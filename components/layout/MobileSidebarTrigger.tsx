@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronDown, ChevronRight } from 'lucide-react';
@@ -52,14 +52,16 @@ export default function MobileSidebarTrigger({
     return '';
   };
 
-  const [expanded, setExpanded] = useState<string>(getActiveSection(pathname));
-
-  useEffect(() => {
-    setExpanded(getActiveSection(pathname));
-  }, [pathname]);
+  const [expandedOverride, setExpandedOverride] = useState<{ pathname: string; section: string } | null>(null);
+  const expanded = expandedOverride?.pathname === pathname
+    ? expandedOverride.section
+    : getActiveSection(pathname);
 
   const toggleSection = (section: string) => {
-    setExpanded(expanded === section ? '' : section);
+    setExpandedOverride({
+      pathname,
+      section: expanded === section ? '' : section,
+    });
   };
 
   const linkClass = (href: string) => {
@@ -74,7 +76,7 @@ export default function MobileSidebarTrigger({
 
   const sectionHeadingClass = "px-2.5 mt-4 mb-1 text-[9px] uppercase font-bold text-foreground/50 tracking-wider select-none flex items-center gap-1.5 cursor-pointer hover:text-foreground/70";
 
-  const SectionHeader = ({ title, count, section }: { title: string; count: number; section: string }) => (
+  const renderSectionHeader = (title: string, count: number, section: string) => (
     <div className={sectionHeadingClass} onClick={() => toggleSection(section)}>
       {expanded === section ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
       <span>{title}</span>
@@ -118,7 +120,7 @@ export default function MobileSidebarTrigger({
           </Link>
 
           {/* Python Packages */}
-          <SectionHeader title="Packages" count={packages.length} section="packages" />
+          {renderSectionHeader('Packages', packages.length, 'packages')}
           {expanded === 'packages' && (
             <ul className="space-y-0.5">
               {packages.map((pkg) => (
@@ -202,7 +204,7 @@ export default function MobileSidebarTrigger({
           )}
 
           {/* Model Registries */}
-          <SectionHeader title="Registries" count={registryTasks.length} section="registry" />
+          {renderSectionHeader('Registries', registryTasks.length, 'registry')}
           {expanded === 'registry' && (
             <ul className="space-y-0.5">
               {registryTasks.map((task) => (
@@ -220,7 +222,7 @@ export default function MobileSidebarTrigger({
           )}
 
           {/* Workflows */}
-          <SectionHeader title="Workflows" count={workflows.length} section="workflows" />
+          {renderSectionHeader('Workflows', workflows.length, 'workflows')}
           {expanded === 'workflows' && (
             <ul className="space-y-0.5">
               {workflows.map((wf) => (
@@ -238,7 +240,7 @@ export default function MobileSidebarTrigger({
           )}
 
           {/* Cheatsheets */}
-          <SectionHeader title="Cheatsheets" count={cheatsheets.length} section="cheatsheets" />
+          {renderSectionHeader('Cheatsheets', cheatsheets.length, 'cheatsheets')}
           {expanded === 'cheatsheets' && (
             <ul className="space-y-0.5">
               {cheatsheets.map((cs) => (

@@ -1,11 +1,11 @@
 import { notFound } from 'next/navigation';
-import { getModelIds, getModel } from '@/lib/data';
+import { getModelIds, getModel, getRelatedContent } from '@/lib/data';
 import { ModelCategory } from '@/types/model';
 import { CodeBlock } from '@/components/shared/CodeBlock';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import OfficialResources from '@/components/shared/OfficialResources';
-import AlternativesList from '@/components/shared/AlternativesList';
+import RelatedContent from '@/components/shared/RelatedContent';
 import { validateModelCategory } from '@/lib/route-params';
 
 export async function generateStaticParams() {
@@ -47,6 +47,7 @@ export default async function ModelDetailPage({ params }: PageProps) {
     { id: 'hyperparams', label: 'Hyperparameters' },
     { id: 'quick-start', label: 'Quick Start' },
   ];
+  const relatedContent = getRelatedContent('model', model.id, validCategory);
 
   return (
     <ContentPageLayout
@@ -57,7 +58,7 @@ export default async function ModelDetailPage({ params }: PageProps) {
       ]}
       toc={toc}
     >
-      <header id="summary" className="space-y-3 border-b border-border pb-4 scroll-mt-6">
+      <header id="summary" className="space-y-3 border-b border-border pb-4 scroll-mt-24">
         <h1>{model.name}</h1>
         <MetadataBadges
           type="model"
@@ -70,7 +71,7 @@ export default async function ModelDetailPage({ params }: PageProps) {
 
       <OfficialResources sources={model.sources} githubRepo={model.github_repo} />
 
-      <section id="decision-guide" className="grid grid-cols-1 md:grid-cols-2 gap-4 scroll-mt-6">
+      <section id="decision-guide" className="grid grid-cols-1 md:grid-cols-2 gap-4 scroll-mt-24">
         <div className="rounded-lg border border-border bg-card p-4">
           <h2 className="text-emerald-700 dark:text-emerald-400">Use When</h2>
           <p className="mt-2 text-sm text-muted-foreground">{model.use_when}</p>
@@ -81,7 +82,7 @@ export default async function ModelDetailPage({ params }: PageProps) {
         </div>
       </section>
 
-      <section id="pros-cons" className="grid grid-cols-1 md:grid-cols-2 gap-4 scroll-mt-6">
+      <section id="pros-cons" className="grid grid-cols-1 md:grid-cols-2 gap-4 scroll-mt-24">
         <div className="rounded-lg border border-border bg-card p-4">
           <h2>Pros</h2>
           <ul className="mt-2 list-disc pl-4 space-y-1 text-sm text-muted-foreground">
@@ -100,7 +101,7 @@ export default async function ModelDetailPage({ params }: PageProps) {
         </div>
       </section>
 
-      <section id="performance" className="rounded-lg border border-border bg-card p-4 scroll-mt-6">
+      <section id="performance" className="rounded-lg border border-border bg-card p-4 scroll-mt-24">
         <h2>Performance Overview</h2>
         <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
           {[
@@ -118,7 +119,7 @@ export default async function ModelDetailPage({ params }: PageProps) {
       </section>
 
       {model.key_hyperparams.length > 0 && (
-        <section id="hyperparams" className="space-y-2 scroll-mt-6">
+        <section id="hyperparams" className="space-y-2 scroll-mt-24">
           <h2>Key Hyperparameters</h2>
           <div className="rounded-lg border border-border overflow-x-auto bg-card">
             <table className="min-w-full divide-y divide-border text-left text-sm">
@@ -143,12 +144,12 @@ export default async function ModelDetailPage({ params }: PageProps) {
         </section>
       )}
 
-      <section id="quick-start" className="space-y-2 scroll-mt-6">
+      <section id="quick-start" className="space-y-2 scroll-mt-24">
         <h2>Quick Start</h2>
         <CodeBlock code={model.quick_start} language="python" />
       </section>
 
-      <AlternativesList alternatives={model.alternatives} title="Alternative Models" />
+      <RelatedContent items={relatedContent} />
     </ContentPageLayout>
   );
 }

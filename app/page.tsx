@@ -5,7 +5,6 @@ import {
   getAllModels, 
   getRegistryTasks, 
   getAllWorkflows, 
-  getAllCheatsheetIds,
   getRecentContent
 } from "@/lib/data";
 import { buildSearchIndex } from "@/lib/search";
@@ -21,27 +20,27 @@ export default function Home() {
   const llmModels = getAllModels("llm");
   const registryTasks = getRegistryTasks();
   const workflows = getAllWorkflows();
-  const cheatsheets = getAllCheatsheetIds();
   const recent = getRecentContent(8);
   const searchIndex = buildSearchIndex();
 
   const totalModelsCount = counts.models_ml + counts.models_dl + counts.models_llm;
+  const popularPackageIds = ['numpy', 'pandas', 'pytorch', 'jax', 'polars', 'dask'];
+  const popularPackages = popularPackageIds
+    .map(packageId => packages.find(pkg => pkg.id === packageId))
+    .filter((pkg): pkg is NonNullable<typeof pkg> => Boolean(pkg));
 
   return (
-    <div className="space-y-10">
-      {/* Hero */}
+    <div className="space-y-8">
+      {/* Global Search */}
       <section className="space-y-3">
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-          AI Engineering Handbook
-        </h1>
-        <p className="content-prose text-sm text-muted-foreground">
-          Static reference for Python packages, model configurations, deployment workflows, and syntax cheatsheets.
-        </p>
-      </section>
-
-      {/* Search */}
-      <section className="space-y-2">
-        <h2 className="text-sm font-semibold text-foreground">Search</h2>
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight text-foreground">
+            AI Engineering Handbook
+          </h1>
+          <p className="content-prose mt-1 text-xs text-muted-foreground">
+            Static reference for packages, models, workflows, registries, and cheatsheets.
+          </p>
+        </div>
         <SearchBox index={searchIndex} placeholder="Search by name, summary, or problem type…" />
       </section>
 
@@ -69,8 +68,8 @@ export default function Home() {
                 href={href}
                 className="rounded-lg border border-border bg-card p-3 hover:border-foreground/20 hover:bg-muted/30 transition-colors"
               >
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm font-medium text-foreground">{item.name}</span>
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <span className="text-sm font-medium text-foreground leading-snug">{item.name}</span>
                   <ContentTypeBadge type={item.type} className="px-1.5 py-0 text-[8px]" />
                 </div>
                 <p className="text-[10px] font-mono text-muted-foreground">
@@ -83,26 +82,23 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Categories */}
+      {/* Popular Packages */}
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-foreground">Categories</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-          {[
-            { label: 'Packages', count: counts.packages, href: '/packages/numpy' },
-            { label: 'ML Models', count: counts.models_ml, href: '/models/ml/random-forest' },
-            { label: 'DL Models', count: counts.models_dl, href: '/models/dl/transformer' },
-            { label: 'LLM Models', count: counts.models_llm, href: '/models/llm/llama-3-8b' },
-            { label: 'Workflows', count: counts.workflows, href: '/workflows/rag' },
-            { label: 'Cheatsheets', count: counts.cheatsheets, href: '/cheatsheets/pytorch' },
-            { label: 'Registry', count: counts.registry_tasks, href: '/registry/embedding' },
-          ].map(cat => (
+        <h2 className="text-sm font-semibold text-foreground">Popular Packages</h2>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {popularPackages.map(pkg => (
             <Link
-              key={cat.label}
-              href={cat.href}
-              className="rounded-lg border border-border bg-card p-3 hover:border-foreground/20 transition-colors"
+              key={pkg.id}
+              href={`/packages/${pkg.id}`}
+              className="rounded-lg border border-border bg-card p-3 hover:border-foreground/20 hover:bg-muted/30 transition-colors"
             >
-              <div className="text-sm font-medium text-foreground">{cat.label}</div>
-              <div className="text-[10px] font-mono text-muted-foreground mt-1">{cat.count} entries</div>
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <div className="text-sm font-medium text-foreground">{pkg.name}</div>
+                  <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{pkg.summary}</p>
+                </div>
+                <span className="shrink-0 text-[10px] font-mono text-muted-foreground">v{pkg.version}</span>
+              </div>
             </Link>
           ))}
         </div>
@@ -184,6 +180,31 @@ export default function Home() {
               ))}
             </div>
           </SectionCard>
+        </div>
+      </section>
+
+      {/* Categories */}
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold text-foreground">Categories</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+          {[
+            { label: 'Packages', count: counts.packages, href: '/packages/numpy' },
+            { label: 'ML Models', count: counts.models_ml, href: '/models/ml/random-forest' },
+            { label: 'DL Models', count: counts.models_dl, href: '/models/dl/transformer' },
+            { label: 'LLM Models', count: counts.models_llm, href: '/models/llm/llama-3-8b' },
+            { label: 'Workflows', count: counts.workflows, href: '/workflows/rag' },
+            { label: 'Cheatsheets', count: counts.cheatsheets, href: '/cheatsheets/pytorch' },
+            { label: 'Registry', count: counts.registry_tasks, href: '/registry/embedding' },
+          ].map(cat => (
+            <Link
+              key={cat.label}
+              href={cat.href}
+              className="rounded-lg border border-border bg-card p-3 hover:border-foreground/20 transition-colors"
+            >
+              <div className="text-sm font-medium text-foreground">{cat.label}</div>
+              <div className="text-[10px] font-mono text-muted-foreground mt-1">{cat.count} entries</div>
+            </Link>
+          ))}
         </div>
       </section>
     </div>

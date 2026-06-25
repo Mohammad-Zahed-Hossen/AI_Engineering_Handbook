@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -47,8 +48,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
     >
+      <head>
+        <Script id="theme-script" strategy="beforeInteractive">
+          {`(function(){try{var key='handbook-theme';var stored=localStorage.getItem(key);var dark=stored?stored==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.toggle('dark',dark);}catch(e){}})();`}
+        </Script>
+      </head>
       <body className="h-full flex overflow-hidden bg-background text-foreground text-sm leading-relaxed">
         <div className="hidden md:block shrink-0 h-full sticky top-0">
           <Sidebar 

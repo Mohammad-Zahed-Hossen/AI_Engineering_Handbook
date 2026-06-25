@@ -1,9 +1,10 @@
 import { notFound } from 'next/navigation';
-import { getAllWorkflowIds, getWorkflow } from '@/lib/data';
+import { getAllWorkflowIds, getWorkflow, getRelatedContent } from '@/lib/data';
 import SectionCard from '@/components/shared/SectionCard';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import OfficialResources from '@/components/shared/OfficialResources';
+import RelatedContent from '@/components/shared/RelatedContent';
 
 export async function generateStaticParams() {
   return getAllWorkflowIds().map((id) => ({ id }));
@@ -23,6 +24,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
     if ((e as NodeJS.ErrnoException).code === 'ENOENT') notFound();
     throw e;
   }
+  const relatedContent = getRelatedContent('workflow', workflow.id);
 
   return (
     <ContentPageLayout
@@ -37,7 +39,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
         { id: 'failures', label: 'Failure Points' },
       ]}
     >
-      <header id="overview" className="space-y-3 border-b border-border pb-4 scroll-mt-6">
+      <header id="overview" className="space-y-3 border-b border-border pb-4 scroll-mt-24">
         <h1>{workflow.name}</h1>
         <MetadataBadges
           type="workflow"
@@ -60,7 +62,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
       <OfficialResources sources={workflow.sources} githubRepo={workflow.github_repo} />
 
       <SectionCard title="Workflow Steps" subtitle="Sequential pipeline">
-        <ol id="steps" className="space-y-6 scroll-mt-6">
+        <ol id="steps" className="space-y-6 scroll-mt-24">
           {workflow.steps.map(s => (
             <li key={s.step} className="flex gap-4 border-b border-border/50 pb-6 last:border-b-0 last:pb-0">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-sm font-mono font-semibold">
@@ -91,7 +93,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
       </SectionCard>
 
       {workflow.common_failure_points.length > 0 && (
-        <div id="failures" className="border-l-2 border-rose-500 bg-rose-500/5 p-4 rounded-r scroll-mt-6">
+        <div id="failures" className="border-l-2 border-rose-500 bg-rose-500/5 p-4 rounded-r scroll-mt-24">
           <h2 className="text-rose-700 dark:text-rose-400">Common Failure Points</h2>
           <ul className="mt-2 list-disc pl-4 space-y-1 text-sm text-muted-foreground">
             {workflow.common_failure_points.map((pt, idx) => (
@@ -100,6 +102,8 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
           </ul>
         </div>
       )}
+
+      <RelatedContent items={relatedContent} />
     </ContentPageLayout>
   );
 }

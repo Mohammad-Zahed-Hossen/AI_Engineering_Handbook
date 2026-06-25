@@ -50,6 +50,7 @@ const nameRegistry = new Map<string, string>();    // "type:name_lower" → file
 const modelIdRegistry = new Map<string, string>(); // model_id → file path
 
 const refsToCheck: Array<{ sourceFile: string; ref: { id: string; type: string } }> = [];
+const docsUrlRegistry = new Map<string, string[]>(); // url → array of "file+fn" locations
 
 // ── Helpers ─────────────────────────────────────────────────
 
@@ -214,6 +215,32 @@ for (const file of files) {
           if (!Array.isArray(section.functions) || section.functions.length < 2) {
             reportError(`Package '${normalizedPath}' section[${idx}] has fewer than 2 functions (${section.functions?.length ?? 0})`);
           }
+          // Validate extended function fields
+          if (Array.isArray(section.functions)) {
+            section.functions.forEach((fn, fnIdx) => {
+              if (typeof fn === 'object' && fn !== null) {
+                const func = fn as Record<string, unknown>;
+                
+                // Collect docs_url for duplicate check
+                if (func.docs_url && typeof func.docs_url === 'string') {
+                  const location = `${normalizedPath}:${func.fn || `section[${idx}].functions[${fnIdx}]`}`;
+                  if (!docsUrlRegistry.has(func.docs_url)) {
+                    docsUrlRegistry.set(func.docs_url, []);
+                  }
+                  docsUrlRegistry.get(func.docs_url)!.push(location);
+                }
+                
+                // Validate related_fns format - must contain "("
+                if (func.related_fns && Array.isArray(func.related_fns)) {
+                  func.related_fns.forEach((relatedFns, relatedIdx) => {
+                    if (typeof relatedFns === 'string' && !relatedFns.includes('(')) {
+                      reportError(`Package '${normalizedPath}' section[${idx}].functions[${fnIdx}].related_fns[${relatedIdx}] must be a function signature with parentheses, got: "${relatedFns}"`);
+                    }
+                  });
+                }
+              }
+            });
+          }
         });
       }
     } else if (type === 'workflow') {
@@ -362,7 +389,16 @@ for (const check of refsToCheck) {
   }
 }
 
-// ── STEP 9: Report and Exit ─────────────────────────────────
+// ── STEP 9: docs_url Uniqueness Check ───────────────────────
+console.log(`\n📊 Checking ${docsUrlRegistry.size} unique docs_url values for duplicates...`);
+
+for (const [url, locations] of docsUrlRegistry.entries()) {
+  if (locations.length > 1) {
+    reportWarning(`Duplicate docs_url '${url}' found in ${locations.length} locations: ${locations.join(', ')}`);
+  }
+}
+
+// ── STEP 10: Report and Exit ───────────────────────────────
 console.log(`\n📊 Validation Summary`);
 console.log(`   Files checked: ${files.length}`);
 console.log(`   Errors:        ${errorCount}`);

@@ -11,9 +11,11 @@ interface ContentPageLayoutProps {
 export default function ContentPageLayout({ breadcrumbs, toc, children }: ContentPageLayoutProps) {
   return (
     <div className="flex gap-8 items-start">
-      <div className="min-w-0 flex-1 space-y-6">
+      <div className="min-w-0 flex-1 space-y-8">
         <Breadcrumbs items={breadcrumbs} />
-        {children}
+        <div className="space-y-8">
+          {children}
+        </div>
       </div>
       {toc && <TableOfContents items={toc} />}
     </div>

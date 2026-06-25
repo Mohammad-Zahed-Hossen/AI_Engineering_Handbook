@@ -19,31 +19,36 @@
           "fn": "np.array(object)",
           "purpose": "Create an array from a list or tuple",
           "example": "a = np.array([1, 2, 3])",
-          "category": "creation"
+          "category": "creation",
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.array.html"
         },
         {
           "fn": "np.zeros(shape)",
           "purpose": "Return a new array of given shape filled with zeros",
           "example": "z = np.zeros((3, 4))",
-          "category": "creation"
+          "category": "creation",
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.zeros.html"
         },
         {
           "fn": "np.ones(shape)",
           "purpose": "Return a new array of given shape filled with ones",
           "example": "o = np.ones((2, 3))",
-          "category": "creation"
+          "category": "creation",
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.ones.html"
         },
         {
           "fn": "np.linspace(start, stop, num)",
           "purpose": "Return evenly spaced numbers over a specified interval",
           "example": "l = np.linspace(0, 1, 5)",
-          "category": "creation"
+          "category": "creation",
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.linspace.html"
         },
         {
           "fn": "np.arange(start, stop, step)",
           "purpose": "Return evenly spaced values within a given interval",
           "example": "r = np.arange(0, 10, 2)",
-          "category": "creation"
+          "category": "creation",
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.arange.html"
         }
       ],
       "gotchas": [
@@ -58,31 +63,37 @@
           "fn": "np.reshape(a, newshape)",
           "purpose": "Change the shape of an array without changing its data",
           "example": "reshaped = np.reshape(arr, (3, 4))",
-          "category": "reshaping"
+          "category": "reshaping",
+          "performance_note": "np.reshape returns a view when possible, but modifying the view may unexpectedly modify the original array; use .copy() if you need an independent array.",
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.reshape.html"
         },
         {
           "fn": "np.ravel(a)",
           "purpose": "Return a contiguous flattened array",
           "example": "flat = np.ravel(arr)",
-          "category": "reshaping"
+          "category": "reshaping",
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.ravel.html"
         },
         {
           "fn": "np.transpose(a, axes)",
           "purpose": "Permute the dimensions of an array",
           "example": "t = np.transpose(arr, (1, 0, 2))",
-          "category": "reshaping"
+          "category": "reshaping",
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.transpose.html"
         },
         {
           "fn": "np.expand_dims(a, axis)",
           "purpose": "Expand the shape of an array by inserting a new axis",
           "example": "expanded = np.expand_dims(arr, axis=0)",
-          "category": "reshaping"
+          "category": "reshaping",
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.expand_dims.html"
         },
         {
           "fn": "np.squeeze(a, axis)",
           "purpose": "Remove singleton dimensions from the shape of an array",
           "example": "squeezed = np.squeeze(arr, axis=1)",
-          "category": "reshaping"
+          "category": "reshaping",
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.squeeze.html"
         }
       ],
       "gotchas": [
@@ -97,31 +108,38 @@
           "fn": "arr[indices]",
           "purpose": "Access elements by index, slice, or boolean mask",
           "example": "subset = arr[2:10:2]",
-          "category": "indexing"
+          "category": "indexing",
+          "docs_url": "https://numpy.org/doc/stable/reference/arrays.indexing.html"
         },
         {
           "fn": "np.where(condition, x, y)",
           "purpose": "Return elements chosen from x or y depending on condition",
           "example": "result = np.where(arr > 0, arr, 0)",
-          "category": "indexing"
+          "category": "indexing",
+          "common_errors": ["When x and y are scalars and condition is a multi-dimensional array, np.where broadcasts the scalars to match the condition shape, which can produce unexpected results if you intended element-wise selection from arrays of the same shape."],
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.where.html"
         },
         {
           "fn": "np.take(a, indices, axis)",
           "purpose": "Take elements from an array along an axis",
           "example": "taken = np.take(arr, [0, 2, 4], axis=0)",
-          "category": "indexing"
+          "category": "indexing",
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.take.html"
         },
         {
           "fn": "arr[boolean_mask]",
           "purpose": "Select elements where the boolean mask is True",
           "example": "positive = arr[arr > 0]",
-          "category": "indexing"
+          "category": "indexing",
+          "common_errors": ["Boolean indexing on a 2D array returns a 1-D flattened result regardless of the original shape, which can break downstream code that expects the original dimensionality."],
+          "docs_url": "https://numpy.org/doc/stable/reference/arrays.indexing.html#boolean-array-indexing"
         },
         {
           "fn": "arr[fancy_indices]",
           "purpose": "Select elements using an array of integer indices",
           "example": "selected = arr[[0, 3, 5]]",
-          "category": "indexing"
+          "category": "indexing",
+          "docs_url": "https://numpy.org/doc/stable/reference/arrays.indexing.html#fancy-indexing"
         }
       ],
       "gotchas": [
@@ -136,37 +154,44 @@
           "fn": "np.sum(a, axis)",
           "purpose": "Sum of array elements over a given axis",
           "example": "s = np.sum(arr, axis=0)",
-          "category": "statistics"
+          "category": "statistics",
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.sum.html"
         },
         {
           "fn": "np.mean(a, axis)",
           "purpose": "Compute the arithmetic mean along the specified axis",
           "example": "m = np.mean(arr, axis=1)",
-          "category": "statistics"
+          "category": "statistics",
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.mean.html"
         },
         {
           "fn": "np.std(a, axis)",
           "purpose": "Compute the standard deviation along the specified axis",
           "example": "std = np.std(arr, axis=0)",
-          "category": "statistics"
+          "category": "statistics",
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.std.html"
         },
         {
           "fn": "np.dot(a, b)",
           "purpose": "Dot product of two arrays",
           "example": "d = np.dot(a, b)",
-          "category": "math"
+          "category": "math",
+          "performance_note": "For matrix multiplication on ND arrays, use the @ operator or np.matmul instead of np.dot for clearer semantics and better performance with broadcasting.",
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.dot.html"
         },
         {
           "fn": "np.linalg.norm(x, ord)",
           "purpose": "Matrix or vector norm",
           "example": "n = np.linalg.norm(vec, ord=2)",
-          "category": "math"
+          "category": "math",
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.norm.html"
         },
         {
           "fn": "np.argmax(a, axis)",
           "purpose": "Return indices of the maximum values along the given axis",
           "example": "idx = np.argmax(arr, axis=1)",
-          "category": "statistics"
+          "category": "statistics",
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.argmax.html"
         }
       ],
       "gotchas": [
@@ -181,25 +206,38 @@
           "fn": "np.linalg.inv(a)",
           "purpose": "Compute the inverse of a matrix",
           "example": "inv = np.linalg.inv(a)",
-          "category": "linalg"
+          "category": "linalg",
+          "common_errors": ["Passing a singular or nearly singular matrix raises LinAlgError with a generic message about singular matrices, even when the issue is numerical instability due to high condition numbers."],
+          "performance_note": "For solving linear systems Ax = b, use np.linalg.solve(a, b) instead of computing the inverse explicitly — it avoids the O(n^3) inverse computation and is numerically more stable.",
+          "related_fns": ["np.linalg.solve(a, b)", "np.linalg.pinv(a)"],
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.inv.html"
         },
         {
           "fn": "np.linalg.eig(a)",
           "purpose": "Compute the eigenvalues and right eigenvectors of a square matrix",
           "example": "w, v = np.linalg.eig(a)",
-          "category": "linalg"
+          "category": "linalg",
+          "common_errors": ["For real symmetric matrices, np.linalg.eig returns complex eigenvalues with negligible imaginary parts due to numerical precision, which can break downstream real-only pipelines expecting float arrays."],
+          "related_fns": ["np.linalg.eigh(a)", "np.linalg.eigvals(a)"],
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.eig.html"
         },
         {
           "fn": "np.linalg.svd(a, full_matrices)",
           "purpose": "Singular Value Decomposition",
           "example": "u, s, vh = np.linalg.svd(a, full_matrices=False)",
-          "category": "linalg"
+          "category": "linalg",
+          "common_errors": ["With full_matrices=True (default), the returned U and Vh matrices can be extremely large for wide or tall input matrices, causing memory exhaustion on datasets that fit in RAM otherwise."],
+          "performance_note": "For dimensionality reduction or low-rank approximations, use full_matrices=False to avoid computing the full orthogonal matrices, reducing memory from O(mn) to O(min(m,n)k) where k is the rank.",
+          "related_fns": ["np.linalg.pinv(a)", "np.linalg.matrix_rank(a)"],
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.svd.html"
         },
         {
           "fn": "np.linalg.solve(a, b)",
           "purpose": "Solve a linear matrix equation",
           "example": "x = np.linalg.solve(a, b)",
-          "category": "linalg"
+          "category": "linalg",
+          "related_fns": ["np.linalg.inv(a)", "np.linalg.lstsq(a, b)"],
+          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.solve.html"
         }
       ],
       "gotchas": [

@@ -1,17 +1,19 @@
 import { z } from 'zod';
 import { BaseMetaSchema, ContentRefSchema } from './meta';
 
-export const PackageFunctionSchema = z.object({
-  fn: z.string(),
-  purpose: z.string(),
+export const PackageTaskSchema = z.object({
+  task: z.string(),
+  mental_trigger: z.string(),
+  syntax: z.string(),
+  important_params: z.array(z.string()).max(5),
   example: z.string(),
-  category: z.string(),
-});
-
-export const PackageSectionSchema = z.object({
-  name: z.string(),
-  functions: z.array(PackageFunctionSchema),
+  use_when: z.string(),
+  avoid_when: z.string(),
+  decision_notes: z.string(),
   gotchas: z.array(z.string()),
+  official_docs: z.string().url(),
+  related_workflows: z.array(z.string()),
+  related_cheatsheets: z.array(z.string()),
 });
 
 export const PackageSchema = BaseMetaSchema.extend({
@@ -21,6 +23,6 @@ export const PackageSchema = BaseMetaSchema.extend({
   install: z.string(),
   import_as: z.string(),
   summary: z.string(),
-  sections: z.array(PackageSectionSchema),
+  tasks: z.array(PackageTaskSchema),
   alternatives: z.array(ContentRefSchema),
 });

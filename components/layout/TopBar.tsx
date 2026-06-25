@@ -2,6 +2,7 @@ import MobileSidebarTrigger from './MobileSidebarTrigger';
 import SearchBox from '@/components/shared/SearchBox';
 import { NavItem } from '@/lib/data';
 import { SearchResult } from '@/lib/search';
+import DarkModeToggle from './DarkModeToggle';
 
 interface TopBarProps {
   packages: NavItem[];
@@ -45,8 +46,9 @@ export default function TopBar({
       <div className="flex-1 flex justify-center max-w-lg">
         <SearchBox index={searchIndex} compact placeholder="Search handbook…" />
       </div>
-      <div className="hidden sm:flex items-center shrink-0">
-        <div className="text-[10px] text-muted-foreground font-mono">Static</div>
+      <div className="flex items-center gap-2 shrink-0">
+        <DarkModeToggle />
+        <div className="hidden sm:block text-[10px] text-muted-foreground font-mono">Static</div>
       </div>
     </header>
   );

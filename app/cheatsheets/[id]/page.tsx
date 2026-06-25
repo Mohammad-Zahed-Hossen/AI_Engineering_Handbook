@@ -1,8 +1,9 @@
 import { notFound } from 'next/navigation';
-import { getAllCheatsheetIds, getCheatsheet } from '@/lib/data';
+import { getAllCheatsheetIds, getCheatsheet, getRelatedContent } from '@/lib/data';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import OfficialResources from '@/components/shared/OfficialResources';
+import RelatedContent from '@/components/shared/RelatedContent';
 
 export async function generateStaticParams() {
   return getAllCheatsheetIds().map((id) => ({ id }));
@@ -22,6 +23,7 @@ export default async function CheatsheetDetailPage({ params }: PageProps) {
     if ((e as NodeJS.ErrnoException).code === 'ENOENT') notFound();
     throw e;
   }
+  const relatedContent = getRelatedContent('cheatsheet', cheatsheet.id);
 
   return (
     <ContentPageLayout
@@ -47,7 +49,7 @@ export default async function CheatsheetDetailPage({ params }: PageProps) {
           <section
             key={group.group}
             id={group.group.toLowerCase().replace(/\s+/g, '-')}
-            className="space-y-2 scroll-mt-6"
+            className="space-y-2 scroll-mt-24"
           >
             <h2>{group.group}</h2>
             <div className="rounded-lg border border-border overflow-x-auto bg-card">
@@ -75,6 +77,8 @@ export default async function CheatsheetDetailPage({ params }: PageProps) {
           </section>
         ))}
       </div>
+
+      <RelatedContent items={relatedContent} />
     </ContentPageLayout>
   );
 }

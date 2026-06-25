@@ -116,6 +116,34 @@ Contains groupings of function references.
   * **Common AI Mistakes**: Random capitalization.
   * **Manual Verification**: Maintain consistent lowercase tag formatting.
 
+### `sections[].functions` — Extended Fields
+
+The following optional fields provide engineering-focused value beyond official documentation:
+
+* **`common_errors`** (optional, array of strings):
+  * **What belongs**: Real engineering bugs that a developer would encounter in practice. Each string describes one silent failure, TypeError, or wrong-result bug.
+  * **Example**: `"Passing a Python list instead of ndarray to linalg.inv raises LinAlgError with a misleading message about singular matrices."`
+  * **What does NOT belong**: Obvious type errors (e.g., "passing a string when a number is expected"), basic syntax errors, or generic warnings.
+  * **Emphasis**: Focus on non-obvious bugs that have misleading error messages or silent failures that waste debugging time.
+
+* **`performance_note`** (optional, string):
+  * **What belongs**: Memory or speed considerations not obvious from the function signature.
+  * **Example**: `"For large matrices, use scipy.linalg.solve instead — it avoids the O(n^3) inverse computation."`
+  * **What does NOT belong**: Generic performance advice, obvious complexity notes (e.g., "this is O(n)"), or information clearly stated in official docs.
+  * **Emphasis**: Provide actionable engineering guidance for performance-critical scenarios.
+
+* **`related_fns`** (optional, array of strings):
+  * **What belongs**: Sibling function signatures within the SAME package only. These are navigation aids that tell you what to look at next.
+  * **Example**: `["np.linalg.solve(a, b)", "np.linalg.pinv(a)"]`
+  * **What does NOT belong**: Functions from other packages, plain function names without parentheses (e.g., `"linalg.inv"`), or unrelated APIs.
+  * **Emphasis**: Each item must be a valid function signature containing parentheses to distinguish it from plain names. Only include functions from the same package.
+
+* **`docs_url`** (optional, string):
+  * **What belongs**: Direct URL to the official documentation for this specific function.
+  * **Example**: `"https://numpy.org/doc/stable/reference/generated/numpy.linalg.inv.html"`
+  * **What does NOT belong**: Package homepage URLs, general documentation landing pages, or third-party tutorial links.
+  * **Emphasis**: This should be the exact function page URL, not a higher-level package documentation URL.
+
 ### `alternatives`
 * **What belongs**: An array of string names referencing alternative packages (e.g., `["cupy", "jax.numpy"]`).
 * **What does NOT belong**: Pros/cons or explanations.

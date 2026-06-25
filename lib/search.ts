@@ -8,7 +8,6 @@ import {
   getRegistryByTask
 } from './data';
 import { SearchResult } from './search-types';
-import type { RegistryTask } from '@/lib/schemas/registry';
 
 export type { SearchResult } from './search-types';
 export { createFuse } from './search-types';
@@ -24,6 +23,26 @@ export function buildSearchIndex(): SearchResult[] {
     href: `/packages/${p.id}`,
     updated_at: p.updated_at,
   }));
+
+  // Index individual functions from packages
+  getAllPackages().forEach(pkg => {
+    pkg.sections.forEach(section => {
+      section.functions.forEach(fn => {
+        results.push({
+          type: 'function',
+          id: `${pkg.id}::${fn.fn.replace(/[^a-z0-9]/gi, '-').toLowerCase()}`,
+          name: fn.fn,
+          summary: fn.purpose,
+          href: `/packages/${pkg.id}#${section.name.toLowerCase().replace(/\s+/g, '-')}`,
+          updated_at: pkg.updated_at,
+          category: pkg.name,
+          fn_signature: fn.fn,
+          fn_section: section.name,
+          fn_package_id: pkg.id,
+        });
+      });
+    });
+  });
 
   (['ml', 'dl', 'llm'] as const).forEach(cat => {
     getAllModels(cat).forEach(m => results.push({
@@ -73,6 +92,12 @@ export function buildSearchIndex(): SearchResult[] {
       href: `/cheatsheets/${cs.id}`,
     });
   });
+
+  // Development-only size check to catch index bloat
+  if (process.env.NODE_ENV === 'development') {
+    const indexSize = Buffer.byteLength(JSON.stringify(results), 'utf8');
+    console.log(`[search] Index contains ${results.length} entries, ~${Math.round(indexSize / 1024)}KB`);
+  }
 
   return results;
 }

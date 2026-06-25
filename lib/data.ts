@@ -6,6 +6,7 @@ import { Model, ModelCategory } from '@/types/model';
 import { RegistryModel, RegistryTask } from '@/types/registry';
 import { Workflow } from '@/types/workflow';
 import { Cheatsheet } from '@/types/cheatsheet';
+import { ContentRef } from '@/types/meta';
 
 // Core data directory in the project workspace
 const dataDir = path.join(process.cwd(), 'data');
@@ -417,6 +418,121 @@ export function getContentPath(type: 'model' | 'package' | 'workflow' | 'cheatsh
   }
   return null;
 }
+
+function uniqueExistingRefs(refs: ContentRef[], current?: ContentRef): ContentRef[] {
+  const seen = new Set<string>();
+
+  return refs.filter(ref => {
+    const key = `${ref.type}:${ref.id}`;
+    const isCurrent = current?.type === ref.type && current.id === ref.id;
+
+    if (isCurrent || seen.has(key) || !contentExists(ref.type, ref.id)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+}
+
+const PACKAGE_LEARNING_PATHS: Record<string, ContentRef[]> = {
+  numpy: [
+    { type: 'package', id: 'pandas' },
+    { type: 'package', id: 'polars' },
+    { type: 'package', id: 'dask' },
+  ],
+  pandas: [
+    { type: 'package', id: 'numpy' },
+    { type: 'package', id: 'polars' },
+    { type: 'package', id: 'dask' },
+  ],
+  polars: [
+    { type: 'package', id: 'pandas' },
+    { type: 'package', id: 'dask' },
+    { type: 'package', id: 'numpy' },
+  ],
+  dask: [
+    { type: 'package', id: 'pandas' },
+    { type: 'package', id: 'polars' },
+    { type: 'package', id: 'numpy' },
+  ],
+  pytorch: [
+    { type: 'package', id: 'jax' },
+    { type: 'package', id: 'numpy' },
+  ],
+  jax: [
+    { type: 'package', id: 'numpy' },
+    { type: 'package', id: 'cupy' },
+  ],
+};
+
+export const getRelatedContent = cache(function getRelatedContent(
+  type: ContentRef['type'],
+  id: string,
+  category?: ModelCategory | string
+): ContentRef[] {
+  const current = { type, id } as ContentRef;
+
+  if (type === 'package') {
+    const pkg = getPackage(id);
+    return uniqueExistingRefs([
+      ...pkg.alternatives,
+      ...(PACKAGE_LEARNING_PATHS[id] ?? []),
+    ], current).slice(0, 6);
+  }
+
+  if (type === 'model') {
+    const modelCategory = (category as ModelCategory | undefined) ?? getModelCategoryById(id);
+    if (!modelCategory) return [];
+
+    const model = getModel(modelCategory, id);
+    const sameCategory = getAllModels(modelCategory)
+      .filter(candidate => candidate.id !== id)
+      .map(candidate => ({ type: 'model', id: candidate.id } satisfies ContentRef));
+    const sameProblemType = getAllModels(modelCategory)
+      .filter(candidate =>
+        candidate.id !== id &&
+        candidate.problem_types.some(problemType => model.problem_types.includes(problemType))
+      )
+      .map(candidate => ({ type: 'model', id: candidate.id } satisfies ContentRef));
+
+    return uniqueExistingRefs([
+      ...model.alternatives,
+      ...sameCategory,
+      ...sameProblemType,
+    ], current).slice(0, 6);
+  }
+
+  if (type === 'workflow') {
+    const workflow = getWorkflow(id);
+    const allWorkflows = getAllWorkflows().filter(candidate => candidate.id !== id);
+    const sharedCategory = allWorkflows
+      .filter(candidate => candidate.category === workflow.category)
+      .map(candidate => ({ type: 'workflow', id: candidate.id } satisfies ContentRef));
+    const workflowTools = new Set(workflow.starter_stack);
+    workflow.steps.forEach(step => step.tools.forEach(tool => workflowTools.add(tool)));
+    const sharedTools = allWorkflows
+      .filter(candidate => {
+        const candidateTools = new Set(candidate.starter_stack);
+        candidate.steps.forEach(step => step.tools.forEach(tool => candidateTools.add(tool)));
+        return [...candidateTools].some(tool => workflowTools.has(tool));
+      })
+      .map(candidate => ({ type: 'workflow', id: candidate.id } satisfies ContentRef));
+
+    return uniqueExistingRefs([...sharedCategory, ...sharedTools], current).slice(0, 6);
+  }
+
+  if (type === 'cheatsheet') {
+    const packageRef: ContentRef[] = contentExists('package', id)
+      ? [{ type: 'package', id }]
+      : [];
+    const relatedPackages = packageRef.length ? getPackage(id).alternatives : [];
+
+    return uniqueExistingRefs([...packageRef, ...relatedPackages], current).slice(0, 6);
+  }
+
+  return [];
+});
 
 /**
  * Retrieves the most recently created or updated entries across packages, models, workflows, cheatsheets, and registry items.
