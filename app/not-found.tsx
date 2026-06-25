@@ -1,19 +1,14 @@
-'use client';
-
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 
 export default function NotFound() {
-  const pathname = usePathname();
-
   return (
     <div className="space-y-6 select-none max-w-md mx-auto mt-12">
       <div className="bg-card text-card-foreground border border-border p-6 rounded-lg shadow-sm">
         <h1 className="text-xl font-bold tracking-tight text-foreground font-sans">
-          Page Not Found
+          Page not found
         </h1>
         <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-          The requested URL <code className="font-mono text-indigo-500 bg-secondary/80 px-1 rounded text-[11px]">{pathname}</code> could not be found.
+          The page may have moved or the URL may be incorrect.
         </p>
 
         <div className="border-t border-border mt-4 pt-4">
@@ -22,23 +17,43 @@ export default function NotFound() {
           </span>
           <ul className="space-y-2 font-mono text-[11px]">
             <li>
-              <Link href="/" className="text-indigo-500 hover:underline">
-                &rarr; Dashboard
+              <Link href="/" className="text-foreground hover:underline">
+                Dashboard
               </Link>
             </li>
             <li>
-              <Link href="/" className="text-indigo-500 hover:underline">
-                &rarr; Python Packages
+              <Link href="/packages/numpy" className="text-foreground hover:underline">
+                Packages
               </Link>
             </li>
             <li>
-              <Link href="/models/ml" className="text-indigo-500 hover:underline">
-                &rarr; Models Library (ML)
+              <Link href="/models/ml" className="text-foreground hover:underline">
+                ML Models
               </Link>
             </li>
             <li>
-              <Link href="/workflows/rag" className="text-indigo-500 hover:underline">
-                &rarr; AI Workflows (RAG)
+              <Link href="/models/dl" className="text-foreground hover:underline">
+                DL Models
+              </Link>
+            </li>
+            <li>
+              <Link href="/models/llm" className="text-foreground hover:underline">
+                LLMs
+              </Link>
+            </li>
+            <li>
+              <Link href="/registry/embedding" className="text-foreground hover:underline">
+                Registry
+              </Link>
+            </li>
+            <li>
+              <Link href="/workflows/rag" className="text-foreground hover:underline">
+                Workflows
+              </Link>
+            </li>
+            <li>
+              <Link href="/cheatsheets/pytorch" className="text-foreground hover:underline">
+                Cheatsheets
               </Link>
             </li>
           </ul>

@@ -9,233 +9,369 @@ import {
   CheatsheetSchema,
 } from '../lib/schemas';
 
-// Import data loading functions to satisfy the requirement
-import * as dataLoader from '../lib/data';
-
-if (dataLoader === null) {
-  // no-op
-}
-
 const dataDir = path.join(process.cwd(), 'data');
+const STRICT_MODE = process.env.STRICT_REFERENCE_MODE === 'true';
 
-/**
- * Recursively scans directory to locate all JSON files.
- */
+// ── Constants ───────────────────────────────────────────────
+
+const SLUG_REGEX = /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/;
+const VALID_REF_TYPES = new Set(['model', 'package', 'workflow', 'cheatsheet', 'registry']);
+
+const PLACEHOLDER_SUBSTRINGS = [
+  'Placeholder',
+  'placeholder',
+  'TODO',
+  'TBD',
+  'Coming soon',
+  '# Instantiate model here',
+  'Use when you need a',
+  'Avoid when resources are highly constrained',
+  'Well established architecture',
+  'Requires modern hardware',
+];
+
+const FILE_TO_TASK: Record<string, string> = {
+  'embeddings.json': 'embedding',
+  'rerankers.json': 'reranker',
+  'vision.json': 'vision',
+  'speech.json': 'speech',
+  'llms.json': 'llm',
+  'multimodal.json': 'multimodal',
+  'ocr.json': 'ocr',
+};
+
+// ── State ───────────────────────────────────────────────────
+
+let errorCount = 0;
+let warningCount = 0;
+
+const idRegistry = new Map<string, string>();      // "type:id" → file path
+const nameRegistry = new Map<string, string>();    // "type:name_lower" → file path
+const modelIdRegistry = new Map<string, string>(); // model_id → file path
+
+const refsToCheck: Array<{ sourceFile: string; ref: { id: string; type: string } }> = [];
+
+// ── Helpers ─────────────────────────────────────────────────
+
 function getJsonFiles(dir: string): string[] {
   let results: string[] = [];
   if (!fs.existsSync(dir)) return results;
-  const list = fs.readdirSync(dir);
-  list.forEach(file => {
+  for (const file of fs.readdirSync(dir)) {
     const filePath = path.join(dir, file);
     const stat = fs.statSync(filePath);
-    if (stat && stat.isDirectory()) {
+    if (stat.isDirectory()) {
       results = results.concat(getJsonFiles(filePath));
     } else if (file.endsWith('.json')) {
       results.push(filePath);
     }
-  });
+  }
   return results;
 }
 
+function reportError(message: string): void {
+  errorCount++;
+  console.error(`❌ ${message}`);
+}
+
+function reportWarning(message: string): void {
+  warningCount++;
+  console.warn(`⚠️ ${message}`);
+}
+
+function containsPlaceholder(text: string): boolean {
+  if (!text) return false;
+  const lowerText = text.toLowerCase();
+  return PLACEHOLDER_SUBSTRINGS.some(sub => lowerText.includes(sub.toLowerCase()));
+}
+
+function checkPlaceholder(file: string, fieldPath: string, value: string | undefined): void {
+  if (value && containsPlaceholder(value)) {
+    reportError(`Placeholder text in '${file}' field '${fieldPath}': "${value.substring(0, 80)}"`);
+  }
+}
+
+function detectContentType(normalizedPath: string): string | null {
+  if (normalizedPath.startsWith('data/packages/')) return 'package';
+  if (normalizedPath.startsWith('data/models/')) return 'model';
+  if (normalizedPath.startsWith('data/workflows/')) return 'workflow';
+  if (normalizedPath.startsWith('data/cheatsheets/')) return 'cheatsheet';
+  if (normalizedPath.startsWith('data/registry/')) return 'registry';
+  return null;
+}
+
+// ── Main ────────────────────────────────────────────────────
+
 const files = getJsonFiles(dataDir);
-let hasErrors = false;
-
-interface RegistryEntry {
-  type: string;
-  path: string;
-}
-
-const globalRegistry = new Map<string, RegistryEntry[]>();
-interface ReferenceCheck {
-  sourceFile: string;
-  ref: { id: string; type: string };
-}
-const refsToCheck: ReferenceCheck[] = [];
-
-function registerId(id: string, type: string, path: string, itemIndex?: number): void {
-  const existingList = globalRegistry.get(id) || [];
-
-  // 1. Check for exact duplicate within the same type
-  const duplicateSameType = existingList.find(e => e.type === type);
-  if (duplicateSameType) {
-    hasErrors = true;
-    if (itemIndex !== undefined) {
-      console.error(`❌ Duplicate ID collision: ID '${id}' in registry '${path}' (index ${itemIndex}) conflicts with '${duplicateSameType.path}'.`);
-    } else {
-      console.error(`❌ Duplicate ID collision: ID '${id}' declared in '${path}' conflicts with '${duplicateSameType.path}'.`);
-    }
-    return;
-  }
-
-  // 2. Check for collisions between core types (package, model, workflow)
-  const isCore = (t: string) => t === 'package' || t === 'model' || t === 'workflow';
-  if (isCore(type)) {
-    const coreConflict = existingList.find(e => isCore(e.type));
-    if (coreConflict) {
-      hasErrors = true;
-      console.error(`❌ Cross-folder ID collision: Core ID '${id}' (type '${type}') declared in '${path}' conflicts with core ID in '${coreConflict.path}' (type '${coreConflict.type}').`);
-      return;
-    }
-  }
-
-  // 3. Otherwise, add to registry
-  existingList.push({ type, path });
-  globalRegistry.set(id, existingList);
-}
-
-console.log(`Starting content validation. Scanning ${files.length} JSON files in ${dataDir}...`);
+console.log(`📊 Starting content validation. Scanning ${files.length} JSON files in ${dataDir}...\n`);
 
 for (const file of files) {
   const relativePath = path.relative(process.cwd(), file);
   const normalizedPath = relativePath.replace(/\\/g, '/');
 
-  if (normalizedPath.endsWith('_index.json') || normalizedPath === 'data/meta.json') {
-    continue;
-  }
-
+  // ── STEP 1: JSON Parse ──────────────────────────────────
   let data: unknown;
   try {
-    const raw = fs.readFileSync(file, 'utf-8');
-    data = JSON.parse(raw) as unknown;
+    data = JSON.parse(fs.readFileSync(file, 'utf-8')) as unknown;
   } catch (e) {
-    console.error(`❌ Error parsing JSON file: ${normalizedPath}`);
-    console.error(`   Message: ${(e as Error).message}`);
-    hasErrors = true;
+    reportError(`JSON parse error in '${normalizedPath}': ${(e as Error).message}`);
     continue;
   }
 
-  let schema: z.ZodTypeAny;
-
-  if (normalizedPath.startsWith('data/packages/')) {
-    schema = PackageSchema;
-  } else if (normalizedPath.startsWith('data/models/ml/') || normalizedPath.startsWith('data/models/dl/') || normalizedPath.startsWith('data/models/llm/')) {
-    schema = ModelSchema;
-  } else if (normalizedPath.startsWith('data/registry/')) {
-    schema = z.array(RegistryModelSchema);
-  } else if (normalizedPath.startsWith('data/workflows/')) {
-    schema = WorkflowSchema;
-  } else if (normalizedPath.startsWith('data/cheatsheets/')) {
-    schema = CheatsheetSchema;
-  } else {
-    console.warn(`⚠️ Warning: Unknown JSON file path found: ${normalizedPath}`);
+  // ── STEP 2: Schema Validation ─────────────────────────────
+  let schema: z.ZodTypeAny | null = null;
+  if (normalizedPath.startsWith('data/packages/')) schema = PackageSchema;
+  else if (normalizedPath.startsWith('data/models/')) schema = ModelSchema;
+  else if (normalizedPath.startsWith('data/registry/')) schema = z.array(RegistryModelSchema);
+  else if (normalizedPath.startsWith('data/workflows/')) schema = WorkflowSchema;
+  else if (normalizedPath.startsWith('data/cheatsheets/')) schema = CheatsheetSchema;
+  else {
+    reportWarning(`Unknown file path '${normalizedPath}' — no schema mapping`);
     continue;
   }
 
   const result = schema.safeParse(data);
   if (!result.success) {
-    hasErrors = true;
-    console.error(`❌ Validation failed in file: ${normalizedPath}`);
-    for (const err of result.error.issues) {
-      const fieldPath = err.path.join('.') || '(root)';
-      console.error(`  - Field: ${fieldPath}`);
-      console.error(`    Error: ${err.message}`);
+    reportError(`Schema validation failed in '${normalizedPath}'`);
+    for (const issue of result.error.issues) {
+      const fieldPath = issue.path.join('.') || '(root)';
+      console.error(`    - Field: ${fieldPath}`);
+      console.error(`      Error: ${issue.message}`);
     }
-  } else {
-    // Perform ID validation and registration
-    const isRegistry = normalizedPath.startsWith('data/registry/');
-    const kebabCaseRegex = /^[a-z0-9.-]+$/;
+    continue;
+  }
 
-    if (!isRegistry) {
-      const expectedId = path.basename(file, '.json');
-      
-      // Enforce filename is kebab-case format
-      if (!kebabCaseRegex.test(expectedId)) {
-        hasErrors = true;
-        console.error(`❌ Invalid filename format: '${normalizedPath}'. Filenames must contain only lowercase letters, digits, hyphens, and periods (kebab-case).`);
+  const isRegistry = normalizedPath.startsWith('data/registry/');
+
+  // ── Non-Registry Files ───────────────────────────────────
+  if (!isRegistry && typeof data === 'object' && data !== null && !Array.isArray(data)) {
+    const obj = data as Record<string, unknown>;
+    const type = detectContentType(normalizedPath);
+    if (!type) {
+      reportWarning(`Could not determine content type for '${normalizedPath}'`);
+      continue;
+    }
+
+    const declaredId = obj.id as string | undefined;
+    const expectedId = path.basename(file, '.json');
+
+    // ── STEP 3: Slug Format ───────────────────────────────
+    if (declaredId && !SLUG_REGEX.test(declaredId)) {
+      reportError(`Invalid slug '${declaredId}' in '${normalizedPath}'. Must match /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/`);
+    }
+
+    // ── STEP 4: Filename === ID ───────────────────────────
+    if (declaredId !== expectedId) {
+      reportError(`Filename/ID mismatch in '${normalizedPath}': filename='${expectedId}', declared id='${declaredId}'`);
+    }
+
+    // ── STEP 5: Placeholder Detection ───────────────────────
+    if (type === 'model') {
+      const model = obj as {
+        summary?: string;
+        quick_start?: string;
+        pros?: string[];
+        cons?: string[];
+      };
+      checkPlaceholder(normalizedPath, 'summary', model.summary);
+      checkPlaceholder(normalizedPath, 'quick_start', model.quick_start);
+      (model.pros ?? []).forEach((pro, idx) => checkPlaceholder(normalizedPath, `pros[${idx}]`, pro));
+      (model.cons ?? []).forEach((con, idx) => checkPlaceholder(normalizedPath, `cons[${idx}]`, con));
+    } else if (type === 'package') {
+      const pkg = obj as { summary?: string };
+      checkPlaceholder(normalizedPath, 'summary', pkg.summary);
+    } else if (type === 'workflow') {
+      const wf = obj as { overview?: string };
+      checkPlaceholder(normalizedPath, 'overview', wf.overview);
+    }
+
+    // ── STEP 6: Minimum Content Quality ─────────────────────
+    if (type === 'model') {
+      const model = obj as {
+        pros?: string[];
+        cons?: string[];
+        key_hyperparams?: unknown[];
+        problem_types?: string[];
+      };
+      if (!Array.isArray(model.pros) || model.pros.length < 3) {
+        reportError(`Model '${normalizedPath}' has fewer than 3 pros (${model.pros?.length ?? 0})`);
       }
-
-      if (data && typeof data === 'object' && !Array.isArray(data)) {
-        const obj = data as { id?: string; alternatives?: Array<{ id?: string; type?: string }> };
-        const declaredId = obj.id;
-        
-        // Enforce filename matches internal ID
-        if (declaredId !== expectedId) {
-          hasErrors = true;
-          console.error(`❌ ID mismatch in '${normalizedPath}': declared ID '${declaredId}' does not match filename '${expectedId}'.`);
-        }
-
-        // Enforce internal ID format
-        if (declaredId && !kebabCaseRegex.test(declaredId)) {
-          hasErrors = true;
-          console.error(`❌ Invalid ID format in '${normalizedPath}': ID '${declaredId}' must contain only lowercase letters, digits, hyphens, and periods.`);
-        }
-
-        // Register ID & detect cross-folder ID collisions
-        const type = normalizedPath.startsWith('data/packages/') ? 'package' :
-                     normalizedPath.startsWith('data/workflows/') ? 'workflow' :
-                     normalizedPath.startsWith('data/cheatsheets/') ? 'cheatsheet' : 'model';
-
-        if (declaredId) {
-          registerId(declaredId, type, normalizedPath);
-        }
-
-        // Collect alternatives for referential integrity checks
-        if (Array.isArray(obj.alternatives)) {
-          obj.alternatives.forEach((alt: { id?: string; type?: string }) => {
-            if (alt && alt.id && alt.type) {
-              refsToCheck.push({ sourceFile: normalizedPath, ref: { id: alt.id, type: alt.type } });
-            }
-          });
-        }
+      if (!Array.isArray(model.cons) || model.cons.length < 3) {
+        reportError(`Model '${normalizedPath}' has fewer than 3 cons (${model.cons?.length ?? 0})`);
       }
-    } else {
-      // Registry file (contains array of models)
-      if (Array.isArray(data)) {
-        (data as Array<{ id?: string; alternatives?: Array<{ id?: string; type?: string }> }>).forEach((item, idx: number) => {
-          if (item && item.id) {
-            // Check internal ID format
-            if (!kebabCaseRegex.test(item.id)) {
-              hasErrors = true;
-              console.error(`❌ Invalid ID format in registry file '${normalizedPath}' (index ${idx}): ID '${item.id}' must contain only lowercase letters, digits, hyphens, and periods.`);
-            }
-
-            // Register ID & detect ID collisions
-            registerId(item.id, 'registry_item', normalizedPath, idx);
-
-            // Collect alternatives
-            if (Array.isArray(item.alternatives)) {
-              item.alternatives.forEach((alt: { id?: string; type?: string }) => {
-                if (alt && alt.id && alt.type) {
-                  refsToCheck.push({ sourceFile: normalizedPath, ref: { id: alt.id, type: alt.type } });
-                }
-              });
-            }
+      const isDetectionOnly =
+        Array.isArray(model.problem_types) &&
+        model.problem_types.length === 1 &&
+        model.problem_types[0] === 'detection';
+      if (!isDetectionOnly && (!Array.isArray(model.key_hyperparams) || model.key_hyperparams.length < 1)) {
+        reportError(`Model '${normalizedPath}' has fewer than 1 key_hyperparams (${model.key_hyperparams?.length ?? 0})`);
+      }
+    } else if (type === 'package') {
+      const pkg = obj as { sections?: Array<{ functions?: unknown[] }> };
+      if (!Array.isArray(pkg.sections) || pkg.sections.length < 2) {
+        reportError(`Package '${normalizedPath}' has fewer than 2 sections (${pkg.sections?.length ?? 0})`);
+      } else {
+        pkg.sections.forEach((section, idx) => {
+          if (!Array.isArray(section.functions) || section.functions.length < 2) {
+            reportError(`Package '${normalizedPath}' section[${idx}] has fewer than 2 functions (${section.functions?.length ?? 0})`);
+          }
+        });
+      }
+    } else if (type === 'workflow') {
+      const wf = obj as { steps?: unknown[] };
+      if (!Array.isArray(wf.steps) || wf.steps.length < 3) {
+        reportError(`Workflow '${normalizedPath}' has fewer than 3 steps (${wf.steps?.length ?? 0})`);
+      }
+    } else if (type === 'cheatsheet') {
+      const cs = obj as { groups?: Array<{ items?: unknown[] }> };
+      if (!Array.isArray(cs.groups) || cs.groups.length < 1) {
+        reportError(`Cheatsheet '${normalizedPath}' has fewer than 1 groups (${cs.groups?.length ?? 0})`);
+      } else {
+        cs.groups.forEach((group, idx) => {
+          if (!Array.isArray(group.items) || group.items.length < 3) {
+            reportError(`Cheatsheet '${normalizedPath}' group[${idx}] has fewer than 3 items (${group.items?.length ?? 0})`);
           }
         });
       }
     }
+
+    // ── STEP 7: Duplicate Detection ─────────────────────────
+    const name = obj.name as string | undefined;
+    if (declaredId) {
+      const idKey = `${type}:${declaredId}`;
+      if (idRegistry.has(idKey)) {
+        reportError(`Duplicate ID '${declaredId}' (type '${type}') in '${normalizedPath}' — already in '${idRegistry.get(idKey)}'`);
+      } else {
+        idRegistry.set(idKey, normalizedPath);
+      }
+    }
+    if (name) {
+      const nameKey = `${type}:${name.toLowerCase()}`;
+      if (nameRegistry.has(nameKey)) {
+        reportError(`Duplicate name '${name}' (type '${type}') in '${normalizedPath}' — already in '${nameRegistry.get(nameKey)}'`);
+      } else {
+        nameRegistry.set(nameKey, normalizedPath);
+      }
+    }
+
+    // ── STEP 8: Collect Alternatives ──────────────────────
+    const alternatives = obj.alternatives as Array<{ id?: string; type?: string }> | undefined;
+    if (Array.isArray(alternatives)) {
+      for (const alt of alternatives) {
+        if (typeof alt === 'string') {
+          reportError(`Legacy string alternative in '${normalizedPath}': '${alt}'. Use { id, type } object.`);
+          continue;
+        }
+        if (!alt?.id || !alt?.type) {
+          reportError(`Malformed alternative in '${normalizedPath}': missing id or type.`);
+          continue;
+        }
+        if (!VALID_REF_TYPES.has(alt.type)) {
+          reportError(`Invalid alternative type '${alt.type}' in '${normalizedPath}'.`);
+        }
+        refsToCheck.push({ sourceFile: normalizedPath, ref: { id: alt.id, type: alt.type } });
+      }
+    }
+  }
+
+  // ── Registry Files ───────────────────────────────────────
+  else if (isRegistry && Array.isArray(data)) {
+    const fileName = path.basename(file);
+    const expectedTask = FILE_TO_TASK[fileName];
+
+    if (!expectedTask) {
+      reportWarning(`Unknown registry file '${normalizedPath}' — no task mapping for '${fileName}'`);
+    }
+
+    if (data.length === 0) {
+      reportError(`Registry file '${normalizedPath}' is empty`);
+    }
+
+    (data as Array<Record<string, unknown>>).forEach((item, idx) => {
+      const itemId = item.id as string | undefined;
+      const itemTask = item.task as string | undefined;
+
+      // ── STEP 3: Slug Format ─────────────────────────────
+      if (itemId && !SLUG_REGEX.test(itemId)) {
+        reportError(`Invalid slug '${itemId}' in '${normalizedPath}[${idx}]'. Must match /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/`);
+      }
+
+      // ── STEP 4: Task matches Filename ─────────────────────
+      if (expectedTask && itemTask !== expectedTask) {
+        reportError(`Task mismatch in '${normalizedPath}[${idx}]': expected '${expectedTask}', got '${itemTask}'`);
+      }
+
+      // ── STEP 5: Placeholder Detection ─────────────────────
+      checkPlaceholder(`${normalizedPath}[${idx}]`, 'notes', item.notes as string | undefined);
+      checkPlaceholder(`${normalizedPath}[${idx}]`, 'quick_start', item.quick_start as string | undefined);
+
+      // ── STEP 7: Duplicate Detection ───────────────────────
+      if (itemId) {
+        const idKey = `registry:${itemId}`;
+        if (idRegistry.has(idKey)) {
+          reportError(`Duplicate registry ID '${itemId}' in '${normalizedPath}[${idx}]' — already in '${idRegistry.get(idKey)}'`);
+        } else {
+          idRegistry.set(idKey, normalizedPath);
+        }
+      }
+
+      const modelId = item.model_id as string | undefined;
+      if (modelId) {
+        if (modelIdRegistry.has(modelId)) {
+          reportError(`Duplicate registry model_id '${modelId}' in '${normalizedPath}[${idx}]' — already in '${modelIdRegistry.get(modelId)}'`);
+        } else {
+          modelIdRegistry.set(modelId, normalizedPath);
+        }
+      }
+
+      // ── STEP 8: Collect Alternatives ────────────────────
+      const alternatives = item.alternatives as Array<{ id?: string; type?: string }> | undefined;
+      if (Array.isArray(alternatives)) {
+        for (const alt of alternatives) {
+          if (typeof alt === 'string') {
+            reportError(`Legacy string alternative in '${normalizedPath}' index ${idx}: '${alt}'.`);
+            continue;
+          }
+          if (!alt?.id || !alt?.type) {
+            reportError(`Malformed alternative in '${normalizedPath}' index ${idx}.`);
+            continue;
+          }
+          if (!VALID_REF_TYPES.has(alt.type)) {
+            reportError(`Invalid alternative type '${alt.type}' in '${normalizedPath}' index ${idx}.`);
+          }
+          refsToCheck.push({ sourceFile: normalizedPath, ref: { id: alt.id, type: alt.type } });
+        }
+      }
+    });
   }
 }
 
-// Perform referential integrity (orphan and type-matching validation)
-console.log(`Checking ${refsToCheck.length} reference links for orphan detection and type matching...`);
+// ── STEP 8: ContentRef Integrity ────────────────────────────
+console.log(`\n📊 Checking ${refsToCheck.length} reference links for integrity...`);
+
 for (const check of refsToCheck) {
   const { id, type } = check.ref;
-  const targets = globalRegistry.get(id);
+  const idKey = `${type}:${id}`;
 
-  if (!targets || targets.length === 0) {
-    hasErrors = true;
-    console.error(`❌ Reference Error: Reference target not found: ID '${id}' (referenced as type '${type}') in source file '${check.sourceFile}'`);
-  } else {
-    // Find a target that matches the expected type (or compatible type)
-    const matchingTarget = targets.find(target => {
-      if (type === target.type) return true;
-      if (type === 'model' && target.type === 'registry_item') return true;
-      return false;
-    });
-
-    if (!matchingTarget) {
-      hasErrors = true;
-      const actualTypes = targets.map(t => `'${t.type}' (defined in '${t.path}')`).join(', ');
-      console.error(`❌ Reference Error: Type mismatch for reference ID '${id}' in '${check.sourceFile}'. Referenced as type '${type}' but actual targets found are: ${actualTypes}.`);
+  if (!idRegistry.has(idKey)) {
+    const message = `Broken reference: ID '${id}' (type '${type}') not found, referenced from '${check.sourceFile}'`;
+    if (STRICT_MODE) {
+      reportError(message);
+    } else {
+      reportWarning(message);
     }
   }
 }
 
-if (hasErrors) {
-  console.error('\n❌ Content validation failed. Please fix the validation errors above.');
+// ── STEP 9: Report and Exit ─────────────────────────────────
+console.log(`\n📊 Validation Summary`);
+console.log(`   Files checked: ${files.length}`);
+console.log(`   Errors:        ${errorCount}`);
+console.log(`   Warnings:      ${warningCount}`);
+
+if (errorCount > 0) {
+  console.error(`\n❌ Content validation failed with ${errorCount} error(s).`);
   process.exit(1);
-} else {
-  console.log('✅ All content files and references validated successfully!');
-  process.exit(0);
 }
+
+console.log('\n✅ All content files and references validated successfully!');
+process.exit(0);

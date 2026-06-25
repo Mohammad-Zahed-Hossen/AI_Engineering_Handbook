@@ -9,7 +9,7 @@ interface SectionCardProps {
 
 export default function SectionCard({ title, subtitle, badge, children }: SectionCardProps) {
   return (
-    <div className="bg-card text-card-foreground border border-border rounded-lg overflow-hidden shadow-sm">
+    <div className="bg-card text-card-foreground border border-border rounded-lg overflow-hidden transition-colors hover:border-foreground/15">
       {/* Card Header section */}
       <div className="px-4 py-3 border-b border-border bg-muted/20 flex items-center justify-between select-none">
         <div>

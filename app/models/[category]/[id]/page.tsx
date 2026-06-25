@@ -1,27 +1,21 @@
 import { notFound } from 'next/navigation';
-import { getModelIds, getModel, getContentName, getContentPath } from '@/lib/data';
+import { getModelIds, getModel } from '@/lib/data';
 import { ModelCategory } from '@/types/model';
 import { CodeBlock } from '@/components/shared/CodeBlock';
-import Link from 'next/link';
+import ContentPageLayout from '@/components/shared/ContentPageLayout';
+import MetadataBadges from '@/components/shared/MetadataBadges';
+import OfficialResources from '@/components/shared/OfficialResources';
+import AlternativesList from '@/components/shared/AlternativesList';
 import { validateModelCategory } from '@/lib/route-params';
 
-/**
- * Pre-generates parameters for all category-id model pairs.
- * Invoked statically during next build. Reads lists from meta indices.
- */
 export async function generateStaticParams() {
   const categories: ModelCategory[] = ['ml', 'dl', 'llm'];
   const params: { category: string; id: string }[] = [];
 
   for (const category of categories) {
-    try {
-      const ids = getModelIds(category);
-      for (const id of ids) {
-        params.push({ category, id });
-      }
-    } catch (e) {
-      console.error(`[generateStaticParams] Failed to load category '${category}':`, e);
-      throw e;
+    const ids = getModelIds(category);
+    for (const id of ids) {
+      params.push({ category, id });
     }
   }
 
@@ -34,140 +28,71 @@ interface PageProps {
 
 export default async function ModelDetailPage({ params }: PageProps) {
   const { category, id } = await params;
-
-  // Validate the model category segment
   const validCategory = validateModelCategory(category);
-  if (!validCategory) {
-    notFound();
-  }
+  if (!validCategory) notFound();
 
   let model;
   try {
     model = getModel(validCategory, id);
   } catch (e) {
-    if ((e as NodeJS.ErrnoException).code === 'ENOENT') {
-      notFound();
-    } else {
-      throw e;
-    }
+    if ((e as NodeJS.ErrnoException).code === 'ENOENT') notFound();
+    throw e;
   }
 
-  if (!model) {
-    notFound();
-  }
-
-  const officialDocs = model.sources.find(
-    url => !url.includes('arxiv.org') && !url.includes('biorxiv.org') && !url.includes('researchgate.net') && !url.includes('doi.org')
-  );
-  const researchPaper = model.sources.find(
-    url => url.includes('arxiv.org') || url.includes('biorxiv.org') || url.includes('researchgate.net') || url.includes('doi.org')
-  );
+  const toc = [
+    { id: 'summary', label: 'Summary' },
+    { id: 'decision-guide', label: 'Decision Guide' },
+    { id: 'pros-cons', label: 'Pros & Cons' },
+    { id: 'performance', label: 'Performance' },
+    { id: 'hyperparams', label: 'Hyperparameters' },
+    { id: 'quick-start', label: 'Quick Start' },
+  ];
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 select-text">
-      {/* SECTION 1: Header */}
-      <header className="border-b border-border pb-4">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground font-sans">
-          {model.name}
-        </h1>
-        <div className="flex flex-wrap items-center gap-2 mt-2 select-none">
-          <span className="bg-primary text-primary-foreground text-[10px] font-semibold font-mono uppercase px-2 py-0.5 rounded">
-            {model.category}
-          </span>
-          {model.problem_types.map((pt) => (
-            <span
-              key={pt}
-              className="bg-secondary text-secondary-foreground border border-border text-[10px] font-mono capitalize px-2 py-0.5 rounded"
-            >
-              {pt}
-            </span>
-          ))}
-        </div>
+    <ContentPageLayout
+      breadcrumbs={[
+        { label: 'Home', href: '/' },
+        { label: 'Models', href: `/models/${validCategory}` },
+        { label: model.name },
+      ]}
+      toc={toc}
+    >
+      <header id="summary" className="space-y-3 border-b border-border pb-4 scroll-mt-6">
+        <h1>{model.name}</h1>
+        <MetadataBadges
+          type="model"
+          updatedAt={model.updated_at}
+          category={model.category}
+          problemTypes={model.problem_types}
+        />
+        <p className="content-prose text-sm text-muted-foreground">{model.summary}</p>
       </header>
 
-      {/* SECTION 2: Summary */}
-      <section className="text-xs leading-relaxed text-muted-foreground max-w-2xl font-sans">
-        {model.summary}
-      </section>
+      <OfficialResources sources={model.sources} githubRepo={model.github_repo} />
 
-      {/* SECTION 2.5: Official Resources */}
-      {(officialDocs || researchPaper || model.github_repo) && (
-        <section className="border border-border p-4 rounded bg-card select-none space-y-2">
-          <h3 className="text-xs font-bold text-foreground uppercase tracking-wider font-sans">
-            Official Resources
-          </h3>
-          <div className="flex flex-wrap gap-4 text-xs font-sans">
-            {officialDocs && (
-              <a
-                href={officialDocs}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-indigo-500 hover:underline font-semibold"
-              >
-                <span>🌐</span> Documentation &rarr;
-              </a>
-            )}
-            {researchPaper && (
-              <a
-                href={researchPaper}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-indigo-500 hover:underline font-semibold"
-              >
-                <span>📄</span> Original Paper &rarr;
-              </a>
-            )}
-            {model.github_repo && (
-              <a
-                href={model.github_repo}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-indigo-500 hover:underline font-semibold"
-              >
-                <span>💻</span> GitHub Repository &rarr;
-              </a>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* SECTION 3: Decision Guide */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6 select-none">
-        <div className="border border-border p-4 rounded bg-card">
-          <h3 className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-2 font-sans">
-            Use When
-          </h3>
-          <p className="text-[11px] leading-relaxed text-muted-foreground font-sans">
-            {model.use_when}
-          </p>
+      <section id="decision-guide" className="grid grid-cols-1 md:grid-cols-2 gap-4 scroll-mt-6">
+        <div className="rounded-lg border border-border bg-card p-4">
+          <h2 className="text-emerald-700 dark:text-emerald-400">Use When</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{model.use_when}</p>
         </div>
-        <div className="border border-border p-4 rounded bg-card">
-          <h3 className="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider mb-2 font-sans">
-            Avoid When
-          </h3>
-          <p className="text-[11px] leading-relaxed text-muted-foreground font-sans">
-            {model.avoid_when}
-          </p>
+        <div className="rounded-lg border border-border bg-card p-4">
+          <h2 className="text-rose-700 dark:text-rose-400">Avoid When</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{model.avoid_when}</p>
         </div>
       </section>
 
-      {/* SECTION 4: Pros vs Cons */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="border border-border p-4 rounded bg-card">
-          <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-2 font-sans select-none">
-            Pros
-          </h3>
-          <ul className="list-disc pl-4 space-y-1 text-[11px] text-muted-foreground leading-relaxed font-sans">
+      <section id="pros-cons" className="grid grid-cols-1 md:grid-cols-2 gap-4 scroll-mt-6">
+        <div className="rounded-lg border border-border bg-card p-4">
+          <h2>Pros</h2>
+          <ul className="mt-2 list-disc pl-4 space-y-1 text-sm text-muted-foreground">
             {model.pros.map((pro, idx) => (
               <li key={idx}>{pro}</li>
             ))}
           </ul>
         </div>
-        <div className="border border-border p-4 rounded bg-card">
-          <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-2 font-sans select-none">
-            Cons
-          </h3>
-          <ul className="list-disc pl-4 space-y-1 text-[11px] text-muted-foreground leading-relaxed font-sans">
+        <div className="rounded-lg border border-border bg-card p-4">
+          <h2>Cons</h2>
+          <ul className="mt-2 list-disc pl-4 space-y-1 text-sm text-muted-foreground">
             {model.cons.map((con, idx) => (
               <li key={idx}>{con}</li>
             ))}
@@ -175,74 +100,41 @@ export default async function ModelDetailPage({ params }: PageProps) {
         </div>
       </section>
 
-      {/* SECTION 5: Performance Overview */}
-      <section className="border border-border p-4 rounded bg-card select-none space-y-3">
-        <h3 className="text-xs font-bold text-foreground uppercase tracking-wider font-sans">
-          Performance Overview
-        </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-          <div className="bg-secondary/40 p-2 rounded border border-border/60">
-            <span className="text-[9px] uppercase font-bold text-muted-foreground block mb-1">
-              Training Speed
-            </span>
-            <span className="text-xs font-mono font-semibold capitalize text-foreground">
-              {model.training_speed}
-            </span>
-          </div>
-          <div className="bg-secondary/40 p-2 rounded border border-border/60">
-            <span className="text-[9px] uppercase font-bold text-muted-foreground block mb-1">
-              Inference Speed
-            </span>
-            <span className="text-xs font-mono font-semibold capitalize text-foreground">
-              {model.inference_speed}
-            </span>
-          </div>
-          <div className="bg-secondary/40 p-2 rounded border border-border/60">
-            <span className="text-[9px] uppercase font-bold text-muted-foreground block mb-1">
-              Memory Usage
-            </span>
-            <span className="text-xs font-mono font-semibold capitalize text-foreground">
-              {model.memory_usage}
-            </span>
-          </div>
-          <div className="bg-secondary/40 p-2 rounded border border-border/60">
-            <span className="text-[9px] uppercase font-bold text-muted-foreground block mb-1">
-              Interpretability
-            </span>
-            <span className="text-xs font-mono font-semibold capitalize text-foreground">
-              {model.interpretability}
-            </span>
-          </div>
+      <section id="performance" className="rounded-lg border border-border bg-card p-4 scroll-mt-6">
+        <h2>Performance Overview</h2>
+        <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+          {[
+            ['Training', model.training_speed],
+            ['Inference', model.inference_speed],
+            ['Memory', model.memory_usage],
+            ['Interpretability', model.interpretability],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded border border-border bg-muted/30 p-2">
+              <span className="text-[10px] uppercase text-muted-foreground block mb-1">{label}</span>
+              <span className="text-sm font-mono font-medium capitalize">{value}</span>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* SECTION 6: Key Hyperparameters */}
-      {model.key_hyperparams && model.key_hyperparams.length > 0 && (
-        <section className="space-y-2">
-          <h3 className="text-xs font-bold text-foreground uppercase tracking-wider font-sans select-none">
-            Key Hyperparameters
-          </h3>
-          <div className="border border-border rounded overflow-x-auto bg-card">
-            <table className="min-w-full divide-y divide-border text-left">
-              <thead className="bg-muted/40 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider select-none font-sans">
+      {model.key_hyperparams.length > 0 && (
+        <section id="hyperparams" className="space-y-2 scroll-mt-6">
+          <h2>Key Hyperparameters</h2>
+          <div className="rounded-lg border border-border overflow-x-auto bg-card">
+            <table className="min-w-full divide-y divide-border text-left text-sm">
+              <thead className="bg-muted/40 text-[10px] font-semibold text-muted-foreground uppercase">
                 <tr>
-                  <th className="px-4 py-2 w-1/4">Name</th>
-                  <th className="px-4 py-2 w-1/4">Default</th>
+                  <th className="px-4 py-2">Name</th>
+                  <th className="px-4 py-2">Default</th>
                   <th className="px-4 py-2">Description</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border text-[11px] font-sans">
-                {model.key_hyperparams.map((hp) => (
+              <tbody className="divide-y divide-border">
+                {model.key_hyperparams.map(hp => (
                   <tr key={hp.name} className="hover:bg-muted/10">
-                    <td className="px-4 py-2.5 font-mono text-indigo-500 font-semibold">
-                      {hp.name}
-                    </td>
-                    <td className="px-4 py-2.5 font-mono font-medium text-foreground">
-                      {hp.default === null ? 'null' : String(hp.default)}
-                    </td>
-                    <td className="px-4 py-2.5 text-muted-foreground leading-relaxed">
-                      {hp.note}
-                    </td>
+                    <td className="px-4 py-2 font-mono text-primary">{hp.name}</td>
+                    <td className="px-4 py-2 font-mono">{hp.default === null ? 'null' : String(hp.default)}</td>
+                    <td className="px-4 py-2 text-muted-foreground">{hp.note}</td>
                   </tr>
                 ))}
               </tbody>
@@ -251,54 +143,12 @@ export default async function ModelDetailPage({ params }: PageProps) {
         </section>
       )}
 
-      {/* SECTION 7: Quick Start */}
-      <section className="space-y-2">
-        <h3 className="text-xs font-bold text-foreground uppercase tracking-wider font-sans select-none">
-          Quick Start
-        </h3>
+      <section id="quick-start" className="space-y-2 scroll-mt-6">
+        <h2>Quick Start</h2>
         <CodeBlock code={model.quick_start} language="python" />
       </section>
 
-      {/* SECTION 8: Alternatives */}
-      {model.alternatives && model.alternatives.length > 0 && (
-        <section className="border-t border-border pt-4 select-none">
-          <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block mb-2 font-sans">
-            Alternative Models
-          </h3>
-          <div className="flex flex-wrap gap-1.5">
-            {model.alternatives.map((alt) => {
-              const name = getContentName(alt.type, alt.id);
-              const path = getContentPath(alt.type, alt.id);
-
-              if (path) {
-                return (
-                  <Link
-                    key={alt.id}
-                    href={path}
-                    className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 text-[10px] font-mono font-semibold hover:underline flex items-center gap-1"
-                  >
-                    <span className="text-[8px] bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 px-1 py-0.2 rounded font-sans uppercase">
-                      {alt.type}
-                    </span>
-                    {name}
-                  </Link>
-                );
-              }
-              return (
-                <span
-                  key={alt.id}
-                  className="px-2 py-0.5 rounded bg-secondary text-secondary-foreground border border-border text-[10px] font-mono flex items-center gap-1"
-                >
-                  <span className="text-[8px] bg-muted text-muted-foreground px-1 py-0.2 rounded font-sans uppercase">
-                    {alt.type}
-                  </span>
-                  {name}
-                </span>
-              );
-            })}
-          </div>
-        </section>
-      )}
-    </div>
+      <AlternativesList alternatives={model.alternatives} title="Alternative Models" />
+    </ContentPageLayout>
   );
 }

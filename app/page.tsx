@@ -8,7 +8,10 @@ import {
   getAllCheatsheetIds,
   getRecentContent
 } from "@/lib/data";
+import { buildSearchIndex } from "@/lib/search";
 import SectionCard from "@/components/shared/SectionCard";
+import SearchBox from "@/components/shared/SearchBox";
+import ContentTypeBadge from "@/components/shared/ContentTypeBadge";
 
 export default function Home() {
   const counts = getDashboardCounts();
@@ -19,236 +22,170 @@ export default function Home() {
   const registryTasks = getRegistryTasks();
   const workflows = getAllWorkflows();
   const cheatsheets = getAllCheatsheetIds();
+  const recent = getRecentContent(8);
+  const searchIndex = buildSearchIndex();
 
   const totalModelsCount = counts.models_ml + counts.models_dl + counts.models_llm;
 
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="bg-card text-card-foreground border border-border p-6 rounded-lg shadow-sm">
-        <h1 className="text-xl font-bold tracking-tight text-foreground font-sans">
-          AI Engineering Knowledge System
+    <div className="space-y-10">
+      {/* Hero */}
+      <section className="space-y-3">
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+          AI Engineering Handbook
         </h1>
-        <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
-          A localized, zero-latency repository of Python package references, model configurations, registries, deployment workflows, and quick-access syntax cheatsheets.
+        <p className="content-prose text-sm text-muted-foreground">
+          Static reference for Python packages, model configurations, deployment workflows, and syntax cheatsheets.
         </p>
-      </div>
+      </section>
 
-      {/* Primary Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Packages Summary */}
-        <SectionCard 
-          title="Python Packages" 
-          subtitle="Imports, syntax, and options"
-          badge={<span className="font-mono bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 px-2 py-0.5 rounded text-[10px] font-semibold">{counts.packages} Cataloged</span>}
-        >
-          <div className="space-y-3">
-            <p className="text-[11px] text-muted-foreground">
-              Reference sheets for scientific computation, data frames, deep learning frameworks, and transformer model libraries.
-            </p>
-            <div className="border-t border-border pt-2">
-              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1">Quick Links</span>
-              <ul className="space-y-1">
-                {packages.map(pkg => (
-                  <li key={pkg.id}>
-                    <Link 
-                      href={`/packages/${pkg.id}`} 
-                      className="flex items-center justify-between p-1.5 rounded bg-muted/40 hover:bg-muted text-[11px] font-mono text-foreground"
-                    >
-                      <span>{pkg.name}</span>
-                      <span className="text-[9px] text-muted-foreground font-sans">v{pkg.version} &rarr;</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </SectionCard>
+      {/* Search */}
+      <section className="space-y-2">
+        <h2 className="text-sm font-semibold text-foreground">Search</h2>
+        <SearchBox index={searchIndex} placeholder="Search by name, summary, or problem type…" />
+      </section>
 
-        {/* Models Summary */}
-        <SectionCard 
-          title="Models Library" 
-          subtitle="Architectures, training, and parameters"
-          badge={<span className="font-mono bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 px-2 py-0.5 rounded text-[10px] font-semibold">{totalModelsCount} Cataloged</span>}
-        >
-          <div className="space-y-3">
-            <p className="text-[11px] text-muted-foreground">
-              Detailed listings covering machine learning classifiers, neural blocks, self-attention transformers, and large open language models.
-            </p>
-            <div className="border-t border-border pt-2 space-y-2">
-              <div>
-                <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1">Machine Learning (ML) &middot; {counts.models_ml}</span>
-                <div className="flex flex-wrap gap-1">
-                  {mlModels.map(m => (
-                    <Link 
-                      key={m.id} 
-                      href={`/models/ml/${m.id}`} 
-                      className="px-1.5 py-0.5 rounded bg-muted/40 hover:bg-muted border border-border/40 text-[10px] text-foreground"
-                    >
-                      {m.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1">Deep Learning (DL) &middot; {counts.models_dl}</span>
-                <div className="flex flex-wrap gap-1">
-                  {dlModels.map(m => (
-                    <Link 
-                      key={m.id} 
-                      href={`/models/dl/${m.id}`} 
-                      className="px-1.5 py-0.5 rounded bg-muted/40 hover:bg-muted border border-border/40 text-[10px] text-foreground"
-                    >
-                      {m.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1">Large Language Models &middot; {counts.models_llm}</span>
-                <div className="flex flex-wrap gap-1">
-                  {llmModels.map(m => (
-                    <Link 
-                      key={m.id} 
-                      href={`/models/llm/${m.id}`} 
-                      className="px-1.5 py-0.5 rounded bg-muted/40 hover:bg-muted border border-border/40 text-[10px] text-foreground"
-                    >
-                      {m.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </SectionCard>
+      {/* Recently Updated */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-foreground">Recently Updated</h2>
+          <span className="text-[10px] font-mono text-muted-foreground">Sorted by updated_at</span>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {recent.map(item => {
+            const href = item.type === 'model'
+              ? `/models/${item.category}/${item.id}`
+              : item.type === 'package'
+              ? `/packages/${item.id}`
+              : item.type === 'workflow'
+              ? `/workflows/${item.id}`
+              : item.type === 'registry'
+              ? `/registry/${item.category}`
+              : `/cheatsheets/${item.id}`;
 
-        {/* Model Registry Summary */}
-        <SectionCard 
-          title="Model Registries" 
-          subtitle="Weights, parameters, and sizes"
-          badge={<span className="font-mono bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 px-2 py-0.5 rounded text-[10px] font-semibold">Verified Registry</span>}
-        >
-          <div className="space-y-3">
-            <p className="text-[11px] text-muted-foreground">
-              Aggregated catalog of embedding generators, speech transcripts, optical character recognizers, and multimodal foundational checkpoints.
-            </p>
-            <div className="border-t border-border pt-2">
-              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1">Tasks</span>
-              <div className="grid grid-cols-2 gap-1">
-                {registryTasks.map(task => (
-                  <Link 
-                    key={task} 
-                    href={`/registry/${task}`} 
-                    className="p-1.5 rounded bg-muted/40 hover:bg-muted text-[10px] text-foreground capitalize flex items-center justify-between"
-                  >
-                    <span>{task}s</span>
-                    <span className="text-muted-foreground/80">&rarr;</span>
+            return (
+              <Link
+                key={`${item.type}-${item.id}`}
+                href={href}
+                className="rounded-lg border border-border bg-card p-3 hover:border-foreground/20 hover:bg-muted/30 transition-colors"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm font-medium text-foreground">{item.name}</span>
+                  <ContentTypeBadge type={item.type} className="px-1.5 py-0 text-[8px]" />
+                </div>
+                <p className="text-[10px] font-mono text-muted-foreground">
+                  {item.updated_at}
+                  {item.category ? ` · ${item.category}` : ''}
+                </p>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Categories */}
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold text-foreground">Categories</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+          {[
+            { label: 'Packages', count: counts.packages, href: '/packages/numpy' },
+            { label: 'ML Models', count: counts.models_ml, href: '/models/ml/random-forest' },
+            { label: 'DL Models', count: counts.models_dl, href: '/models/dl/transformer' },
+            { label: 'LLM Models', count: counts.models_llm, href: '/models/llm/llama-3-8b' },
+            { label: 'Workflows', count: counts.workflows, href: '/workflows/rag' },
+            { label: 'Cheatsheets', count: counts.cheatsheets, href: '/cheatsheets/pytorch' },
+            { label: 'Registry', count: counts.registry_tasks, href: '/registry/embedding' },
+          ].map(cat => (
+            <Link
+              key={cat.label}
+              href={cat.href}
+              className="rounded-lg border border-border bg-card p-3 hover:border-foreground/20 transition-colors"
+            >
+              <div className="text-sm font-medium text-foreground">{cat.label}</div>
+              <div className="text-[10px] font-mono text-muted-foreground mt-1">{cat.count} entries</div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Quick Access */}
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold text-foreground">Quick Access</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <SectionCard title="Python Packages" subtitle={`${counts.packages} cataloged`}>
+            <ul className="space-y-1">
+              {packages.slice(0, 6).map(pkg => (
+                <li key={pkg.id}>
+                  <Link href={`/packages/${pkg.id}`} className="text-xs text-foreground hover:underline font-mono">
+                    {pkg.name} <span className="text-muted-foreground">v{pkg.version}</span>
                   </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-        </SectionCard>
+                </li>
+              ))}
+            </ul>
+          </SectionCard>
 
-        {/* Workflows Summary */}
-        <SectionCard 
-          title="AI Workflows" 
-          subtitle="Production deployment and pipelines"
-          badge={<span className="font-mono bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 px-2 py-0.5 rounded text-[10px] font-semibold">{counts.workflows} Documented</span>}
-        >
-          <div className="space-y-3">
-            <p className="text-[11px] text-muted-foreground">
-              Structured walkthrough guides for Retrieval-Augmented Generation (RAG), model fine-tuning, evaluation, and hardware inference optimizations.
-            </p>
-            <div className="border-t border-border pt-2">
-              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1">Pipelines</span>
-              <ul className="space-y-1">
-                {workflows.map(wf => (
-                  <li key={wf.id}>
-                    <Link 
-                      href={`/workflows/${wf.id}`} 
-                      className="flex items-center justify-between p-1.5 rounded bg-muted/40 hover:bg-muted text-[11px] text-foreground font-medium"
-                    >
-                      <span>{wf.name}</span>
-                      <span className="text-[9px] text-indigo-500 font-mono font-semibold uppercase">{wf.type} &rarr;</span>
+          <SectionCard title="Models Library" subtitle={`${totalModelsCount} cataloged`}>
+            <div className="space-y-2 text-xs">
+              <div>
+                <span className="text-muted-foreground uppercase text-[10px]">ML</span>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {mlModels.slice(0, 4).map(m => (
+                    <Link key={m.id} href={`/models/ml/${m.id}`} className="rounded border border-border px-1.5 py-0.5 hover:bg-muted">
+                      {m.name}
                     </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </SectionCard>
-
-        {/* Cheatsheets Summary */}
-        <SectionCard 
-          title="Syntax Cheatsheets" 
-          subtitle="Quick code recall sheets"
-          badge={<span className="font-mono bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 px-2 py-0.5 rounded text-[10px] font-semibold">{cheatsheets.length} Loaded</span>}
-        >
-          <div className="space-y-3">
-            <p className="text-[11px] text-muted-foreground">
-              Reference groups containing syntax definitions, constructor methods, training APIs, and validation modules.
-            </p>
-            <div className="border-t border-border pt-2">
-              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1">Syntaxes</span>
-              <div className="flex flex-wrap gap-1">
-                {cheatsheets.map(csId => (
-                  <Link 
-                    key={csId} 
-                    href={`/cheatsheets/${csId}`} 
-                    className="px-2 py-1 rounded bg-muted/40 hover:bg-muted border border-border/40 text-[10px] font-mono text-foreground capitalize"
-                  >
-                    {csId}
-                  </Link>
-                ))}
+                  ))}
+                </div>
+              </div>
+              <div>
+                <span className="text-muted-foreground uppercase text-[10px]">DL</span>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {dlModels.slice(0, 4).map(m => (
+                    <Link key={m.id} href={`/models/dl/${m.id}`} className="rounded border border-border px-1.5 py-0.5 hover:bg-muted">
+                      {m.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <span className="text-muted-foreground uppercase text-[10px]">LLM</span>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {llmModels.slice(0, 4).map(m => (
+                    <Link key={m.id} href={`/models/llm/${m.id}`} className="rounded border border-border px-1.5 py-0.5 hover:bg-muted">
+                      {m.name}
+                    </Link>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </SectionCard>
+          </SectionCard>
 
-        {/* Recently Updated Summary */}
-        <SectionCard 
-          title="Recently Updated" 
-          subtitle="Latest catalog edits and activity log"
-          badge={<span className="font-mono bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 px-2 py-0.5 rounded text-[10px] font-semibold">Activity</span>}
-        >
-          <div className="space-y-3">
-            <p className="text-[11px] text-muted-foreground">
-              Recently modified reference items, package documentation segments, and deployment pipeline workflows.
-            </p>
-            <div className="border-t border-border pt-2">
-              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1">Activity Log</span>
-              <ul className="space-y-1.5">
-                {getRecentContent(5).map(item => {
-                  const href = item.type === 'model'
-                    ? `/models/${item.category}/${item.id}`
-                    : item.type === 'package'
-                    ? `/packages/${item.id}`
-                    : item.type === 'workflow'
-                    ? `/workflows/${item.id}`
-                    : `/cheatsheets/${item.id}`;
-                  return (
-                    <li key={`${item.type}-${item.id}`}>
-                      <Link 
-                        href={href} 
-                        className="flex items-center justify-between p-1.5 rounded bg-muted/40 hover:bg-muted text-[11px] text-foreground transition-all"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="bg-secondary text-secondary-foreground text-[8px] font-mono uppercase px-1 py-0.5 rounded border border-border select-none">
-                            {item.type}
-                          </span>
-                          <span className="font-medium truncate max-w-[120px]">{item.name}</span>
-                        </div>
-                        <span className="text-[9px] text-muted-foreground font-mono">{item.updated_at}</span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
+          <SectionCard title="Workflows" subtitle={`${counts.workflows} documented`}>
+            <ul className="space-y-1">
+              {workflows.map(wf => (
+                <li key={wf.id}>
+                  <Link href={`/workflows/${wf.id}`} className="text-xs text-foreground hover:underline">
+                    {wf.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </SectionCard>
+
+          <SectionCard title="Registry Tasks" subtitle={`${counts.registry_tasks} task groups`}>
+            <div className="flex flex-wrap gap-1">
+              {registryTasks.map(task => (
+                <Link
+                  key={task}
+                  href={`/registry/${task}`}
+                  className="rounded border border-border px-2 py-1 text-xs capitalize hover:bg-muted"
+                >
+                  {task}
+                </Link>
+              ))}
             </div>
-          </div>
-        </SectionCard>
-      </div>
+          </SectionCard>
+        </div>
+      </section>
     </div>
   );
 }

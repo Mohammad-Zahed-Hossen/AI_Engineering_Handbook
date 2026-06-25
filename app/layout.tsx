@@ -4,12 +4,13 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import Sidebar from "@/components/layout/Sidebar";
 import TopBar from "@/components/layout/TopBar";
-import { 
-  getPackageNavItems, 
-  getModelNavItems, 
-  getRegistryTasks, 
-  getWorkflowNavItems, 
-  getAllCheatsheetIds 
+import { buildSearchIndex } from "@/lib/search";
+import {
+  getPackageNavItems,
+  getModelNavItems,
+  getRegistryTasks,
+  getWorkflowNavItems,
+  getCheatsheetNavItems
 } from "@/lib/data";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
@@ -40,7 +41,8 @@ export default function RootLayout({
   const llmModels = getModelNavItems("llm");
   const registryTasks = getRegistryTasks();
   const workflows = getWorkflowNavItems();
-  const cheatsheets = getAllCheatsheetIds();
+  const cheatsheets = getCheatsheetNavItems();
+  const searchIndex = buildSearchIndex();
 
   return (
     <html
@@ -48,8 +50,7 @@ export default function RootLayout({
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
     >
       <body className="h-full flex overflow-hidden bg-background text-foreground text-sm leading-relaxed">
-        {/* Sidebar Navigation (Desktop only) */}
-        <div className="hidden md:block shrink-0 h-full">
+        <div className="hidden md:block shrink-0 h-full sticky top-0">
           <Sidebar 
             packages={packages}
             mlModels={mlModels}
@@ -61,7 +62,6 @@ export default function RootLayout({
           />
         </div>
 
-        {/* Dynamic Main Workspace panel */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
           <TopBar 
             packages={packages}
@@ -71,9 +71,10 @@ export default function RootLayout({
             registryTasks={registryTasks}
             workflows={workflows}
             cheatsheets={cheatsheets}
+            searchIndex={searchIndex}
           />
-          <main className="flex-1 overflow-y-auto bg-zinc-50 dark:bg-zinc-950 p-6">
-            <div className="max-w-4xl mx-auto w-full">
+          <main className="flex-1 overflow-y-auto bg-zinc-50 dark:bg-zinc-950 p-6 md:p-8">
+            <div className="max-w-5xl mx-auto w-full">
               {children}
             </div>
           </main>

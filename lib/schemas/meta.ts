@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const ContentRefSchema = z.object({
   id: z.string(),
-  type: z.enum(['model', 'package', 'workflow', 'cheatsheet']),
+  type: z.enum(['model', 'package', 'workflow', 'cheatsheet', 'registry']),
 });
 
 export const BaseMetaSchema = z.object({

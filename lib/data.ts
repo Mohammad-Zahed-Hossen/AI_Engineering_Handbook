@@ -289,10 +289,22 @@ export const getWorkflowNavItems = cache(function getWorkflowNavItems(): NavItem
   });
 });
 
+/**
+ * Lightweight navigation retriever for cheatsheets.
+ */
+export const getCheatsheetNavItems = cache(function getCheatsheetNavItems(): NavItem[] {
+  return getAllCheatsheetIds().map(id => {
+    const data = readJSON<{ id: string; name: string }>(
+      path.join(dataDir, 'cheatsheets', `${id}.json`)
+    );
+    return { id: data.id, name: data.name };
+  });
+});
+
 export interface RecentContentItem {
   id: string;
   name: string;
-  type: 'package' | 'model' | 'workflow' | 'cheatsheet';
+  type: 'package' | 'model' | 'workflow' | 'cheatsheet' | 'registry';
   updated_at: string;
   category?: string;
 }
@@ -311,7 +323,7 @@ export const getModelCategoryById = cache(function getModelCategoryById(id: stri
 /**
  * Centralized exist check for handbook content entities.
  */
-export function contentExists(type: 'model' | 'package' | 'workflow' | 'cheatsheet', id: string): boolean {
+export function contentExists(type: 'model' | 'package' | 'workflow' | 'cheatsheet' | 'registry', id: string): boolean {
   if (type === 'package') {
     return fs.existsSync(path.join(dataDir, 'packages', `${id}.json`));
   }
@@ -324,6 +336,12 @@ export function contentExists(type: 'model' | 'package' | 'workflow' | 'cheatshe
   if (type === 'cheatsheet') {
     return fs.existsSync(path.join(dataDir, 'cheatsheets', `${id}.json`));
   }
+  if (type === 'registry') {
+    for (const task of getRegistryTasks()) {
+      const models = getRegistryByTask(task);
+      if (models.some(m => m.id === id)) return true;
+    }
+  }
   return false;
 }
 
@@ -331,7 +349,7 @@ export function contentExists(type: 'model' | 'package' | 'workflow' | 'cheatshe
  * Centralized metadata lookup utility for any handbook content type.
  */
 export function loadContentMeta(
-  type: 'model' | 'package' | 'workflow' | 'cheatsheet',
+  type: 'model' | 'package' | 'workflow' | 'cheatsheet' | 'registry',
   id: string
 ): { name: string; updated_at: string } {
   try {
@@ -354,6 +372,13 @@ export function loadContentMeta(
       const cs = getCheatsheet(id);
       return { name: cs.name, updated_at: cs.updated_at };
     }
+    if (type === 'registry') {
+      for (const task of getRegistryTasks()) {
+        const models = getRegistryByTask(task);
+        const model = models.find(m => m.id === id);
+        if (model) return { name: model.model_id || model.id, updated_at: model.updated_at };
+      }
+    }
   } catch {
     // Graceful fallback
   }
@@ -367,7 +392,7 @@ export function loadContentMeta(
  * Resolves the name of any content reference.
  * If the reference is not found in the content database, falls back to a start-cased version of the ID.
  */
-export function getContentName(type: 'model' | 'package' | 'workflow' | 'cheatsheet', id: string): string {
+export function getContentName(type: 'model' | 'package' | 'workflow' | 'cheatsheet' | 'registry', id: string): string {
   return loadContentMeta(type, id).name;
 }
 
@@ -375,7 +400,7 @@ export function getContentName(type: 'model' | 'package' | 'workflow' | 'cheatsh
  * Resolves the path of any content reference, checking if the file actually exists first.
  * Returns null if the target content has not yet been cataloged.
  */
-export function getContentPath(type: 'model' | 'package' | 'workflow' | 'cheatsheet', id: string): string | null {
+export function getContentPath(type: 'model' | 'package' | 'workflow' | 'cheatsheet' | 'registry', id: string): string | null {
   if (!contentExists(type, id)) return null;
   if (type === 'package') return `/packages/${id}`;
   if (type === 'workflow') return `/workflows/${id}`;
@@ -384,11 +409,17 @@ export function getContentPath(type: 'model' | 'package' | 'workflow' | 'cheatsh
     const cat = getModelCategoryById(id);
     if (cat) return `/models/${cat}/${id}`;
   }
+  if (type === 'registry') {
+    for (const task of getRegistryTasks()) {
+      const models = getRegistryByTask(task);
+      if (models.some(m => m.id === id)) return `/registry/${task}`;
+    }
+  }
   return null;
 }
 
 /**
- * Retrieves the most recently created or updated entries across packages, models, workflows, and cheatsheets.
+ * Retrieves the most recently created or updated entries across packages, models, workflows, cheatsheets, and registry items.
  */
 export const getRecentContent = cache(function getRecentContent(limit = 6): RecentContentItem[] {
   const items: RecentContentItem[] = [];
@@ -403,8 +434,8 @@ export const getRecentContent = cache(function getRecentContent(limit = 6): Rece
         type: 'package',
         updated_at: p.updated_at,
       });
-    } catch {
-      // ignore
+    } catch (e) {
+      console.warn(`[getRecentContent] Failed to load package/${id}:`, e);
     }
   });
 
@@ -420,8 +451,8 @@ export const getRecentContent = cache(function getRecentContent(limit = 6): Rece
           updated_at: m.updated_at,
           category: cat,
         });
-      } catch {
-        // ignore
+      } catch (e) {
+        console.warn(`[getRecentContent] Failed to load model/${cat}/${id}:`, e);
       }
     });
   });
@@ -436,8 +467,8 @@ export const getRecentContent = cache(function getRecentContent(limit = 6): Rece
         type: 'workflow',
         updated_at: w.updated_at,
       });
-    } catch {
-      // ignore
+    } catch (e) {
+      console.warn(`[getRecentContent] Failed to load workflow/${id}:`, e);
     }
   });
 
@@ -451,8 +482,26 @@ export const getRecentContent = cache(function getRecentContent(limit = 6): Rece
         type: 'cheatsheet',
         updated_at: cs.updated_at,
       });
-    } catch {
-      // ignore
+    } catch (e) {
+      console.warn(`[getRecentContent] Failed to load cheatsheet/${id}:`, e);
+    }
+  });
+
+  // Registry
+  getRegistryTasks().forEach(task => {
+    try {
+      const models = getRegistryByTask(task);
+      models.forEach(entry => {
+        items.push({
+          id: entry.id,
+          name: entry.model_id,
+          type: 'registry',
+          updated_at: entry.updated_at,
+          category: task,
+        });
+      });
+    } catch (e) {
+      console.warn(`[getRecentContent] Failed to load registry task '${task}':`, e);
     }
   });
 

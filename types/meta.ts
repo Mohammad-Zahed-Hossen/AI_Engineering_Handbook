@@ -1,6 +1,6 @@
 export interface ContentRef {
   id: string;
-  type: 'model' | 'package' | 'workflow' | 'cheatsheet';
+  type: 'model' | 'package' | 'workflow' | 'cheatsheet' | 'registry';
 }
 
 export interface BaseMeta {

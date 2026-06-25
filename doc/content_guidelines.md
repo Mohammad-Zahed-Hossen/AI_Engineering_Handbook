@@ -452,15 +452,40 @@ Before saving any new content JSON file, manually verify the following:
 
 In addition to the mandatory global fields, the following optional fields can be included in `BaseMetaSchema` objects:
 
-### 4. `official_docs`
-* **What belongs**: A URL pointing to the official documentation page for the entry.
-  * **Packages**: Link to the package's documentation homepage or API reference (e.g., `"https://scikit-learn.org/stable/"`).
-  * **Models**: Link to the model card, vendor page, or official repository (e.g., `"https://huggingface.co/meta-llama/Meta-Llama-3-8B"`).
-  * **Workflows**: Link to the canonical reference or guide for the workflow (e.g., LangChain or LlamaIndex documentation for RAG).
-* **What does NOT belong**: Generic search engine queries or non-official blog posts.
-* **Manual Verification**: Must be a valid absolute HTTP/HTTPS URL if provided.
+### `sources` as Single Source of Truth
 
-### 5. `research_paper`
-* **What belongs**: A URL pointing to the original research paper introducing the model, algorithm, or framework (e.g., `"https://arxiv.org/abs/1706.03762"` for Transformers).
-* **When to omit/use null**: This field is optional. For software-only packages or workflows without a single canonical founding research paper, omit this field from the JSON object.
-* **Manual Verification**: Must be a valid absolute HTTP/HTTPS URL if provided.
+All external links — documentation, papers, model cards, and GitHub — must go into the `sources[]` array. The `OfficialResources` component automatically categorizes them using `categorizeSources()` in `lib/resources.ts`. Do **not** create separate fields for documentation or paper URLs.
+
+* **Papers**: Include arXiv, DOI, OpenReview, or other paper URLs directly in `sources[]`:
+  ```json
+  "sources": [
+    "https://arxiv.org/abs/1706.03762",
+    "https://doi.org/10.1234/example",
+    "https://openreview.net/forum?id=some-id"
+  ]
+  ```
+
+* **Documentation**: Include official documentation URLs directly in `sources[]`:
+  ```json
+  "sources": [
+    "https://scikit-learn.org/stable/",
+    "https://pytorch.org/docs/stable/",
+    "https://numpy.org/doc/stable/"
+  ]
+  ```
+
+* **Model Cards**: Include model card URLs directly in `sources[]`:
+  ```json
+  "sources": [
+    "https://huggingface.co/meta-llama/Meta-Llama-3-8B",
+    "https://modelscope.cn/models/some-model"
+  ]
+  ```
+
+* **External References**: Any other relevant URLs (blogs, tutorials, benchmarks) can also be included in `sources[]` and will be categorized as external references.
+
+### `github_repo` (optional)
+
+* **What belongs**: A URL pointing to the official GitHub repository (e.g., `"https://github.com/numpy/numpy"`, `"https://github.com/huggingface/transformers"`).
+* **What does NOT belong**: Non-GitHub URLs or generic search engine queries.
+* **Manual Verification**: Must be a valid absolute HTTPS URL starting with `https://github.com`.

@@ -1,5 +1,7 @@
 import MobileSidebarTrigger from './MobileSidebarTrigger';
+import SearchBox from '@/components/shared/SearchBox';
 import { NavItem } from '@/lib/data';
+import { SearchResult } from '@/lib/search';
 
 interface TopBarProps {
   packages: NavItem[];
@@ -8,7 +10,8 @@ interface TopBarProps {
   llmModels: NavItem[];
   registryTasks: string[];
   workflows: NavItem[];
-  cheatsheets: readonly string[];
+  cheatsheets: NavItem[];
+  searchIndex: SearchResult[];
 }
 
 export default function TopBar({
@@ -19,12 +22,12 @@ export default function TopBar({
   registryTasks,
   workflows,
   cheatsheets,
+  searchIndex,
 }: TopBarProps) {
   return (
-    <header className="h-12 border-b border-border bg-card text-card-foreground px-4 flex items-center justify-between select-none">
-      <div className="flex items-center gap-3">
-        {/* Mobile sidebar trigger */}
-        <div className="md:hidden flex items-center">
+    <header className="h-14 border-b border-border bg-card text-card-foreground px-4 flex items-center justify-between gap-4 select-none shrink-0">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="md:hidden flex items-center shrink-0">
           <MobileSidebarTrigger
             packages={packages}
             mlModels={mlModels}
@@ -35,10 +38,15 @@ export default function TopBar({
             cheatsheets={cheatsheets}
           />
         </div>
-        <span className="text-xs font-semibold text-foreground font-sans">AI Engineering Knowledge Base</span>
+        <span className="hidden sm:inline text-xs font-semibold text-foreground font-sans shrink-0">
+          AI Engineering Handbook
+        </span>
       </div>
-      <div className="flex items-center gap-2">
-        <div className="text-[9px] text-muted-foreground font-mono">v2.0.0</div>
+      <div className="flex-1 flex justify-center max-w-lg">
+        <SearchBox index={searchIndex} compact placeholder="Search handbook…" />
+      </div>
+      <div className="hidden sm:flex items-center shrink-0">
+        <div className="text-[10px] text-muted-foreground font-mono">Static</div>
       </div>
     </header>
   );

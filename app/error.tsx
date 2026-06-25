@@ -23,6 +23,12 @@ export default function GlobalError({ error, reset }: ErrorProps) {
           {error.message || 'Unknown error'}
         </div>
 
+        {error.digest && (
+          <p className="text-[10px] text-muted-foreground mt-2 font-mono select-text">
+            Error ID: {error.digest}
+          </p>
+        )}
+
         <div className="border-t border-border mt-4 pt-4 flex items-center gap-4 select-none">
           <button
             onClick={() => reset()}

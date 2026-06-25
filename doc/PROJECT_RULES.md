@@ -1,571 +1,283 @@
-Project: AI Engineering Handbook
-Stack: Next.js 15, TypeScript strict, Tailwind CSS v4, shadcn/ui (badge, card, separator only)
-Data: Local JSON files via fs.readFileSync in lib/data.ts — no database, no API routes
-Types: All defined in /types — never add or remove fields from existing types
-Routing: App Router, all data pages are Server Components, filters are Client Components
+# AI Engineering Handbook - Project Rules
 
-Hard rules:
-1. Never create files outside the defined folder structure
-2. Never modify types in /types directory
-3. Never add npm packages without asking me first
-4. Never use useEffect to fetch data — data loading happens server-side in page.tsx
-5. Never use <a> tags — always Next.js <Link>
-6. Never add animations, transitions, or decorative UI elements
-7. Always use generateStaticParams on dynamic routes
-8. CodeBlock component always has a copy-to-clipboard button
-9. Client components are only for: copy button, filters, search
-10. If a field doesn't exist in the TypeScript type, don't render it
+## SECTION 1 — Project Identity
 
-Current task: [describe your task here]
+This is a **personal AI Engineering knowledge system**, not a SaaS product or commercial application.
 
+It helps me:
+- Quickly recall Python package syntax
+- Browse AI/ML/DL/LLM models
+- Review Hugging Face ecosystem tools
+- Study workflows (RAG, Fine-Tuning, Evaluation, Inference)
+- Reference cheatsheets while working on AI projects
 
-
-PROJECT: AI Engineering Handbook
-
-
-
-PURPOSE:
-
-This is not a SaaS product and not a commercial application.
-
-
-
-This is a personal AI Engineering knowledge system that helps me:
-
-
-
-* Quickly recall Python package syntax
-
-* Browse AI/ML/DL/LLM models
-
-* Review Hugging Face ecosystem tools
-
-* Study workflows such as RAG, Fine-Tuning, Evaluation, Inference
-
-* Review cheatsheets while working on AI projects
-
-
-
-The application must prioritize:
-
-
-
+**Priorities:**
 1. Content density
-
 2. Fast navigation
-
 3. Clean architecture
-
 4. Long-term maintainability
-
 5. Zero API cost
-
 6. Zero database
-
 7. Static generation
-
 8. Personal knowledge management
 
+**What it is NOT:**
+- Not a SaaS product
+- Not a commercial application
+- Not a multi-user system
+- Not a backend service
 
+---
 
-Technology Stack:
+## SECTION 2 — Current Tech Stack
 
+- **Next.js**: 16.2.9 (App Router)
+- **React**: 19.2.4
+- **TypeScript**: 5 (strict mode)
+- **Tailwind CSS**: v4
+- **shadcn/ui**: 4.11.0 (badge, button, card, separator, sheet components)
+- **Fuse.js**: 7.4.2 (fuzzy search)
+- **Zod**: 4.4.3 (schema validation)
+- **Lucide React**: 1.21.0 (icons)
 
+**No database, no backend, no API routes.** All content is local JSON files.
 
-* Next.js 15 App Router
+---
 
-* TypeScript Strict Mode
+## SECTION 3 — Hard Rules
 
-* Tailwind CSS v4
+1. **Never create files outside the approved folder structure**
+2. **Never modify TypeScript types in /types without updating the corresponding Zod schema in /lib/schemas** — they must stay in sync
+3. **Never install npm packages without explicit approval**
+4. **Never introduce a database, Supabase, Firebase, MongoDB, PostgreSQL, Prisma, or ORM**
+5. **Never fetch content from external APIs** — all content is local JSON
+6. **Use Server Components by default** — Client Components only when interaction is required (copy button, filters, search, sidebar toggle)
+7. **All dynamic routes must implement generateStaticParams** for static generation
+8. **CodeBlock component always includes a copy-to-clipboard button**
+9. **All content JSON files must pass npm run validate before committing**
+10. **When modifying a type, also update its Zod schema in lib/schemas/** — they must stay in sync
 
-* shadcn/ui
+---
 
-* Local JSON files
+## SECTION 4 — Actual Folder Structure
 
-* No backend
-
-* No database
-
-* No API routes
-
-
-
-Hard Rules:
-
-
-
-1. Never create files outside the approved folder structure.
-
-2. Never modify existing TypeScript schemas without permission.
-
-3. Never install additional npm packages without asking.
-
-4. Never introduce a database.
-
-5. Never introduce Supabase, Firebase, MongoDB, PostgreSQL, Prisma or ORM.
-
-6. Never fetch content from external APIs.
-
-7. All content must come from local JSON files.
-
-8. Use Server Components whenever possible.
-
-9. Use Client Components only when interaction is required.
-
-10. Generate complete production-quality code.
-
-11. Return full file contents when creating files.
-
-12. Explain where each file should be placed.
-
-13. If you detect architectural problems, explain them before generating code.
-
-
-
-Folder Structure:
-
-
-
+```
 ai-engineering-handbook/
-
-│
-
 ├── app/
-
-│   ├── layout.tsx
-
-│   ├── page.tsx                          ← Dashboard
-
+│   ├── layout.tsx                          ← Root layout with Sidebar, TopBar
+│   ├── page.tsx                            ← Dashboard with recent content
+│   ├── globals.css                         ← Tailwind v4 + shadcn styles
+│   ├── not-found.tsx                       ← 404 page (Server Component)
+│   ├── error.tsx                           ← Error boundary (Client Component)
+│   ├── favicon.ico
 │   ├── packages/
-
-│   │   └── [id]/page.tsx
-
+│   │   └── [id]/
+│   │       └── page.tsx                    ← Package detail page
 │   ├── models/
-
-│   │   ├── [category]/page.tsx           ← Model list with filters
-
-│   │   └── [category]/[id]/page.tsx      ← Model detail
-
+│   │   ├── [category]/
+│   │   │   ├── page.tsx                    ← Model list with filters
+│   │   │   └── [id]/
+│   │   │       └── page.tsx                ← Model detail page
 │   ├── registry/
-
-│   │   └── [task]/page.tsx
-
+│   │   └── [task]/
+│   │       └── page.tsx                    ← Registry task page
 │   ├── workflows/
-
-│   │   └── [id]/page.tsx
-
+│   │   └── [id]/
+│   │       └── page.tsx                    ← Workflow detail page
 │   └── cheatsheets/
-
-│       └── [id]/page.tsx
-
+│       └── [id]/
+│           └── page.tsx                    ← Cheatsheet detail page
 │
-
 ├── components/
-
 │   ├── layout/
-
-│   │   ├── Sidebar.tsx
-
-│   │   └── TopBar.tsx
-
-│   └── shared/
-
-│       ├── CodeBlock.tsx                 ← copy button lives here
-
-│       ├── SectionCard.tsx
-
-│       ├── StatusBadge.tsx
-
-│       └── FilterBar.tsx                 ← client component, reusable
-
+│   │   ├── Sidebar.tsx                     ← Desktop sidebar (collapsible sections)
+│   │   ├── TopBar.tsx                      ← Header with search
+│   │   └── MobileSidebarTrigger.tsx        ← Mobile menu (Sheet component)
+│   ├── shared/
+│   │   ├── AlternativesList.tsx            ← ContentRef-based alternatives
+│   │   ├── Breadcrumbs.tsx                 ← Navigation breadcrumbs
+│   │   ├── CodeBlock.tsx                   ← Code with copy button
+│   │   ├── ContentPageLayout.tsx           ← Page layout wrapper
+│   │   ├── ContentTypeBadge.tsx            ← Type badge (package/model/etc)
+│   │   ├── FilterBar.tsx                   ← Client-side filter component
+│   │   ├── MetadataBadges.tsx              ← Updated at, sources badges
+│   │   ├── OfficialResources.tsx           ← Sources[] rendering
+│   │   ├── SearchBox.tsx                   ← Fuse.js search input
+│   │   ├── SectionCard.tsx                 ← Section container
+│   │   ├── StatusBadge.tsx                 ← Status indicator
+│   │   └── TableOfContents.tsx             ← Page TOC
+│   └── ui/
+│       ├── badge.tsx                       ← shadcn badge
+│       ├── button.tsx                      ← shadcn button
+│       ├── card.tsx                        ← shadcn card
+│       ├── separator.tsx                   ← shadcn separator
+│       └── sheet.tsx                       ← shadcn sheet
 │
-
 ├── data/
-
-│   ├── meta.json                         ← dashboard counts, manually updated
-
-│   ├── packages/
-
-│   │   ├── _index.json                   ← ["numpy","pandas","pytorch",...]
-
+│   ├── packages/                           ← Auto-discovered, no _index.json
 │   │   ├── numpy.json
-
-│   │   └── pandas.json
-
+│   │   ├── pandas.json
+│   │   └── ...
 │   ├── models/
-
 │   │   ├── ml/
-
-│   │   │   ├── _index.json               ← ["random-forest","xgboost",...]
-
-│   │   │   └── random-forest.json
-
+│   │   │   ├── random-forest.json
+│   │   │   └── ...
 │   │   ├── dl/
-
-│   │   │   ├── _index.json
-
-│   │   │   └── transformer.json
-
+│   │   │   └── ...
 │   │   └── llm/
-
-│   │       ├── _index.json
-
-│   │       └── llama3.json
-
+│   │       └── ...
 │   ├── registry/
-
-│   │   ├── _index.json                   ← ["embedding","reranker","vision",...]
-
-│   │   └── embeddings.json               ← array of RegistryModel
-
+│   │   ├── embeddings.json
+│   │   ├── rerankers.json
+│   │   ├── vision.json
+│   │   ├── speech.json
+│   │   ├── llms.json
+│   │   ├── multimodal.json
+│   │   └── ocr.json
 │   ├── workflows/
-
-│   │   ├── _index.json
-
-│   │   └── rag.json
-
+│   │   ├── rag.json
+│   │   └── ...
 │   └── cheatsheets/
-
-│       ├── _index.json
-
-│       └── pytorch.json
-
+│       ├── pytorch.json
+│       └── ...
 │
-
 ├── lib/
-
-│   ├── data.ts                           ← all data loading (fs-based)
-
-│   └── search.ts                         ← Fuse.js (Phase 4 only)
-
+│   ├── data.ts                             ← All data loading (fs.readFileSync + React.cache)
+│   ├── search.ts                           ← Fuse.js search index builder
+│   ├── search-types.ts                     ← SearchResult type, createFuse config
+│   ├── resources.ts                        ← Resource URL resolver
+│   ├── route-params.ts                     ← generateStaticParams helpers
+│   ├── utils.ts                            ← cn() utility
+│   └── schemas/
+│       ├── package.ts                      ← Zod schema for Package
+│       ├── model.ts                        ← Zod schema for Model
+│       ├── registry.ts                     ← Zod schema for RegistryModel
+│       ├── workflow.ts                     ← Zod schema for Workflow
+│       ├── cheatsheet.ts                   ← Zod schema for Cheatsheet
+│       ├── meta.ts                         ← Zod schema for BaseMeta
+│       └── index.ts                        ← Re-export all schemas
 │
-
 ├── types/
-
-│   ├── package.ts
-
-│   ├── model.ts
-
-│   ├── registry.ts
-
-│   ├── workflow.ts
-
-│   ├── cheatsheet.ts
-
-│   └── index.ts
-
+│   ├── package.ts                          ← TypeScript interface for Package
+│   ├── model.ts                            ← TypeScript interface for Model
+│   ├── registry.ts                         ← TypeScript interface for RegistryModel
+│   ├── workflow.ts                         ← TypeScript interface for Workflow
+│   ├── cheatsheet.ts                       ← TypeScript interface for Cheatsheet
+│   ├── meta.ts                             ← TypeScript interface for BaseMeta
+│   └── index.ts                            ← Re-export all types
 │
+├── scripts/
+│   └── validate-content.ts                 ← Zod validation for all JSON files
+│
+├── doc/
+│   ├── PROJECT_RULES.md                    ← This file
+│   ├── ARCHITECTURAL_REVIEW.md
+│   ├── content_guidelines.md
+│   └── validate_content.md
+│
+├── public/                                 ← Static assets
+├── next.config.ts                          ← Next.js config (TS strict)
+├── eslint.config.mjs                       ← ESLint flat config
+├── tsconfig.json                           ← TypeScript config
+├── tailwind.config.ts                      ← Tailwind v4 config
+└── package.json
+```
 
-└── public/ 
+**Key changes from old structure:**
+- **No _index.json files** — auto-discovery via `scanDirectoryForIds()` in lib/data.ts
+- **No meta.json** — dashboard counts computed dynamically via `getDashboardCounts()`
+- **lib/schemas/** added — Zod schemas mirror TypeScript types
+- **lib/search.ts, lib/search-types.ts** added — Fuse.js search integration
+- **lib/resources.ts, lib/route-params.ts** added — utility functions
+- **components/shared/** expanded — many new reusable components
+- **components/ui/** added — shadcn/ui components
+- **scripts/validate-content.ts** added — build-time JSON validation
 
+---
 
+## SECTION 5 — Content Schema Rules
 
-Type Definitions:
-
-
-
-Part 0: Corrected Type Definitions
-
-These replace your V1 types. Do not deviate.
-
-
-
-types/package.ts
-
-typescriptexport interface PackageFunction {
-
-  fn: string;
-
-  purpose: string;
-
-  example: string;        // removed 'syntax' — redundant
-
-  category: string;
-
+**All content extends BaseMeta:**
+```typescript
+interface BaseMeta {
+  created_at: string;      // ISO date string
+  updated_at: string;      // ISO date string
+  sources: string[];      // ALL external links (docs, papers, model cards)
+  github_repo?: string;    // Optional GitHub repo URL
 }
-
-
-
-export interface PackageSection {
-
-  name: string;
-
-  functions: PackageFunction[];
-
-  gotchas: string[];
-
-}
-
-
-
-export interface Package {
-
-  id: string;
-
-  name: string;
-
-  version: string;
-
-  install: string;
-
-  import_as: string;
-
-  summary: string;
-
-  sections: PackageSection[];
-
-  alternatives: string[];
-
-}
-
-
-
-types/model.ts
-
-typescriptexport type ModelCategory = 'ml' | 'dl' | 'llm';
-
-
-
-export type ProblemType =
-
-  | 'classification'
-
-  | 'regression'
-
-  | 'clustering'
-
-  | 'generation'
-
-  | 'embedding'
-
-  | 'detection'
-
-  | 'segmentation';
-
-
-
-export type SpeedRating = 'fast' | 'medium' | 'slow';
-
-export type SizeRating  = 'low'  | 'medium' | 'high';
-
-export type InterpretabilityRating = 'high' | 'medium' | 'low';
-
-
-
-export interface HyperParameter {
-
-  name: string;
-
-  default: string | number | null;
-
-  note: string;
-
-}
-
-
-
-export interface Model {
-
-  id: string;
-
-  name: string;
-
-  category: ModelCategory;
-
-  problem_types: ProblemType[];          // ADDED — required for filtering
-
-  summary: string;
-
-  use_when: string;
-
-  avoid_when: string;
-
-  pros: string[];
-
-  cons: string[];
-
-  key_hyperparams: HyperParameter[];
-
-  training_speed: SpeedRating;           // enum, not free string
-
-  inference_speed: SpeedRating;
-
-  memory_usage: SizeRating;
-
-  interpretability: InterpretabilityRating;
-
-  quick_start: string;
-
-  alternatives: string[];
-
-}
-
-
-
-types/registry.ts
-
-typescriptexport type RegistryTask =
-
-  | 'embedding'
-
-  | 'reranker'
-
-  | 'vision'
-
-  | 'speech'
-
-  | 'llm'
-
-  | 'multimodal'
-
-  | 'ocr';
-
-
-
-export type ModelStatus = 'active' | 'experimental' | 'deprecated';
-
-
-
-export interface RegistryModel {
-
-  id: string;
-
-  model_id: string;
-
-  task: RegistryTask;
-
-  language: string;
-
-  dimension?: number;
-
-  use_case: string;
-
-  size_mb: number;
-
-  status: ModelStatus;
-
-  notes: string;
-
-  quick_start: string;
-
-  alternatives: string[];
-
-  last_verified: string;
-
-}
-
-
-
-types/workflow.ts — Merged with Recipes
-
-typescriptexport type WorkflowType = 'pipeline' | 'snippet';
-
-
-
-export interface WorkflowStep {
-
-  step: number;
-
-  name: string;
-
-  what: string;
-
-  tools: string[];
-
-  decision: string;
-
-}
-
-
-
-export interface Workflow {
-
-  id: string;
-
-  name: string;
-
-  type: WorkflowType;        // 'pipeline' = multi-step | 'snippet' = quick recipe
-
-  category: string;
-
-  overview: string;
-
-  starter_stack: string[];
-
-  steps: WorkflowStep[];
-
-  common_failure_points: string[];
-
-}
-
-
-
-types/cheatsheet.ts
-
-typescriptexport interface CheatsheetItem {
-
-  fn: string;
-
-  purpose: string;
-
-}
-
-
-
-export interface CheatsheetGroup {
-
-  group: string;
-
-  items: CheatsheetItem[];
-
-}
-
-
-
-export interface Cheatsheet {
-
-  id: string;
-
-  name: string;
-
-  groups: CheatsheetGroup[];
-
-}
-
-
-
-types/index.ts — Re-export everything from one place
-
-typescriptexport * from './package';
-
-export * from './model';
-
-export * from './registry';
-
-export * from './workflow';
-
-export * from './cheatsheet'; 
-
-When I say "continue", continue from the previous phase without redesigning the architecture.
-
-
-
-
-
-Why Each Folder Exists
-app/: Serves as the core routing framework using Next.js App Router conventions.
-packages/[id]: Page route dynamic segment to show package-specific details.
-models/[category]: Displays model lists filtered by category (ml, dl, llm).
-models/[category]/[id]: Page route dynamic segment to view specific model architecture details.
-registry/[task]: Shows registry tables grouped by model tasks (embedding, ocr, etc.).
-workflows/[id]: Displays step-by-step engineering workflows.
-cheatsheets/[id]: Page route dynamic segment for syntax cheatsheets.
-components/: Modular presentation layer components.
-layout/: Global structure widgets such as Sidebar and TopBar.
-shared/: Generic reusable leaf components like CodeBlock, SectionCard, StatusBadge, and FilterBar.
-data/: The local filesystem knowledge storage. Replaces remote databases/APIs.
-packages/, models/, registry/, workflows/, cheatsheets/: Individual JSON entries validated at build time against Zod schemas.
-lib/: Business utility functions and validator schemas.
-schemas/: Zod object validators corresponding directly to the database types.
-data.ts: Server-only file system operations using node fs.
-types/: Strict TypeScript interface models that ensure compile-time check constraints are fulfilled.
+```
+
+**Sources array:**
+- Contains ALL external links in one place
+- No separate fields for docs_url, paper_url, model_card_url
+- Rendered via OfficialResources component
+
+**Alternatives:**
+- Use `ContentRef` type: `{ id: string; type: 'model' | 'package' | 'workflow' | 'cheatsheet' | 'registry' }`
+- Enables cross-referencing between content types
+- Rendered via AlternativesList component
+
+**ID format:**
+- Must be kebab-case: `^[a-z0-9][a-z0-9-]*[a-z0-9]$`
+- No underscores, no uppercase letters
+- Examples: `random-forest`, `pytorch`, `rag`, `embedding`
+
+---
+
+## SECTION 6 — Data Flow
+
+```
+JSON files (data/)
+    ↓
+lib/data.ts (fs.readFileSync + React.cache)
+    ↓
+Server Components (app/**/page.tsx)
+    ↓
+Static Pages (next build)
+```
+
+**Key functions in lib/data.ts:**
+- `scanDirectoryForIds()` — Auto-discovers JSON files by directory scanning
+- `getPackage()`, `getModel()`, `getWorkflow()`, `getCheatsheet()` — Read individual files
+- `getRegistryByTask()` — Read registry task arrays
+- `getPackageNavItems()`, `getModelNavItems()`, etc. — Lightweight navigation data
+- `getDashboardCounts()` — Computed dashboard counts
+- `getRecentContent()` — Recently updated content across all types
+- `buildSearchIndex()` — Aggregates all content for Fuse.js search (in lib/search.ts)
+
+All data loading uses `React.cache()` for memoization and `fs.readFileSync()` for synchronous file reading.
+
+---
+
+## SECTION 7 — Adding New Content
+
+**Step 1: Create the JSON file**
+- Place in the correct `data/` subdirectory (packages/, models/ml/, models/dl/, models/llm/, registry/, workflows/, cheatsheets/)
+- Follow the schema in the corresponding `lib/schemas/*.ts` file
+- Use kebab-case for the ID (filename without .json)
+
+**Step 2: No index file to update**
+- Auto-discovery via `scanDirectoryForIds()` means no _index.json files
+- The file is automatically picked up on next build
+
+**Step 3: Validate**
+- Run `npm run validate` to catch schema errors
+- This runs `scripts/validate-content.ts` which checks all JSON files against Zod schemas
+
+**Step 4: Build**
+- Run `npm run build` to confirm static generation works
+- This also runs `npm run validate` automatically via prebuild script
+
+**Step 5: If adding a new section type**
+- Update `types/*.ts` with the new TypeScript interface
+- Update `lib/schemas/*.ts` with the corresponding Zod schema
+- Update `lib/data.ts` with data loading functions
+- Update `scripts/validate-content.ts` to include the new type
+- Update `lib/search.ts` to index the new content type (if searchable)
+
+---
+
+**Source of truth for type definitions:**
+- The actual files in `types/` and `lib/schemas/` are the source of truth
+- This document provides an overview, not exhaustive type definitions
+- Always refer to the actual files when implementing changes

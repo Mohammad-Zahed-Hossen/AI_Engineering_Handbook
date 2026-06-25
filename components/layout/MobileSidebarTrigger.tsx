@@ -1,12 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NavItem } from '@/lib/data';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
+
+const REGISTRY_TASK_LABELS: Record<string, string> = {
+  embedding: 'Embeddings',
+  reranker: 'Rerankers',
+  vision: 'Vision',
+  speech: 'Speech',
+  llm: 'LLMs',
+  multimodal: 'Multimodal',
+  ocr: 'OCR',
+};
 
 interface MobileSidebarTriggerProps {
   packages: NavItem[];
@@ -15,7 +26,7 @@ interface MobileSidebarTriggerProps {
   llmModels: NavItem[];
   registryTasks: string[];
   workflows: NavItem[];
-  cheatsheets: readonly string[];
+  cheatsheets: NavItem[];
 }
 
 export default function MobileSidebarTrigger({
@@ -30,6 +41,27 @@ export default function MobileSidebarTrigger({
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
+  const getActiveSection = (pathname: string): string => {
+    if (pathname.startsWith('/packages')) return 'packages';
+    if (pathname.startsWith('/models/ml')) return 'ml';
+    if (pathname.startsWith('/models/dl')) return 'dl';
+    if (pathname.startsWith('/models/llm')) return 'llm';
+    if (pathname.startsWith('/registry')) return 'registry';
+    if (pathname.startsWith('/workflows')) return 'workflows';
+    if (pathname.startsWith('/cheatsheets')) return 'cheatsheets';
+    return '';
+  };
+
+  const [expanded, setExpanded] = useState<string>(getActiveSection(pathname));
+
+  useEffect(() => {
+    setExpanded(getActiveSection(pathname));
+  }, [pathname]);
+
+  const toggleSection = (section: string) => {
+    setExpanded(expanded === section ? '' : section);
+  };
+
   const linkClass = (href: string) => {
     const active = pathname === href;
     return cn(
@@ -40,7 +72,15 @@ export default function MobileSidebarTrigger({
     );
   };
 
-  const sectionHeadingClass = "px-2.5 mt-4 mb-1 text-[9px] uppercase font-bold text-foreground/50 tracking-wider select-none";
+  const sectionHeadingClass = "px-2.5 mt-4 mb-1 text-[9px] uppercase font-bold text-foreground/50 tracking-wider select-none flex items-center gap-1.5 cursor-pointer hover:text-foreground/70";
+
+  const SectionHeader = ({ title, count, section }: { title: string; count: number; section: string }) => (
+    <div className={sectionHeadingClass} onClick={() => toggleSection(section)}>
+      {expanded === section ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+      <span>{title}</span>
+      <span className="ml-auto text-[8px] bg-muted px-1 rounded text-muted-foreground">{count}</span>
+    </div>
+  );
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -78,116 +118,142 @@ export default function MobileSidebarTrigger({
           </Link>
 
           {/* Python Packages */}
-          <div className={sectionHeadingClass}>Packages</div>
-          <ul className="space-y-0.5">
-            {packages.map((pkg) => (
-              <li key={pkg.id}>
-                <Link 
-                  href={`/packages/${pkg.id}`} 
-                  className={linkClass(`/packages/${pkg.id}`)}
-                  onClick={() => setOpen(false)}
-                >
-                  {pkg.name} <span className="text-[9px] opacity-75">v{pkg.version}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <SectionHeader title="Packages" count={packages.length} section="packages" />
+          {expanded === 'packages' && (
+            <ul className="space-y-0.5">
+              {packages.map((pkg) => (
+                <li key={pkg.id}>
+                  <Link
+                    href={`/packages/${pkg.id}`}
+                    className={linkClass(`/packages/${pkg.id}`)}
+                    onClick={() => setOpen(false)}
+                  >
+                    {pkg.name} <span className="text-[9px] opacity-75">v{pkg.version}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
 
           {/* Models Library */}
           <div className={sectionHeadingClass}>Models Library</div>
-          
-          <div className="pl-2.5 mt-1.5 text-[9px] font-semibold text-muted-foreground uppercase">Machine Learning</div>
-          <ul className="space-y-0.5 pl-2 border-l border-sidebar-border ml-2.5">
-            {mlModels.map((m) => (
-              <li key={m.id}>
-                <Link 
-                  href={`/models/ml/${m.id}`} 
-                  className={linkClass(`/models/ml/${m.id}`)}
-                  onClick={() => setOpen(false)}
-                >
-                  {m.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
 
-          <div className="pl-2.5 mt-2.5 text-[9px] font-semibold text-muted-foreground uppercase">Deep Learning</div>
-          <ul className="space-y-0.5 pl-2 border-l border-sidebar-border ml-2.5">
-            {dlModels.map((m) => (
-              <li key={m.id}>
-                <Link 
-                  href={`/models/dl/${m.id}`} 
-                  className={linkClass(`/models/dl/${m.id}`)}
-                  onClick={() => setOpen(false)}
-                >
-                  {m.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <div className="pl-2.5 mt-1.5 text-[9px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('ml')}>
+            {expanded === 'ml' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+            <span>Machine Learning</span>
+            <span className="ml-auto text-[8px] bg-muted px-1 rounded text-muted-foreground">{mlModels.length}</span>
+          </div>
+          {expanded === 'ml' && (
+            <ul className="space-y-0.5 pl-2 border-l border-sidebar-border ml-2.5">
+              {mlModels.map((m) => (
+                <li key={m.id}>
+                  <Link
+                    href={`/models/ml/${m.id}`}
+                    className={linkClass(`/models/ml/${m.id}`)}
+                    onClick={() => setOpen(false)}
+                  >
+                    {m.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
 
-          <div className="pl-2.5 mt-2.5 text-[9px] font-semibold text-muted-foreground uppercase">Large Language Models</div>
-          <ul className="space-y-0.5 pl-2 border-l border-sidebar-border ml-2.5">
-            {llmModels.map((m) => (
-              <li key={m.id}>
-                <Link 
-                  href={`/models/llm/${m.id}`} 
-                  className={linkClass(`/models/llm/${m.id}`)}
-                  onClick={() => setOpen(false)}
-                >
-                  {m.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <div className="pl-2.5 mt-2.5 text-[9px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('dl')}>
+            {expanded === 'dl' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+            <span>Deep Learning</span>
+            <span className="ml-auto text-[8px] bg-muted px-1 rounded text-muted-foreground">{dlModels.length}</span>
+          </div>
+          {expanded === 'dl' && (
+            <ul className="space-y-0.5 pl-2 border-l border-sidebar-border ml-2.5">
+              {dlModels.map((m) => (
+                <li key={m.id}>
+                  <Link
+                    href={`/models/dl/${m.id}`}
+                    className={linkClass(`/models/dl/${m.id}`)}
+                    onClick={() => setOpen(false)}
+                  >
+                    {m.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="pl-2.5 mt-2.5 text-[9px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('llm')}>
+            {expanded === 'llm' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+            <span>Large Language Models</span>
+            <span className="ml-auto text-[8px] bg-muted px-1 rounded text-muted-foreground">{llmModels.length}</span>
+          </div>
+          {expanded === 'llm' && (
+            <ul className="space-y-0.5 pl-2 border-l border-sidebar-border ml-2.5">
+              {llmModels.map((m) => (
+                <li key={m.id}>
+                  <Link
+                    href={`/models/llm/${m.id}`}
+                    className={linkClass(`/models/llm/${m.id}`)}
+                    onClick={() => setOpen(false)}
+                  >
+                    {m.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
 
           {/* Model Registries */}
-          <div className={sectionHeadingClass}>Registries</div>
-          <ul className="space-y-0.5">
-            {registryTasks.map((task) => (
-              <li key={task}>
-                <Link 
-                  href={`/registry/${task}`} 
-                  className={linkClass(`/registry/${task}`)}
-                  onClick={() => setOpen(false)}
-                >
-                  {task}s
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <SectionHeader title="Registries" count={registryTasks.length} section="registry" />
+          {expanded === 'registry' && (
+            <ul className="space-y-0.5">
+              {registryTasks.map((task) => (
+                <li key={task}>
+                  <Link
+                    href={`/registry/${task}`}
+                    className={linkClass(`/registry/${task}`)}
+                    onClick={() => setOpen(false)}
+                  >
+                    {REGISTRY_TASK_LABELS[task] ?? task}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
 
           {/* Workflows */}
-          <div className={sectionHeadingClass}>Workflows</div>
-          <ul className="space-y-0.5">
-            {workflows.map((wf) => (
-              <li key={wf.id}>
-                <Link 
-                  href={`/workflows/${wf.id}`} 
-                  className={linkClass(`/workflows/${wf.id}`)}
-                  onClick={() => setOpen(false)}
-                >
-                  {wf.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <SectionHeader title="Workflows" count={workflows.length} section="workflows" />
+          {expanded === 'workflows' && (
+            <ul className="space-y-0.5">
+              {workflows.map((wf) => (
+                <li key={wf.id}>
+                  <Link
+                    href={`/workflows/${wf.id}`}
+                    className={linkClass(`/workflows/${wf.id}`)}
+                    onClick={() => setOpen(false)}
+                  >
+                    {wf.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
 
           {/* Cheatsheets */}
-          <div className={sectionHeadingClass}>Cheatsheets</div>
-          <ul className="space-y-0.5">
-            {cheatsheets.map((csId) => (
-              <li key={csId}>
-                <Link 
-                  href={`/cheatsheets/${csId}`} 
-                  className={linkClass(`/cheatsheets/${csId}`)}
-                  onClick={() => setOpen(false)}
-                >
-                  {csId}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <SectionHeader title="Cheatsheets" count={cheatsheets.length} section="cheatsheets" />
+          {expanded === 'cheatsheets' && (
+            <ul className="space-y-0.5">
+              {cheatsheets.map((cs) => (
+                <li key={cs.id}>
+                  <Link
+                    href={`/cheatsheets/${cs.id}`}
+                    className={linkClass(`/cheatsheets/${cs.id}`)}
+                    onClick={() => setOpen(false)}
+                  >
+                    {cs.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </nav>
       </SheetContent>
     </Sheet>

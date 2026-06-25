@@ -1,27 +1,21 @@
-import Fuse from 'fuse.js';
-import { 
-  getAllPackages, 
-  getAllModels, 
-  getAllWorkflows, 
-  getAllCheatsheetIds, 
-  getCheatsheet 
+import {
+  getAllPackages,
+  getAllModels,
+  getAllWorkflows,
+  getAllCheatsheetIds,
+  getCheatsheet,
+  getRegistryTasks,
+  getRegistryByTask
 } from './data';
+import { SearchResult } from './search-types';
+import type { RegistryTask } from '@/lib/schemas/registry';
 
-export type SearchResult = {
-  type: 'package' | 'model' | 'workflow' | 'cheatsheet';
-  id: string;
-  name: string;
-  summary: string;
-  href: string;
-  updated_at: string;
-  category?: string;
-  problem_types?: string[];
-};
+export type { SearchResult } from './search-types';
+export { createFuse } from './search-types';
 
 export function buildSearchIndex(): SearchResult[] {
   const results: SearchResult[] = [];
 
-  // Packages
   getAllPackages().forEach(p => results.push({
     type: 'package',
     id: p.id,
@@ -31,7 +25,6 @@ export function buildSearchIndex(): SearchResult[] {
     updated_at: p.updated_at,
   }));
 
-  // Models
   (['ml', 'dl', 'llm'] as const).forEach(cat => {
     getAllModels(cat).forEach(m => results.push({
       type: 'model',
@@ -45,7 +38,6 @@ export function buildSearchIndex(): SearchResult[] {
     }));
   });
 
-  // Workflows
   getAllWorkflows().forEach(w => results.push({
     type: 'workflow',
     id: w.id,
@@ -56,25 +48,31 @@ export function buildSearchIndex(): SearchResult[] {
     href: `/workflows/${w.id}`,
   }));
 
-  // Cheatsheets
+  getRegistryTasks().forEach(task => {
+    getRegistryByTask(task).forEach(entry => {
+      results.push({
+        type: 'registry',
+        id: entry.id,
+        name: entry.model_id,
+        summary: entry.use_case,
+        href: `/registry/${task}`,
+        updated_at: entry.updated_at,
+        category: task,
+      });
+    });
+  });
+
   getAllCheatsheetIds().forEach(id => {
     const cs = getCheatsheet(id);
     results.push({
       type: 'cheatsheet',
       id: cs.id,
       name: cs.name,
-      summary: `${cs.name} syntax cheatsheet reference.`,
+      summary: cs.groups.map(g => g.group).slice(0, 4).join(', '),
       updated_at: cs.updated_at,
       href: `/cheatsheets/${cs.id}`,
     });
   });
 
   return results;
-}
-
-export function createFuse(data: SearchResult[]) {
-  return new Fuse(data, {
-    keys: ['name', 'summary', 'problem_types'],
-    threshold: 0.3,
-  });
 }

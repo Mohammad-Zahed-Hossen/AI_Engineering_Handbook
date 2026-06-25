@@ -103,7 +103,7 @@ export function ModelListFilter({ models, category }: ModelListFilterProps) {
       />
 
       {/* Models Grid Table */}
-      <div className="bg-card text-card-foreground border border-border rounded-lg shadow-sm overflow-hidden">
+      <div className="bg-card text-card-foreground border border-border rounded-lg overflow-hidden transition-colors hover:border-foreground/15">
         {filteredModels.length === 0 ? (
           <div className="p-8 text-center text-xs text-muted-foreground select-none">
             No models match the selected filter criteria.
@@ -126,7 +126,7 @@ export function ModelListFilter({ models, category }: ModelListFilterProps) {
                   <td className="px-4 py-3 align-middle">
                     <Link
                       href={`/models/${category}/${m.id}`}
-                      className="font-semibold text-indigo-500 hover:underline text-xs"
+                      className="font-semibold text-primary hover:underline text-xs"
                     >
                       {m.name}
                     </Link>
