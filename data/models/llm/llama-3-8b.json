@@ -1,0 +1,72 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct"
+  ],
+  "official_docs": "https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct",
+  "research_paper": "https://arxiv.org/abs/2407.21783",
+  "github_repo": "https://github.com/meta-llama/llama3",
+  "id": "llama-3-8b",
+  "name": "Llama 3 8B",
+  "category": "llm",
+  "problem_types": [
+    "generation"
+  ],
+  "summary": "Llama 3 8B is the instruction-tuned 8-billion parameter variant of Meta's Llama 3 family, offering the best efficiency-to-performance ratio for consumer GPU deployment. It outperforms the previous Llama 2 13B and 70B models on many reasoning and coding benchmarks despite its smaller size.",
+  "use_when": "On-device or consumer GPU chat applications requiring strong reasoning and instruction-following. Fine-tuning on custom datasets with limited compute (8GB-24GB VRAM). Multi-turn conversational agents where inference cost per token must be minimized.",
+  "avoid_when": "Tasks requiring extreme long-context reasoning beyond 8K tokens. Production systems where sub-100ms token latency is required without quantization. Use cases where the larger Llama 3 70B or 405B variants would meaningfully improve accuracy.",
+  "pros": [
+    "Superior efficiency-to-performance ratio in the Llama 3 family, outperforming Llama 2 13B on most benchmarks at half the parameter count",
+    "Excellent instruction-following and conversational quality after supervised fine-tuning and RLHF on diverse multilingual data",
+    "Broad ecosystem support including quantization (GPTQ, AWQ, GGUF), LoRA fine-tuning, and vLLM inference server compatibility",
+    "8K token context window with strong performance on retrieval-augmented generation and document question-answering tasks"
+  ],
+  "cons": [
+    "Requires 16GB+ VRAM for full-precision inference or careful quantization to run on consumer hardware",
+    "Struggles with complex mathematical reasoning and long-horizon planning compared to frontier models like GPT-4 and Claude 3",
+    "Llama 3 tokenizer uses a byte-fallback strategy that can produce fragmented outputs for low-resource languages and rare Unicode characters",
+    "Meta's commercial license has usage restrictions for organizations exceeding 700 million monthly active users"
+  ],
+  "key_hyperparams": [
+    {
+      "name": "temperature",
+      "default": 0.6,
+      "note": "Sampling temperature for generation. Lower to 0.1-0.3 for deterministic code and factual answers. Increase to 0.8-1.0 for creative writing and brainstorming."
+    },
+    {
+      "name": "top_p",
+      "default": 0.9,
+      "note": "Nucleus sampling threshold. Set to 0.8-0.9 for balanced diversity. Lower to 0.5 for more focused outputs. Top-p 1.0 disables nucleus filtering."
+    },
+    {
+      "name": "max_new_tokens",
+      "default": 512,
+      "note": "Maximum number of tokens to generate. Increase to 2048-4096 for long-form content generation. Balance with context window to avoid truncation."
+    },
+    {
+      "name": "repetition_penalty",
+      "default": 1.0,
+      "note": "Penalty factor for repeated tokens. Increase to 1.1-1.2 to reduce repetitive phrases in chat and creative writing. 1.0 disables the penalty."
+    }
+  ],
+  "training_speed": "slow",
+  "inference_speed": "medium",
+  "memory_usage": "medium",
+  "interpretability": "low",
+  "quick_start": "from transformers import AutoModelForCausalLM, AutoTokenizer\n\nmodel = AutoModelForCausalLM.from_pretrained(\n    'meta-llama/Meta-Llama-3-8B-Instruct',\n    torch_dtype='auto',\n    device_map='auto'\n)\ntokenizer = AutoTokenizer.from_pretrained('meta-llama/Meta-Llama-3-8B-Instruct')\n\nmessages = [{'role': 'user', 'content': 'Explain quantum computing'}]\ninput_text = tokenizer.apply_chat_template(messages, tokenize=False)\ninputs = tokenizer(input_text, return_tensors='pt').to(model.device)\noutputs = model.generate(**inputs, max_new_tokens=256, temperature=0.6)",
+  "alternatives": [
+    {
+      "id": "mistral-7b",
+      "type": "model"
+    },
+    {
+      "id": "gemma-2",
+      "type": "model"
+    },
+    {
+      "id": "llama3",
+      "type": "model"
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "created_at": "2026-06-24",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://arxiv.org/abs/2005.11401"
+  ],
+  "research_paper": "https://arxiv.org/abs/2005.11401",
+  "id": "rag",
+  "name": "Retrieval-Augmented Generation",
+  "type": "pipeline",
+  "category": "Inference",
+  "overview": "RAG retrieves relevant information from a local document index to augment LLM prompt contexts for factual answering.",
+  "starter_stack": [
+    "LangChain",
+    "ChromaDB",
+    "SentenceTransformers",
+    "PyMuPDF",
+    "BAAI/bge-large-en-v1.5"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "name": "Ingestion & Chunking",
+      "what": "Parse documents and split text into smaller chunks.",
+      "tools": [
+        "PyMuPDF",
+        "LangChain RecursiveCharacterTextSplitter"
+      ],
+      "decision": "Use chunk size 512 with 10% overlap as baseline."
+    },
+    {
+      "step": 2,
+      "name": "Embedding",
+      "what": "Encode each text chunk into a dense vector using a sentence embedding model.",
+      "tools": [
+        "SentenceTransformers",
+        "BAAI/bge-large-en-v1.5"
+      ],
+      "decision": "Choose BAAI/bge-large-en-v1.5 for high-accuracy multilingual retrieval; for latency-sensitive systems, downsize to gte-large or enable ONNX quantization."
+    },
+    {
+      "step": 3,
+      "name": "Vector Storage",
+      "what": "Store chunk embeddings in a vector database for efficient approximate nearest neighbor search.",
+      "tools": [
+        "FAISS",
+        "ChromaDB",
+        "Qdrant"
+      ],
+      "decision": "FAISS for single-machine in-memory search; ChromaDB for persistent local storage; Qdrant for multi-tenant cloud deployments with built-in filtering."
+    },
+    {
+      "step": 4,
+      "name": "Query Processing",
+      "what": "Embed the user's query using the same embedding model and retrieve top-k similar chunks.",
+      "tools": [
+        "SentenceTransformers",
+        "FAISS",
+        "ChromaDB"
+      ],
+      "decision": "Start with top-k=5; increase to 10-20 for long-form queries. Always normalize query embeddings before search if the embedding model uses cosine similarity."
+    },
+    {
+      "step": 5,
+      "name": "Reranking",
+      "what": "Score the retrieved chunks against the query with a cross-encoder to improve relevance ordering.",
+      "tools": [
+        "BAAI/bge-reranker-large",
+        "Cohere Rerank v3"
+      ],
+      "decision": "Add a reranker when retrieval precision drops below 70% on held-out queries. Keep reranker top-n at 3-5 to avoid exceeding the LLM context window."
+    },
+    {
+      "step": 6,
+      "name": "Generation",
+      "what": "Inject the retrieved context into a prompt template and call the LLM to generate a grounded answer.",
+      "tools": [
+        "LangChain",
+        "meta-llama/Meta-Llama-3-8B-Instruct",
+        "OpenAI GPT-4"
+      ],
+      "decision": "Use a strict prompt template that separates context from the question. Limit context to 3000 tokens to leave room for the answer and system prompt."
+    }
+  ],
+  "common_failure_points": [
+    "Chunk boundaries splitting sentences across semantic units, causing retrieval to miss half of a critical fact.",
+    "Using a different embedding model at query time than at indexing time, producing incompatible vector spaces and zero relevant hits.",
+    "Retrieving outdated document versions because the vector store lacks a versioning or timestamp filter.",
+    "Hallucination when the LLM ignores the provided context and falls back on parametric knowledge due to a weakly structured prompt.",
+    "Context window overflow because the combined prompt and retrieved chunks exceed the LLM's maximum token limit, causing silent truncation of the system prompt."
+  ]
+}

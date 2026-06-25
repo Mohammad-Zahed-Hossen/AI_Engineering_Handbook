@@ -1,0 +1,63 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://github.com/SYSTRAN/faster-whisper"
+  ],
+  "official_docs": "https://github.com/SYSTRAN/faster-whisper",
+  "github_repo": "https://github.com/SYSTRAN/faster-whisper",
+  "id": "faster-whisper",
+  "name": "Faster Whisper",
+  "category": "dl",
+  "problem_types": [
+    "generation"
+  ],
+  "summary": "Faster Whisper is a CTranslate2-optimized reimplementation of OpenAI's Whisper speech recognition model, achieving up to 4x faster inference and reduced memory usage through int8 quantization and efficient attention kernels. It maintains the same API surface while replacing the PyTorch backend with a C++ inference engine optimized for both CPU and GPU.",
+  "use_when": "Production speech-to-text pipelines requiring low-latency transcription. Batch processing of large audio datasets where throughput matters. GPU-constrained environments where int8 quantization enables large model deployment on consumer hardware.",
+  "avoid_when": "Research requiring exact float32 parity with OpenAI's original Whisper for reproducible benchmarking. Audio applications requiring custom training or fine-tuning on domain-specific accents. Systems where the CTranslate2 dependency introduces cross-platform build complexity.",
+  "pros": [
+    "Up to 4x faster inference than the original OpenAI Whisper implementation on both CPU and GPU through CTranslate2 optimized kernels",
+    "int8 quantization reduces model memory by approximately 50% with minimal accuracy degradation on clean speech",
+    "Built-in Voice Activity Detection (VAD) filter removes non-speech segments before transcription, reducing hallucination and compute waste",
+    "Batched inference allows processing multiple audio files simultaneously, improving GPU utilization for offline transcription workloads"
+  ],
+  "cons": [
+    "CTranslate2 dependency adds a C++ compilation step that can be problematic on Windows and ARM platforms without prebuilt wheels",
+    "Slightly lower word-error rate than float32 Whisper on noisy or accented speech because int8 quantization loses subtle spectral information",
+    "CPU int8 inference performance varies significantly by platform; AVX2 is required for optimal speed and results are poor on older x86 CPUs",
+    "No training or fine-tuning capability; models must be converted from OpenAI checkpoints using the CTranslate2 conversion tool"
+  ],
+  "key_hyperparams": [
+    {
+      "name": "model_size",
+      "default": "base",
+      "note": "Whisper model variant to load. Options: 'tiny', 'base', 'small', 'medium', 'large-v1', 'large-v2', 'large-v3'. Larger models improve accuracy on multilingual and noisy speech."
+    },
+    {
+      "name": "device",
+      "default": "cpu",
+      "note": "Compute device for inference. 'cpu' for CPU-only, 'cuda' for NVIDIA GPU. GPU inference is dramatically faster and recommended for real-time transcription."
+    },
+    {
+      "name": "compute_type",
+      "default": "default",
+      "note": "Numerical precision for inference. 'int8' for fastest CPU inference, 'float16' for GPU, 'float32' for maximum accuracy. Device support varies."
+    },
+    {
+      "name": "beam_size",
+      "default": 5,
+      "note": "Beam search width for decoding. Increase to 10 for better accuracy on difficult audio. Decrease to 1 for greedy decoding and maximum speed."
+    }
+  ],
+  "training_speed": "slow",
+  "inference_speed": "fast",
+  "memory_usage": "medium",
+  "interpretability": "low",
+  "quick_start": "from faster_whisper import WhisperModel\n\nmodel = WhisperModel(\n    'base',\n    device='cuda',\n    compute_type='float16'\n)\n\nsegments, info = model.transcribe('audio.mp3', beam_size=5, word_timestamps=True)\nfor segment in segments:\n    print(f\"[{segment.start:.2f}s -> {segment.end:.2f}s] {segment.text}\")",
+  "alternatives": [
+    {
+      "id": "whisper-large-v3",
+      "type": "model"
+    }
+  ]
+}

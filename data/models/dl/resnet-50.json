@@ -1,0 +1,62 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://arxiv.org/abs/1512.03385"
+  ],
+  "official_docs": "https://pytorch.org/vision/stable/models/resnet.html",
+  "research_paper": "https://arxiv.org/abs/1512.03385",
+  "github_repo": "https://github.com/pytorch/vision",
+  "id": "resnet-50",
+  "name": "ResNet-50",
+  "category": "dl",
+  "problem_types": [
+    "classification",
+    "detection",
+    "segmentation"
+  ],
+  "summary": "ResNet-50 is a 50-layer deep convolutional neural network that uses skip connections (residual mappings) to bypass layers, solving the degradation problem where deeper networks perform worse than shallower ones on training data. It has become the canonical backbone for image classification, object detection, and segmentation pipelines through its pretrained ImageNet weights.",
+  "use_when": "Image classification tasks requiring strong transfer learning from ImageNet pretrained weights. Object detection and segmentation pipelines needing a proven backbone such as Faster R-CNN or FPN. Educational and research settings where model interpretability through feature visualization is valuable.",
+  "avoid_when": "Real-time mobile or edge deployment where lightweight architectures like MobileNet or EfficientNet are preferred. Transformer-era vision tasks where vision transformers consistently outperform CNNs on large-scale datasets. Situations requiring variable input resolutions beyond standard 224x224 without architectural redesign.",
+  "pros": [
+    "Skip connections prevent vanishing gradients by providing identity pathways, enabling successful training of networks with 50+ layers",
+    "Strong ImageNet pretrained weights available through torchvision, enabling near-state-of-the-art transfer learning with minimal training data",
+    "Canonical backbone for detection and segmentation frameworks including Faster R-CNN, Mask R-CNN, and Feature Pyramid Networks",
+    "Ready-to-use implementation in torchvision with consistent API for loading pretrained weights and replacing the final classifier head",
+    "Well-understood feature hierarchy where early layers capture edges and textures, while deeper layers capture semantic object parts"
+  ],
+  "cons": [
+    "Slower inference and higher parameter count than lightweight models such as MobileNetV3 or EfficientNet-B0 on resource-constrained devices",
+    "Not suited for modern vision tasks that benefit from self-attention mechanisms, such as long-range spatial relationships in medical imaging",
+    "Fixed input resolution expectations (224x224) that require resizing or cropping, potentially losing fine-grained spatial information",
+    "Global average pooling collapses spatial information, making it less effective than attention-based architectures for dense prediction tasks"
+  ],
+  "key_hyperparams": [
+    {
+      "name": "pretrained",
+      "default": "true",
+      "note": "Whether to load ImageNet pretrained weights. Set to 'true' for transfer learning to reduce training time and improve convergence. Set to 'false' for training from scratch on custom domains."
+    },
+    {
+      "name": "num_classes",
+      "default": 1000,
+      "note": "Number of output classes for the final fully connected layer. Replace the default 1000 with your target class count for transfer learning."
+    },
+    {
+      "name": "zero_init_residual",
+      "default": "false",
+      "note": "Whether to zero-initialize the last batch normalization layer in each residual branch. Set to 'true' for training from scratch to improve convergence stability."
+    }
+  ],
+  "training_speed": "medium",
+  "inference_speed": "medium",
+  "memory_usage": "medium",
+  "interpretability": "low",
+  "quick_start": "from torchvision import models\n\nmodel = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V2)\n\n# Replace final classifier for transfer learning\nmodel.fc = nn.Linear(model.fc.in_features, num_classes=10)\n\nimport torch\nfrom torch import nn\n\nx = torch.randn(4, 3, 224, 224)\nout = model(x)",
+  "alternatives": [
+    {
+      "id": "transformer",
+      "type": "model"
+    }
+  ]
+}

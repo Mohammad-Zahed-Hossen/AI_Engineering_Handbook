@@ -1,0 +1,101 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://huggingface.co/docs/peft/conceptual_guides/lora"
+  ],
+  "research_paper": "https://arxiv.org/abs/2106.09685",
+  "github_repo": "https://github.com/huggingface/peft",
+  "id": "fine-tuning-lora",
+  "name": "LoRA Fine-Tuning Pipeline",
+  "type": "pipeline",
+  "category": "Fine-Tuning",
+  "overview": "Fine-tune large language models with LoRA adapters using HuggingFace PEFT, enabling efficient parameter updates on consumer hardware.",
+  "starter_stack": [
+    "transformers",
+    "peft",
+    "datasets",
+    "trl",
+    "bitsandbytes"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "name": "Dataset Preparation",
+      "what": "Format raw data into instruction-following format and split into train and validation sets.",
+      "tools": [
+        "datasets",
+        "pandas"
+      ],
+      "decision": "Use a 90/10 train/val split for datasets under 10K rows; for larger datasets, 95/5 is sufficient. Always verify that the validation set contains no data leakage from the training set."
+    },
+    {
+      "step": 2,
+      "name": "Base Model Loading",
+      "what": "Load the pretrained language model with reduced precision to fit on limited GPU memory.",
+      "tools": [
+        "AutoModelForCausalLM",
+        "BitsAndBytesConfig"
+      ],
+      "decision": "Load in 4-bit with nf4 quantization for models above 7B parameters on 24GB VRAM. Use 8-bit for models under 7B or when the dataset contains numerical data that nf4 degrades."
+    },
+    {
+      "step": 3,
+      "name": "LoRA Config",
+      "what": "Define the rank, alpha, target modules, and dropout for the low-rank adapter.",
+      "tools": [
+        "LoraConfig",
+        "TaskType"
+      ],
+      "decision": "Set r=8 and lora_alpha=16 for datasets under 10K samples. Increase r to 16-32 for datasets above 50K. Target q_proj and v_proj for general tasks; add k_proj and o_proj for reasoning-heavy tasks."
+    },
+    {
+      "step": 4,
+      "name": "PEFT Wrapping",
+      "what": "Wrap the base model with get_peft_model to inject trainable LoRA adapters.",
+      "tools": [
+        "get_peft_model",
+        "print_trainable_parameters"
+      ],
+      "decision": "Verify that print_trainable_parameters shows less than 1% of total parameters as trainable. If the percentage exceeds 5%, recheck your target_modules list for correctness."
+    },
+    {
+      "step": 5,
+      "name": "Training Setup",
+      "what": "Configure the trainer with hyperparameters, batch size, and optimization settings.",
+      "tools": [
+        "SFTTrainer",
+        "TrainingArguments",
+        "DataCollatorForLanguageModeling"
+      ],
+      "decision": "Enable gradient checkpointing for models above 7B to trade compute for memory. Use per_device_train_batch_size=1 with gradient_accumulation_steps=4 to simulate a batch size of 4 on limited VRAM."
+    },
+    {
+      "step": 6,
+      "name": "Training Loop",
+      "what": "Run the training loop while monitoring loss and validation metrics.",
+      "tools": [
+        "SFTTrainer.train()",
+        "WandB"
+      ],
+      "decision": "Watch for training loss plateauing while validation loss increases, which signals overfitting on small datasets. Stop early if validation perplexity increases for 3 consecutive evaluation steps."
+    },
+    {
+      "step": 7,
+      "name": "Saving and Merging",
+      "what": "Export the adapter weights and optionally merge them back into the base model.",
+      "tools": [
+        "save_pretrained",
+        "merge_and_unload"
+      ],
+      "decision": "Save only the adapter with save_pretrained for iterative experimentation. Use merge_and_unload only for final deployment to avoid the inference overhead of loading base model plus adapter separately."
+    }
+  ],
+  "common_failure_points": [
+    "Rank too high for the dataset size, causing the adapter to memorize training examples and overfit without improving generalization.",
+    "Forgetting to enable input gradients with model.enable_input_require_grads() before wrapping with PEFT, causing a RuntimeError during backward pass on frozen embeddings.",
+    "dtype mismatch between the base model loaded in bfloat16 and the optimizer expecting float32, leading to NaN loss values within the first few training steps.",
+    "Out-of-memory errors because the model was not loaded in 4-bit, or because batch_size was increased without proportional reduction in sequence length.",
+    "Silent data corruption when the tokenizer pad token is not set, causing the model to attend to EOS tokens as padding and learn incorrect attention patterns."
+  ]
+}

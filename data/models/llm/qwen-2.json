@@ -1,0 +1,63 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://huggingface.co/Qwen/Qwen2-7B-Instruct"
+  ],
+  "official_docs": "https://huggingface.co/Qwen/Qwen2-7B-Instruct",
+  "research_paper": "https://arxiv.org/abs/2407.10671",
+  "github_repo": "https://github.com/QwenLM/Qwen2",
+  "id": "qwen-2",
+  "name": "Qwen 2",
+  "category": "llm",
+  "problem_types": [
+    "generation"
+  ],
+  "summary": "Qwen 2 is Alibaba's second-generation large language model series, featuring strong multilingual and code capabilities with Grouped Query Attention and support for context windows up to 128K tokens. It excels at Chinese-English bilingual tasks and programming benchmarks while remaining competitive with Western open-weight models.",
+  "use_when": "Chinese-English bilingual applications requiring high-quality translation, code generation, and reasoning in both languages. Long-document analysis and retrieval-augmented generation with 128K context support. Open-source coding assistants where HumanEval and MBPP scores are prioritized.",
+  "avoid_when": "Production systems requiring strict English-only outputs where Qwen's bilingual training can introduce Chinese tokens or syntax. Use cases requiring vLLM or TGI inference server optimization where Qwen's attention patterns may not be fully supported. Environments with strict data residency requirements outside China.",
+  "pros": [
+    "Strong multilingual performance with particular excellence in Chinese, English, and code-switching scenarios",
+    "128K token context window with effective long-context retrieval and document summarization capabilities",
+    "Grouped Query Attention reduces KV cache memory by 4x, enabling higher throughput on consumer GPUs",
+    "Competitive HumanEval and MBPP scores for code generation, often matching or exceeding Llama 3 8B on programming tasks"
+  ],
+  "cons": [
+    "Higher VRAM requirements than comparable 7B models due to larger vocabulary size (151K tokens) and extended context support",
+    "Bilingual training can produce mixed-language outputs in English-only prompts, requiring careful post-processing",
+    "Smaller ecosystem of fine-tuning tools and community adapters compared to Llama and Mistral in Western markets",
+    "Qwen tokenizer's large vocabulary increases embedding lookup memory and can cause slower tokenization on CPU-bound preprocessing"
+  ],
+  "key_hyperparams": [
+    {
+      "name": "temperature",
+      "default": 0.7,
+      "note": "Sampling temperature. Lower to 0.2-0.4 for code and structured JSON generation. Increase to 0.8-1.0 for creative writing in Chinese."
+    },
+    {
+      "name": "top_p",
+      "default": 0.95,
+      "note": "Nucleus sampling threshold. 0.95 is the default for balanced output. Lower to 0.8 for more deterministic factual answers."
+    },
+    {
+      "name": "max_new_tokens",
+      "default": 2048,
+      "note": "Maximum tokens to generate. Qwen 2 supports up to 32K output length in theory. Set to 4096-8192 for long document generation."
+    }
+  ],
+  "training_speed": "slow",
+  "inference_speed": "medium",
+  "memory_usage": "high",
+  "interpretability": "low",
+  "quick_start": "from transformers import AutoModelForCausalLM, AutoTokenizer\n\nmodel = AutoModelForCausalLM.from_pretrained(\n    'Qwen/Qwen2-7B-Instruct',\n    torch_dtype='auto',\n    device_map='auto'\n)\ntokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen2-7B-Instruct')\n\nmessages = [{'role': 'user', 'content': 'Write a Python script to parse JSON'}]\ntext = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)\ninputs = tokenizer(text, return_tensors='pt').to(model.device)\noutputs = model.generate(**inputs, max_new_tokens=512, temperature=0.7)",
+  "alternatives": [
+    {
+      "id": "mistral-7b",
+      "type": "model"
+    },
+    {
+      "id": "llama-3-8b",
+      "type": "model"
+    }
+  ]
+}

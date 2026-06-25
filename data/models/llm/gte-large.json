@@ -1,0 +1,53 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://huggingface.co/thenlper/gte-large"
+  ],
+  "official_docs": "https://huggingface.co/thenlper/gte-large",
+  "github_repo": "https://github.com/FlagOpen/FlagEmbedding",
+  "id": "gte-large",
+  "name": "GTE Large",
+  "category": "llm",
+  "problem_types": [
+    "embedding"
+  ],
+  "summary": "GTE Large is Alibaba's General Text Embeddings large model, producing 1024-dimensional dense vectors trained on a large-scale corpus of relevance pairs. It achieves strong performance on the MTEB benchmark and is fully open-weight, allowing self-hosted deployment without API dependencies.",
+  "use_when": "Self-hosted semantic search and retrieval-augmented generation pipelines where data privacy prohibits API usage. Fine-tuning on domain-specific corpora using contrastive learning on labeled relevance pairs. Multi-tenant vector search systems where embedding latency must be predictable and controllable.",
+  "avoid_when": "Applications requiring cutting-edge MTEB performance where OpenAI's text-embedding-3-large or Cohere models hold the top positions. Environments where GPU inference is unavailable and CPU embedding of long documents becomes a bottleneck. Use cases requiring 3K+ dimensional embeddings for maximum representational capacity.",
+  "pros": [
+    "Fully open weights enabling self-hosted deployment, fine-tuning, and complete control over inference infrastructure and data privacy",
+    "Strong MTEB performance on retrieval and classification tasks, often competitive with API-only models at a fraction of the operational cost",
+    "1024-dimensional output strikes a balance between representational quality and vector database storage efficiency",
+    "Native SentenceTransformers compatibility simplifies integration with existing RAG pipelines, ChromaDB, and FAISS indexing workflows"
+  ],
+  "cons": [
+    "MTEB scores slightly trail the top API-only models on certain clustering and pair classification tasks where larger models excel",
+    "1024 dimensions may limit representational capacity for highly heterogeneous corpora compared to 3072-dimensional alternatives",
+    "Requires GPU for batch inference on large datasets; CPU embedding of long documents is significantly slower than API-based solutions",
+    "Fine-tuning requires labeled relevance pairs and contrastive learning expertise, raising the barrier to domain adaptation compared to plug-and-play APIs"
+  ],
+  "key_hyperparams": [
+    {
+      "name": "batch_size",
+      "default": 32,
+      "note": "Number of sentences encoded simultaneously. Increase to 64-128 on high-memory GPUs for higher throughput. Decrease to 8-16 on memory-constrained devices."
+    },
+    {
+      "name": "normalize_embeddings",
+      "default": "true",
+      "note": "Whether to L2-normalize output embeddings. Set to 'true' for cosine similarity search and dot-product retrieval. Set to 'false' only when using learned distance metrics."
+    }
+  ],
+  "training_speed": "slow",
+  "inference_speed": "medium",
+  "memory_usage": "medium",
+  "interpretability": "low",
+  "quick_start": "from sentence_transformers import SentenceTransformer\n\nmodel = SentenceTransformer('thenlper/gte-large')\n\nsentences = [\n    'This is an example sentence',\n    'Each sentence is converted to an embedding'\n]\nembeddings = model.encode(sentences, normalize_embeddings=True, batch_size=32)\nprint(embeddings.shape)  # (2, 1024)",
+  "alternatives": [
+    {
+      "id": "text-embedding-3-large",
+      "type": "model"
+    }
+  ]
+}

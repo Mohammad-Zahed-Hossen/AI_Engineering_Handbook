@@ -1,0 +1,48 @@
+[
+  {
+    "created_at": "2026-06-25",
+    "updated_at": "2026-06-25",
+    "sources": [
+      "https://huggingface.co/google/paligemma-3b-pt-224"
+    ],
+    "id": "paligemma-3b-pt-224",
+    "model_id": "google/paligemma-3b-pt-224",
+    "task": "multimodal",
+    "language": "en",
+    "use_case": "Vision-language model for image captioning and visual question answering",
+    "size_mb": 6000,
+    "status": "active",
+    "notes": "3B parameter model combining SigLIP vision encoder with Gemma 2B language decoder. Accepts 224x224 images and generates text captions or answers to visual questions.",
+    "quick_start": "from transformers import AutoProcessor, PaliGemmaForConditionalGeneration\nfrom PIL import Image\nprocessor = AutoProcessor.from_pretrained('google/paligemma-3b-pt-224')\nmodel = PaliGemmaForConditionalGeneration.from_pretrained('google/paligemma-3b-pt-224', torch_dtype='auto', device_map='auto')\nimage = Image.open('photo.jpg')\ninputs = processor(text='caption en', images=image, return_tensors='pt').to(model.device)",
+    "alternatives": [
+      {
+        "id": "blip2-opt-2.7b",
+        "type": "model"
+      }
+    ],
+    "last_verified": "2026-06-25"
+  },
+  {
+    "created_at": "2026-06-25",
+    "updated_at": "2026-06-25",
+    "sources": [
+      "https://huggingface.co/Salesforce/blip2-opt-2.7b"
+    ],
+    "id": "blip2-opt-2.7b",
+    "model_id": "Salesforce/blip2-opt-2.7b",
+    "task": "multimodal",
+    "language": "en",
+    "use_case": "Image captioning and visual understanding with Q-Former bridge",
+    "size_mb": 5000,
+    "status": "active",
+    "notes": "BLIP-2 architecture using a frozen OPT-2.7B language model with a trainable Q-Former bridge. Strong zero-shot image captioning but slower than PaliGemma due to Q-Former overhead.",
+    "quick_start": "from transformers import Blip2Processor, Blip2ForConditionalGeneration\nfrom PIL import Image\nprocessor = Blip2Processor.from_pretrained('Salesforce/blip2-opt-2.7b')\nmodel = Blip2ForConditionalGeneration.from_pretrained('Salesforce/blip2-opt-2.7b', torch_dtype='auto', device_map='auto')\nimage = Image.open('photo.jpg')\ninputs = processor(images=image, return_tensors='pt').to(model.device)",
+    "alternatives": [
+      {
+        "id": "paligemma-3b-pt-224",
+        "type": "model"
+      }
+    ],
+    "last_verified": "2026-06-25"
+  }
+]

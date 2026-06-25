@@ -1,0 +1,63 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://github.com/JaidedAI/EasyOCR"
+  ],
+  "official_docs": "https://www.jaided.ai/easyocr/documentation/",
+  "github_repo": "https://github.com/JaidedAI/EasyOCR",
+  "id": "easyocr",
+  "name": "EasyOCR",
+  "category": "ml",
+  "problem_types": [
+    "detection"
+  ],
+  "summary": "EasyOCR is a deep learning-based OCR engine that combines CRAFT for text detection and CRNN for recognition, supporting over 80 languages without requiring language-specific training data. It provides a unified Python API that handles both detection and recognition in a single call.",
+  "use_when": "Multi-language text detection in natural scene images, product labels, and street signs. Rapid prototyping without custom model training or complex preprocessing pipelines.",
+  "avoid_when": "CPU-only environments processing high-resolution images in real time. Handwritten text recognition. Projects requiring fine-tuning on custom fonts or domain-specific vocabularies.",
+  "pros": [
+    "Simple Python API with a single Reader class handling both text detection and recognition",
+    "Supports 80+ languages out of the box without additional language pack installation",
+    "GPU acceleration significantly speeds up inference on CUDA-enabled devices",
+    "Performs well on natural scene text with varied lighting, angles, and backgrounds"
+  ],
+  "cons": [
+    "Very slow on CPU-only machines, especially for high-resolution images",
+    "High memory consumption when processing large images or batch inference without resizing",
+    "Struggles with handwritten text and heavily stylized fonts not represented in training data",
+    "No public fine-tuning API for custom datasets or domain-specific vocabulary"
+  ],
+  "key_hyperparams": [
+    {
+      "name": "gpu",
+      "default": "true",
+      "note": "Whether to use CUDA GPU acceleration. Set to 'true' for GPU inference, which is dramatically faster than CPU. Requires PyTorch with CUDA support."
+    },
+    {
+      "name": "lang_list",
+      "default": "en",
+      "note": "Language codes to recognize. Pass as a comma-separated string like 'en,ch_sim'. Each additional language increases model load time and memory usage."
+    },
+    {
+      "name": "detail",
+      "default": 1,
+      "note": "Level of detail in output. 0 returns only text strings. 1 returns bounding boxes, confidence scores, and text. Use 0 for simple extraction."
+    },
+    {
+      "name": "paragraph",
+      "default": "false",
+      "note": "Whether to group detected text boxes into paragraphs. Set to 'true' for document-like structured output, 'false' for raw line-by-line detection."
+    }
+  ],
+  "training_speed": "slow",
+  "inference_speed": "slow",
+  "memory_usage": "high",
+  "interpretability": "low",
+  "quick_start": "import easyocr\n\nreader = easyocr.Reader(['en'], gpu=True)\nresult = reader.readtext('image.jpg', detail=1, paragraph=False)\nfor (bbox, text, conf) in result:\n    print(f\"{text} (confidence: {conf:.2f})\")",
+  "alternatives": [
+    {
+      "id": "tesseract",
+      "type": "model"
+    }
+  ]
+}

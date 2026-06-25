@@ -1,0 +1,57 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://docs.cohere.com/reference/rerank"
+  ],
+  "official_docs": "https://docs.cohere.com/reference/rerank",
+  "id": "cohere-reranker-v3",
+  "name": "Cohere Rerank v3",
+  "category": "llm",
+  "problem_types": [
+    "embedding"
+  ],
+  "summary": "Cohere Rerank v3 is a third-generation cross-encoder reranker model supporting 100+ languages, designed to improve retrieval-augmented generation pipelines by scoring the relevance of retrieved documents against a query. It is API-only and excels at reordering initial retrieval results from vector search or keyword indexes.",
+  "use_when": "RAG pipelines where initial retrieval from vector search or BM25 returns noisy or poorly ranked results. Multilingual search applications requiring relevance scoring across 100+ languages with a single endpoint. Production systems where the operational cost of a reranker API is justified by improved answer quality and reduced hallucination.",
+  "avoid_when": "On-premise or air-gapped environments where API dependency is prohibited. Low-latency real-time search where the additional round-trip to a reranker API exceeds latency budgets. Use cases with extremely large document sets where per-document scoring costs become prohibitive.",
+  "pros": [
+    "Cross-encoder architecture captures fine-grained query-document interactions that bi-encoder embedding models miss, improving ranking precision",
+    "Supports 100+ languages with a single model, eliminating the need for separate language-specific rerankers in multilingual RAG pipelines",
+    "Significantly improves RAG answer quality by filtering irrelevant chunks before they reach the LLM context window, reducing hallucination",
+    "Simple API integration with existing retrieval systems; drop-in replacement for naive cosine-similarity ranking in most vector databases"
+  ],
+  "cons": [
+    "API-only access with no local weights, creating vendor dependency and preventing offline or air-gapped deployment",
+    "Per-document pricing scales linearly with the number of candidate documents, making it expensive for large candidate sets",
+    "Adds latency to the retrieval pipeline because every candidate document must be scored against the query in a separate forward pass",
+    "Cannot be fine-tuned on domain-specific corpora, limiting effectiveness for specialized vocabularies like legal, medical, or technical documentation"
+  ],
+  "key_hyperparams": [
+    {
+      "name": "top_n",
+      "default": 3,
+      "note": "Number of top-ranked documents to return. Increase to 5-10 for RAG pipelines with large context windows. Decrease to 1-2 for strict answer extraction."
+    },
+    {
+      "name": "return_documents",
+      "default": "false",
+      "note": "Whether to return the full document text in the response. Set to 'true' for convenience in RAG pipelines, 'false' to reduce payload size when document IDs suffice."
+    },
+    {
+      "name": "max_chunks_per_doc",
+      "default": null,
+      "note": "Maximum number of chunks to consider per document. Use when documents are split into multiple chunks and you want to limit per-document scoring. Null means unlimited."
+    }
+  ],
+  "training_speed": "slow",
+  "inference_speed": "medium",
+  "memory_usage": "low",
+  "interpretability": "low",
+  "quick_start": "import cohere\n\nclient = cohere.Client('YOUR_API_KEY')\n\nresponse = client.rerank(\n    model='rerank-v3.5',\n    query='What is the capital of France?',\n    documents=[\n        'Paris is the capital of France.',\n        'Berlin is the capital of Germany.',\n        'The Eiffel Tower is in Paris.'\n    ],\n    top_n=3,\n    return_documents=True\n)\nfor result in response.results:\n    print(f\"Rank {result.index}: {result.document.text} (score: {result.relevance_score:.3f})\")",
+  "alternatives": [
+    {
+      "id": "bge-reranker-large",
+      "type": "model"
+    }
+  ]
+}

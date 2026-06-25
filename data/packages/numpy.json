@@ -1,0 +1,221 @@
+{
+  "created_at": "2026-06-24",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://numpy.org"
+  ],
+  "github_repo": "https://github.com/numpy/numpy",
+  "id": "numpy",
+  "name": "NumPy",
+  "version": "2.0.0",
+  "install": "pip install numpy",
+  "import_as": "import numpy as np",
+  "summary": "Fundamental package for scientific computing in Python, providing powerful N-dimensional array objects.",
+  "sections": [
+    {
+      "name": "Creation",
+      "functions": [
+        {
+          "fn": "np.array(object)",
+          "purpose": "Create an array from a list or tuple",
+          "example": "a = np.array([1, 2, 3])",
+          "category": "creation"
+        },
+        {
+          "fn": "np.zeros(shape)",
+          "purpose": "Return a new array of given shape filled with zeros",
+          "example": "z = np.zeros((3, 4))",
+          "category": "creation"
+        },
+        {
+          "fn": "np.ones(shape)",
+          "purpose": "Return a new array of given shape filled with ones",
+          "example": "o = np.ones((2, 3))",
+          "category": "creation"
+        },
+        {
+          "fn": "np.linspace(start, stop, num)",
+          "purpose": "Return evenly spaced numbers over a specified interval",
+          "example": "l = np.linspace(0, 1, 5)",
+          "category": "creation"
+        },
+        {
+          "fn": "np.arange(start, stop, step)",
+          "purpose": "Return evenly spaced values within a given interval",
+          "example": "r = np.arange(0, 10, 2)",
+          "category": "creation"
+        }
+      ],
+      "gotchas": [
+        "Arrays have fixed types; implicit casting can happen silently.",
+        "np.empty() allocates uninitialized memory that may contain garbage values; never assume zeros without explicit initialization."
+      ]
+    },
+    {
+      "name": "Broadcasting and Reshaping",
+      "functions": [
+        {
+          "fn": "np.reshape(a, newshape)",
+          "purpose": "Change the shape of an array without changing its data",
+          "example": "reshaped = np.reshape(arr, (3, 4))",
+          "category": "reshaping"
+        },
+        {
+          "fn": "np.ravel(a)",
+          "purpose": "Return a contiguous flattened array",
+          "example": "flat = np.ravel(arr)",
+          "category": "reshaping"
+        },
+        {
+          "fn": "np.transpose(a, axes)",
+          "purpose": "Permute the dimensions of an array",
+          "example": "t = np.transpose(arr, (1, 0, 2))",
+          "category": "reshaping"
+        },
+        {
+          "fn": "np.expand_dims(a, axis)",
+          "purpose": "Expand the shape of an array by inserting a new axis",
+          "example": "expanded = np.expand_dims(arr, axis=0)",
+          "category": "reshaping"
+        },
+        {
+          "fn": "np.squeeze(a, axis)",
+          "purpose": "Remove singleton dimensions from the shape of an array",
+          "example": "squeezed = np.squeeze(arr, axis=1)",
+          "category": "reshaping"
+        }
+      ],
+      "gotchas": [
+        "Broadcasting silently expands dimensions by replicating values; adding a shape-(3,) array to a shape-(3,1) array produces a (3,3) result that may not match the intended element-wise operation.",
+        "np.reshape() returns a view when possible, but modifying the result may unexpectedly modify the original array; use .copy() if you need an independent array."
+      ]
+    },
+    {
+      "name": "Indexing and Slicing",
+      "functions": [
+        {
+          "fn": "arr[indices]",
+          "purpose": "Access elements by index, slice, or boolean mask",
+          "example": "subset = arr[2:10:2]",
+          "category": "indexing"
+        },
+        {
+          "fn": "np.where(condition, x, y)",
+          "purpose": "Return elements chosen from x or y depending on condition",
+          "example": "result = np.where(arr > 0, arr, 0)",
+          "category": "indexing"
+        },
+        {
+          "fn": "np.take(a, indices, axis)",
+          "purpose": "Take elements from an array along an axis",
+          "example": "taken = np.take(arr, [0, 2, 4], axis=0)",
+          "category": "indexing"
+        },
+        {
+          "fn": "arr[boolean_mask]",
+          "purpose": "Select elements where the boolean mask is True",
+          "example": "positive = arr[arr > 0]",
+          "category": "indexing"
+        },
+        {
+          "fn": "arr[fancy_indices]",
+          "purpose": "Select elements using an array of integer indices",
+          "example": "selected = arr[[0, 3, 5]]",
+          "category": "indexing"
+        }
+      ],
+      "gotchas": [
+        "Fancy indexing with integer arrays returns a copy, not a view; assignments like arr[[0,1]] = 5 work on a temporary copy and may not modify the original array unless you use np.put or np.take with mode='put'.",
+        "Boolean indexing creates a 1-D flattened result regardless of input dimensionality; if you need to preserve shape, use np.where() or np.where with a fill value instead."
+      ]
+    },
+    {
+      "name": "Math and Statistics",
+      "functions": [
+        {
+          "fn": "np.sum(a, axis)",
+          "purpose": "Sum of array elements over a given axis",
+          "example": "s = np.sum(arr, axis=0)",
+          "category": "statistics"
+        },
+        {
+          "fn": "np.mean(a, axis)",
+          "purpose": "Compute the arithmetic mean along the specified axis",
+          "example": "m = np.mean(arr, axis=1)",
+          "category": "statistics"
+        },
+        {
+          "fn": "np.std(a, axis)",
+          "purpose": "Compute the standard deviation along the specified axis",
+          "example": "std = np.std(arr, axis=0)",
+          "category": "statistics"
+        },
+        {
+          "fn": "np.dot(a, b)",
+          "purpose": "Dot product of two arrays",
+          "example": "d = np.dot(a, b)",
+          "category": "math"
+        },
+        {
+          "fn": "np.linalg.norm(x, ord)",
+          "purpose": "Matrix or vector norm",
+          "example": "n = np.linalg.norm(vec, ord=2)",
+          "category": "math"
+        },
+        {
+          "fn": "np.argmax(a, axis)",
+          "purpose": "Return indices of the maximum values along the given axis",
+          "example": "idx = np.argmax(arr, axis=1)",
+          "category": "statistics"
+        }
+      ],
+      "gotchas": [
+        "np.mean() on integer arrays performs integer division in NumPy versions before 2.0, silently truncating the fractional part; cast to float first with arr.astype(float) or use np.mean(arr, dtype=float).",
+        "np.argmax() returns the first occurrence of the maximum; for arrays with all identical values, it always returns index 0, which can bias downstream sampling or selection logic."
+      ]
+    },
+    {
+      "name": "Linear Algebra",
+      "functions": [
+        {
+          "fn": "np.linalg.inv(a)",
+          "purpose": "Compute the inverse of a matrix",
+          "example": "inv = np.linalg.inv(a)",
+          "category": "linalg"
+        },
+        {
+          "fn": "np.linalg.eig(a)",
+          "purpose": "Compute the eigenvalues and right eigenvectors of a square matrix",
+          "example": "w, v = np.linalg.eig(a)",
+          "category": "linalg"
+        },
+        {
+          "fn": "np.linalg.svd(a, full_matrices)",
+          "purpose": "Singular Value Decomposition",
+          "example": "u, s, vh = np.linalg.svd(a, full_matrices=False)",
+          "category": "linalg"
+        },
+        {
+          "fn": "np.linalg.solve(a, b)",
+          "purpose": "Solve a linear matrix equation",
+          "example": "x = np.linalg.solve(a, b)",
+          "category": "linalg"
+        }
+      ],
+      "gotchas": [
+        "np.linalg.inv() is numerically unstable for nearly singular matrices with condition numbers above 1e12; use np.linalg.solve() directly or check np.linalg.cond() before inversion.",
+        "np.linalg.eig() returns complex eigenvalues for real matrices when the matrix is not symmetric; np.linalg.eigvals() on a non-symmetric matrix may produce unexpected complex conjugate pairs that break downstream real-only pipelines."
+      ]
+    }
+  ],
+  "alternatives": [
+    {
+      "id": "cupy",
+      "type": "package"
+    },
+    {
+      "id": "jax",
+      "type": "package"
+    }
+  ]
+}

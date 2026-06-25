@@ -1,0 +1,58 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://tesseract-ocr.github.io/tessdoc/"
+  ],
+  "official_docs": "https://tesseract-ocr.github.io/tessdoc/",
+  "github_repo": "https://github.com/tesseract-ocr/tesseract",
+  "id": "tesseract",
+  "name": "Tesseract OCR",
+  "category": "ml",
+  "problem_types": [
+    "detection"
+  ],
+  "summary": "Tesseract OCR is Google's open-source optical character recognition engine, using LSTM-based neural networks since version 4 for line recognition. It is primarily accessed through the pytesseract Python wrapper, which calls the underlying system binary.",
+  "use_when": "High-quality scanned documents, PDFs, and clean digital images with uniform text. Custom font training workflows and environments requiring a fully open-source OCR engine.",
+  "avoid_when": "Natural scene images, mobile captures with complex backgrounds, or low-resolution photos without preprocessing. Pure Python environments where installing system binaries is not permitted.",
+  "pros": [
+    "Battle-tested engine with decades of development and widespread community support",
+    "Completely free and open-source under Apache 2.0 license",
+    "Trainable on custom fonts and languages via .traineddata files",
+    "Fast CPU inference on clean, high-contrast document images with minimal latency"
+  ],
+  "cons": [
+    "Poor accuracy on natural scene text, photographs, and low-contrast images without heavy preprocessing",
+    "Highly sensitive to image quality, requiring deskewing, binarization, and noise removal",
+    "Requires OS-level installation of the tesseract binary in addition to the Python wrapper",
+    "Not an end-to-end Python solution; pytesseract is only a thin wrapper around CLI subprocess calls"
+  ],
+  "key_hyperparams": [
+    {
+      "name": "lang",
+      "default": "eng",
+      "note": "Language model traineddata to use. 'eng' for English, 'eng+deu' for multi-language. Must match installed .traineddata files on the system."
+    },
+    {
+      "name": "config",
+      "default": null,
+      "note": "Tesseract command-line config string. Use '--psm 3' for auto page segmentation, '--psm 6' for single uniform text block, '--psm 11' for sparse text. '--oem 3' uses LSTM engine."
+    },
+    {
+      "name": "nice",
+      "default": 0,
+      "note": "Process priority modifier. 0 is default. Positive values lower priority, negative values require elevated permissions."
+    }
+  ],
+  "training_speed": "medium",
+  "inference_speed": "fast",
+  "memory_usage": "low",
+  "interpretability": "low",
+  "quick_start": "from PIL import Image\nimport pytesseract\n\nimg = Image.open('document.png')\ntext = pytesseract.image_to_string(\n    img, lang='eng', config='--psm 6 --oem 3'\n)\nprint(text)",
+  "alternatives": [
+    {
+      "id": "easyocr",
+      "type": "model"
+    }
+  ]
+}

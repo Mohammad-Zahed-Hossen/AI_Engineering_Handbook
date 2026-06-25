@@ -1,0 +1,159 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://docs.dask.org/en/stable/"
+  ],
+  "official_docs": "https://docs.dask.org/en/stable/",
+  "github_repo": "https://github.com/dask/dask",
+  "id": "dask",
+  "name": "Dask",
+  "version": "2024.1.0",
+  "install": "pip install dask[complete]",
+  "import_as": "import dask.dataframe as dd\nimport dask.array as da",
+  "summary": "Parallel computing library scaling Python code from single machines to clusters, providing lazy Pandas and NumPy-compatible APIs for out-of-core computation.",
+  "sections": [
+    {
+      "name": "Dask DataFrame",
+      "functions": [
+        {
+          "fn": "dd.read_csv(filepath)",
+          "purpose": "Read CSV files into a Dask DataFrame partitioned for parallel processing",
+          "example": "df = dd.read_csv('data-*.csv')",
+          "category": "io"
+        },
+        {
+          "fn": "dd.from_pandas(data, npartitions)",
+          "purpose": "Convert a Pandas DataFrame into a Dask DataFrame with specified partitions",
+          "example": "ddf = dd.from_pandas(pdf, npartitions=4)",
+          "category": "creation"
+        },
+        {
+          "fn": "ddf.compute()",
+          "purpose": "Execute the lazy task graph and return a Pandas DataFrame",
+          "example": "result = ddf.groupby('key').value.sum().compute()",
+          "category": "execution"
+        },
+        {
+          "fn": "ddf.persist()",
+          "purpose": "Execute and persist the result in distributed memory for repeated access",
+          "example": "ddf = ddf[dff.value > 0].persist()",
+          "category": "execution"
+        }
+      ],
+      "gotchas": [
+        "Dask DataFrame operations are lazy and do not execute until compute() is called; missing .compute() will return a Dask object instead of actual data, causing silent downstream errors.",
+        "Column assignment in Dask DataFrames requires map_partitions() or explicit Dask-aware operations; direct column assignment like df['new'] = series is not supported and raises an error."
+      ]
+    },
+    {
+      "name": "Dask Array",
+      "functions": [
+        {
+          "fn": "da.from_array(x, chunks)",
+          "purpose": "Create a Dask array from a NumPy array with specified chunk sizes",
+          "example": "arr = da.from_array(np.ones((1000, 1000)), chunks=(500, 500))",
+          "category": "creation"
+        },
+        {
+          "fn": "da.random.random(size, chunks)",
+          "purpose": "Generate a random Dask array with given shape and chunk sizes",
+          "example": "arr = da.random.random((10000, 10000), chunks=(1000, 1000))",
+          "category": "creation"
+        },
+        {
+          "fn": "da.sum(a, axis)",
+          "purpose": "Sum of array elements over a given axis, computed in parallel across chunks",
+          "example": "s = da.sum(arr, axis=0).compute()",
+          "category": "math"
+        },
+        {
+          "fn": "da.dot(a, b)",
+          "purpose": "Dot product of two Dask arrays, chunking over the contracted dimension",
+          "example": "result = da.dot(a, b).compute()",
+          "category": "math"
+        }
+      ],
+      "gotchas": [
+        "Dask Array chunk sizes significantly impact performance; chunks smaller than 1MB cause excessive task overhead, while chunks larger than 100MB may exceed worker memory limits.",
+        "Mixed chunk sizes along an axis prevent certain operations from optimizing properly; use rechunk() to regularize chunk shapes before reduction operations like sum() or mean()."
+      ]
+    },
+    {
+      "name": "Scheduler and Compute",
+      "functions": [
+        {
+          "fn": "dask.compute(*args)",
+          "purpose": "Compute multiple Dask collections simultaneously, sharing intermediate results",
+          "example": "x, y = dask.compute(arr1, arr2)",
+          "category": "execution"
+        },
+        {
+          "fn": "dask.delayed(func)",
+          "purpose": "Decorator to convert a Python function into a lazy Dask task",
+          "example": "delayed_add = dask.delayed(add)(1, 2)",
+          "category": "task-graph"
+        },
+        {
+          "fn": "dask.visualize(obj)",
+          "purpose": "Render the task graph for a Dask collection to a file or inline",
+          "example": "ddf.visualize(filename='task-graph.svg')",
+          "category": "diagnostics"
+        },
+        {
+          "fn": "dask.config.set(scheduler)",
+          "purpose": "Configure the default scheduler for Dask computations",
+          "example": "dask.config.set(scheduler='processes')",
+          "category": "configuration"
+        }
+      ],
+      "gotchas": [
+        "dask.delayed() does not handle complex Python objects well; passing large Pandas DataFrames or unserializable objects between delayed tasks causes serialization overhead or crashes.",
+        "Using the synchronous scheduler with dask.compute() on large workloads blocks the main thread; switch to 'threads' or 'processes' for I/O-bound work, or use a distributed Client for clusters."
+      ]
+    },
+    {
+      "name": "Diagnostics",
+      "functions": [
+        {
+          "fn": "client.dashboard_link",
+          "purpose": "Property returning the URL to the Dask distributed dashboard for monitoring",
+          "example": "print(client.dashboard_link)",
+          "category": "monitoring"
+        },
+        {
+          "fn": "client.gather(futures)",
+          "purpose": "Collect results from distributed futures into the local process",
+          "example": "results = client.gather(futures)",
+          "category": "execution"
+        },
+        {
+          "fn": "client.submit(func, *args)",
+          "purpose": "Submit a function to the scheduler for execution on a worker",
+          "example": "future = client.submit(process_chunk, data_chunk)",
+          "category": "execution"
+        },
+        {
+          "fn": "client.restart()",
+          "purpose": "Restart all workers, clearing their memory and state",
+          "example": "client.restart()",
+          "category": "management"
+        }
+      ],
+      "gotchas": [
+        "Calling client.gather() on large distributed results can exhaust local memory if the aggregated output exceeds the client machine's RAM; use to_csv() or write to disk on workers instead.",
+        "client.restart() clears all worker memory and cancels running computations without warning; any unpersisted intermediate results are lost and must be recomputed from scratch."
+      ]
+    }
+  ],
+  "alternatives": [
+    {
+      "id": "polars",
+      "type": "package"
+    },
+    {
+      "id": "pandas",
+      "type": "package"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://arxiv.org/abs/2305.13048"
+  ],
+  "official_docs": "https://github.com/BlinkDL/RWKV-LM",
+  "research_paper": "https://arxiv.org/abs/2305.13048",
+  "github_repo": "https://github.com/BlinkDL/RWKV-LM",
+  "id": "rwkv",
+  "name": "RWKV",
+  "category": "dl",
+  "problem_types": [
+    "generation",
+    "classification"
+  ],
+  "summary": "RWKV is an RNN-Transformer hybrid architecture that combines the parallelizable training of Transformers with the constant-memory inference of RNNs through a linear attention mechanism called the Receptance Weighted Key Value formulation. It eliminates the quadratic attention bottleneck while preserving the ability to model long-range dependencies across sequences.",
+  "use_when": "Long-context text generation where constant memory per token during inference is critical. Deployments on consumer GPUs with limited VRAM where Transformer KV caches would exhaust memory. Applications requiring streaming generation without batch attention recomputation.",
+  "avoid_when": "Production systems requiring plug-and-play compatibility with the Hugging Face ecosystem, LoRA adapters, or vLLM inference engines. Teams without expertise in custom model loading and tokenization pipelines. Tasks where the full Transformer attention matrix is needed for interpretability or attention-visualization debugging.",
+  "pros": [
+    "Constant O(1) memory at inference per step because it stores a fixed-size recurrent state rather than growing key-value caches",
+    "Fully parallelizable training across the sequence dimension, matching Transformer throughput during the training phase",
+    "Good performance on long-context tasks exceeding 10,000 tokens because the recurrent state does not degrade with sequence length",
+    "Open weights available in multiple sizes from 169M to 14B parameters, enabling experimentation across compute budgets"
+  ],
+  "cons": [
+    "Limited pretrained model availability compared to the thousands of open-weight Transformer models on Hugging Face Hub",
+    "Harder to adapt than standard Transformers because the linear attention formulation requires custom attention masking and position interpolation",
+    "Smaller active community and ecosystem, resulting in fewer tutorials, debugging resources, and third-party integrations",
+    "Less tooling for production deployment including quantization formats (GPTQ, AWQ, GGUF) and inference servers (vLLM, TGI) that are Transformer-optimized"
+  ],
+  "key_hyperparams": [
+    {
+      "name": "n_layer",
+      "default": null,
+      "note": "Number of model layers. Determines model depth and capacity. Typical values are 12 for base models, 24 for large models. Must be specified."
+    },
+    {
+      "name": "n_embd",
+      "default": null,
+      "note": "Embedding dimension (hidden size). Defines the width of the model. Common values are 768 for 169M parameters and 2048 for 3B parameters."
+    },
+    {
+      "name": "ctx_len",
+      "default": 1024,
+      "note": "Maximum context length in tokens. The model is trained to handle sequences up to this length. Increase to 4096-8192 for long-context fine-tuning."
+    }
+  ],
+  "training_speed": "medium",
+  "inference_speed": "fast",
+  "memory_usage": "low",
+  "interpretability": "low",
+  "quick_start": "from rwkv.model import RWKV\n\nmodel = RWKV(model='RWKV-4-World-3B-v1', strategy='cuda fp16')\n\nprompt = \"The future of AI is\"\noutput = model.generate(prompt, token_count=100, temperature=1.0, top_p=0.85)\nprint(output)",
+  "alternatives": [
+    {
+      "id": "transformer",
+      "type": "model"
+    },
+    {
+      "id": "mamba",
+      "type": "model"
+    },
+    {
+      "id": "lstm",
+      "type": "model"
+    }
+  ]
+}

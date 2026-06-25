@@ -1,0 +1,68 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2"
+  ],
+  "official_docs": "https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2",
+  "research_paper": "https://arxiv.org/abs/2310.06825",
+  "github_repo": "https://github.com/mistralai/mistral-src",
+  "id": "mistral-7b",
+  "name": "Mistral 7B",
+  "category": "llm",
+  "problem_types": [
+    "generation"
+  ],
+  "summary": "Mistral 7B is a 7-billion parameter decoder-only transformer that uses sliding window attention and grouped query attention to achieve faster inference and lower memory usage than comparable dense models. It outperforms Llama 2 13B on most reasoning, coding, and multilingual benchmarks while remaining efficient for single-GPU deployment.",
+  "use_when": "High-throughput text generation on a single consumer GPU where inference speed is critical. Long-context retrieval-augmented generation up to 32K tokens using sliding window attention. Fine-tuning with QLoRA on 24GB VRAM for domain-specific chatbots.",
+  "avoid_when": "Tasks requiring extremely long coherent reasoning beyond the sliding window's effective range. Production systems that cannot tolerate the occasional attention sparsity artifacts of sliding window attention. Use cases where the larger Mistral 8x7B or 8x22B MoE variants would be more appropriate.",
+  "pros": [
+    "Sliding window attention with 4K local window and 128K cache capacity enables efficient inference on long documents without full quadratic attention cost",
+    "Grouped Query Attention reduces KV cache memory by 4x compared to multi-head attention, enabling higher batch sizes and longer sequences per GPU",
+    "Outperforms Llama 2 13B on HumanEval, MMLU, and HellaSwag while using fewer parameters and less VRAM during inference",
+    "Fast tokenizer with efficient byte-pair encoding and strong multilingual coverage for European and programming languages"
+  ],
+  "cons": [
+    "Sliding window attention can miss dependencies beyond the local window size, causing coherence degradation in very long generation tasks",
+    "Grouped Query Attention slightly reduces expressiveness compared to full multi-head attention, observable on complex reasoning benchmarks",
+    "Mistral's commercial license requires a paid enterprise agreement for usage above specific revenue thresholds",
+    "Smaller fine-tuning ecosystem than Llama models, with fewer publicly available LoRA adapters and specialized checkpoints"
+  ],
+  "key_hyperparams": [
+    {
+      "name": "temperature",
+      "default": 0.7,
+      "note": "Sampling temperature. Lower to 0.2-0.4 for code and structured output. Increase to 0.8-1.0 for creative tasks."
+    },
+    {
+      "name": "top_p",
+      "default": 0.9,
+      "note": "Nucleus sampling threshold. 0.9 provides good diversity without excessive hallucination. Lower to 0.7 for factual QA."
+    },
+    {
+      "name": "max_new_tokens",
+      "default": 256,
+      "note": "Maximum tokens to generate. Set to 512-1024 for long-form responses. Ensure total prompt plus output fits within model context."
+    },
+    {
+      "name": "sliding_window",
+      "default": 4096,
+      "note": "Attention window size in tokens. Default 4096 balances speed and long-range capture. Increase to 8192 for better long-context coherence at higher compute cost."
+    }
+  ],
+  "training_speed": "slow",
+  "inference_speed": "fast",
+  "memory_usage": "medium",
+  "interpretability": "low",
+  "quick_start": "from transformers import AutoModelForCausalLM, AutoTokenizer\n\nmodel = AutoModelForCausalLM.from_pretrained(\n    'mistralai/Mistral-7B-Instruct-v0.2',\n    torch_dtype='auto',\n    device_map='auto'\n)\ntokenizer = AutoTokenizer.from_pretrained('mistralai/Mistral-7B-Instruct-v0.2')\n\nprompt = '[INST] Write a Python function to sort a list[/INST]'\ninputs = tokenizer(prompt, return_tensors='pt').to(model.device)\noutputs = model.generate(**inputs, max_new_tokens=256, do_sample=True, temperature=0.7)",
+  "alternatives": [
+    {
+      "id": "llama-3-8b",
+      "type": "model"
+    },
+    {
+      "id": "gemma-2",
+      "type": "model"
+    }
+  ]
+}

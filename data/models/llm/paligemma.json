@@ -1,0 +1,55 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://huggingface.co/google/paligemma-3b-pt-224"
+  ],
+  "official_docs": "https://huggingface.co/google/paligemma-3b-pt-224",
+  "research_paper": "https://arxiv.org/abs/2407.07726",
+  "github_repo": "https://github.com/google-research/big_vision",
+  "id": "paligemma",
+  "name": "PaliGemma",
+  "category": "llm",
+  "problem_types": [
+    "generation",
+    "detection"
+  ],
+  "summary": "PaliGemma is Google's open vision-language model that combines a SigLIP vision encoder with a Gemma 2B language decoder, enabling image understanding, captioning, visual question answering, and object detection through text prompts. It processes images at 224x224 resolution and generates text responses describing visual content.",
+  "use_when": "Multimodal applications requiring image understanding and text generation on consumer GPUs with only 8-16GB VRAM. Visual question answering on documents, charts, and natural images where a lightweight model suffices. Object detection and region captioning through text prompts without requiring separate detection heads.",
+  "avoid_when": "High-resolution image analysis where 224x224 input crops critical visual details. Production systems requiring strict text-only output guarantees where image inputs could trigger unwanted visual hallucinations. Tasks requiring state-of-the-art vision reasoning where larger models like GPT-4V or Gemini Pro Vision significantly outperform 3B parameter models.",
+  "pros": [
+    "3B parameter size enables deployment on consumer GPUs and edge devices where 7B+ multimodal models are too memory-intensive",
+    "SigLIP vision encoder provides strong zero-shot image understanding and cross-modal alignment without requiring separate image preprocessing pipelines",
+    "Gemma decoder offers text generation capabilities with established tokenizer and vocabulary, simplifying integration with existing NLP tooling",
+    "Open weights and permissive licensing enable research, fine-tuning, and commercial deployment without usage restrictions or API costs"
+  ],
+  "cons": [
+    "Fixed 224x224 image resolution limits detail capture for fine-grained visual tasks like small object detection or medical image analysis",
+    "3B parameter capacity limits reasoning depth compared to 7B-70B multimodal models, resulting in more frequent factual errors on complex visual questions",
+    "Visual hallucinations can occur when the model generates confident but incorrect descriptions of objects not present in the image",
+    "Limited fine-tuning recipes and community adapters compared to pure text models, making domain adaptation for specialized vision tasks more challenging"
+  ],
+  "key_hyperparams": [
+    {
+      "name": "max_new_tokens",
+      "default": 128,
+      "note": "Maximum text tokens to generate from the image prompt. Increase to 256-512 for detailed captions and long-form visual descriptions."
+    },
+    {
+      "name": "image_size",
+      "default": 224,
+      "note": "Input image resolution in pixels. Fixed at 224 for standard PaliGemma checkpoints. Custom fine-tuning can adapt to 448 for higher detail at increased compute cost."
+    }
+  ],
+  "training_speed": "slow",
+  "inference_speed": "slow",
+  "memory_usage": "high",
+  "interpretability": "low",
+  "quick_start": "from transformers import AutoProcessor, PaliGemmaForConditionalGeneration\nfrom PIL import Image\n\nmodel = PaliGemmaForConditionalGeneration.from_pretrained(\n    'google/paligemma-3b-pt-224',\n    torch_dtype='auto',\n    device_map='auto'\n)\nprocessor = AutoProcessor.from_pretrained('google/paligemma-3b-pt-224')\n\nimage = Image.open('photo.jpg')\nprompt = 'caption en'\ninputs = processor(text=prompt, images=image, return_tensors='pt').to(model.device)\noutputs = model.generate(**inputs, max_new_tokens=128)\nprint(processor.decode(outputs[0], skip_special_tokens=True))",
+  "alternatives": [
+    {
+      "id": "gemma-2",
+      "type": "model"
+    }
+  ]
+}

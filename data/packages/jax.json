@@ -1,0 +1,159 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://jax.readthedocs.io/en/latest/"
+  ],
+  "official_docs": "https://jax.readthedocs.io/en/latest/",
+  "github_repo": "https://github.com/google/jax",
+  "id": "jax",
+  "name": "JAX",
+  "version": "0.4.25",
+  "install": "pip install jax[cuda12]",
+  "import_as": "import jax\nimport jax.numpy as jnp",
+  "summary": "Google's library for high-performance ML research combining a NumPy-compatible API with automatic differentiation, JIT compilation via XLA, and composable function transformations.",
+  "sections": [
+    {
+      "name": "Array Operations",
+      "functions": [
+        {
+          "fn": "jnp.array(obj)",
+          "purpose": "Create a JAX array from a Python list or NumPy array",
+          "example": "a = jnp.array([1.0, 2.0, 3.0])",
+          "category": "creation"
+        },
+        {
+          "fn": "jnp.dot(a, b)",
+          "purpose": "Compute the dot product of two JAX arrays",
+          "example": "d = jnp.dot(a, b)",
+          "category": "math"
+        },
+        {
+          "fn": "jnp.mean(a, axis)",
+          "purpose": "Compute the arithmetic mean along the specified axis",
+          "example": "m = jnp.mean(a, axis=0)",
+          "category": "math"
+        },
+        {
+          "fn": "jnp.where(condition, x, y)",
+          "purpose": "Return elements chosen from x or y depending on condition",
+          "example": "result = jnp.where(a > 0, a, 0)",
+          "category": "indexing"
+        }
+      ],
+      "gotchas": [
+        "JAX arrays are immutable; in-place operations like a[0] = 1 are not allowed and will raise a TypeError. Use jnp.where or jnp.at[].set() for functional updates.",
+        "JAX defaults to float32 even on 64-bit systems; enable 64-bit mode with jax.config.update('jax_enable_x64', True) before importing jax.numpy."
+      ]
+    },
+    {
+      "name": "Transformations",
+      "functions": [
+        {
+          "fn": "jax.jit(fun)",
+          "purpose": "JIT-compile a function with XLA for accelerated execution",
+          "example": "fast_fun = jax.jit(fun)",
+          "category": "compilation"
+        },
+        {
+          "fn": "jax.grad(fun)",
+          "purpose": "Return a function that computes the gradient of fun with respect to its first argument",
+          "example": "grad_fun = jax.grad(fun)",
+          "category": "autodiff"
+        },
+        {
+          "fn": "jax.vmap(fun, in_axes)",
+          "purpose": "Automatically vectorize a function over an axis using JAX's automatic batching",
+          "example": "batched_fun = jax.vmap(fun, in_axes=(0, 0))",
+          "category": "vectorization"
+        },
+        {
+          "fn": "jax.pmap(fun, axis_name)",
+          "purpose": "Parallelize a function across multiple accelerators using SPMD",
+          "example": "parallel_fun = jax.pmap(fun, axis_name='batch')",
+          "category": "parallelization"
+        }
+      ],
+      "gotchas": [
+        "jax.jit() traces functions with abstract values; side effects like print() or mutation of Python lists are silently ignored during compilation.",
+        "jax.grad() differentiates with respect to the first positional argument by default; passing a non-differentiable argument as the first parameter raises a TypeError."
+      ]
+    },
+    {
+      "name": "Random Numbers",
+      "functions": [
+        {
+          "fn": "jax.random.PRNGKey(seed)",
+          "purpose": "Create a random key for JAX's explicit random number generation",
+          "example": "key = jax.random.PRNGKey(42)",
+          "category": "random"
+        },
+        {
+          "fn": "jax.random.normal(key, shape)",
+          "purpose": "Sample standard normal random values on the device",
+          "example": "x = jax.random.normal(key, shape=(3, 3))",
+          "category": "random"
+        },
+        {
+          "fn": "jax.random.split(key, num)",
+          "purpose": "Split a random key into multiple independent subkeys",
+          "example": "keys = jax.random.split(key, num=3)",
+          "category": "random"
+        },
+        {
+          "fn": "jax.random.uniform(key, shape, minval, maxval)",
+          "purpose": "Sample uniform random values in a given range",
+          "example": "u = jax.random.uniform(key, shape=(2, 2), minval=0, maxval=1)",
+          "category": "random"
+        }
+      ],
+      "gotchas": [
+        "JAX random keys are explicit and stateless; reusing the same key produces identical random values every time. Always split keys before each random call.",
+        "jax.random.PRNGKey() creates a key on the CPU device; for GPU random generation, ensure the key is transferred to the target device before calling random functions."
+      ]
+    },
+    {
+      "name": "Neural Net Primitives",
+      "functions": [
+        {
+          "fn": "jax.nn.relu(x)",
+          "purpose": "Rectified linear unit activation function",
+          "example": "activated = jax.nn.relu(x)",
+          "category": "activation"
+        },
+        {
+          "fn": "jax.nn.softmax(x, axis)",
+          "purpose": "Compute the softmax of elements along a given axis",
+          "example": "probs = jax.nn.softmax(logits, axis=-1)",
+          "category": "activation"
+        },
+        {
+          "fn": "jax.nn.sigmoid(x)",
+          "purpose": "Sigmoid activation function element-wise",
+          "example": "s = jax.nn.sigmoid(x)",
+          "category": "activation"
+        },
+        {
+          "fn": "jax.nn.one_hot(x, num_classes)",
+          "purpose": "Return one-hot encoded array from integer labels",
+          "example": "oh = jax.nn.one_hot(labels, num_classes=10)",
+          "category": "encoding"
+        }
+      ],
+      "gotchas": [
+        "jax.nn.softmax() can overflow for large logits; subtract the max before softmax manually if logits are unbounded or use jax.nn.log_softmax for stability.",
+        "jax.nn.one_hot() silently ignores out-of-range indices by producing all-zero rows; validate class labels before encoding to prevent silent data corruption."
+      ]
+    }
+  ],
+  "alternatives": [
+    {
+      "id": "numpy",
+      "type": "package"
+    },
+    {
+      "id": "cupy",
+      "type": "package"
+    }
+  ]
+}

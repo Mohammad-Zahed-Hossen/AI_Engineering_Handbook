@@ -1,0 +1,69 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html"
+  ],
+  "official_docs": "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html",
+  "github_repo": "https://github.com/scikit-learn/scikit-learn",
+  "id": "extratreesclassifier",
+  "name": "Extra Trees Classifier",
+  "category": "ml",
+  "problem_types": [
+    "classification",
+    "regression"
+  ],
+  "summary": "Extra Trees builds an ensemble of decision trees using completely random split thresholds rather than optimal ones, making training substantially faster than Random Forest while maintaining competitive accuracy. The added randomness acts as a regularization mechanism, reducing variance at the cost of increased bias on clean datasets.",
+  "use_when": "Tabular datasets with heterogeneous features where training speed is prioritized over marginal accuracy. Noisy datasets where random split thresholds provide implicit regularization and reduce variance.",
+  "avoid_when": "Clean datasets with well-separated classes where optimal split finding yields better accuracy. High-dimensional sparse data. Real-time inference systems where tree traversal latency is critical.",
+  "pros": [
+    "Faster training than Random Forest because it selects random split thresholds rather than exhaustively searching for optimal ones",
+    "Lower variance than Random Forest on noisy datasets by averaging more diverse and decorrelated trees",
+    "Strong implicit regularization from random split selection reduces overfitting risk on small training sets",
+    "Supports multi-output classification and regression natively without requiring separate pipelines",
+    "No feature scaling required, similar to other tree-based ensemble methods"
+  ],
+  "cons": [
+    "Higher bias than Random Forest on clean, well-separated data where optimal splits significantly improve accuracy",
+    "Less interpretable individual splits since thresholds are chosen randomly rather than by impurity reduction",
+    "Memory usage comparable to Random Forest, growing linearly with the number of estimators",
+    "Feature importance scores can be less reliable due to random threshold selection"
+  ],
+  "key_hyperparams": [
+    {
+      "name": "n_estimators",
+      "default": 100,
+      "note": "Number of trees in the ensemble. Scales linearly with training and inference time. Increase to 300-500 for better accuracy without severe overfitting."
+    },
+    {
+      "name": "max_features",
+      "default": "sqrt",
+      "note": "Number of features to consider at each split. 'sqrt' for classification, 'log2' for high-dimensional data. Limits correlation between individual trees."
+    },
+    {
+      "name": "min_samples_split",
+      "default": 2,
+      "note": "Minimum samples required to split an internal node. Increase to 5-20 to prevent overfitting on small datasets and reduce tree complexity."
+    },
+    {
+      "name": "bootstrap",
+      "default": "false",
+      "note": "Whether to use bootstrap samples. Default false uses the whole dataset for each tree (the original Extra-Trees behavior). Set to true to match Random Forest sampling."
+    }
+  ],
+  "training_speed": "fast",
+  "inference_speed": "medium",
+  "memory_usage": "high",
+  "interpretability": "medium",
+  "quick_start": "from sklearn.ensemble import ExtraTreesClassifier\n\nclf = ExtraTreesClassifier(\n    n_estimators=300,\n    max_features='sqrt',\n    min_samples_split=5,\n    bootstrap=False,\n    random_state=42,\n    n_jobs=-1\n)\nclf.fit(X_train, y_train)\npreds = clf.predict(X_test)",
+  "alternatives": [
+    {
+      "id": "random-forest",
+      "type": "model"
+    },
+    {
+      "id": "xgboost",
+      "type": "model"
+    }
+  ]
+}

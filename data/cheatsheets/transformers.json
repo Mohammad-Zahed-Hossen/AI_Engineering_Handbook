@@ -1,0 +1,75 @@
+{
+  "created_at": "2026-06-24",
+  "updated_at": "2026-06-25",
+  "sources": ["https://huggingface.co/docs/transformers/index"],
+  "id": "transformers",
+  "name": "Transformers",
+  "groups": [
+    {
+      "group": "Pipeline API",
+      "items": [
+        { "fn": "pipeline(task)", "purpose": "Load a pipeline for a specific task." },
+        { "fn": "pipe = pipeline(task)", "purpose": "Instantiates a pipeline object for a specific natural language task." },
+        { "fn": "pipe(text, batch_size=16)", "purpose": "Runs inference on a batch of inputs through the loaded pipeline." },
+        { "fn": "pipeline(task, model=model_name, device=0)", "purpose": "Loads a pipeline onto a specific GPU device for accelerated inference." },
+        { "fn": "pipeline(task, torch_dtype='float16')", "purpose": "Loads a pipeline with half-precision weights to reduce memory usage." },
+        { "fn": "pipeline(task, return_all_scores=True)", "purpose": "Configures a classification pipeline to return scores for all labels." }
+      ]
+    },
+    {
+      "group": "Loading",
+      "items": [
+        { "fn": "AutoTokenizer.from_pretrained(model_name)", "purpose": "Loads a pretrained tokenizer from the Hugging Face Hub." },
+        { "fn": "AutoModel.from_pretrained(model_name)", "purpose": "Loads a pretrained base model without a task-specific head." },
+        { "fn": "AutoModelForCausalLM.from_pretrained(model_name)", "purpose": "Loads a pretrained model with a causal language modeling head." },
+        { "fn": "pipeline(task, model=model_name)", "purpose": "Instantiates a task-specific pipeline using a pretrained model." },
+        { "fn": "AutoConfig.from_pretrained(model_name)", "purpose": "Loads the configuration object of a pretrained model." },
+        { "fn": "AutoModelForSequenceClassification.from_pretrained(model_name)", "purpose": "Loads a pretrained model with a sequence classification head." }
+      ]
+    },
+    {
+      "group": "Tokenization",
+      "items": [
+        { "fn": "tokenizer(text, return_tensors='pt')", "purpose": "Tokenizes a text string and returns a dictionary of tensors." },
+        { "fn": "tokenizer.input_ids", "purpose": "Accesses the list of integer token IDs from a tokenizer output." },
+        { "fn": "tokenizer.attention_mask", "purpose": "Accesses the attention mask indicating which tokens to attend." },
+        { "fn": "tokenizer.decode(token_ids, skip_special_tokens=True)", "purpose": "Converts a sequence of token IDs back into a readable string." },
+        { "fn": "tokenizer.batch_encode_plus(batch_text, padding=True, truncation=True)", "purpose": "Tokenizes a batch of texts and pads them to the same length." },
+        { "fn": "tokenizer.encode(text, add_special_tokens=True)", "purpose": "Converts a text string into a list of integer token IDs." }
+      ]
+    },
+    {
+      "group": "Inference",
+      "items": [
+        { "fn": "model.generate(**inputs, max_new_tokens=50)", "purpose": "Generates text tokens autoregressively from input token IDs." },
+        { "fn": "model(**inputs)", "purpose": "Performs a forward pass through the model and returns logits or hidden states." },
+        { "fn": "outputs.logits", "purpose": "Accesses the raw model output scores for each token position." },
+        { "fn": "torch.softmax(logits, dim=-1)", "purpose": "Converts logits into a probability distribution over the vocabulary." },
+        { "fn": "model.generate(**inputs, top_k=50, top_p=0.9)", "purpose": "Generates tokens using top-k and nucleus sampling for diversity." },
+        { "fn": "model.eval()", "purpose": "Sets the model to evaluation mode disabling dropout and batch norm updates." }
+      ]
+    },
+    {
+      "group": "Training",
+      "items": [
+        { "fn": "Trainer(model, args, train_dataset, eval_dataset, compute_metrics)", "purpose": "Initializes a trainer object that handles training loops and evaluation." },
+        { "fn": "TrainingArguments(output_dir, num_train_epochs, per_device_train_batch_size)", "purpose": "Defines hyperparameters and output paths for the training loop." },
+        { "fn": "DataCollatorWithPadding(tokenizer)", "purpose": "Dynamically pads a batch of inputs to the longest sequence in the batch." },
+        { "fn": "compute_metrics(eval_pred)", "purpose": "Defines a custom metric function that receives predictions and labels." },
+        { "fn": "trainer.train()", "purpose": "Runs the full training loop over the training dataset." },
+        { "fn": "trainer.evaluate()", "purpose": "Evaluates the model on the evaluation dataset and returns metrics." }
+      ]
+    },
+    {
+      "group": "PEFT",
+      "items": [
+        { "fn": "get_peft_model(model, peft_config)", "purpose": "Wraps a base model with parameter-efficient fine-tuning adapters." },
+        { "fn": "LoraConfig(r=8, lora_alpha=16, target_modules=['q_proj', 'v_proj'])", "purpose": "Configures a LoRA adapter with specified rank and target modules." },
+        { "fn": "PeftModel.from_pretrained(model, model_id)", "purpose": "Loads a PEFT adapter into an existing base model." },
+        { "fn": "merge_and_unload()", "purpose": "Merges the adapter weights into the base model and returns the full model." },
+        { "fn": "PeftConfig()", "purpose": "Base configuration class for all parameter-efficient fine-tuning methods." },
+        { "fn": "TaskType.SEQ_CLS", "purpose": "Specifies the task type for sequence classification when configuring PEFT." }
+      ]
+    }
+  ]
+}

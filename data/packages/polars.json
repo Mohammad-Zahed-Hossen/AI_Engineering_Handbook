@@ -1,0 +1,159 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://docs.pola.rs/"
+  ],
+  "official_docs": "https://docs.pola.rs/",
+  "github_repo": "https://github.com/pola-rs/polars",
+  "id": "polars",
+  "name": "Polars",
+  "version": "0.20.0",
+  "install": "pip install polars",
+  "import_as": "import polars as pl",
+  "summary": "Blazing-fast DataFrame library written in Rust with a lazy execution engine, multithreaded and columnar by default for analytical workloads.",
+  "sections": [
+    {
+      "name": "I/O",
+      "functions": [
+        {
+          "fn": "pl.read_csv(source)",
+          "purpose": "Read a CSV file into an eager DataFrame",
+          "example": "df = pl.read_csv('data.csv')",
+          "category": "io"
+        },
+        {
+          "fn": "pl.read_parquet(source)",
+          "purpose": "Read a Parquet file into a DataFrame with full type inference",
+          "example": "df = pl.read_parquet('data.parquet')",
+          "category": "io"
+        },
+        {
+          "fn": "df.write_csv(file)",
+          "purpose": "Write a DataFrame to a CSV file",
+          "example": "df.write_csv('output.csv')",
+          "category": "io"
+        },
+        {
+          "fn": "df.write_parquet(file)",
+          "purpose": "Write a DataFrame to a Parquet file with compression",
+          "example": "df.write_parquet('output.parquet', compression='zstd')",
+          "category": "io"
+        }
+      ],
+      "gotchas": [
+        "pl.read_csv() infers types from the first 100 rows by default; columns with mixed types later in the file may fail with a SchemaError. Use infer_schema_length=None to scan the full file.",
+        "Polars uses eager I/O by default; for files larger than RAM, use pl.scan_csv() or pl.scan_parquet() to build a lazy query plan and avoid loading everything into memory."
+      ]
+    },
+    {
+      "name": "Selection and Filtering",
+      "functions": [
+        {
+          "fn": "df.select(exprs)",
+          "purpose": "Select columns by name or expression from a DataFrame",
+          "example": "df.select(['name', 'age'])",
+          "category": "selection"
+        },
+        {
+          "fn": "df.filter(expr)",
+          "purpose": "Filter rows based on a boolean expression",
+          "example": "df.filter(pl.col('age') > 30)",
+          "category": "filtering"
+        },
+        {
+          "fn": "df.with_columns(exprs)",
+          "purpose": "Add or modify columns without mutating the original DataFrame",
+          "example": "df.with_columns((pl.col('a') + 1).alias('b'))",
+          "category": "mutation"
+        },
+        {
+          "fn": "df.drop(columns)",
+          "purpose": "Remove one or more columns from a DataFrame",
+          "example": "df.drop(['temp', 'intermediate'])",
+          "category": "selection"
+        }
+      ],
+      "gotchas": [
+        "Polars DataFrames are immutable; methods like with_columns() return a new DataFrame rather than modifying in place. Reassign the result to a variable.",
+        "Column expressions in filter() are lazy and must use pl.col() references; passing a plain Python boolean will not filter rows and may raise a TypeError."
+      ]
+    },
+    {
+      "name": "GroupBy and Aggregation",
+      "functions": [
+        {
+          "fn": "df.group_by(by)",
+          "purpose": "Group rows by one or more columns for aggregation",
+          "example": "df.group_by('category').agg(pl.col('sales').sum())",
+          "category": "aggregation"
+        },
+        {
+          "fn": "pl.col(name).agg.sum()",
+          "purpose": "Sum aggregation expression for a column",
+          "example": "df.group_by('id').agg(pl.col('value').sum().alias('total'))",
+          "category": "aggregation"
+        },
+        {
+          "fn": "pl.col(name).agg.mean()",
+          "purpose": "Mean aggregation expression for a column",
+          "example": "df.group_by('region').agg(pl.col('score').mean().alias('avg_score'))",
+          "category": "aggregation"
+        },
+        {
+          "fn": "pl.col(name).agg.count()",
+          "purpose": "Count aggregation expression for a column",
+          "example": "df.group_by('status').agg(pl.col('id').count().alias('count'))",
+          "category": "aggregation"
+        }
+      ],
+      "gotchas": [
+        "Polars does not preserve row order after group_by() by default; use maintain_order=True if downstream logic depends on the original group sequence.",
+        "Aggregating on nullable columns without handling nulls explicitly can produce unexpected results; use fill_null() inside the aggregation expression for deterministic behavior."
+      ]
+    },
+    {
+      "name": "Lazy API",
+      "functions": [
+        {
+          "fn": "pl.scan_csv(source)",
+          "purpose": "Create a lazy DataFrame from a CSV file without loading data into memory",
+          "example": "lazy_df = pl.scan_csv('big_data.csv')",
+          "category": "lazy"
+        },
+        {
+          "fn": "df.lazy()",
+          "purpose": "Convert an eager DataFrame to a lazy DataFrame for query optimization",
+          "example": "lazy_df = df.lazy()",
+          "category": "lazy"
+        },
+        {
+          "fn": "lazy_df.collect()",
+          "purpose": "Execute the lazy query plan and materialize the result as an eager DataFrame",
+          "example": "result = lazy_df.filter(pl.col('a') > 0).collect()",
+          "category": "lazy"
+        },
+        {
+          "fn": "lazy_df.fetch(n_rows)",
+          "purpose": "Execute the lazy query plan on a small subset of data for fast inspection",
+          "example": "preview = lazy_df.fetch(100)",
+          "category": "lazy"
+        }
+      ],
+      "gotchas": [
+        "Lazy queries are only optimized when collect() is called; intermediate transformations on a LazyFrame do not trigger computation and cannot be inspected for correctness until materialized.",
+        "pl.scan_csv() on a remote URL will download the entire file during schema inference unless schema is provided explicitly; large remote files should be cached locally before scanning."
+      ]
+    }
+  ],
+  "alternatives": [
+    {
+      "id": "pandas",
+      "type": "package"
+    },
+    {
+      "id": "dask",
+      "type": "package"
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingClassifier.html"
+  ],
+  "official_docs": "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingClassifier.html",
+  "github_repo": "https://github.com/scikit-learn/scikit-learn",
+  "id": "gradientboostingclassifier",
+  "name": "Gradient Boosting Classifier",
+  "category": "ml",
+  "problem_types": [
+    "classification",
+    "regression"
+  ],
+  "summary": "Scikit-learn's GradientBoostingClassifier builds trees sequentially using first-order gradients to correct the errors of previous estimators, following the classical gradient boosting machine framework. It uses level-wise tree growth with exact split finding and full sorting at each node, providing a stable baseline without external dependencies.",
+  "use_when": "Small to medium tabular datasets requiring a reliable baseline without installing external dependencies. Environments with strict security or compliance requirements limiting package installations. Educational contexts teaching fundamental gradient boosting mechanics from first principles.",
+  "avoid_when": "Large datasets with millions of rows where XGBoost or LightGBM train orders of magnitude faster. GPU-accelerated training requirements. Production systems needing built-in early stopping, distributed training, or native categorical feature support.",
+  "pros": [
+    "Native scikit-learn implementation requires no extra dependencies beyond the standard sklearn package",
+    "Solid baseline accuracy for structured tabular classification and regression without library complexity",
+    "Supports sample_weight for handling class imbalance, custom loss weighting, and cost-sensitive learning",
+    "Stable API with consistent behavior across scikit-learn versions, making it reliable for long-term maintenance"
+  ],
+  "cons": [
+    "Slower than XGBoost and LightGBM on large datasets due to lack of histogram optimization and level-wise growth",
+    "No native GPU acceleration for training or inference, limiting scalability on modern hardware",
+    "No early stopping by default until scikit-learn 0.20; earlier versions require manual validation loop implementation",
+    "Level-wise tree growth with full sorting at each split is memory-intensive on high-dimensional datasets"
+  ],
+  "key_hyperparams": [
+    {
+      "name": "n_estimators",
+      "default": 100,
+      "note": "Number of boosting stages. Each stage fits a tree to the negative gradient. Increase to 200-500 but monitor for overfitting since early stopping is not automatic in older sklearn versions."
+    },
+    {
+      "name": "max_depth",
+      "default": 3,
+      "note": "Maximum depth of individual trees. Default 3 is intentionally shallow; increase to 5-8 for more complex relationships but watch for overfitting since there is no built-in regularization beyond tree depth."
+    },
+    {
+      "name": "learning_rate",
+      "default": 0.1,
+      "note": "Shrinkage factor applied to each tree's contribution. Lower to 0.01-0.05 and increase n_estimators for better regularization and smoother convergence, trading training time for generalization."
+    },
+    {
+      "name": "subsample",
+      "default": 1.0,
+      "note": "Fraction of samples used for fitting each tree. Set to 0.5-0.8 to implement stochastic gradient boosting and reduce variance through random row sampling."
+    },
+    {
+      "name": "min_samples_leaf",
+      "default": 1,
+      "note": "Minimum samples required in leaf nodes. Increase to 2-20 to smooth predictions and reduce overfitting on small datasets, especially when combined with a shallow max_depth."
+    }
+  ],
+  "training_speed": "slow",
+  "inference_speed": "medium",
+  "memory_usage": "medium",
+  "interpretability": "medium",
+  "quick_start": "from sklearn.ensemble import GradientBoostingClassifier\n\nclf = GradientBoostingClassifier(\n    n_estimators=200,\n    max_depth=3,\n    learning_rate=0.1,\n    subsample=0.8,\n    min_samples_leaf=2,\n    random_state=42\n)\nclf.fit(X_train, y_train)\npreds = clf.predict(X_test)",
+  "alternatives": [
+    {
+      "id": "xgboost",
+      "type": "model"
+    },
+    {
+      "id": "lightgbm",
+      "type": "model"
+    },
+    {
+      "id": "random-forest",
+      "type": "model"
+    }
+  ]
+}

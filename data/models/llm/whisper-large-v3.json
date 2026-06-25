@@ -1,0 +1,64 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://huggingface.co/openai/whisper-large-v3"
+  ],
+  "official_docs": "https://huggingface.co/openai/whisper-large-v3",
+  "research_paper": "https://arxiv.org/abs/2212.04356",
+  "github_repo": "https://github.com/openai/whisper",
+  "id": "whisper-large-v3",
+  "name": "Whisper Large v3",
+  "category": "llm",
+  "problem_types": [
+    "generation"
+  ],
+  "summary": "Whisper Large v3 is OpenAI's largest encoder-decoder transformer model for automatic speech recognition, supporting multilingual transcription and translation across 99 languages. It uses a 32-layer encoder and 32-layer decoder with 1.5B parameters, trained on 680,000 hours of weakly supervised audio data.",
+  "use_when": "Multilingual speech-to-text requiring robust performance across diverse accents, noisy environments, and low-resource languages. Audio translation pipelines where English output is needed from non-English source audio. Research applications requiring the exact OpenAI Whisper model for reproducible benchmarking.",
+  "avoid_when": "Real-time transcription on consumer hardware where Faster Whisper's CTranslate2 optimization provides 4x speedup. GPU-constrained environments where the 1.5B parameter model exhausts available VRAM. Production batch pipelines where int8 quantization is required but model accuracy must remain float32-equivalent.",
+  "pros": [
+    "Supports 99 languages with strong zero-shot performance on languages not seen during training, including low-resource African and Asian languages",
+    "Encoder-decoder architecture handles both transcription and translation in a single forward pass, simplifying multilingual pipeline design",
+    "Large-scale training on 680,000 hours of audio produces robust generalization across accents, background noise, and technical vocabulary",
+    "Official OpenAI implementation provides exact reproducibility for research, with consistent tokenizer and decoding behavior across platforms"
+  ],
+  "cons": [
+    "Slow inference on CPU compared to optimized reimplementations; the original PyTorch model is not optimized for production throughput",
+    "Requires 10GB+ VRAM for float16 inference, making it difficult to deploy on consumer GPUs without aggressive quantization or model sharding",
+    "Hallucination of non-existent speech in silent segments, especially with long-form audio where the model invents content to fill gaps",
+    "Fixed 30-second chunking for long audio requires careful concatenation and timestamp alignment to avoid boundary artifacts"
+  ],
+  "key_hyperparams": [
+    {
+      "name": "language",
+      "default": null,
+      "note": "Target language for transcription. Use 'en' for English, 'zh' for Chinese, or omit for auto-detection. Specifying language improves accuracy and reduces hallucination."
+    },
+    {
+      "name": "task",
+      "default": "transcribe",
+      "note": "Task type: 'transcribe' for speech-to-text in the source language, 'translate' for translation to English. Translation forces English output regardless of source language."
+    },
+    {
+      "name": "temperature",
+      "default": 0,
+      "note": "Sampling temperature for decoding. 0 is greedy decoding for transcription. Increase to 0.2-0.4 when the model fails to decode and falls back to sampling."
+    },
+    {
+      "name": "compression_ratio_threshold",
+      "default": 2.4,
+      "note": "If the gzip compression ratio of the decoded text is above this threshold, the model is considered to be hallucinating and decoding falls back to temperature sampling."
+    }
+  ],
+  "training_speed": "slow",
+  "inference_speed": "slow",
+  "memory_usage": "high",
+  "interpretability": "low",
+  "quick_start": "from transformers import pipeline\n\ntranscriber = pipeline(\n    'automatic-speech-recognition',\n    model='openai/whisper-large-v3',\n    torch_dtype='auto',\n    device_map='auto'\n)\n\nresult = transcriber(\n    'audio.mp3',\n    return_timestamps=True,\n    task='transcribe',\n    language='en'\n)\nprint(result['text'])",
+  "alternatives": [
+    {
+      "id": "faster-whisper",
+      "type": "model"
+    }
+  ]
+}

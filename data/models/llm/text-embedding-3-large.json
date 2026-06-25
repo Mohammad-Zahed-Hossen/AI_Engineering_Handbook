@@ -1,0 +1,52 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://platform.openai.com/docs/guides/embeddings"
+  ],
+  "official_docs": "https://platform.openai.com/docs/guides/embeddings",
+  "id": "text-embedding-3-large",
+  "name": "text-embedding-3-large",
+  "category": "llm",
+  "problem_types": [
+    "embedding"
+  ],
+  "summary": "text-embedding-3-large is OpenAI's highest-quality text embedding model, producing 3072-dimensional dense vectors that outperform the previous ada-002 model on the MTEB benchmark. It supports native dimensionality truncation, allowing users to trade off between vector quality and storage cost.",
+  "use_when": "Production retrieval-augmented generation pipelines where MTEB leaderboard performance directly impacts search quality. Applications requiring a single API endpoint for multiple languages without managing separate embedding models. Systems where dimensionality truncation can reduce vector database costs while maintaining competitive accuracy.",
+  "avoid_when": "On-premise or air-gapped environments where API dependency is unacceptable. High-volume batch processing where per-token API costs exceed the cost of self-hosting an open-source model. Use cases requiring full control over the embedding model for domain-specific fine-tuning.",
+  "pros": [
+    "Top-tier MTEB performance with strong retrieval accuracy across classification, clustering, and semantic search benchmarks",
+    "Native support for dimensionality truncation down to 256 dimensions, enabling flexible storage and latency trade-offs without retraining",
+    "Multilingual capability with competitive performance in 100+ languages through a single API endpoint, simplifying architecture",
+    "Consistent API behavior and uptime guarantees from OpenAI's infrastructure, reducing operational burden for engineering teams"
+  ],
+  "cons": [
+    "API-only access with no local weights available, creating vendor lock-in and preventing offline or air-gapped deployment",
+    "Per-token pricing accumulates quickly for high-volume batch embedding jobs, often exceeding the cost of self-hosted alternatives",
+    "Cannot be fine-tuned on domain-specific corpora, limiting adaptability to specialized vocabularies like legal, medical, or scientific text",
+    "Rate limits and quota restrictions can throttle large-scale ingestion pipelines, requiring complex retry and batching logic"
+  ],
+  "key_hyperparams": [
+    {
+      "name": "dimensions",
+      "default": 3072,
+      "note": "Output embedding dimension. Can be truncated to 256, 512, 1024, or 2048. Lower dimensions reduce storage but may hurt retrieval accuracy on hard negatives."
+    },
+    {
+      "name": "encoding_format",
+      "default": "float",
+      "note": "Output format: 'float' for standard 32-bit floats, 'base64' for compressed string encoding. Use 'base64' when transmitting embeddings over JSON to reduce payload size."
+    }
+  ],
+  "training_speed": "slow",
+  "inference_speed": "fast",
+  "memory_usage": "low",
+  "interpretability": "low",
+  "quick_start": "from openai import OpenAI\n\nclient = OpenAI()\nresponse = client.embeddings.create(\n    model='text-embedding-3-large',\n    input='The quick brown fox jumps over the lazy dog',\n    dimensions=1024,\n    encoding_format='float'\n)\nembedding = response.data[0].embedding\nprint(len(embedding))  # 1024",
+  "alternatives": [
+    {
+      "id": "gte-large",
+      "type": "model"
+    }
+  ]
+}

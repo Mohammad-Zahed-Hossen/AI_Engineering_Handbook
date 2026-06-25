@@ -1,0 +1,89 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://scikit-learn.org/stable/supervised_learning.html#supervised-learning"
+  ],
+  "id": "text-classification",
+  "name": "Text Classification Pipeline",
+  "type": "pipeline",
+  "category": "NLP",
+  "overview": "End-to-end pipeline from raw text to deployed classifier, covering EDA, preprocessing, feature extraction, model selection, training, evaluation, and export.",
+  "starter_stack": [
+    "pandas",
+    "scikit-learn",
+    "transformers",
+    "datasets"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "name": "Data Loading and EDA",
+      "what": "Load raw text data and inspect class distribution, text lengths, and data quality.",
+      "tools": [
+        "pandas",
+        "datasets"
+      ],
+      "decision": "Check class balance with value_counts; if the largest class exceeds 60% of the data, apply stratified sampling or class weighting before training."
+    },
+    {
+      "step": 2,
+      "name": "Preprocessing",
+      "what": "Clean and normalize text by lowercasing, removing punctuation, and tokenizing.",
+      "tools": [
+        "scikit-learn",
+        "regex",
+        "nltk"
+      ],
+      "decision": "Lowercase for TF-IDF baselines to reduce vocabulary size. For BERT fine-tuning, preserve original casing because the tokenizer is cased-aware."
+    },
+    {
+      "step": 3,
+      "name": "Feature Extraction",
+      "what": "Convert text into numerical features suitable for machine learning.",
+      "tools": [
+        "TfidfVectorizer",
+        "SentenceTransformer"
+      ],
+      "decision": "Use TF-IDF for datasets under 50K samples with clear keyword signals. Use dense embeddings for datasets above 50K or where semantic similarity matters more than exact keyword matching."
+    },
+    {
+      "step": 4,
+      "name": "Model Selection",
+      "what": "Choose a classification model that matches the feature representation and dataset size.",
+      "tools": [
+        "LogisticRegression",
+        "AutoModelForSequenceClassification"
+      ],
+      "decision": "LogisticRegression with TF-IDF as a fast baseline. Switch to BERT fine-tuning when the baseline F1 is below 0.85 and the dataset has at least 1000 labeled examples per class."
+    },
+    {
+      "step": 5,
+      "name": "Training and Evaluation",
+      "what": "Fit the model and evaluate on a held-out test set.",
+      "tools": [
+        "scikit-learn Pipeline",
+        "classification_report",
+        "confusion_matrix"
+      ],
+      "decision": "Always use a stratified train-test split with stratify=y to preserve class ratios. Report macro-F1 for imbalanced datasets and weighted-F1 for balanced datasets."
+    },
+    {
+      "step": 6,
+      "name": "Export",
+      "what": "Serialize the trained model and pipeline for deployment.",
+      "tools": [
+        "joblib",
+        "save_pretrained"
+      ],
+      "decision": "Use joblib for sklearn Pipelines to preserve the entire vectorizer-to-classifier flow. Use save_pretrained for HuggingFace models to export both tokenizer and weights."
+    }
+  ],
+  "common_failure_points": [
+    "Class imbalance where the majority class dominates accuracy but macro-F1 collapses, giving a false impression of model quality.",
+    "Label leakage from including metadata in the text that correlates with the target but will not be available at inference time.",
+    "Tokenization mismatch between TF-IDF vectorizer and BERT tokenizer, causing the same word to be split differently and producing incompatible feature spaces.",
+    "Overfitting on small datasets when using BERT without early stopping or data augmentation, resulting in high training accuracy but poor generalization.",
+    "Evaluation data leakage through preprocessing steps like stopword removal or TF-IDF fitting on the entire dataset before splitting, which silently biases the test set."
+  ]
+}

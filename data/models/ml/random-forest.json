@@ -1,0 +1,74 @@
+{
+  "created_at": "2026-06-24",
+  "updated_at": "2026-06-24",
+  "sources": [
+    "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html"
+  ],
+  "github_repo": "https://github.com/scikit-learn/scikit-learn",
+  "id": "random-forest",
+  "name": "Random Forest",
+  "category": "ml",
+  "problem_types": [
+    "classification",
+    "regression"
+  ],
+  "summary": "Ensemble of decision trees trained on bootstrap samples and random feature subsets. Reduces variance and overfitting by averaging individual tree estimators.",
+  "use_when": "Tabular datasets. High-cardinality feature sets requiring automated importances. Serves as a robust non-linear baseline.",
+  "avoid_when": "High-dimensional sparse data like text tf-idf or pixel images. Low latency production requirements. Massive scaling where LightGBM/XGBoost are faster.",
+  "pros": [
+    "Resilient to scaling issues, no normalization required",
+    "Handles missing values and categorical data structures natively",
+    "Outputs impurity-based or permutation-based feature importances",
+    "Reduced overfitting risk relative to individual decision trees"
+  ],
+  "cons": [
+    "Slow real-time inference due to traversing multiple deep trees",
+    "High VRAM/RAM footprint for large number of estimators",
+    "Lacks extrapolation capabilities beyond the training range boundaries"
+  ],
+  "key_hyperparams": [
+    {
+      "name": "n_estimators",
+      "default": 100,
+      "note": "Number of trees in forest. Scales linearly with training/inference latency. Usually stable at 200-500."
+    },
+    {
+      "name": "max_depth",
+      "default": null,
+      "note": "Maximum depth of trees. Defaults to fully grown. Set 8-15 to prune tree branches and reduce noise sensitivity."
+    },
+    {
+      "name": "max_features",
+      "default": "sqrt",
+      "note": "Size of random feature subsets at split nodes. 'sqrt' for classification, 0.33 for regression."
+    },
+    {
+      "name": "min_samples_leaf",
+      "default": 1,
+      "note": "Minimum data samples required in leaf nodes. Increase to 2-10 to prevent overfitting on outlier nodes."
+    }
+  ],
+  "training_speed": "medium",
+  "inference_speed": "medium",
+  "memory_usage": "high",
+  "interpretability": "medium",
+  "quick_start": "from sklearn.ensemble import RandomForestClassifier\n\nclf = RandomForestClassifier(\n    n_estimators=200,\n    max_depth=12,\n    max_features='sqrt',\n    min_samples_leaf=2,\n    random_state=42,\n    n_jobs=-1\n)\nclf.fit(X_train, y_train)\nimportances = clf.feature_importances_",
+  "alternatives": [
+    {
+      "id": "xgboost",
+      "type": "model"
+    },
+    {
+      "id": "lightgbm",
+      "type": "model"
+    },
+    {
+      "id": "extratreesclassifier",
+      "type": "model"
+    },
+    {
+      "id": "gradientboostingclassifier",
+      "type": "model"
+    }
+  ]
+}

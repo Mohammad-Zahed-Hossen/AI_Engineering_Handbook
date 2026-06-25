@@ -1,0 +1,84 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://xgboost.readthedocs.io/en/stable/"
+  ],
+  "official_docs": "https://xgboost.readthedocs.io/en/stable/",
+  "research_paper": "https://arxiv.org/abs/1603.02754",
+  "github_repo": "https://github.com/dmlc/xgboost",
+  "id": "xgboost",
+  "name": "XGBoost",
+  "category": "ml",
+  "problem_types": [
+    "classification",
+    "regression"
+  ],
+  "summary": "XGBoost implements gradient boosting with second-order Taylor expansion and built-in L1/L2 regularization to optimize the objective function using both first and second derivatives. It scales efficiently to large datasets through approximate split finding, column and row subsampling, and optional GPU acceleration.",
+  "use_when": "Tabular datasets with heterogeneous features requiring high predictive accuracy. Competitions and production systems where regularization and early stopping are critical. Datasets with missing values or sparse features that benefit from sparsity-aware split finding.",
+  "avoid_when": "Small datasets with fewer than 1,000 samples where simpler models suffice. Sub-millisecond latency inference requirements. Projects where minimal dependency footprint is required and scikit-learn is preferred.",
+  "pros": [
+    "Built-in L1 (alpha) and L2 (lambda) regularization prevents overfitting without manual feature engineering",
+    "Handles sparse data natively through a sparsity-aware split finding algorithm that skips missing values",
+    "Native GPU support via CUDA and external memory capability for datasets exceeding RAM",
+    "Cross-validation and early stopping are built into the training API, simplifying hyperparameter tuning",
+    "Monotonic constraints allow enforcing directional relationships between individual features and the target"
+  ],
+  "cons": [
+    "Hyperparameter sensitivity requires extensive tuning of n_estimators, learning_rate, and max_depth for optimal performance",
+    "Slower than LightGBM on large datasets due to level-wise tree growth and exact split finding",
+    "Default parameters often underfit; n_estimators and learning_rate must be co-tuned to achieve competitive accuracy",
+    "Native DMatrix format and additional API surface can be confusing for beginners migrating from pure scikit-learn"
+  ],
+  "key_hyperparams": [
+    {
+      "name": "n_estimators",
+      "default": 100,
+      "note": "Number of boosting rounds. Increase to 500-1000 with early stopping and a low learning_rate. Each additional round adds a new tree and scales linearly with training time."
+    },
+    {
+      "name": "max_depth",
+      "default": 6,
+      "note": "Maximum depth of each tree. Range 3-10. Lower values reduce overfitting but require more estimators to reach the same model capacity. Default 6 is a conservative balance."
+    },
+    {
+      "name": "learning_rate",
+      "default": 0.3,
+      "note": "Shrinkage factor applied to each new tree's contribution. Lower to 0.01-0.1 and increase n_estimators proportionally for better generalization and smoother convergence."
+    },
+    {
+      "name": "subsample",
+      "default": 1.0,
+      "note": "Fraction of training samples used to grow each tree. Set to 0.5-0.8 to introduce stochastic gradient boosting and reduce variance through row sampling."
+    },
+    {
+      "name": "colsample_bytree",
+      "default": 1.0,
+      "note": "Fraction of features sampled per tree. Set to 0.3-0.7 on high-dimensional data to prevent overfitting and speed up training by reducing split evaluation."
+    },
+    {
+      "name": "reg_lambda",
+      "default": 1.0,
+      "note": "L2 regularization penalty on leaf weights. Increase to 2-10 to penalize large leaf values and reduce model complexity without pruning tree depth."
+    }
+  ],
+  "training_speed": "medium",
+  "inference_speed": "fast",
+  "memory_usage": "medium",
+  "interpretability": "medium",
+  "quick_start": "from xgboost import XGBClassifier\n\nclf = XGBClassifier(\n    n_estimators=500,\n    max_depth=6,\n    learning_rate=0.1,\n    subsample=0.8,\n    colsample_bytree=0.8,\n    reg_lambda=1.0,\n    eval_metric='logloss'\n)\nclf.fit(X_train, y_train)\npreds = clf.predict(X_test)",
+  "alternatives": [
+    {
+      "id": "lightgbm",
+      "type": "model"
+    },
+    {
+      "id": "random-forest",
+      "type": "model"
+    },
+    {
+      "id": "gradientboostingclassifier",
+      "type": "model"
+    }
+  ]
+}

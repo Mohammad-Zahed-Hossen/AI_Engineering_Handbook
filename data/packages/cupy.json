@@ -1,0 +1,159 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://docs.cupy.dev/en/stable/"
+  ],
+  "official_docs": "https://docs.cupy.dev/en/stable/",
+  "github_repo": "https://github.com/cupy/cupy",
+  "id": "cupy",
+  "name": "CuPy",
+  "version": "13.0.0",
+  "install": "pip install cupy-cuda12x",
+  "import_as": "import cupy as cp",
+  "summary": "Drop-in GPU replacement for NumPy using CUDA, providing the same API surface with GPU-accelerated array operations for NVIDIA hardware.",
+  "sections": [
+    {
+      "name": "Array Creation",
+      "functions": [
+        {
+          "fn": "cp.array(obj)",
+          "purpose": "Create a GPU array from a Python list or NumPy array",
+          "example": "a = cp.array([1.0, 2.0, 3.0])",
+          "category": "creation"
+        },
+        {
+          "fn": "cp.zeros(shape)",
+          "purpose": "Return a new GPU array of given shape filled with zeros",
+          "example": "z = cp.zeros((3, 4))",
+          "category": "creation"
+        },
+        {
+          "fn": "cp.arange(start, stop, step)",
+          "purpose": "Return evenly spaced values within a given interval on the GPU",
+          "example": "r = cp.arange(0, 10, 2)",
+          "category": "creation"
+        },
+        {
+          "fn": "cp.eye(N)",
+          "purpose": "Return a 2-D identity matrix on the GPU",
+          "example": "i = cp.eye(5)",
+          "category": "creation"
+        }
+      ],
+      "gotchas": [
+        "Transferring data from CPU to GPU with cp.array() is synchronous and blocks the host until the copy completes; batch transfers to minimize overhead.",
+        "cp.empty() allocates uninitialized GPU memory and may contain garbage values from previous allocations; always initialize before use."
+      ]
+    },
+    {
+      "name": "Math Operations",
+      "functions": [
+        {
+          "fn": "cp.sum(a, axis)",
+          "purpose": "Sum of array elements over a given axis on the GPU",
+          "example": "s = cp.sum(a, axis=0)",
+          "category": "math"
+        },
+        {
+          "fn": "cp.mean(a, axis)",
+          "purpose": "Compute the arithmetic mean along the specified axis",
+          "example": "m = cp.mean(a, axis=1)",
+          "category": "math"
+        },
+        {
+          "fn": "cp.exp(x)",
+          "purpose": "Calculate the exponential of all elements in the input array",
+          "example": "e = cp.exp(x)",
+          "category": "math"
+        },
+        {
+          "fn": "cp.dot(a, b)",
+          "purpose": "Dot product of two arrays on the GPU",
+          "example": "d = cp.dot(a, b)",
+          "category": "math"
+        }
+      ],
+      "gotchas": [
+        "Integer division on CuPy follows the same behavior as NumPy; use cp.true_divide() to ensure float output when dividing integers.",
+        "Reduction operations like cp.sum() and cp.mean() return a 0-d GPU array, not a Python scalar; call .item() to transfer a single value to the host."
+      ]
+    },
+    {
+      "name": "Linear Algebra",
+      "functions": [
+        {
+          "fn": "cp.linalg.inv(a)",
+          "purpose": "Compute the inverse of a matrix on the GPU",
+          "example": "inv = cp.linalg.inv(a)",
+          "category": "linalg"
+        },
+        {
+          "fn": "cp.linalg.solve(a, b)",
+          "purpose": "Solve a linear matrix equation on the GPU",
+          "example": "x = cp.linalg.solve(a, b)",
+          "category": "linalg"
+        },
+        {
+          "fn": "cp.linalg.eigvals(a)",
+          "purpose": "Compute the eigenvalues of a general matrix",
+          "example": "w = cp.linalg.eigvals(a)",
+          "category": "linalg"
+        },
+        {
+          "fn": "cp.linalg.svd(a, full_matrices)",
+          "purpose": "Singular value decomposition on the GPU",
+          "example": "u, s, vh = cp.linalg.svd(a, full_matrices=False)",
+          "category": "linalg"
+        }
+      ],
+      "gotchas": [
+        "cp.linalg.solve() requires the coefficient matrix to be square and non-singular; singular matrices raise LinAlgError without a clear fallback.",
+        "Large SVD operations on the GPU can exhaust memory because intermediate buffers for U, S, and Vh are all allocated simultaneously; consider truncated SVD for tall matrices."
+      ]
+    },
+    {
+      "name": "FFT",
+      "functions": [
+        {
+          "fn": "cp.fft.fft(a, n)",
+          "purpose": "Compute the one-dimensional discrete Fourier Transform on the GPU",
+          "example": "f = cp.fft.fft(a, n=1024)",
+          "category": "fft"
+        },
+        {
+          "fn": "cp.fft.ifft(a)",
+          "purpose": "Compute the inverse one-dimensional discrete Fourier Transform",
+          "example": "a_reconstructed = cp.fft.ifft(f)",
+          "category": "fft"
+        },
+        {
+          "fn": "cp.fft.fft2(a, s)",
+          "purpose": "Compute the 2-dimensional discrete Fourier Transform on the GPU",
+          "example": "f2 = cp.fft.fft2(a, s=(256, 256))",
+          "category": "fft"
+        },
+        {
+          "fn": "cp.fft.fftshift(x)",
+          "purpose": "Shift the zero-frequency component to the center of the spectrum",
+          "example": "shifted = cp.fft.fftshift(x)",
+          "category": "fft"
+        }
+      ],
+      "gotchas": [
+        "FFT output length is determined by the input shape; padding or truncating with the n parameter changes the frequency resolution without warning.",
+        "cp.fft.fft() operates on the last axis by default; for batch FFT over a specific axis, use axis=1 explicitly to avoid silent dimension mismatches."
+      ]
+    }
+  ],
+  "alternatives": [
+    {
+      "id": "jax",
+      "type": "package"
+    },
+    {
+      "id": "numpy",
+      "type": "package"
+    }
+  ]
+}

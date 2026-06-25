@@ -1,0 +1,84 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://lightgbm.readthedocs.io/en/stable/"
+  ],
+  "official_docs": "https://lightgbm.readthedocs.io/en/stable/",
+  "research_paper": "https://papers.nips.cc/paper/2017/hash/6449f44a102fde848669bdd9eb6b76fa-Abstract.html",
+  "github_repo": "https://github.com/microsoft/LightGBM",
+  "id": "lightgbm",
+  "name": "LightGBM",
+  "category": "ml",
+  "problem_types": [
+    "classification",
+    "regression"
+  ],
+  "summary": "LightGBM uses histogram-based gradient boosting with leaf-wise tree growth, reducing memory usage and training time on large datasets by splitting the leaf with the maximum delta loss rather than growing level by level. It combines gradient-based one-side sampling and exclusive feature bundling to achieve state-of-the-art speed on tabular data.",
+  "use_when": "Large tabular datasets with millions of rows and hundreds of features. Production pipelines requiring fast training cycles and low memory usage. Datasets containing high-cardinality categorical features that can be passed natively without manual encoding.",
+  "avoid_when": "Small datasets with fewer than 10,000 samples where aggressive leaf-wise growth can overfit. Applications requiring deterministic results across different hardware or library versions. When exact split finding is needed rather than histogram-based approximation.",
+  "pros": [
+    "Fastest training speed among gradient boosting libraries on large tabular data due to histogram-based binning and leaf-wise growth",
+    "Native categorical feature support eliminates the need for one-hot encoding or manual ordinal encoding",
+    "Low memory footprint via histogram-based binning, exclusive feature bundling, and gradient-based one-side sampling",
+    "Supports distributed learning and GPU acceleration for training on massive datasets across multiple machines",
+    "Efficient handling of missing values without requiring explicit imputation or preprocessing"
+  ],
+  "cons": [
+    "Overfitting risk on small datasets due to aggressive leaf-wise growth that can create overly deep trees",
+    "Leaf-wise tree structure is harder to tune than level-wise XGBoost because num_leaves and max_depth interact non-linearly",
+    "Histogram binning can introduce approximation errors on features with extreme outliers or very sparse distributions",
+    "Fewer built-in regularization options compared to XGBoost, making it more reliant on early stopping and row sampling"
+  ],
+  "key_hyperparams": [
+    {
+      "name": "n_estimators",
+      "default": 100,
+      "note": "Number of boosting iterations. Use 100-1000 with early stopping. LightGBM often needs fewer trees than XGBoost to achieve equivalent accuracy because leaf-wise growth is more expressive."
+    },
+    {
+      "name": "num_leaves",
+      "default": 31,
+      "note": "Maximum number of leaves in one tree. Controls model complexity. Set to 20-50 for small datasets, up to 150 for large datasets. Keep num_leaves well below 2^(max_depth) to avoid overfitting."
+    },
+    {
+      "name": "learning_rate",
+      "default": 0.1,
+      "note": "Shrinkage rate applied to each tree's contribution. Lower to 0.05-0.1 and increase n_estimators for better regularization. Default 0.1 works well when paired with early stopping."
+    },
+    {
+      "name": "max_depth",
+      "default": -1,
+      "note": "Maximum tree depth. -1 means no limit. Set to 6-12 to constrain leaf-wise growth and prevent overfitting on small datasets, especially when num_leaves is large."
+    },
+    {
+      "name": "min_child_samples",
+      "default": 20,
+      "note": "Minimum number of data samples required in a leaf. Increase to 50-100 on noisy datasets to reduce overfitting on outlier nodes and improve generalization."
+    },
+    {
+      "name": "feature_fraction",
+      "default": 1.0,
+      "note": "Fraction of features selected per tree. Set to 0.8-0.9 to introduce feature bagging and reduce overfitting on high-dimensional data without sacrificing too much speed."
+    }
+  ],
+  "training_speed": "fast",
+  "inference_speed": "fast",
+  "memory_usage": "low",
+  "interpretability": "medium",
+  "quick_start": "from lightgbm import LGBMClassifier\n\nclf = LGBMClassifier(\n    n_estimators=500,\n    num_leaves=31,\n    learning_rate=0.1,\n    max_depth=-1,\n    min_child_samples=20,\n    feature_fraction=0.8,\n    verbose=-1\n)\nclf.fit(X_train, y_train)\npreds = clf.predict(X_test)",
+  "alternatives": [
+    {
+      "id": "xgboost",
+      "type": "model"
+    },
+    {
+      "id": "random-forest",
+      "type": "model"
+    },
+    {
+      "id": "gradientboostingclassifier",
+      "type": "model"
+    }
+  ]
+}

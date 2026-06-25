@@ -1,0 +1,63 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://huggingface.co/google/gemma-2-9b-it"
+  ],
+  "official_docs": "https://huggingface.co/google/gemma-2-9b-it",
+  "research_paper": "https://arxiv.org/abs/2408.00118",
+  "github_repo": "https://github.com/google/gemma.cpp",
+  "id": "gemma-2",
+  "name": "Gemma 2",
+  "category": "llm",
+  "problem_types": [
+    "generation"
+  ],
+  "summary": "Gemma 2 is Google's second-generation open-weights language model family, using interleaved local and global attention layers combined with knowledge distillation from larger teacher models. It is available in 2B and 9B parameter variants, with the 9B variant achieving competitive results against much larger models through efficient architecture design.",
+  "use_when": "Research and educational projects requiring fully open weights with permissive licensing. Edge deployment on devices with limited memory where the 2B variant can run efficiently. Multilingual tasks benefiting from Google's extensive pretraining corpus.",
+  "avoid_when": "Production applications requiring guaranteed API availability and enterprise SLAs. Tasks where the 9B parameter ceiling limits reasoning depth compared to 13B-70B models. Use cases requiring extensive community fine-tuning resources and LoRA adapter libraries.",
+  "pros": [
+    "Interleaved local and global attention layers reduce memory usage during training and inference compared to full global attention at every layer",
+    "Knowledge distillation from larger teacher models improves the 9B variant's performance beyond what naive scaling would predict",
+    "Fully open weights with permissive terms of use for research, commercial applications, and redistribution without usage caps",
+    "Strong performance on safety benchmarks with built-in safety filtering and responsible AI design principles from Google"
+  ],
+  "cons": [
+    "Smaller parameter count (2B and 9B) limits maximum reasoning capacity compared to 13B-70B competitors on complex mathematical and coding tasks",
+    "Limited fine-tuning ecosystem with fewer publicly available adapters, datasets, and community recipes compared to Llama and Mistral",
+    "Knowledge distillation can produce outputs that mimic teacher reasoning without genuine understanding, leading to plausible-sounding but incorrect answers",
+    "Google's distribution requires acceptance of terms and usage reporting for high-volume deployments, creating friction for enterprise adoption"
+  ],
+  "key_hyperparams": [
+    {
+      "name": "temperature",
+      "default": 1.0,
+      "note": "Sampling temperature. Gemma 2 uses a higher default (1.0) than many instruction models. Lower to 0.3-0.5 for deterministic tasks."
+    },
+    {
+      "name": "top_p",
+      "default": 0.95,
+      "note": "Nucleus sampling threshold. 0.95 provides good coverage. Lower to 0.8 for more focused factual responses."
+    },
+    {
+      "name": "max_new_tokens",
+      "default": 1024,
+      "note": "Maximum tokens to generate. Increase to 2048 for long-form writing. Total prompt plus output must fit within 8K context window."
+    }
+  ],
+  "training_speed": "slow",
+  "inference_speed": "fast",
+  "memory_usage": "medium",
+  "interpretability": "low",
+  "quick_start": "from transformers import AutoModelForCausalLM, AutoTokenizer\n\nmodel = AutoModelForCausalLM.from_pretrained(\n    'google/gemma-2-9b-it',\n    torch_dtype='auto',\n    device_map='auto'\n)\ntokenizer = AutoTokenizer.from_pretrained('google/gemma-2-9b-it')\n\nprompt = 'What is the capital of France?'\ninputs = tokenizer(prompt, return_tensors='pt').to(model.device)\noutputs = model.generate(**inputs, max_new_tokens=128, do_sample=True, temperature=1.0)",
+  "alternatives": [
+    {
+      "id": "mistral-7b",
+      "type": "model"
+    },
+    {
+      "id": "llama-3-8b",
+      "type": "model"
+    }
+  ]
+}

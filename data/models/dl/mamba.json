@@ -1,0 +1,73 @@
+{
+  "created_at": "2026-06-25",
+  "updated_at": "2026-06-25",
+  "sources": [
+    "https://arxiv.org/abs/2312.00752"
+  ],
+  "official_docs": "https://github.com/state-spaces/mamba",
+  "research_paper": "https://arxiv.org/abs/2312.00752",
+  "github_repo": "https://github.com/state-spaces/mamba",
+  "id": "mamba",
+  "name": "Mamba (SSM)",
+  "category": "dl",
+  "problem_types": [
+    "generation",
+    "classification"
+  ],
+  "summary": "Mamba is a State Space Model architecture that introduces selective state updates, allowing the model to selectively remember or forget information based on the input token, achieving linear scaling with sequence length rather than the quadratic attention complexity of Transformers. It maintains Transformer-level quality on long-context tasks while dramatically reducing inference memory and compute requirements.",
+  "use_when": "Long-context sequence modeling where linear complexity is essential. Streaming and real-time applications requiring constant memory per step. Research and production systems seeking Transformer alternatives with lower inference cost.",
+  "avoid_when": "Mature production systems with extensive Transformer tooling and pretrained checkpoints. Short-sequence tasks where the implementation overhead of selective SSMs does not justify marginal gains. Teams requiring battle-tested, well-documented training recipes with broad community support.",
+  "pros": [
+    "Linear O(n) complexity with respect to sequence length, enabling efficient processing of sequences with millions of tokens",
+    "Fast autoregressive inference with constant memory per step because it does not require key-value caching or attention matrices",
+    "Matches or exceeds Transformer quality on long-context benchmarks including language modeling, DNA sequencing, and audio processing",
+    "Efficient on long-context tasks where the quadratic cost of self-attention becomes prohibitive even with gradient checkpointing"
+  ],
+  "cons": [
+    "Experimental ecosystem with fewer production-ready libraries and integration points compared to the mature Transformer stack",
+    "Limited availability of large pretrained checkpoints relative to the thousands of Transformer models on Hugging Face Hub",
+    "Less tooling for standard workflows such as quantization, LoRA fine-tuning, and speculative decoding that are well-developed for Transformers",
+    "Harder to fine-tune than standard Transformers because selective SSM parameters require careful learning rate scheduling and warmup"
+  ],
+  "key_hyperparams": [
+    {
+      "name": "d_model",
+      "default": null,
+      "note": "Model dimension, the width of the hidden representation. Typical values are 768 for base models and 2048 for large models. Must be specified."
+    },
+    {
+      "name": "d_state",
+      "default": 16,
+      "note": "State dimension of the SSM. Controls the expressiveness of the state representation. Increase to 32-64 for tasks requiring fine-grained long-range dependency tracking."
+    },
+    {
+      "name": "d_conv",
+      "default": 4,
+      "note": "Convolution kernel size before the SSM projection. Governs local context capture. Default 4 captures short-range patterns; increase for tasks with local syntactic structure."
+    },
+    {
+      "name": "expand",
+      "default": 2,
+      "note": "Expansion factor applied to the inner dimension of the SSM block. Increase to 4 for larger models to boost capacity at the cost of memory and compute."
+    }
+  ],
+  "training_speed": "medium",
+  "inference_speed": "fast",
+  "memory_usage": "medium",
+  "interpretability": "low",
+  "quick_start": "from mamba_ssm import Mamba\n\nmodel = Mamba(\n    d_model=768,\n    d_state=16,\n    d_conv=4,\n    expand=2\n)\n\nimport torch\nx = torch.randn(1, 512, 768)  # batch, seq, d_model\ny = model(x)",
+  "alternatives": [
+    {
+      "id": "transformer",
+      "type": "model"
+    },
+    {
+      "id": "rwkv",
+      "type": "model"
+    },
+    {
+      "id": "lstm",
+      "type": "model"
+    }
+  ]
+}
