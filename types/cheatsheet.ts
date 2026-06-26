@@ -1,17 +1,5 @@
-import { BaseMeta } from "./meta";
+import { z } from 'zod';
+import { CheatsheetSchema, CheatsheetEntrySchema } from '@/lib/schemas/cheatsheet';
 
-export interface CheatsheetItem {
-  fn: string;
-  purpose: string;
-}
-
-export interface CheatsheetGroup {
-  group: string;
-  items: CheatsheetItem[];
-}
-
-export interface Cheatsheet extends BaseMeta {
-  id: string;
-  name: string;
-  groups: CheatsheetGroup[];
-}
+export type CheatsheetEntry = z.infer<typeof CheatsheetEntrySchema>;
+export type Cheatsheet = z.infer<typeof CheatsheetSchema>;

@@ -1,6 +1,6 @@
 {
   "created_at": "2026-06-24",
-  "updated_at": "2026-06-25",
+  "updated_at": "2026-06-26",
   "sources": [
     "https://arxiv.org/abs/2005.11401"
   ],
@@ -8,7 +8,7 @@
   "name": "Retrieval-Augmented Generation",
   "type": "pipeline",
   "category": "Inference",
-  "overview": "RAG retrieves relevant information from a local document index to augment LLM prompt contexts for factual answering.",
+  "overview": "RAG retrieves relevant chunks from a local document index and injects them into a prompt to ground LLM answers in your data. Use when the LLM lacks domain knowledge or you need citations.",
   "starter_stack": [
     "LangChain",
     "ChromaDB",
@@ -19,13 +19,22 @@
   "steps": [
     {
       "step": 1,
-      "name": "Ingestion & Chunking",
-      "what": "Parse documents and split text into smaller chunks.",
+      "name": "Ingestion and Chunking",
+      "what": "Parse source documents and split text into overlapping chunks for indexing.",
       "tools": [
         "PyMuPDF",
         "LangChain RecursiveCharacterTextSplitter"
       ],
-      "decision": "Use chunk size 512 with 10% overlap as baseline."
+      "decision": "Baseline: chunk_size=512, overlap=10%. Increase overlap to 20% for dense technical text where a fact can span a sentence boundary. Decrease chunk size for Q&A over short structured data.",
+      "uses": {
+        "packages": ["pandas"],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Chunk boundaries split sentences mid-fact — the retriever finds the chunk but the answer is in the adjacent half.",
+        "PDF extraction misses tables and inline equations — extract these separately or use a structured PDF parser."
+      ]
     },
     {
       "step": 2,
@@ -35,57 +44,109 @@
         "SentenceTransformers",
         "BAAI/bge-large-en-v1.5"
       ],
-      "decision": "Choose BAAI/bge-large-en-v1.5 for high-accuracy multilingual retrieval; for latency-sensitive systems, downsize to gte-large or enable ONNX quantization."
+      "decision": "BAAI/bge-large-en-v1.5 for accuracy. Downsize to gte-large or enable ONNX quantization if latency per query exceeds 50ms.",
+      "uses": {
+        "packages": ["numpy"],
+        "models": ["gte-large"],
+        "cheatsheets": ["numpy-cheatsheet"]
+      },
+      "failure_points": [
+        "Using a different embedding model at query time than at index time — produces incompatible vector spaces and zero relevant hits.",
+        "Embedding model max token length (typically 512) silently truncates long chunks, losing the tail of the text."
+      ]
     },
     {
       "step": 3,
       "name": "Vector Storage",
-      "what": "Store chunk embeddings in a vector database for efficient approximate nearest neighbor search.",
+      "what": "Store chunk embeddings in a vector database for approximate nearest neighbor search.",
       "tools": [
         "FAISS",
         "ChromaDB",
         "Qdrant"
       ],
-      "decision": "FAISS for single-machine in-memory search; ChromaDB for persistent local storage; Qdrant for multi-tenant cloud deployments with built-in filtering."
+      "decision": "FAISS for single-machine in-memory search. ChromaDB for persistent local storage with metadata filtering. Qdrant for multi-tenant cloud deployments with built-in payload filtering.",
+      "uses": {
+        "packages": ["numpy"],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "No versioning on the vector store — stale document embeddings persist after content updates and return outdated answers.",
+        "Missing metadata (source file, chunk index, timestamp) makes it impossible to verify or cite retrieved passages."
+      ]
     },
     {
       "step": 4,
-      "name": "Query Processing",
-      "what": "Embed the user's query using the same embedding model and retrieve top-k similar chunks.",
+      "name": "Query Embedding and Retrieval",
+      "what": "Embed the user query using the same model and retrieve top-k similar chunks.",
       "tools": [
         "SentenceTransformers",
         "FAISS",
         "ChromaDB"
       ],
-      "decision": "Start with top-k=5; increase to 10-20 for long-form queries. Always normalize query embeddings before search if the embedding model uses cosine similarity."
+      "decision": "Start with top-k=5. Increase to 10-20 for long-form synthesis queries. Normalize query embeddings if the embedding model uses cosine similarity.",
+      "uses": {
+        "packages": ["numpy"],
+        "models": ["gte-large"],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Query and index embeddings normalized differently — cosine similarity scores are unreliable when only one side is L2-normalized.",
+        "Retrieval returns semantically similar but topically wrong chunks when the query term is polysemous (e.g. 'bank' → river bank vs. financial bank)."
+      ]
     },
     {
       "step": 5,
       "name": "Reranking",
-      "what": "Score the retrieved chunks against the query with a cross-encoder to improve relevance ordering.",
+      "what": "Score retrieved chunks against the query with a cross-encoder to improve relevance ordering before generation.",
       "tools": [
         "BAAI/bge-reranker-large",
         "Cohere Rerank v3"
       ],
-      "decision": "Add a reranker when retrieval precision drops below 70% on held-out queries. Keep reranker top-n at 3-5 to avoid exceeding the LLM context window."
+      "decision": "Add a reranker when retrieval precision drops below 70% on held-out queries. Keep reranker top-n at 3-5 to avoid exceeding the LLM context window.",
+      "uses": {
+        "packages": ["numpy"],
+        "models": ["cohere-reranker-v3"],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Reranker top-n too high — all retrieved chunks fit in context but the LLM ignores the later ones due to attention sink effects.",
+        "Reranker latency not measured — cross-encoders can add 100-500ms per query at large top-k, bottlenecking the entire pipeline."
+      ]
     },
     {
       "step": 6,
       "name": "Generation",
-      "what": "Inject the retrieved context into a prompt template and call the LLM to generate a grounded answer.",
+      "what": "Inject retrieved context into a structured prompt template and call the LLM to produce a grounded answer.",
       "tools": [
         "LangChain",
         "meta-llama/Meta-Llama-3-8B-Instruct",
         "OpenAI GPT-4"
       ],
-      "decision": "Use a strict prompt template that separates context from the question. Limit context to 3000 tokens to leave room for the answer and system prompt."
+      "decision": "Use a strict prompt template that separates CONTEXT from QUESTION with explicit delimiters. Limit injected context to 3000 tokens to leave room for the system prompt and answer.",
+      "uses": {
+        "packages": [],
+        "models": ["llama-3-8b"],
+        "cheatsheets": ["transformers"]
+      },
+      "failure_points": [
+        "Hallucination when the LLM ignores the provided context and answers from parametric memory — add an explicit instruction: 'Answer only from the context above. If unsure, say so.'",
+        "Context window overflow from combined prompt + retrieved chunks — silently truncates the system prompt or the question itself."
+      ]
     }
   ],
+  "evaluation_checks": [
+    "Retrieval precision@5 >= 0.70 on a held-out question set",
+    "Answer groundedness: no claims in the answer absent from the retrieved context",
+    "End-to-end latency <= 2s for typical 5-chunk retrieval + generation"
+  ],
+  "next_links": ["fine-tuning-lora", "text-classification"],
   "common_failure_points": [
     "Chunk boundaries splitting sentences across semantic units, causing retrieval to miss half of a critical fact.",
     "Using a different embedding model at query time than at indexing time, producing incompatible vector spaces and zero relevant hits.",
     "Retrieving outdated document versions because the vector store lacks a versioning or timestamp filter.",
     "Hallucination when the LLM ignores the provided context and falls back on parametric knowledge due to a weakly structured prompt.",
     "Context window overflow because the combined prompt and retrieved chunks exceed the LLM's maximum token limit, causing silent truncation of the system prompt."
-  ]
+  ],
+  "aliases": ["retrieval augmented generation", "document qa", "document question answering", "knowledge base chat", "local llm with documents"]
 }

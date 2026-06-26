@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { BaseMetaSchema, ContentRefSchema } from './meta';
 
 export const RegistryTaskSchema = z.enum([
   'embedding',
@@ -12,20 +11,18 @@ export const RegistryTaskSchema = z.enum([
 ]);
 export type RegistryTask = z.infer<typeof RegistryTaskSchema>;
 
-export const ModelStatusSchema = z.enum(['active', 'experimental', 'deprecated']);
-export type ModelStatus = z.infer<typeof ModelStatusSchema>;
-
-export const RegistryModelSchema = BaseMetaSchema.extend({
+// Structured missing model reference for graph completeness
+export const MissingModelRefSchema = z.object({
+  type: z.literal('missing'),
   id: z.string(),
-  model_id: z.string(),
+  reason: z.string().optional(),
+});
+export type MissingModelRef = z.infer<typeof MissingModelRefSchema>;
+
+// Link field supports both string paths and structured missing references
+export const RegistryModelSchema = z.object({
+  id: z.string(),
   task: RegistryTaskSchema,
-  language: z.string(),
-  dimension: z.number().optional(),
-  use_case: z.string(),
   size_mb: z.number(),
-  status: ModelStatusSchema,
-  notes: z.string(),
-  quick_start: z.string(),
-  alternatives: z.array(ContentRefSchema),
-  last_verified: z.string(),
+  link: z.union([z.string(), MissingModelRefSchema]),
 });

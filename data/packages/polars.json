@@ -1,6 +1,6 @@
 {
   "created_at": "2026-06-25",
-  "updated_at": "2026-06-25",
+  "updated_at": "2026-06-26",
   "sources": [
     "https://docs.pola.rs/"
   ],
@@ -10,139 +10,91 @@
   "version": "0.20.0",
   "install": "pip install polars",
   "import_as": "import polars as pl",
-  "summary": "Blazing-fast DataFrame library written in Rust with a lazy execution engine, multithreaded and columnar by default for analytical workloads.",
-  "sections": [
+  "summary": "Rust-native DataFrame library with a lazy execution engine. Drop-in for pandas on large files where you need multithreaded columnar processing without spinning up a cluster.",
+  "tasks": [
     {
-      "name": "I/O",
-      "functions": [
-        {
-          "fn": "pl.read_csv(source)",
-          "purpose": "Read a CSV file into an eager DataFrame",
-          "example": "df = pl.read_csv('data.csv')",
-          "category": "io"
-        },
-        {
-          "fn": "pl.read_parquet(source)",
-          "purpose": "Read a Parquet file into a DataFrame with full type inference",
-          "example": "df = pl.read_parquet('data.parquet')",
-          "category": "io"
-        },
-        {
-          "fn": "df.write_csv(file)",
-          "purpose": "Write a DataFrame to a CSV file",
-          "example": "df.write_csv('output.csv')",
-          "category": "io"
-        },
-        {
-          "fn": "df.write_parquet(file)",
-          "purpose": "Write a DataFrame to a Parquet file with compression",
-          "example": "df.write_parquet('output.parquet', compression='zstd')",
-          "category": "io"
-        }
+      "task": "Load tabular data with lazy evaluation for large files",
+      "mental_trigger": "My file is too big for pandas or I want deferred, optimized I/O before filtering",
+      "syntax": "pl.scan_csv(source)\npl.scan_parquet(source)\npl.read_csv(source)\npl.read_parquet(source)",
+      "important_params": [
+        "source — file path or glob pattern e.g. 'data-*.csv'",
+        "infer_schema_length — rows to scan for type inference; set to None to scan all rows for mixed-type safety",
+        "schema — explicit schema dict to skip inference entirely"
       ],
+      "example": "# Lazy: only reads what the query needs\nlazy = pl.scan_csv('data.csv', infer_schema_length=None)\nresult = lazy.filter(pl.col('score') > 0.8).collect()\n\n# Eager for small files\ndf = pl.read_parquet('data.parquet')",
+      "use_when": "Files larger than available RAM. Multi-file glob reads. When you know you will filter aggressively before materializing.",
+      "avoid_when": "File fits in memory and you need pandas-compatible API for downstream libraries — polars Series are not pandas Series.",
+      "decision_notes": "Always prefer scan_* over read_* for files over ~500MB. The query optimizer pushes filters and column selections down to the I/O layer, often reading less than 10% of the file.",
       "gotchas": [
-        "pl.read_csv() infers types from the first 100 rows by default; columns with mixed types later in the file may fail with a SchemaError. Use infer_schema_length=None to scan the full file.",
-        "Polars uses eager I/O by default; for files larger than RAM, use pl.scan_csv() or pl.scan_parquet() to build a lazy query plan and avoid loading everything into memory."
-      ]
+        "pl.read_csv infers types from the first 100 rows by default; mixed-type columns later in the file raise a SchemaError. Pass infer_schema_length=None to scan all rows.",
+        "Lazy frames do not execute until .collect() — intermediate results cannot be printed or inspected without materializing."
+      ],
+      "official_docs": "https://docs.pola.rs/api/python/stable/reference/io.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
     },
     {
-      "name": "Selection and Filtering",
-      "functions": [
-        {
-          "fn": "df.select(exprs)",
-          "purpose": "Select columns by name or expression from a DataFrame",
-          "example": "df.select(['name', 'age'])",
-          "category": "selection"
-        },
-        {
-          "fn": "df.filter(expr)",
-          "purpose": "Filter rows based on a boolean expression",
-          "example": "df.filter(pl.col('age') > 30)",
-          "category": "filtering"
-        },
-        {
-          "fn": "df.with_columns(exprs)",
-          "purpose": "Add or modify columns without mutating the original DataFrame",
-          "example": "df.with_columns((pl.col('a') + 1).alias('b'))",
-          "category": "mutation"
-        },
-        {
-          "fn": "df.drop(columns)",
-          "purpose": "Remove one or more columns from a DataFrame",
-          "example": "df.drop(['temp', 'intermediate'])",
-          "category": "selection"
-        }
+      "task": "Select columns and filter rows with expressions",
+      "mental_trigger": "I need to select a subset of columns or filter rows using a condition in Polars",
+      "syntax": "df.select([col_names])\ndf.filter(pl.col('name') > value)\ndf.with_columns((pl.col('a') + 1).alias('b'))\ndf.drop([col_names])",
+      "important_params": [
+        "pl.col('name') — column reference inside any expression",
+        "alias('new_name') — rename the result of an expression",
+        "pl.lit(value) — wrap a scalar as a Polars expression"
       ],
+      "example": "result = (\n    df\n    .filter(pl.col('age') > 30)\n    .select(['name', 'score'])\n    .with_columns((pl.col('score') * 100).alias('pct_score'))\n)",
+      "use_when": "Any time you need to filter rows, add derived columns, or reduce column count in a Polars DataFrame. Chain operations for optimizer efficiency.",
+      "avoid_when": "Mixing with pandas ops in the same pipeline — convert once at the boundary using df.to_pandas() or pd.from_polars(df).",
+      "decision_notes": "Polars DataFrames are immutable — every operation returns a new DataFrame. This prevents accidental mutation but means you must always reassign the result.",
       "gotchas": [
-        "Polars DataFrames are immutable; methods like with_columns() return a new DataFrame rather than modifying in place. Reassign the result to a variable.",
-        "Column expressions in filter() are lazy and must use pl.col() references; passing a plain Python boolean will not filter rows and may raise a TypeError."
-      ]
+        "Filter expressions must use pl.col() references — passing a Python boolean or a pandas mask raises a TypeError.",
+        "with_columns() does not modify in place; always reassign: df = df.with_columns(...)."
+      ],
+      "official_docs": "https://docs.pola.rs/api/python/stable/reference/dataframe/api/polars.DataFrame.filter.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
     },
     {
-      "name": "GroupBy and Aggregation",
-      "functions": [
-        {
-          "fn": "df.group_by(by)",
-          "purpose": "Group rows by one or more columns for aggregation",
-          "example": "df.group_by('category').agg(pl.col('sales').sum())",
-          "category": "aggregation"
-        },
-        {
-          "fn": "pl.col(name).agg.sum()",
-          "purpose": "Sum aggregation expression for a column",
-          "example": "df.group_by('id').agg(pl.col('value').sum().alias('total'))",
-          "category": "aggregation"
-        },
-        {
-          "fn": "pl.col(name).agg.mean()",
-          "purpose": "Mean aggregation expression for a column",
-          "example": "df.group_by('region').agg(pl.col('score').mean().alias('avg_score'))",
-          "category": "aggregation"
-        },
-        {
-          "fn": "pl.col(name).agg.count()",
-          "purpose": "Count aggregation expression for a column",
-          "example": "df.group_by('status').agg(pl.col('id').count().alias('count'))",
-          "category": "aggregation"
-        }
+      "task": "Group and aggregate data",
+      "mental_trigger": "I need per-group statistics: sum, mean, count across one or more key columns",
+      "syntax": "df.group_by(by).agg([exprs])\npl.col('col').sum()\npl.col('col').mean()\npl.col('col').count()",
+      "important_params": [
+        "by — column name or list of column names",
+        "maintain_order=True — preserve input row order in group results",
+        "exprs — list of aggregation expressions per column"
       ],
+      "example": "result = (\n    df.group_by('region')\n    .agg([\n        pl.col('sales').sum().alias('total_sales'),\n        pl.col('profit').mean().alias('avg_profit'),\n        pl.col('id').count().alias('n'),\n    ])\n)",
+      "use_when": "Computing per-class statistics, feature aggregation per entity, rolling window summaries. Faster than pandas groupby on large datasets.",
+      "avoid_when": "You need a deterministic group row order without setting maintain_order=True — Polars group_by output order is undefined by default.",
+      "decision_notes": "Polars group_by is multithreaded and does not require sort-before-group like some SQL engines. For nullable columns, add .fill_null(0) inside the aggregation expression for deterministic results.",
       "gotchas": [
-        "Polars does not preserve row order after group_by() by default; use maintain_order=True if downstream logic depends on the original group sequence.",
-        "Aggregating on nullable columns without handling nulls explicitly can produce unexpected results; use fill_null() inside the aggregation expression for deterministic behavior."
-      ]
+        "group_by does not preserve row order; set maintain_order=True if downstream code depends on group sequence.",
+        "Aggregating nullable columns without fill_null produces null aggregates that silently propagate through subsequent computations."
+      ],
+      "official_docs": "https://docs.pola.rs/api/python/stable/reference/dataframe/api/polars.DataFrame.group_by.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
     },
     {
-      "name": "Lazy API",
-      "functions": [
-        {
-          "fn": "pl.scan_csv(source)",
-          "purpose": "Create a lazy DataFrame from a CSV file without loading data into memory",
-          "example": "lazy_df = pl.scan_csv('big_data.csv')",
-          "category": "lazy"
-        },
-        {
-          "fn": "df.lazy()",
-          "purpose": "Convert an eager DataFrame to a lazy DataFrame for query optimization",
-          "example": "lazy_df = df.lazy()",
-          "category": "lazy"
-        },
-        {
-          "fn": "lazy_df.collect()",
-          "purpose": "Execute the lazy query plan and materialize the result as an eager DataFrame",
-          "example": "result = lazy_df.filter(pl.col('a') > 0).collect()",
-          "category": "lazy"
-        },
-        {
-          "fn": "lazy_df.fetch(n_rows)",
-          "purpose": "Execute the lazy query plan on a small subset of data for fast inspection",
-          "example": "preview = lazy_df.fetch(100)",
-          "category": "lazy"
-        }
+      "task": "Build and execute a lazy query pipeline",
+      "mental_trigger": "I want to chain multiple operations and let Polars optimize the execution plan before reading any data",
+      "syntax": "pl.scan_csv(source)\n.filter(expr)\n.select(cols)\n.collect()\n\nlazy_df.fetch(n_rows)  # test on small subset",
+      "important_params": [
+        "collect() — materializes the lazy plan into an eager DataFrame",
+        "fetch(n) — execute plan on first n rows only; useful for testing",
+        "streaming=True in collect() — for datasets exceeding RAM"
       ],
+      "example": "# Build the full plan, execute once\nresult = (\n    pl.scan_parquet('big/*.parquet')\n    .filter(pl.col('label') == 1)\n    .select(['text', 'label', 'score'])\n    .with_columns(pl.col('score').log().alias('log_score'))\n    .collect(streaming=True)    # out-of-core for huge files\n)\n\n# Test on 100 rows before collecting millions\npreview = pl.scan_csv('big.csv').filter(pl.col('x') > 0).fetch(100)",
+      "use_when": "Any multi-step transformation on large files where you want the optimizer to eliminate unnecessary column reads and row scans automatically.",
+      "avoid_when": "You need to inspect intermediate results at each step — lazy frames cannot be printed without collect() which defeats lazy evaluation.",
+      "decision_notes": "fetch(n) is the correct way to test a lazy pipeline without materializing everything. Use collect(streaming=True) for files that exceed RAM — it processes in fixed-size batches.",
       "gotchas": [
-        "Lazy queries are only optimized when collect() is called; intermediate transformations on a LazyFrame do not trigger computation and cannot be inspected for correctness until materialized.",
-        "pl.scan_csv() on a remote URL will download the entire file during schema inference unless schema is provided explicitly; large remote files should be cached locally before scanning."
-      ]
+        "Operations are not validated until collect() is called — a typo in a column name raises an error only at execution time, not at chain time.",
+        "df.lazy() on an already-eager DataFrame is valid but adds unnecessary overhead; start from scan_* directly for large files."
+      ],
+      "official_docs": "https://docs.pola.rs/user-guide/lazy/",
+      "related_workflows": [],
+      "related_cheatsheets": []
     }
   ],
   "alternatives": [
@@ -152,6 +104,10 @@
     },
     {
       "id": "dask",
+      "type": "package"
+    },
+    {
+      "id": "numpy",
       "type": "package"
     }
   ]

@@ -112,57 +112,73 @@ export default function Sidebar({
         )}
 
         {/* Models Library */}
-        <div className={sectionHeadingClass}>Models Library</div>
+        {(mlModels.length > 0 || dlModels.length > 0 || llmModels.length > 0) && (
+          <>
+            <div className={sectionHeadingClass}>Models Library</div>
 
-        <div className="pl-2.5 mt-1.5 text-[9px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('ml')}>
-          {expanded === 'ml' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-          <span>Machine Learning</span>
-          <span className="ml-auto text-[8px] bg-muted px-1 rounded text-muted-foreground">{mlModels.length}</span>
-        </div>
-        {expanded === 'ml' && (
-          <ul className="space-y-0.5 pl-2 border-l border-sidebar-border ml-2.5">
-            {mlModels.map((m) => (
-              <li key={m.id}>
-                <Link href={`/models/ml/${m.id}`} className={linkClass(`/models/ml/${m.id}`)}>
-                  {m.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+            {mlModels.length > 0 && (
+              <>
+                <div className="pl-2.5 mt-1.5 text-[9px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('ml')}>
+                  {expanded === 'ml' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                  <span>Machine Learning</span>
+                  <span className="ml-auto text-[8px] bg-muted px-1 rounded text-muted-foreground">{mlModels.length}</span>
+                </div>
+                {expanded === 'ml' && (
+                  <ul className="space-y-0.5 pl-2 border-l border-sidebar-border ml-2.5">
+                    {mlModels.map((m) => (
+                      <li key={m.id}>
+                        <Link href={`/models/ml/${m.id}`} className={linkClass(`/models/ml/${m.id}`)}>
+                          {m.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </>
+            )}
 
-        <div className="pl-2.5 mt-2.5 text-[9px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('dl')}>
-          {expanded === 'dl' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-          <span>Deep Learning</span>
-          <span className="ml-auto text-[8px] bg-muted px-1 rounded text-muted-foreground">{dlModels.length}</span>
-        </div>
-        {expanded === 'dl' && (
-          <ul className="space-y-0.5 pl-2 border-l border-sidebar-border ml-2.5">
-            {dlModels.map((m) => (
-              <li key={m.id}>
-                <Link href={`/models/dl/${m.id}`} className={linkClass(`/models/dl/${m.id}`)}>
-                  {m.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+            {dlModels.length > 0 && (
+              <>
+                <div className="pl-2.5 mt-2.5 text-[9px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('dl')}>
+                  {expanded === 'dl' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                  <span>Deep Learning</span>
+                  <span className="ml-auto text-[8px] bg-muted px-1 rounded text-muted-foreground">{dlModels.length}</span>
+                </div>
+                {expanded === 'dl' && (
+                  <ul className="space-y-0.5 pl-2 border-l border-sidebar-border ml-2.5">
+                    {dlModels.map((m) => (
+                      <li key={m.id}>
+                        <Link href={`/models/dl/${m.id}`} className={linkClass(`/models/dl/${m.id}`)}>
+                          {m.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </>
+            )}
 
-        <div className="pl-2.5 mt-2.5 text-[9px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('llm')}>
-          {expanded === 'llm' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-          <span>Large Language Models</span>
-          <span className="ml-auto text-[8px] bg-muted px-1 rounded text-muted-foreground">{llmModels.length}</span>
-        </div>
-        {expanded === 'llm' && (
-          <ul className="space-y-0.5 pl-2 border-l border-sidebar-border ml-2.5">
-            {llmModels.map((m) => (
-              <li key={m.id}>
-                <Link href={`/models/llm/${m.id}`} className={linkClass(`/models/llm/${m.id}`)}>
-                  {m.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
+            {llmModels.length > 0 && (
+              <>
+                <div className="pl-2.5 mt-2.5 text-[9px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('llm')}>
+                  {expanded === 'llm' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                  <span>Large Language Models</span>
+                  <span className="ml-auto text-[8px] bg-muted px-1 rounded text-muted-foreground">{llmModels.length}</span>
+                </div>
+                {expanded === 'llm' && (
+                  <ul className="space-y-0.5 pl-2 border-l border-sidebar-border ml-2.5">
+                    {llmModels.map((m) => (
+                      <li key={m.id}>
+                        <Link href={`/models/llm/${m.id}`} className={linkClass(`/models/llm/${m.id}`)}>
+                          {m.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </>
+            )}
+          </>
         )}
 
         {/* Model Registries */}

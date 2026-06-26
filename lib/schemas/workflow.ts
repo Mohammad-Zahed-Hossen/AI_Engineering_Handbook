@@ -10,6 +10,12 @@ export const WorkflowStepSchema = z.object({
   what: z.string(),
   tools: z.array(z.string()),
   decision: z.string(),
+  uses: z.object({
+    packages: z.array(z.string()),
+    models: z.array(z.string()),
+    cheatsheets: z.array(z.string()),
+  }),
+  failure_points: z.array(z.string()),
 });
 
 export const WorkflowSchema = BaseMetaSchema.extend({
@@ -21,4 +27,6 @@ export const WorkflowSchema = BaseMetaSchema.extend({
   starter_stack: z.array(z.string()),
   steps: z.array(WorkflowStepSchema),
   common_failure_points: z.array(z.string()),
+  evaluation_checks: z.array(z.string()).optional(),
+  next_links: z.array(z.string()).optional(),
 });

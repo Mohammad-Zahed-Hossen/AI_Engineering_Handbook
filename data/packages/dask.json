@@ -1,6 +1,6 @@
 {
   "created_at": "2026-06-25",
-  "updated_at": "2026-06-25",
+  "updated_at": "2026-06-26",
   "sources": [
     "https://docs.dask.org/en/stable/"
   ],
@@ -10,139 +10,68 @@
   "version": "2024.1.0",
   "install": "pip install dask[complete]",
   "import_as": "import dask.dataframe as dd\nimport dask.array as da",
-  "summary": "Parallel computing library scaling Python code from single machines to clusters, providing lazy Pandas and NumPy-compatible APIs for out-of-core computation.",
-  "sections": [
+  "summary": "Parallel and out-of-core computing for Python. Provides lazy pandas and NumPy-compatible APIs that scale from a single machine to a cluster without rewriting code.",
+  "tasks": [
     {
-      "name": "Dask DataFrame",
-      "functions": [
-        {
-          "fn": "dd.read_csv(filepath)",
-          "purpose": "Read CSV files into a Dask DataFrame partitioned for parallel processing",
-          "example": "df = dd.read_csv('data-*.csv')",
-          "category": "io"
-        },
-        {
-          "fn": "dd.from_pandas(data, npartitions)",
-          "purpose": "Convert a Pandas DataFrame into a Dask DataFrame with specified partitions",
-          "example": "ddf = dd.from_pandas(pdf, npartitions=4)",
-          "category": "creation"
-        },
-        {
-          "fn": "ddf.compute()",
-          "purpose": "Execute the lazy task graph and return a Pandas DataFrame",
-          "example": "result = ddf.groupby('key').value.sum().compute()",
-          "category": "execution"
-        },
-        {
-          "fn": "ddf.persist()",
-          "purpose": "Execute and persist the result in distributed memory for repeated access",
-          "example": "ddf = ddf[dff.value > 0].persist()",
-          "category": "execution"
-        }
+      "task": "Read and process datasets too large for RAM",
+      "mental_trigger": "My CSV or Parquet dataset doesn't fit in memory and pandas read_csv runs OOM",
+      "syntax": "dd.read_csv(filepath_or_glob)\ndd.read_parquet(filepath)\nddf.filter_operation()\nddf.compute()",
+      "important_params": [
+        "filepath — glob pattern like 'data-*.csv' to read multiple files as partitions",
+        "blocksize — size of each partition in bytes e.g. '128MB'; tune to worker memory",
+        "dtype — dict of column types to prevent inference errors across partitions"
       ],
+      "example": "import dask.dataframe as dd\n\nddf = dd.read_csv('data-*.csv', dtype={'score': float, 'label': int})\n\n# Operations are lazy until .compute()\nresult = ddf[ddf['score'] > 0.8]['label'].value_counts().compute()",
+      "use_when": "Files that exceed RAM. Multi-file glob processing. When you want pandas-compatible API without loading everything into memory.",
+      "avoid_when": "Data fits in memory — pandas is faster for in-memory work because it has no partitioning overhead. For analytical workloads on very large files, consider Polars with streaming instead.",
+      "decision_notes": "Dask operations are entirely lazy. Nothing executes until .compute() is called. Forgetting .compute() is the single most common mistake — you get a Dask object back, not data.",
       "gotchas": [
-        "Dask DataFrame operations are lazy and do not execute until compute() is called; missing .compute() will return a Dask object instead of actual data, causing silent downstream errors.",
-        "Column assignment in Dask DataFrames requires map_partitions() or explicit Dask-aware operations; direct column assignment like df['new'] = series is not supported and raises an error."
-      ]
+        "All operations return lazy Dask objects; forgetting .compute() silently returns a task graph object that passes type checks but contains no actual data.",
+        "Column assignment (ddf['new'] = series) is not supported in Dask DataFrames — use ddf.assign(new=expr) or map_partitions."
+      ],
+      "official_docs": "https://docs.dask.org/en/stable/dataframe.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
     },
     {
-      "name": "Dask Array",
-      "functions": [
-        {
-          "fn": "da.from_array(x, chunks)",
-          "purpose": "Create a Dask array from a NumPy array with specified chunk sizes",
-          "example": "arr = da.from_array(np.ones((1000, 1000)), chunks=(500, 500))",
-          "category": "creation"
-        },
-        {
-          "fn": "da.random.random(size, chunks)",
-          "purpose": "Generate a random Dask array with given shape and chunk sizes",
-          "example": "arr = da.random.random((10000, 10000), chunks=(1000, 1000))",
-          "category": "creation"
-        },
-        {
-          "fn": "da.sum(a, axis)",
-          "purpose": "Sum of array elements over a given axis, computed in parallel across chunks",
-          "example": "s = da.sum(arr, axis=0).compute()",
-          "category": "math"
-        },
-        {
-          "fn": "da.dot(a, b)",
-          "purpose": "Dot product of two Dask arrays, chunking over the contracted dimension",
-          "example": "result = da.dot(a, b).compute()",
-          "category": "math"
-        }
+      "task": "Parallelize NumPy array operations across chunks",
+      "mental_trigger": "I have a massive NumPy array or need to parallelize reduction/matrix ops across multiple CPU cores",
+      "syntax": "da.from_array(numpy_arr, chunks=chunk_size)\nda.random.random(size, chunks=chunk_size)\nda.sum(arr, axis)\nresult = computation.compute()",
+      "important_params": [
+        "chunks — size of each chunk per dimension e.g. (1000, 1000) or '128MB'",
+        "rechunk(chunks) — repartition after loading if chunk sizes are irregular"
       ],
+      "example": "import dask.array as da\nimport numpy as np\n\nnp_arr = np.random.rand(100_000, 1000)\nda_arr = da.from_array(np_arr, chunks=(10_000, 1000))  # 10 partitions along axis 0\n\nmean_per_col = da.mean(da_arr, axis=0).compute()       # parallel reduction",
+      "use_when": "NumPy reductions or element-wise ops on arrays that exceed RAM, or when you want to use all CPU cores for embarrassingly parallel array operations.",
+      "avoid_when": "Chunks smaller than 1MB — task overhead dominates. Highly irregular access patterns like fancy indexing — rechunking will kill performance.",
+      "decision_notes": "Chunk size is the most critical tuning parameter. Target 100MB per chunk for CPU workers, 500MB–1GB per chunk for I/O-bound work. Use rechunk() to normalize after loading.",
       "gotchas": [
-        "Dask Array chunk sizes significantly impact performance; chunks smaller than 1MB cause excessive task overhead, while chunks larger than 100MB may exceed worker memory limits.",
-        "Mixed chunk sizes along an axis prevent certain operations from optimizing properly; use rechunk() to regularize chunk shapes before reduction operations like sum() or mean()."
-      ]
+        "Chunks smaller than 1MB create excessive task overhead and are slower than single-threaded NumPy.",
+        "Mixed chunk sizes along an axis prevent fusion of reduction operations — always rechunk to uniform sizes before sum or mean."
+      ],
+      "official_docs": "https://docs.dask.org/en/stable/array.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
     },
     {
-      "name": "Scheduler and Compute",
-      "functions": [
-        {
-          "fn": "dask.compute(*args)",
-          "purpose": "Compute multiple Dask collections simultaneously, sharing intermediate results",
-          "example": "x, y = dask.compute(arr1, arr2)",
-          "category": "execution"
-        },
-        {
-          "fn": "dask.delayed(func)",
-          "purpose": "Decorator to convert a Python function into a lazy Dask task",
-          "example": "delayed_add = dask.delayed(add)(1, 2)",
-          "category": "task-graph"
-        },
-        {
-          "fn": "dask.visualize(obj)",
-          "purpose": "Render the task graph for a Dask collection to a file or inline",
-          "example": "ddf.visualize(filename='task-graph.svg')",
-          "category": "diagnostics"
-        },
-        {
-          "fn": "dask.config.set(scheduler)",
-          "purpose": "Configure the default scheduler for Dask computations",
-          "example": "dask.config.set(scheduler='processes')",
-          "category": "configuration"
-        }
+      "task": "Wrap arbitrary Python functions for parallel execution",
+      "mental_trigger": "I have a plain Python function I want to run in parallel over a list of inputs without writing multiprocessing code",
+      "syntax": "dask.delayed(func)(args)\ndask.compute(*delayed_list)\ndask.visualize(obj)",
+      "important_params": [
+        "scheduler — 'threads' (I/O), 'processes' (CPU), 'synchronous' (debug)",
+        "pure=True — tells Dask the function has no side effects, enabling caching"
       ],
+      "example": "import dask\n\n@dask.delayed\ndef process(filepath):\n    import pandas as pd\n    df = pd.read_csv(filepath)\n    return df['score'].mean()\n\nfiles = ['a.csv', 'b.csv', 'c.csv']\nresults = dask.compute(*[process(f) for f in files])  # parallel",
+      "use_when": "Parallelizing existing functions over lists of inputs. Processing a directory of files. Running embarrassingly parallel preprocessing pipelines.",
+      "avoid_when": "Functions with shared mutable state, database connections, or GPU resources — these do not serialize cleanly across Dask workers.",
+      "decision_notes": "dask.delayed is the lowest-friction way to parallelize arbitrary Python code. For data that fits in pandas/NumPy, it outperforms multiprocessing.Pool because Dask avoids repeated process spawn overhead.",
       "gotchas": [
-        "dask.delayed() does not handle complex Python objects well; passing large Pandas DataFrames or unserializable objects between delayed tasks causes serialization overhead or crashes.",
-        "Using the synchronous scheduler with dask.compute() on large workloads blocks the main thread; switch to 'threads' or 'processes' for I/O-bound work, or use a distributed Client for clusters."
-      ]
-    },
-    {
-      "name": "Diagnostics",
-      "functions": [
-        {
-          "fn": "client.dashboard_link",
-          "purpose": "Property returning the URL to the Dask distributed dashboard for monitoring",
-          "example": "print(client.dashboard_link)",
-          "category": "monitoring"
-        },
-        {
-          "fn": "client.gather(futures)",
-          "purpose": "Collect results from distributed futures into the local process",
-          "example": "results = client.gather(futures)",
-          "category": "execution"
-        },
-        {
-          "fn": "client.submit(func, *args)",
-          "purpose": "Submit a function to the scheduler for execution on a worker",
-          "example": "future = client.submit(process_chunk, data_chunk)",
-          "category": "execution"
-        },
-        {
-          "fn": "client.restart()",
-          "purpose": "Restart all workers, clearing their memory and state",
-          "example": "client.restart()",
-          "category": "management"
-        }
+        "dask.delayed functions must be serializable — closures that capture large objects or database connections fail at worker spawn time.",
+        "Using the synchronous scheduler (default in notebooks) runs tasks sequentially — switch to 'threads' or 'processes' for actual parallelism."
       ],
-      "gotchas": [
-        "Calling client.gather() on large distributed results can exhaust local memory if the aggregated output exceeds the client machine's RAM; use to_csv() or write to disk on workers instead.",
-        "client.restart() clears all worker memory and cancels running computations without warning; any unpersisted intermediate results are lost and must be recomputed from scratch."
-      ]
+      "official_docs": "https://docs.dask.org/en/stable/delayed.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
     }
   ],
   "alternatives": [
@@ -152,6 +81,10 @@
     },
     {
       "id": "pandas",
+      "type": "package"
+    },
+    {
+      "id": "numpy",
       "type": "package"
     }
   ]

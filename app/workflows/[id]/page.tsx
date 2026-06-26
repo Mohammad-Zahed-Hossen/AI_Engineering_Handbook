@@ -30,7 +30,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
     <ContentPageLayout
       breadcrumbs={[
         { label: 'Home', href: '/' },
-        { label: 'Workflows', href: '/workflows/rag' },
+        { label: 'Workflows', href: '/workflows' },
         { label: workflow.name },
       ]}
       toc={[

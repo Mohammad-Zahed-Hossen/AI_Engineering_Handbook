@@ -1,6 +1,6 @@
 {
   "created_at": "2026-06-25",
-  "updated_at": "2026-06-25",
+  "updated_at": "2026-06-26",
   "sources": [
     "https://docs.cupy.dev/en/stable/"
   ],
@@ -10,139 +10,69 @@
   "version": "13.0.0",
   "install": "pip install cupy-cuda12x",
   "import_as": "import cupy as cp",
-  "summary": "Drop-in GPU replacement for NumPy using CUDA, providing the same API surface with GPU-accelerated array operations for NVIDIA hardware.",
-  "sections": [
+  "summary": "Drop-in GPU replacement for NumPy using CUDA. Same API, all operations execute on NVIDIA GPU memory. Use when NumPy is the bottleneck and you have VRAM headroom.",
+  "tasks": [
     {
-      "name": "Array Creation",
-      "functions": [
-        {
-          "fn": "cp.array(obj)",
-          "purpose": "Create a GPU array from a Python list or NumPy array",
-          "example": "a = cp.array([1.0, 2.0, 3.0])",
-          "category": "creation"
-        },
-        {
-          "fn": "cp.zeros(shape)",
-          "purpose": "Return a new GPU array of given shape filled with zeros",
-          "example": "z = cp.zeros((3, 4))",
-          "category": "creation"
-        },
-        {
-          "fn": "cp.arange(start, stop, step)",
-          "purpose": "Return evenly spaced values within a given interval on the GPU",
-          "example": "r = cp.arange(0, 10, 2)",
-          "category": "creation"
-        },
-        {
-          "fn": "cp.eye(N)",
-          "purpose": "Return a 2-D identity matrix on the GPU",
-          "example": "i = cp.eye(5)",
-          "category": "creation"
-        }
+      "task": "Move data between CPU and GPU",
+      "mental_trigger": "I have a NumPy array and need to run operations on GPU, or I need to bring GPU results back to CPU",
+      "syntax": "cp.array(numpy_arr)\ncp.asarray(numpy_arr)\nnumpy_arr = cp.asnumpy(gpu_arr)\nnumpy_arr = gpu_arr.get()",
+      "important_params": [
+        "dtype — specify to avoid unexpected upcasting during transfer",
+        "stream — CuPy stream for async transfer overlap with compute"
       ],
+      "example": "import numpy as np\nimport cupy as cp\n\nx_cpu = np.random.rand(10000, 512).astype(np.float32)\nx_gpu = cp.asarray(x_cpu)          # CPU → GPU\n\nresult_gpu = cp.dot(x_gpu, x_gpu.T)\nresult_cpu = result_gpu.get()       # GPU → CPU",
+      "use_when": "You need the GPU for a specific bottleneck operation (matmul, SVD, FFT) inside a larger CPU pipeline. Transfer once, compute many times.",
+      "avoid_when": "The data is small — PCIe transfer overhead dominates for arrays under ~10MB. Use NumPy directly instead.",
+      "decision_notes": "Transfer cost is O(n) on PCIe bandwidth (~16 GB/s). For a 100MB array that means ~6ms transfer vs nanoseconds for an in-memory NumPy copy. Batch all GPU work to amortize this cost.",
       "gotchas": [
-        "Transferring data from CPU to GPU with cp.array() is synchronous and blocks the host until the copy completes; batch transfers to minimize overhead.",
-        "cp.empty() allocates uninitialized GPU memory and may contain garbage values from previous allocations; always initialize before use."
-      ]
+        "cp.array() is synchronous and blocks the host until the copy completes — use streams for overlap with computation.",
+        "cp.empty() allocates uninitialized GPU memory; previous allocations may leave garbage values — always initialize before reading."
+      ],
+      "official_docs": "https://docs.cupy.dev/en/stable/user_guide/basic.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
     },
     {
-      "name": "Math Operations",
-      "functions": [
-        {
-          "fn": "cp.sum(a, axis)",
-          "purpose": "Sum of array elements over a given axis on the GPU",
-          "example": "s = cp.sum(a, axis=0)",
-          "category": "math"
-        },
-        {
-          "fn": "cp.mean(a, axis)",
-          "purpose": "Compute the arithmetic mean along the specified axis",
-          "example": "m = cp.mean(a, axis=1)",
-          "category": "math"
-        },
-        {
-          "fn": "cp.exp(x)",
-          "purpose": "Calculate the exponential of all elements in the input array",
-          "example": "e = cp.exp(x)",
-          "category": "math"
-        },
-        {
-          "fn": "cp.dot(a, b)",
-          "purpose": "Dot product of two arrays on the GPU",
-          "example": "d = cp.dot(a, b)",
-          "category": "math"
-        }
+      "task": "Accelerate math and linear algebra on GPU",
+      "mental_trigger": "I need matrix multiply, SVD, FFT, or reduction operations to run faster than NumPy on CPU",
+      "syntax": "cp.dot(a, b)\na @ b\ncp.linalg.solve(A, b)\ncp.linalg.svd(A, full_matrices=False)\ncp.sum(a, axis)\ncp.mean(a, axis)",
+      "important_params": [
+        "full_matrices=False — economy SVD; avoids allocating O(m*n) for large matrices",
+        "axis — 0 for column-wise, 1 for row-wise reduction",
+        "dtype — float32 is 2x faster than float64 on most CUDA hardware"
       ],
+      "example": "# Batched matrix multiply on GPU\nA = cp.random.rand(1000, 512).astype(cp.float32)\nB = cp.random.rand(512, 256).astype(cp.float32)\nC = A @ B                                # GPU matmul\n\n# Economy SVD\nU, s, Vh = cp.linalg.svd(A, full_matrices=False)\n\n# Scalar result needs .item() for Python float\nmean_val = cp.mean(A).item()",
+      "use_when": "Matrix operations on arrays larger than ~1000x1000. FFT on large 1D/2D signals. Any reduction where NumPy is the observed bottleneck in a profiler.",
+      "avoid_when": "Operations with irregular memory access patterns (e.g. Python loops over elements) — GPU parallelism cannot be exploited and cupy overhead makes it slower than NumPy.",
+      "decision_notes": "Use float32 instead of float64 unless you have a precision requirement. GPU throughput for float32 is 2-32x higher depending on the NVIDIA architecture (Ampere+).",
       "gotchas": [
-        "Integer division on CuPy follows the same behavior as NumPy; use cp.true_divide() to ensure float output when dividing integers.",
-        "Reduction operations like cp.sum() and cp.mean() return a 0-d GPU array, not a Python scalar; call .item() to transfer a single value to the host."
-      ]
+        "Reduction ops like cp.sum() return a 0-d CuPy array — call .item() to get a Python scalar; otherwise comparisons with Python floats silently wrap in unexpected ways.",
+        "Large SVD allocates all three matrices (U, S, Vh) simultaneously on GPU — use full_matrices=False to avoid OOM on tall/wide matrices."
+      ],
+      "official_docs": "https://docs.cupy.dev/en/stable/reference/linalg.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
     },
     {
-      "name": "Linear Algebra",
-      "functions": [
-        {
-          "fn": "cp.linalg.inv(a)",
-          "purpose": "Compute the inverse of a matrix on the GPU",
-          "example": "inv = cp.linalg.inv(a)",
-          "category": "linalg"
-        },
-        {
-          "fn": "cp.linalg.solve(a, b)",
-          "purpose": "Solve a linear matrix equation on the GPU",
-          "example": "x = cp.linalg.solve(a, b)",
-          "category": "linalg"
-        },
-        {
-          "fn": "cp.linalg.eigvals(a)",
-          "purpose": "Compute the eigenvalues of a general matrix",
-          "example": "w = cp.linalg.eigvals(a)",
-          "category": "linalg"
-        },
-        {
-          "fn": "cp.linalg.svd(a, full_matrices)",
-          "purpose": "Singular value decomposition on the GPU",
-          "example": "u, s, vh = cp.linalg.svd(a, full_matrices=False)",
-          "category": "linalg"
-        }
+      "task": "Run GPU-accelerated FFT",
+      "mental_trigger": "I need to compute Fourier transforms on large signals and NumPy FFT is too slow",
+      "syntax": "cp.fft.fft(a, n)\ncp.fft.ifft(a)\ncp.fft.fft2(a, s)\ncp.fft.fftshift(x)",
+      "important_params": [
+        "n — output length; pads or truncates input to this size",
+        "s — output shape for 2D FFT",
+        "axis — axis along which to compute; default is last axis"
       ],
+      "example": "signal = cp.random.rand(1024 * 1024).astype(cp.float32)\nspectrum = cp.fft.fft(signal)\nmagnitude = cp.abs(spectrum)\nshifted = cp.fft.fftshift(magnitude)",
+      "use_when": "Signal processing, audio feature extraction, or image frequency analysis where batch FFT over thousands of signals is required.",
+      "avoid_when": "Short signals (< 1024 samples) — overhead of GPU kernel launch exceeds compute savings. Use scipy.fft on CPU for short arrays.",
+      "decision_notes": "CuPy FFT delegates to cuFFT under the hood, which achieves near-theoretical peak throughput on NVIDIA GPUs. For batch 1D FFT over thousands of signals, use cp.fft.fft on a 2D array (one signal per row).",
       "gotchas": [
-        "cp.linalg.solve() requires the coefficient matrix to be square and non-singular; singular matrices raise LinAlgError without a clear fallback.",
-        "Large SVD operations on the GPU can exhaust memory because intermediate buffers for U, S, and Vh are all allocated simultaneously; consider truncated SVD for tall matrices."
-      ]
-    },
-    {
-      "name": "FFT",
-      "functions": [
-        {
-          "fn": "cp.fft.fft(a, n)",
-          "purpose": "Compute the one-dimensional discrete Fourier Transform on the GPU",
-          "example": "f = cp.fft.fft(a, n=1024)",
-          "category": "fft"
-        },
-        {
-          "fn": "cp.fft.ifft(a)",
-          "purpose": "Compute the inverse one-dimensional discrete Fourier Transform",
-          "example": "a_reconstructed = cp.fft.ifft(f)",
-          "category": "fft"
-        },
-        {
-          "fn": "cp.fft.fft2(a, s)",
-          "purpose": "Compute the 2-dimensional discrete Fourier Transform on the GPU",
-          "example": "f2 = cp.fft.fft2(a, s=(256, 256))",
-          "category": "fft"
-        },
-        {
-          "fn": "cp.fft.fftshift(x)",
-          "purpose": "Shift the zero-frequency component to the center of the spectrum",
-          "example": "shifted = cp.fft.fftshift(x)",
-          "category": "fft"
-        }
+        "cp.fft.fft operates on the last axis by default — for 2D arrays, this may not be the axis you intend. Always specify axis explicitly.",
+        "Passing n changes frequency resolution; this is silent and can corrupt downstream frequency-domain analysis if you miscount bins."
       ],
-      "gotchas": [
-        "FFT output length is determined by the input shape; padding or truncating with the n parameter changes the frequency resolution without warning.",
-        "cp.fft.fft() operates on the last axis by default; for batch FFT over a specific axis, use axis=1 explicitly to avoid silent dimension mismatches."
-      ]
+      "official_docs": "https://docs.cupy.dev/en/stable/reference/fft.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
     }
   ],
   "alternatives": [

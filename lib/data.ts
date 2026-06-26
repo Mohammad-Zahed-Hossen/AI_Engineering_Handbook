@@ -3,7 +3,9 @@ import path from 'path';
 import { cache } from 'react';
 import { Package } from '@/types/package';
 import { Model, ModelCategory } from '@/types/model';
-import { RegistryModel, RegistryTask } from '@/types/registry';
+import { RegistryModel } from '@/types/registry';
+import { REGISTRY_TASK_FILES, REGISTRY_FILE_TO_TASK } from './config/registry';
+import type { RegistryTask } from './config/registry';
 import { Workflow } from '@/types/workflow';
 import { Cheatsheet } from '@/types/cheatsheet';
 import { ContentRef } from '@/types/meta';
@@ -36,7 +38,7 @@ function scanDirectoryForIds(subPath: string): readonly string[] {
     return [];
   }
   return fs.readdirSync(dirPath)
-    .filter(file => file.endsWith('.json'))
+    .filter(file => file.endsWith('.json') && !file.startsWith('_'))
     .map(file => path.basename(file, '.json'))
     .sort((a, b) => a.localeCompare(b));
 }
@@ -106,16 +108,6 @@ export const getAllModels = cache(function getAllModels(category: ModelCategory)
 
 // ── Registry ────────────────────────────────────────────────
 
-const REGISTRY_TASK_FILES: Record<RegistryTask, string> = {
-  embedding: 'embeddings.json',
-  reranker: 'rerankers.json',
-  vision: 'vision.json',
-  speech: 'speech.json',
-  llm: 'llms.json',
-  multimodal: 'multimodal.json',
-  ocr: 'ocr.json',
-};
-
 /**
  * Retrieves list of all task keys available in the registry.
  * 
@@ -127,18 +119,8 @@ export const getRegistryTasks = cache(function getRegistryTasks(): RegistryTask[
 
   const files = fs.readdirSync(dirPath).filter(file => file.endsWith('.json'));
 
-  const reverseMap: Record<string, RegistryTask> = {
-    'embeddings.json': 'embedding',
-    'rerankers.json': 'reranker',
-    'vision.json': 'vision',
-    'speech.json': 'speech',
-    'llms.json': 'llm',
-    'multimodal.json': 'multimodal',
-    'ocr.json': 'ocr',
-  };
-
   return files
-    .map(file => reverseMap[file])
+    .map(file => REGISTRY_FILE_TO_TASK[file])
     .filter((task): task is RegistryTask => task !== undefined)
     .sort((a, b) => a.localeCompare(b));
 });
@@ -258,48 +240,65 @@ export interface NavItem {
  * Lightweight navigation retriever for python packages.
  */
 export const getPackageNavItems = cache(function getPackageNavItems(): NavItem[] {
-  return getAllPackageIds().map(id => {
-    const data = readJSON<{ id: string; name: string; version: string }>(
-      path.join(dataDir, 'packages', `${id}.json`)
-    );
-    return { id: data.id, name: data.name, version: data.version };
-  });
+  const navPath = path.join(dataDir, 'packages', '_nav.json');
+  if (!fs.existsSync(navPath)) {
+    // Fallback: rebuild from full files (first run before script executes)
+    return getAllPackageIds().map(id => {
+      const data = readJSON<{ id: string; name: string; version: string }>(
+        path.join(dataDir, 'packages', `${id}.json`)
+      );
+      return { id: data.id, name: data.name, version: data.version };
+    });
+  }
+  return readJSON<NavItem[]>(navPath);
 });
 
 /**
  * Lightweight navigation retriever for models.
  */
 export const getModelNavItems = cache(function getModelNavItems(category: ModelCategory): NavItem[] {
-  return getModelIds(category).map(id => {
-    const data = readJSON<{ id: string; name: string }>(
-      path.join(dataDir, 'models', category, `${id}.json`)
-    );
-    return { id: data.id, name: data.name };
-  });
+  const navPath = path.join(dataDir, 'models', category, '_nav.json');
+  if (!fs.existsSync(navPath)) {
+    return getModelIds(category).map(id => {
+      const data = readJSON<{ id: string; name: string }>(
+        path.join(dataDir, 'models', category, `${id}.json`)
+      );
+      return { id: data.id, name: data.name };
+    });
+  }
+  return readJSON<NavItem[]>(navPath);
 });
 
 /**
  * Lightweight navigation retriever for workflows.
  */
 export const getWorkflowNavItems = cache(function getWorkflowNavItems(): NavItem[] {
-  return getAllWorkflowIds().map(id => {
-    const data = readJSON<{ id: string; name: string }>(
-      path.join(dataDir, 'workflows', `${id}.json`)
-    );
-    return { id: data.id, name: data.name };
-  });
+  const navPath = path.join(dataDir, 'workflows', '_nav.json');
+  if (!fs.existsSync(navPath)) {
+    return getAllWorkflowIds().map(id => {
+      const data = readJSON<{ id: string; name: string }>(
+        path.join(dataDir, 'workflows', `${id}.json`)
+      );
+      return { id: data.id, name: data.name };
+    });
+  }
+  return readJSON<NavItem[]>(navPath);
 });
 
 /**
  * Lightweight navigation retriever for cheatsheets.
  */
 export const getCheatsheetNavItems = cache(function getCheatsheetNavItems(): NavItem[] {
-  return getAllCheatsheetIds().map(id => {
-    const data = readJSON<{ id: string; name: string }>(
-      path.join(dataDir, 'cheatsheets', `${id}.json`)
-    );
-    return { id: data.id, name: data.name };
-  });
+  const navPath = path.join(dataDir, 'cheatsheets', '_nav.json');
+  if (!fs.existsSync(navPath)) {
+    return getAllCheatsheetIds().map(id => {
+      const data = readJSON<{ id: string; name: string }>(
+        path.join(dataDir, 'cheatsheets', `${id}.json`)
+      );
+      return { id: data.id, name: data.name };
+    });
+  }
+  return readJSON<NavItem[]>(navPath);
 });
 
 export interface RecentContentItem {
@@ -377,7 +376,7 @@ export function loadContentMeta(
       for (const task of getRegistryTasks()) {
         const models = getRegistryByTask(task);
         const model = models.find(m => m.id === id);
-        if (model) return { name: model.model_id || model.id, updated_at: model.updated_at };
+        if (model) return { name: model.id, updated_at: '' };
       }
     }
   } catch {
@@ -435,37 +434,6 @@ function uniqueExistingRefs(refs: ContentRef[], current?: ContentRef): ContentRe
   });
 }
 
-const PACKAGE_LEARNING_PATHS: Record<string, ContentRef[]> = {
-  numpy: [
-    { type: 'package', id: 'pandas' },
-    { type: 'package', id: 'polars' },
-    { type: 'package', id: 'dask' },
-  ],
-  pandas: [
-    { type: 'package', id: 'numpy' },
-    { type: 'package', id: 'polars' },
-    { type: 'package', id: 'dask' },
-  ],
-  polars: [
-    { type: 'package', id: 'pandas' },
-    { type: 'package', id: 'dask' },
-    { type: 'package', id: 'numpy' },
-  ],
-  dask: [
-    { type: 'package', id: 'pandas' },
-    { type: 'package', id: 'polars' },
-    { type: 'package', id: 'numpy' },
-  ],
-  pytorch: [
-    { type: 'package', id: 'jax' },
-    { type: 'package', id: 'numpy' },
-  ],
-  jax: [
-    { type: 'package', id: 'numpy' },
-    { type: 'package', id: 'cupy' },
-  ],
-};
-
 export const getRelatedContent = cache(function getRelatedContent(
   type: ContentRef['type'],
   id: string,
@@ -477,7 +445,6 @@ export const getRelatedContent = cache(function getRelatedContent(
     const pkg = getPackage(id);
     return uniqueExistingRefs([
       ...pkg.alternatives,
-      ...(PACKAGE_LEARNING_PATHS[id] ?? []),
     ], current).slice(0, 6);
   }
 
@@ -534,97 +501,104 @@ export const getRelatedContent = cache(function getRelatedContent(
   return [];
 });
 
-/**
- * Retrieves the most recently created or updated entries across packages, models, workflows, cheatsheets, and registry items.
- */
-export const getRecentContent = cache(function getRecentContent(limit = 6): RecentContentItem[] {
+/** Fallback for when _nav.json indexes have not been built yet. */
+function getRecentContentFallback(limit: number): RecentContentItem[] {
   const items: RecentContentItem[] = [];
 
-  // Packages
   getAllPackageIds().forEach(id => {
     try {
       const p = getPackage(id);
-      items.push({
-        id: p.id,
-        name: p.name,
-        type: 'package',
-        updated_at: p.updated_at,
-      });
-    } catch (e) {
-      console.warn(`[getRecentContent] Failed to load package/${id}:`, e);
-    }
+      items.push({ id: p.id, name: p.name, type: 'package', updated_at: p.updated_at });
+    } catch { /* skip */ }
   });
 
-  // Models
   (['ml', 'dl', 'llm'] as const).forEach(cat => {
     getModelIds(cat).forEach(id => {
       try {
         const m = getModel(cat, id);
-        items.push({
-          id: m.id,
-          name: m.name,
-          type: 'model',
-          updated_at: m.updated_at,
-          category: cat,
-        });
-      } catch (e) {
-        console.warn(`[getRecentContent] Failed to load model/${cat}/${id}:`, e);
-      }
+        items.push({ id: m.id, name: m.name, type: 'model', updated_at: m.updated_at, category: cat });
+      } catch { /* skip */ }
     });
   });
 
-  // Workflows
   getAllWorkflowIds().forEach(id => {
     try {
       const w = getWorkflow(id);
-      items.push({
-        id: w.id,
-        name: w.name,
-        type: 'workflow',
-        updated_at: w.updated_at,
-      });
-    } catch (e) {
-      console.warn(`[getRecentContent] Failed to load workflow/${id}:`, e);
-    }
+      items.push({ id: w.id, name: w.name, type: 'workflow', updated_at: w.updated_at });
+    } catch { /* skip */ }
   });
 
-  // Cheatsheets
   getAllCheatsheetIds().forEach(id => {
     try {
       const cs = getCheatsheet(id);
-      items.push({
-        id: cs.id,
-        name: cs.name,
-        type: 'cheatsheet',
-        updated_at: cs.updated_at,
-      });
-    } catch (e) {
-      console.warn(`[getRecentContent] Failed to load cheatsheet/${id}:`, e);
-    }
+      items.push({ id: cs.id, name: cs.name, type: 'cheatsheet', updated_at: cs.updated_at });
+    } catch { /* skip */ }
   });
 
-  // Registry
-  getRegistryTasks().forEach(task => {
-    try {
-      const models = getRegistryByTask(task);
-      models.forEach(entry => {
-        items.push({
-          id: entry.id,
-          name: entry.model_id,
-          type: 'registry',
-          updated_at: entry.updated_at,
-          category: task,
-        });
-      });
-    } catch (e) {
-      console.warn(`[getRecentContent] Failed to load registry task '${task}':`, e);
-    }
-  });
-
-  // Sort by updated_at descending, then name ascending
+  const normalizeDate = (v?: string) => typeof v === 'string' ? v : '';
   return items
     .sort((a, b) => {
-      const dateCompare = b.updated_at.localeCompare(a.updated_at);
+      const d = normalizeDate(b.updated_at).localeCompare(normalizeDate(a.updated_at));
+      return d !== 0 ? d : a.name.localeCompare(b.name);
+    })
+    .slice(0, limit);
+}
+
+/**
+ * Retrieves the most recently updated entries by reading lightweight _nav.json
+ * index files instead of all content files.
+ * 
+ * Falls back to the full file scan if _nav.json files are missing (e.g. first
+ * run before build-nav-index has been executed).
+ */
+export const getRecentContent = cache(function getRecentContent(limit = 6): RecentContentItem[] {
+  const navPaths = [
+    path.join(dataDir, 'packages', '_nav.json'),
+    path.join(dataDir, 'models', 'ml', '_nav.json'),
+    path.join(dataDir, 'models', 'dl', '_nav.json'),
+    path.join(dataDir, 'models', 'llm', '_nav.json'),
+    path.join(dataDir, 'workflows', '_nav.json'),
+    path.join(dataDir, 'cheatsheets', '_nav.json'),
+  ];
+
+  const allNavFilesExist = navPaths.every(p => fs.existsSync(p));
+
+  if (!allNavFilesExist) {
+    // Fallback: original full-scan implementation for first run
+    return getRecentContentFallback(limit);
+  }
+
+  const items: RecentContentItem[] = [];
+
+  for (const navPath of navPaths) {
+    try {
+      const entries = readJSON<Array<{
+        id: string;
+        name: string;
+        type: 'package' | 'model' | 'workflow' | 'cheatsheet';
+        updated_at?: string;
+        category?: string;
+      }>>(navPath);
+
+      for (const entry of entries) {
+        items.push({
+          id: entry.id,
+          name: entry.name,
+          type: entry.type,
+          updated_at: entry.updated_at ?? '',
+          category: entry.category,
+        });
+      }
+    } catch (e) {
+      console.warn(`[getRecentContent] Failed to read nav index: ${navPath}`, e);
+    }
+  }
+
+  const normalizeDate = (value?: string) => typeof value === 'string' ? value : '';
+
+  return items
+    .sort((a, b) => {
+      const dateCompare = normalizeDate(b.updated_at).localeCompare(normalizeDate(a.updated_at));
       if (dateCompare !== 0) return dateCompare;
       return a.name.localeCompare(b.name);
     })

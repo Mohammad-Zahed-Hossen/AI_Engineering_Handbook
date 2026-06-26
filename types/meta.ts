@@ -1,11 +1,5 @@
-export interface ContentRef {
-  id: string;
-  type: 'model' | 'package' | 'workflow' | 'cheatsheet' | 'registry';
-}
+import { z } from 'zod';
+import { BaseMetaSchema, ContentRefSchema } from '@/lib/schemas/meta';
 
-export interface BaseMeta {
-  created_at: string;
-  updated_at: string;
-  sources: string[];
-  github_repo?: string;
-}
+export type BaseMeta = z.infer<typeof BaseMetaSchema>;
+export type ContentRef = z.infer<typeof ContentRefSchema>;

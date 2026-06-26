@@ -9,11 +9,23 @@ import ContentTypeBadge from './ContentTypeBadge';
 import { formatContentType } from '@/lib/resources';
 import { cn } from '@/lib/utils';
 
+interface SearchEngine {
+  search: (query: string, limit?: number) => SearchResult[];
+}
+
+type SearchDisplayResult = {
+  item: SearchResult;
+  matches?: readonly FuseResultMatch[];
+};
+
 interface SearchBoxProps {
   index: SearchResult[];
   placeholder?: string;
   limit?: number;
   compact?: boolean;
+  // Phase 3: Optional engine prop for future search engine integration
+  // When null or undefined, the existing Fuse.js path runs unchanged
+  engine?: SearchEngine | null;
 }
 
 export default function SearchBox({
@@ -21,6 +33,7 @@ export default function SearchBox({
   placeholder = 'Search packages, models, workflows…',
   limit = 8,
   compact = false,
+  engine = null,
 }: SearchBoxProps) {
   const router = useRouter();
   const inputId = useId();
@@ -30,11 +43,21 @@ export default function SearchBox({
   const [activeIndex, setActiveIndex] = useState(0);
   const fuse = useMemo(() => createFuse(index), [index]);
 
-  const results = useMemo(() => {
+  const results = useMemo<SearchDisplayResult[]>(() => {
     const trimmed = query.trim();
     if (!trimmed) return [];
-    return fuse.search(trimmed, { limit });
-  }, [fuse, query, limit]);
+
+    // Phase 3: If engine is provided, use it; otherwise use existing Fuse.js path
+    if (engine?.search) {
+      return engine.search(trimmed, limit).map(item => ({ item }));
+    }
+
+    // Existing Fuse.js path (unchanged when engine is null)
+    return fuse.search(trimmed, { limit }).map(result => ({
+      item: result.item,
+      matches: result.matches,
+    }));
+  }, [fuse, query, limit, engine]);
 
   const closeSearch = () => {
     setQuery('');

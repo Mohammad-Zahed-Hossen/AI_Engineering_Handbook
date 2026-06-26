@@ -1,6 +1,6 @@
 {
   "created_at": "2026-06-25",
-  "updated_at": "2026-06-25",
+  "updated_at": "2026-06-26",
   "sources": [
     "https://huggingface.co/docs/peft/conceptual_guides/lora",
     "https://arxiv.org/abs/2106.09685"
@@ -10,7 +10,7 @@
   "name": "LoRA Fine-Tuning Pipeline",
   "type": "pipeline",
   "category": "Fine-Tuning",
-  "overview": "Fine-tune large language models with LoRA adapters using HuggingFace PEFT, enabling efficient parameter updates on consumer hardware.",
+  "overview": "Fine-tune a pretrained LLM on a custom dataset using LoRA adapters. Trains less than 1% of parameters, fits on consumer GPUs, and produces a mergeable adapter file. Use when prompt engineering is insufficient and you have labeled domain data.",
   "starter_stack": [
     "transformers",
     "peft",
@@ -22,75 +22,125 @@
     {
       "step": 1,
       "name": "Dataset Preparation",
-      "what": "Format raw data into instruction-following format and split into train and validation sets.",
+      "what": "Format raw data into instruction-response pairs and split into train and validation sets.",
       "tools": [
         "datasets",
         "pandas"
       ],
-      "decision": "Use a 90/10 train/val split for datasets under 10K rows; for larger datasets, 95/5 is sufficient. Always verify that the validation set contains no data leakage from the training set."
+      "decision": "90/10 train/val split for datasets under 10K rows; 95/5 for larger. Format must match the model's chat template exactly — Llama 3 and Mistral use different delimiters. Verify with tokenizer.apply_chat_template before training.",
+      "uses": {
+        "packages": ["pandas"],
+        "models": [],
+        "cheatsheets": ["pandas-cheatsheet"]
+      },
+      "failure_points": [
+        "Chat template mismatch between training format and inference format — model sees a different special token structure at serving time and degrades.",
+        "Validation set contaminated with near-duplicates from training — use fuzzy dedup before splitting."
+      ]
     },
     {
       "step": 2,
-      "name": "Base Model Loading",
-      "what": "Load the pretrained language model with reduced precision to fit on limited GPU memory.",
+      "name": "Base Model Loading with Quantization",
+      "what": "Load the pretrained LLM in 4-bit or 8-bit precision to fit on limited GPU VRAM.",
       "tools": [
         "AutoModelForCausalLM",
         "BitsAndBytesConfig"
       ],
-      "decision": "Load in 4-bit with nf4 quantization for models above 7B parameters on 24GB VRAM. Use 8-bit for models under 7B or when the dataset contains numerical data that nf4 degrades."
+      "decision": "4-bit nf4 for models above 7B on 24GB VRAM. 8-bit for models under 7B or when the task is numerically sensitive (nf4 degrades on regression-like outputs).",
+      "uses": {
+        "packages": [],
+        "models": ["llama-3-8b", "mistral-7b"],
+        "cheatsheets": ["transformers"]
+      },
+      "failure_points": [
+        "dtype mismatch: base model loaded in bfloat16 but optimizer expects float32 — produces NaN loss in the first few steps.",
+        "bitsandbytes not installed for the correct CUDA version — raises ImportError at load time; match cuXX suffix to your driver."
+      ]
     },
     {
       "step": 3,
-      "name": "LoRA Config",
-      "what": "Define the rank, alpha, target modules, and dropout for the low-rank adapter.",
+      "name": "LoRA Configuration",
+      "what": "Define rank, alpha, target modules, and dropout for the low-rank adapter.",
       "tools": [
         "LoraConfig",
         "TaskType"
       ],
-      "decision": "Set r=8 and lora_alpha=16 for datasets under 10K samples. Increase r to 16-32 for datasets above 50K. Target q_proj and v_proj for general tasks; add k_proj and o_proj for reasoning-heavy tasks."
+      "decision": "r=8, lora_alpha=16 for datasets under 10K samples. r=16-32 for datasets above 50K. Target q_proj and v_proj as baseline. Add k_proj and o_proj for reasoning-heavy tasks. Use lora_dropout=0.05 for small datasets.",
+      "uses": {
+        "packages": [],
+        "models": [],
+        "cheatsheets": ["transformers"]
+      },
+      "failure_points": [
+        "Rank too high for dataset size — adapter memorizes training examples and overfits without generalizing.",
+        "Wrong target_modules for the model architecture — each model (Llama, Mistral, Gemma) uses different projection names; check model.named_modules() to verify."
+      ]
     },
     {
       "step": 4,
-      "name": "PEFT Wrapping",
-      "what": "Wrap the base model with get_peft_model to inject trainable LoRA adapters.",
+      "name": "PEFT Wrapping and Verification",
+      "what": "Wrap the quantized base model with LoRA adapters and verify trainable parameter count.",
       "tools": [
         "get_peft_model",
         "print_trainable_parameters"
       ],
-      "decision": "Verify that print_trainable_parameters shows less than 1% of total parameters as trainable. If the percentage exceeds 5%, recheck your target_modules list for correctness."
+      "decision": "print_trainable_parameters must show under 1% of total params as trainable. If above 5%, target_modules is too broad. If 0%, the module names are wrong and no adapters were injected.",
+      "uses": {
+        "packages": [],
+        "models": [],
+        "cheatsheets": ["transformers"]
+      },
+      "failure_points": [
+        "Forgetting model.enable_input_require_grads() before get_peft_model — causes RuntimeError during backward pass on frozen embedding layers.",
+        "Trainable parameter count is 0 — target_modules names do not match the model's actual layer names."
+      ]
     },
     {
       "step": 5,
-      "name": "Training Setup",
-      "what": "Configure the trainer with hyperparameters, batch size, and optimization settings.",
+      "name": "Training Setup and Execution",
+      "what": "Configure SFTTrainer with learning rate, batch size, gradient accumulation, and run the training loop.",
       "tools": [
         "SFTTrainer",
         "TrainingArguments",
         "DataCollatorForLanguageModeling"
       ],
-      "decision": "Enable gradient checkpointing for models above 7B to trade compute for memory. Use per_device_train_batch_size=1 with gradient_accumulation_steps=4 to simulate a batch size of 4 on limited VRAM."
+      "decision": "batch_size=1 with gradient_accumulation_steps=4 to simulate batch of 4 on limited VRAM. Enable gradient_checkpointing for models above 7B. learning_rate=2e-4 is a safe starting point with cosine scheduler.",
+      "uses": {
+        "packages": [],
+        "models": [],
+        "cheatsheets": ["transformers"]
+      },
+      "failure_points": [
+        "Pad token not set — model attends to EOS as padding and learns corrupted attention patterns; always set tokenizer.pad_token = tokenizer.eos_token before training.",
+        "validation loss increasing while training loss decreases after epoch 2 on small datasets — add early stopping with patience=3."
+      ]
     },
     {
       "step": 6,
-      "name": "Training Loop",
-      "what": "Run the training loop while monitoring loss and validation metrics.",
-      "tools": [
-        "SFTTrainer.train()",
-        "WandB"
-      ],
-      "decision": "Watch for training loss plateauing while validation loss increases, which signals overfitting on small datasets. Stop early if validation perplexity increases for 3 consecutive evaluation steps."
-    },
-    {
-      "step": 7,
-      "name": "Saving and Merging",
-      "what": "Export the adapter weights and optionally merge them back into the base model.",
+      "name": "Adapter Saving and Optional Merge",
+      "what": "Save the LoRA adapter weights. Optionally merge them into the base model for deployment.",
       "tools": [
         "save_pretrained",
         "merge_and_unload"
       ],
-      "decision": "Save only the adapter with save_pretrained for iterative experimentation. Use merge_and_unload only for final deployment to avoid the inference overhead of loading base model plus adapter separately."
+      "decision": "Save only the adapter (save_pretrained) for iterative experiments — adapter files are typically 10-100MB. Use merge_and_unload only for final production deployment to eliminate the runtime overhead of loading base + adapter separately.",
+      "uses": {
+        "packages": [],
+        "models": [],
+        "cheatsheets": ["transformers"]
+      },
+      "failure_points": [
+        "Merging while the model is still in 4-bit — merge_and_unload requires float16 or bfloat16; dequantize first with model.dequantize().",
+        "Loading a merged model without the original tokenizer — always save_pretrained both model and tokenizer to the same directory."
+      ]
     }
   ],
+  "evaluation_checks": [
+    "Trainable parameters < 1% of total model parameters after PEFT wrapping",
+    "Validation loss decreasing or stable through training — not diverging from training loss",
+    "Inference output format matches expected chat template on 10 held-out examples before full evaluation"
+  ],
+  "next_links": ["rag", "text-classification"],
   "common_failure_points": [
     "Rank too high for the dataset size, causing the adapter to memorize training examples and overfit without improving generalization.",
     "Forgetting to enable input gradients with model.enable_input_require_grads() before wrapping with PEFT, causing a RuntimeError during backward pass on frozen embeddings.",

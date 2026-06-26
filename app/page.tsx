@@ -122,36 +122,42 @@ export default function Home() {
 
           <SectionCard title="Models Library" subtitle={`${totalModelsCount} cataloged`}>
             <div className="space-y-2 text-xs">
-              <div>
-                <span className="text-muted-foreground uppercase text-[10px]">ML</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {mlModels.slice(0, 4).map(m => (
-                    <Link key={m.id} href={`/models/ml/${m.id}`} className="rounded border border-border px-1.5 py-0.5 hover:bg-muted">
-                      {m.name}
-                    </Link>
-                  ))}
+              {counts.models_ml > 0 && (
+                <div>
+                  <span className="text-muted-foreground uppercase text-[10px]">ML</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {mlModels.slice(0, 4).map(m => (
+                      <Link key={m.id} href={`/models/ml/${m.id}`} className="rounded border border-border px-1.5 py-0.5 hover:bg-muted">
+                        {m.name}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div>
-                <span className="text-muted-foreground uppercase text-[10px]">DL</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {dlModels.slice(0, 4).map(m => (
-                    <Link key={m.id} href={`/models/dl/${m.id}`} className="rounded border border-border px-1.5 py-0.5 hover:bg-muted">
-                      {m.name}
-                    </Link>
-                  ))}
+              )}
+              {counts.models_dl > 0 && (
+                <div>
+                  <span className="text-muted-foreground uppercase text-[10px]">DL</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {dlModels.slice(0, 4).map(m => (
+                      <Link key={m.id} href={`/models/dl/${m.id}`} className="rounded border border-border px-1.5 py-0.5 hover:bg-muted">
+                        {m.name}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div>
-                <span className="text-muted-foreground uppercase text-[10px]">LLM</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {llmModels.slice(0, 4).map(m => (
-                    <Link key={m.id} href={`/models/llm/${m.id}`} className="rounded border border-border px-1.5 py-0.5 hover:bg-muted">
-                      {m.name}
-                    </Link>
-                  ))}
+              )}
+              {counts.models_llm > 0 && (
+                <div>
+                  <span className="text-muted-foreground uppercase text-[10px]">LLM</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {llmModels.slice(0, 4).map(m => (
+                      <Link key={m.id} href={`/models/llm/${m.id}`} className="rounded border border-border px-1.5 py-0.5 hover:bg-muted">
+                        {m.name}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </SectionCard>
 
@@ -188,14 +194,14 @@ export default function Home() {
         <h2 className="text-sm font-semibold text-foreground">Categories</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
           {[
-            { label: 'Packages', count: counts.packages, href: '/packages/numpy' },
-            { label: 'ML Models', count: counts.models_ml, href: '/models/ml/random-forest' },
-            { label: 'DL Models', count: counts.models_dl, href: '/models/dl/transformer' },
-            { label: 'LLM Models', count: counts.models_llm, href: '/models/llm/llama-3-8b' },
-            { label: 'Workflows', count: counts.workflows, href: '/workflows/rag' },
-            { label: 'Cheatsheets', count: counts.cheatsheets, href: '/cheatsheets/pytorch' },
+            { label: 'Packages', count: counts.packages, href: '/packages' },
+            { label: 'ML Models', count: counts.models_ml, href: '/models/ml' },
+            { label: 'DL Models', count: counts.models_dl, href: '/models/dl' },
+            { label: 'LLM Models', count: counts.models_llm, href: '/models/llm' },
+            { label: 'Workflows', count: counts.workflows, href: '/workflows' },
+            { label: 'Cheatsheets', count: counts.cheatsheets, href: '/cheatsheets' },
             { label: 'Registry', count: counts.registry_tasks, href: '/registry/embedding' },
-          ].map(cat => (
+          ].filter(item => item.count > 0).map(cat => (
             <Link
               key={cat.label}
               href={cat.href}

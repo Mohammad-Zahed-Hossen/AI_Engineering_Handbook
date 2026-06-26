@@ -47,4 +47,7 @@ export const ModelSchema = BaseMetaSchema.extend({
   interpretability: InterpretabilityRatingSchema,
   quick_start: z.string(),
   alternatives: z.array(ContentRefSchema),
+  related_workflows: z.array(z.string()),
+  decision_notes: z.string().optional(),
+  competitors: z.array(ContentRefSchema).optional(),
 });

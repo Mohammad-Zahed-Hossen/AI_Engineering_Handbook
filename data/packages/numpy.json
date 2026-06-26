@@ -1,6 +1,6 @@
 {
   "created_at": "2026-06-24",
-  "updated_at": "2026-06-25",
+  "updated_at": "2026-06-26",
   "sources": [
     "https://numpy.org"
   ],
@@ -10,240 +10,114 @@
   "version": "2.0.0",
   "install": "pip install numpy",
   "import_as": "import numpy as np",
-  "summary": "Fundamental package for scientific computing in Python, providing powerful N-dimensional array objects.",
-  "sections": [
+  "summary": "N-dimensional array operations, linear algebra, and vectorized math for Python. Foundation of the scientific Python stack.",
+  "tasks": [
     {
-      "name": "Creation",
-      "functions": [
-        {
-          "fn": "np.array(object)",
-          "purpose": "Create an array from a list or tuple",
-          "example": "a = np.array([1, 2, 3])",
-          "category": "creation",
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.array.html"
-        },
-        {
-          "fn": "np.zeros(shape)",
-          "purpose": "Return a new array of given shape filled with zeros",
-          "example": "z = np.zeros((3, 4))",
-          "category": "creation",
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.zeros.html"
-        },
-        {
-          "fn": "np.ones(shape)",
-          "purpose": "Return a new array of given shape filled with ones",
-          "example": "o = np.ones((2, 3))",
-          "category": "creation",
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.ones.html"
-        },
-        {
-          "fn": "np.linspace(start, stop, num)",
-          "purpose": "Return evenly spaced numbers over a specified interval",
-          "example": "l = np.linspace(0, 1, 5)",
-          "category": "creation",
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.linspace.html"
-        },
-        {
-          "fn": "np.arange(start, stop, step)",
-          "purpose": "Return evenly spaced values within a given interval",
-          "example": "r = np.arange(0, 10, 2)",
-          "category": "creation",
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.arange.html"
-        }
+      "task": "Create arrays from data or shape",
+      "mental_trigger": "I need a typed numeric container from a list, shape, or range",
+      "syntax": "np.array(object, dtype=None)\nnp.zeros(shape)\nnp.ones(shape)\nnp.arange(start, stop, step)\nnp.linspace(start, stop, num)",
+      "important_params": [
+        "object — list/tuple/nested list to convert",
+        "shape — tuple like (3, 4) for multi-dimensional",
+        "dtype — e.g. np.float32 to control memory and precision",
+        "num — number of points for linspace"
       ],
+      "example": "a = np.array([[1, 2], [3, 4]], dtype=np.float32)\nz = np.zeros((3, 4))\nr = np.arange(0, 10, 2)  # [0, 2, 4, 6, 8]",
+      "use_when": "Converting Python lists to vectorized numeric arrays. Pre-allocating fixed-shape buffers for model outputs or feature matrices.",
+      "avoid_when": "Data is on GPU — use cupy or torch.tensor instead. Data exceeds RAM — use dask.array or memory-mapped arrays.",
+      "decision_notes": "np.zeros is safer than np.empty for pre-allocation; empty leaves garbage values that can silently corrupt downstream computations.",
       "gotchas": [
-        "Arrays have fixed types; implicit casting can happen silently.",
-        "np.empty() allocates uninitialized memory that may contain garbage values; never assume zeros without explicit initialization."
-      ]
+        "Arrays have a fixed dtype; mixing int and float during creation silently upcasts to float64, doubling memory for large arrays.",
+        "np.empty() allocates without zeroing — never assume its values are zero."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.array.html",
+      "related_workflows": ["rag"],
+      "related_cheatsheets": ["numpy-cheatsheet"]
     },
     {
-      "name": "Broadcasting and Reshaping",
-      "functions": [
-        {
-          "fn": "np.reshape(a, newshape)",
-          "purpose": "Change the shape of an array without changing its data",
-          "example": "reshaped = np.reshape(arr, (3, 4))",
-          "category": "reshaping",
-          "performance_note": "np.reshape returns a view when possible, but modifying the view may unexpectedly modify the original array; use .copy() if you need an independent array.",
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.reshape.html"
-        },
-        {
-          "fn": "np.ravel(a)",
-          "purpose": "Return a contiguous flattened array",
-          "example": "flat = np.ravel(arr)",
-          "category": "reshaping",
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.ravel.html"
-        },
-        {
-          "fn": "np.transpose(a, axes)",
-          "purpose": "Permute the dimensions of an array",
-          "example": "t = np.transpose(arr, (1, 0, 2))",
-          "category": "reshaping",
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.transpose.html"
-        },
-        {
-          "fn": "np.expand_dims(a, axis)",
-          "purpose": "Expand the shape of an array by inserting a new axis",
-          "example": "expanded = np.expand_dims(arr, axis=0)",
-          "category": "reshaping",
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.expand_dims.html"
-        },
-        {
-          "fn": "np.squeeze(a, axis)",
-          "purpose": "Remove singleton dimensions from the shape of an array",
-          "example": "squeezed = np.squeeze(arr, axis=1)",
-          "category": "reshaping",
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.squeeze.html"
-        }
+      "task": "Reshape, transpose, and manipulate array dimensions",
+      "mental_trigger": "I need to change the shape of an array for matrix ops, batching, or model input formatting",
+      "syntax": "arr.reshape(newshape)\nnp.transpose(a, axes)\nnp.expand_dims(a, axis)\nnp.squeeze(a, axis)\nnp.ravel(a)",
+      "important_params": [
+        "newshape — target shape tuple; use -1 to infer one dimension",
+        "axes — permutation order for transpose e.g. (1, 0, 2)",
+        "axis — position to insert or remove dimension"
       ],
+      "example": "x = np.zeros((100, 28, 28))\nx_flat = x.reshape(100, -1)          # (100, 784)\nx_t = np.transpose(x, (0, 2, 1))     # (100, 28, 28) swapped\nx_ch = np.expand_dims(x, axis=1)     # (100, 1, 28, 28) for CNN input",
+      "use_when": "Preparing tensors for neural network layers (batch, channels, height, width). Flattening for fully connected layers. Aligning dimensions for broadcasting.",
+      "avoid_when": "You need a guaranteed copy — reshape returns a view when possible; use .copy() if the original must remain unmodified.",
+      "decision_notes": "reshape(-1) is the canonical flatten for feed-forward input. expand_dims + squeeze are the standard dimension insertion/removal idiom used in PyTorch interop code.",
       "gotchas": [
-        "Broadcasting silently expands dimensions by replicating values; adding a shape-(3,) array to a shape-(3,1) array produces a (3,3) result that may not match the intended element-wise operation.",
-        "np.reshape() returns a view when possible, but modifying the result may unexpectedly modify the original array; use .copy() if you need an independent array."
-      ]
+        "reshape returns a view when possible; modifying it modifies the original array silently.",
+        "Broadcasting silently expands shape-(3,) + shape-(3,1) into (3,3) — always check result shapes with arr.shape."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.reshape.html",
+      "related_workflows": [],
+      "related_cheatsheets": ["numpy-cheatsheet"]
     },
     {
-      "name": "Indexing and Slicing",
-      "functions": [
-        {
-          "fn": "arr[indices]",
-          "purpose": "Access elements by index, slice, or boolean mask",
-          "example": "subset = arr[2:10:2]",
-          "category": "indexing",
-          "docs_url": "https://numpy.org/doc/stable/reference/arrays.indexing.html"
-        },
-        {
-          "fn": "np.where(condition, x, y)",
-          "purpose": "Return elements chosen from x or y depending on condition",
-          "example": "result = np.where(arr > 0, arr, 0)",
-          "category": "indexing",
-          "common_errors": ["When x and y are scalars and condition is a multi-dimensional array, np.where broadcasts the scalars to match the condition shape, which can produce unexpected results if you intended element-wise selection from arrays of the same shape."],
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.where.html"
-        },
-        {
-          "fn": "np.take(a, indices, axis)",
-          "purpose": "Take elements from an array along an axis",
-          "example": "taken = np.take(arr, [0, 2, 4], axis=0)",
-          "category": "indexing",
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.take.html"
-        },
-        {
-          "fn": "arr[boolean_mask]",
-          "purpose": "Select elements where the boolean mask is True",
-          "example": "positive = arr[arr > 0]",
-          "category": "indexing",
-          "common_errors": ["Boolean indexing on a 2D array returns a 1-D flattened result regardless of the original shape, which can break downstream code that expects the original dimensionality."],
-          "docs_url": "https://numpy.org/doc/stable/reference/arrays.indexing.html#boolean-array-indexing"
-        },
-        {
-          "fn": "arr[fancy_indices]",
-          "purpose": "Select elements using an array of integer indices",
-          "example": "selected = arr[[0, 3, 5]]",
-          "category": "indexing",
-          "docs_url": "https://numpy.org/doc/stable/reference/arrays.indexing.html#fancy-indexing"
-        }
+      "task": "Index, slice, and filter array elements",
+      "mental_trigger": "I need to select or extract a subset of array values based on position, condition, or index list",
+      "syntax": "arr[start:stop:step]\narr[boolean_mask]\nnp.where(condition, x, y)\narr[index_array]",
+      "important_params": [
+        "boolean_mask — array of True/False same shape as arr",
+        "condition — expression evaluated element-wise",
+        "x, y — values to return where condition is True or False"
       ],
+      "example": "positive = arr[arr > 0]                        # boolean mask\nclipped  = np.where(arr > 0, arr, 0)           # replace negatives with 0\nselected = arr[[0, 3, 5]]                      # fancy index — returns copy",
+      "use_when": "Filtering samples by label, masking padded positions in NLP sequences, selecting top-k indices from model output.",
+      "avoid_when": "You need to assign values back via fancy indexing — arr[[0,1]] = 5 may silently fail on chained operations; use np.put or direct slice assignment.",
+      "decision_notes": "Boolean indexing for filtering, np.where for conditional replacement, fancy integer indexing for reordering. These are the three non-overlapping cases.",
       "gotchas": [
-        "Fancy indexing with integer arrays returns a copy, not a view; assignments like arr[[0,1]] = 5 work on a temporary copy and may not modify the original array unless you use np.put or np.take with mode='put'.",
-        "Boolean indexing creates a 1-D flattened result regardless of input dimensionality; if you need to preserve shape, use np.where() or np.where with a fill value instead."
-      ]
+        "Boolean indexing on a 2D array always returns a 1D flat result regardless of input shape — use np.where with fill values to preserve shape.",
+        "Fancy indexing returns a copy, not a view — assignment through it does not modify the original array."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/arrays.indexing.html",
+      "related_workflows": [],
+      "related_cheatsheets": ["numpy-cheatsheet"]
     },
     {
-      "name": "Math and Statistics",
-      "functions": [
-        {
-          "fn": "np.sum(a, axis)",
-          "purpose": "Sum of array elements over a given axis",
-          "example": "s = np.sum(arr, axis=0)",
-          "category": "statistics",
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.sum.html"
-        },
-        {
-          "fn": "np.mean(a, axis)",
-          "purpose": "Compute the arithmetic mean along the specified axis",
-          "example": "m = np.mean(arr, axis=1)",
-          "category": "statistics",
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.mean.html"
-        },
-        {
-          "fn": "np.std(a, axis)",
-          "purpose": "Compute the standard deviation along the specified axis",
-          "example": "std = np.std(arr, axis=0)",
-          "category": "statistics",
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.std.html"
-        },
-        {
-          "fn": "np.dot(a, b)",
-          "purpose": "Dot product of two arrays",
-          "example": "d = np.dot(a, b)",
-          "category": "math",
-          "performance_note": "For matrix multiplication on ND arrays, use the @ operator or np.matmul instead of np.dot for clearer semantics and better performance with broadcasting.",
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.dot.html"
-        },
-        {
-          "fn": "np.linalg.norm(x, ord)",
-          "purpose": "Matrix or vector norm",
-          "example": "n = np.linalg.norm(vec, ord=2)",
-          "category": "math",
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.norm.html"
-        },
-        {
-          "fn": "np.argmax(a, axis)",
-          "purpose": "Return indices of the maximum values along the given axis",
-          "example": "idx = np.argmax(arr, axis=1)",
-          "category": "statistics",
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.argmax.html"
-        }
+      "task": "Compute statistics and reductions along axes",
+      "mental_trigger": "I need per-row, per-column, or global aggregation: sum, mean, std, max, argmax",
+      "syntax": "np.sum(a, axis)\nnp.mean(a, axis)\nnp.std(a, axis)\nnp.argmax(a, axis)\nnp.linalg.norm(x, ord)",
+      "important_params": [
+        "axis — 0 for column-wise, 1 for row-wise, None for global",
+        "keepdims — True to preserve shape for broadcasting back",
+        "ord — norm order: 1 (L1), 2 (L2), np.inf (max)"
       ],
+      "example": "scores = np.array([[0.1, 0.9], [0.7, 0.3]])\npreds  = np.argmax(scores, axis=1)    # [1, 0]\nnorms  = np.linalg.norm(scores, ord=2, axis=1, keepdims=True)",
+      "use_when": "Computing per-batch loss statistics, normalizing embedding vectors, finding predicted class indices from logit arrays.",
+      "avoid_when": "Aggregating over very large arrays on CPU — prefer CuPy or PyTorch tensor ops which fuse reduction kernels on GPU.",
+      "decision_notes": "keepdims=True is essential when you need to broadcast the result back against the original array (e.g. normalizing rows). Forgetting it produces a shape mismatch that is hard to debug.",
       "gotchas": [
-        "np.mean() on integer arrays performs integer division in NumPy versions before 2.0, silently truncating the fractional part; cast to float first with arr.astype(float) or use np.mean(arr, dtype=float).",
-        "np.argmax() returns the first occurrence of the maximum; for arrays with all identical values, it always returns index 0, which can bias downstream sampling or selection logic."
-      ]
+        "np.mean on integer dtype arrays silently truncates fractional parts in NumPy < 2.0; cast to float first.",
+        "np.argmax returns the first index when multiple elements share the maximum — can bias sampling or evaluation metrics."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.mean.html",
+      "related_workflows": [],
+      "related_cheatsheets": ["numpy-cheatsheet"]
     },
     {
-      "name": "Linear Algebra",
-      "functions": [
-        {
-          "fn": "np.linalg.inv(a)",
-          "purpose": "Compute the inverse of a matrix",
-          "example": "inv = np.linalg.inv(a)",
-          "category": "linalg",
-          "common_errors": ["Passing a singular or nearly singular matrix raises LinAlgError with a generic message about singular matrices, even when the issue is numerical instability due to high condition numbers."],
-          "performance_note": "For solving linear systems Ax = b, use np.linalg.solve(a, b) instead of computing the inverse explicitly — it avoids the O(n^3) inverse computation and is numerically more stable.",
-          "related_fns": ["np.linalg.solve(a, b)", "np.linalg.pinv(a)"],
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.inv.html"
-        },
-        {
-          "fn": "np.linalg.eig(a)",
-          "purpose": "Compute the eigenvalues and right eigenvectors of a square matrix",
-          "example": "w, v = np.linalg.eig(a)",
-          "category": "linalg",
-          "common_errors": ["For real symmetric matrices, np.linalg.eig returns complex eigenvalues with negligible imaginary parts due to numerical precision, which can break downstream real-only pipelines expecting float arrays."],
-          "related_fns": ["np.linalg.eigh(a)", "np.linalg.eigvals(a)"],
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.eig.html"
-        },
-        {
-          "fn": "np.linalg.svd(a, full_matrices)",
-          "purpose": "Singular Value Decomposition",
-          "example": "u, s, vh = np.linalg.svd(a, full_matrices=False)",
-          "category": "linalg",
-          "common_errors": ["With full_matrices=True (default), the returned U and Vh matrices can be extremely large for wide or tall input matrices, causing memory exhaustion on datasets that fit in RAM otherwise."],
-          "performance_note": "For dimensionality reduction or low-rank approximations, use full_matrices=False to avoid computing the full orthogonal matrices, reducing memory from O(mn) to O(min(m,n)k) where k is the rank.",
-          "related_fns": ["np.linalg.pinv(a)", "np.linalg.matrix_rank(a)"],
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.svd.html"
-        },
-        {
-          "fn": "np.linalg.solve(a, b)",
-          "purpose": "Solve a linear matrix equation",
-          "example": "x = np.linalg.solve(a, b)",
-          "category": "linalg",
-          "related_fns": ["np.linalg.inv(a)", "np.linalg.lstsq(a, b)"],
-          "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.solve.html"
-        }
+      "task": "Perform linear algebra operations on matrices",
+      "mental_trigger": "I need matrix multiply, inverse, eigenvalues, SVD, or solving linear systems",
+      "syntax": "A @ B\nnp.linalg.solve(A, b)\nnp.linalg.svd(A, full_matrices=False)\nnp.linalg.eigh(A)\nnp.linalg.norm(x)",
+      "important_params": [
+        "full_matrices — False for economy SVD; saves O(m*n) memory for wide/tall matrices",
+        "A, b — coefficient matrix and right-hand side for solve",
+        "axes — for batched matmul via np.tensordot or np.einsum"
       ],
+      "example": "# Solve Ax = b without computing inverse\nA = np.array([[3, 1], [1, 2]], dtype=float)\nb = np.array([9, 8], dtype=float)\nx = np.linalg.solve(A, b)   # [2. 3.]\n\n# Economy SVD for PCA\nU, s, Vh = np.linalg.svd(X, full_matrices=False)",
+      "use_when": "Implementing PCA, computing cosine similarity via norm, solving least-squares regression, computing attention score normalization.",
+      "avoid_when": "Computing matrix inverse explicitly to solve Ax=b — use np.linalg.solve which is O(n^3) cheaper and numerically more stable.",
+      "decision_notes": "Never use linalg.inv to solve linear systems. Always use linalg.solve. For symmetric positive definite matrices, eigh is faster and guaranteed real output vs eig.",
       "gotchas": [
-        "np.linalg.inv() is numerically unstable for nearly singular matrices with condition numbers above 1e12; use np.linalg.solve() directly or check np.linalg.cond() before inversion.",
-        "np.linalg.eig() returns complex eigenvalues for real matrices when the matrix is not symmetric; np.linalg.eigvals() on a non-symmetric matrix may produce unexpected complex conjugate pairs that break downstream real-only pipelines."
-      ]
+        "np.linalg.inv on near-singular matrices with condition number > 1e12 produces numerically garbage results with no error; check np.linalg.cond first.",
+        "np.linalg.eig returns complex eigenvalues for real but non-symmetric matrices; use np.linalg.eigh for symmetric/Hermitian matrices to guarantee real output."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/routines.linalg.html",
+      "related_workflows": [],
+      "related_cheatsheets": ["numpy-cheatsheet"],
+      "aliases": ["matrix inverse", "inverse matrix", "solve Ax=b", "solve linear system", "eigenvalues", "SVD", "singular value decomposition", "least squares", "matrix multiply", "dot product"]
     }
   ],
   "alternatives": [

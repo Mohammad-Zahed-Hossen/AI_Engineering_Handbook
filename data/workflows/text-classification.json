@@ -1,6 +1,6 @@
 {
   "created_at": "2026-06-25",
-  "updated_at": "2026-06-25",
+  "updated_at": "2026-06-26",
   "sources": [
     "https://scikit-learn.org/stable/supervised_learning.html#supervised-learning"
   ],
@@ -8,7 +8,7 @@
   "name": "Text Classification Pipeline",
   "type": "pipeline",
   "category": "NLP",
-  "overview": "End-to-end pipeline from raw text to deployed classifier, covering EDA, preprocessing, feature extraction, model selection, training, evaluation, and export.",
+  "overview": "End-to-end pipeline from raw text to a deployed classifier. Start with a TF-IDF + LogisticRegression baseline, then escalate to BERT fine-tuning only if the baseline F1 is below 0.85.",
   "starter_stack": [
     "pandas",
     "scikit-learn",
@@ -18,67 +18,129 @@
   "steps": [
     {
       "step": 1,
-      "name": "Data Loading and EDA",
-      "what": "Load raw text data and inspect class distribution, text lengths, and data quality.",
+      "name": "Data Loading and Class Audit",
+      "what": "Load raw text data and inspect class distribution, text lengths, and null rates before any preprocessing.",
       "tools": [
         "pandas",
         "datasets"
       ],
-      "decision": "Check class balance with value_counts; if the largest class exceeds 60% of the data, apply stratified sampling or class weighting before training."
+      "decision": "If the largest class exceeds 60% of the data, apply class_weight='balanced' in the classifier or use stratified oversampling before training. Never skip this step — imbalance masks real model failures behind high accuracy.",
+      "uses": {
+        "packages": ["pandas"],
+        "models": [],
+        "cheatsheets": ["pandas-cheatsheet"]
+      },
+      "failure_points": [
+        "Majority-class collapse: accuracy looks fine but macro-F1 is near zero because the model predicts only the dominant class.",
+        "Null text rows silently dropped without logging — downstream column counts no longer match the original dataset."
+      ]
     },
     {
       "step": 2,
       "name": "Preprocessing",
-      "what": "Clean and normalize text by lowercasing, removing punctuation, and tokenizing.",
+      "what": "Normalize and clean text. Apply only what the downstream model needs — different models have different preprocessing requirements.",
       "tools": [
         "scikit-learn",
-        "regex",
-        "nltk"
+        "regex"
       ],
-      "decision": "Lowercase for TF-IDF baselines to reduce vocabulary size. For BERT fine-tuning, preserve original casing because the tokenizer is cased-aware."
+      "decision": "Lowercase + strip punctuation for TF-IDF baselines. Preserve original casing for BERT fine-tuning — the cased tokenizer encodes 'US' and 'us' differently. Never apply both in the same pipeline.",
+      "uses": {
+        "packages": ["pandas"],
+        "models": [],
+        "cheatsheets": ["pandas-cheatsheet"]
+      },
+      "failure_points": [
+        "Applying TF-IDF-style lowercasing to BERT input — the cased tokenizer treats 'Apple' and 'apple' as different tokens; lowercasing silently discards this signal.",
+        "Preprocessing the full dataset before train/test split — stopword removal or normalization based on dataset statistics leaks into the test set."
+      ]
     },
     {
       "step": 3,
       "name": "Feature Extraction",
-      "what": "Convert text into numerical features suitable for machine learning.",
+      "what": "Convert text to numerical features suitable for the classifier.",
       "tools": [
         "TfidfVectorizer",
         "SentenceTransformer"
       ],
-      "decision": "Use TF-IDF for datasets under 50K samples with clear keyword signals. Use dense embeddings for datasets above 50K or where semantic similarity matters more than exact keyword matching."
+      "decision": "TF-IDF for datasets under 50K samples with clear keyword signals. Dense embeddings (sentence-transformers) for datasets above 50K or where paraphrase equivalence matters more than keyword overlap.",
+      "uses": {
+        "packages": [],
+        "models": ["gte-large"],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Fitting TfidfVectorizer on the full dataset before splitting — test set vocabulary leaks into the vectorizer's idf weights.",
+        "Embedding model max sequence length (typically 512 tokens) silently truncates long documents — verify with tokenizer(text, truncation=False) on your longest examples."
+      ]
     },
     {
       "step": 4,
-      "name": "Model Selection",
-      "what": "Choose a classification model that matches the feature representation and dataset size.",
+      "name": "Baseline Model: TF-IDF + LogisticRegression",
+      "what": "Fit a fast, interpretable baseline and record its macro-F1 score as the threshold for model escalation.",
       "tools": [
         "LogisticRegression",
-        "AutoModelForSequenceClassification"
+        "Pipeline",
+        "classification_report"
       ],
-      "decision": "LogisticRegression with TF-IDF as a fast baseline. Switch to BERT fine-tuning when the baseline F1 is below 0.85 and the dataset has at least 1000 labeled examples per class."
+      "decision": "If macro-F1 >= 0.85 on the validation set, ship the baseline — it is production-ready and much cheaper to serve than BERT. Escalate to fine-tuning only if below 0.85 and you have at least 1000 labeled examples per class.",
+      "uses": {
+        "packages": [],
+        "models": ["gradient-boosting-classifier", "random-forest"],
+        "cheatsheets": ["sklearn"]
+      },
+      "failure_points": [
+        "Using accuracy as the evaluation metric on imbalanced data — always report macro-F1 alongside accuracy.",
+        "Omitting stratify=y in train_test_split — small minority classes can end up entirely in one split."
+      ]
     },
     {
       "step": 5,
-      "name": "Training and Evaluation",
-      "what": "Fit the model and evaluate on a held-out test set.",
+      "name": "BERT Fine-Tuning (Escalation Path)",
+      "what": "Fine-tune a pretrained transformer on the classification task when the TF-IDF baseline is insufficient.",
       "tools": [
-        "scikit-learn Pipeline",
-        "classification_report",
-        "confusion_matrix"
+        "AutoModelForSequenceClassification",
+        "Trainer",
+        "TrainingArguments"
       ],
-      "decision": "Always use a stratified train-test split with stratify=y to preserve class ratios. Report macro-F1 for imbalanced datasets and weighted-F1 for balanced datasets."
+      "decision": "Use distilbert-base-uncased for latency-constrained deployments. Use bert-base-uncased or roberta-base for higher accuracy with less constraint. Freeze the first 6 encoder layers if dataset is under 2000 examples to prevent catastrophic forgetting.",
+      "uses": {
+        "packages": [],
+        "models": [],
+        "cheatsheets": ["transformers"]
+      },
+      "failure_points": [
+        "Overfitting on small datasets without early stopping — BERT can reach near-zero training loss in 2 epochs on 500 examples while validation F1 collapses.",
+        "Label IDs not matching num_labels in AutoModelForSequenceClassification — causes silent shape mismatch in the classification head output."
+      ]
     },
     {
       "step": 6,
-      "name": "Export",
-      "what": "Serialize the trained model and pipeline for deployment.",
+      "name": "Evaluation and Export",
+      "what": "Evaluate on the held-out test set, inspect confusion matrix, and serialize the final pipeline.",
       "tools": [
+        "classification_report",
+        "confusion_matrix",
         "joblib",
         "save_pretrained"
       ],
-      "decision": "Use joblib for sklearn Pipelines to preserve the entire vectorizer-to-classifier flow. Use save_pretrained for HuggingFace models to export both tokenizer and weights."
+      "decision": "Use joblib for sklearn Pipelines — it preserves vectorizer + classifier as a single artifact. Use save_pretrained for HuggingFace models — it exports both tokenizer and weights together. Never export them separately.",
+      "uses": {
+        "packages": [],
+        "models": [],
+        "cheatsheets": ["sklearn"]
+      },
+      "failure_points": [
+        "Exporting model weights without the tokenizer — the two are inseparable at inference time; save both to the same directory.",
+        "Testing on validation set instead of a held-out test set — if you used validation F1 for model selection, it is no longer an unbiased estimate."
+      ]
     }
   ],
+  "evaluation_checks": [
+    "Macro-F1 on held-out test set, not validation set used for model selection",
+    "Per-class F1 reported — not just weighted or accuracy",
+    "Confusion matrix inspected for systematic misclassification between specific class pairs"
+  ],
+  "next_links": ["rag", "fine-tuning-lora"],
   "common_failure_points": [
     "Class imbalance where the majority class dominates accuracy but macro-F1 collapses, giving a false impression of model quality.",
     "Label leakage from including metadata in the text that correlates with the target but will not be available at inference time.",

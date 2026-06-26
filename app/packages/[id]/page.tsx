@@ -1,4 +1,3 @@
-import { Fragment } from 'react';
 import { notFound } from 'next/navigation';
 import { getAllPackageIds, getPackage, getRelatedContent } from '@/lib/data';
 import { CodeBlock } from '@/components/shared/CodeBlock';
@@ -16,6 +15,10 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+function slugify(value: string) {
+  return value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+}
+
 export default async function PackageDetailPage({ params }: PageProps) {
   const { id } = await params;
 
@@ -30,7 +33,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
   const toc = [
     { id: 'setup', label: 'Quick Setup' },
     { id: 'summary', label: 'Summary' },
-    ...pkg.sections.map(s => ({ id: s.name.toLowerCase().replace(/\s+/g, '-'), label: s.name })),
+    ...pkg.tasks.map(task => ({ id: slugify(task.task), label: task.task })),
   ];
   const relatedContent = getRelatedContent('package', pkg.id);
 
@@ -38,7 +41,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
     <ContentPageLayout
       breadcrumbs={[
         { label: 'Home', href: '/' },
-        { label: 'Packages', href: '/packages/numpy' },
+        { label: 'Packages', href: '/packages' },
         { label: pkg.name },
       ]}
       toc={toc}
@@ -69,111 +72,94 @@ export default async function PackageDetailPage({ params }: PageProps) {
       <OfficialResources sources={pkg.sources} githubRepo={pkg.github_repo} />
 
       <div className="space-y-6">
-        {pkg.sections.map(section => (
-          <SectionCard
-            key={section.name}
-            title={section.name}
-            subtitle={`API reference for ${section.name}`}
-          >
-            <div id={section.name.toLowerCase().replace(/\s+/g, '-')} className="space-y-4 scroll-mt-24">
-              <div className="rounded-lg border border-border overflow-x-auto bg-card">
-                <table className="min-w-[760px] divide-y divide-border text-left text-sm">
-                  <thead className="bg-muted/40 text-[10px] font-semibold text-muted-foreground uppercase">
-                    <tr>
-                      <th className="w-[28%] px-3 py-2">Function</th>
-                      <th className="w-[32%] px-3 py-2">Purpose</th>
-                      <th className="px-3 py-2">Example</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {section.functions.map((fn, idx) => {
-                      const functionKey = `${section.name}-${fn.fn}-${idx}`;
-                      const hasExtendedFields = 
-                        (fn.common_errors && fn.common_errors.length > 0) ||
-                        fn.performance_note ||
-                        (fn.related_fns && fn.related_fns.length > 0);
+        {pkg.tasks.map(task => {
+          const taskAnchor = slugify(task.task);
 
-                      return (
-                        <Fragment key={functionKey}>
-                          <tr className="hover:bg-muted/10">
-                            <td className="px-3 py-2 align-top">
-                              <div className="flex items-start gap-2">
-                                <code className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[11px] leading-relaxed text-primary">
-                                  {fn.fn}
-                                </code>
-                                {fn.docs_url && (
-                                  <a
-                                    href={fn.docs_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    title="Official documentation"
-                                    className="mt-0.5 shrink-0 text-[11px] text-muted-foreground hover:text-foreground"
-                                  >
-                                    Docs
-                                  </a>
-                                )}
-                              </div>
-                            </td>
-                            <td className="px-3 py-2 text-muted-foreground align-top leading-relaxed">{fn.purpose}</td>
-                            <td className="px-3 py-2 align-top">
-                              <CodeBlock code={fn.example} language="python" />
-                            </td>
-                          </tr>
-                          {hasExtendedFields && (
-                            <tr className="bg-muted/20">
-                              <td colSpan={3} className="px-3 py-3">
-                                <div className="flex flex-wrap gap-4">
-                                  {fn.common_errors && fn.common_errors.length > 0 && (
-                                    <div className="flex-1 min-w-[200px] border-l-2 border-amber-600 bg-amber-600/5 p-3 rounded-r">
-                                      <h3 className="text-[10px] font-semibold uppercase mb-1 text-amber-800 dark:text-amber-300">Common Errors</h3>
-                                      <ul className="list-disc pl-4 space-y-1 text-xs text-amber-800 dark:text-amber-300">
-                                        {fn.common_errors.map((error, errIdx) => (
-                                          <li key={errIdx}>{error}</li>
-                                        ))}
-                                      </ul>
-                                    </div>
-                                  )}
-                                  {fn.performance_note && (
-                                    <div className="flex-1 min-w-[200px] border-l-2 border-blue-600 bg-blue-600/5 p-3 rounded-r">
-                                      <h3 className="text-[10px] font-semibold uppercase mb-1 text-blue-800 dark:text-blue-300">Performance</h3>
-                                      <p className="text-xs text-blue-800 dark:text-blue-300">{fn.performance_note}</p>
-                                    </div>
-                                  )}
-                                  {fn.related_fns && fn.related_fns.length > 0 && (
-                                    <div className="flex-1 min-w-[200px] p-3">
-                                      <h3 className="text-[10px] font-semibold uppercase mb-1 text-muted-foreground">See Also</h3>
-                                      <div className="flex flex-wrap gap-1.5">
-                                        {fn.related_fns.map((relatedFn, relIdx) => (
-                                          <span key={relIdx} className="text-[10px] font-mono px-1.5 py-0.5 bg-muted rounded text-muted-foreground">
-                                            {relatedFn}
-                                          </span>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          )}
-                        </Fragment>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              {section.gotchas.length > 0 && (
-                <div className="border-l-2 border-amber-500 bg-amber-500/5 p-3 rounded-r text-sm text-amber-800 dark:text-amber-300">
-                  <h3 className="text-[10px] font-semibold uppercase mb-1">Gotchas</h3>
-                  <ul className="list-disc pl-4 space-y-1">
-                    {section.gotchas.map((gotcha, idx) => (
-                      <li key={idx}>{gotcha}</li>
-                    ))}
-                  </ul>
+          return (
+            <SectionCard
+              key={task.task}
+              title={task.task}
+              subtitle={`Mental trigger: ${task.mental_trigger}`}
+            >
+              <div id={taskAnchor} className="space-y-4 scroll-mt-24">
+                <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
+                  <div className="rounded-lg border border-border bg-card p-4">
+                    <h3 className="mb-2 text-sm font-semibold">Syntax</h3>
+                    <CodeBlock code={task.syntax} language="python" />
+                  </div>
+                  <div className="rounded-lg border border-border bg-card p-4">
+                    <h3 className="mb-2 text-sm font-semibold">Example</h3>
+                    <CodeBlock code={task.example} language="python" />
+                  </div>
                 </div>
-              )}
-            </div>
-          </SectionCard>
-        ))}
+
+                <div className="grid gap-4 lg:grid-cols-3 text-sm">
+                  <div>
+                    <h4 className="text-[11px] font-semibold uppercase text-muted-foreground mb-1">Important parameters</h4>
+                    <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
+                      {task.important_params.map((param, idx) => (
+                        <li key={idx}>{param}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="text-[11px] font-semibold uppercase text-muted-foreground mb-1">When to use</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{task.use_when}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-[11px] font-semibold uppercase text-muted-foreground mb-1">Avoid when</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{task.avoid_when}</p>
+                  </div>
+                </div>
+
+                {task.decision_notes && (
+                  <div className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
+                    <h4 className="text-[11px] font-semibold uppercase mb-1">Decision notes</h4>
+                    <p>{task.decision_notes}</p>
+                  </div>
+                )}
+
+                {task.gotchas.length > 0 && (
+                  <div className="border-l-2 border-amber-500 bg-amber-500/5 p-3 rounded-r text-sm text-amber-800 dark:text-amber-300">
+                    <h3 className="text-[10px] font-semibold uppercase mb-1">Gotchas</h3>
+                    <ul className="list-disc pl-4 space-y-1">
+                      {task.gotchas.map((gotcha, idx) => (
+                        <li key={idx}>{gotcha}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="grid gap-4 lg:grid-cols-2 text-sm">
+                  <div>
+                    <h4 className="text-[11px] font-semibold uppercase text-muted-foreground mb-1">Official docs</h4>
+                    <a
+                      href={task.official_docs}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary hover:underline"
+                    >
+                      {task.official_docs}
+                    </a>
+                  </div>
+                  {(task.related_workflows.length > 0 || task.related_cheatsheets.length > 0) && (
+                    <div>
+                      <h4 className="text-[11px] font-semibold uppercase text-muted-foreground mb-1">Related content</h4>
+                      <div className="space-y-1 text-sm text-muted-foreground">
+                        {task.related_workflows.length > 0 && (
+                          <p>Workflows: {task.related_workflows.join(', ')}</p>
+                        )}
+                        {task.related_cheatsheets.length > 0 && (
+                          <p>Cheatsheets: {task.related_cheatsheets.join(', ')}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </SectionCard>
+          );
+        })}
       </div>
 
       <RelatedContent items={relatedContent} />

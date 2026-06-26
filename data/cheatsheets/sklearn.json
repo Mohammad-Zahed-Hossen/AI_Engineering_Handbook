@@ -1,76 +1,33 @@
 {
   "created_at": "2026-06-24",
-  "updated_at": "2026-06-25",
+  "updated_at": "2026-06-26",
   "sources": ["https://scikit-learn.org/stable/user_guide.html"],
   "id": "sklearn",
   "name": "Scikit-Learn",
-  "groups": [
+  "entries": [
     {
-      "group": "Model Training",
-      "items": [
-        { "fn": "model.fit(X, y)", "purpose": "Train the estimator on standard inputs and labels." },
-        { "fn": "model.predict(X)", "purpose": "Predicts labels or values for input samples using the trained estimator." },
-        { "fn": "model.predict_proba(X)", "purpose": "Returns probability estimates for each class on input samples." },
-        { "fn": "model.transform(X)", "purpose": "Transforms input data using the fitted estimator or preprocessing pipeline." },
-        { "fn": "model.fit_transform(X, y)", "purpose": "Fits the estimator to the data and then transforms the input samples." },
-        { "fn": "model.score(X, y)", "purpose": "Returns the mean accuracy or R-squared score on the given test data." },
-        { "fn": "model.get_params()", "purpose": "Retrieves the current parameter names and values of the estimator." }
-      ]
+      "problem": "Train and evaluate a classification model",
+      "trigger": "Need to build a baseline classifier for tabular data",
+      "snippet": "from sklearn.model_selection import train_test_split\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.metrics import accuracy_score\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)\nmodel = RandomForestClassifier(n_estimators=100)\nmodel.fit(X_train, y_train)\ny_pred = model.predict(X_test)\nprint(accuracy_score(y_test, y_pred))",
+      "minimal_notes": "Always split data before training. Use random_state for reproducibility.",
+      "common_bug": "Data leakage when preprocessing before train_test_split — always fit scalers on train data only.",
+      "docs_url": "https://scikit-learn.org/stable/modules/ensemble.html#forest"
     },
     {
-      "group": "Preprocessing",
-      "items": [
-        { "fn": "StandardScaler()", "purpose": "Standardizes features by removing the mean and scaling to unit variance." },
-        { "fn": "MinMaxScaler()", "purpose": "Scales each feature to a given range typically between zero and one." },
-        { "fn": "LabelEncoder()", "purpose": "Encodes target labels with values between zero and n_classes minus one." },
-        { "fn": "OneHotEncoder()", "purpose": "Encodes categorical features as a one-hot numeric array." },
-        { "fn": "train_test_split(X, y, test_size=0.2)", "purpose": "Splits arrays into random train and test subsets." },
-        { "fn": "SimpleImputer()", "purpose": "Imputes missing values using a constant or statistical strategy." }
-      ]
+      "problem": "Build a preprocessing pipeline",
+      "trigger": "Need consistent preprocessing for train and test data",
+      "snippet": "from sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.impute import SimpleImputer\n\npipeline = Pipeline([\n    ('imputer', SimpleImputer(strategy='median')),\n    ('scaler', StandardScaler())\n])\nX_train_processed = pipeline.fit_transform(X_train)\nX_test_processed = pipeline.transform(X_test)",
+      "minimal_notes": "Pipeline prevents data leakage by fitting only on train data. Transform applies fitted preprocessing to test data.",
+      "common_bug": "Calling fit on test data leaks information — use fit_transform on train, transform only on test.",
+      "docs_url": "https://scikit-learn.org/stable/modules/compose.html"
     },
     {
-      "group": "Models",
-      "items": [
-        { "fn": "LogisticRegression()", "purpose": "Fits a logistic regression model for classification tasks." },
-        { "fn": "RandomForestClassifier()", "purpose": "Fits an ensemble of decision trees for classification tasks." },
-        { "fn": "SVC()", "purpose": "Fits a support vector classifier with a kernel function." },
-        { "fn": "KMeans(n_clusters=8)", "purpose": "Partitions data into k clusters using the Lloyd algorithm." },
-        { "fn": "LinearRegression()", "purpose": "Fits a linear model to minimize residual sum of squares." },
-        { "fn": "DecisionTreeClassifier()", "purpose": "Fits a single decision tree classifier to the data." }
-      ]
-    },
-    {
-      "group": "Pipeline",
-      "items": [
-        { "fn": "Pipeline(steps=[('scaler', scaler), ('model', model)])", "purpose": "Chains multiple estimators into a single composite estimator." },
-        { "fn": "make_pipeline(*steps)", "purpose": "Constructs a pipeline from given estimators using generated names." },
-        { "fn": "ColumnTransformer(transformers=[('name', transformer, columns)])", "purpose": "Applies different transformers to different columns of a DataFrame." },
-        { "fn": "FeatureUnion(transformer_list=[('name', transformer)])", "purpose": "Concatenates the results of multiple transformer objects." },
-        { "fn": "FunctionTransformer(func)", "purpose": "Constructs a transformer from an arbitrary callable function." },
-        { "fn": "pipeline.fit(X, y)", "purpose": "Fits all transformers and the final estimator on the data." }
-      ]
-    },
-    {
-      "group": "Metrics",
-      "items": [
-        { "fn": "accuracy_score(y_true, y_pred)", "purpose": "Computes the fraction of correctly classified samples." },
-        { "fn": "f1_score(y_true, y_pred)", "purpose": "Computes the F1 score combining precision and recall." },
-        { "fn": "classification_report(y_true, y_pred)", "purpose": "Builds a text report showing classification metrics per class." },
-        { "fn": "confusion_matrix(y_true, y_pred)", "purpose": "Computes a matrix of true versus predicted class labels." },
-        { "fn": "roc_auc_score(y_true, y_score)", "purpose": "Computes the area under the receiver operating characteristic curve." },
-        { "fn": "mean_squared_error(y_true, y_pred)", "purpose": "Computes the mean squared error between true and predicted values." }
-      ]
-    },
-    {
-      "group": "Model Selection",
-      "items": [
-        { "fn": "cross_val_score(estimator, X, y, cv=5)", "purpose": "Evaluates a score by cross-validation on a dataset." },
-        { "fn": "GridSearchCV(estimator, param_grid, cv=5)", "purpose": "Exhaustively searches over a parameter grid for the best estimator." },
-        { "fn": "RandomizedSearchCV(estimator, param_distributions, n_iter=10)", "purpose": "Searches over a random subset of the parameter space." },
-        { "fn": "cross_validate(estimator, X, y, cv=5, scoring)", "purpose": "Evaluates metrics by cross-validation and returns multiple scores." },
-        { "fn": "StratifiedKFold(n_splits=5)", "purpose": "Provides train-test indices to preserve class distribution in each fold." },
-        { "fn": "ParameterGrid(param_grid)", "purpose": "Generates all combinations of parameter values from a grid." }
-      ]
+      "problem": "Perform hyperparameter tuning with cross-validation",
+      "trigger": "Need to find optimal model parameters",
+      "snippet": "from sklearn.model_selection import GridSearchCV\n\nparam_grid = {'n_estimators': [50, 100, 200], 'max_depth': [10, 20, None]}\ngrid_search = GridSearchCV(RandomForestClassifier(), param_grid, cv=5)\ngrid_search.fit(X_train, y_train)\nprint(grid_search.best_params_, grid_search.best_score_)",
+      "minimal_notes": "Use cv=5 for 5-fold cross-validation. best_params_ shows optimal hyperparameters.",
+      "common_bug": "Not setting random_state leads to non-reproducible results across runs.",
+      "docs_url": "https://Scikit-learn.org/stable/modules/grid_search.html"
     }
   ]
 }

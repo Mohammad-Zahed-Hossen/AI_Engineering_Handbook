@@ -1,69 +1,51 @@
 {
   "created_at": "2026-06-24",
-  "updated_at": "2026-06-25",
-  "sources": ["https://numpy.org/doc/stable/"],
+  "updated_at": "2026-06-26",
+  "sources": [
+    "https://numpy.org/doc/stable/"
+  ],
   "id": "numpy-cheatsheet",
   "name": "NumPy Cheatsheet",
-  "groups": [
+  "entries": [
     {
-      "group": "Array Creation",
-      "items": [
-        { "fn": "np.array(list)", "purpose": "Convert a list into a NumPy array." },
-        { "fn": "np.zeros(shape)", "purpose": "Creates an array of the given shape filled with zeros." },
-        { "fn": "np.ones(shape)", "purpose": "Creates an array of the given shape filled with ones." },
-        { "fn": "np.empty(shape)", "purpose": "Creates an uninitialized array of the given shape without setting values." },
-        { "fn": "np.arange(start, stop, step)", "purpose": "Returns evenly spaced values within a given interval." },
-        { "fn": "np.linspace(start, stop, num=50)", "purpose": "Returns evenly spaced numbers over a specified interval." },
-        { "fn": "np.random.rand(d0, d1, ...)", "purpose": "Creates an array of random values from a uniform distribution over [0, 1)." }
-      ]
+      "problem": "Create array from list / pre-allocate buffer",
+      "trigger": "Converting Python data to NumPy or initializing a fixed-shape output",
+      "snippet": "a = np.array([1, 2, 3], dtype=np.float32)\nz = np.zeros((batch, features))\nr = np.arange(0, 10, 2)",
+      "minimal_notes": "Use zeros not empty for pre-allocation — empty contains garbage values.",
+      "common_bug": "Mixed int/float list silently upcasts to float64, doubling memory for large arrays.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.array.html"
     },
     {
-      "group": "Shape Operations",
-      "items": [
-        { "fn": "np.reshape(a, newshape)", "purpose": "Gives a new shape to an array without changing its data." },
-        { "fn": "np.ravel(a)", "purpose": "Returns a contiguous flattened 1-D array." },
-        { "fn": "a.flatten()", "purpose": "Returns a copy of the array collapsed into one dimension." },
-        { "fn": "np.transpose(a, axes)", "purpose": "Permutes the dimensions of an array according to the given axes." },
-        { "fn": "np.expand_dims(a, axis)", "purpose": "Expands the shape of an array by inserting a new axis at the given position." },
-        { "fn": "np.squeeze(a, axis)", "purpose": "Removes single-dimensional entries from the shape of an array." },
-        { "fn": "np.concatenate((a1, a2), axis=0)", "purpose": "Joins a sequence of arrays along an existing axis." }
-      ]
+      "problem": "Reshape array for model input (batch, channel, height, width)",
+      "trigger": "Preparing a tensor shape mismatch before a layer forward pass",
+      "snippet": "x = arr.reshape(batch, -1)           # flatten spatial dims\nx = np.expand_dims(arr, axis=1)      # add channel dim: (N,H,W) -> (N,1,H,W)\nx = np.transpose(arr, (0, 2, 1))     # swap last two dims",
+      "minimal_notes": "reshape returns a view when possible — call .copy() if you need an independent array.",
+      "common_bug": "Broadcasting (3,) + (3,1) silently produces (3,3) instead of element-wise — always verify .shape after operations.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.reshape.html"
     },
     {
-      "group": "Indexing",
-      "items": [
-        { "fn": "a[indices]", "purpose": "Selects elements from an array using integer indices or slices." },
-        { "fn": "a[boolean_mask]", "purpose": "Selects elements where the boolean mask evaluates to True." },
-        { "fn": "np.where(condition, x, y)", "purpose": "Returns elements chosen from x or y depending on the condition." },
-        { "fn": "np.argmax(a, axis)", "purpose": "Returns the indices of the maximum values along an axis." },
-        { "fn": "np.argmin(a, axis)", "purpose": "Returns the indices of the minimum values along an axis." },
-        { "fn": "np.take(a, indices, axis)", "purpose": "Takes elements from an array along a given axis at given indices." }
-      ]
+      "problem": "Filter array elements by condition",
+      "trigger": "Masking padding tokens, selecting positive predictions, filtering by label",
+      "snippet": "positive = arr[arr > 0]                        # boolean mask — returns 1D\nreplaced = np.where(arr > 0, arr, 0.0)         # conditional replace — preserves shape\nselected = arr[[0, 3, 5]]                      # fancy index — returns copy",
+      "minimal_notes": "Boolean mask on 2D array always returns 1D flat result. Use np.where to preserve shape.",
+      "common_bug": "Fancy index assignment arr[[0,1]] = 5 may silently not apply — use direct slice assignment for in-place modification.",
+      "docs_url": "https://numpy.org/doc/stable/reference/arrays.indexing.html"
     },
     {
-      "group": "Math Operations",
-      "items": [
-        { "fn": "np.sum(a, axis)", "purpose": "Sums the elements of an array over a given axis." },
-        { "fn": "np.mean(a, axis)", "purpose": "Computes the arithmetic mean along a given axis." },
-        { "fn": "np.std(a, axis)", "purpose": "Computes the standard deviation along a given axis." },
-        { "fn": "np.max(a, axis)", "purpose": "Returns the maximum value along a given axis." },
-        { "fn": "np.min(a, axis)", "purpose": "Returns the minimum value along a given axis." },
-        { "fn": "np.dot(a, b)", "purpose": "Computes the dot product of two arrays." },
-        { "fn": "np.cross(a, b)", "purpose": "Computes the cross product of two vectors." },
-        { "fn": "np.abs(a)", "purpose": "Calculates the absolute value element-wise." },
-        { "fn": "np.clip(a, min, max)", "purpose": "Limits the values in an array between min and max." }
-      ]
+      "problem": "Compute per-axis statistics (sum, mean, std, argmax)",
+      "trigger": "Computing per-batch loss stats, class prediction indices, L2 norms for normalization",
+      "snippet": "col_means = np.mean(arr, axis=0, keepdims=True)   # per-column, shape preserved\npreds     = np.argmax(logits, axis=1)              # predicted class per row\nnorms     = np.linalg.norm(X, ord=2, axis=1, keepdims=True)",
+      "minimal_notes": "keepdims=True is essential to broadcast the result back against the original array.",
+      "common_bug": "np.mean on int dtype silently truncates in NumPy < 2.0 — always cast to float first.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.mean.html"
     },
     {
-      "group": "Linear Algebra",
-      "items": [
-        { "fn": "np.linalg.inv(a)", "purpose": "Computes the multiplicative inverse of a square matrix." },
-        { "fn": "np.linalg.eig(a)", "purpose": "Computes the eigenvalues and eigenvectors of a square matrix." },
-        { "fn": "np.linalg.svd(a)", "purpose": "Performs singular value decomposition on a matrix." },
-        { "fn": "np.linalg.norm(a, ord)", "purpose": "Computes a matrix or vector norm." },
-        { "fn": "np.linalg.solve(a, b)", "purpose": "Solves a linear matrix equation using a square coefficient matrix." },
-        { "fn": "np.linalg.det(a)", "purpose": "Computes the determinant of a square matrix." }
-      ]
+      "problem": "Solve linear system or decompose matrix (SVD, eig)",
+      "trigger": "PCA, least-squares regression, normalizing embeddings, computing cosine similarity",
+      "snippet": "x = np.linalg.solve(A, b)                       # Ax = b, stable\nU, s, Vh = np.linalg.svd(X, full_matrices=False) # economy SVD\nw, v = np.linalg.eigh(M)                         # symmetric matrix: real output",
+      "minimal_notes": "Never use linalg.inv to solve Ax=b — use linalg.solve. Use eigh not eig for symmetric matrices.",
+      "common_bug": "linalg.inv on near-singular matrix (cond > 1e12) returns garbage silently — check np.linalg.cond first.",
+      "docs_url": "https://numpy.org/doc/stable/reference/routines.linalg.html"
     }
   ]
 }

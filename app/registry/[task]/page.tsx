@@ -1,9 +1,6 @@
 import { notFound } from 'next/navigation';
-import { getRegistryTasks, getRegistryByTask, getContentName, getContentPath } from '@/lib/data';
-import StatusBadge from '@/components/shared/StatusBadge';
-import { CodeBlock } from '@/components/shared/CodeBlock';
+import { getRegistryTasks, getRegistryByTask } from '@/lib/data';
 import { validateRegistryTask } from '@/lib/route-params';
-import Link from 'next/link';
 
 /**
  * Pre-generates tasks for the model registry paths.
@@ -46,8 +43,6 @@ export default async function RegistryTaskPage({ params }: PageProps) {
     ocr: 'OCR Models Registry',
   };
 
-  const hasDimension = models.some((m) => m.dimension !== undefined);
-
   return (
     <div className="space-y-6">
       {/* Registry Header */}
@@ -61,7 +56,7 @@ export default async function RegistryTaskPage({ params }: PageProps) {
           </span>
         </div>
         <p className="text-xs text-muted-foreground mt-2 max-w-2xl leading-relaxed">
-          Comparison specifications, sizes, status flags, and quick instantiation commands for {validTask} model checkpoints.
+          Lightweight navigation index for {validTask} model checkpoints with size information.
         </p>
       </div>
 
@@ -81,91 +76,39 @@ export default async function RegistryTaskPage({ params }: PageProps) {
             <table className="min-w-full divide-y divide-border text-left">
               <thead className="bg-muted/40 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider select-none font-sans">
                 <tr>
-                  <th className="px-4 py-2 w-[15%]">Model ID</th>
-                  <th className="px-4 py-2 text-center w-[5%]">Lang</th>
-                  {hasDimension && <th className="px-4 py-2 text-center w-[8%]">Dimension</th>}
-                  <th className="px-4 py-2 text-center w-[8%]">Size</th>
-                  <th className="px-4 py-2 text-center w-[10%]">Status</th>
-                  <th className="px-4 py-2 w-[18%]">Use Case</th>
-                  <th className="px-4 py-2 w-[22%]">Quick Start</th>
-                  <th className="px-4 py-2 w-[14%]">Alternatives</th>
+                  <th className="px-4 py-2 w-[30%]">Model ID</th>
+                  <th className="px-4 py-2 text-center w-[20%]">Task</th>
+                  <th className="px-4 py-2 text-center w-[20%]">Size (MB)</th>
+                  <th className="px-4 py-2 w-[30%]">Link</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border text-[11px] font-mono align-top">
                 {models.map((m) => (
                   <tr key={m.id} className="hover:bg-muted/10">
                     <td className="px-4 py-2.5 font-semibold text-foreground select-all font-mono">
-                      <div>{m.model_id}</div>
-                      {(() => {
-                        const officialDocs = m.sources.find(
-                          url => !url.includes('arxiv.org') && !url.includes('biorxiv.org') && !url.includes('researchgate.net') && !url.includes('doi.org')
-                        );
-                        if (officialDocs) {
-                          return (
-                            <a
-                              href={officialDocs}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[9px] text-indigo-500 hover:underline block mt-1 font-sans font-semibold"
-                            >
-                              Docs &rarr;
-                            </a>
-                          );
-                        }
-                        return null;
-                      })()}
+                      {m.id}
                     </td>
                     <td className="px-4 py-2.5 text-center uppercase text-muted-foreground">
-                      {m.language}
+                      {m.task}
                     </td>
-                    {hasDimension && (
-                      <td className="px-4 py-2.5 text-center text-muted-foreground font-semibold">
-                        {m.dimension !== undefined ? m.dimension : 'N/A'}
-                      </td>
-                    )}
                     <td className="px-4 py-2.5 text-center text-muted-foreground whitespace-nowrap">
                       {m.size_mb.toLocaleString()} MB
                     </td>
-                    <td className="px-4 py-2.5 text-center">
-                      <StatusBadge status={m.status} />
-                    </td>
-                    <td className="px-4 py-2.5 text-muted-foreground font-sans leading-relaxed">
-                      {m.use_case}
-                    </td>
-                    <td className="px-4 py-2">
-                      <CodeBlock code={m.quick_start} language="python" />
-                    </td>
                     <td className="px-4 py-2.5">
-                      <div className="flex flex-wrap gap-1">
-                        {m.alternatives && m.alternatives.length > 0 ? (
-                          m.alternatives.map((alt) => {
-                            const name = getContentName(alt.type, alt.id);
-                            const path = getContentPath(alt.type, alt.id);
-
-                            if (path) {
-                              return (
-                                <Link
-                                  key={alt.id}
-                                  href={path}
-                                  className="px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 text-[9px] hover:underline"
-                                >
-                                  {name}
-                                </Link>
-                              );
-                            }
-                            return (
-                              <span
-                                key={alt.id}
-                                className="px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground border border-border text-[9px]"
-                              >
-                                {name}
-                              </span>
-                            );
-                          })
-                        ) : (
-                          <span className="text-muted-foreground/60 text-[9px] font-sans">None</span>
-                        )}
-                      </div>
+                      {typeof m.link === 'string' ? (
+                        <a
+                          href={m.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[10px] text-indigo-500 hover:underline font-sans font-semibold"
+                        >
+                          View &rarr;
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground/60 text-[9px] font-sans">
+                          Missing: {m.link.reason || 'N/A'}
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}

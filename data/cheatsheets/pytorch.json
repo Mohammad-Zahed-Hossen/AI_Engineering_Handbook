@@ -1,90 +1,51 @@
 {
   "created_at": "2026-06-24",
-  "updated_at": "2026-06-25",
-  "sources": ["https://pytorch.org/docs/stable/index.html"],
+  "updated_at": "2026-06-26",
+  "sources": [
+    "https://pytorch.org/docs/stable/index.html"
+  ],
   "id": "pytorch",
   "name": "PyTorch",
-  "groups": [
+  "entries": [
     {
-      "group": "Tensor Creation",
-      "items": [
-        { "fn": "torch.tensor(data)", "purpose": "Creates a tensor from data like a list or array." },
-        { "fn": "torch.zeros(*size)", "purpose": "Creates a tensor filled with zeros." },
-        { "fn": "torch.ones(*size)", "purpose": "Creates a tensor filled with ones." },
-        { "fn": "torch.rand(*size)", "purpose": "Creates a tensor with uniform random values in [0, 1)." },
-        { "fn": "torch.randn(*size)", "purpose": "Creates a tensor with standard normal random values." },
-        { "fn": "torch.arange(start, end, step)", "purpose": "Creates a 1-D tensor with values from start to end by step." },
-        { "fn": "torch.linspace(start, end, steps)", "purpose": "Creates a 1-D tensor with evenly spaced steps between start and end." },
-        { "fn": "torch.from_numpy(ndarray)", "purpose": "Creates a tensor that shares memory with a NumPy array." }
-      ]
+      "problem": "Create tensors and move to device",
+      "trigger": "Model input preparation, weight initialization, or converting NumPy arrays for GPU",
+      "snippet": "x = torch.tensor(data, dtype=torch.float32).to(device)\nx = torch.from_numpy(arr).float()      # shares memory with numpy array\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')",
+      "minimal_notes": "from_numpy shares memory — modifying one modifies the other. Call .clone() to break the link.",
+      "common_bug": "Tensor on CPU passed to a model on GPU raises RuntimeError — always call .to(device) on both model and inputs.",
+      "docs_url": "https://pytorch.org/docs/stable/tensors.html"
     },
     {
-      "group": "Tensor Operations",
-      "items": [
-        { "fn": "tensor.reshape(*shape)", "purpose": "Returns a tensor with the same data but different shape." },
-        { "fn": "tensor.view(*shape)", "purpose": "Returns a view of the tensor with a new shape without copying data." },
-        { "fn": "tensor.permute(dims)", "purpose": "Reorders the dimensions of a tensor according to the given permutation." },
-        { "fn": "tensor.squeeze(dim)", "purpose": "Removes dimensions of size one from a tensor." },
-        { "fn": "tensor.unsqueeze(dim)", "purpose": "Inserts a dimension of size one at the specified position." },
-        { "fn": "torch.cat(tensors, dim=0)", "purpose": "Concatenates a sequence of tensors along an existing dimension." },
-        { "fn": "torch.stack(tensors, dim=0)", "purpose": "Concatenates a sequence of tensors along a new dimension." },
-        { "fn": "torch.split(tensor, split_size_or_sections, dim=0)", "purpose": "Splits a tensor into chunks along a given dimension." }
-      ]
+      "problem": "Write the training loop correctly",
+      "trigger": "Custom training — any time you are not using HuggingFace Trainer",
+      "snippet": "model.train()\nfor batch_X, batch_y in dataloader:\n    batch_X, batch_y = batch_X.to(device), batch_y.to(device)\n    optimizer.zero_grad()       # must come before forward\n    out = model(batch_X)\n    loss = criterion(out, batch_y)\n    loss.backward()\n    optimizer.step()",
+      "minimal_notes": "zero_grad() must be called before backward() — omitting it accumulates gradients across batches silently.",
+      "common_bug": "Calling loss.item() inside the training loop keeps the computation graph alive — only call .item() for logging, never for intermediate ops.",
+      "docs_url": "https://pytorch.org/docs/stable/optim.html"
     },
     {
-      "group": "Autograd",
-      "items": [
-        { "fn": "tensor.requires_grad_(True)", "purpose": "Enables gradient tracking for a tensor in-place." },
-        { "fn": "tensor.backward()", "purpose": "Computes the gradient of the tensor with respect to graph leaves." },
-        { "fn": "torch.autograd.grad(outputs, inputs)", "purpose": "Computes and returns the sum of gradients of outputs with respect to inputs." },
-        { "fn": "tensor.detach()", "purpose": "Returns a new tensor detached from the computation graph." },
-        { "fn": "torch.no_grad()", "purpose": "Context manager that disables gradient calculation for inference." },
-        { "fn": "tensor.grad", "purpose": "Accesses the gradient accumulated for the tensor after backward." }
-      ]
+      "problem": "Run inference without building a computation graph",
+      "trigger": "Validation loop, serving, embedding generation — anywhere you do not need gradients",
+      "snippet": "model.eval()\nwith torch.no_grad():\n    preds = model(X.to(device))\n    probs = torch.softmax(preds, dim=-1)\n    labels = probs.argmax(dim=-1).cpu().numpy()",
+      "minimal_notes": "model.eval() disables dropout and switches BatchNorm to use running stats. torch.no_grad() disables gradient tracking. Both are required.",
+      "common_bug": "Forgetting model.eval() during validation — dropout randomly zeroes activations, producing different results on every forward pass.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.no_grad.html"
     },
     {
-      "group": "Neural Network",
-      "items": [
-        { "fn": "nn.Linear(in_features, out_features)", "purpose": "Applies a linear transformation to incoming data." },
-        { "fn": "nn.Conv2d(in_channels, out_channels, kernel_size)", "purpose": "Applies a 2D convolution over an input signal." },
-        { "fn": "nn.ReLU()", "purpose": "Applies the rectified linear unit activation function element-wise." },
-        { "fn": "nn.Dropout(p=0.5)", "purpose": "Randomly zeroes elements of the input tensor during training." },
-        { "fn": "nn.BatchNorm1d(num_features)", "purpose": "Normalizes a 2D or 3D input over a batch using running statistics." },
-        { "fn": "nn.Sequential(*modules)", "purpose": "A container that chains modules in a sequential order." }
-      ]
+      "problem": "Save and load a model checkpoint",
+      "trigger": "Saving the best model during training or resuming from a checkpoint",
+      "snippet": "# Save\ntorch.save({'epoch': epoch, 'model_state': model.state_dict(),\n            'optim_state': optimizer.state_dict(), 'loss': loss}, 'ckpt.pt')\n\n# Load\nckpt = torch.load('ckpt.pt', map_location=device)\nmodel.load_state_dict(ckpt['model_state'])\noptimizer.load_state_dict(ckpt['optim_state'])",
+      "minimal_notes": "Always save optimizer state alongside model state — without it, adaptive optimizers (Adam, AdamW) reset their momentum on resume.",
+      "common_bug": "torch.load without map_location always loads to the device it was saved on — pass map_location=device to avoid CUDA errors when loading on CPU.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.save.html"
     },
     {
-      "group": "Optimizers",
-      "items": [
-        { "fn": "torch.optim.Adam(params, lr=0.001)", "purpose": "Implements the Adam optimization algorithm." },
-        { "fn": "torch.optim.SGD(params, lr=0.01, momentum=0.9)", "purpose": "Implements stochastic gradient descent with optional momentum." },
-        { "fn": "torch.optim.lr_scheduler.StepLR(optimizer, step_size, gamma=0.1)", "purpose": "Decays the learning rate by gamma every step_size epochs." },
-        { "fn": "optimizer.zero_grad()", "purpose": "Resets gradients of all optimized tensors to zero." },
-        { "fn": "optimizer.step()", "purpose": "Performs a single optimization step to update parameters." },
-        { "fn": "torch.optim.AdamW(params, lr=0.001)", "purpose": "Implements Adam with decoupled weight decay regularization." }
-      ]
-    },
-    {
-      "group": "Training Utilities",
-      "items": [
-        { "fn": "DataLoader(dataset, batch_size=32)", "purpose": "Wraps a dataset to provide batching, shuffling, and parallel loading." },
-        { "fn": "Dataset (class)", "purpose": "Abstract base class for custom datasets requiring __len__ and __getitem__." },
-        { "fn": "model.train()", "purpose": "Sets the model in training mode enabling dropout and batch norm updates." },
-        { "fn": "model.eval()", "purpose": "Sets the model in evaluation mode disabling dropout and using batch norm stats." },
-        { "fn": "torch.save(obj, f)", "purpose": "Saves a serialized object to a file using pickle." },
-        { "fn": "torch.load(f)", "purpose": "Loads an object saved with torch.save from a file." }
-      ]
-    },
-    {
-      "group": "CUDA",
-      "items": [
-        { "fn": "tensor.to(device)", "purpose": "Moves a tensor to the specified device such as CPU or CUDA." },
-        { "fn": "torch.cuda.is_available()", "purpose": "Returns True if a CUDA-capable GPU is available." },
-        { "fn": "torch.cuda.empty_cache()", "purpose": "Releases unused cached GPU memory that can be freed." },
-        { "fn": "torch.device('cuda')", "purpose": "Creates a device object representing the specified CUDA device." },
-        { "fn": "torch.cuda.manual_seed(seed)", "purpose": "Sets the seed for generating random numbers on the current GPU." },
-        { "fn": "torch.cuda.synchronize()", "purpose": "Waits for all kernels in all streams on the current device to complete." }
-      ]
+      "problem": "Reshape tensors for layer compatibility",
+      "trigger": "Flattening before a Linear layer, adding/removing dims for conv or attention",
+      "snippet": "flat  = x.view(batch_size, -1)           # (B, C, H, W) -> (B, C*H*W)\nexpd  = x.unsqueeze(1)                   # (B, L) -> (B, 1, L)\nswap  = x.permute(0, 2, 1)              # (B, L, D) -> (B, D, L)",
+      "minimal_notes": "view requires contiguous memory — call .contiguous() before view if permute was applied, or use reshape which handles non-contiguous tensors.",
+      "common_bug": "x.view(-1, 512) after permute raises RuntimeError about non-contiguous tensors — use x.contiguous().view(-1, 512) or x.reshape(-1, 512).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.Tensor.view.html"
     }
   ]
 }

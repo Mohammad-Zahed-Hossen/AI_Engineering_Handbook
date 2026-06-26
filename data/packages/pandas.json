@@ -1,6 +1,6 @@
 {
   "created_at": "2026-06-24",
-  "updated_at": "2026-06-25",
+  "updated_at": "2026-06-26",
   "sources": [
     "https://pandas.pydata.org"
   ],
@@ -10,202 +10,114 @@
   "version": "2.2.0",
   "install": "pip install pandas",
   "import_as": "import pandas as pd",
-  "summary": "Flexible data analysis and manipulation library for Python.",
-  "sections": [
+  "summary": "Tabular data manipulation library for Python. Standard tool for CSV/Parquet I/O, column-level transformations, groupby aggregation, and time-series resampling.",
+  "tasks": [
     {
-      "name": "I/O",
-      "functions": [
-        {
-          "fn": "pd.read_csv(filepath)",
-          "purpose": "Read CSV file into a DataFrame",
-          "example": "df = pd.read_csv('data.csv')",
-          "category": "io"
-        },
-        {
-          "fn": "pd.read_parquet(filepath)",
-          "purpose": "Read a Parquet file into a DataFrame",
-          "example": "df = pd.read_parquet('data.parquet')",
-          "category": "io"
-        },
-        {
-          "fn": "df.to_csv(path)",
-          "purpose": "Write DataFrame to a CSV file",
-          "example": "df.to_csv('output.csv', index=False)",
-          "category": "io"
-        },
-        {
-          "fn": "df.to_parquet(path)",
-          "purpose": "Write DataFrame to a Parquet file",
-          "example": "df.to_parquet('output.parquet', compression='snappy')",
-          "category": "io"
-        },
-        {
-          "fn": "pd.read_json(filepath)",
-          "purpose": "Read a JSON file into a DataFrame",
-          "example": "df = pd.read_json('data.json', orient='records')",
-          "category": "io"
-        }
+      "task": "Load and save tabular data",
+      "mental_trigger": "I need to read from or write to CSV, Parquet, or JSON on disk",
+      "syntax": "pd.read_csv(filepath, dtype=None, usecols=None)\npd.read_parquet(filepath)\ndf.to_csv(path, index=False)\ndf.to_parquet(path, compression='snappy')",
+      "important_params": [
+        "dtype — dict mapping column names to types; prevents silent object-dtype coercion",
+        "usecols — list of columns to load; skips reading unused data",
+        "compression — 'snappy' or 'gzip' for parquet; snappy is faster, gzip is smaller",
+        "index — set False on to_csv to avoid writing row numbers"
       ],
+      "example": "df = pd.read_csv('data.csv', dtype={'id': str, 'score': float}, usecols=['id', 'score', 'label'])\ndf.to_parquet('output.parquet', compression='snappy', index=False)",
+      "use_when": "Reading structured tabular files where column types need to be controlled upfront. Saving intermediate pipeline results in Parquet for faster re-reads.",
+      "avoid_when": "Files exceed available RAM — use polars lazy API or dask. Need millisecond I/O — Parquet is still slower than memory-mapped formats like Arrow IPC.",
+      "decision_notes": "Always prefer Parquet over CSV for any file you will read more than once — Parquet is columnar, typed, and 3-10x faster to load. Use dtype on read_csv to prevent late-stage type surprises.",
       "gotchas": [
-        "Modifying a slice of a DataFrame can trigger SettingWithCopyWarning.",
-        "pd.read_csv() infers dtypes from the first chunk of rows; columns with mixed types later in the file may silently coerce to object dtype, inflating memory and breaking downstream numeric operations."
-      ]
+        "pd.read_csv infers dtypes from the first chunk only; mixed-type columns appearing later silently coerce to object dtype, breaking all downstream numeric operations.",
+        "df.to_csv writes the row index by default — always pass index=False unless you explicitly want the index preserved."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html",
+      "related_workflows": ["rag", "fine-tuning-lora", "text-classification"],
+      "related_cheatsheets": ["pandas-cheatsheet"]
     },
     {
-      "name": "Inspection",
-      "functions": [
-        {
-          "fn": "df.head(n)",
-          "purpose": "Return the first n rows of the DataFrame",
-          "example": "preview = df.head(10)",
-          "category": "inspection"
-        },
-        {
-          "fn": "df.info()",
-          "purpose": "Print a concise summary of the DataFrame including dtypes and memory usage",
-          "example": "df.info()",
-          "category": "inspection"
-        },
-        {
-          "fn": "df.describe()",
-          "purpose": "Generate descriptive statistics for numeric columns",
-          "example": "stats = df.describe()",
-          "category": "inspection"
-        },
-        {
-          "fn": "df.dtypes",
-          "purpose": "Return the data types of each column as a Series",
-          "example": "types = df.dtypes",
-          "category": "inspection"
-        },
-        {
-          "fn": "df.value_counts(subset)",
-          "purpose": "Return a Series containing counts of unique rows in the DataFrame",
-          "example": "counts = df.value_counts(['category', 'status'])",
-          "category": "inspection"
-        }
+      "task": "Inspect DataFrame structure and data quality",
+      "mental_trigger": "I just loaded data and need to understand its shape, types, and null distribution before doing anything else",
+      "syntax": "df.info()\ndf.describe(include='all')\ndf.isnull().sum()\ndf.value_counts(subset)",
+      "important_params": [
+        "include='all' — include non-numeric columns in describe output",
+        "subset — list of columns for value_counts grouping"
       ],
+      "example": "df.info()                             # shape, dtypes, null counts per column\ndf.describe(include='all')            # stats for all columns including categoricals\ndf.isnull().sum().sort_values(ascending=False)  # ranked null counts",
+      "use_when": "Always first step after loading any new dataset. Identifying object-dtype columns that should be numeric, spotting null patterns before imputation.",
+      "avoid_when": "Production inference path — these are EDA-only operations with no place in a serving pipeline.",
+      "decision_notes": "df.info() and df.isnull().sum() are the two mandatory first calls after read_csv. Skipping them is the single most common source of silent type bugs in data pipelines.",
       "gotchas": [
-        "df.describe() only includes numeric columns by default; categorical and datetime columns are silently excluded unless you pass include='all', which can mislead EDA by hiding missing data in non-numeric columns.",
-        "df.dtypes returns a pandas Series, not a dictionary; comparing it with a plain dict for equality will always return False even when the mappings are identical."
-      ]
+        "df.describe() silently excludes non-numeric columns unless you pass include='all' — you will miss null counts in string and category columns.",
+        "df.dtypes returns a pandas Series, not a dict — equality comparison with a plain dict always returns False."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.info.html",
+      "related_workflows": [],
+      "related_cheatsheets": ["pandas-cheatsheet"]
     },
     {
-      "name": "Selection",
-      "functions": [
-        {
-          "fn": "df.loc[rows, cols]",
-          "purpose": "Access a group of rows and columns by labels or boolean array",
-          "example": "subset = df.loc[df['age'] > 30, ['name', 'salary']]",
-          "category": "selection"
-        },
-        {
-          "fn": "df.iloc[rows, cols]",
-          "purpose": "Access a group of rows and columns by integer position",
-          "example": "subset = df.iloc[0:5, [0, 2, 3]]",
-          "category": "selection"
-        },
-        {
-          "fn": "df[cols]",
-          "purpose": "Select one or more columns by name",
-          "example": "names = df[['name', 'age']]",
-          "category": "selection"
-        },
-        {
-          "fn": "df.query(expr)",
-          "purpose": "Filter rows using a query expression string",
-          "example": "filtered = df.query('age > 30 and salary < 50000')",
-          "category": "selection"
-        },
-        {
-          "fn": "df[boolean_mask]",
-          "purpose": "Select rows where the boolean mask is True",
-          "example": "filtered = df[df['status'] == 'active']",
-          "category": "selection"
-        }
+      "task": "Select and filter rows and columns",
+      "mental_trigger": "I need to extract a subset of rows by condition or columns by name",
+      "syntax": "df.loc[row_condition, col_list]\ndf.iloc[row_int, col_int]\ndf.query(expr)\ndf[boolean_mask]",
+      "important_params": [
+        "row_condition — boolean Series or label slice for loc",
+        "col_list — list of column names to return",
+        "expr — string expression for query e.g. 'age > 30 and salary < 50000'"
       ],
+      "example": "# Label-based: rows where age > 30, only name and salary columns\nsubset = df.loc[df['age'] > 30, ['name', 'salary']]\n\n# String expression (readable, avoids chaining)\nactive = df.query('status == \"active\" and score >= 0.8')",
+      "use_when": "Filtering training data by label class, selecting feature columns before model input, extracting validation splits.",
+      "avoid_when": "Chained bracket indexing like df[cond1][cond2] — the second filter may silently operate on a stale copy of the original DataFrame.",
+      "decision_notes": "Use df.loc for combined row+column selection in one operation. Use df.query for readable multi-condition filtering. Never chain brackets for assignment.",
       "gotchas": [
-        "df.loc[] with integer labels on a non-RangeIndex DataFrame selects by label, not position; using df.loc[0] on a reindexed DataFrame may select a row with index label 0 even if it is not the first row.",
-        "Chained boolean indexing like df[df['a'] > 0][df['b'] < 0] evaluates the second filter on the original DataFrame, not the filtered one, because each bracket creates a new DataFrame with a potentially reset index."
-      ]
+        "df.loc with integer labels on a non-default index selects by label, not position — on a reindexed DataFrame this silently picks the wrong row.",
+        "Chained assignment df[df['a']>0]['b'] = 1 triggers SettingWithCopyWarning and may not modify the original; always use df.loc for assignment."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.loc.html",
+      "related_workflows": [],
+      "related_cheatsheets": ["pandas-cheatsheet"]
     },
     {
-      "name": "Cleaning",
-      "functions": [
-        {
-          "fn": "df.dropna(how, subset)",
-          "purpose": "Remove missing values from the DataFrame",
-          "example": "clean = df.dropna(subset=['name', 'age'])",
-          "category": "cleaning"
-        },
-        {
-          "fn": "df.fillna(value)",
-          "purpose": "Fill NA/NaN values with a specified value or method",
-          "example": "filled = df.fillna({'age': df['age'].median(), 'status': 'unknown'})",
-          "category": "cleaning"
-        },
-        {
-          "fn": "df.drop_duplicates(subset)",
-          "purpose": "Remove duplicate rows based on specified columns",
-          "example": "unique = df.drop_duplicates(subset=['email'], keep='first')",
-          "category": "cleaning"
-        },
-        {
-          "fn": "df.astype(dtype)",
-          "purpose": "Cast a pandas object to a specified dtype",
-          "example": "df['id'] = df['id'].astype(int)",
-          "category": "cleaning"
-        },
-        {
-          "fn": "df.rename(mapper)",
-          "purpose": "Alter axes labels",
-          "example": "df = df.rename(columns={'old_name': 'new_name'})",
-          "category": "cleaning"
-        }
+      "task": "Clean data: handle nulls, duplicates, types, and column names",
+      "mental_trigger": "I need to fix missing values, deduplicate rows, cast column types, or rename columns before modeling",
+      "syntax": "df.dropna(subset=cols)\ndf.fillna(value_dict)\ndf.drop_duplicates(subset=cols, keep='first')\ndf.astype(dtype_dict)\ndf.rename(columns=mapping)",
+      "important_params": [
+        "subset — list of columns to consider for null/duplicate checks",
+        "value_dict — per-column fill values e.g. {'age': df['age'].median()}",
+        "keep — 'first' or 'last' for which duplicate to retain",
+        "dtype_dict — {'col': type} for targeted casting"
       ],
+      "example": "df = df.dropna(subset=['label', 'text'])           # drop rows with missing target or feature\ndf = df.fillna({'score': df['score'].median(), 'category': 'unknown'})\ndf = df.drop_duplicates(subset=['user_id'], keep='first')\ndf = df.astype({'id': str, 'score': float})",
+      "use_when": "Any time raw data enters a pipeline before feature engineering or model training. Null imputation, type enforcement, and deduplication are always required.",
+      "avoid_when": "Imputing without understanding the null pattern — imputing label columns destroys dataset integrity. Always verify null distributions first with isnull().sum().",
+      "decision_notes": "Order matters: dropna → fillna → drop_duplicates → astype. Casting before handling nulls will fail with ValueError on NaN-containing columns.",
       "gotchas": [
-        "df.fillna(0) on an object-dtype column silently converts the column to object strings '0' instead of numeric 0, causing subsequent numeric operations to raise TypeError.",
-        "df.drop_duplicates() defaults to considering all columns; forgetting to specify subset can silently remove valid rows that differ in an irrelevant column like a timestamp or row number."
-      ]
+        "df.fillna(0) on an object-dtype column inserts the string '0', not the integer 0 — always cast the column to numeric first.",
+        "df.drop_duplicates without specifying subset considers all columns — valid rows differing only in a timestamp or ID will be silently retained."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.dropna.html",
+      "related_workflows": [],
+      "related_cheatsheets": ["pandas-cheatsheet"]
     },
     {
-      "name": "Aggregation",
-      "functions": [
-        {
-          "fn": "df.groupby(by)",
-          "purpose": "Group DataFrame using a mapper or by a Series of columns",
-          "example": "grouped = df.groupby('category')['sales'].sum()",
-          "category": "aggregation"
-        },
-        {
-          "fn": "df.agg(func)",
-          "purpose": "Aggregate using one or more operations over the specified axis",
-          "example": "result = df.groupby('region').agg({'sales': 'sum', 'profit': 'mean'})",
-          "category": "aggregation"
-        },
-        {
-          "fn": "df.pivot_table(values, index, columns, aggfunc)",
-          "purpose": "Create a spreadsheet-style pivot table as a DataFrame",
-          "example": "pivot = df.pivot_table(values='sales', index='region', columns='quarter', aggfunc='sum')",
-          "category": "aggregation"
-        },
-        {
-          "fn": "df.resample(rule)",
-          "purpose": "Resample time-series data and aggregate",
-          "example": "monthly = df.resample('M')['value'].mean()",
-          "category": "aggregation"
-        },
-        {
-          "fn": "df.merge(right, on, how)",
-          "purpose": "Merge DataFrame or named Series objects with a database-style join",
-          "example": "merged = df.merge(other, on='id', how='left')",
-          "category": "join"
-        }
+      "task": "Aggregate data with groupby, pivot, or time-series resample",
+      "mental_trigger": "I need per-group statistics, cross-tabulations, or periodic summaries from a DataFrame",
+      "syntax": "df.groupby(by)[col].agg(func)\ndf.pivot_table(values, index, columns, aggfunc)\ndf.resample(rule)[col].mean()\ndf.merge(right, on=col, how='left')",
+      "important_params": [
+        "by — column name or list for groupby key",
+        "aggfunc — 'sum', 'mean', 'count', or dict per column",
+        "rule — time offset for resample e.g. 'D', 'W', 'M'",
+        "how — join strategy: 'left', 'inner', 'outer', 'right'"
       ],
+      "example": "# Per-region sales and profit stats\nresult = df.groupby('region').agg({'sales': 'sum', 'profit': 'mean'})\n\n# Monthly average — requires DatetimeIndex\nmonthly = df.set_index('date').resample('M')['value'].mean()\n\n# Left join on user_id\nmerged = df.merge(user_df, on='user_id', how='left')",
+      "use_when": "Computing class-level statistics for EDA, joining feature tables before model input, resampling sensor or transaction data to fixed time windows.",
+      "avoid_when": "groupby on very high-cardinality string keys — consider integer encoding first. resample on non-datetime index — it will raise TypeError with a confusing message.",
+      "decision_notes": "For groupby with categoricals, always pass observed=True to avoid phantom groups with NaN aggregates. For merges, always check the row count after merge to detect accidental fan-out from duplicate keys.",
       "gotchas": [
-        "df.groupby() on a categorical column includes all categories in the result even when some have zero rows, producing NaN aggregates that can silently break downstream mean calculations unless observed=True is passed.",
-        "df.resample() requires a DatetimeIndex; calling it on a DataFrame with a string or integer index raises a TypeError with a confusing message that does not mention setting the index first."
-      ]
+        "df.groupby on a categorical column returns NaN aggregates for all categories not present in the data unless observed=True is set.",
+        "df.resample requires a DatetimeIndex — calling it on a string or integer index raises TypeError without telling you to set the index first."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.groupby.html",
+      "related_workflows": [],
+      "related_cheatsheets": ["pandas-cheatsheet"]
     }
   ],
   "alternatives": [
@@ -215,6 +127,10 @@
     },
     {
       "id": "dask",
+      "type": "package"
+    },
+    {
+      "id": "numpy",
       "type": "package"
     }
   ]

@@ -1,6 +1,6 @@
 {
   "created_at": "2026-06-25",
-  "updated_at": "2026-06-25",
+  "updated_at": "2026-06-26",
   "sources": [
     "https://jax.readthedocs.io/en/latest/"
   ],
@@ -10,139 +10,88 @@
   "version": "0.4.25",
   "install": "pip install jax[cuda12]",
   "import_as": "import jax\nimport jax.numpy as jnp",
-  "summary": "Google's library for high-performance ML research combining a NumPy-compatible API with automatic differentiation, JIT compilation via XLA, and composable function transformations.",
-  "sections": [
+  "summary": "Google's composable function transformation library. JIT, autograd, vmap, and pmap over NumPy-compatible operations on CPU/GPU/TPU. Standard for research-grade ML that needs custom training loops.",
+  "tasks": [
     {
-      "name": "Array Operations",
-      "functions": [
-        {
-          "fn": "jnp.array(obj)",
-          "purpose": "Create a JAX array from a Python list or NumPy array",
-          "example": "a = jnp.array([1.0, 2.0, 3.0])",
-          "category": "creation"
-        },
-        {
-          "fn": "jnp.dot(a, b)",
-          "purpose": "Compute the dot product of two JAX arrays",
-          "example": "d = jnp.dot(a, b)",
-          "category": "math"
-        },
-        {
-          "fn": "jnp.mean(a, axis)",
-          "purpose": "Compute the arithmetic mean along the specified axis",
-          "example": "m = jnp.mean(a, axis=0)",
-          "category": "math"
-        },
-        {
-          "fn": "jnp.where(condition, x, y)",
-          "purpose": "Return elements chosen from x or y depending on condition",
-          "example": "result = jnp.where(a > 0, a, 0)",
-          "category": "indexing"
-        }
+      "task": "JIT-compile a function for accelerated repeated execution",
+      "mental_trigger": "I have a pure function I call in a training loop and it's the bottleneck — I want XLA to compile it",
+      "syntax": "jax.jit(fun)\n@jax.jit\ndef my_fn(x): ...",
+      "important_params": [
+        "static_argnums — tuple of argument positions to treat as compile-time constants (e.g. non-array args like n_classes)",
+        "donate_argnums — donate input buffer to output to avoid allocation"
       ],
+      "example": "import jax\nimport jax.numpy as jnp\n\n@jax.jit\ndef forward(params, x):\n    return jnp.dot(x, params['W']) + params['b']\n\n# First call traces and compiles; subsequent calls are fast\ny = forward(params, x_batch)",
+      "use_when": "Any pure function called repeatedly in a training or inference loop — the first call pays the trace+compile cost, every subsequent call is near-hardware-speed.",
+      "avoid_when": "Functions with Python side effects (print, logging, list mutation) — these are silently dropped during tracing. Functions that change shape per call — JIT retraces for every new shape.",
+      "decision_notes": "jit only compiles once per unique input shape signature. If you feed variable-length sequences without padding, you trigger retracing on every unique length — always pad to a fixed length.",
       "gotchas": [
-        "JAX arrays are immutable; in-place operations like a[0] = 1 are not allowed and will raise a TypeError. Use jnp.where or jnp.at[].set() for functional updates.",
-        "JAX defaults to float32 even on 64-bit systems; enable 64-bit mode with jax.config.update('jax_enable_x64', True) before importing jax.numpy."
-      ]
+        "print() inside a jitted function runs only during tracing, not on every call — use jax.debug.print for runtime printing.",
+        "Passing a non-static Python int as an argument causes retracing on every unique value — mark it with static_argnums."
+      ],
+      "official_docs": "https://jax.readthedocs.io/en/latest/jit-compilation.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
     },
     {
-      "name": "Transformations",
-      "functions": [
-        {
-          "fn": "jax.jit(fun)",
-          "purpose": "JIT-compile a function with XLA for accelerated execution",
-          "example": "fast_fun = jax.jit(fun)",
-          "category": "compilation"
-        },
-        {
-          "fn": "jax.grad(fun)",
-          "purpose": "Return a function that computes the gradient of fun with respect to its first argument",
-          "example": "grad_fun = jax.grad(fun)",
-          "category": "autodiff"
-        },
-        {
-          "fn": "jax.vmap(fun, in_axes)",
-          "purpose": "Automatically vectorize a function over an axis using JAX's automatic batching",
-          "example": "batched_fun = jax.vmap(fun, in_axes=(0, 0))",
-          "category": "vectorization"
-        },
-        {
-          "fn": "jax.pmap(fun, axis_name)",
-          "purpose": "Parallelize a function across multiple accelerators using SPMD",
-          "example": "parallel_fun = jax.pmap(fun, axis_name='batch')",
-          "category": "parallelization"
-        }
+      "task": "Compute gradients of arbitrary functions",
+      "mental_trigger": "I need the gradient of a loss function with respect to parameters for a custom training loop",
+      "syntax": "jax.grad(fun)(args)\njax.value_and_grad(fun)(args)\njax.jacobian(fun)(args)",
+      "important_params": [
+        "argnums — which positional argument to differentiate with respect to; default is 0",
+        "has_aux — True if fun returns (value, aux) tuple; grad only differentiates the first return value"
       ],
+      "example": "import jax\nimport jax.numpy as jnp\n\ndef loss(params, x, y):\n    pred = jnp.dot(x, params)\n    return jnp.mean((pred - y) ** 2)\n\ngrad_fn = jax.value_and_grad(loss)     # returns (loss_value, grad_dict)\nloss_val, grads = grad_fn(params, X, Y)\nparams = params - 0.01 * grads         # manual SGD step",
+      "use_when": "Custom loss functions, meta-learning, higher-order gradients, Hessian-vector products. Anything where PyTorch autograd is too rigid.",
+      "avoid_when": "You only need standard backprop through standard layers — use PyTorch or Flax which handle device placement and optimizer state for you.",
+      "decision_notes": "jax.value_and_grad is preferred over jax.grad alone because it returns both the loss value and gradient in one pass, avoiding recomputing the forward pass for logging.",
       "gotchas": [
-        "jax.jit() traces functions with abstract values; side effects like print() or mutation of Python lists are silently ignored during compilation.",
-        "jax.grad() differentiates with respect to the first positional argument by default; passing a non-differentiable argument as the first parameter raises a TypeError."
-      ]
+        "jax.grad differentiates with respect to the first argument by default — passing the wrong argument order silently computes the gradient of the wrong thing.",
+        "Gradients through non-differentiable operations (integer indexing, argmax) return 0 silently, not an error."
+      ],
+      "official_docs": "https://jax.readthedocs.io/en/latest/automatic-differentiation.html",
+      "related_workflows": ["fine-tuning-lora"],
+      "related_cheatsheets": []
     },
     {
-      "name": "Random Numbers",
-      "functions": [
-        {
-          "fn": "jax.random.PRNGKey(seed)",
-          "purpose": "Create a random key for JAX's explicit random number generation",
-          "example": "key = jax.random.PRNGKey(42)",
-          "category": "random"
-        },
-        {
-          "fn": "jax.random.normal(key, shape)",
-          "purpose": "Sample standard normal random values on the device",
-          "example": "x = jax.random.normal(key, shape=(3, 3))",
-          "category": "random"
-        },
-        {
-          "fn": "jax.random.split(key, num)",
-          "purpose": "Split a random key into multiple independent subkeys",
-          "example": "keys = jax.random.split(key, num=3)",
-          "category": "random"
-        },
-        {
-          "fn": "jax.random.uniform(key, shape, minval, maxval)",
-          "purpose": "Sample uniform random values in a given range",
-          "example": "u = jax.random.uniform(key, shape=(2, 2), minval=0, maxval=1)",
-          "category": "random"
-        }
+      "task": "Vectorize a function over a batch dimension",
+      "mental_trigger": "I have a function written for a single example and I want to apply it over a batch without rewriting it",
+      "syntax": "jax.vmap(fun, in_axes=(0, None))(batched_arg, shared_arg)",
+      "important_params": [
+        "in_axes — per-argument axis to vectorize over; None means broadcast (share across batch)",
+        "out_axes — axis where batch dimension goes in the output; default is 0"
       ],
+      "example": "def score_single(query, key):\n    return jnp.dot(query, key)\n\n# Apply over batch of queries, single shared key matrix\nbatched_score = jax.vmap(score_single, in_axes=(0, None))\nscores = batched_score(query_batch, key_matrix)  # (batch_size,)",
+      "use_when": "Per-example gradient computation, attention over variable-length sequences, any function that is cleanest written for a single item but needs to run over a batch.",
+      "avoid_when": "Your function has operations that are already batch-native (matmul on 2D arrays) — vmap adds overhead for no gain when the underlying op already vectorizes.",
+      "decision_notes": "vmap is how JAX implements batching without writing explicit batch loops. Combined with jit, vmap+jit is the standard JAX pattern: write for one sample, compile for a batch.",
       "gotchas": [
-        "JAX random keys are explicit and stateless; reusing the same key produces identical random values every time. Always split keys before each random call.",
-        "jax.random.PRNGKey() creates a key on the CPU device; for GPU random generation, ensure the key is transferred to the target device before calling random functions."
-      ]
+        "in_axes must match the positional argument order exactly — a mismatch silently batches the wrong argument.",
+        "vmap cannot handle Python control flow that branches on array values — use jax.lax.cond instead of if/else inside vmapped functions."
+      ],
+      "official_docs": "https://jax.readthedocs.io/en/latest/automatic-vectorization.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
     },
     {
-      "name": "Neural Net Primitives",
-      "functions": [
-        {
-          "fn": "jax.nn.relu(x)",
-          "purpose": "Rectified linear unit activation function",
-          "example": "activated = jax.nn.relu(x)",
-          "category": "activation"
-        },
-        {
-          "fn": "jax.nn.softmax(x, axis)",
-          "purpose": "Compute the softmax of elements along a given axis",
-          "example": "probs = jax.nn.softmax(logits, axis=-1)",
-          "category": "activation"
-        },
-        {
-          "fn": "jax.nn.sigmoid(x)",
-          "purpose": "Sigmoid activation function element-wise",
-          "example": "s = jax.nn.sigmoid(x)",
-          "category": "activation"
-        },
-        {
-          "fn": "jax.nn.one_hot(x, num_classes)",
-          "purpose": "Return one-hot encoded array from integer labels",
-          "example": "oh = jax.nn.one_hot(labels, num_classes=10)",
-          "category": "encoding"
-        }
+      "task": "Handle random numbers correctly in JAX",
+      "mental_trigger": "I need random arrays in JAX but my normal approach produces identical values every time",
+      "syntax": "key = jax.random.PRNGKey(seed)\nkey, subkey = jax.random.split(key)\nx = jax.random.normal(subkey, shape)\nu = jax.random.uniform(subkey, shape, minval, maxval)",
+      "important_params": [
+        "seed — integer seed for reproducibility",
+        "num — number of subkeys to produce from split",
+        "shape — output shape tuple"
       ],
+      "example": "import jax\n\nkey = jax.random.PRNGKey(42)\n\n# Split before every random call — never reuse the same key\nkey, k1 = jax.random.split(key)\nweights = jax.random.normal(k1, shape=(512, 256))\n\nkey, k2 = jax.random.split(key)\ndropout_mask = jax.random.bernoulli(k2, p=0.5, shape=(512,))",
+      "use_when": "Any time you need random values in JAX — initialization, dropout, data augmentation, sampling.",
+      "avoid_when": "Nothing — this is the only correct way to generate random numbers in JAX. There is no global random state.",
+      "decision_notes": "JAX random is explicit and stateless by design for reproducibility under jit and vmap. The pattern is always: split the key first, use the subkey for the random call, keep the updated key for the next call.",
       "gotchas": [
-        "jax.nn.softmax() can overflow for large logits; subtract the max before softmax manually if logits are unbounded or use jax.nn.log_softmax for stability.",
-        "jax.nn.one_hot() silently ignores out-of-range indices by producing all-zero rows; validate class labels before encoding to prevent silent data corruption."
-      ]
+        "Reusing the same key in two calls produces identical random values — always split before each use.",
+        "jax.random.PRNGKey creates the key on CPU — for GPU random generation, ensure the key lands on the right device via jax.device_put."
+      ],
+      "official_docs": "https://jax.readthedocs.io/en/latest/random-numbers.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
     }
   ],
   "alternatives": [

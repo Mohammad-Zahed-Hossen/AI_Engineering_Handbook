@@ -8,6 +8,7 @@ import {
   WorkflowSchema,
   CheatsheetSchema,
 } from '../lib/schemas';
+import { REGISTRY_FILE_TO_TASK } from '../lib/config/registry';
 
 const dataDir = path.join(process.cwd(), 'data');
 const STRICT_MODE = process.env.STRICT_REFERENCE_MODE === 'true';
@@ -30,15 +31,6 @@ const PLACEHOLDER_SUBSTRINGS = [
   'Requires modern hardware',
 ];
 
-const FILE_TO_TASK: Record<string, string> = {
-  'embeddings.json': 'embedding',
-  'rerankers.json': 'reranker',
-  'vision.json': 'vision',
-  'speech.json': 'speech',
-  'llms.json': 'llm',
-  'multimodal.json': 'multimodal',
-  'ocr.json': 'ocr',
-};
 
 // ── State ───────────────────────────────────────────────────
 
@@ -47,7 +39,6 @@ let warningCount = 0;
 
 const idRegistry = new Map<string, string>();      // "type:id" → file path
 const nameRegistry = new Map<string, string>();    // "type:name_lower" → file path
-const modelIdRegistry = new Map<string, string>(); // model_id → file path
 
 const refsToCheck: Array<{ sourceFile: string; ref: { id: string; type: string } }> = [];
 const docsUrlRegistry = new Map<string, string[]>(); // url → array of "file+fn" locations
@@ -62,7 +53,7 @@ function getJsonFiles(dir: string): string[] {
     const stat = fs.statSync(filePath);
     if (stat.isDirectory()) {
       results = results.concat(getJsonFiles(filePath));
-    } else if (file.endsWith('.json')) {
+    } else if (file.endsWith('.json') && !file.startsWith('_')) {
       results.push(filePath);
     }
   }
@@ -207,41 +198,9 @@ for (const file of files) {
         reportError(`Model '${normalizedPath}' has fewer than 1 key_hyperparams (${model.key_hyperparams?.length ?? 0})`);
       }
     } else if (type === 'package') {
-      const pkg = obj as { sections?: Array<{ functions?: unknown[] }> };
-      if (!Array.isArray(pkg.sections) || pkg.sections.length < 2) {
-        reportError(`Package '${normalizedPath}' has fewer than 2 sections (${pkg.sections?.length ?? 0})`);
-      } else {
-        pkg.sections.forEach((section, idx) => {
-          if (!Array.isArray(section.functions) || section.functions.length < 2) {
-            reportError(`Package '${normalizedPath}' section[${idx}] has fewer than 2 functions (${section.functions?.length ?? 0})`);
-          }
-          // Validate extended function fields
-          if (Array.isArray(section.functions)) {
-            section.functions.forEach((fn, fnIdx) => {
-              if (typeof fn === 'object' && fn !== null) {
-                const func = fn as Record<string, unknown>;
-                
-                // Collect docs_url for duplicate check
-                if (func.docs_url && typeof func.docs_url === 'string') {
-                  const location = `${normalizedPath}:${func.fn || `section[${idx}].functions[${fnIdx}]`}`;
-                  if (!docsUrlRegistry.has(func.docs_url)) {
-                    docsUrlRegistry.set(func.docs_url, []);
-                  }
-                  docsUrlRegistry.get(func.docs_url)!.push(location);
-                }
-                
-                // Validate related_fns format - must contain "("
-                if (func.related_fns && Array.isArray(func.related_fns)) {
-                  func.related_fns.forEach((relatedFns, relatedIdx) => {
-                    if (typeof relatedFns === 'string' && !relatedFns.includes('(')) {
-                      reportError(`Package '${normalizedPath}' section[${idx}].functions[${fnIdx}].related_fns[${relatedIdx}] must be a function signature with parentheses, got: "${relatedFns}"`);
-                    }
-                  });
-                }
-              }
-            });
-          }
-        });
+      const pkg = obj as { tasks?: unknown[] };
+      if (!Array.isArray(pkg.tasks) || pkg.tasks.length < 1) {
+        reportError(`Package '${normalizedPath}' has fewer than 1 tasks (${pkg.tasks?.length ?? 0})`);
       }
     } else if (type === 'workflow') {
       const wf = obj as { steps?: unknown[] };
@@ -249,15 +208,9 @@ for (const file of files) {
         reportError(`Workflow '${normalizedPath}' has fewer than 3 steps (${wf.steps?.length ?? 0})`);
       }
     } else if (type === 'cheatsheet') {
-      const cs = obj as { groups?: Array<{ items?: unknown[] }> };
-      if (!Array.isArray(cs.groups) || cs.groups.length < 1) {
-        reportError(`Cheatsheet '${normalizedPath}' has fewer than 1 groups (${cs.groups?.length ?? 0})`);
-      } else {
-        cs.groups.forEach((group, idx) => {
-          if (!Array.isArray(group.items) || group.items.length < 3) {
-            reportError(`Cheatsheet '${normalizedPath}' group[${idx}] has fewer than 3 items (${group.items?.length ?? 0})`);
-          }
-        });
+      const cs = obj as { entries?: unknown[] };
+      if (!Array.isArray(cs.entries) || cs.entries.length < 1) {
+        reportError(`Cheatsheet '${normalizedPath}' has fewer than 1 entries (${cs.entries?.length ?? 0})`);
       }
     }
 
@@ -303,7 +256,7 @@ for (const file of files) {
   // ── Registry Files ───────────────────────────────────────
   else if (isRegistry && Array.isArray(data)) {
     const fileName = path.basename(file);
-    const expectedTask = FILE_TO_TASK[fileName];
+    const expectedTask = REGISTRY_FILE_TO_TASK[fileName];
 
     if (!expectedTask) {
       reportWarning(`Unknown registry file '${normalizedPath}' — no task mapping for '${fileName}'`);
@@ -328,8 +281,7 @@ for (const file of files) {
       }
 
       // ── STEP 5: Placeholder Detection ─────────────────────
-      checkPlaceholder(`${normalizedPath}[${idx}]`, 'notes', item.notes as string | undefined);
-      checkPlaceholder(`${normalizedPath}[${idx}]`, 'quick_start', item.quick_start as string | undefined);
+      // Registry entries are lightweight navigation index - no placeholder checks needed
 
       // ── STEP 7: Duplicate Detection ───────────────────────
       if (itemId) {
@@ -338,34 +290,6 @@ for (const file of files) {
           reportError(`Duplicate registry ID '${itemId}' in '${normalizedPath}[${idx}]' — already in '${idRegistry.get(idKey)}'`);
         } else {
           idRegistry.set(idKey, normalizedPath);
-        }
-      }
-
-      const modelId = item.model_id as string | undefined;
-      if (modelId) {
-        if (modelIdRegistry.has(modelId)) {
-          reportError(`Duplicate registry model_id '${modelId}' in '${normalizedPath}[${idx}]' — already in '${modelIdRegistry.get(modelId)}'`);
-        } else {
-          modelIdRegistry.set(modelId, normalizedPath);
-        }
-      }
-
-      // ── STEP 8: Collect Alternatives ────────────────────
-      const alternatives = item.alternatives as Array<{ id?: string; type?: string }> | undefined;
-      if (Array.isArray(alternatives)) {
-        for (const alt of alternatives) {
-          if (typeof alt === 'string') {
-            reportError(`Legacy string alternative in '${normalizedPath}' index ${idx}: '${alt}'.`);
-            continue;
-          }
-          if (!alt?.id || !alt?.type) {
-            reportError(`Malformed alternative in '${normalizedPath}' index ${idx}.`);
-            continue;
-          }
-          if (!VALID_REF_TYPES.has(alt.type)) {
-            reportError(`Invalid alternative type '${alt.type}' in '${normalizedPath}' index ${idx}.`);
-          }
-          refsToCheck.push({ sourceFile: normalizedPath, ref: { id: alt.id, type: alt.type } });
         }
       }
     });
