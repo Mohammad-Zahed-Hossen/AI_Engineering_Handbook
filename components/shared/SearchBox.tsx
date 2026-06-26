@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useId, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useId, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { FuseResultMatch } from 'fuse.js';
@@ -41,7 +41,21 @@ export default function SearchBox({
   const resultRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
+  const [focused, setFocused] = useState(false);
   const fuse = useMemo(() => createFuse(index), [index]);
+
+  useEffect(() => {
+    function handleGlobalKeyDown(e: KeyboardEvent) {
+      if (e.key !== '/') return;
+      const tag = (document.activeElement as HTMLElement)?.tagName?.toLowerCase();
+      const isEditable = (document.activeElement as HTMLElement)?.isContentEditable;
+      if (tag === 'input' || tag === 'textarea' || isEditable) return;
+      e.preventDefault();
+      document.getElementById(inputId)?.focus();
+    }
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [inputId]);
 
   const results = useMemo<SearchDisplayResult[]>(() => {
     const trimmed = query.trim();
@@ -149,6 +163,8 @@ export default function SearchBox({
           setQuery(e.target.value);
           setActiveIndex(0);
         }}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         role="combobox"
@@ -157,6 +173,14 @@ export default function SearchBox({
         aria-activedescendant={results[activeIndex] ? `${listboxId}-${activeIndex}` : undefined}
         className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
       />
+
+      {!focused && !query && (
+        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
+          <kbd className="text-[9px] font-mono text-muted-foreground/50 border border-border/50 rounded px-1 py-0.5">
+            /
+          </kbd>
+        </div>
+      )}
 
       {query.trim() && (
         <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-border bg-popover shadow-sm">

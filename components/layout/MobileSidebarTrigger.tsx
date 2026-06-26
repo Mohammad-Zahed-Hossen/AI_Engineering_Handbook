@@ -3,11 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NavItem } from '@/lib/data';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
 
 const REGISTRY_TASK_LABELS: Record<string, string> = {
   embedding: 'Embeddings',
@@ -87,14 +86,12 @@ export default function MobileSidebarTrigger({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="flex items-center justify-center px-2 py-0.5 rounded border border-border bg-secondary text-foreground hover:bg-muted cursor-pointer text-[10px] font-semibold select-none h-auto"
+        <button
           aria-label="Open navigation menu"
+          className="flex items-center justify-center w-11 h-11 rounded-md text-foreground hover:bg-muted transition-colors"
         >
-          Menu
-        </Button>
+          <Menu className="w-5 h-5" />
+        </button>
       </SheetTrigger>
       <SheetContent side="left" className="w-[280px] p-0 bg-sidebar text-sidebar-foreground overflow-y-auto border-r border-sidebar-border">
         <SheetHeader className="sr-only">

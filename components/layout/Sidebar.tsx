@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronDown, ChevronRight } from 'lucide-react';
@@ -37,6 +37,17 @@ export default function Sidebar({
   cheatsheets,
 }: SidebarProps) {
   const pathname = usePathname();
+  const sidebarRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!sidebarRef.current) return;
+    // Small delay to allow the expand animation to render the active item
+    const timer = setTimeout(() => {
+      const active = sidebarRef.current?.querySelector('[class*="bg-primary"]');
+      active?.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [pathname]);
 
   const getActiveSection = (pathname: string): string => {
     if (pathname.startsWith('/packages')) return 'packages';
@@ -82,7 +93,7 @@ export default function Sidebar({
   );
 
   return (
-    <aside className="w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col h-full overflow-y-auto select-none">
+    <aside ref={sidebarRef} className="w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col h-full overflow-y-auto select-none">
       {/* Brand */}
       <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
         <Link href="/" className="font-bold tracking-tight text-xs text-foreground uppercase">

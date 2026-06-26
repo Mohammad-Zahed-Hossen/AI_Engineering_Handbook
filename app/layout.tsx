@@ -76,7 +76,7 @@ export default function RootLayout({
             cheatsheets={cheatsheets}
             searchIndex={searchIndex}
           />
-          <main className="flex-1 overflow-y-auto bg-zinc-50 dark:bg-zinc-950 p-6 md:p-8">
+          <main className="flex-1 overflow-y-auto bg-zinc-50 dark:bg-zinc-950 px-4 py-5 md:px-8 md:py-8">
             <div className="max-w-5xl mx-auto w-full">
               {children}
             </div>

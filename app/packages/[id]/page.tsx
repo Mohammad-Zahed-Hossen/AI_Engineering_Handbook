@@ -1,10 +1,10 @@
 import { notFound } from 'next/navigation';
 import { getAllPackageIds, getPackage, getRelatedContent } from '@/lib/data';
 import { CodeBlock } from '@/components/shared/CodeBlock';
-import SectionCard from '@/components/shared/SectionCard';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import OfficialResources from '@/components/shared/OfficialResources';
+import PackageTaskList from '@/components/shared/PackageTaskList';
 import RelatedContent from '@/components/shared/RelatedContent';
 
 export async function generateStaticParams() {
@@ -71,96 +71,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
 
       <OfficialResources sources={pkg.sources} githubRepo={pkg.github_repo} />
 
-      <div className="space-y-6">
-        {pkg.tasks.map(task => {
-          const taskAnchor = slugify(task.task);
-
-          return (
-            <SectionCard
-              key={task.task}
-              title={task.task}
-              subtitle={`Mental trigger: ${task.mental_trigger}`}
-            >
-              <div id={taskAnchor} className="space-y-4 scroll-mt-24">
-                <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
-                  <div className="rounded-lg border border-border bg-card p-4">
-                    <h3 className="mb-2 text-sm font-semibold">Syntax</h3>
-                    <CodeBlock code={task.syntax} language="python" />
-                  </div>
-                  <div className="rounded-lg border border-border bg-card p-4">
-                    <h3 className="mb-2 text-sm font-semibold">Example</h3>
-                    <CodeBlock code={task.example} language="python" />
-                  </div>
-                </div>
-
-                <div className="grid gap-4 lg:grid-cols-3 text-sm">
-                  <div>
-                    <h4 className="text-[11px] font-semibold uppercase text-muted-foreground mb-1">Important parameters</h4>
-                    <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
-                      {task.important_params.map((param, idx) => (
-                        <li key={idx}>{param}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="text-[11px] font-semibold uppercase text-muted-foreground mb-1">When to use</h4>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{task.use_when}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-[11px] font-semibold uppercase text-muted-foreground mb-1">Avoid when</h4>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{task.avoid_when}</p>
-                  </div>
-                </div>
-
-                {task.decision_notes && (
-                  <div className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
-                    <h4 className="text-[11px] font-semibold uppercase mb-1">Decision notes</h4>
-                    <p>{task.decision_notes}</p>
-                  </div>
-                )}
-
-                {task.gotchas.length > 0 && (
-                  <div className="border-l-2 border-amber-500 bg-amber-500/5 p-3 rounded-r text-sm text-amber-800 dark:text-amber-300">
-                    <h3 className="text-[10px] font-semibold uppercase mb-1">Gotchas</h3>
-                    <ul className="list-disc pl-4 space-y-1">
-                      {task.gotchas.map((gotcha, idx) => (
-                        <li key={idx}>{gotcha}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                <div className="grid gap-4 lg:grid-cols-2 text-sm">
-                  <div>
-                    <h4 className="text-[11px] font-semibold uppercase text-muted-foreground mb-1">Official docs</h4>
-                    <a
-                      href={task.official_docs}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-primary hover:underline"
-                    >
-                      {task.official_docs}
-                    </a>
-                  </div>
-                  {(task.related_workflows.length > 0 || task.related_cheatsheets.length > 0) && (
-                    <div>
-                      <h4 className="text-[11px] font-semibold uppercase text-muted-foreground mb-1">Related content</h4>
-                      <div className="space-y-1 text-sm text-muted-foreground">
-                        {task.related_workflows.length > 0 && (
-                          <p>Workflows: {task.related_workflows.join(', ')}</p>
-                        )}
-                        {task.related_cheatsheets.length > 0 && (
-                          <p>Cheatsheets: {task.related_cheatsheets.join(', ')}</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </SectionCard>
-          );
-        })}
-      </div>
+      <PackageTaskList tasks={pkg.tasks} packageName={pkg.name} />
 
       <RelatedContent items={relatedContent} />
     </ContentPageLayout>
