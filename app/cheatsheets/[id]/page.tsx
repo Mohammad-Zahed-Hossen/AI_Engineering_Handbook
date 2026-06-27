@@ -5,6 +5,7 @@ import MetadataBadges from '@/components/shared/MetadataBadges';
 import OfficialResources from '@/components/shared/OfficialResources';
 import RelatedContent from '@/components/shared/RelatedContent';
 import CheatsheetEntry from '@/components/shared/CheatsheetEntry';
+import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 
 export async function generateStaticParams() {
   return getAllCheatsheetIds().map((id) => ({ id }));
@@ -43,6 +44,7 @@ export default async function CheatsheetDetailPage({ params }: PageProps) {
             })),
           ]}
     >
+      <ReadingSessionTracker href={`/cheatsheets/${cheatsheet.id}`} name={cheatsheet.name} type="cheatsheet" />
       <header className="space-y-3 border-b border-border pb-4">
         <h1>{cheatsheet.name}</h1>
         <MetadataBadges type="cheatsheet" updatedAt={cheatsheet.updated_at} />

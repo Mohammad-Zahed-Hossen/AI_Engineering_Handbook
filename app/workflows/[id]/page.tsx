@@ -7,6 +7,7 @@ import MetadataBadges from '@/components/shared/MetadataBadges';
 import OfficialResources from '@/components/shared/OfficialResources';
 import RelatedContent from '@/components/shared/RelatedContent';
 import WorkflowStepList from '@/components/shared/WorkflowStepList';
+import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 
 export async function generateStaticParams() {
   return getAllWorkflowIds().map((id) => ({ id }));
@@ -44,6 +45,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
           : []),
       ]}
     >
+      <ReadingSessionTracker href={`/workflows/${workflow.id}`} name={workflow.name} type="workflow" category={workflow.category} />
       <header id="overview" className="space-y-3 border-b border-border pb-4 scroll-mt-24">
         <h1>{workflow.name}</h1>
         <MetadataBadges

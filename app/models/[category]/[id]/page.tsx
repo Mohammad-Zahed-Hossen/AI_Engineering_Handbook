@@ -8,6 +8,7 @@ import RelatedContent from '@/components/shared/RelatedContent';
 import AlternativesList from '@/components/shared/AlternativesList';
 import ModelCollapsibleSections from '@/components/shared/ModelCollapsibleSections';
 import { validateModelCategory } from '@/lib/route-params';
+import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 
 export async function generateStaticParams() {
   const categories: ModelCategory[] = ['ml', 'dl', 'llm'];
@@ -59,6 +60,7 @@ export default async function ModelDetailPage({ params }: PageProps) {
       ]}
       toc={toc}
     >
+      <ReadingSessionTracker href={`/models/${validCategory}/${model.id}`} name={model.name} type="model" category={validCategory} />
       <header id="summary" className="space-y-3 border-b border-border pb-4 scroll-mt-24">
         <h1>{model.name}</h1>
         <MetadataBadges

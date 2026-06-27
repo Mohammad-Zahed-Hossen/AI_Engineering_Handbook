@@ -7,6 +7,26 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NavItem } from '@/lib/data';
 
+const MAX_VISIBLE_ITEMS = 12;
+
+function applyItemLimit<T extends { id: string }>(
+  items: T[],
+  activeId: string | null,
+  max: number
+): { visible: T[]; truncated: boolean; total: number } {
+  if (items.length <= max) {
+    return { visible: items, truncated: false, total: items.length };
+  }
+  const activeIndex = items.findIndex(item => item.id === activeId);
+  let visible = items.slice(0, max);
+  // If active item exists but is outside the cap, replace the last visible
+  // item with the active item so it is always shown.
+  if (activeIndex >= max) {
+    visible = [...items.slice(0, max - 1), items[activeIndex]];
+  }
+  return { visible, truncated: true, total: items.length };
+}
+
 const REGISTRY_TASK_LABELS: Record<string, string> = {
   embedding: 'Embeddings',
   reranker: 'Rerankers',
@@ -38,6 +58,34 @@ export default function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const sidebarRef = useRef<HTMLElement>(null);
+
+  const getActiveId = (pathname: string): string | null => {
+    const parts = pathname.split('/').filter(Boolean);
+    if (pathname.startsWith('/packages/') && parts[1]) return parts[1];
+    if (pathname.startsWith('/models/ml/') && parts[2]) return parts[2];
+    if (pathname.startsWith('/models/dl/') && parts[2]) return parts[2];
+    if (pathname.startsWith('/models/llm/') && parts[2]) return parts[2];
+    if (pathname.startsWith('/registry/') && parts[1]) return parts[1];
+    if (pathname.startsWith('/workflows/') && parts[1]) return parts[1];
+    if (pathname.startsWith('/cheatsheets/') && parts[1]) return parts[1];
+    return null;
+  };
+
+  function applyItemLimitForStrings(
+    items: string[],
+    activeId: string | null,
+    max: number
+  ): { visible: string[]; truncated: boolean; total: number } {
+    if (items.length <= max) {
+      return { visible: items, truncated: false, total: items.length };
+    }
+    const activeIndex = items.findIndex(item => item === activeId);
+    let visible = items.slice(0, max);
+    if (activeIndex >= max) {
+      visible = [...items.slice(0, max - 1), items[activeIndex]];
+    }
+    return { visible, truncated: true, total: items.length };
+  }
 
   useEffect(() => {
     if (!sidebarRef.current) return;
@@ -84,10 +132,24 @@ export default function Sidebar({
 
   const sectionHeadingClass = "px-2.5 mt-4 mb-1 text-[9px] uppercase font-bold text-foreground/50 tracking-wider select-none flex items-center gap-1.5 cursor-pointer hover:text-foreground/70";
 
-  const renderSectionHeader = (title: string, count: number, section: string) => (
-    <div className={sectionHeadingClass} onClick={() => toggleSection(section)}>
-      {expanded === section ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-      <span>{title}</span>
+  const renderSectionHeader = (title: string, count: number, section: string, href: string) => (
+    <div className={sectionHeadingClass}>
+      {/* Chevron toggle — expands/collapses; does NOT navigate */}
+      <span
+        onClick={() => toggleSection(section)}
+        className="flex items-center cursor-pointer"
+        aria-label={`Toggle ${title}`}
+      >
+        {expanded === section ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+      </span>
+      {/* Title — navigates to list page; does NOT toggle */}
+      <Link
+        href={href}
+        className="flex-1 hover:text-foreground/90 transition-none"
+        onClick={e => e.stopPropagation()}
+      >
+        {title}
+      </Link>
       <span className="ml-auto text-[8px] bg-muted px-1 rounded text-muted-foreground">{count}</span>
     </div>
   );
@@ -109,40 +171,80 @@ export default function Sidebar({
         </Link>
 
         {/* Python Packages */}
-        {renderSectionHeader('Packages', packages.length, 'packages')}
+        {renderSectionHeader('Packages', packages.length, 'packages', '/packages')}
         {expanded === 'packages' && (
           <ul className="space-y-0.5">
-            {packages.map((pkg) => (
-              <li key={pkg.id}>
-                <Link href={`/packages/${pkg.id}`} className={linkClass(`/packages/${pkg.id}`)}>
-                  {pkg.name} <span className="text-[9px] opacity-75">v{pkg.version}</span>
-                </Link>
-              </li>
-            ))}
+            {(() => {
+              const { visible, truncated, total } = applyItemLimit(packages, getActiveId(pathname), MAX_VISIBLE_ITEMS);
+              return (
+                <>
+                  {visible.map((pkg) => (
+                    <li key={pkg.id}>
+                      <Link href={`/packages/${pkg.id}`} className={linkClass(`/packages/${pkg.id}`)}>
+                        {pkg.name} <span className="text-[9px] opacity-75">v{pkg.version}</span>
+                      </Link>
+                    </li>
+                  ))}
+                  {truncated && (
+                    <li>
+                      <Link
+                        href="/packages"
+                        className="block py-1 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                      >
+                        See all {total} →
+                      </Link>
+                    </li>
+                  )}
+                </>
+              );
+            })()}
           </ul>
         )}
 
         {/* Models Library */}
         {(mlModels.length > 0 || dlModels.length > 0 || llmModels.length > 0) && (
           <>
-            <div className={sectionHeadingClass}>Models Library</div>
+            <Link href="/models" className={sectionHeadingClass}>
+              Models Library
+            </Link>
 
             {mlModels.length > 0 && (
               <>
-                <div className="pl-2.5 mt-1.5 text-[9px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('ml')}>
-                  {expanded === 'ml' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-                  <span>Machine Learning</span>
+                <div className="pl-2.5 mt-1.5 text-[9px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5">
+                  <span className="flex items-center cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('ml')}>
+                    {expanded === 'ml' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                  </span>
+                  <Link href="/models/ml" className="flex-1 hover:text-foreground/90 transition-none" onClick={e => e.stopPropagation()}>
+                    Machine Learning
+                  </Link>
                   <span className="ml-auto text-[8px] bg-muted px-1 rounded text-muted-foreground">{mlModels.length}</span>
                 </div>
                 {expanded === 'ml' && (
                   <ul className="space-y-0.5 pl-2 border-l border-sidebar-border ml-2.5">
-                    {mlModels.map((m) => (
-                      <li key={m.id}>
-                        <Link href={`/models/ml/${m.id}`} className={linkClass(`/models/ml/${m.id}`)}>
-                          {m.name}
-                        </Link>
-                      </li>
-                    ))}
+                    {(() => {
+                      const { visible, truncated, total } = applyItemLimit(mlModels, getActiveId(pathname), MAX_VISIBLE_ITEMS);
+                      return (
+                        <>
+                          {visible.map((m) => (
+                            <li key={m.id}>
+                              <Link href={`/models/ml/${m.id}`} className={linkClass(`/models/ml/${m.id}`)}>
+                                {m.name}
+                              </Link>
+                            </li>
+                          ))}
+                          {truncated && (
+                            <li>
+                              <Link
+                                href="/models/ml"
+                                className="block py-1 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                              >
+                                See all {total} →
+                              </Link>
+                            </li>
+                          )}
+                        </>
+                      );
+                    })()}
                   </ul>
                 )}
               </>
@@ -150,20 +252,41 @@ export default function Sidebar({
 
             {dlModels.length > 0 && (
               <>
-                <div className="pl-2.5 mt-2.5 text-[9px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('dl')}>
-                  {expanded === 'dl' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-                  <span>Deep Learning</span>
+                <div className="pl-2.5 mt-2.5 text-[9px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5">
+                  <span className="flex items-center cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('dl')}>
+                    {expanded === 'dl' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                  </span>
+                  <Link href="/models/dl" className="flex-1 hover:text-foreground/90 transition-none" onClick={e => e.stopPropagation()}>
+                    Deep Learning
+                  </Link>
                   <span className="ml-auto text-[8px] bg-muted px-1 rounded text-muted-foreground">{dlModels.length}</span>
                 </div>
                 {expanded === 'dl' && (
                   <ul className="space-y-0.5 pl-2 border-l border-sidebar-border ml-2.5">
-                    {dlModels.map((m) => (
-                      <li key={m.id}>
-                        <Link href={`/models/dl/${m.id}`} className={linkClass(`/models/dl/${m.id}`)}>
-                          {m.name}
-                        </Link>
-                      </li>
-                    ))}
+                    {(() => {
+                      const { visible, truncated, total } = applyItemLimit(dlModels, getActiveId(pathname), MAX_VISIBLE_ITEMS);
+                      return (
+                        <>
+                          {visible.map((m) => (
+                            <li key={m.id}>
+                              <Link href={`/models/dl/${m.id}`} className={linkClass(`/models/dl/${m.id}`)}>
+                                {m.name}
+                              </Link>
+                            </li>
+                          ))}
+                          {truncated && (
+                            <li>
+                              <Link
+                                href="/models/dl"
+                                className="block py-1 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                              >
+                                See all {total} →
+                              </Link>
+                            </li>
+                          )}
+                        </>
+                      );
+                    })()}
                   </ul>
                 )}
               </>
@@ -171,20 +294,41 @@ export default function Sidebar({
 
             {llmModels.length > 0 && (
               <>
-                <div className="pl-2.5 mt-2.5 text-[9px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('llm')}>
-                  {expanded === 'llm' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-                  <span>Large Language Models</span>
+                <div className="pl-2.5 mt-2.5 text-[9px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5">
+                  <span className="flex items-center cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('llm')}>
+                    {expanded === 'llm' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                  </span>
+                  <Link href="/models/llm" className="flex-1 hover:text-foreground/90 transition-none" onClick={e => e.stopPropagation()}>
+                    Large Language Models
+                  </Link>
                   <span className="ml-auto text-[8px] bg-muted px-1 rounded text-muted-foreground">{llmModels.length}</span>
                 </div>
                 {expanded === 'llm' && (
                   <ul className="space-y-0.5 pl-2 border-l border-sidebar-border ml-2.5">
-                    {llmModels.map((m) => (
-                      <li key={m.id}>
-                        <Link href={`/models/llm/${m.id}`} className={linkClass(`/models/llm/${m.id}`)}>
-                          {m.name}
-                        </Link>
-                      </li>
-                    ))}
+                    {(() => {
+                      const { visible, truncated, total } = applyItemLimit(llmModels, getActiveId(pathname), MAX_VISIBLE_ITEMS);
+                      return (
+                        <>
+                          {visible.map((m) => (
+                            <li key={m.id}>
+                              <Link href={`/models/llm/${m.id}`} className={linkClass(`/models/llm/${m.id}`)}>
+                                {m.name}
+                              </Link>
+                            </li>
+                          ))}
+                          {truncated && (
+                            <li>
+                              <Link
+                                href="/models/llm"
+                                className="block py-1 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                              >
+                                See all {total} →
+                              </Link>
+                            </li>
+                          )}
+                        </>
+                      );
+                    })()}
                   </ul>
                 )}
               </>
@@ -193,44 +337,95 @@ export default function Sidebar({
         )}
 
         {/* Model Registries */}
-        {renderSectionHeader('Registries', registryTasks.length, 'registry')}
+        {renderSectionHeader('Registries', registryTasks.length, 'registry', '/registry')}
         {expanded === 'registry' && (
           <ul className="space-y-0.5">
-            {registryTasks.map((task) => (
-              <li key={task}>
-                <Link href={`/registry/${task}`} className={linkClass(`/registry/${task}`)}>
-                  {REGISTRY_TASK_LABELS[task] ?? task}
-                </Link>
-              </li>
-            ))}
+            {(() => {
+              const { visible, truncated, total } = applyItemLimitForStrings(registryTasks, getActiveId(pathname), MAX_VISIBLE_ITEMS);
+              return (
+                <>
+                  {visible.map((task) => (
+                    <li key={task}>
+                      <Link href={`/registry/${task}`} className={linkClass(`/registry/${task}`)}>
+                        {REGISTRY_TASK_LABELS[task] ?? task}
+                      </Link>
+                    </li>
+                  ))}
+                  {truncated && (
+                    <li>
+                      <Link
+                        href="/registry"
+                        className="block py-1 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                      >
+                        See all {total} →
+                      </Link>
+                    </li>
+                  )}
+                </>
+              );
+            })()}
           </ul>
         )}
 
         {/* Workflows */}
-        {renderSectionHeader('Workflows', workflows.length, 'workflows')}
+        {renderSectionHeader('Workflows', workflows.length, 'workflows', '/workflows')}
         {expanded === 'workflows' && (
           <ul className="space-y-0.5">
-            {workflows.map((wf) => (
-              <li key={wf.id}>
-                <Link href={`/workflows/${wf.id}`} className={linkClass(`/workflows/${wf.id}`)}>
-                  {wf.name}
-                </Link>
-              </li>
-            ))}
+            {(() => {
+              const { visible, truncated, total } = applyItemLimit(workflows, getActiveId(pathname), MAX_VISIBLE_ITEMS);
+              return (
+                <>
+                  {visible.map((wf) => (
+                    <li key={wf.id}>
+                      <Link href={`/workflows/${wf.id}`} className={linkClass(`/workflows/${wf.id}`)}>
+                        {wf.name}
+                      </Link>
+                    </li>
+                  ))}
+                  {truncated && (
+                    <li>
+                      <Link
+                        href="/workflows"
+                        className="block py-1 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                      >
+                        See all {total} →
+                      </Link>
+                    </li>
+                  )}
+                </>
+              );
+            })()}
           </ul>
         )}
 
         {/* Cheatsheets */}
-        {renderSectionHeader('Cheatsheets', cheatsheets.length, 'cheatsheets')}
+        {renderSectionHeader('Cheatsheets', cheatsheets.length, 'cheatsheets', '/cheatsheets')}
         {expanded === 'cheatsheets' && (
           <ul className="space-y-0.5">
-            {cheatsheets.map((cs) => (
-              <li key={cs.id}>
-                <Link href={`/cheatsheets/${cs.id}`} className={linkClass(`/cheatsheets/${cs.id}`)}>
-                  {cs.name}
-                </Link>
-              </li>
-            ))}
+            {(() => {
+              const { visible, truncated, total } = applyItemLimit(cheatsheets, getActiveId(pathname), MAX_VISIBLE_ITEMS);
+              return (
+                <>
+                  {visible.map((cs) => (
+                    <li key={cs.id}>
+                      <Link href={`/cheatsheets/${cs.id}`} className={linkClass(`/cheatsheets/${cs.id}`)}>
+                        {cs.name}
+                      </Link>
+                    </li>
+                  ))}
+                  {truncated && (
+                    <li>
+                      <Link
+                        href="/cheatsheets"
+                        className="block py-1 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                      >
+                        See all {total} →
+                      </Link>
+                    </li>
+                  )}
+                </>
+              );
+            })()}
           </ul>
         )}
       </nav>

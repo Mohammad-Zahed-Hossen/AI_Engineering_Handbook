@@ -19,7 +19,12 @@ export default function PackagesPage() {
                 <h2 className="text-lg font-medium text-foreground">{pkg.name}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">{pkg.summary}</p>
               </div>
-              <span className="shrink-0 text-xs font-mono text-muted-foreground">v{pkg.version}</span>
+              <div className="shrink-0 flex flex-col items-end gap-0.5">
+                <span className="text-xs font-mono text-muted-foreground">v{pkg.version}</span>
+                <span className="text-[10px] font-mono text-muted-foreground/70">
+                  {pkg.tasks.length} {pkg.tasks.length === 1 ? 'task' : 'tasks'}
+                </span>
+              </div>
             </div>
           </Link>
         ))}

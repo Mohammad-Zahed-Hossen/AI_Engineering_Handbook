@@ -16,7 +16,10 @@ export default function CheatsheetsPage() {
               href={`/cheatsheets/${cs.id}`}
               className="block rounded-lg border border-border bg-card p-4 hover:border-foreground/20 hover:bg-muted/30 transition-colors"
             >
-              <h2 className="text-lg font-medium text-foreground">{cs.name}</h2>
+              <h2 className="text-sm font-medium text-foreground">{cs.name}</h2>
+              <p className="text-[10px] font-mono text-muted-foreground mt-0.5">
+                {cs.entries.length} {cs.entries.length === 1 ? 'entry' : 'entries'}
+              </p>
             </Link>
           );
         })}

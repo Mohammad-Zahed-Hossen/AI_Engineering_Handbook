@@ -1,25 +1,36 @@
 'use client';
 
-import { useState } from 'react';
-
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { BookOpen, X } from 'lucide-react';
-import { getContinueReading, type RecentItem, clearContinueReading } from '@/lib/session-tracking';
+import { getContinueReading, type ContinueReadingItem, clearContinueReading } from '@/lib/session-tracking';
 import ContentTypeBadge from './ContentTypeBadge';
 
+function formatTimeAgo(timestamp: number): string {
+  const seconds = Math.floor((Date.now() - timestamp) / 1000);
+  if (seconds < 60) return 'just now';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+  return `${Math.floor(seconds / 604800)}w ago`;
+}
+
 export default function ContinueReadingSection() {
-  const [item, setItem] = useState<RecentItem | null>(() => getContinueReading());
+  // Initialize to null (SSR-safe). Hydrate from localStorage after mount.
+  const [item, setItem] = useState<ContinueReadingItem | null>(null);
 
-
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setItem(getContinueReading());
+  }, []);
 
   const handleDismiss = () => {
-
     clearContinueReading();
     setItem(null);
   };
 
+  // item === null means not yet mounted or nothing stored. Both render nothing.
   if (!item || item.href === '/') return null;
-
 
   return (
     <section className="space-y-3">
@@ -34,7 +45,7 @@ export default function ContinueReadingSection() {
         </button>
       </div>
       <Link
-        href={item.href}
+        href={`${item.href}?scrollTo=${item.scrollY ?? 0}`}
         className="block rounded-lg border border-primary/20 bg-primary/5 p-4 hover:border-primary/40 hover:bg-primary/10 active:bg-primary/15 transition-colors"
       >
         <div className="flex items-start justify-between gap-2">
@@ -43,7 +54,7 @@ export default function ContinueReadingSection() {
             <div>
               <span className="text-sm font-semibold text-foreground">{item.name}</span>
               <p className="text-[10px] text-muted-foreground mt-0.5">
-                Continue where you left off
+                {(item.scrollPercent ?? 0).toFixed(0)}% through · {formatTimeAgo(item.timestamp)}
               </p>
             </div>
           </div>

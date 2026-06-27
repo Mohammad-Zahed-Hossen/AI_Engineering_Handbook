@@ -12,6 +12,12 @@ export interface RecentItem {
   timestamp: number;
 }
 
+export interface ContinueReadingItem extends RecentItem {
+  scrollY: number;
+  scrollPercent: number;
+  dwellMs: number;
+}
+
 export function recordPageVisit(href: string, name: string, type: string, category?: string) {
   if (typeof window === 'undefined') return;
   try {
@@ -22,9 +28,6 @@ export function recordPageVisit(href: string, name: string, type: string, catego
     const filtered = existing.filter(r => r.href !== href);
     const next = [item, ...filtered].slice(0, MAX_RECENT);
     window.localStorage.setItem(RECENT_KNOWLEDGE_KEY, JSON.stringify(next));
-
-    // Update continue reading
-    window.localStorage.setItem(CONTINUE_READING_KEY, JSON.stringify(item));
   } catch {
     // Storage full or disabled
   }
@@ -40,11 +43,19 @@ export function getRecentKnowledge(): RecentItem[] {
   }
 }
 
-export function getContinueReading(): RecentItem | null {
+export function getContinueReading(): ContinueReadingItem | null {
   if (typeof window === 'undefined') return null;
   try {
     const raw = window.localStorage.getItem(CONTINUE_READING_KEY);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    // Backwards compatibility: if scrollY is missing, default to 0
+    return {
+      ...parsed,
+      scrollY: parsed.scrollY ?? 0,
+      scrollPercent: parsed.scrollPercent ?? 0,
+      dwellMs: parsed.dwellMs ?? 0,
+    };
   } catch {
     return null;
   }
@@ -58,4 +69,13 @@ export function clearRecentKnowledge() {
 export function clearContinueReading() {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(CONTINUE_READING_KEY);
+}
+
+export function saveContinueReading(item: ContinueReadingItem): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(CONTINUE_READING_KEY, JSON.stringify(item));
+  } catch {
+    // Storage full or disabled
+  }
 }

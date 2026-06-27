@@ -6,6 +6,7 @@ import OfficialResources from '@/components/shared/OfficialResources';
 import PackageTaskList from '@/components/shared/PackageTaskList';
 import QuickSetupSection from '@/components/shared/QuickSetupSection';
 import RelatedContent from '@/components/shared/RelatedContent';
+import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 
 export async function generateStaticParams() {
   return getAllPackageIds().map((id) => ({ id }));
@@ -57,6 +58,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
       ]}
       toc={toc}
     >
+      <ReadingSessionTracker href={`/packages/${pkg.id}`} name={pkg.name} type="package" />
       <header className="space-y-3 border-b border-border pb-4">
         <h1>{pkg.name}</h1>
         <MetadataBadges type="package" updatedAt={pkg.updated_at} version={pkg.version} />
