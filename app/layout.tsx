@@ -5,6 +5,9 @@ import { cn } from "@/lib/utils";
 import Sidebar from "@/components/layout/Sidebar";
 import TopBar from "@/components/layout/TopBar";
 import ThemeInitializer from "@/components/layout/ThemeInitializer";
+import ReadingProgress from "@/components/shared/ReadingProgress";
+import BackToTop from "@/components/shared/BackToTop";
+import PageVisitTracker from "@/components/shared/PageVisitTracker";
 import { buildSearchIndex } from "@/lib/search";
 import {
   getPackageNavItems,
@@ -53,6 +56,9 @@ export default function RootLayout({
     >
       <body className="h-full flex overflow-hidden bg-background text-foreground text-sm leading-relaxed">
         <ThemeInitializer />
+        <PageVisitTracker />
+        <ReadingProgress />
+        <BackToTop />
         <div className="hidden md:block shrink-0 h-full sticky top-0">
           <Sidebar 
             packages={packages}

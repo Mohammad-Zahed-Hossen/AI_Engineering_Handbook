@@ -11,6 +11,8 @@ import { buildSearchIndex } from "@/lib/search";
 import SectionCard from "@/components/shared/SectionCard";
 import SearchBox from "@/components/shared/SearchBox";
 import ContentTypeBadge from "@/components/shared/ContentTypeBadge";
+import ContinueReadingSection from "@/components/shared/ContinueReadingSection";
+import RecentKnowledgeSection from "@/components/shared/RecentKnowledgeSection";
 
 export default function Home() {
   const counts = getDashboardCounts();
@@ -44,13 +46,19 @@ export default function Home() {
         <SearchBox index={searchIndex} placeholder="Search by name, summary, or problem type…" />
       </section>
 
+      {/* Continue Reading — session resumption */}
+      <ContinueReadingSection />
+
+      {/* Recent Knowledge — browsing history */}
+      <RecentKnowledgeSection />
+
       {/* Recently Updated */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold text-foreground">Recently Updated</h2>
           <span className="text-[10px] font-mono text-muted-foreground">Sorted by updated_at</span>
         </div>
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid gap-2 grid-cols-1 md:grid-cols-2">
           {recent.map(item => {
             const href = item.type === 'model'
               ? `/models/${item.category}/${item.id}`
@@ -66,7 +74,7 @@ export default function Home() {
               <Link
                 key={`${item.type}-${item.id}`}
                 href={href}
-                className="rounded-lg border border-border bg-card p-3 hover:border-foreground/20 hover:bg-muted/30 transition-colors"
+                className="rounded-lg border border-border bg-card p-3 hover:border-foreground/20 hover:bg-muted/30 active:bg-muted/50 transition-colors"
               >
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <span className="text-sm font-medium text-foreground leading-snug">{item.name}</span>
@@ -85,12 +93,12 @@ export default function Home() {
       {/* Popular Packages */}
       <section className="space-y-3">
         <h2 className="text-sm font-semibold text-foreground">Popular Packages</h2>
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {popularPackages.map(pkg => (
             <Link
               key={pkg.id}
               href={`/packages/${pkg.id}`}
-              className="rounded-lg border border-border bg-card p-3 hover:border-foreground/20 hover:bg-muted/30 transition-colors"
+              className="rounded-lg border border-border bg-card p-3 hover:border-foreground/20 hover:bg-muted/30 active:bg-muted/50 transition-colors"
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
@@ -205,7 +213,7 @@ export default function Home() {
             <Link
               key={cat.label}
               href={cat.href}
-              className="rounded-lg border border-border bg-card p-3 hover:border-foreground/20 transition-colors"
+              className="rounded-lg border border-border bg-card p-3 hover:border-foreground/20 active:bg-muted/50 transition-colors"
             >
               <div className="text-sm font-medium text-foreground">{cat.label}</div>
               <div className="text-[10px] font-mono text-muted-foreground mt-1">{cat.count} entries</div>

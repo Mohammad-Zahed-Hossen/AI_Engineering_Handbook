@@ -66,14 +66,14 @@ export default function MobileSidebarTrigger({
   const linkClass = (href: string) => {
     const active = pathname === href;
     return cn(
-      "block py-1.5 px-2.5 rounded text-[11px] font-mono leading-normal transition-none select-none",
+      "block py-1.5 px-2.5 rounded text-xs font-mono leading-normal transition-none select-none",
       active
         ? "bg-primary text-primary-foreground font-semibold"
         : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
     );
   };
 
-  const sectionHeadingClass = "px-2.5 mt-4 mb-1 text-[9px] uppercase font-bold text-foreground/50 tracking-wider select-none flex items-center gap-1.5 cursor-pointer hover:text-foreground/70";
+  const sectionHeadingClass = "px-2.5 mt-4 mb-1 text-[10px] uppercase font-bold text-foreground/50 tracking-wider select-none flex items-center gap-1.5 cursor-pointer hover:text-foreground/70";
 
   const renderSectionHeader = (title: string, count: number, section: string) => (
     <div className={sectionHeadingClass} onClick={() => toggleSection(section)}>
@@ -137,7 +137,7 @@ export default function MobileSidebarTrigger({
           {/* Models Library */}
           <div className={sectionHeadingClass}>Models Library</div>
 
-          <div className="pl-2.5 mt-1.5 text-[9px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('ml')}>
+          <div className="pl-2.5 mt-1.5 text-[10px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('ml')}>
             {expanded === 'ml' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             <span>Machine Learning</span>
             <span className="ml-auto text-[8px] bg-muted px-1 rounded text-muted-foreground">{mlModels.length}</span>
@@ -158,7 +158,7 @@ export default function MobileSidebarTrigger({
             </ul>
           )}
 
-          <div className="pl-2.5 mt-2.5 text-[9px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('dl')}>
+          <div className="pl-2.5 mt-2.5 text-[10px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('dl')}>
             {expanded === 'dl' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             <span>Deep Learning</span>
             <span className="ml-auto text-[8px] bg-muted px-1 rounded text-muted-foreground">{dlModels.length}</span>
@@ -179,7 +179,7 @@ export default function MobileSidebarTrigger({
             </ul>
           )}
 
-          <div className="pl-2.5 mt-2.5 text-[9px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('llm')}>
+          <div className="pl-2.5 mt-2.5 text-[10px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('llm')}>
             {expanded === 'llm' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             <span>Large Language Models</span>
             <span className="ml-auto text-[8px] bg-muted px-1 rounded text-muted-foreground">{llmModels.length}</span>

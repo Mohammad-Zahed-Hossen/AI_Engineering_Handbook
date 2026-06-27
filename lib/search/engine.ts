@@ -20,17 +20,40 @@ export function createSearchEngine(docs: SearchResult[]): SearchEngine {
       const trimmed = query.trim();
       if (!trimmed) return [];
 
+      const lowerQuery = trimmed.toLowerCase();
+
       const { expandedTokens, conceptGroupIds } = expandQuery(trimmed);
-      const queryTokens: string[] = expandedTokens
+      const expandedQueryTokens: string[] = expandedTokens
         .map((token: string) => token.toLowerCase())
         .flatMap((token: string) => token.split(/[^a-z0-9]+/))
         .filter((token: string) => token.length >= 2);
 
-      const tokenMatches = queryInvertedIndex(invertedIndex, queryTokens);
+      const tokenMatches = queryInvertedIndex(invertedIndex, expandedQueryTokens);
       const tokenScores = new Map<string, number>();
 
       tokenMatches.forEach(match => {
-        tokenScores.set(match.id, Math.min((match.matchedTokenCount / Math.max(match.totalQueryTokens, 1)) * 0.95, 0.95));
+        const doc = invertedIndex.docMap.get(match.id);
+        let score = Math.min((match.matchedTokenCount / Math.max(match.totalQueryTokens, 1)) * 0.95, 0.95);
+
+        // Boost exact name matches heavily
+        if (doc) {
+          const nameLower = doc.name.toLowerCase();
+          if (nameLower === lowerQuery) {
+            score = Math.max(score, 1.0);
+          } else if (nameLower.startsWith(lowerQuery + ' ')) {
+            score = Math.max(score, 0.98);
+          } else if (nameLower.includes(lowerQuery)) {
+            score = Math.max(score, 0.90);
+          }
+
+          // Boost exact summary matches
+          const summaryLower = (doc.summary || '').toLowerCase();
+          if (summaryLower.includes(lowerQuery)) {
+            score = Math.max(score, 0.85);
+          }
+        }
+
+        tokenScores.set(match.id, score);
       });
 
       conceptGroupIds.forEach(id => {

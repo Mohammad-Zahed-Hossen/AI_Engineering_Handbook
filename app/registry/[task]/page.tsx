@@ -60,8 +60,52 @@ export default async function RegistryTaskPage({ params }: PageProps) {
         </p>
       </div>
 
-      {/* Main Table */}
-      <div className="bg-card text-card-foreground border border-border rounded-lg shadow-sm overflow-hidden">
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {models.length === 0 ? (
+          <div className="p-8 text-center text-xs text-muted-foreground select-none">
+            No registry entries loaded for this task.
+          </div>
+        ) : (
+          models.map((m) => (
+            <div
+              key={m.id}
+              className="rounded-lg border border-border bg-card p-4"
+            >
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <span className="text-sm font-semibold text-foreground font-mono select-all">
+                  {m.id}
+                </span>
+                <span className="shrink-0 text-[9px] font-mono px-1.5 py-0.5 rounded border border-border bg-muted text-muted-foreground uppercase">
+                  {m.task}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs text-muted-foreground">
+                  {m.size_mb.toLocaleString()} MB
+                </span>
+                {typeof m.link === 'string' ? (
+                  <a
+                    href={m.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-indigo-500 hover:underline font-semibold"
+                  >
+                    View &rarr;
+                  </a>
+                ) : (
+                  <span className="text-muted-foreground/60 text-[9px]">
+                    Missing: {m.link.reason || 'N/A'}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block bg-card text-card-foreground border border-border rounded-lg shadow-sm overflow-hidden">
         <div className="px-4 py-3 border-b border-border bg-muted/30 select-none">
           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider font-sans">
             {validTask.toUpperCase()} MODEL CHECKPOINTS

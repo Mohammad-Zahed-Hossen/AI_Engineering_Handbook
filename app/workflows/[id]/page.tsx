@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { getAllWorkflowIds, getWorkflow, getRelatedContent } from '@/lib/data';
 import SectionCard from '@/components/shared/SectionCard';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
@@ -37,6 +38,9 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
         { id: 'overview', label: 'Overview' },
         { id: 'steps', label: 'Steps' },
         { id: 'failures', label: 'Failure Points' },
+        ...(workflow.evaluation_checks?.length
+          ? [{ id: 'evaluation', label: 'Evaluation' }]
+          : []),
       ]}
     >
       <header id="overview" className="space-y-3 border-b border-border pb-4 scroll-mt-24">
@@ -86,6 +90,20 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                   </span>
                   {s.decision}
                 </div>
+                {s.failure_points.length > 0 && (
+                  <div className="rounded border-l-2 border-amber-500 bg-amber-500/5 px-3 py-2">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400 block mb-1.5">
+                      Watch Out
+                    </span>
+                    <ul className="space-y-1">
+                      {s.failure_points.map((fp, idx) => (
+                        <li key={idx} className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
+                          {fp}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </li>
           ))}
@@ -100,6 +118,51 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
               <li key={idx}>{pt}</li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {workflow.evaluation_checks && workflow.evaluation_checks.length > 0 && (
+        <div id="evaluation" className="rounded-lg border border-border bg-card p-4 space-y-2 scroll-mt-24">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">
+            Evaluation Checklist
+          </span>
+          <ul className="space-y-1.5">
+            {workflow.evaluation_checks.map((check, idx) => (
+              <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                <span className="mt-0.5 text-emerald-500 shrink-0 text-xs">✓</span>
+                <span className="leading-relaxed">{check}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {workflow.next_links && workflow.next_links.length > 0 && (
+        <div className="space-y-2">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">
+            Next Workflow
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {workflow.next_links.map(wfId => {
+              let name = wfId;
+              try {
+                name = getWorkflow(wfId).name;
+              } catch {
+                // If workflow not found, fall back to ID
+              }
+              return (
+                <Link
+                  key={wfId}
+                  href={`/workflows/${wfId}`}
+                  className="inline-flex items-center gap-1.5 rounded border border-border bg-muted/40 
+                             px-3 py-1.5 text-xs font-medium text-foreground 
+                             hover:bg-muted hover:border-foreground/20 transition-colors"
+                >
+                  {name} →
+                </Link>
+              );
+            })}
+          </div>
         </div>
       )}
 

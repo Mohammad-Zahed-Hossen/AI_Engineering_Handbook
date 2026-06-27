@@ -55,6 +55,19 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
 
   return (
     <div className="space-y-4" aria-label={`${packageName} tasks`}>
+      {/* Progress indicator */}
+      <div className="flex items-center gap-3 text-xs text-muted-foreground select-none">
+        <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+          <div
+            className="h-full rounded-full bg-primary transition-[width] duration-300"
+            style={{ width: `${tasks.length > 0 ? (expandedTasks.size / tasks.length) * 100 : 0}%` }}
+          />
+        </div>
+        <span className="shrink-0 font-mono text-[10px]">
+          {expandedTasks.size} / {tasks.length} explored
+        </span>
+      </div>
+
       {tasks.map((task, idx) => {
         const taskAnchor = slugify(task.task);
         const isExpanded = expandedTasks.has(idx);

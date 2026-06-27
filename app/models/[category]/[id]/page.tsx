@@ -1,11 +1,12 @@
 import { notFound } from 'next/navigation';
 import { getModelIds, getModel, getRelatedContent } from '@/lib/data';
 import { ModelCategory } from '@/types/model';
-import { CodeBlock } from '@/components/shared/CodeBlock';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import OfficialResources from '@/components/shared/OfficialResources';
 import RelatedContent from '@/components/shared/RelatedContent';
+import AlternativesList from '@/components/shared/AlternativesList';
+import ModelCollapsibleSections from '@/components/shared/ModelCollapsibleSections';
 import { validateModelCategory } from '@/lib/route-params';
 
 export async function generateStaticParams() {
@@ -72,15 +73,26 @@ export default async function ModelDetailPage({ params }: PageProps) {
       <OfficialResources sources={model.sources} githubRepo={model.github_repo} />
 
       <section id="decision-guide" className="grid grid-cols-1 md:grid-cols-2 gap-4 scroll-mt-24">
-        <div className="rounded-lg border border-border bg-card p-4">
+        <div className="rounded-lg border border-border bg-card p-4 border-l-2 border-l-emerald-500">
           <h2 className="text-emerald-700 dark:text-emerald-400">Use When</h2>
           <p className="mt-2 text-sm text-muted-foreground">{model.use_when}</p>
         </div>
-        <div className="rounded-lg border border-border bg-card p-4">
+        <div className="rounded-lg border border-border bg-card p-4 border-l-2 border-l-amber-500">
           <h2 className="text-rose-700 dark:text-rose-400">Avoid When</h2>
           <p className="mt-2 text-sm text-muted-foreground">{model.avoid_when}</p>
         </div>
       </section>
+
+      {model.decision_notes && (
+        <div className="rounded-lg border border-border bg-card p-4 space-y-1.5">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">
+            Decision Notes
+          </span>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {model.decision_notes}
+          </p>
+        </div>
+      )}
 
       <section id="pros-cons" className="grid grid-cols-1 md:grid-cols-2 gap-4 scroll-mt-24">
         <div className="rounded-lg border border-border bg-card p-4">
@@ -101,55 +113,17 @@ export default async function ModelDetailPage({ params }: PageProps) {
         </div>
       </section>
 
-      <section id="performance" className="rounded-lg border border-border bg-card p-4 scroll-mt-24">
-        <h2>Performance Overview</h2>
-        <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-          {[
-            ['Training', model.training_speed],
-            ['Inference', model.inference_speed],
-            ['Memory', model.memory_usage],
-            ['Interpretability', model.interpretability],
-          ].map(([label, value]) => (
-            <div key={label} className="rounded border border-border bg-muted/30 p-2">
-              <span className="text-[10px] uppercase text-muted-foreground block mb-1">{label}</span>
-              <span className="text-sm font-mono font-medium capitalize">{value}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+      <ModelCollapsibleSections model={model} />
 
-      {model.key_hyperparams.length > 0 && (
-        <section id="hyperparams" className="space-y-2 scroll-mt-24">
-          <h2>Key Hyperparameters</h2>
-          <div className="rounded-lg border border-border overflow-x-auto bg-card">
-            <table className="min-w-full divide-y divide-border text-left text-sm">
-              <thead className="bg-muted/40 text-[10px] font-semibold text-muted-foreground uppercase">
-                <tr>
-                  <th className="px-4 py-2">Name</th>
-                  <th className="px-4 py-2">Default</th>
-                  <th className="px-4 py-2">Description</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {model.key_hyperparams.map(hp => (
-                  <tr key={hp.name} className="hover:bg-muted/10">
-                    <td className="px-4 py-2 font-mono text-primary">{hp.name}</td>
-                    <td className="px-4 py-2 font-mono">{hp.default === null ? 'null' : String(hp.default)}</td>
-                    <td className="px-4 py-2 text-muted-foreground">{hp.note}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+      {model.competitors && model.competitors.length > 0 && (
+        <AlternativesList
+          alternatives={model.competitors}
+          title="Compared To"
+        />
       )}
-
-      <section id="quick-start" className="space-y-2 scroll-mt-24">
-        <h2>Quick Start</h2>
-        <CodeBlock code={model.quick_start} language="python" />
-      </section>
 
       <RelatedContent items={relatedContent} />
     </ContentPageLayout>
   );
 }
+
