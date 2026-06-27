@@ -61,7 +61,7 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
 
   const [perfOpen, setPerfOpen] = useState(false);
   const [hyperOpen, setHyperOpen] = useState(false);
-  const [codeOpen, setCodeOpen] = useState(false);
+  const [codeOpen, setCodeOpen] = useState(true);
 
   return (
     <>
@@ -99,28 +99,53 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
           open={hyperOpen}
           onToggle={() => setHyperOpen(v => !v)}
         >
-          <div className="rounded-lg border border-border overflow-x-auto bg-card">
-            <table className="min-w-full divide-y divide-border text-left text-sm">
-              <thead className="bg-muted/40 text-[10px] font-semibold text-muted-foreground uppercase">
-                <tr>
-                  <th className="px-4 py-2">Name</th>
-                  <th className="px-4 py-2">Default</th>
-                  <th className="px-4 py-2">Description</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {model.key_hyperparams.map(hp => (
-                  <tr key={hp.name} className="hover:bg-muted/10">
-                    <td className="px-4 py-2 font-mono text-primary">{hp.name}</td>
-                    <td className="px-4 py-2 font-mono">
-                      {hp.default === null ? 'null' : String(hp.default)}
-                    </td>
-                    <td className="px-4 py-2 text-muted-foreground">{hp.note}</td>
+          <>
+            {/* Mobile: card per hyperparam */}
+            <div className="md:hidden space-y-2">
+              {model.key_hyperparams.map(hp => (
+                <div
+                  key={hp.name}
+                  className="rounded-lg border border-border bg-card p-3 space-y-1.5"
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="font-mono text-sm font-semibold text-primary">
+                      {hp.name}
+                    </span>
+                    <span className="font-mono text-xs text-muted-foreground shrink-0">
+                      default: {hp.default === null ? 'null' : String(hp.default)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {hp.note}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop: original table */}
+            <div className="hidden md:block rounded-lg border border-border overflow-x-auto bg-card">
+              <table className="min-w-full divide-y divide-border text-left text-sm">
+                <thead className="bg-muted/40 text-[10px] font-semibold text-muted-foreground uppercase">
+                  <tr>
+                    <th className="px-4 py-2">Name</th>
+                    <th className="px-4 py-2">Default</th>
+                    <th className="px-4 py-2">Description</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {model.key_hyperparams.map(hp => (
+                    <tr key={hp.name} className="hover:bg-muted/10">
+                      <td className="px-4 py-2 font-mono text-primary">{hp.name}</td>
+                      <td className="px-4 py-2 font-mono">
+                        {hp.default === null ? 'null' : String(hp.default)}
+                      </td>
+                      <td className="px-4 py-2 text-muted-foreground">{hp.note}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         </CollapsibleSection>
       )}
 

@@ -58,8 +58,8 @@ export default function Home() {
           <h2 className="text-sm font-semibold text-foreground">Recently Updated</h2>
           <span className="text-[10px] font-mono text-muted-foreground">Sorted by updated_at</span>
         </div>
-        <div className="grid gap-2 grid-cols-1 md:grid-cols-2">
-          {recent.map(item => {
+        <div className="grid gap-2 grid-cols-2 md:grid-cols-3">
+          {recent.slice(0, 6).map(item => {
             const href = item.type === 'model'
               ? `/models/${item.category}/${item.id}`
               : item.type === 'package'
@@ -74,15 +74,14 @@ export default function Home() {
               <Link
                 key={`${item.type}-${item.id}`}
                 href={href}
-                className="rounded-lg border border-border bg-card p-3 hover:border-foreground/20 hover:bg-muted/30 active:bg-muted/50 transition-colors"
+                className="rounded-lg border border-border bg-card px-3 py-2 hover:border-foreground/20 hover:bg-muted/30 active:bg-muted/50 transition-colors"
               >
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <span className="text-sm font-medium text-foreground leading-snug">{item.name}</span>
+                  <span className="text-sm font-medium text-foreground leading-snug truncate min-w-0">{item.name}</span>
                   <ContentTypeBadge type={item.type} className="px-1.5 py-0 text-[8px]" />
                 </div>
-                <p className="text-[10px] font-mono text-muted-foreground">
-                  {item.updated_at}
-                  {item.category ? ` · ${item.category}` : ''}
+                <p className="text-[10px] font-mono text-muted-foreground truncate">
+                  {item.category ?? item.type}
                 </p>
               </Link>
             );

@@ -35,15 +35,15 @@ export default function RecentKnowledgeSection() {
           Clear
         </button>
       </div>
-      <div className="grid gap-2 grid-cols-1 md:grid-cols-2">
-        {items.map((item, idx) => (
+      <div className="grid gap-2 grid-cols-2 md:grid-cols-3">
+        {items.slice(0, 6).map((item, idx) => (
           <Link
             key={`${item.href}-${idx}`}
             href={item.href}
-            className="rounded-lg border border-border bg-card p-3 hover:border-foreground/20 hover:bg-muted/30 active:bg-muted/50 transition-colors"
+            className="rounded-lg border border-border bg-card px-3 py-2 hover:border-foreground/20 hover:bg-muted/30 active:bg-muted/50 transition-colors"
           >
             <div className="flex items-start justify-between gap-2 mb-1">
-              <span className="text-sm font-medium text-foreground leading-snug truncate">{item.name}</span>
+              <span className="text-sm font-medium text-foreground leading-snug truncate min-w-0">{item.name}</span>
               <ContentTypeBadge type={item.type as never} className="px-1.5 py-0 text-[8px] shrink-0" />
             </div>
             <p className="text-[10px] font-mono text-muted-foreground flex items-center gap-1">

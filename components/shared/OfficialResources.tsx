@@ -17,7 +17,7 @@ export default function OfficialResources({ sources, githubRepo }: OfficialResou
   if (!hasContent) return null;
 
   const linkClass =
-    'inline-flex items-center gap-1 text-xs font-medium text-foreground underline-offset-4 hover:underline';
+    'inline-flex items-center gap-1 text-xs font-medium text-foreground underline-offset-4 hover:underline truncate max-w-full';
 
   return (
     <section className="rounded-lg border border-border bg-card p-4 space-y-3 select-none">

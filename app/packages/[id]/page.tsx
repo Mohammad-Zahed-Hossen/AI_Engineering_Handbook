@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getAllPackageIds, getPackage, getRelatedContent } from '@/lib/data';
+import { getAllPackageIds, getPackage, getRelatedContent, getContentPath } from '@/lib/data';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import OfficialResources from '@/components/shared/OfficialResources';
@@ -30,6 +30,17 @@ export default async function PackageDetailPage({ params }: PageProps) {
     throw e;
   }
 
+  // Resolve task cross-references
+  const resolvedTasks = pkg.tasks.map(task => ({
+    ...task,
+    related_workflow_links: task.related_workflows
+      .map(id => ({ id, href: getContentPath('workflow', id) }))
+      .filter(r => r.href !== null) as { id: string; href: string }[],
+    related_cheatsheet_links: task.related_cheatsheets
+      .map(id => ({ id, href: getContentPath('cheatsheet', id) }))
+      .filter(r => r.href !== null) as { id: string; href: string }[],
+  }));
+
   const toc = [
     { id: 'setup', label: 'Quick Setup' },
     { id: 'summary', label: 'Summary' },
@@ -59,7 +70,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
 
       <OfficialResources sources={pkg.sources} githubRepo={pkg.github_repo} />
 
-      <PackageTaskList tasks={pkg.tasks} packageName={pkg.name} />
+      <PackageTaskList tasks={resolvedTasks} packageName={pkg.name} />
 
       <RelatedContent items={relatedContent} />
     </ContentPageLayout>

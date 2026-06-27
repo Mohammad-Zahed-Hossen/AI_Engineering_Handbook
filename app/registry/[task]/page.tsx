@@ -87,8 +87,6 @@ export default async function RegistryTaskPage({ params }: PageProps) {
                 {typeof m.link === 'string' ? (
                   <a
                     href={m.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="text-xs text-indigo-500 hover:underline font-semibold"
                   >
                     View &rarr;
@@ -142,8 +140,6 @@ export default async function RegistryTaskPage({ params }: PageProps) {
                       {typeof m.link === 'string' ? (
                         <a
                           href={m.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
                           className="text-[10px] text-indigo-500 hover:underline font-sans font-semibold"
                         >
                           View &rarr;

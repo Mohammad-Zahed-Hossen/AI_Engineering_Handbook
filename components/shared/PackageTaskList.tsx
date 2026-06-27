@@ -3,10 +3,17 @@
 import { useEffect, useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { CodeBlock } from '@/components/shared/CodeBlock';
-import type { Package } from '@/types/package';
+import type { PackageTask } from '@/types/package';
+
+interface ResolvedRef { id: string; href: string }
+
+interface ResolvedTask extends PackageTask {
+  related_workflow_links: ResolvedRef[];
+  related_cheatsheet_links: ResolvedRef[];
+}
 
 interface PackageTaskListProps {
-  tasks: Package['tasks'];
+  tasks: ResolvedTask[];
   packageName: string;
 }
 
@@ -158,21 +165,42 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
                       href={task.official_docs}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-primary hover:underline"
+                      className="text-sm text-primary hover:underline break-all"
                     >
-                      {task.official_docs}
+                      {(() => {
+                        try {
+                          const url = new URL(task.official_docs);
+                          return url.hostname + url.pathname.replace(/\/$/, '');
+                        } catch {
+                          return task.official_docs;
+                        }
+                      })()}
                     </a>
                   </div>
-                  {(task.related_workflows.length > 0 || task.related_cheatsheets.length > 0) && (
+                  {(task.related_workflow_links.length > 0 || task.related_cheatsheet_links.length > 0) && (
                     <div>
-                      <h4 className="text-[11px] font-semibold uppercase text-muted-foreground mb-1">Related content</h4>
-                      <div className="space-y-1 text-sm text-muted-foreground">
-                        {task.related_workflows.length > 0 && (
-                          <p>Workflows: {task.related_workflows.join(', ')}</p>
-                        )}
-                        {task.related_cheatsheets.length > 0 && (
-                          <p>Cheatsheets: {task.related_cheatsheets.join(', ')}</p>
-                        )}
+                      <h4 className="text-[11px] font-semibold uppercase text-muted-foreground mb-1">
+                        Related content
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {task.related_workflow_links.map(ref => (
+                          <a
+                            key={ref.id}
+                            href={ref.href}
+                            className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-foreground hover:bg-muted transition-colors"
+                          >
+                            workflow: {ref.id}
+                          </a>
+                        ))}
+                        {task.related_cheatsheet_links.map(ref => (
+                          <a
+                            key={ref.id}
+                            href={ref.href}
+                            className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-foreground hover:bg-muted transition-colors"
+                          >
+                            cheatsheet: {ref.id}
+                          </a>
+                        ))}
                       </div>
                     </div>
                   )}

@@ -1,11 +1,12 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getAllWorkflowIds, getWorkflow, getRelatedContent } from '@/lib/data';
+import { getAllWorkflowIds, getWorkflow, getRelatedContent, contentExists } from '@/lib/data';
 import SectionCard from '@/components/shared/SectionCard';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import OfficialResources from '@/components/shared/OfficialResources';
 import RelatedContent from '@/components/shared/RelatedContent';
+import WorkflowStepList from '@/components/shared/WorkflowStepList';
 
 export async function generateStaticParams() {
   return getAllWorkflowIds().map((id) => ({ id }));
@@ -66,48 +67,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
       <OfficialResources sources={workflow.sources} githubRepo={workflow.github_repo} />
 
       <SectionCard title="Workflow Steps" subtitle="Sequential pipeline">
-        <ol id="steps" className="space-y-6 scroll-mt-24">
-          {workflow.steps.map(s => (
-            <li key={s.step} className="flex gap-4 border-b border-border/50 pb-6 last:border-b-0 last:pb-0">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-sm font-mono font-semibold">
-                {s.step}
-              </div>
-              <div className="space-y-2 flex-1">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h3>{s.name}</h3>
-                  <div className="flex flex-wrap gap-1">
-                    {s.tools.map(t => (
-                      <span key={t} className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-mono">
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground">{s.what}</p>
-                <div className="rounded border border-border bg-muted/30 p-3 text-sm">
-                  <span className="text-[10px] font-semibold uppercase text-muted-foreground block mb-1">
-                    Key Decision
-                  </span>
-                  {s.decision}
-                </div>
-                {s.failure_points.length > 0 && (
-                  <div className="rounded border-l-2 border-amber-500 bg-amber-500/5 px-3 py-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400 block mb-1.5">
-                      Watch Out
-                    </span>
-                    <ul className="space-y-1">
-                      {s.failure_points.map((fp, idx) => (
-                        <li key={idx} className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
-                          {fp}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </li>
-          ))}
-        </ol>
+        <WorkflowStepList steps={workflow.steps} />
       </SectionCard>
 
       {workflow.common_failure_points.length > 0 && (
@@ -137,20 +97,22 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
         </div>
       )}
 
-      {workflow.next_links && workflow.next_links.length > 0 && (
-        <div className="space-y-2">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">
-            Next Workflow
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {workflow.next_links.map(wfId => {
-              let name = wfId;
-              try {
-                name = getWorkflow(wfId).name;
-              } catch {
-                // If workflow not found, fall back to ID
-              }
-              return (
+      {workflow.next_links && workflow.next_links.length > 0 && (() => {
+        const validLinks = workflow.next_links
+          .filter(wfId => contentExists('workflow', wfId))
+          .map(wfId => {
+            let name = wfId;
+            try { name = getWorkflow(wfId).name; } catch { }
+            return { id: wfId, name };
+          });
+        if (!validLinks.length) return null;
+        return (
+          <div className="space-y-2">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">
+              Next Workflow
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {validLinks.map(({ id: wfId, name }) => (
                 <Link
                   key={wfId}
                   href={`/workflows/${wfId}`}
@@ -160,11 +122,11 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                 >
                   {name} →
                 </Link>
-              );
-            })}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       <RelatedContent items={relatedContent} />
     </ContentPageLayout>
