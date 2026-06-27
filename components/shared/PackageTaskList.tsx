@@ -83,7 +83,7 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
           <section
             key={task.task}
             id={taskAnchor}
-            className="scroll-mt-24 rounded-lg border border-border bg-card overflow-hidden"
+            className="scroll-mt-24 rounded-lg border border-border bg-card"
           >
             <button
               onClick={() => toggleTask(idx)}
@@ -111,11 +111,11 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
             {isExpanded && (
               <div className="p-4 space-y-4">
                 <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
-                  <div className="rounded-lg border border-border bg-card p-4">
+                  <div className="rounded-lg border border-border bg-card p-4 min-w-0">
                     <h3 className="mb-2 text-sm font-semibold">Syntax</h3>
                     <CodeBlock code={task.syntax} language="python" />
                   </div>
-                  <div className="rounded-lg border border-border bg-card p-4">
+                  <div className="rounded-lg border border-border bg-card p-4 min-w-0">
                     <h3 className="mb-2 text-sm font-semibold">Example</h3>
                     <CodeBlock code={task.example} language="python" />
                   </div>
