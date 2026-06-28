@@ -43,21 +43,22 @@ export function getRecentKnowledge(): RecentItem[] {
   }
 }
 
-export function getContinueReading(): ContinueReadingItem | null {
-  if (typeof window === 'undefined') return null;
+export function getContinueReading(): ContinueReadingItem[] {
+  if (typeof window === 'undefined') return [];
   try {
     const raw = window.localStorage.getItem(CONTINUE_READING_KEY);
-    if (!raw) return null;
+    if (!raw) return [];
     const parsed = JSON.parse(raw);
-    // Backwards compatibility: if scrollY is missing, default to 0
-    return {
-      ...parsed,
-      scrollY: parsed.scrollY ?? 0,
-      scrollPercent: parsed.scrollPercent ?? 0,
-      dwellMs: parsed.dwellMs ?? 0,
-    };
+    // Backwards compatibility: if parsed is a single object (legacy), wrap in array
+    const items = Array.isArray(parsed) ? parsed : [parsed];
+    return items.map((item: ContinueReadingItem) => ({
+      ...item,
+      scrollY: item.scrollY ?? 0,
+      scrollPercent: item.scrollPercent ?? 0,
+      dwellMs: item.dwellMs ?? 0,
+    }));
   } catch {
-    return null;
+    return [];
   }
 }
 
@@ -74,7 +75,26 @@ export function clearContinueReading() {
 export function saveContinueReading(item: ContinueReadingItem): void {
   if (typeof window === 'undefined') return;
   try {
-    window.localStorage.setItem(CONTINUE_READING_KEY, JSON.stringify(item));
+    // Don't store home page visits
+    if (item.href === '/') return;
+
+    const existing = getContinueReading();
+    // Filter out any item with the same href (deduplication)
+    const filtered = existing.filter(i => i.href !== item.href);
+    // Prepend new item and slice to max 3
+    const next = [item, ...filtered].slice(0, 3);
+    window.localStorage.setItem(CONTINUE_READING_KEY, JSON.stringify(next));
+  } catch {
+    // Storage full or disabled
+  }
+}
+
+export function dismissContinueReadingItem(href: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const existing = getContinueReading();
+    const filtered = existing.filter(i => i.href !== href);
+    window.localStorage.setItem(CONTINUE_READING_KEY, JSON.stringify(filtered));
   } catch {
     // Storage full or disabled
   }

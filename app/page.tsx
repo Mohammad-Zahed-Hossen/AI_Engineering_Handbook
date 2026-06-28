@@ -22,7 +22,7 @@ export default function Home() {
   const llmModels = getAllModels("llm");
   const registryTasks = getRegistryTasks();
   const workflows = getAllWorkflows();
-  const recent = getRecentContent(8);
+  const recent = getRecentContent(6);
   const searchIndex = buildSearchIndex();
 
   const totalModelsCount = counts.models_ml + counts.models_dl + counts.models_llm;
@@ -52,14 +52,37 @@ export default function Home() {
       {/* Recent Knowledge — browsing history */}
       <RecentKnowledgeSection />
 
+      {/* Categories */}
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold text-foreground">Categories</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+          {[
+            { label: 'Packages', count: counts.packages, href: '/packages' },
+            { label: 'Models', count: totalModelsCount, href: '/models' },
+            { label: 'Workflows', count: counts.workflows, href: '/workflows' },
+            { label: 'Cheatsheets', count: counts.cheatsheets, href: '/cheatsheets' },
+            { label: 'Registry', count: counts.registry_tasks, href: '/registry' },
+          ].filter(item => item.count > 0).map(cat => (
+            <Link
+              key={cat.label}
+              href={cat.href}
+              className="rounded-lg border border-border bg-card p-3 hover:border-foreground/20 active:bg-muted/50 transition-colors"
+            >
+              <div className="text-sm font-medium text-foreground">{cat.label}</div>
+              <div className="text-[10px] font-mono text-muted-foreground mt-1">{cat.count} entries</div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       {/* Recently Updated */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold text-foreground">Recently Updated</h2>
           <span className="text-[10px] font-mono text-muted-foreground">Sorted by updated_at</span>
         </div>
-        <div className="grid gap-2 grid-cols-2 md:grid-cols-3">
-          {recent.slice(0, 6).map(item => {
+        <ul className="divide-y divide-border rounded-lg border border-border overflow-hidden">
+          {recent.map(item => {
             const href = item.type === 'model'
               ? `/models/${item.category}/${item.id}`
               : item.type === 'package'
@@ -71,44 +94,21 @@ export default function Home() {
               : `/cheatsheets/${item.id}`;
 
             return (
-              <Link
-                key={`${item.type}-${item.id}`}
-                href={href}
-                className="rounded-lg border border-border bg-card px-3 py-2 hover:border-foreground/20 hover:bg-muted/30 active:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <span className="text-sm font-medium text-foreground leading-snug truncate min-w-0">{item.name}</span>
-                  <ContentTypeBadge type={item.type} className="px-1.5 py-0 text-[8px]" />
-                </div>
-                <p className="text-[10px] font-mono text-muted-foreground truncate">
-                  {item.category ?? item.type}
-                </p>
-              </Link>
+              <li key={`${item.type}-${item.id}`}>
+                <Link
+                  href={href}
+                  className="flex items-center justify-between px-3 py-2 hover:bg-muted/30 transition-colors"
+                >
+                  <span className="text-sm font-medium text-foreground truncate">{item.name}</span>
+                  <div className="flex items-center gap-2">
+                    <ContentTypeBadge type={item.type} className="px-1.5 py-0 text-[8px]" />
+                    <span className="text-[10px] font-mono text-muted-foreground">{item.updated_at}</span>
+                  </div>
+                </Link>
+              </li>
             );
           })}
-        </div>
-      </section>
-
-      {/* Popular Packages */}
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-foreground">Popular Packages</h2>
-        <div className="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {popularPackages.map(pkg => (
-            <Link
-              key={pkg.id}
-              href={`/packages/${pkg.id}`}
-              className="rounded-lg border border-border bg-card p-3 hover:border-foreground/20 hover:bg-muted/30 active:bg-muted/50 transition-colors"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <div className="text-sm font-medium text-foreground">{pkg.name}</div>
-                  <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{pkg.summary}</p>
-                </div>
-                <span className="shrink-0 text-[10px] font-mono text-muted-foreground">v{pkg.version}</span>
-              </div>
-            </Link>
-          ))}
-        </div>
+        </ul>
       </section>
 
       {/* Quick Access */}
@@ -117,7 +117,7 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <SectionCard title="Python Packages" subtitle={`${counts.packages} cataloged`}>
             <ul className="space-y-1">
-              {packages.slice(0, 6).map(pkg => (
+              {popularPackages.slice(0, 6).map(pkg => (
                 <li key={pkg.id}>
                   <Link href={`/packages/${pkg.id}`} className="text-xs text-foreground hover:underline font-mono">
                     {pkg.name} <span className="text-muted-foreground">v{pkg.version}</span>
@@ -170,7 +170,7 @@ export default function Home() {
 
           <SectionCard title="Workflows" subtitle={`${counts.workflows} documented`}>
             <ul className="space-y-1">
-              {workflows.map(wf => (
+              {workflows.slice(0, 6).map(wf => (
                 <li key={wf.id}>
                   <Link href={`/workflows/${wf.id}`} className="text-xs text-foreground hover:underline">
                     {wf.name}
@@ -178,6 +178,11 @@ export default function Home() {
                 </li>
               ))}
             </ul>
+            {workflows.length > 6 && (
+              <Link href="/workflows" className="text-xs text-muted-foreground hover:text-foreground hover:underline font-mono mt-2 block">
+                See all {workflows.length} workflows →
+              </Link>
+            )}
           </SectionCard>
 
           <SectionCard title="Registry Tasks" subtitle={`${counts.registry_tasks} task groups`}>
@@ -196,30 +201,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-foreground">Categories</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-          {[
-            { label: 'Packages', count: counts.packages, href: '/packages' },
-            { label: 'ML Models', count: counts.models_ml, href: '/models/ml' },
-            { label: 'DL Models', count: counts.models_dl, href: '/models/dl' },
-            { label: 'LLM Models', count: counts.models_llm, href: '/models/llm' },
-            { label: 'Workflows', count: counts.workflows, href: '/workflows' },
-            { label: 'Cheatsheets', count: counts.cheatsheets, href: '/cheatsheets' },
-            { label: 'Registry', count: counts.registry_tasks, href: '/registry/embedding' },
-          ].filter(item => item.count > 0).map(cat => (
-            <Link
-              key={cat.label}
-              href={cat.href}
-              className="rounded-lg border border-border bg-card p-3 hover:border-foreground/20 active:bg-muted/50 transition-colors"
-            >
-              <div className="text-sm font-medium text-foreground">{cat.label}</div>
-              <div className="text-[10px] font-mono text-muted-foreground mt-1">{cat.count} entries</div>
-            </Link>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }

@@ -59,6 +59,7 @@ export function formatContentType(type: string): string {
     package: 'Package',
     workflow: 'Workflow',
     cheatsheet: 'Cheatsheet',
+    registry: 'Registry',
   };
   return labels[type] ?? type;
 }
