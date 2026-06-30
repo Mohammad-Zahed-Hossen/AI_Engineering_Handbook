@@ -71,6 +71,13 @@ This playbook defines the rules and constraints that AI coding agents must follo
 - **Do not** remove dependencies specified
 - **Do not** use alternative libraries for specified tools (e.g., use json-schema-to-typescript, not manual types)
 
+## Never Exceed Milestone Scope
+- **Do not** create files belonging to future milestones
+- **Do not** implement features from future phases
+- **Do not** modify files not specified in current milestone
+- **Before creating, modifying, renaming, or deleting any file, verify the action belongs to the current milestone**
+- **If the requested action belongs to a future milestone, STOP and ask for confirmation**
+
 ---
 
 # Required Actions
