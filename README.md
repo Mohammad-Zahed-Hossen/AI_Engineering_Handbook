@@ -49,7 +49,7 @@ ai-engineering-handbook/
 │   ├── registry/             # Task-specific model registry sheets
 │   ├── workflows/            # Production walkthroughs
 │   └── cheatsheets/          # Command recall references
-├── doc/                      # Developer guides & architectural guidelines
+├── docs/                     # Developer guides & architectural guidelines
 ├── lib/                      # Business Logic & Schemas
 │   ├── data.ts               # File system data-loading utils (Next.js server-cached)
 │   ├── search.ts             # Fuse.js search query resolvers
