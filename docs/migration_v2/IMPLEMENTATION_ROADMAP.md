@@ -18,17 +18,8 @@ Create the directory structure for the new architecture.
 - .gitkeep files in empty directories
 
 ## Files to Create
-- `aens.config.json`
 - `schema/`
-- `schema/config.schema.json`
 - `schema/v2/`
-- `schema/v2/base.schema.json`
-- `schema/v2/package.schema.json`
-- `schema/v2/model.schema.json`
-- `schema/v2/workflow.schema.json`
-- `schema/v2/cheatsheet.schema.json`
-- `schema/v2/registry.schema.json`
-- `schema/v2/metadata.schema.json`
 - `lib/`
 - `lib/config/`
 - `lib/validation/`

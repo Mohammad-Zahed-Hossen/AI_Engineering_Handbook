@@ -192,8 +192,7 @@ Create central configuration system before any other implementation.
   "version": "2.0",
   "content_types": ["package", "model", "workflow", "cheatsheet", "registry"],
   "schema_version_mapping": {
-    "2.0": "schema/v2",
-    "3.0": "schema/v3"
+    "2.0": "schema/v2"
   },
   "size_budgets": {
     "package_max_common_tasks": 15,

@@ -1,0 +1,116 @@
+{
+  "$id": "https://aens.dev/schema/config.schema.json",
+  "title": "AENS Configuration",
+  "type": "object",
+  "required": ["version", "content_types", "schema_version_mapping", "size_budgets", "stability_tiers", "validation_rules", "registry_asset_types"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "content_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "schema_version_mapping": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "size_budgets": {
+      "type": "object",
+      "required": ["package_max_common_tasks", "workflow_max_steps", "cheatsheet_max_entries", "max_relationships_per_type", "max_total_relationships"],
+      "properties": {
+        "package_max_common_tasks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "workflow_max_steps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cheatsheet_max_entries": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_relationships_per_type": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_total_relationships": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "stability_tiers": {
+      "type": "object",
+      "required": ["stable", "semi_stable", "volatile"],
+      "properties": {
+        "stable": {
+          "type": "object",
+          "required": ["review_cadence_days", "verification_required"],
+          "properties": {
+            "review_cadence_days": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "verification_required": {
+              "type": "boolean"
+            }
+          }
+        },
+        "semi_stable": {
+          "type": "object",
+          "required": ["review_cadence_days", "verification_required"],
+          "properties": {
+            "review_cadence_days": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "verification_required": {
+              "type": "boolean"
+            }
+          }
+        },
+        "volatile": {
+          "type": "object",
+          "required": ["review_cadence_days", "verification_required"],
+          "properties": {
+            "review_cadence_days": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "verification_required": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "validation_rules": {
+      "type": "object",
+      "required": ["require_bidirectional_relationships", "allow_unregistered_tags", "allow_unregistered_aliases"],
+      "properties": {
+        "require_bidirectional_relationships": {
+          "type": "boolean"
+        },
+        "allow_unregistered_tags": {
+          "type": "boolean"
+        },
+        "allow_unregistered_aliases": {
+          "type": "boolean"
+        }
+      }
+    },
+    "registry_asset_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
