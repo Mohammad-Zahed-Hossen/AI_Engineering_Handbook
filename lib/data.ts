@@ -2,13 +2,17 @@ import fs from 'fs';
 import path from 'path';
 import { cache } from 'react';
 import { Package } from '@/types/package';
-import { Model, ModelCategory } from '@/types/model';
+import { Model, ModelCategory, ModelSubcategory } from '@/types/model';
 import { RegistryModel } from '@/types/registry';
 import { REGISTRY_TASK_FILES, REGISTRY_FILE_TO_TASK } from './config/registry';
 import type { RegistryTask } from './config/registry';
 import { Workflow } from '@/types/workflow';
 import { Cheatsheet } from '@/types/cheatsheet';
-import { ContentRef } from '@/types/meta';
+import { Pattern } from '@/types/pattern';
+import { DebugGuide } from '@/types/debug-guide';
+import { DecisionGuide } from '@/types/decision-guide';
+import { Principle } from '@/types/principle';
+import { ContentRef } from '@/lib/schemas/base';
 
 // Core data directory in the project workspace
 const dataDir = path.join(process.cwd(), 'data');
@@ -37,10 +41,14 @@ function scanDirectoryForIds(subPath: string): readonly string[] {
   if (!fs.existsSync(dirPath)) {
     return [];
   }
-  return fs.readdirSync(dirPath)
-    .filter(file => file.endsWith('.json') && !file.startsWith('_'))
-    .map(file => path.basename(file, '.json'))
-    .sort((a, b) => a.localeCompare(b));
+  try {
+    return fs.readdirSync(dirPath)
+      .filter(file => file.endsWith('.json') && !file.startsWith('_'))
+      .map(file => path.basename(file, '.json'))
+      .sort((a, b) => a.localeCompare(b));
+  } catch {
+    return [];
+  }
 }
 
 // ── Packages ──────────────────────────────────────────────
@@ -61,7 +69,11 @@ export const getAllPackageIds = cache(function getAllPackageIds(): readonly stri
  * @returns {Package} The package details
  */
 export const getPackage = cache(function getPackage(id: string): Package {
-  return readJSON<Package>(path.join(dataDir, 'packages', `${id}.json`));
+  const filePath = path.join(dataDir, 'packages', `${id}.json`);
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Package not found: ${id}`);
+  }
+  return readJSON<Package>(filePath);
 });
 
 /**
@@ -93,7 +105,11 @@ export const getModelIds = cache(function getModelIds(category: ModelCategory): 
  * @returns {Model} Model object
  */
 export const getModel = cache(function getModel(category: ModelCategory, id: string): Model {
-  return readJSON<Model>(path.join(dataDir, 'models', category, `${id}.json`));
+  const filePath = path.join(dataDir, 'models', category, `${id}.json`);
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Model not found: ${category}/${id}`);
+  }
+  return readJSON<Model>(filePath);
 });
 
 /**
@@ -104,6 +120,38 @@ export const getModel = cache(function getModel(category: ModelCategory, id: str
  */
 export const getAllModels = cache(function getAllModels(category: ModelCategory): Model[] {
   return getModelIds(category).map(id => getModel(category, id));
+});
+
+/**
+ * Reads categories comparison metadata from the categories index file.
+ */
+export const getModelCategories = cache(function getModelCategories(category: ModelCategory): Record<string, {
+  label: string;
+  description: string;
+  comparison_columns: string[];
+  decision_flow?: Array<{ question: string; if_yes: string; if_no: string }>;
+  linked_decision_guide?: string | null;
+}> {
+  const filePath = path.join(dataDir, 'models', category, '_categories.json');
+  if (!fs.existsSync(filePath)) {
+    return {};
+  }
+  return readJSON<Record<string, {
+    label: string;
+    description: string;
+    comparison_columns: string[];
+    decision_flow?: Array<{ question: string; if_yes: string; if_no: string }>;
+    linked_decision_guide?: string | null;
+  }>>(filePath);
+});
+
+/**
+ * Combines metadata and models belonging to a subcategory.
+ */
+export const getCategoryComparison = cache(function getCategoryComparison(category: ModelCategory, subcategory: ModelSubcategory) {
+  const meta = getModelCategories(category)[subcategory] || null;
+  const models = getAllModels(category).filter(m => m.subcategory === subcategory);
+  return { meta, models };
 });
 
 // ── Registry ────────────────────────────────────────────────
@@ -132,9 +180,11 @@ export const getRegistryTasks = cache(function getRegistryTasks(): RegistryTask[
  * @returns {RegistryModel[]} Array of registry models
  */
 export const getRegistryByTask = cache(function getRegistryByTask(task: RegistryTask): RegistryModel[] {
-  return readJSON<RegistryModel[]>(
-    path.join(dataDir, 'registry', REGISTRY_TASK_FILES[task])
-  );
+  const filePath = path.join(dataDir, 'registry', REGISTRY_TASK_FILES[task]);
+  if (!fs.existsSync(filePath)) {
+    return [];
+  }
+  return readJSON<RegistryModel[]>(filePath);
 });
 
 // ── Workflows ───────────────────────────────────────────────
@@ -155,7 +205,11 @@ export const getAllWorkflowIds = cache(function getAllWorkflowIds(): readonly st
  * @returns {Workflow} workflow details
  */
 export const getWorkflow = cache(function getWorkflow(id: string): Workflow {
-  return readJSON<Workflow>(path.join(dataDir, 'workflows', `${id}.json`));
+  const filePath = path.join(dataDir, 'workflows', `${id}.json`);
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Workflow not found: ${id}`);
+  }
+  return readJSON<Workflow>(filePath);
 });
 
 /**
@@ -185,7 +239,11 @@ export const getAllCheatsheetIds = cache(function getAllCheatsheetIds(): readonl
  * @returns {Cheatsheet} cheatsheet details
  */
 export const getCheatsheet = cache(function getCheatsheet(id: string): Cheatsheet {
-  return readJSON<Cheatsheet>(path.join(dataDir, 'cheatsheets', `${id}.json`));
+  const filePath = path.join(dataDir, 'cheatsheets', `${id}.json`);
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Cheatsheet not found: ${id}`);
+  }
+  return readJSON<Cheatsheet>(filePath);
 });
 
 // ── Meta (dashboard) ────────────────────────────────────────
@@ -301,10 +359,182 @@ export const getCheatsheetNavItems = cache(function getCheatsheetNavItems(): Nav
   return readJSON<NavItem[]>(navPath);
 });
 
+// ── Patterns ───────────────────────────────────────────────
+
+/**
+ * Retrieves all pattern IDs from the patterns index.
+ */
+export const getAllPatternIds = cache(function getAllPatternIds(): readonly string[] {
+  return scanDirectoryForIds('patterns');
+});
+
+/**
+ * Reads a single pattern's details from its JSON file.
+ */
+export const getPattern = cache(function getPattern(id: string): Pattern {
+  const filePath = path.join(dataDir, 'patterns', `${id}.json`);
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Pattern not found: ${id}`);
+  }
+  return readJSON<Pattern>(filePath);
+});
+
+/**
+ * Fetches all patterns by mapping over all pattern IDs.
+ */
+export const getAllPatterns = cache(function getAllPatterns(): Pattern[] {
+  return getAllPatternIds().map(id => getPattern(id));
+});
+
+/**
+ * Lightweight navigation retriever for patterns.
+ */
+export const getPatternNavItems = cache(function getPatternNavItems(): NavItem[] {
+  const navPath = path.join(dataDir, 'patterns', '_nav.json');
+  if (!fs.existsSync(navPath)) {
+    return getAllPatternIds().map(id => {
+      const data = readJSON<{ id: string; name?: string; title?: string }>(
+        path.join(dataDir, 'patterns', `${id}.json`)
+      );
+      return { id: data.id, name: data.title || data.name || data.id };
+    });
+  }
+  return readJSON<NavItem[]>(navPath);
+});
+
+// ── Debug Guides ───────────────────────────────────────────
+
+/**
+ * Retrieves all debug guide IDs from the debug-guides index.
+ */
+export const getAllDebugGuideIds = cache(function getAllDebugGuideIds(): readonly string[] {
+  return scanDirectoryForIds('debug-guides');
+});
+
+/**
+ * Reads a single debug guide's details from its JSON file.
+ */
+export const getDebugGuide = cache(function getDebugGuide(id: string): DebugGuide {
+  const filePath = path.join(dataDir, 'debug-guides', `${id}.json`);
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Debug Guide not found: ${id}`);
+  }
+  return readJSON<DebugGuide>(filePath);
+});
+
+/**
+ * Fetches all debug guides by mapping over all debug guide IDs.
+ */
+export const getAllDebugGuides = cache(function getAllDebugGuides(): DebugGuide[] {
+  return getAllDebugGuideIds().map(id => getDebugGuide(id));
+});
+
+/**
+ * Lightweight navigation retriever for debug guides.
+ */
+export const getDebugGuideNavItems = cache(function getDebugGuideNavItems(): NavItem[] {
+  const navPath = path.join(dataDir, 'debug-guides', '_nav.json');
+  if (!fs.existsSync(navPath)) {
+    return getAllDebugGuideIds().map(id => {
+      const data = readJSON<{ id: string; name?: string; title?: string }>(
+        path.join(dataDir, 'debug-guides', `${id}.json`)
+      );
+      return { id: data.id, name: data.title || data.name || data.id };
+    });
+  }
+  return readJSON<NavItem[]>(navPath);
+});
+
+// ── Decision Guides ───────────────────────────────────────
+
+/**
+ * Retrieves all decision guide IDs from the decision-guides index.
+ */
+export const getAllDecisionGuideIds = cache(function getAllDecisionGuideIds(): readonly string[] {
+  return scanDirectoryForIds('decision-guides');
+});
+
+/**
+ * Reads a single decision guide's details from its JSON file.
+ */
+export const getDecisionGuide = cache(function getDecisionGuide(id: string): DecisionGuide {
+  const filePath = path.join(dataDir, 'decision-guides', `${id}.json`);
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Decision Guide not found: ${id}`);
+  }
+  return readJSON<DecisionGuide>(filePath);
+});
+
+/**
+ * Fetches all decision guides by mapping over all decision guide IDs.
+ */
+export const getAllDecisionGuides = cache(function getAllDecisionGuides(): DecisionGuide[] {
+  return getAllDecisionGuideIds().map(id => getDecisionGuide(id));
+});
+
+/**
+ * Lightweight navigation retriever for decision guides.
+ */
+export const getDecisionGuideNavItems = cache(function getDecisionGuideNavItems(): NavItem[] {
+  const navPath = path.join(dataDir, 'decision-guides', '_nav.json');
+  if (!fs.existsSync(navPath)) {
+    return getAllDecisionGuideIds().map(id => {
+      const data = readJSON<{ id: string; name?: string; title?: string }>(
+        path.join(dataDir, 'decision-guides', `${id}.json`)
+      );
+      return { id: data.id, name: data.title || data.name || data.id };
+    });
+  }
+  return readJSON<NavItem[]>(navPath);
+});
+
+// ── Principles ──────────────────────────────────────────────
+
+/**
+ * Retrieves all principle IDs from the principles index.
+ */
+export const getAllPrincipleIds = cache(function getAllPrincipleIds(): readonly string[] {
+  return scanDirectoryForIds('principles');
+});
+
+/**
+ * Reads a single principle's details from its JSON file.
+ */
+export const getPrinciple = cache(function getPrinciple(id: string): Principle {
+  const filePath = path.join(dataDir, 'principles', `${id}.json`);
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Principle not found: ${id}`);
+  }
+  return readJSON<Principle>(filePath);
+});
+
+/**
+ * Fetches all principles by mapping over all principle IDs.
+ */
+export const getAllPrinciples = cache(function getAllPrinciples(): Principle[] {
+  return getAllPrincipleIds().map(id => getPrinciple(id));
+});
+
+/**
+ * Lightweight navigation retriever for principles.
+ */
+export const getPrincipleNavItems = cache(function getPrincipleNavItems(): NavItem[] {
+  const navPath = path.join(dataDir, 'principles', '_nav.json');
+  if (!fs.existsSync(navPath)) {
+    return getAllPrincipleIds().map(id => {
+      const data = readJSON<{ id: string; name?: string; title?: string }>(
+        path.join(dataDir, 'principles', `${id}.json`)
+      );
+      return { id: data.id, name: data.title || data.name || data.id };
+    });
+  }
+  return readJSON<NavItem[]>(navPath);
+});
+
 export interface RecentContentItem {
   id: string;
   name: string;
-  type: 'package' | 'model' | 'workflow' | 'cheatsheet' | 'registry';
+  type: 'package' | 'model' | 'workflow' | 'cheatsheet' | 'registry' | 'pattern' | 'debug_guide' | 'decision_guide' | 'principle';
   updated_at: string;
   category?: string;
 }
@@ -323,7 +553,7 @@ export const getModelCategoryById = cache(function getModelCategoryById(id: stri
 /**
  * Centralized exist check for handbook content entities.
  */
-export function contentExists(type: 'model' | 'package' | 'workflow' | 'cheatsheet' | 'registry', id: string): boolean {
+export function contentExists(type: 'model' | 'package' | 'workflow' | 'cheatsheet' | 'registry' | 'pattern' | 'debug_guide' | 'decision_guide' | 'principle', id: string): boolean {
   if (type === 'package') {
     return fs.existsSync(path.join(dataDir, 'packages', `${id}.json`));
   }
@@ -335,6 +565,18 @@ export function contentExists(type: 'model' | 'package' | 'workflow' | 'cheatshe
   }
   if (type === 'cheatsheet') {
     return fs.existsSync(path.join(dataDir, 'cheatsheets', `${id}.json`));
+  }
+  if (type === 'pattern') {
+    return fs.existsSync(path.join(dataDir, 'patterns', `${id}.json`));
+  }
+  if (type === 'debug_guide') {
+    return fs.existsSync(path.join(dataDir, 'debug-guides', `${id}.json`));
+  }
+  if (type === 'decision_guide') {
+    return fs.existsSync(path.join(dataDir, 'decision-guides', `${id}.json`));
+  }
+  if (type === 'principle') {
+    return fs.existsSync(path.join(dataDir, 'principles', `${id}.json`));
   }
   if (type === 'registry') {
     for (const task of getRegistryTasks()) {
@@ -349,7 +591,7 @@ export function contentExists(type: 'model' | 'package' | 'workflow' | 'cheatshe
  * Centralized metadata lookup utility for any handbook content type.
  */
 export function loadContentMeta(
-  type: 'model' | 'package' | 'workflow' | 'cheatsheet' | 'registry',
+  type: 'model' | 'package' | 'workflow' | 'cheatsheet' | 'registry' | 'pattern' | 'debug_guide' | 'decision_guide' | 'principle',
   id: string
 ): { name: string; updated_at: string } {
   try {
@@ -361,16 +603,32 @@ export function loadContentMeta(
       const cat = getModelCategoryById(id);
       if (cat) {
         const m = getModel(cat, id);
-        return { name: m.name, updated_at: m.updated_at };
+        return { name: m.name || m.title, updated_at: m.updated_at };
       }
     }
     if (type === 'workflow') {
       const w = getWorkflow(id);
-      return { name: w.name, updated_at: w.updated_at };
+      return { name: w.name || w.title, updated_at: w.updated_at };
     }
     if (type === 'cheatsheet') {
       const cs = getCheatsheet(id);
-      return { name: cs.name, updated_at: cs.updated_at };
+      return { name: cs.name || cs.title, updated_at: cs.updated_at };
+    }
+    if (type === 'pattern') {
+      const pattern = getPattern(id);
+      return { name: pattern.title || pattern.id, updated_at: pattern.updated_at };
+    }
+    if (type === 'debug_guide') {
+      const dg = getDebugGuide(id);
+      return { name: dg.title || dg.id, updated_at: dg.updated_at };
+    }
+    if (type === 'decision_guide') {
+      const dg = getDecisionGuide(id);
+      return { name: dg.title || dg.id, updated_at: dg.updated_at };
+    }
+    if (type === 'principle') {
+      const principle = getPrinciple(id);
+      return { name: principle.title || principle.id, updated_at: principle.updated_at };
     }
     if (type === 'registry') {
       for (const task of getRegistryTasks()) {
@@ -392,7 +650,7 @@ export function loadContentMeta(
  * Resolves the name of any content reference.
  * If the reference is not found in the content database, falls back to a start-cased version of the ID.
  */
-export function getContentName(type: 'model' | 'package' | 'workflow' | 'cheatsheet' | 'registry', id: string): string {
+export function getContentName(type: 'model' | 'package' | 'workflow' | 'cheatsheet' | 'registry' | 'pattern' | 'debug_guide' | 'decision_guide' | 'principle', id: string): string {
   return loadContentMeta(type, id).name;
 }
 
@@ -400,11 +658,15 @@ export function getContentName(type: 'model' | 'package' | 'workflow' | 'cheatsh
  * Resolves the path of any content reference, checking if the file actually exists first.
  * Returns null if the target content has not yet been cataloged.
  */
-export function getContentPath(type: 'model' | 'package' | 'workflow' | 'cheatsheet' | 'registry', id: string): string | null {
+export function getContentPath(type: 'model' | 'package' | 'workflow' | 'cheatsheet' | 'registry' | 'pattern' | 'debug_guide' | 'decision_guide' | 'principle', id: string): string | null {
   if (!contentExists(type, id)) return null;
   if (type === 'package') return `/packages/${id}`;
   if (type === 'workflow') return `/workflows/${id}`;
   if (type === 'cheatsheet') return `/cheatsheets/${id}`;
+  if (type === 'pattern') return `/patterns/${id}`;
+  if (type === 'debug_guide') return `/debug-guides/${id}`;
+  if (type === 'decision_guide') return `/decision-guides/${id}`;
+  if (type === 'principle') return `/principles/${id}`;
   if (type === 'model') {
     const cat = getModelCategoryById(id);
     if (cat) return `/models/${cat}/${id}`;
@@ -444,7 +706,7 @@ export const getRelatedContent = cache(function getRelatedContent(
   if (type === 'package') {
     const pkg = getPackage(id);
     return uniqueExistingRefs([
-      ...pkg.alternatives,
+      ...(pkg.alternatives || []),
     ], current).slice(0, 6);
   }
 
@@ -493,9 +755,33 @@ export const getRelatedContent = cache(function getRelatedContent(
     const packageRef: ContentRef[] = contentExists('package', id)
       ? [{ type: 'package', id }]
       : [];
-    const relatedPackages = packageRef.length ? getPackage(id).alternatives : [];
+    const relatedPackages = packageRef.length
+      ? Array.isArray(getPackage(id).alternatives)
+        ? getPackage(id).alternatives
+        : []
+      : [];
 
     return uniqueExistingRefs([...packageRef, ...relatedPackages], current).slice(0, 6);
+  }
+
+  if (type === 'pattern') {
+    const pattern = getPattern(id);
+    return uniqueExistingRefs([...(pattern.related_content || [])], current).slice(0, 6);
+  }
+
+  if (type === 'debug_guide') {
+    const dg = getDebugGuide(id);
+    return uniqueExistingRefs([...(dg.related_content || [])], current).slice(0, 6);
+  }
+
+  if (type === 'decision_guide') {
+    const dg = getDecisionGuide(id);
+    return uniqueExistingRefs([...(dg.related_content || [])], current).slice(0, 6);
+  }
+
+  if (type === 'principle') {
+    const principle = getPrinciple(id);
+    return uniqueExistingRefs([...(principle.related_content || [])], current).slice(0, 6);
   }
 
   return [];
@@ -516,7 +802,7 @@ function getRecentContentFallback(limit: number): RecentContentItem[] {
     getModelIds(cat).forEach(id => {
       try {
         const m = getModel(cat, id);
-        items.push({ id: m.id, name: m.name, type: 'model', updated_at: m.updated_at, category: cat });
+        items.push({ id: m.id, name: m.name || m.title, type: 'model', updated_at: m.updated_at, category: cat });
       } catch { /* skip */ }
     });
   });
@@ -524,14 +810,42 @@ function getRecentContentFallback(limit: number): RecentContentItem[] {
   getAllWorkflowIds().forEach(id => {
     try {
       const w = getWorkflow(id);
-      items.push({ id: w.id, name: w.name, type: 'workflow', updated_at: w.updated_at });
+      items.push({ id: w.id, name: w.name || w.title, type: 'workflow', updated_at: w.updated_at });
     } catch { /* skip */ }
   });
 
   getAllCheatsheetIds().forEach(id => {
     try {
       const cs = getCheatsheet(id);
-      items.push({ id: cs.id, name: cs.name, type: 'cheatsheet', updated_at: cs.updated_at });
+      items.push({ id: cs.id, name: cs.name || cs.title, type: 'cheatsheet', updated_at: cs.updated_at });
+    } catch { /* skip */ }
+  });
+
+  getAllPatternIds().forEach(id => {
+    try {
+      const pattern = getPattern(id);
+      items.push({ id: pattern.id, name: pattern.title || pattern.id, type: 'pattern', updated_at: pattern.updated_at });
+    } catch { /* skip */ }
+  });
+
+  getAllDebugGuideIds().forEach(id => {
+    try {
+      const dg = getDebugGuide(id);
+      items.push({ id: dg.id, name: dg.title || dg.id, type: 'debug_guide', updated_at: dg.updated_at });
+    } catch { /* skip */ }
+  });
+
+  getAllDecisionGuideIds().forEach(id => {
+    try {
+      const dg = getDecisionGuide(id);
+      items.push({ id: dg.id, name: dg.title || dg.id, type: 'decision_guide', updated_at: dg.updated_at });
+    } catch { /* skip */ }
+  });
+
+  getAllPrincipleIds().forEach(id => {
+    try {
+      const principle = getPrinciple(id);
+      items.push({ id: principle.id, name: principle.title || principle.id, type: 'principle', updated_at: principle.updated_at });
     } catch { /* skip */ }
   });
 
@@ -559,6 +873,10 @@ export const getRecentContent = cache(function getRecentContent(limit = 6): Rece
     path.join(dataDir, 'models', 'llm', '_nav.json'),
     path.join(dataDir, 'workflows', '_nav.json'),
     path.join(dataDir, 'cheatsheets', '_nav.json'),
+    path.join(dataDir, 'patterns', '_nav.json'),
+    path.join(dataDir, 'debug-guides', '_nav.json'),
+    path.join(dataDir, 'decision-guides', '_nav.json'),
+    path.join(dataDir, 'principles', '_nav.json'),
   ];
 
   const allNavFilesExist = navPaths.every(p => fs.existsSync(p));
@@ -575,7 +893,7 @@ export const getRecentContent = cache(function getRecentContent(limit = 6): Rece
       const entries = readJSON<Array<{
         id: string;
         name: string;
-        type: 'package' | 'model' | 'workflow' | 'cheatsheet';
+        type: 'package' | 'model' | 'workflow' | 'cheatsheet' | 'pattern' | 'debug_guide' | 'decision_guide' | 'principle';
         updated_at?: string;
         category?: string;
       }>>(navPath);

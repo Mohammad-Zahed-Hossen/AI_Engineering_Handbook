@@ -1,0 +1,91 @@
+{
+  "id": "u-net",
+  "title": "U-Net",
+  "slug": "u-net",
+  "description": "Symmetric encoder-decoder network utilizing skip-links for precise pixel segmentation mapping.",
+  "name": "U-Net",
+  "category": "dl",
+  "subcategory": "vision_segmentation",
+  "problem_types": [
+    "segmentation"
+  ],
+  "summary": "U-Net is a convolutional network architecture designed for fast and precise image segmentation. It consists of a contracting path (encoder) to capture context and a symmetric expanding path (decoder) with skip connections to enable precise localization.",
+  "use_when": "Performing pixel-level image segmentation, especially in biomedical imaging or satellite analysis.",
+  "avoid_when": "Working with general image classification or bounding-box detection tasks without pixel-level map needs.",
+  "pros": [
+    "Skip connections preserve high-resolution spatial details in outputs.",
+    "Can be trained successfully with relatively small annotated image sets.",
+    "End-to-end pixel mapping supports arbitrary input shapes."
+  ],
+  "cons": [
+    "Requires substantial memory footprint due to skip connection feature map duplication.",
+    "Cannot capture global contextual relationships natively due to localized convolutions.",
+    "Sensitive to boundary alignment artifacts during pooling."
+  ],
+  "key_hyperparams": [
+    {
+      "name": "bilinear",
+      "default": "true",
+      "note": "Whether to use bilinear upsampling instead of transposed convolutions to prevent checkerboard artifacts."
+    }
+  ],
+  "training_speed": "medium",
+  "inference_speed": "fast",
+  "memory_usage": "medium",
+  "interpretability": "low",
+  "quick_start": "import torch\nimport torch.nn as nn\n\n# Symmetric U-Net block definition\nclass UNetBlock(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.down = nn.Conv2d(3, 64, 3, padding=1)\n        self.up = nn.ConvTranspose2d(64, 1, 3, padding=1)\n    def forward(self, x):\n        return self.up(self.down(x))\n\nmodel = UNetBlock()\nx = torch.rand((1, 3, 128, 128))\nout = model(x)",
+  "alternatives": [],
+  "related_workflows": [],
+  "sources": [
+    "https://arxiv.org/abs/1505.04597"
+  ],
+  "tags": [
+    "segmentation",
+    "medical-imaging",
+    "encoder-decoder",
+    "vision"
+  ],
+  "aliases": [
+    "unet"
+  ],
+  "keywords": [
+    "unet",
+    "segmentation",
+    "pixel",
+    "biomedical"
+  ],
+  "search_tokens": [
+    "unet",
+    "u-net",
+    "pixel-segmentation"
+  ],
+  "domain": "deep-learning",
+  "difficulty": "intermediate",
+  "engineering_area": "modeling",
+  "estimated_reading_time": 15,
+  "prerequisites": [
+    "pytorch"
+  ],
+  "recommended_next": [
+    "yolo"
+  ],
+  "related_content": [
+    {
+      "id": "pytorch",
+      "type": "package",
+      "relationship_type": "related_to"
+    }
+  ],
+  "created_at": "2026-07-08",
+  "updated_at": "2026-07-08",
+  "last_verified": "2026-07-08",
+  "review_frequency": "annually",
+  "verified_against": "1.0.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready"
+}

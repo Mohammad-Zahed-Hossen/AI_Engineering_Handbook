@@ -17,7 +17,7 @@ interface NavEntry {
   name: string;
   version?: string;
   updated_at?: string;
-  type: 'package' | 'model' | 'workflow' | 'cheatsheet';
+  type: 'package' | 'model' | 'workflow' | 'cheatsheet' | 'pattern' | 'debug_guide' | 'decision_guide' | 'principle';
   category?: string; // for models: 'ml' | 'dl' | 'llm'
 }
 
@@ -50,6 +50,10 @@ function buildNavIndex(
 }
 
 function writeNavIndex(dirPath: string, entries: NavEntry[]) {
+  if (!fs.existsSync(dirPath)) {
+    console.log(`  ⊘ ${dirPath.replace(process.cwd(), '.')} (directory does not exist, skipping)`);
+    return;
+  }
   const outPath = path.join(dirPath, '_nav.json');
   fs.writeFileSync(outPath, JSON.stringify(entries, null, 2));
   console.log(`  ✓ ${outPath.replace(process.cwd(), '.')} (${entries.length} entries)`);
@@ -81,6 +85,30 @@ writeNavIndex(
 writeNavIndex(
   path.join(dataDir, 'cheatsheets'),
   buildNavIndex(path.join(dataDir, 'cheatsheets'), 'cheatsheet')
+);
+
+// Patterns
+writeNavIndex(
+  path.join(dataDir, 'patterns'),
+  buildNavIndex(path.join(dataDir, 'patterns'), 'pattern')
+);
+
+// Debug Guides
+writeNavIndex(
+  path.join(dataDir, 'debug-guides'),
+  buildNavIndex(path.join(dataDir, 'debug-guides'), 'debug_guide')
+);
+
+// Decision Guides
+writeNavIndex(
+  path.join(dataDir, 'decision-guides'),
+  buildNavIndex(path.join(dataDir, 'decision-guides'), 'decision_guide')
+);
+
+// Principles
+writeNavIndex(
+  path.join(dataDir, 'principles'),
+  buildNavIndex(path.join(dataDir, 'principles'), 'principle')
 );
 
 console.log('Done.');

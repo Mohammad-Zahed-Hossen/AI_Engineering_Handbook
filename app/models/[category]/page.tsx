@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getAllModels } from '@/lib/data';
+import { getAllModels, getModelCategories } from '@/lib/data';
 import { ModelCategory } from '@/types/model';
 import { ModelListFilter } from '@/components/shared/FilterBar';
 import { validateModelCategory } from '@/lib/route-params';
@@ -28,6 +28,7 @@ export default async function ModelCategoryPage({ params }: PageProps) {
 
   // Load models within this category from the local database
   const models = getAllModels(validCategory);
+  const categoriesMeta = getModelCategories(validCategory);
   
   const titles: Record<string, string> = {
     ml: 'Machine Learning Models (ML)',
@@ -54,7 +55,7 @@ export default async function ModelCategoryPage({ params }: PageProps) {
       </div>
 
       {/* Interactive List Container with problem_types client-side filter */}
-      <ModelListFilter models={models} category={category} />
+      <ModelListFilter models={models} category={category} categoriesMeta={categoriesMeta} />
     </div>
   );
 }

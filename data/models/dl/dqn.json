@@ -1,0 +1,90 @@
+{
+  "id": "dqn",
+  "title": "Deep Q-Network",
+  "slug": "dqn",
+  "description": "Value-based reinforcement learning model combining Q-learning with deep neural network function estimators.",
+  "name": "Deep Q-Network",
+  "category": "dl",
+  "subcategory": "reinforcement_learning",
+  "problem_types": [
+    "generation"
+  ],
+  "summary": "Deep Q-Networks (DQN) estimate action-value (Q) functions using deep convolutional or linear networks, utilizing experience replay buffers and target network updates to stabilize training.",
+  "use_when": "Training autonomous agents in discrete, low-dimensional action spaces with simulation environments.",
+  "avoid_when": "Action spaces are continuous or training stability and sample efficiency are prioritized.",
+  "pros": [
+    "Learns to solve complex control policies directly from raw pixel/feature inputs.",
+    "Experience replay buffer stabilizes convergence by decorrelating samples.",
+    "Off-policy design supports learning from historical demonstration logs."
+  ],
+  "cons": [
+    "Prone to Q-value overestimation biases (mitigated by Double DQN).",
+    "Highly sample inefficient, requiring millions of interactions to converge.",
+    "Does not natively support continuous action spaces."
+  ],
+  "key_hyperparams": [
+    {
+      "name": "gamma",
+      "default": 0.99,
+      "note": "Discount factor for future rewards. Determines the agent's horizon of planning."
+    }
+  ],
+  "training_speed": "slow",
+  "inference_speed": "fast",
+  "memory_usage": "medium",
+  "interpretability": "low",
+  "quick_start": "import torch.nn as nn\nimport torch\n\n# Value estimator network\nclass QNetwork(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(nn.Linear(4, 64), nn.ReLU(), nn.Linear(64, 2))\n    def forward(self, state):\n        return self.net(state)\n\nmodel = QNetwork()\ns = torch.rand((1, 4))\nq_values = model(s)",
+  "alternatives": [],
+  "related_workflows": [],
+  "sources": [
+    "https://www.nature.com/articles/nature14236"
+  ],
+  "tags": [
+    "reinforcement-learning",
+    "q-learning",
+    "rl",
+    "agent"
+  ],
+  "aliases": [
+    "dqn",
+    "deep-q-learning"
+  ],
+  "keywords": [
+    "dqn",
+    "reinforcement",
+    "learning",
+    "q-learning"
+  ],
+  "search_tokens": [
+    "dqn",
+    "deep-q-network",
+    "value-learning"
+  ],
+  "domain": "deep-learning",
+  "difficulty": "advanced",
+  "engineering_area": "modeling",
+  "estimated_reading_time": 20,
+  "prerequisites": [
+    "pytorch"
+  ],
+  "recommended_next": [],
+  "related_content": [
+    {
+      "id": "pytorch",
+      "type": "package",
+      "relationship_type": "related_to"
+    }
+  ],
+  "created_at": "2026-07-08",
+  "updated_at": "2026-07-08",
+  "last_verified": "2026-07-08",
+  "review_frequency": "annually",
+  "verified_against": "1.0.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready"
+}

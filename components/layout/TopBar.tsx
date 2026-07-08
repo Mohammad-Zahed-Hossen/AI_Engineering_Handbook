@@ -12,6 +12,10 @@ interface TopBarProps {
   registryTasks: string[];
   workflows: NavItem[];
   cheatsheets: NavItem[];
+  patterns: NavItem[];
+  debugGuides: NavItem[];
+  decisionGuides: NavItem[];
+  principles: NavItem[];
   searchIndex: SearchResult[];
 }
 
@@ -23,6 +27,10 @@ export default function TopBar({
   registryTasks,
   workflows,
   cheatsheets,
+  patterns,
+  debugGuides,
+  decisionGuides,
+  principles,
   searchIndex,
 }: TopBarProps) {
   return (
@@ -37,6 +45,10 @@ export default function TopBar({
             registryTasks={registryTasks}
             workflows={workflows}
             cheatsheets={cheatsheets}
+            patterns={patterns}
+            debugGuides={debugGuides}
+            decisionGuides={decisionGuides}
+            principles={principles}
           />
         </div>
         <span className="hidden sm:inline text-xs font-semibold text-foreground font-sans shrink-0">
@@ -53,3 +65,6 @@ export default function TopBar({
     </header>
   );
 }
+
+
+

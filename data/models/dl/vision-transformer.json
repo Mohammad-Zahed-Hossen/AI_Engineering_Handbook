@@ -1,0 +1,102 @@
+{
+  "id": "vision-transformer",
+  "title": "Vision Transformer",
+  "slug": "vision-transformer",
+  "description": "Image classification backbone applying standard transformer encoders directly to patch sequences.",
+  "name": "Vision Transformer",
+  "category": "dl",
+  "subcategory": "vision_backbone",
+  "problem_types": [
+    "classification"
+  ],
+  "summary": "Vision Transformers (ViT) split images into non-overlapping patches, flatten and linear-project them into patch embeddings, add positional encodings, and feed them directly into a standard Transformer encoder.",
+  "use_when": "Working with massive image datasets where global context and scaling limits outperform standard CNNs.",
+  "avoid_when": "Data budget is small, as ViTs lack the inductive spatial bias of convolutions and overfit easily.",
+  "pros": [
+    "Captures global long-range relationships across pixels immediately from the first layer.",
+    "Scales better than CNNs on massive datasets (e.g. JFT-300M).",
+    "Unified architecture makes multimodal models (text + image) simple to construct."
+  ],
+  "cons": [
+    "Lacks spatial inductive bias, requiring massive datasets or strong regularization to generalize.",
+    "Quadratic patch interaction costs make high-resolution imaging expensive.",
+    "Higher memory footprint during training compared to CNNs."
+  ],
+  "key_hyperparams": [
+    {
+      "name": "patch_size",
+      "default": 16,
+      "note": "Size of non-overlapping image patches to create. Common choice is 16x16 pixels."
+    }
+  ],
+  "training_speed": "slow",
+  "inference_speed": "medium",
+  "memory_usage": "high",
+  "interpretability": "low",
+  "quick_start": "from torchvision.models import vit_b_16, ViT_B_16_Weights\nimport torch\n\nweights = ViT_B_16_Weights.DEFAULT\nmodel = vit_b_16(weights=weights)\nmodel.eval()\nx = torch.rand((1, 3, 224, 224))\nout = model(x)",
+  "alternatives": [
+    {
+      "id": "resnet",
+      "type": "model",
+      "relationship_type": "alternative_to"
+    },
+    {
+      "id": "cnn",
+      "type": "model",
+      "relationship_type": "alternative_to"
+    }
+  ],
+  "related_workflows": [],
+  "sources": [
+    "https://arxiv.org/abs/2010.11929"
+  ],
+  "tags": [
+    "vision",
+    "transformer",
+    "attention",
+    "image-patch"
+  ],
+  "aliases": [
+    "vit"
+  ],
+  "keywords": [
+    "vit",
+    "transformer",
+    "attention",
+    "patch"
+  ],
+  "search_tokens": [
+    "vit",
+    "vision-transformer",
+    "patch-embedding"
+  ],
+  "domain": "deep-learning",
+  "difficulty": "advanced",
+  "engineering_area": "modeling",
+  "estimated_reading_time": 18,
+  "prerequisites": [
+    "pytorch"
+  ],
+  "recommended_next": [
+    "resnet"
+  ],
+  "related_content": [
+    {
+      "id": "pytorch",
+      "type": "package",
+      "relationship_type": "related_to"
+    }
+  ],
+  "created_at": "2026-07-08",
+  "updated_at": "2026-07-08",
+  "last_verified": "2026-07-08",
+  "review_frequency": "annually",
+  "verified_against": "1.0.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready"
+}

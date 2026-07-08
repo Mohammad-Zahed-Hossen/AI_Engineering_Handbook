@@ -6,7 +6,12 @@ import {
   getAllCheatsheetIds,
   getCheatsheet,
   getRegistryTasks,
-  getRegistryByTask
+  getRegistryByTask,
+  getAllPatterns,
+  getAllDebugGuides,
+  getAllDecisionGuides,
+  getAllPrinciples,
+  getModelCategories
 } from './data';
 import { SearchResult } from '@/lib/search-types';
 import { tokenizeCodeField } from '@/lib/search/tokenizer';
@@ -47,7 +52,8 @@ export const buildSearchIndex = cache(function buildSearchIndex(): SearchResult[
       const proseKeywords = extractKeywordsFromProse(proseText);
       const codeContext = tokenizeCodeField(task.syntax || '');
       const codeTokens = codeContext.split(/\s+/).filter(Boolean);
-      const keywords = [...new Set([...proseKeywords, ...codeTokens])];
+      const equivalentKeywords = (task.visualization_equivalents || []).flatMap(eq => [eq.package, eq.task, eq.reason]);
+      const keywords = [...new Set([...proseKeywords, ...codeTokens, ...equivalentKeywords])];
 
       results.push({
         type: 'function',
@@ -70,12 +76,33 @@ export const buildSearchIndex = cache(function buildSearchIndex(): SearchResult[
   });
 
   (['ml', 'dl', 'llm'] as const).forEach(cat => {
+    // Add subcategory comparison pages to search results
+    const categoriesMeta = getModelCategories(cat);
+    Object.entries(categoriesMeta).forEach(([sub, meta]: [string, {
+      label: string;
+      description: string;
+      comparison_columns: string[];
+      decision_flow?: Array<{ question: string; if_yes: string; if_no: string }>;
+      linked_decision_guide?: string | null;
+    }]) => {
+      results.push({
+        type: 'model',
+        id: `compare-${cat}-${sub}`,
+        name: `${meta.label || sub} Comparison Matrix`,
+        summary: meta.description || `Compare and select the best model from the ${meta.label || sub} category.`,
+        href: `/models/${cat}/compare/${sub}`,
+        updated_at: '2026-07-08',
+        category: cat,
+        keywords: [sub, 'comparison', 'matrix', 'decision', 'tree', 'selection', cat],
+      });
+    });
+
     getAllModels(cat).forEach(m => {
       const keywords = extractKeywordsFromProse(m.use_when || '' + ' ' + m.pros?.join(' ') || '' + ' ' + m.cons?.join(' ') || '');
       results.push({
         type: 'model',
         id: m.id,
-        name: m.name,
+        name: m.name || m.title,
         summary: m.summary,
         href: `/models/${cat}/${m.id}`,
         updated_at: m.updated_at,
@@ -91,11 +118,11 @@ export const buildSearchIndex = cache(function buildSearchIndex(): SearchResult[
     const stepNames = w.steps.map(s => s.name);
     const stepTools = w.steps.flatMap(s => s.tools);
     const keywords = extractKeywordsFromProse(w.overview || '');
-    
+
     results.push({
       type: 'workflow',
       id: w.id,
-      name: w.name,
+      name: w.name || w.title,
       summary: w.overview,
       category: w.category,
       updated_at: w.updated_at,
@@ -128,11 +155,11 @@ export const buildSearchIndex = cache(function buildSearchIndex(): SearchResult[
     results.push({
       type: 'cheatsheet',
       id: cs.id,
-      name: cs.name,
+      name: cs.name || cs.title,
       summary: cs.entries.map(entry => entry.problem).slice(0, 4).join(', '),
       updated_at: cs.updated_at,
       href: `/cheatsheets/${cs.id}`,
-      parent_name: cs.name,
+      parent_name: cs.name || cs.title,
     });
 
     // Add individual entry-level results
@@ -151,14 +178,90 @@ export const buildSearchIndex = cache(function buildSearchIndex(): SearchResult[
         summary: entry.trigger || entry.problem,
         href: `/cheatsheets/${cs.id}#${entryAnchor}`,
         updated_at: cs.updated_at,
-        category: cs.name,
+        category: cs.name || cs.title,
         // Phase 1 additions
         mental_trigger: entry.trigger,
         code_context: codeContext,
         code_tokens: codeTokens.length > 0 ? codeTokens : undefined,
         keywords: keywords.length > 0 ? keywords : undefined,
-        parent_name: cs.name,
+        parent_name: cs.name || cs.title,
       });
+    });
+  });
+
+  // Index patterns with enriched search fields
+  getAllPatterns().forEach(p => {
+    const keywords = extractKeywordsFromProse(p.description || '');
+    results.push({
+      type: 'pattern',
+      id: p.id,
+      name: p.title || p.id,
+      title: p.title,
+      summary: p.description,
+      href: `/patterns/${p.id}`,
+      updated_at: p.updated_at,
+      // Phase 7 additions
+      keywords: keywords.length > 0 ? keywords : undefined,
+      tags: p.tags,
+      aliases: p.aliases,
+      search_tokens: p.search_tokens,
+    });
+  });
+
+  // Index debug guides with enriched search fields
+  getAllDebugGuides().forEach(dg => {
+    const keywords = extractKeywordsFromProse(dg.description || '');
+    results.push({
+      type: 'debug_guide',
+      id: dg.id,
+      name: dg.title || dg.id,
+      title: dg.title,
+      summary: dg.description,
+      href: `/debug-guides/${dg.id}`,
+      updated_at: dg.updated_at,
+      // Phase 7 additions
+      keywords: keywords.length > 0 ? keywords : undefined,
+      tags: dg.tags,
+      aliases: dg.aliases,
+      search_tokens: dg.search_tokens,
+    });
+  });
+
+  // Index decision guides with enriched search fields
+  getAllDecisionGuides().forEach(dg => {
+    const keywords = extractKeywordsFromProse(dg.description || '');
+    results.push({
+      type: 'decision_guide',
+      id: dg.id,
+      name: dg.title || dg.id,
+      title: dg.title,
+      summary: dg.description,
+      href: `/decision-guides/${dg.id}`,
+      updated_at: dg.updated_at,
+      // Phase 7 additions
+      keywords: keywords.length > 0 ? keywords : undefined,
+      tags: dg.tags,
+      aliases: dg.aliases,
+      search_tokens: dg.search_tokens,
+    });
+  });
+
+  // Index principles with enriched search fields
+  getAllPrinciples().forEach(p => {
+    const keywords = extractKeywordsFromProse(p.description || '');
+    results.push({
+      type: 'principle',
+      id: p.id,
+      name: p.title || p.id,
+      title: p.title,
+      summary: p.description,
+      href: `/principles/${p.id}`,
+      updated_at: p.updated_at,
+      // Phase 7 additions
+      keywords: keywords.length > 0 ? keywords : undefined,
+      tags: p.tags,
+      aliases: p.aliases,
+      search_tokens: p.search_tokens,
     });
   });
 

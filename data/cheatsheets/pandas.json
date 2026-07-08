@@ -1,0 +1,1424 @@
+{
+  "id": "pandas",
+  "title": "Pandas Cheatsheet",
+  "name": "Pandas Cheatsheet",
+  "slug": "pandas-cheatsheet",
+  "description": "Canonical copy-paste cheatsheet for core Pandas syntax and production workflows.",
+  "package_reference": "pandas",
+  "verified_against": "3.0.4",
+  "created_at": "2026-07-06",
+  "updated_at": "2026-07-06",
+  "sources": [
+    "https://pandas.pydata.org/",
+    "https://pandas.pydata.org/docs/reference/index.html",
+    "https://pandas.pydata.org/docs/user_guide/index.html",
+    "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html",
+    "https://pandas.pydata.org/docs/whatsnew/index.html"
+  ],
+  "related_content": [
+    {
+      "id": "pandas",
+      "type": "package",
+      "relationship_type": "references"
+    }
+  ],
+  "entries": [
+    {
+      "problem": "See shape, types, missingness, and sample rows fast.",
+      "trigger": "You just loaded a dataset and need a first-pass audit.",
+      "snippet": "import pandas as pd\n\ndf = pd.read_csv(\"sales.csv\")\n\nprint(df.head())\nprint(df.tail())\nprint(df.shape)\nprint(df.columns)\nprint(df.dtypes)\nprint(df.info())\nprint(df.describe(include=\"all\"))\nprint(df.isna().sum())",
+      "minimal_notes": "`info()` is the fastest way to check dtypes and non-null counts. `describe(include=\"all\")` gives a broad summary for mixed-type frames.",
+      "common_bug": "Relying on `head()` only and missing dtype or null issues.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.info.html"
+    },
+    {
+      "problem": "Read CSV, Excel, JSON, or Parquet with correct schema and memory efficiency.",
+      "trigger": "You need production-style ingestion from common file formats.",
+      "snippet": "import pandas as pd\n\ncsv_df = pd.read_csv(\n    \"sales.csv\",\n    usecols=[\"order_id\", \"customer_id\", \"order_date\", \"amount\"],\n    dtype={\"order_id\": \"string\", \"customer_id\": \"string\", \"amount\": \"float64\"},\n    parse_dates=[\"order_date\"],\n    na_values=[\"\", \"NA\", \"null\"],\n)\nexcel_df = pd.read_excel(\"sales.xlsx\", sheet_name=0)\njson_df = pd.read_json(\"sales.json\", lines=True)\nparquet_df = pd.read_parquet(\"sales.parquet\")",
+      "minimal_notes": "Specify `dtype`, `usecols`, and `parse_dates` early to reduce downstream cleanup. Use the format-specific reader instead of converting through CSV.",
+      "common_bug": "Letting Pandas infer everything and ending up with object dtypes or slow reads.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html"
+    },
+    {
+      "problem": "Keep only the columns you need.",
+      "trigger": "You want a smaller working frame.",
+      "snippet": "import pandas as pd\n\ndf = pd.read_csv(\"sales.csv\")\nsubset = df[[\"order_id\", \"amount\"]]",
+      "minimal_notes": "Column selection is the simplest way to reduce memory and focus operations.",
+      "common_bug": "Using a single bracket and accidentally selecting a Series.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.__getitem__.html"
+    },
+    {
+      "problem": "Filter by membership or numeric range.",
+      "trigger": "You need set-based or interval-based selection.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"score\": [10, 35, 70], \"status\": [\"new\", \"paid\", \"open\"]})\nfiltered = df[df[\"status\"].isin([\"paid\", \"open\"]) & df[\"score\"].between(20, 80)]",
+      "minimal_notes": "`isin` and `between` are vectorized and easy to read.",
+      "common_bug": "Using chained comparisons incorrectly with Series objects.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.Series.isin.html"
+    },
+    {
+      "problem": "Order records deterministically.",
+      "trigger": "You need reproducible outputs or top-ranked rows.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"customer_id\": [2, 1, 1], \"score\": [10, 30, 20]})\nsorted_df = df.sort_values([\"customer_id\", \"score\"], ascending=[True, False])\nsorted_idx = sorted_df.set_index(\"customer_id\").sort_index()",
+      "minimal_notes": "Sort before deduplication when recency or priority matters.",
+      "common_bug": "Sorting by strings when you expected numeric or datetime order.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.sort_values.html"
+    },
+    {
+      "problem": "Manage frame schema explicitly.",
+      "trigger": "You need controlled column lifecycle operations.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"a\": [1, 2], \"b\": [3, 4]})\ndf = df.rename(columns={\"a\": \"x\"})\ndf.insert(1, \"y\", [10, 20])\nremoved = df.pop(\"b\")\ndf = df.drop(columns=[\"x\"])",
+      "minimal_notes": "Use `insert` for stable column placement and `pop` when you want the removed data.",
+      "common_bug": "Mutating temporary slices and assuming the parent frame changed.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.insert.html"
+    },
+    {
+      "problem": "Create derived features or update existing values safely.",
+      "trigger": "You need copy-safe transformations.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"amount\": [100, 200, 300]})\ndf = df.assign(amount_usd=lambda x: x[\"amount\"] * 1.08)\n\npatch = pd.DataFrame({\"amount\": [^999]}, index=[^1])\ndf.update(patch)",
+      "minimal_notes": "`assign` is chain-friendly. `update` writes aligned non-null values into matching labels.",
+      "common_bug": "Expecting `update` to add new rows or columns.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.update.html"
+    },
+    {
+      "problem": "Detect, drop, fill, interpolate, and combine sparse data.",
+      "trigger": "Your data has gaps.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"a\": [1, None, 3], \"b\": [None, 2, 3]})\ndf[\"a\"] = df[\"a\"].fillna(0)\ndf[\"b\"] = df[\"b\"].ffill()\nclean = df.dropna(subset=[\"a\"])\ncombined = df[\"a\"].combine_first(df[\"b\"])",
+      "minimal_notes": "`fillna`, `ffill`, `bfill`, `dropna`, and `combine_first` cover most missing-data workflows.",
+      "common_bug": "Filling numeric data with strings and silently changing dtype to object.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.fillna.html"
+    },
+    {
+      "problem": "Deduplicate records and keep the right row.",
+      "trigger": "You suspect repeated rows or keys.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame(\n    {\"order_id\": [1, 1, 2], \"updated_at\": pd.to_datetime([\"2026-01-01\", \"2026-02-01\", \"2026-01-15\"])}\n)\ndeduped = df.sort_values(\"updated_at\").drop_duplicates(subset=[\"order_id\"], keep=\"last\")",
+      "minimal_notes": "Sort before `drop_duplicates` when recency matters.",
+      "common_bug": "Dropping full-row duplicates when duplicate keys matter more than exact row equality.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.drop_duplicates.html"
+    },
+    {
+      "problem": "Normalize columns to modern nullable dtypes.",
+      "trigger": "You need consistent missing-value semantics.",
+      "snippet": "import pandas as pd\n\ndf = pd.read_csv(\"sales.csv\").convert_dtypes(dtype_backend=\"numpy_nullable\")\ndf[\"amount\"] = df[\"amount\"].astype(\"Float64\")\ndf[\"flag\"] = df[\"flag\"].astype(\"boolean\")",
+      "minimal_notes": "Prefer nullable dtypes over legacy object columns. Use Arrow-backed dtypes when your pipeline benefits from them.",
+      "common_bug": "Leaving numeric data as object dtype and slowing all downstream operations.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.convert_dtypes.html"
+    },
+    {
+      "problem": "Convert text to timestamps or durations.",
+      "trigger": "You need time-series operations.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame(\n    {\"order_date\": [\"2026-01-01\", \"2026-02-01\"], \"latency\": [\"5 min\", \"8 min\"]}\n)\ndf[\"order_date\"] = pd.to_datetime(df[\"order_date\"], utc=True, errors=\"coerce\")\ndf[\"latency\"] = pd.to_timedelta(df[\"latency\"], errors=\"coerce\")",
+      "minimal_notes": "`errors=\"coerce\"` is useful for dirty input. Parse time values before arithmetic.",
+      "common_bug": "Comparing naive and timezone-aware timestamps.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.to_datetime.html"
+    },
+    {
+      "problem": "Attach or convert timezones correctly.",
+      "trigger": "You work with timestamps across regions.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"ts\": pd.date_range(\"2026-01-01\", periods=3, freq=\"D\")})\ndf[\"ts_utc\"] = df[\"ts\"].dt.tz_localize(\"UTC\")\ndf[\"ts_oslo\"] = df[\"ts_utc\"].dt.tz_convert(\"Europe/Oslo\")",
+      "minimal_notes": "`tz_localize` attaches a timezone; `tz_convert` changes it.",
+      "common_bug": "Calling `tz_convert` on naive timestamps.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.Series.dt.tz_localize.html"
+    },
+    {
+      "problem": "Clean and parse text columns.",
+      "trigger": "You need normalization or token extraction.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"email\": [\" Alice@Example.com \", \"bob@test.org\"]})\ndf[\"email_clean\"] = df[\"email\"].str.strip().str.lower()\ndf[\"domain\"] = df[\"email_clean\"].str.extract(r\"@(.+)$\")\ndf[\"first_token\"] = df[\"email_clean\"].str.split(\"@\").str[^0]",
+      "minimal_notes": "Chain `.str` methods for vectorized string operations. `extractall` is useful when you expect multiple regex matches.",
+      "common_bug": "Applying Python string methods directly to a Series.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.Series.str.extract.html"
+    },
+    {
+      "problem": "Control category sets, ordering, and codes.",
+      "trigger": "You need predictable label behavior and smaller memory use.",
+      "snippet": "import pandas as pd\n\ns = pd.Series(pd.Categorical([\"low\", \"high\", \"low\"], categories=[\"low\", \"medium\", \"high\"], ordered=True))\ns = s.cat.set_categories([\"low\", \"medium\", \"high\", \"critical\"], ordered=True)\ns = s.cat.remove_unused_categories()\ncodes = s.cat.codes",
+      "minimal_notes": "Use ordered categories for explicit sort semantics. Remove unused categories after filtering.",
+      "common_bug": "Sorting or comparing unordered categories and getting unexpected results.",
+      "docs_url": "https://pandas.pydata.org/docs/user_guide/categorical.html#categorical-accessor"
+    },
+    {
+      "problem": "Join two tables on keys with cardinality checks.",
+      "trigger": "You need relational enrichment.",
+      "snippet": "import pandas as pd\n\norders = pd.DataFrame({\"customer_id\": [1, 2], \"amount\": [10, 20]})\ncustomers = pd.DataFrame({\"customer_id\": [1, 2], \"country\": [\"NO\", \"SE\"]})\n\nmerged = orders.merge(customers, on=\"customer_id\", how=\"left\", validate=\"one_to_one\")",
+      "minimal_notes": "Use `validate` to catch key cardinality errors early.",
+      "common_bug": "Merge explosions from duplicate keys on either side.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.merge.html"
+    },
+    {
+      "problem": "Stack batches or compare related tables.",
+      "trigger": "You need batch assembly or difference detection.",
+      "snippet": "import pandas as pd\n\na = pd.DataFrame({\"id\": [1, 2], \"value\": [10, 20]})\nb = pd.DataFrame({\"id\": [3, 4], \"value\": [30, 40]})\n\ncombined = pd.concat([a, b], ignore_index=True)\ndiff = a.compare(a.copy())",
+      "minimal_notes": "Use `concat` for batch append patterns, not repeated concatenation in loops. `compare` helps debug differences.",
+      "common_bug": "Assuming `concat` performs a keyed join.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.concat.html"
+    },
+    {
+      "problem": "Summarize data by one or more keys.",
+      "trigger": "You need totals, counts, or custom summaries.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"region\": [\"NO\", \"NO\", \"SE\"], \"amount\": [10, 15, 20]})\nsummary = (\n    df.groupby(\"region\", as_index=False, observed=True, dropna=False)\n    .agg(total_amount=(\"amount\", \"sum\"), avg_amount=(\"amount\", \"mean\"))\n)",
+      "minimal_notes": "Named aggregations keep output columns readable. `observed=True` helps with categorical group keys.",
+      "common_bug": "Forgetting `as_index=False` and getting grouped keys in the index.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.groupby.html"
+    },
+    {
+      "problem": "Add group-level metrics back to each row.",
+      "trigger": "You need per-row features like group mean or share.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"region\": [\"NO\", \"NO\", \"SE\"], \"amount\": [10, 15, 20]})\ng = df.groupby(\"region\")\ndf[\"region_avg\"] = g[\"amount\"].transform(\"mean\")\ndf[\"region_cumcount\"] = g.cumcount()\ndf[\"region_total_rank\"] = g[\"amount\"].rank(method=\"dense\", ascending=False)",
+      "minimal_notes": "`transform` preserves row count and aligns back to the original frame. `cumcount` and grouped `rank` are common feature-engineering tools.",
+      "common_bug": "Using `agg` when you actually need same-length output.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.core.groupby.GroupBy.cumcount.html"
+    },
+    {
+      "problem": "Convert long data to wide layout with and without aggregation.",
+      "trigger": "You need matrix-style output or aggregated reshaping.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame(\n    {\"date\": [\"2026-01-01\", \"2026-01-01\", \"2026-01-02\"], \"metric\": [\"sales\", \"sales\", \"sales\"], \"value\": [10, 15, 12]}\n)\n\ntable = df.pivot_table(index=\"date\", columns=\"metric\", values=\"value\", aggfunc=\"sum\", fill_value=0)",
+      "minimal_notes": "Use `pivot` for unique combinations and `pivot_table` for duplicate cells.",
+      "common_bug": "Using `pivot` when duplicates require aggregation.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.pivot_table.html"
+    },
+    {
+      "problem": "Normalize wide data into tidy rows.",
+      "trigger": "You need a long format for analysis or plotting.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"id\": [1, 2], \"sales_q1\": [10, 20], \"sales_q2\": [15, 25]})\nlong = df.melt(id_vars=[\"id\"], var_name=\"quarter\", value_name=\"sales\")",
+      "minimal_notes": "`melt` is the standard inverse of wide-to-long reshaping. `wide_to_long` is useful for systematic column prefixes.",
+      "common_bug": "Forgetting to preserve identifier columns in `id_vars`.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.melt.html"
+    },
+    {
+      "problem": "Move index levels between rows and columns.",
+      "trigger": "You are working with hierarchical indexes.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame(\n    {\"region\": [\"NO\", \"NO\"], \"metric\": [\"sales\", \"visits\"], \"value\": [10, 50]}\n).set_index([\"region\", \"metric\"])\n\nwide = df.unstack(\"metric\")\nlong = wide.stack(\"metric\")",
+      "minimal_notes": "`stack` and `unstack` are common in multi-indexed workflows.",
+      "common_bug": "Mixing index level names and positions incorrectly.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.unstack.html"
+    },
+    {
+      "problem": "Compute moving statistics.",
+      "trigger": "You need trailing window features.",
+      "snippet": "import pandas as pd\n\ns = pd.Series([10, 20, 30, 40, 50])\nrolling_mean = s.rolling(window=3, min_periods=1).mean()",
+      "minimal_notes": "`rolling` is the usual choice for moving averages and volatility.",
+      "common_bug": "Forgetting `min_periods` and getting leading NaNs.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.Series.rolling.html"
+    },
+    {
+      "problem": "Compute cumulative and exponentially weighted statistics.",
+      "trigger": "You need growing-history or smoothed features.",
+      "snippet": "import pandas as pd\n\ns = pd.Series([10, 20, 30, 40, 50])\nexp_mean = s.expanding(min_periods=1).mean()\newm_mean = s.ewm(alpha=0.3, adjust=False).mean()",
+      "minimal_notes": "`expanding` uses all prior rows; `ewm` is common for trend tracking and online metrics.",
+      "common_bug": "Using `rolling` when you actually need full-history accumulation.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.Series.expanding.html"
+    },
+    {
+      "problem": "Change time frequency and aggregate.",
+      "trigger": "Your index is datetime-like.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame(\n    {\"ts\": pd.date_range(\"2026-01-01\", periods=6, freq=\"H\"), \"value\": [1, 2, 3, 4, 5, 6]}\n).set_index(\"ts\")\n\nhourly = df.resample(\"3H\").sum()",
+      "minimal_notes": "`resample` is the time-series equivalent of groupby by time bins.",
+      "common_bug": "Resampling a non-datetime index.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.resample.html"
+    },
+    {
+      "problem": "Fill gaps in ordered numeric data.",
+      "trigger": "You have sparse series with intermediate gaps.",
+      "snippet": "import pandas as pd\n\ns = pd.Series([1.0, None, None, 4.0])\nfilled = s.interpolate(method=\"linear\")",
+      "minimal_notes": "Interpolation is best for continuous ordered data, especially time series.",
+      "common_bug": "Using interpolation on unordered categorical data.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.Series.interpolate.html"
+    },
+    {
+      "problem": "Extract date parts or normalize timestamps.",
+      "trigger": "You need year, month, weekday, or timezone-aware operations.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"ts\": pd.to_datetime([\"2026-01-01\", \"2026-07-06\"], utc=True)})\ndf[\"year\"] = df[\"ts\"].dt.year\ndf[\"month\"] = df[\"ts\"].dt.month\ndf[\"weekday\"] = df[\"ts\"].dt.weekday\ndf[\"date_only\"] = df[\"ts\"].dt.normalize()",
+      "minimal_notes": "`.dt` is the vectorized datetime accessor. Use `floor`, `ceil`, and `round` for time bucketing.",
+      "common_bug": "Calling `.dt` on object dtype values that are not parsed datetimes.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/series.html#datetimelike-properties"
+    },
+    {
+      "problem": "Make fast exploratory plots.",
+      "trigger": "You need a visual sanity check.",
+      "snippet": "import pandas as pd\nimport matplotlib.pyplot as plt\n\ndf = pd.DataFrame({\"x\": [1, 2, 3, 4], \"y\": [10, 15, 13, 18], \"group\": [\"a\", \"a\", \"b\", \"b\"]})\nax1 = df.plot(x=\"x\", y=\"y\", kind=\"line\", title=\"Line\")\nax2 = df[\"y\"].plot(kind=\"hist\", bins=4, title=\"Hist\")\nax3 = df.plot(x=\"x\", y=\"y\", kind=\"scatter\", title=\"Scatter\")\nplt.tight_layout()\nplt.show()",
+      "minimal_notes": "`.plot` is good for fast diagnostics and simple summaries. Keep visual checks lightweight.",
+      "common_bug": "Expecting publication-quality control from the default plot accessor.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.plot.html"
+    },
+    {
+      "problem": "Find large columns or reduce memory usage.",
+      "trigger": "You need to scale a frame without wasting RAM.",
+      "snippet": "import pandas as pd\n\ndf = pd.read_csv(\"sales.csv\")\nprint(df.memory_usage(deep=True))\nprint(df.info(memory_usage=\"deep\"))\ndf[\"status\"] = df[\"status\"].astype(\"category\")\ndf = df.convert_dtypes(dtype_backend=\"numpy_nullable\")",
+      "minimal_notes": "`deep=True` matters for object columns. Categoricals and nullable dtypes often reduce memory materially.",
+      "common_bug": "Underestimating memory because object/string storage is not counted deeply.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.memory_usage.html"
+    },
+    {
+      "problem": "Write a result table to CSV safely.",
+      "trigger": "You need a shareable flat-file output.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"id\": [1, 2], \"value\": [10, 20]})\ndf.to_csv(\"output.csv\", index=False)",
+      "minimal_notes": "`index=False` is usually the right default for exchange files.",
+      "common_bug": "Accidentally exporting the index as an extra column.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_csv.html"
+    },
+    {
+      "problem": "Save columnar analytics data.",
+      "trigger": "You need compact, fast IO.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"id\": [1, 2], \"value\": [10, 20]})\ndf.to_parquet(\"output.parquet\", index=False)",
+      "minimal_notes": "Parquet is usually better than CSV for large analytics pipelines.",
+      "common_bug": "Ignoring dtype preservation and schema consistency.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_parquet.html"
+    },
+    {
+      "problem": "Flatten nested JSON records.",
+      "trigger": "Your input has nested dict/list structures.",
+      "snippet": "import pandas as pd\n\nrecords = [\n    {\"id\": 1, \"user\": {\"name\": \"Alice\", \"country\": \"NO\"}},\n    {\"id\": 2, \"user\": {\"name\": \"Bob\", \"country\": \"SE\"}},\n]\ndf = pd.json_normalize(records)",
+      "minimal_notes": "`json_normalize` is the standard way to flatten nested mappings.",
+      "common_bug": "Attempting manual nested extraction for large payloads.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.json_normalize.html"
+    },
+    {
+      "problem": "Build null masks.",
+      "trigger": "You need to filter or count missing data.",
+      "snippet": "import pandas as pd\n\ns = pd.Series([1, None, 3])\nmask = pd.isna(s)\nnot_missing = pd.notna(s)",
+      "minimal_notes": "Use `isna` / `notna` instead of comparing to `None`.",
+      "common_bug": "Comparing directly with `== None` or `!= None`.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.isna.html"
+    },
+    {
+      "problem": "Recover from object dtypes and dirty null-heavy inputs.",
+      "trigger": "You inherited messy columns or mixed types.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"x\": [\"1\", \"2\", None, \"4\"], \"y\": [1, None, 3, 4]})\ndf = df.infer_objects(copy=False)\ndf = df.convert_dtypes(dtype_backend=\"numpy_nullable\")\ndf[\"x\"] = pd.to_numeric(df[\"x\"], errors=\"coerce\")",
+      "minimal_notes": "`convert_dtypes()` is the preferred modern first step. `dtype_backend=\"pyarrow\"` is useful when Arrow-backed dtypes are desired and supported.",
+      "common_bug": "Leaving messy data as object dtype and pushing the problem downstream.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.convert_dtypes.html"
+    },
+    {
+      "problem": "Combine objects by label, not position.",
+      "trigger": "You need aligned arithmetic or paired transforms.",
+      "snippet": "import pandas as pd\n\na = pd.Series([1, 2], index=[\"x\", \"y\"])\nb = pd.Series([10, 20], index=[\"y\", \"z\"])\n\nleft, right = a.align(b, join=\"outer\")\nsum_series = left.fillna(0) + right.fillna(0)",
+      "minimal_notes": "Alignment is label-based, not positional.",
+      "common_bug": "Assuming two objects line up by row order.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.Series.align.html"
+    },
+    {
+      "problem": "Load from or export to a database table.",
+      "trigger": "Your source of truth is a relational database.",
+      "snippet": "import pandas as pd\nfrom sqlalchemy import create_engine\n\nengine = create_engine(\"sqlite:///example.db\")\n\ndf = pd.read_sql(\"SELECT order_id, amount FROM sales\", engine)\ndf.to_sql(\"sales_export\", engine, if_exists=\"replace\", index=False)",
+      "minimal_notes": "`read_sql` and `to_sql` are the standard round-trip APIs for database workflows. Prefer explicit column selection and controlled writes.",
+      "common_bug": "Writing the DataFrame index as an unintended database column.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.read_sql.html"
+    },
+    {
+      "problem": "Check representative records, value distribution, and row counts.",
+      "trigger": "You need a quick data sanity check.",
+      "snippet": "import pandas as pd\n\ndf = pd.read_csv(\"sales.csv\")\n\nsample = df.sample(n=5, random_state=42)\nprint(df[\"status\"].value_counts(dropna=False))\nprint(df[\"customer_id\"].nunique(dropna=True))\nprint(df[\"status\"].mode())",
+      "minimal_notes": "`sample` is useful for spot-checking records. `value_counts()` and `nunique()` are fast for distribution checks.",
+      "common_bug": "Sampling without `random_state` and getting non-reproducible results.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.sample.html"
+    },
+    {
+      "problem": "Use label-based or position-based indexing precisely.",
+      "trigger": "You need row/column slices or scalar access.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"a\": [10, 20, 30], \"b\": [100, 200, 300]}, index=[\"x\", \"y\", \"z\"])\n\nlabel_slice = df.loc[\"x\":\"y\", [\"a\", \"b\"]]\npos_slice = df.iloc[0:2, 0:1]\nscalar_label = df.at[\"y\", \"a\"]\nscalar_pos = df.iat[1, 0]",
+      "minimal_notes": "`loc` is label-based and inclusive on slices; `iloc` is position-based. Use `at` and `iat` for scalar reads/writes.",
+      "common_bug": "Mixing label and position semantics or assuming `iloc` accepts labels.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.loc.html"
+    },
+    {
+      "problem": "Filter with readable boolean expressions.",
+      "trigger": "You want SQL-like row filtering.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"amount\": [50, 200, 150], \"status\": [\"paid\", \"paid\", \"open\"]})\nhigh_value = df.query(\"amount > 100 and status == 'paid'\")",
+      "minimal_notes": "`query` keeps chained filters easier to read. It is especially useful for compact business rules.",
+      "common_bug": "Forgetting that `query` still obeys Python operator precedence inside expressions.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.query.html"
+    },
+    {
+      "problem": "Select rows by clock time or first/last valid timestamps.",
+      "trigger": "You work with intraday or sparse time series.",
+      "snippet": "import pandas as pd\n\nidx = pd.date_range(\"2026-07-01\", periods=6, freq=\"6H\")\ndf = pd.DataFrame({\"value\": range(6)}, index=idx)\n\nbusiness_hours = df.between_time(\"09:00\", \"17:00\")\nfirst_ts = df.first_valid_index()\nlast_ts = df.last_valid_index()",
+      "minimal_notes": "`between_time` works on a DatetimeIndex. `first_valid_index` and `last_valid_index` help with sparse series.",
+      "common_bug": "Calling time-based index methods on a non-datetime index.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.between_time.html"
+    },
+    {
+      "problem": "Rank values or extract top records per group.",
+      "trigger": "You need leaderboard-style outputs.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"team\": [\"a\", \"a\", \"b\"], \"score\": [10, 30, 20]})\ndf[\"rank\"] = df[\"score\"].rank(method=\"dense\", ascending=False)\ntop2 = df.nlargest(2, \"score\")\nbottom2 = df.nsmallest(2, \"score\")",
+      "minimal_notes": "`nlargest` and `nsmallest` are faster than full sorts for small top-N selections.",
+      "common_bug": "Using `sort_values().head()` when only top-N is needed on large data.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.nlargest.html"
+    },
+    {
+      "problem": "Transform scalar values, map labels, or run row/column functions.",
+      "trigger": "You need targeted value replacement or a function-based transform.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"status\": [\"new\", \"open\", \"paid\"], \"amount\": [10, 20, 30]})\ndf[\"status\"] = df[\"status\"].replace({\"new\": \"fresh\"})\ndf[\"status_code\"] = df[\"status\"].map({\"fresh\": 1, \"open\": 2, \"paid\": 3})\ndf[\"amount_plus_1\"] = df[\"amount\"].apply(lambda x: x + 1)",
+      "minimal_notes": "Prefer vectorized operations first. Use `map` for one-to-one label lookup and `apply` only when needed.",
+      "common_bug": "Using `apply` for simple arithmetic that should be vectorized.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.Series.map.html"
+    },
+    {
+      "problem": "Apply a scalar-to-scalar function across a DataFrame.",
+      "trigger": "You need elementwise transformation, not row logic.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"a\": [1, 2], \"b\": [3, 4]})\nsquared = df.map(lambda x: x * x)",
+      "minimal_notes": "`DataFrame.map` is the current elementwise API. Use it instead of old `applymap` patterns.",
+      "common_bug": "Using elementwise mapping when a vectorized column operation is much faster.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.map.html"
+    },
+    {
+      "problem": "Keep transformations readable and composable.",
+      "trigger": "You want pipeline-style code without temporary variables.",
+      "snippet": "import pandas as pd\n\ndef add_margin(frame: pd.DataFrame) -> pd.DataFrame:\n    return frame.assign(margin=lambda x: x[\"revenue\"] - x[\"cost\"])\n\ndf = pd.DataFrame({\"revenue\": [100, 200], \"cost\": [60, 150]})\nresult = (\n    df.pipe(add_margin)\n      .query(\"margin > 20\")\n)",
+      "minimal_notes": "`pipe` helps when a transformation is reusable or conditional.",
+      "common_bug": "Inlining long transformation chains without clear step boundaries.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.pipe.html"
+    },
+    {
+      "problem": "Detect changes between datasets or test outputs.",
+      "trigger": "You need regression checks or debug diffs.",
+      "snippet": "import pandas as pd\nfrom pandas.testing import assert_frame_equal\n\nleft = pd.DataFrame({\"a\": [1, 2], \"b\": [3, 4]})\nright = pd.DataFrame({\"a\": [1, 2], \"b\": [3, 5]})\n\ndiff = left.compare(right, keep_shape=True, keep_equal=False)\nassert_frame_equal(left, left.copy())",
+      "minimal_notes": "`compare` is useful for debugging row/column deltas. `assert_frame_equal` is the standard testing utility.",
+      "common_bug": "Assuming visually similar frames are equal without checking dtypes or index labels.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.compare.html"
+    },
+    {
+      "problem": "Generate aligned time indexes and business calendars.",
+      "trigger": "You need scheduled periods or trading-day-like sequences.",
+      "snippet": "import pandas as pd\n\ndays = pd.date_range(\"2026-01-01\", periods=5, freq=\"D\")\nbiz = pd.bdate_range(\"2026-01-01\", periods=5)\nnext_month = days + pd.offsets.MonthBegin(1)",
+      "minimal_notes": "Use frequency-aware constructors for repeatable time indexes. Offsets make calendar arithmetic explicit.",
+      "common_bug": "Hand-rolling date increments and missing weekends or month-boundary behavior.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.date_range.html"
+    },
+    {
+      "problem": "Move keys into the index or restore them back to columns.",
+      "trigger": "You need alignment, hierarchical indexing, or time-series indexing.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"customer_id\": [1, 2], \"amount\": [10, 20]})\nindexed = df.set_index(\"customer_id\")\nrestored = indexed.reset_index()",
+      "minimal_notes": "Explicit index strategy helps joins, resampling, and alignment.",
+      "common_bug": "Forgetting which key is stored in the index and which is a column.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.set_index.html"
+    },
+    {
+      "problem": "Work with hierarchical row or column labels.",
+      "trigger": "You need grouped axes or nested keys.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame(\n    {\"region\": [\"NO\", \"NO\", \"SE\"], \"year\": [2025, 2026, 2026], \"value\": [1, 2, 3]}\n).set_index([\"region\", \"year\"])\n\nno_rows = df.xs(\"NO\", level=\"region\")\nreordered = df.reorder_levels([\"year\", \"region\"]).sort_index()",
+      "minimal_notes": "`xs`, `swaplevel`, `reorder_levels`, and `droplevel` are the main MultiIndex tools.",
+      "common_bug": "Sorting or slicing a MultiIndex without knowing the active level order.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.MultiIndex.html"
+    },
+    {
+      "problem": "Keep complex filters and computed expressions readable.",
+      "trigger": "You want compact, chain-friendly logic.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"a\": [1, 2, 3], \"b\": [10, 20, 30]})\nfiltered = df.query(\"a > 1 and b < 30\")\ndf[\"c\"] = df.eval(\"a + b\")",
+      "minimal_notes": "`query` and `eval` can make pipeline code easier to scan.",
+      "common_bug": "Expecting `eval` to replace proper schema or validation checks.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.eval.html"
+    },
+    {
+      "problem": "Join ordered time series by nearest key or ordered key.",
+      "trigger": "You need as-of or ordered alignment.",
+      "snippet": "import pandas as pd\n\nleft = pd.DataFrame(\n    {\"ts\": pd.to_datetime([\"2026-01-01 10:00\", \"2026-01-01 10:05\"]), \"value\": [1, 2]}\n).sort_values(\"ts\")\nright = pd.DataFrame(\n    {\"ts\": pd.to_datetime([\"2026-01-01 09:59\", \"2026-01-01 10:03\"]), \"ref\": [100, 200]}\n).sort_values(\"ts\")\n\nasof_join = pd.merge_asof(left, right, on=\"ts\", direction=\"backward\")\nordered_join = pd.merge_ordered(left, right, on=\"ts\", fill_method=\"ffill\")",
+      "minimal_notes": "Both frames must be sorted for `merge_asof`. `merge_ordered` is useful for ordered data with optional filling.",
+      "common_bug": "Calling `merge_asof` on unsorted keys.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.merge_asof.html"
+    },
+    {
+      "problem": "Keep or pick rows from specific groups.",
+      "trigger": "You need first/last/nth or conditional group filtering.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"region\": [\"NO\", \"NO\", \"SE\"], \"amount\": [10, 15, 20]})\ng = df.groupby(\"region\")\ntop_row = g.nth(0)\nfirst_rows = g.first()\nlarge_groups = g.filter(lambda x: len(x) >= 2)",
+      "minimal_notes": "`first`, `last`, `nth`, `size`, and `filter` cover most group-level row selection tasks.",
+      "common_bug": "Using `apply` for simple row picking logic.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.core.groupby.DataFrameGroupBy.filter.html"
+    },
+    {
+      "problem": "Turn list values into one row per element.",
+      "trigger": "You have nested list data in a column.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"id\": [1, 2], \"tags\": [[\"a\", \"b\"], [\"c\"]]})\nexploded = df.explode(\"tags\", ignore_index=True)",
+      "minimal_notes": "`explode` is common after JSON parsing or tokenization.",
+      "common_bug": "Exploding columns that still contain mixed scalar and list values.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.explode.html"
+    },
+    {
+      "problem": "Compute rolling windows within groups.",
+      "trigger": "You need per-entity time-series features.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame(\n    {\n        \"customer_id\": [1, 1, 1, 2, 2],\n        \"ts\": pd.to_datetime([\"2026-01-01\", \"2026-01-02\", \"2026-01-03\", \"2026-01-01\", \"2026-01-02\"]),\n        \"amount\": [10, 20, 30, 40, 50],\n    }\n).sort_values([\"customer_id\", \"ts\"])\n\ndf[\"rolling_2\"] = (\n    df.groupby(\"customer_id\")[\"amount\"]\n      .rolling(2, min_periods=1)\n      .mean()\n      .reset_index(level=0, drop=True)\n)",
+      "minimal_notes": "Sort before grouped rolling. Reset the grouped index after the rolling operation.",
+      "common_bug": "Forgetting to sort within each group before applying a rolling window.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.core.groupby.SeriesGroupBy.rolling.html"
+    },
+    {
+      "problem": "Reindex time series to a fixed frequency.",
+      "trigger": "You need a regular grid without aggregation.",
+      "snippet": "import pandas as pd\n\ns = pd.Series([1, 2, 3], index=pd.to_datetime([\"2026-01-01\", \"2026-01-03\", \"2026-01-04\"]))\nregular = s.asfreq(\"D\")",
+      "minimal_notes": "`asfreq` is for frequency conversion and alignment, not aggregation.",
+      "common_bug": "Using `resample` when you only need a structural frequency change.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.Series.asfreq.html"
+    },
+    {
+      "problem": "Build lagged or lead features.",
+      "trigger": "You need previous or future values.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"value\": [10, 20, 30, 40]})\ndf[\"lag_1\"] = df[\"value\"].shift(1)\ndf[\"lead_1\"] = df[\"value\"].shift(-1)\ndf[\"pct_change\"] = df[\"value\"].pct_change()",
+      "minimal_notes": "`shift` is the core lag/lead primitive. `pct_change` is a common derived metric.",
+      "common_bug": "Mixing shifted data with unshifted labels and leaking future information.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.shift.html"
+    },
+    {
+      "problem": "Compute descriptive stats, correlation, covariance, and quantiles.",
+      "trigger": "You need quick statistical profiling.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"x\": [1, 2, 3, 4], \"y\": [2, 4, 6, 8]})\nprint(df.describe())\nprint(df.corr(numeric_only=True))\nprint(df.cov(numeric_only=True))\nprint(df.quantile([0.25, 0.5, 0.75], numeric_only=True))",
+      "minimal_notes": "`describe`, `corr`, `cov`, and `quantile` cover most exploratory stats.",
+      "common_bug": "Expecting correlation on non-numeric columns without cleaning dtypes first.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.describe.html"
+    },
+    {
+      "problem": "Build running totals and running extrema.",
+      "trigger": "You need cumulative features.",
+      "snippet": "import pandas as pd\n\ns = pd.Series([3, 1, 4, 2])\ncum = pd.DataFrame({\"s\": s}).assign(\n    cumsum=s.cumsum(),\n    cummin=s.cummin(),\n    cummax=s.cummax(),\n    cumprod=s.cumprod(),\n)",
+      "minimal_notes": "Cumulative APIs are useful for trend and threshold features.",
+      "common_bug": "Applying cumulative logic to unsorted data and getting misleading results.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.Series.cumsum.html"
+    },
+    {
+      "problem": "Inspect frequency, uniqueness, and duplicate records.",
+      "trigger": "You need cardinality or quality checks.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"status\": [\"new\", \"new\", \"paid\", \"open\"]})\ncounts = df[\"status\"].value_counts(dropna=False)\ndupe_rows = df.duplicated(keep=False)\ndupe_values = df[\"status\"].duplicated(keep=False)",
+      "minimal_notes": "`duplicated` is the standard duplicate detector for rows or columns.",
+      "common_bug": "Confusing value duplication with whole-row duplication.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.duplicated.html"
+    },
+    {
+      "problem": "Split structured strings and normalize text variants.",
+      "trigger": "You need stable text processing across encodings and separators.",
+      "snippet": "import pandas as pd\nimport unicodedata\n\ndf = pd.DataFrame({\"path\": [\"a/b/c\", \"x/y/z\"], \"text\": [\"café\", \"naïve\"]})\nparts = df[\"path\"].str.partition(\"/\")\ndf[\"text_norm\"] = df[\"text\"].map(lambda x: unicodedata.normalize(\"NFKC\", x))",
+      "minimal_notes": "`partition` is useful when only the first delimiter matters. Unicode normalization helps stabilize text keys.",
+      "common_bug": "Treating visually identical Unicode strings as equal without normalization.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.Series.str.partition.html"
+    },
+    {
+      "problem": "One-hot encode categorical columns.",
+      "trigger": "You need model-ready indicator columns.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"city\": [\"Oslo\", \"Bergen\", \"Oslo\"]})\nencoded = pd.get_dummies(df, columns=[\"city\"], dtype=\"int64\")\ndecoded = pd.from_dummies(encoded.filter(like=\"city_\"))",
+      "minimal_notes": "`get_dummies` is the standard encoder; `from_dummies` helps reverse the transformation in simple cases.",
+      "common_bug": "One-hot encoding without controlling dtype or category drift between train and inference.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.get_dummies.html"
+    },
+    {
+      "problem": "Create, sort, slice, and align indexes directly.",
+      "trigger": "You need index-level manipulation without changing data columns.",
+      "snippet": "import pandas as pd\n\nidx = pd.Index([\"b\", \"a\", \"c\"])\nsorted_idx = idx.sort_values()\n\ndf = pd.DataFrame({\"value\": [10, 20, 30]}, index=idx)\naligned = df.reindex(sorted_idx)",
+      "minimal_notes": "Index objects are immutable and central to alignment semantics.",
+      "common_bug": "Treating the index as if it were a normal mutable column.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.Index.html"
+    },
+    {
+      "problem": "Work with MultiIndex rows or columns cleanly.",
+      "trigger": "You need targeted extraction from hierarchical axes.",
+      "snippet": "import pandas as pd\n\nidx = pd.MultiIndex.from_tuples([(\"NO\", 2025), (\"NO\", 2026), (\"SE\", 2026)], names=[\"region\", \"year\"])\ndf = pd.DataFrame({\"value\": [1, 2, 3]}, index=idx)\n\nno = df.xs(\"NO\", level=\"region\")\nslc = df.loc[pd.IndexSlice[\"NO\", :], :]",
+      "minimal_notes": "`xs` is a concise cross-section tool. `IndexSlice` makes MultiIndex selection readable.",
+      "common_bug": "Mixing tuple indexing with level names without confirming the index structure.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.xs.html"
+    },
+    {
+      "problem": "Reorder hierarchical axes or remove a level.",
+      "trigger": "You need cleaner MultiIndex outputs.",
+      "snippet": "import pandas as pd\n\nidx = pd.MultiIndex.from_product([[\"NO\", \"SE\"], [2025, 2026]], names=[\"region\", \"year\"])\ndf = pd.DataFrame({\"value\": [1, 2, 3, 4]}, index=idx)\n\ndf = df.sort_index()\ndf = df.swaplevel(\"region\", \"year\").sort_index()\ndf = df.droplevel(\"region\")",
+      "minimal_notes": "`sort_index`, `swaplevel`, and `droplevel` are core MultiIndex maintenance tools.",
+      "common_bug": "Operating on a MultiIndex without sorting it first.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.sort_index.html"
+    },
+    {
+      "problem": "Apply conditional value rules.",
+      "trigger": "You need bounded values or conditional replacement.",
+      "snippet": "import pandas as pd\n\ns = pd.Series([5, 15, 25, 35])\nbounded = s.clip(lower=10, upper=30)\ninside = s.where(s.between(10, 30), other=pd.NA)\noutside = s.mask(s.between(10, 30), other=0)",
+      "minimal_notes": "`where` keeps values where the condition is true; `mask` does the inverse.",
+      "common_bug": "Swapping `where` and `mask` logic.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.Series.clip.html"
+    },
+    {
+      "problem": "Compute rounding, differences, and percentage changes.",
+      "trigger": "You need feature engineering on numeric sequences.",
+      "snippet": "import pandas as pd\n\ns = pd.Series([10.123, 11.456, 12.789])\nout = pd.DataFrame({\n    \"round_1\": s.round(1),\n    \"diff_1\": s.diff(),\n    \"pct_change_1\": s.pct_change(),\n})",
+      "minimal_notes": "These are fast vectorized transforms for numeric pipelines.",
+      "common_bug": "Using Python loops for operations Pandas already vectorizes.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.Series.round.html"
+    },
+    {
+      "problem": "Move data between tools or persist Python-native structures.",
+      "trigger": "You need quick local transfer or fast round-trips.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"a\": [1, 2], \"b\": [3, 4]})\ndf.to_clipboard(index=False)\ndf.to_pickle(\"frame.pkl\")\ndf.to_feather(\"frame.feather\")\ndf.to_orc(\"frame.orc\")",
+      "minimal_notes": "Use clipboard for ad hoc transfers, pickle for Python-only round trips, and Feather/ORC for fast columnar IO.",
+      "common_bug": "Treating pickle as a cross-language format or secure interchange format.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_pickle.html"
+    },
+    {
+      "problem": "Extract or publish tabular web data.",
+      "trigger": "Your data source or sink is HTML or XML.",
+      "snippet": "import pandas as pd\n\ntables = pd.read_html(\"https://example.com/table.html\")\ndf = tables[^0]\n\nxml_df = pd.read_xml(\"data.xml\", xpath=\".//row\")",
+      "minimal_notes": "`read_html` and `read_xml` are useful for structured web tables.",
+      "common_bug": "Assuming every page table has a stable schema.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.read_html.html"
+    },
+    {
+      "problem": "Read large files in bounded memory.",
+      "trigger": "Your input is too large for a single in-memory read.",
+      "snippet": "import pandas as pd\n\nchunks = pd.read_csv(\"large.csv\", chunksize=100_000, usecols=[\"id\", \"amount\"])\ntotal = 0\nfor chunk in chunks:\n    total += chunk[\"amount\"].sum()",
+      "minimal_notes": "Chunked reading is the standard fallback for large CSV inputs. Combine with `usecols` and `dtype` when possible.",
+      "common_bug": "Loading a huge file all at once and relying on swap or memory pressure.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html"
+    },
+    {
+      "problem": "Build a deterministic transformation pipeline.",
+      "trigger": "You want readable, testable data preparation steps.",
+      "snippet": "import pandas as pd\n\ndef build_features(frame: pd.DataFrame) -> pd.DataFrame:\n    return (\n        frame.convert_dtypes()\n        .assign(amount_usd=lambda x: x[\"amount\"] * 1.08)\n        .query(\"amount_usd > 100\")\n        .sort_values([\"customer_id\", \"order_date\"])\n    )\n\ndf = pd.DataFrame({\"customer_id\": [1, 2], \"amount\": [90, 120], \"order_date\": pd.to_datetime([\"2026-01-01\", \"2026-01-02\"])})\nresult = build_features(df)",
+      "minimal_notes": "Method chaining reduces temporary state and makes pipelines easier to review.",
+      "common_bug": "Mixing chained transformations with hidden in-place mutations.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.pipe.html"
+    },
+    {
+      "problem": "Validate outputs during development and tests.",
+      "trigger": "You need fast correctness checks.",
+      "snippet": "import pandas as pd\nfrom pandas.testing import assert_frame_equal, assert_series_equal\n\nleft = pd.DataFrame({\"a\": [1, 2], \"b\": [3, 4]})\nright = pd.DataFrame({\"a\": [1, 2], \"b\": [3, 4]})\n\nassert left.equals(right)\nassert_frame_equal(left, right)\nassert_series_equal(left[\"a\"], right[\"a\"])",
+      "minimal_notes": "`equals` is a quick boolean check; testing utilities give stricter diffs.",
+      "common_bug": "Checking values only and missing dtype or index mismatches.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.equals.html"
+    },
+    {
+      "problem": "Find duplicate keys or misaligned index behavior.",
+      "trigger": "A join, assignment, or reshape produced unexpected results.",
+      "snippet": "import pandas as pd\n\ndf = pd.DataFrame({\"id\": [1, 1, 2], \"value\": [10, 20, 30]})\nprint(df.duplicated(subset=[\"id\"], keep=False))\nprint(df.index.duplicated(keep=False))\nprint(df.compare(df.copy(), keep_shape=True))",
+      "minimal_notes": "Diagnose duplicates before merge, pivot, or dedup steps.",
+      "common_bug": "Assuming silent index alignment will behave like row order.",
+      "docs_url": "https://pandas.pydata.org/docs/reference/api/pandas.Index.duplicated.html"
+    }
+  ],
+  "quick_references": [
+    {
+      "title": "Core Objects",
+      "headers": [
+        "Object",
+        "Use",
+        "Constructor"
+      ],
+      "rows": [
+        [
+          "DataFrame",
+          "2D tabular data.",
+          "`pd.DataFrame(...)`"
+        ],
+        [
+          "Series",
+          "1D labeled data.",
+          "`pd.Series(...)`"
+        ],
+        [
+          "Index",
+          "Immutable labels.",
+          "`pd.Index(...)`"
+        ],
+        [
+          "RangeIndex",
+          "Efficient integer index.",
+          "`pd.RangeIndex(...)`"
+        ],
+        [
+          "MultiIndex",
+          "Hierarchical labels.",
+          "`pd.MultiIndex.from_frame(...)`"
+        ],
+        [
+          "DatetimeIndex",
+          "Datetime labels.",
+          "`pd.DatetimeIndex(...)`"
+        ],
+        [
+          "TimedeltaIndex",
+          "Duration labels.",
+          "`pd.TimedeltaIndex(...)`"
+        ],
+        [
+          "PeriodIndex",
+          "Period labels.",
+          "`pd.PeriodIndex(...)`"
+        ],
+        [
+          "Categorical",
+          "Finite categories.",
+          "`pd.Categorical(...)`"
+        ],
+        [
+          "NA",
+          "Nullable missing sentinel.",
+          "`pd.NA`"
+        ]
+      ]
+    },
+    {
+      "title": "Top-Level Constructors",
+      "headers": [
+        "API",
+        "Typical use"
+      ],
+      "rows": [
+        [
+          "`pd.DataFrame`",
+          "Build tabular data."
+        ],
+        [
+          "`pd.Series`",
+          "Build labeled vectors."
+        ],
+        [
+          "`pd.Index`",
+          "Build labels."
+        ],
+        [
+          "`pd.array`",
+          "Build nullable extension arrays."
+        ],
+        [
+          "`pd.concat`",
+          "Combine objects along an axis."
+        ],
+        [
+          "`pd.merge`",
+          "Relational joins."
+        ],
+        [
+          "`pd.date_range`",
+          "Regular datetime sequences."
+        ],
+        [
+          "`pd.timedelta_range`",
+          "Regular timedelta sequences."
+        ],
+        [
+          "`pd.period_range`",
+          "Regular period sequences."
+        ],
+        [
+          "`pd.interval_range`",
+          "Interval sequences."
+        ],
+        [
+          "`pd.to_datetime`",
+          "Parse datetimes."
+        ],
+        [
+          "`pd.to_numeric`",
+          "Parse numeric values."
+        ],
+        [
+          "`pd.to_timedelta`",
+          "Parse durations."
+        ],
+        [
+          "`pd.json_normalize`",
+          "Flatten nested JSON."
+        ],
+        [
+          "`pd.unique`",
+          "Unique values."
+        ],
+        [
+          "`pd.isna` / `pd.notna`",
+          "Missing-value checks."
+        ],
+        [
+          "`pd.factorize`",
+          "Encode uniques as integer codes."
+        ],
+        [
+          "`pd.cut` / `pd.qcut`",
+          "Binning."
+        ],
+        [
+          "`pd.crosstab`",
+          "Frequency tables."
+        ],
+        [
+          "`pd.pivot_table`",
+          "Aggregated reshaping."
+        ],
+        [
+          "`pd.merge_asof`",
+          "Nearest-key ordered joins."
+        ],
+        [
+          "`pd.merge_ordered`",
+          "Ordered merges with optional fill."
+        ],
+        [
+          "`pd.bdate_range`",
+          "Business-day datetime sequences."
+        ]
+      ]
+    },
+    {
+      "title": "Selection APIs",
+      "headers": [
+        "Task",
+        "API"
+      ],
+      "rows": [
+        [
+          "Select columns",
+          "`df[[\"a\", \"b\"]]`"
+        ],
+        [
+          "Select rows by label",
+          "`df.loc[...]`"
+        ],
+        [
+          "Select rows by position",
+          "`df.iloc[...]`"
+        ],
+        [
+          "Filter by condition",
+          "`df[mask]`"
+        ],
+        [
+          "Query by expression",
+          "`df.query(\"a > 1\")`"
+        ],
+        [
+          "Select scalar by label",
+          "`df.at[...]`"
+        ],
+        [
+          "Select scalar by position",
+          "`df.iat[...]`"
+        ],
+        [
+          "Cross-section",
+          "`df.xs(...)`"
+        ],
+        [
+          "Sample rows",
+          "`df.sample(...)`"
+        ]
+      ]
+    },
+    {
+      "title": "Indexing APIs",
+      "headers": [
+        "Task",
+        "API"
+      ],
+      "rows": [
+        [
+          "Set index",
+          "`df.set_index(...)`"
+        ],
+        [
+          "Reset index",
+          "`df.reset_index(...)`"
+        ],
+        [
+          "Sort index",
+          "`df.sort_index(...)`"
+        ],
+        [
+          "Reindex",
+          "`df.reindex(...)`"
+        ],
+        [
+          "Align labels",
+          "`obj.align(...)`"
+        ],
+        [
+          "MultiIndex create",
+          "`pd.MultiIndex.from_*`"
+        ],
+        [
+          "Swap levels",
+          "`df.swaplevel(...)`"
+        ],
+        [
+          "Reorder levels",
+          "`df.reorder_levels(...)`"
+        ],
+        [
+          "Drop a level",
+          "`df.droplevel(...)`"
+        ],
+        [
+          "Cross-section",
+          "`df.xs(...)`"
+        ]
+      ]
+    },
+    {
+      "title": "Missing Value APIs",
+      "headers": [
+        "Task",
+        "API"
+      ],
+      "rows": [
+        [
+          "Detect missing",
+          "`pd.isna`, `pd.notna`"
+        ],
+        [
+          "Fill missing",
+          "`fillna`"
+        ],
+        [
+          "Forward fill",
+          "`ffill`"
+        ],
+        [
+          "Backward fill",
+          "`bfill`"
+        ],
+        [
+          "Interpolate",
+          "`interpolate`"
+        ],
+        [
+          "Drop missing",
+          "`dropna`"
+        ],
+        [
+          "Combine fallback",
+          "`combine_first`"
+        ]
+      ]
+    },
+    {
+      "title": "Reshaping APIs",
+      "headers": [
+        "Task",
+        "API"
+      ],
+      "rows": [
+        [
+          "Stack",
+          "`stack`"
+        ],
+        [
+          "Unstack",
+          "`unstack`"
+        ],
+        [
+          "Melt",
+          "`melt`"
+        ],
+        [
+          "Pivot",
+          "`pivot`"
+        ],
+        [
+          "Pivot table",
+          "`pivot_table`"
+        ],
+        [
+          "Wide to long",
+          "`wide_to_long`"
+        ],
+        [
+          "Explode",
+          "`explode`"
+        ],
+        [
+          "Crosstab",
+          "`crosstab`"
+        ],
+        [
+          "Dummies",
+          "`get_dummies` / `from_dummies`"
+        ]
+      ]
+    },
+    {
+      "title": "Merge APIs",
+      "headers": [
+        "Task",
+        "API"
+      ],
+      "rows": [
+        [
+          "Inner join",
+          "`merge(..., how=\"inner\")`"
+        ],
+        [
+          "Left join",
+          "`merge(..., how=\"left\")`"
+        ],
+        [
+          "Right join",
+          "`merge(..., how=\"right\")`"
+        ],
+        [
+          "Outer join",
+          "`merge(..., how=\"outer\")`"
+        ],
+        [
+          "Concatenate",
+          "`concat(...)`"
+        ],
+        [
+          "Join on index",
+          "`df.join(...)`"
+        ],
+        [
+          "Ordered merge",
+          "`merge_ordered(...)`"
+        ],
+        [
+          "As-of merge",
+          "`merge_asof(...)`"
+        ],
+        [
+          "Align",
+          "`obj.align(...)`"
+        ],
+        [
+          "Compare",
+          "`df.compare(...)`"
+        ]
+      ]
+    },
+    {
+      "title": "GroupBy APIs",
+      "headers": [
+        "Task",
+        "API"
+      ],
+      "rows": [
+        [
+          "Aggregate",
+          "`groupby(...).agg(...)`"
+        ],
+        [
+          "Transform",
+          "`groupby(...).transform(...)`"
+        ],
+        [
+          "Filter groups",
+          "`groupby(...).filter(...)`"
+        ],
+        [
+          "Apply custom function",
+          "`groupby(...).apply(...)`"
+        ],
+        [
+          "Count rows",
+          "`groupby(...).size()`"
+        ],
+        [
+          "Count non-null",
+          "`groupby(...).count()`"
+        ],
+        [
+          "First / last",
+          "`groupby(...).first()`, `groupby(...).last()`"
+        ],
+        [
+          "Nth row",
+          "`groupby(...).nth(...)`"
+        ],
+        [
+          "Group number",
+          "`groupby(...).ngroup()`"
+        ],
+        [
+          "Cumulative count",
+          "`groupby(...).cumcount()`"
+        ],
+        [
+          "Rolling within groups",
+          "`groupby(...).rolling(...)`"
+        ]
+      ]
+    },
+    {
+      "title": "Window APIs",
+      "headers": [
+        "Task",
+        "API"
+      ],
+      "rows": [
+        [
+          "Rolling mean",
+          "`rolling(...).mean()`"
+        ],
+        [
+          "Rolling sum",
+          "`rolling(...).sum()`"
+        ],
+        [
+          "Expanding mean",
+          "`expanding(...).mean()`"
+        ],
+        [
+          "EWM mean",
+          "`ewm(...).mean()`"
+        ],
+        [
+          "Rolling apply",
+          "`rolling(...).apply(...)`"
+        ]
+      ]
+    },
+    {
+      "title": "Datetime APIs",
+      "headers": [
+        "Task",
+        "API"
+      ],
+      "rows": [
+        [
+          "Parse datetimes",
+          "`pd.to_datetime(...)`"
+        ],
+        [
+          "Date range",
+          "`pd.date_range(...)`"
+        ],
+        [
+          "Extract year/month",
+          "`.dt.year`, `.dt.month`"
+        ],
+        [
+          "Floor / ceil / round",
+          "`.dt.floor(...)`, `.dt.ceil(...)`, `.dt.round(...)`"
+        ],
+        [
+          "Localize / convert",
+          "`.dt.tz_localize(...)`, `.dt.tz_convert(...)`"
+        ],
+        [
+          "Parse durations",
+          "`pd.to_timedelta(...)`"
+        ],
+        [
+          "Business date range",
+          "`pd.bdate_range(...)`"
+        ],
+        [
+          "Time delta range",
+          "`pd.timedelta_range(...)`"
+        ],
+        [
+          "Period range",
+          "`pd.period_range(...)`"
+        ],
+        [
+          "Normalize date",
+          "`.dt.normalize()`"
+        ],
+        [
+          "Format string",
+          "`.dt.strftime(...)`"
+        ],
+        [
+          "Shift",
+          "`.shift(...)`"
+        ],
+        [
+          "Frequency convert",
+          "`.asfreq(...)`"
+        ],
+        [
+          "Resample",
+          "`.resample(...)`"
+        ]
+      ]
+    },
+    {
+      "title": "String APIs",
+      "headers": [
+        "Task",
+        "API"
+      ],
+      "rows": [
+        [
+          "Lower / upper",
+          "`.str.lower()`, `.str.upper()`"
+        ],
+        [
+          "Strip",
+          "`.str.strip()`"
+        ],
+        [
+          "Contains",
+          "`.str.contains(...)`"
+        ],
+        [
+          "Replace",
+          "`.str.replace(...)`"
+        ],
+        [
+          "Split",
+          "`.str.split(...)`"
+        ],
+        [
+          "Extract regex",
+          "`.str.extract(...)`"
+        ],
+        [
+          "Length",
+          "`.str.len()`"
+        ],
+        [
+          "Match",
+          "`.str.match(...)`"
+        ],
+        [
+          "Partition",
+          "`.str.partition(...)`"
+        ],
+        [
+          "Extract all",
+          "`.str.extractall(...)`"
+        ],
+        [
+          "Normalize Unicode",
+          "`unicodedata.normalize(...)`"
+        ]
+      ]
+    },
+    {
+      "title": "Categorical APIs",
+      "headers": [
+        "Task",
+        "API"
+      ],
+      "rows": [
+        [
+          "Convert",
+          "`astype(\"category\")`"
+        ],
+        [
+          "Categories",
+          "`.cat.categories`"
+        ],
+        [
+          "Codes",
+          "`.cat.codes`"
+        ],
+        [
+          "Reorder",
+          "`.cat.reorder_categories(...)`"
+        ],
+        [
+          "Rename",
+          "`.cat.rename_categories(...)`"
+        ],
+        [
+          "Remove categories",
+          "`.cat.remove_categories(...)`"
+        ],
+        [
+          "Set categories",
+          "`.cat.set_categories(...)`"
+        ],
+        [
+          "Remove unused",
+          "`.cat.remove_unused_categories()`"
+        ],
+        [
+          "Ordered categories",
+          "`ordered=True`"
+        ],
+        [
+          "Groupby optimization",
+          "`observed=True`"
+        ]
+      ]
+    },
+    {
+      "title": "IO APIs",
+      "headers": [
+        "Task",
+        "API"
+      ],
+      "rows": [
+        [
+          "CSV read/write",
+          "`read_csv`, `to_csv`"
+        ],
+        [
+          "Excel read/write",
+          "`read_excel`, `to_excel`"
+        ],
+        [
+          "JSON read/write",
+          "`read_json`, `to_json`"
+        ],
+        [
+          "Parquet read/write",
+          "`read_parquet`, `to_parquet`"
+        ],
+        [
+          "Feather read/write",
+          "`read_feather`, `to_feather`"
+        ],
+        [
+          "ORC read/write",
+          "`read_orc`, `to_orc`"
+        ],
+        [
+          "HTML tables",
+          "`read_html`"
+        ],
+        [
+          "XML",
+          "`read_xml`"
+        ],
+        [
+          "SQL read/write",
+          "`read_sql`, `to_sql`"
+        ],
+        [
+          "Pickle read/write",
+          "`read_pickle`, `to_pickle`"
+        ],
+        [
+          "Clipboard",
+          "`read_clipboard`, `to_clipboard`"
+        ]
+      ]
+    },
+    {
+      "title": "Performance APIs",
+      "headers": [
+        "Task",
+        "API"
+      ],
+      "rows": [
+        [
+          "Memory usage",
+          "`memory_usage(deep=True)`"
+        ],
+        [
+          "Info with memory",
+          "`info(memory_usage=\"deep\")`"
+        ],
+        [
+          "Vectorized iteration",
+          "`itertuples()`"
+        ],
+        [
+          "Avoid row loops",
+          "prefer vectorization"
+        ],
+        [
+          "Schema conversion",
+          "`convert_dtypes(...)`"
+        ],
+        [
+          "Categorical storage",
+          "`astype(\"category\")`"
+        ],
+        [
+          "Fast top-N",
+          "`nlargest`, `nsmallest`"
+        ],
+        [
+          "Chunked reads",
+          "`read_csv(..., chunksize=...)`"
+        ]
+      ]
+    },
+    {
+      "title": "Debugging APIs",
+      "headers": [
+        "Task",
+        "API"
+      ],
+      "rows": [
+        [
+          "Equality check",
+          "`equals(...)`"
+        ],
+        [
+          "Frame diff",
+          "`compare(...)`"
+        ],
+        [
+          "Testing equality",
+          "`assert_frame_equal(...)`"
+        ],
+        [
+          "Series equality",
+          "`assert_series_equal(...)`"
+        ],
+        [
+          "Duplicate rows",
+          "`duplicated(...)`"
+        ],
+        [
+          "Duplicate index",
+          "`index.duplicated(...)`"
+        ],
+        [
+          "Display types",
+          "`info()`, `dtypes`"
+        ]
+      ]
+    }
+  ],
+  "performance_checklist": [
+    {
+      "area": "",
+      "recommendations": "Specify `dtype` on read when possible."
+    },
+    {
+      "area": "",
+      "recommendations": "Use `usecols` to read fewer columns."
+    },
+    {
+      "area": "",
+      "recommendations": "Convert repeated text columns to `category` when cardinality is low."
+    },
+    {
+      "area": "",
+      "recommendations": "Use nullable or Arrow-backed dtypes for cleaner missing-data handling."
+    },
+    {
+      "area": "",
+      "recommendations": "Use `memory_usage(deep=True)` and `info(memory_usage=\"deep\")` to find expensive columns."
+    },
+    {
+      "area": "",
+      "recommendations": "Prefer vectorized `.str`, `.dt`, arithmetic, `groupby`, and `transform` over Python loops."
+    },
+    {
+      "area": "",
+      "recommendations": "Avoid `iterrows`; prefer vectorized code or `itertuples` for row-wise iteration."
+    },
+    {
+      "area": "",
+      "recommendations": "Prefer `apply` only when no vectorized alternative exists."
+    },
+    {
+      "area": "",
+      "recommendations": "Prefer `concat` for batch append patterns and avoid repeated concatenation in loops."
+    },
+    {
+      "area": "",
+      "recommendations": "Prefer `merge(..., validate=...)` for safe joins."
+    },
+    {
+      "area": "",
+      "recommendations": "Prefer Parquet or Feather for large analytical outputs."
+    },
+    {
+      "area": "",
+      "recommendations": "Prefer deterministic sort order before deduplication or top-N selection."
+    },
+    {
+      "area": "",
+      "recommendations": "Be copy-on-write aware and avoid unnecessary intermediate copies."
+    }
+  ],
+  "production_checklist": [
+    "Lock schema early with explicit dtypes.",
+    "Normalize timestamps and timezones consistently.",
+    "Validate joins with `validate=`.",
+    "Avoid chained assignment; assign back to the frame.",
+    "Check nulls and duplicates before modeling or export.",
+    "Prefer deterministic sort order before deduplication.",
+    "Use copy-safe transformations and clear column names.",
+    "Manage index explicitly with `set_index`, `reset_index`, and `ignore_index`.",
+    "Validate output equality and schema in tests.",
+    "Review memory usage before scaling pipelines.",
+    "Confirm export formats preserve required dtypes and missing values.",
+    "Keep method chains readable and deterministic.",
+    "Avoid hidden reliance on row order when labels matter."
+  ]
+}

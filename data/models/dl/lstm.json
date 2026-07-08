@@ -1,93 +1,99 @@
 {
-  "created_at": "2026-06-25",
-  "updated_at": "2026-06-25",
-  "sources": [
-    "https://pytorch.org/docs/stable/generated/torch.nn.LSTM.html",
-    "https://www.bioinf.jku.at/publications/older/2604.pdf"
-  ],
-  "github_repo": "https://github.com/pytorch/pytorch",
   "id": "lstm",
+  "title": "LSTM",
+  "slug": "lstm",
+  "description": "Recurrent neural network cell utilizing gate structures to resolve vanishing gradients.",
   "name": "LSTM",
   "category": "dl",
+  "subcategory": "recurrent_sequence",
   "problem_types": [
-    "classification",
-    "generation"
+    "generation",
+    "embedding"
   ],
-  "summary": "Long Short-Term Memory is a gated recurrent neural network architecture that uses input, forget, and output gates to control the flow of information through cell states, effectively solving the vanishing gradient problem that plagued vanilla RNNs. It became the dominant approach for sequential modeling in NLP, speech, and time-series before the rise of Transformer architectures.",
-  "use_when": "Sequential data with moderate length where temporal order is critical and interpretability of hidden state dynamics matters. Small to medium datasets where Transformer-level compute is unnecessary. Edge deployment scenarios with strict memory constraints.",
-  "avoid_when": "Very long sequences where attention mechanisms capture dependencies more effectively. Tasks requiring parallel training across large clusters where RNN sequentiality becomes a bottleneck. State-of-the-art NLP tasks where Transformers have established dominance.",
+  "summary": "LSTMs (Long Short-Term Memory) are recurrent neural networks designed to process sequential data, utilizing input, forget, and output gate structures to control gradient flows and capture long-range temporal dependencies.",
+  "use_when": "Processing real-time streaming sequence data or small-scale low-latency time series.",
+  "avoid_when": "Working with long document contexts where Transformer models can be trained in parallel.",
   "pros": [
-    "Explicitly preserves sequential order through recurrent state propagation, making it inherently position-aware without external positional encoding",
-    "Lower memory footprint than Transformers during inference because it does not store per-token attention matrices or key-value caches",
-    "Interpretable gate activations (input, forget, output) reveal which information is retained or discarded at each time step",
-    "No positional encoding required, avoiding the aliasing and length extrapolation issues seen in learned sinusoidal position embeddings"
+    "Mitigates the vanishing gradient problem in RNNs.",
+    "Maintains constant memory footprint regardless of sequence length.",
+    "Natively handles varying-length streaming sequences."
   ],
   "cons": [
-    "Cannot parallelize training across the time dimension, forcing sequential backpropagation through time that scales linearly with sequence length",
-    "Performance degrades on very long sequences due to compounding gradient noise and limited capacity for long-range state retention",
-    "Slower training than Transformers on modern hardware because matrix multiplications are not batched across the sequence axis",
-    "Largely replaced by Transformers and Mamba-style architectures in production NLP systems, resulting in limited pretrained model availability"
+    "Sequential training step restricts utilization of parallel computing.",
+    "Prone to forgetting historical context over very long sequences (1000+ steps).",
+    "Requires careful initialization of gate biases to prevent saturation."
   ],
   "key_hyperparams": [
     {
-      "name": "input_size",
-      "default": null,
-      "note": "Number of expected features in the input x. Must match the embedding dimension of your input data. No default; must be specified explicitly."
-    },
-    {
       "name": "hidden_size",
-      "default": null,
-      "note": "Number of features in the hidden state h. Defines the model capacity. Common values range from 128 for small tasks to 512 for language modeling."
-    },
-    {
-      "name": "num_layers",
-      "default": 1,
-      "note": "Number of stacked recurrent layers. Increase to 2-4 for deeper feature extraction but watch for vanishing gradients across stacked layers."
-    },
-    {
-      "name": "dropout",
-      "default": 0,
-      "note": "Dropout probability applied to outputs of each LSTM layer except the last. Set to 0.2-0.5 during training to prevent overfitting on small datasets."
-    },
-    {
-      "name": "bidirectional",
-      "default": "false",
-      "note": "Whether to use bidirectional LSTM processing both forward and backward contexts. Set to 'true' for classification tasks requiring full context awareness."
+      "default": 128,
+      "note": "Number of features in the LSTM hidden state. Larger values capture more complexity."
     }
   ],
-  "training_speed": "medium",
-  "inference_speed": "medium",
+  "training_speed": "slow",
+  "inference_speed": "fast",
   "memory_usage": "low",
-  "interpretability": "medium",
-  "quick_start": "import torch\nimport torch.nn as nn\n\nlstm = nn.LSTM(\n    input_size=128,\n    hidden_size=256,\n    num_layers=2,\n    dropout=0.3,\n    bidirectional=True,\n    batch_first=True\n)\n\nx = torch.randn(32, 50, 128)  # batch, seq, features\noutput, (hidden, cell) = lstm(x)",
+  "interpretability": "low",
+  "quick_start": "import torch.nn as nn\nimport torch\n\nmodel = nn.LSTM(input_size=10, hidden_size=20, num_layers=2)\nx = torch.rand((5, 3, 10))\nout, (h, c) = model(x)",
   "alternatives": [
     {
       "id": "transformer",
-      "type": "model"
-    },
-    {
-      "id": "rwkv",
-      "type": "model"
-    },
-    {
-      "id": "mamba",
-      "type": "model"
+      "type": "model",
+      "relationship_type": "alternative_to"
     }
   ],
-  "decision_notes": "Choose LSTM for moderate-length sequences where interpretability and memory efficiency matter. Use Transformer for long-context or parallel training requirements.",
-  "competitors": [
+  "related_workflows": [],
+  "sources": [
+    "https://pytorch.org/docs/stable/generated/torch.nn.LSTM.html",
+    "https://en.wikipedia.org/wiki/Long_short-term_memory"
+  ],
+  "tags": [
+    "recurrent",
+    "lstm",
+    "rnn",
+    "seq2seq"
+  ],
+  "aliases": [
+    "long-short-term-memory"
+  ],
+  "keywords": [
+    "lstm",
+    "rnn",
+    "recurrent",
+    "gates"
+  ],
+  "search_tokens": [
+    "lstm",
+    "rnn",
+    "recurrent-network"
+  ],
+  "domain": "deep-learning",
+  "difficulty": "intermediate",
+  "engineering_area": "modeling",
+  "estimated_reading_time": 12,
+  "prerequisites": [
+    "pytorch"
+  ],
+  "recommended_next": [
+    "transformer"
+  ],
+  "related_content": [
     {
-      "id": "transformer",
-      "type": "model"
-    },
-    {
-      "id": "rwkv",
-      "type": "model"
-    },
-    {
-      "id": "mamba",
-      "type": "model"
+      "id": "pytorch",
+      "type": "package",
+      "relationship_type": "related_to"
     }
   ],
-  "related_workflows": []
+  "created_at": "2026-07-08",
+  "updated_at": "2026-07-08",
+  "last_verified": "2026-07-08",
+  "review_frequency": "annually",
+  "verified_against": "1.0.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready"
 }

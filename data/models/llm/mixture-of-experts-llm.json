@@ -1,0 +1,97 @@
+{
+  "id": "mixture-of-experts-llm",
+  "title": "Mixture-of-Experts LLM",
+  "slug": "mixture-of-experts-llm",
+  "description": "Sparse transformer architecture utilizing router networks to activate subset parameter paths.",
+  "name": "Mixture-of-Experts LLM",
+  "category": "llm",
+  "subcategory": "foundation_llm",
+  "problem_types": [
+    "generation"
+  ],
+  "summary": "Mixture-of-Experts (MoE) models replace standard dense feedforward layers with multiple sparse 'expert' networks. A router network assigns each token to specific experts, enabling scaling parameters while keeping active compute constant.",
+  "use_when": "Serving highly capable models under restricted request latency and compute-per-token budgets.",
+  "avoid_when": "Serving on devices with extremely low RAM, as all parameters must reside in memory.",
+  "pros": [
+    "Drastically reduces compute cost per token compared to equivalent-sized dense models.",
+    "Allows scaling total parameter counts to trillions.",
+    "Maintains high inference throughput."
+  ],
+  "cons": [
+    "Extremely high RAM overhead to store inactive expert weights.",
+    "Router load-balancing makes distributed training unstable.",
+    "Fine-tuning requires specialized clustering and synchronization tooling."
+  ],
+  "key_hyperparams": [
+    {
+      "name": "num_experts_per_token",
+      "default": 2,
+      "note": "Number of experts activated per token during routing. Usually set to 2."
+    }
+  ],
+  "training_speed": "slow",
+  "inference_speed": "medium",
+  "memory_usage": "high",
+  "interpretability": "low",
+  "quick_start": "# Conceptual MoE forward pass\n# class MoELayer(nn.Module):\n#     def forward(self, x):\n#         gates = self.router(x)\n#         outputs = sum(gates[i] * self.experts[i](x) for i in selected_indices)\n#         return outputs",
+  "alternatives": [
+    {
+      "id": "decoder-only-llm",
+      "type": "model",
+      "relationship_type": "alternative_to"
+    }
+  ],
+  "related_workflows": [],
+  "sources": [
+    "https://arxiv.org/abs/2101.03961"
+  ],
+  "tags": [
+    "llm",
+    "moe",
+    "mixture-of-experts",
+    "sparse-transformer"
+  ],
+  "aliases": [
+    "moe-llm"
+  ],
+  "keywords": [
+    "moe",
+    "mixture",
+    "experts",
+    "sparse"
+  ],
+  "search_tokens": [
+    "moe",
+    "mixture-of-experts",
+    "sparse-llm"
+  ],
+  "domain": "large-language-models",
+  "difficulty": "expert",
+  "engineering_area": "modeling",
+  "estimated_reading_time": 20,
+  "prerequisites": [
+    "pytorch"
+  ],
+  "recommended_next": [
+    "decoder-only-llm"
+  ],
+  "related_content": [
+    {
+      "id": "pytorch",
+      "type": "package",
+      "relationship_type": "related_to"
+    }
+  ],
+  "created_at": "2026-07-08",
+  "updated_at": "2026-07-08",
+  "last_verified": "2026-07-08",
+  "review_frequency": "annually",
+  "verified_against": "1.0.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready"
+}

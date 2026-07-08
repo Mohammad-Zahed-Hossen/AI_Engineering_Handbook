@@ -1,0 +1,1091 @@
+{
+  "id": "matplotlib",
+  "title": "Matplotlib Canonical Cheatsheet",
+  "name": "Matplotlib Cheatsheet",
+  "slug": "matplotlib-canonical-cheatsheet",
+  "description": "Canonical syntax recall for daily Matplotlib engineering work with production-ready, copy-paste snippets and compact lookup tables.",
+  "package_reference": "matplotlib",
+  "verified_against": "3.11.0",
+  "created_at": "2026-07-06",
+  "updated_at": "2026-07-06",
+  "sources": [
+    "https://matplotlib.org/stable/users/release_notes.html",
+    "https://matplotlib.org/stable/api/figure_api.html",
+    "https://matplotlib.org/stable/api/axes_api.html",
+    "https://matplotlib.org/stable/gallery/index.html",
+    "https://github.com/matplotlib/matplotlib"
+  ],
+  "tags": [
+    "matplotlib",
+    "visualization",
+    "plotting",
+    "python",
+    "data-science"
+  ],
+  "aliases": [
+    "matplotlib-cheatsheet",
+    "plt-cheatsheet"
+  ],
+  "keywords": [
+    "matplotlib",
+    "pyplot",
+    "figure",
+    "axes",
+    "subplots",
+    "plot",
+    "scatter",
+    "bar",
+    "hist",
+    "imshow"
+  ],
+  "search_tokens": [
+    "matplotlib-cheatsheet",
+    "matplotlib-plots",
+    "plt-plots"
+  ],
+  "domain": "data-science",
+  "category": "visualization",
+  "difficulty": "intermediate",
+  "engineering_area": "visualization",
+  "estimated_reading_time": 7,
+  "prerequisites": [],
+  "recommended_next": [],
+  "related_content": [],
+  "last_verified": "2026-07-06",
+  "compatible_versions": [
+    "3.11.0"
+  ],
+  "breaking_changes": [],
+  "entries": [
+    {
+      "title": "Import pyplot and NumPy",
+      "problem": "Start a standard Matplotlib script with NumPy data.",
+      "trigger": "You need plotting plus array creation in one file.",
+      "snippet": "import numpy as np\nimport matplotlib.pyplot as plt",
+      "minimal_notes": "This is the default import pair for most scripts. Use `plt` for figure creation and `np` for data generation.",
+      "common_bug": "Forgetting `import numpy as np` before using sample data.",
+      "docs_url": "https://matplotlib.org/stable/api/pyplot_api.html"
+    },
+    {
+      "title": "Import Matplotlib core",
+      "problem": "Configure Matplotlib without pyplot.",
+      "trigger": "You need backend, rcParams, or non-plot utilities.",
+      "snippet": "import matplotlib as mpl",
+      "minimal_notes": "Use `matplotlib` for package-level settings and metadata. Keep plotting code in `pyplot` or OO objects.",
+      "common_bug": "Using `plt.rcParams` in code that should only depend on the core package.",
+      "docs_url": "https://matplotlib.org/stable/api/index.html"
+    },
+    {
+      "title": "Use NumPy arrays with plotting",
+      "problem": "Plot computed arrays directly.",
+      "trigger": "Your data is already in NumPy form.",
+      "snippet": "import numpy as np\nimport matplotlib.pyplot as plt\n\nx = np.linspace(0, 10, 200)\ny = np.sin(x)\nfig, ax = plt.subplots()\nax.plot(x, y)\nplt.show()",
+      "minimal_notes": "Matplotlib accepts NumPy arrays natively. Most scientific plots start this way.",
+      "common_bug": "Passing mismatched array lengths for `x` and `y`.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.plot.html"
+    },
+    {
+      "title": "Create a figure",
+      "problem": "Open a single canvas for manual Axes placement.",
+      "trigger": "You need explicit figure control before adding axes.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig = plt.figure(figsize=(8, 4), dpi=150, layout=\"constrained\")\nax = fig.add_subplot(111)\nax.plot([1, 2, 3], [1, 4, 9])\nplt.show()",
+      "minimal_notes": "Use `Figure` when you need direct control over size or canvas layout. Prefer `subplots()` when starting a normal multi-panel figure.",
+      "common_bug": "Creating a figure but never adding an Axes.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html"
+    },
+    {
+      "title": "Create subplots",
+      "problem": "Build a figure with one or more Axes at once.",
+      "trigger": "You need the standard OO workflow for one-panel or grid layouts.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots(figsize=(6, 4), layout=\"constrained\")\nax.plot([1, 2, 3], [2, 3, 5])\nax.set_title(\"Single panel\")\nplt.show()",
+      "minimal_notes": "This is the most common production entry point. For multiple panels, `axs` is returned as an array.",
+      "common_bug": "Treating the returned Axes array like a single Axes object.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html"
+    },
+    {
+      "title": "Use subfigures",
+      "problem": "Split one figure into nested figure regions.",
+      "trigger": "You need independent layouts inside a larger page.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nfig = plt.figure(layout=\"constrained\", figsize=(10, 4))\nsubfigs = fig.subfigures(1, 2, wspace=0.07)\nx = np.linspace(0, 1, 50)\n\nax1 = subfigs[0].subplots()\nax1.plot(x, x**2)\nax1.set_title(\"Left\")\n\nax2 = subfigs[1].subplots()\nax2.plot(x, np.sqrt(x))\nax2.set_title(\"Right\")\n\nplt.show()",
+      "minimal_notes": "Use subfigures for complex dashboard-style layouts. They behave like nested figures.",
+      "common_bug": "Using subfigures when a simple subplot grid would be easier.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.subfigures.html"
+    },
+    {
+      "title": "Build a GridSpec layout",
+      "problem": "Place Axes with uneven row or column spans.",
+      "trigger": "You need a figure with asymmetric panel sizes.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig = plt.figure(layout=\"constrained\", figsize=(8, 5))\ngs = fig.add_gridspec(2, 2)\n\nax1 = fig.add_subplot(gs[0, :])\nax2 = fig.add_subplot(gs[1, 0])\nax3 = fig.add_subplot(gs[1, 1])\n\nax1.set_title(\"Top spans both columns\")\nplt.show()",
+      "minimal_notes": "`GridSpec` is the low-level layout tool for spans. Use it when `subplots()` is not enough.",
+      "common_bug": "Mixing `GridSpec` and manual `add_axes()` positions in the same layout.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.add_gridspec.html"
+    },
+    {
+      "title": "Build a mosaic layout",
+      "problem": "Name panels instead of indexing them manually.",
+      "trigger": "You want readable layout code for dashboards.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, axd = plt.subplot_mosaic([[\"top\", \"top\"], [\"left\", \"right\"]],\n                              figsize=(8, 5), layout=\"constrained\")\naxd[\"top\"].set_title(\"Top\")\naxd[\"left\"].plot([1, 2, 3], [1, 4, 2])\naxd[\"right\"].plot([1, 2, 3], [2, 1, 3])\nplt.show()",
+      "minimal_notes": "Mosaic layouts improve readability in multi-panel figures. They are ideal when panels have semantic names.",
+      "common_bug": "Reusing the same label unintentionally and overwriting a panel.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplot_mosaic.html"
+    },
+    {
+      "title": "Show a figure",
+      "problem": "Render the current figure in a script or notebook.",
+      "trigger": "You want the GUI or notebook backend to display output.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 9])\nplt.show()",
+      "minimal_notes": "In scripts, `show()` is the normal display step. In notebooks it may be implicit, but calling it is still safe.",
+      "common_bug": "Forgetting `show()` in script-based workflows.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.show.html"
+    },
+    {
+      "title": "Close a figure",
+      "problem": "Free memory after generating plots.",
+      "trigger": "You create many figures in a loop or batch job.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 9])\nplt.close(fig)",
+      "minimal_notes": "Closing figures prevents memory growth in long-running jobs. Close figures you no longer need.",
+      "common_bug": "Leaving hundreds of figures open in automation or notebook loops.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.close.html"
+    },
+    {
+      "title": "Create a line plot",
+      "problem": "Plot a continuous trend or series.",
+      "trigger": "You need the default chart for numeric sequences.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nx = np.linspace(0, 10, 200)\ny = np.sin(x)\nfig, ax = plt.subplots()\nax.plot(x, y, label=\"sin(x)\", linewidth=2)\nax.legend()\nplt.show()",
+      "minimal_notes": "`plot()` is the workhorse for line charts. Add labels early if a legend is needed.",
+      "common_bug": "Using `plot()` without specifying the x-values when order matters.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.plot.html"
+    },
+    {
+      "title": "Create a scatter plot",
+      "problem": "Show point-wise relationships or clusters.",
+      "trigger": "You need to visualize unconnected observations.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nrng = np.random.default_rng(0)\nx = rng.normal(size=200)\ny = 0.5 * x + rng.normal(size=200)\n\nfig, ax = plt.subplots()\nax.scatter(x, y, s=25, alpha=0.7)\nplt.show()",
+      "minimal_notes": "Use `scatter()` for point clouds and categorical jitter plots. Control size and alpha for dense data.",
+      "common_bug": "Passing huge markers without alpha, which hides structure.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.scatter.html"
+    },
+    {
+      "title": "Create a bar chart",
+      "problem": "Compare discrete categories.",
+      "trigger": "You need vertical bars for counts, totals, or ranking.",
+      "snippet": "import matplotlib.pyplot as plt\n\nlabels = [\"A\", \"B\", \"C\"]\nvalues = [10, 14, 8]\n\nfig, ax = plt.subplots()\nax.bar(labels, values, color=[\"#4C78A8\", \"#F58518\", \"#54A24B\"])\nax.set_ylabel(\"Value\")\nplt.show()",
+      "minimal_notes": "`bar()` is the default categorical comparison plot. Keep category labels short to avoid overlap.",
+      "common_bug": "Using numeric categories without setting tick labels clearly.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.bar.html"
+    },
+    {
+      "title": "Create a horizontal bar chart",
+      "problem": "Compare categories with long labels.",
+      "trigger": "Vertical labels would be hard to read.",
+      "snippet": "import matplotlib.pyplot as plt\n\nlabels = [\"Long label A\", \"Long label B\", \"Long label C\"]\nvalues = [10, 14, 8]\n\nfig, ax = plt.subplots()\nax.barh(labels, values, color=\"#4C78A8\")\nax.set_xlabel(\"Value\")\nplt.show()",
+      "minimal_notes": "`barh()` is better when labels are lengthy. It also works well for rankings.",
+      "common_bug": "Forgetting to invert the y-axis when you want the highest value at the top.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.barh.html"
+    },
+    {
+      "title": "Create a histogram",
+      "problem": "Show the distribution of a numeric variable.",
+      "trigger": "You need frequency or density bins.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nrng = np.random.default_rng(0)\ndata = rng.normal(size=1000)\n\nfig, ax = plt.subplots()\nax.hist(data, bins=30, edgecolor=\"white\")\nax.set_xlabel(\"Value\")\nax.set_ylabel(\"Count\")\nplt.show()",
+      "minimal_notes": "`hist()` is the standard distribution overview. Bin count changes the visual shape a lot.",
+      "common_bug": "Comparing histograms with different bin edges.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.hist.html"
+    },
+    {
+      "title": "Create a pie chart",
+      "problem": "Show part-to-whole proportions.",
+      "trigger": "You have a small number of categories that sum to a whole.",
+      "snippet": "import matplotlib.pyplot as plt\n\nsizes = [40, 35, 25]\nlabels = [\"A\", \"B\", \"C\"]\n\nfig, ax = plt.subplots()\nax.pie(sizes, labels=labels, autopct=\"%1.1f%%\", startangle=90)\nax.set_aspect(\"equal\")\nplt.show()",
+      "minimal_notes": "Use pie charts sparingly and only for simple proportions. Equal aspect keeps the circle round.",
+      "common_bug": "Omitting `ax.set_aspect(\"equal\")` and getting an oval.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.pie.html"
+    },
+    {
+      "title": "Create a box plot",
+      "problem": "Compare distributions with quartiles and outliers.",
+      "trigger": "You need compact summary statistics across groups.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nrng = np.random.default_rng(0)\ndata = [rng.normal(loc, 1, 200) for loc in [0, 1, 2]]\n\nfig, ax = plt.subplots()\nax.boxplot(data, labels=[\"G1\", \"G2\", \"G3\"])\nax.set_ylabel(\"Value\")\nplt.show()",
+      "minimal_notes": "`boxplot()` is useful for side-by-side group summaries. Use it when medians and spread matter.",
+      "common_bug": "Forgetting to pass grouped sequences rather than one flattened array.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.boxplot.html"
+    },
+    {
+      "title": "Create a violin plot",
+      "problem": "Compare group distributions with shape information.",
+      "trigger": "You need more detail than a box plot provides.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nrng = np.random.default_rng(0)\ndata = [rng.normal(loc, 1, 200) for loc in [0, 1, 2]]\n\nfig, ax = plt.subplots()\nax.violinplot(data, showmeans=True, showmedians=True)\nax.set_xticks([1, 2, 3], [\"G1\", \"G2\", \"G3\"])\nax.set_ylabel(\"Value\")\nplt.show()",
+      "minimal_notes": "Violin plots show density shape as well as spread. They work well for distribution comparison across groups.",
+      "common_bug": "Not setting tick labels for the violin positions.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.violinplot.html"
+    },
+    {
+      "title": "Create a stem plot",
+      "problem": "Show discrete impulses or sample amplitudes.",
+      "trigger": "Your data is naturally sampled at individual points.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nx = np.arange(0, 10)\ny = np.array([1, 3, 2, 5, 4, 2, 1, 3, 2, 4])\n\nfig, ax = plt.subplots()\nax.stem(x, y)\nplt.show()",
+      "minimal_notes": "Stem plots emphasize each sample location. They are common in signal processing and integer-indexed data.",
+      "common_bug": "Using stem for dense continuous series where a line plot is clearer.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.stem.html"
+    },
+    {
+      "title": "Create a step plot",
+      "problem": "Show piecewise constant values or state changes.",
+      "trigger": "Your series changes at discrete boundaries.",
+      "snippet": "import matplotlib.pyplot as plt\n\nx = [0, 1, 2, 3, 4]\ny = [1, 1, 3, 3, 2]\n\nfig, ax = plt.subplots()\nax.step(x, y, where=\"mid\")\nax.set_ylim(0, 4)\nplt.show()",
+      "minimal_notes": "Step plots are ideal for sampled states and histogram-like trends. The `where` argument controls alignment.",
+      "common_bug": "Picking the wrong `where` value and shifting the visual transition.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.step.html"
+    },
+    {
+      "title": "Create a stack plot",
+      "problem": "Show how multiple series add up over time.",
+      "trigger": "You need cumulative area comparison.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nx = np.arange(5)\ny1 = np.array([1, 2, 1, 3, 2])\ny2 = np.array([2, 1, 2, 1, 2])\n\nfig, ax = plt.subplots()\nax.stackplot(x, y1, y2, labels=[\"A\", \"B\"])\nax.legend(loc=\"upper left\")\nplt.show()",
+      "minimal_notes": "`stackplot()` is good for part-to-whole over an ordered x-axis. Keep the number of series small.",
+      "common_bug": "Stacking data that should actually be compared separately.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.stackplot.html"
+    },
+    {
+      "title": "Create an area fill plot",
+      "problem": "Shade the region under or between curves.",
+      "trigger": "You need emphasis on an interval or magnitude.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nx = np.linspace(0, 10, 200)\ny = np.sin(x)\n\nfig, ax = plt.subplots()\nax.plot(x, y, color=\"black\")\nax.fill_between(x, 0, y, alpha=0.3)\nplt.show()",
+      "minimal_notes": "`fill_between()` is the common area chart primitive. It also works for confidence bands.",
+      "common_bug": "Forgetting to plot the line, which makes the filled area harder to read.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.fill_between.html"
+    },
+    {
+      "title": "Create an error bar plot",
+      "problem": "Show measured values with uncertainty.",
+      "trigger": "You have standard deviations, confidence intervals, or measurement error.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nx = np.arange(5)\ny = np.array([2.0, 2.5, 3.1, 2.8, 3.4])\nerr = np.array([0.2, 0.3, 0.1, 0.25, 0.15])\n\nfig, ax = plt.subplots()\nax.errorbar(x, y, yerr=err, fmt=\"o\", capsize=4)\nplt.show()",
+      "minimal_notes": "`errorbar()` is the standard uncertainty overlay. Use symmetric or asymmetric errors as needed.",
+      "common_bug": "Plotting error bars with the wrong units or scale.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.errorbar.html"
+    },
+    {
+      "title": "Create a hexbin plot",
+      "problem": "Visualize dense 2D point clouds.",
+      "trigger": "A scatter plot is too overplotted.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nrng = np.random.default_rng(0)\nx = rng.normal(size=5000)\ny = x * 0.5 + rng.normal(size=5000)\n\nfig, ax = plt.subplots()\nhb = ax.hexbin(x, y, gridsize=40, cmap=\"viridis\")\nfig.colorbar(hb, ax=ax)\nplt.show()",
+      "minimal_notes": "Hexbin compresses dense scatter data into bins. Add a colorbar for counts or density.",
+      "common_bug": "Using hexbin on small datasets where scatter is clearer.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.hexbin.html"
+    },
+    {
+      "title": "Create contour lines",
+      "problem": "Show level curves of a 2D scalar field.",
+      "trigger": "You need isolines for scientific data.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nx = np.linspace(-3, 3, 100)\ny = np.linspace(-3, 3, 100)\nX, Y = np.meshgrid(x, y)\nZ = np.sin(X) * np.cos(Y)\n\nfig, ax = plt.subplots()\ncs = ax.contour(X, Y, Z, levels=10)\nax.clabel(cs, inline=True, fontsize=8)\nplt.show()",
+      "minimal_notes": "`contour()` is the base isoline plot. Label contours only when the plot stays readable.",
+      "common_bug": "Passing 1D arrays instead of a meshgrid for gridded data.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.contour.html"
+    },
+    {
+      "title": "Create filled contours",
+      "problem": "Show continuous scalar fields with filled levels.",
+      "trigger": "You need a heatmap-like scientific surface.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nx = np.linspace(-3, 3, 100)\ny = np.linspace(-3, 3, 100)\nX, Y = np.meshgrid(x, y)\nZ = np.sin(X) * np.cos(Y)\n\nfig, ax = plt.subplots()\ncf = ax.contourf(X, Y, Z, levels=20, cmap=\"coolwarm\")\nfig.colorbar(cf, ax=ax)\nplt.show()",
+      "minimal_notes": "`contourf()` is the filled version of contour plotting. Pair it with a colorbar.",
+      "common_bug": "Using too many levels and losing interpretability.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.contourf.html"
+    },
+    {
+      "title": "Display an image",
+      "problem": "Render a matrix or raster array.",
+      "trigger": "You have image-like 2D data or pixel grids.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nimg = np.random.default_rng(0).random((50, 50))\n\nfig, ax = plt.subplots()\nim = ax.imshow(img, cmap=\"viridis\", origin=\"lower\")\nfig.colorbar(im, ax=ax)\nplt.show()",
+      "minimal_notes": "`imshow()` is the standard raster display API. Always check `origin` when orientation matters.",
+      "common_bug": "Forgetting that image row 0 is often drawn at the top by default.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.imshow.html"
+    },
+    {
+      "title": "Display a matrix as an image",
+      "problem": "Show array structure with row and column indexing.",
+      "trigger": "You want a matrix view rather than generic image semantics.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nmat = np.arange(16).reshape(4, 4)\n\nfig, ax = plt.subplots()\nim = ax.matshow(mat, cmap=\"Blues\")\nfig.colorbar(im, ax=ax)\nplt.show()",
+      "minimal_notes": "`matshow()` is a convenience wrapper for matrix visualization. It is useful for small tables and matrices.",
+      "common_bug": "Using it for large arrays where labels become unreadable.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.matshow.html"
+    },
+    {
+      "title": "Create a pseudocolor mesh",
+      "problem": "Visualize values on a rectangular grid.",
+      "trigger": "Your data is on cell corners or a grid surface.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nx = np.linspace(0, 1, 40)\ny = np.linspace(0, 1, 30)\nX, Y = np.meshgrid(x, y)\nZ = np.sin(4 * np.pi * X) * np.cos(3 * np.pi * Y)\n\nfig, ax = plt.subplots()\npc = ax.pcolormesh(X, Y, Z, shading=\"auto\", cmap=\"viridis\")\nfig.colorbar(pc, ax=ax)\nplt.show()",
+      "minimal_notes": "`pcolormesh()` is often faster than contouring for gridded data. Use `shading=\"auto\"` for modern defaults.",
+      "common_bug": "Dimension mismatch between grid coordinates and cell values.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.pcolormesh.html"
+    },
+    {
+      "title": "Create a quiver plot",
+      "problem": "Plot vector fields with arrows.",
+      "trigger": "You need direction and magnitude on a grid.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nx, y = np.meshgrid(np.arange(0, 5), np.arange(0, 5))\nu = np.cos(x)\nv = np.sin(y)\n\nfig, ax = plt.subplots()\nax.quiver(x, y, u, v)\nplt.show()",
+      "minimal_notes": "`quiver()` is the standard arrow-field plot. Scale and normalization matter for readability.",
+      "common_bug": "Letting arrows overlap so densely that direction is unclear.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.quiver.html"
+    },
+    {
+      "title": "Create a stream plot",
+      "problem": "Show flow lines for a vector field.",
+      "trigger": "You want continuous trajectories instead of arrows.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nx = np.linspace(-2, 2, 40)\ny = np.linspace(-2, 2, 40)\nX, Y = np.meshgrid(x, y)\nU = -Y\nV = X\n\nfig, ax = plt.subplots()\nax.streamplot(X, Y, U, V, density=1.2)\nplt.show()",
+      "minimal_notes": "`streamplot()` is better when the field is dense. It emphasizes flow over local vectors.",
+      "common_bug": "Feeding irregular grids that are not compatible with streamplot expectations.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.streamplot.html"
+    },
+    {
+      "title": "Create a 2D histogram",
+      "problem": "Show density over two numeric variables.",
+      "trigger": "Scatter is too noisy and you need aggregated counts.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nrng = np.random.default_rng(0)\nx = rng.normal(size=5000)\ny = x * 0.4 + rng.normal(size=5000)\n\nfig, ax = plt.subplots()\nh = ax.hist2d(x, y, bins=40, cmap=\"magma\")\nfig.colorbar(h[3], ax=ax)\nplt.show()",
+      "minimal_notes": "Use `hist2d()` for dense bivariate data. It is useful when count density matters more than individual points.",
+      "common_bug": "Forgetting that `hist2d()` returns multiple objects, not just the image.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.hist2d.html"
+    },
+    {
+      "title": "Set title and labels",
+      "problem": "Add semantic context to a plot.",
+      "trigger": "You need axis labels and a title before publication.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 9])\nax.set_title(\"Trend\")\nax.set_xlabel(\"Time\")\nax.set_ylabel(\"Value\")\nplt.show()",
+      "minimal_notes": "Set labels on the Axes, not globally. Titles and labels should be short and specific.",
+      "common_bug": "Forgetting units in axis labels.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_title.html"
+    },
+    {
+      "title": "Set axis limits",
+      "problem": "Control visible data range.",
+      "trigger": "Autoscaling shows too much or too little data.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 9])\nax.set_xlim(0, 4)\nax.set_ylim(0, 10)\nplt.show()",
+      "minimal_notes": "Use explicit limits for consistent comparisons across figures. Limits also help focus on a region of interest.",
+      "common_bug": "Setting limits before all data is added and then being surprised by autoscale behavior.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_xlim.html"
+    },
+    {
+      "title": "Customize ticks and tick labels",
+      "problem": "Show exactly the tick positions and names you need.",
+      "trigger": "Default tick placement is not suitable for the story.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [2, 3, 5])\nax.set_xticks([1, 2, 3], [\"one\", \"two\", \"three\"])\nax.set_yticks([2, 4, 6])\nplt.show()",
+      "minimal_notes": "Use `set_xticks()` and `set_yticks()` for direct control. Pair them with readable labels.",
+      "common_bug": "Calling `set_xticklabels()` without first fixing tick locations.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_xticks.html"
+    },
+    {
+      "title": "Rotate tick labels",
+      "problem": "Prevent tick label overlap.",
+      "trigger": "Category names or dates are long.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nax.bar([\"Category A\", \"Category B\", \"Category C\"], [3, 5, 2])\nax.tick_params(axis=\"x\", rotation=30)\nplt.show()",
+      "minimal_notes": "Rotation is the quickest fix for crowded x-axis labels. Use it with layout management.",
+      "common_bug": "Rotating labels but not adjusting figure size or layout.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.tick_params.html"
+    },
+    {
+      "title": "Set axis scale",
+      "problem": "Use logarithmic or other non-linear scaling.",
+      "trigger": "Your data spans multiple orders of magnitude.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nx = np.logspace(0, 3, 100)\ny = x**2\n\nfig, ax = plt.subplots()\nax.plot(x, y)\nax.set_xscale(\"log\")\nax.set_yscale(\"log\")\nplt.show()",
+      "minimal_notes": "Use scale changes for multiplicative data. Log scales are common in science and engineering plots.",
+      "common_bug": "Applying log scale to data containing zeros or negatives.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_xscale.html"
+    },
+    {
+      "title": "Add grid lines",
+      "problem": "Improve value reading from the plot.",
+      "trigger": "You need reference lines for estimation.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 9])\nax.grid(True, which=\"major\", axis=\"both\", linestyle=\"--\", alpha=0.4)\nplt.show()",
+      "minimal_notes": "Grid lines should be subtle, not dominant. Use them to support reading rather than decorate.",
+      "common_bug": "Making grid lines darker than the data.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.grid.html"
+    },
+    {
+      "title": "Set aspect ratio",
+      "problem": "Preserve geometry or equal scaling.",
+      "trigger": "Shapes, distances, or slopes must be visually accurate.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nax.plot([0, 1], [0, 1])\nax.set_aspect(\"equal\", adjustable=\"box\")\nplt.show()",
+      "minimal_notes": "`equal` is common for maps, circles, and geometry plots. Aspect control prevents distortion.",
+      "common_bug": "Using default aspect for shapes that need equal units.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_aspect.html"
+    },
+    {
+      "title": "Add a secondary y-axis",
+      "problem": "Show a second scale derived from the primary y-axis.",
+      "trigger": "You need a transformed companion axis on the right.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nfig, ax = plt.subplots()\nx = np.linspace(0, 10, 100)\nax.plot(x, x**2)\nsecax = ax.secondary_yaxis(\"right\", functions=(lambda y: y / 2, lambda y: y * 2))\nsecax.set_ylabel(\"Half scale\")\nplt.show()",
+      "minimal_notes": "Use `secondary_yaxis()` for mathematically related scales. Keep the transform simple and invertible.",
+      "common_bug": "Using a secondary axis for unrelated units.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.secondary_yaxis.html"
+    },
+    {
+      "title": "Add twin y-axis",
+      "problem": "Overlay a second series with a different y-scale.",
+      "trigger": "Two quantities share x but have different units.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nx = np.linspace(0, 10, 100)\nfig, ax1 = plt.subplots()\nax2 = ax1.twinx()\n\nax1.plot(x, np.sin(x), color=\"tab:blue\", label=\"sin\")\nax2.plot(x, 100 * np.cos(x), color=\"tab:orange\", label=\"100 cos\")\nax1.set_ylabel(\"sin\")\nax2.set_ylabel(\"100 cos\")\nplt.show()",
+      "minimal_notes": "`twinx()` creates a second y-axis sharing x. Use it when dual units are truly necessary.",
+      "common_bug": "Overloading one plot with too many unrelated scales.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.twinx.html"
+    },
+    {
+      "title": "Add twin x-axis",
+      "problem": "Overlay a second x-scale at the top.",
+      "trigger": "You need paired horizontal units or transformed coordinates.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nx = np.linspace(0, 10, 100)\nfig, ax1 = plt.subplots()\nax2 = ax1.twiny()\n\nax1.plot(x, np.sin(x))\nax1.set_xlabel(\"Primary x\")\nax2.set_xlabel(\"Secondary x\")\nplt.show()",
+      "minimal_notes": "`twiny()` shares y while adding a second x axis. It is less common than `twinx()`.",
+      "common_bug": "Forgetting that the top axis has its own tick setup.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.twiny.html"
+    },
+    {
+      "title": "Add a legend",
+      "problem": "Identify plotted series automatically or explicitly.",
+      "trigger": "More than one artist needs a label.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nx = np.linspace(0, 5, 50)\nfig, ax = plt.subplots()\nax.plot(x, x, label=\"linear\")\nax.plot(x, x**2, label=\"quadratic\")\nax.legend()\nplt.show()",
+      "minimal_notes": "Legends use artist labels by default. Label the artists at creation time whenever possible.",
+      "common_bug": "Calling `legend()` before assigning any labels.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.legend.html"
+    },
+    {
+      "title": "Place a figure legend",
+      "problem": "Create one legend for multiple axes.",
+      "trigger": "A multi-panel figure shares the same series labels.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nx = np.linspace(0, 5, 50)\nfig, axs = plt.subplots(1, 2, figsize=(8, 3), layout=\"constrained\")\nl1, = axs[0].plot(x, x, label=\"linear\")\nl2, = axs[1].plot(x, x**2, label=\"quadratic\")\nfig.legend(handles=[l1, l2], loc=\"outside upper right\")\nplt.show()",
+      "minimal_notes": "`fig.legend()` is useful for shared legends across panels. Use `constrained_layout` for outside placement.",
+      "common_bug": "Putting a separate legend in every subplot when one shared legend is enough.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.legend.html"
+    },
+    {
+      "title": "Create a custom legend",
+      "problem": "Build a legend from proxy artists.",
+      "trigger": "The plotted object does not generate the legend you want.",
+      "snippet": "import matplotlib.pyplot as plt\nfrom matplotlib.lines import Line2D\n\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 9], color=\"tab:blue\")\n\nhandles = [\n    Line2D([0], [0], color=\"tab:blue\", lw=2, label=\"Measured\"),\n    Line2D([0], [0], color=\"tab:orange\", lw=2, linestyle=\"--\", label=\"Target\"),\n]\nax.legend(handles=handles)\nplt.show()",
+      "minimal_notes": "Proxy artists are useful when the real plot elements are too complex. Build the legend you need, not the one Matplotlib guesses.",
+      "common_bug": "Using actual data objects when a proxy artist would be simpler.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.lines.Line2D.html"
+    },
+    {
+      "title": "Add text to an Axes",
+      "problem": "Place free text at a specific data coordinate.",
+      "trigger": "You need a simple label on the plot.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 9])\nax.text(2, 5, \"Peak region\", fontsize=10)\nplt.show()",
+      "minimal_notes": "`text()` is for labels and short annotations. Choose coordinates carefully.",
+      "common_bug": "Confusing data coordinates with axes coordinates.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.text.html"
+    },
+    {
+      "title": "Annotate a point with an arrow",
+      "problem": "Call out a specific data point.",
+      "trigger": "You need a label connected to a plotted value.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 9])\nax.annotate(\"max\", xy=(3, 9), xytext=(2.2, 8),\n            arrowprops=dict(arrowstyle=\"->\"))\nplt.show()",
+      "minimal_notes": "`annotate()` is the standard callout API. It handles arrows and offset labels together.",
+      "common_bug": "Placing annotation text directly on top of the data point.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.annotate.html"
+    },
+    {
+      "title": "Render mathematical expressions",
+      "problem": "Include formula-like text in labels or annotations.",
+      "trigger": "You need TeX-style math in a figure.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 9], label=r\"$y = x2$\")\nax.set_title(r\"Model: $f(x)$\")\nax.legend()\nplt.show()",
+      "minimal_notes": "Use raw strings for math text. Math rendering works in titles, labels, and annotations.",
+      "common_bug": "Forgetting raw string prefixes and escaping backslashes incorrectly.",
+      "docs_url": "https://matplotlib.org/stable/users/explain/text/mathtext.html"
+    },
+    {
+      "title": "Use LaTeX rendering",
+      "problem": "Render full LaTeX text in a figure.",
+      "trigger": "You need document-quality math or serif typography.",
+      "snippet": "import matplotlib as mpl\nimport matplotlib.pyplot as plt\n\nmpl.rcParams[\"text.usetex\"] = False\n\nfig, ax = plt.subplots()\nax.set_title(r\"Inline math: $\\alpha + \\beta$\")\nax.plot([1, 2, 3], [1, 4, 9])\nplt.show()",
+      "minimal_notes": "Native mathtext is usually enough and avoids external LaTeX dependencies. Enable full LaTeX only when your environment supports it.",
+      "common_bug": "Turning on `text.usetex` in environments without a LaTeX installation.",
+      "docs_url": "https://matplotlib.org/stable/tutorials/text/usetex.html"
+    },
+    {
+      "title": "Use tight layout",
+      "problem": "Reduce overlapping labels automatically.",
+      "trigger": "Labels, titles, or tick labels crowd the figure edges.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, axs = plt.subplots(2, 1)\naxs[0].set_title(\"Top panel\")\naxs[1].set_xlabel(\"X axis\")\nfig.tight_layout()\nplt.show()",
+      "minimal_notes": "`tight_layout()` is a quick spacing fix. It works well for many simple figures.",
+      "common_bug": "Using it when a more complex layout engine is needed.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.tight_layout.html"
+    },
+    {
+      "title": "Use constrained layout",
+      "problem": "Let Matplotlib manage figure spacing robustly.",
+      "trigger": "You want automatic spacing for multi-panel figures.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, axs = plt.subplots(2, 2, layout=\"constrained\")\nfor ax in axs.ravel():\n    ax.plot([1, 2, 3], [1, 4, 9])\nplt.show()",
+      "minimal_notes": "`layout=\"constrained\"` is the modern default choice for many figures. It handles titles, labels, and colorbars well.",
+      "common_bug": "Combining constrained layout with manual spacing tweaks that fight the engine.",
+      "docs_url": "https://matplotlib.org/stable/tutorials/intermediate/constrainedlayout_guide.html"
+    },
+    {
+      "title": "Adjust subplot spacing manually",
+      "problem": "Fine-tune panel gaps yourself.",
+      "trigger": "The default spacing is close, but not perfect.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, axs = plt.subplots(2, 2, figsize=(6, 4))\nfig.subplots_adjust(wspace=0.3, hspace=0.4, left=0.08, right=0.98, top=0.92)\nplt.show()",
+      "minimal_notes": "`subplots_adjust()` is the manual spacing tool. Use it when automated layout is not enough.",
+      "common_bug": "Overusing manual margins and breaking responsiveness.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.subplots_adjust.html"
+    },
+    {
+      "title": "Share axes across subplots",
+      "problem": "Keep scales aligned across panels.",
+      "trigger": "You compare multiple plots on the same x or y scale.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, axs = plt.subplots(2, 1, sharex=True, figsize=(6, 4), layout=\"constrained\")\naxs[0].plot([1, 2, 3], [1, 4, 9])\naxs[1].plot([1, 2, 3], [2, 3, 5])\nplt.show()",
+      "minimal_notes": "Shared axes help comparisons and reduce label clutter. Use them for small multiples.",
+      "common_bug": "Accidentally hiding needed tick labels on shared subplots.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.sharex.html"
+    },
+    {
+      "title": "Add an inset Axes",
+      "problem": "Show a zoomed detail inside a main plot.",
+      "trigger": "You need a close-up view without a separate figure.",
+      "snippet": "import matplotlib.pyplot as plt\nfrom mpl_toolkits.axes_grid1.inset_locator import inset_axes\n\nfig, ax = plt.subplots()\nax.plot([1, 2, 3, 4], [1, 4, 9, 16])\n\naxins = inset_axes(ax, width=\"40%\", height=\"40%\", loc=\"upper left\")\naxins.plot([1, 2, 3], [1, 4, 9])\nplt.show()",
+      "minimal_notes": "Insets are useful for detail views and zoom windows. Keep inset content simple.",
+      "common_bug": "Making the inset too large and obscuring the main plot.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/mpl_toolkits.axes_grid1.inset_locator.inset_axes.html"
+    },
+    {
+      "title": "Apply a style sheet",
+      "problem": "Switch the global visual theme.",
+      "trigger": "You need a consistent publication or house style.",
+      "snippet": "import matplotlib.pyplot as plt\n\nplt.style.use(\"seaborn-v0_8-whitegrid\")\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 9])\nplt.show()",
+      "minimal_notes": "Styles are the fastest way to change defaults. Apply them before creating figures.",
+      "common_bug": "Mixing multiple style changes without knowing which one wins.",
+      "docs_url": "https://matplotlib.org/stable/api/style_api.html#matplotlib.style.use"
+    },
+    {
+      "title": "Update rcParams",
+      "problem": "Set defaults for the whole session or script.",
+      "trigger": "You want repeatable styling across many plots.",
+      "snippet": "import matplotlib as mpl\nimport matplotlib.pyplot as plt\n\nmpl.rcParams.update({\n    \"figure.dpi\": 150,\n    \"axes.grid\": True,\n    \"lines.linewidth\": 2,\n})\n\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 9])\nplt.show()",
+      "minimal_notes": "`rcParams` are session-wide defaults. Set only the parameters you need.",
+      "common_bug": "Mutating global defaults in shared notebook state and affecting later plots.",
+      "docs_url": "https://matplotlib.org/stable/tutorials/introductory/customizing.html"
+    },
+    {
+      "title": "Use a temporary style context",
+      "problem": "Apply styling only inside a block.",
+      "trigger": "You want local changes without global side effects.",
+      "snippet": "import matplotlib.pyplot as plt\n\nwith plt.style.context(\"ggplot\"):\n    fig, ax = plt.subplots()\n    ax.plot([1, 2, 3], [1, 4, 9])\n    plt.show()",
+      "minimal_notes": "Context managers keep style changes contained. This is safer in reusable code.",
+      "common_bug": "Leaving global style changes active after the plot is created.",
+      "docs_url": "https://matplotlib.org/stable/api/style_api.html#matplotlib.style.context"
+    },
+    {
+      "title": "Select line and marker styles",
+      "problem": "Tune the appearance of a plotted series.",
+      "trigger": "You need publication-friendly line emphasis.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 9], color=\"tab:blue\", linestyle=\"--\", marker=\"o\", linewidth=2, alpha=0.8)\nplt.show()",
+      "minimal_notes": "Line style, marker, width, color, and alpha cover most appearance needs. Keep styling consistent across series.",
+      "common_bug": "Overusing markers on dense line charts.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.plot.html"
+    },
+    {
+      "title": "Use a property cycler",
+      "problem": "Cycle through a custom set of colors or styles.",
+      "trigger": "You have multiple series and want consistent styling.",
+      "snippet": "import matplotlib.pyplot as plt\nfrom cycler import cycler\n\nfig, ax = plt.subplots()\nax.set_prop_cycle(cycler(color=[\"#4C78A8\", \"#F58518\", \"#54A24B\"]))\nfor i in range(3):\n    ax.plot([1, 2, 3], [j + i for j in [1, 4, 9]])\nplt.show()",
+      "minimal_notes": "Property cycling keeps multi-series plots visually organized. It is especially useful for repeated dashboards.",
+      "common_bug": "Manually setting every series color and losing consistency.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_prop_cycle.html"
+    },
+    {
+      "title": "Use built-in colormaps",
+      "problem": "Choose a standard color gradient.",
+      "trigger": "You need a named colormap for an image or contour plot.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\ndata = np.random.default_rng(0).random((20, 20))\nfig, ax = plt.subplots()\nim = ax.imshow(data, cmap=\"viridis\")\nfig.colorbar(im, ax=ax)\nplt.show()",
+      "minimal_notes": "Use named built-in colormaps for portability and clarity. Prefer perceptually uniform maps for scalar data.",
+      "common_bug": "Using rainbow-style maps for data that needs ordered perception.",
+      "docs_url": "https://matplotlib.org/stable/users/explain/colors/colormaps.html"
+    },
+    {
+      "title": "Normalize a colormap",
+      "problem": "Map values into a specific color scaling range.",
+      "trigger": "You need linear, logarithmic, or centered color mapping.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\nfrom matplotlib.colors import Normalize\n\ndata = np.linspace(0, 100, 100).reshape(10, 10)\n\nfig, ax = plt.subplots()\nim = ax.imshow(data, cmap=\"viridis\", norm=Normalize(vmin=0, vmax=100))\nfig.colorbar(im, ax=ax)\nplt.show()",
+      "minimal_notes": "Normalization controls how data maps into colors. Use it explicitly when figures must be comparable.",
+      "common_bug": "Comparing two heatmaps with different implicit scaling.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.Normalize.html"
+    },
+    {
+      "title": "Use discrete color bins",
+      "problem": "Show binned or categorical scalar levels.",
+      "trigger": "Continuous shading is too detailed for the message.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\nfrom matplotlib.colors import BoundaryNorm\n\ndata = np.random.default_rng(0).random((20, 20)) * 4\nbounds = [0, 1, 2, 3, 4]\nnorm = BoundaryNorm(bounds, ncolors=256)\n\nfig, ax = plt.subplots()\nim = ax.imshow(data, cmap=\"viridis\", norm=norm)\nfig.colorbar(im, ax=ax, boundaries=bounds)\nplt.show()",
+      "minimal_notes": "Discrete bins make thresholds explicit. They are useful for regimes or severity levels.",
+      "common_bug": "Forgetting to align the colorbar boundaries with the bin edges.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.BoundaryNorm.html"
+    },
+    {
+      "title": "Plot datetime values",
+      "problem": "Render time-series with actual dates.",
+      "trigger": "Your x-axis uses Python datetime objects.",
+      "snippet": "import matplotlib.pyplot as plt\nimport matplotlib.dates as mdates\nfrom datetime import datetime, timedelta\n\ndates = [datetime(2026, 1, 1) + timedelta(days=i) for i in range(10)]\nvalues = [i * i for i in range(10)]\n\nfig, ax = plt.subplots()\nax.plot(dates, values)\nax.xaxis.set_major_formatter(mdates.DateFormatter(\"%b %d\"))\nfig.autofmt_xdate()\nplt.show()",
+      "minimal_notes": "Matplotlib handles datetime objects directly. Formatters and locators control readability.",
+      "common_bug": "Letting date labels overlap on dense time axes.",
+      "docs_url": "https://matplotlib.org/stable/api/dates_api.html#matplotlib.dates.DateFormatter"
+    },
+    {
+      "title": "Control date locators",
+      "problem": "Choose date tick spacing explicitly.",
+      "trigger": "Default date ticks are too sparse or too dense.",
+      "snippet": "import matplotlib.pyplot as plt\nimport matplotlib.dates as mdates\nfrom datetime import datetime, timedelta\n\ndates = [datetime(2026, 1, 1) + timedelta(days=i) for i in range(90)]\nvalues = [i % 10 for i in range(90)]\n\nfig, ax = plt.subplots()\nax.plot(dates, values)\nax.xaxis.set_major_locator(mdates.MonthLocator())\nax.xaxis.set_major_formatter(mdates.DateFormatter(\"%b\"))\nfig.autofmt_xdate()\nplt.show()",
+      "minimal_notes": "Locators choose tick positions and formatters choose labels. Use both together for clean time axes.",
+      "common_bug": "Setting only the formatter and leaving poor tick spacing in place.",
+      "docs_url": "https://matplotlib.org/stable/api/dates_api.html#matplotlib.dates.MonthLocator"
+    },
+    {
+      "title": "Use a broken-axis workflow",
+      "problem": "Show disjoint ranges without wasting space.",
+      "trigger": "One outlier range compresses the important region.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nfig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(6, 4),\n                               gridspec_kw={\"height_ratios\": [1, 2]}, layout=\"constrained\")\nx = np.arange(10)\ny = np.array([1, 2, 3, 4, 50, 51, 52, 53, 54, 55])\n\nax1.plot(x, y)\nax2.plot(x, y)\nax1.set_ylim(48, 56)\nax2.set_ylim(0, 5)\nplt.show()",
+      "minimal_notes": "A broken-axis effect is usually built from stacked axes. Keep the break visually obvious to avoid misreading.",
+      "common_bug": "Using a broken axis without marking the discontinuity.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html"
+    },
+    {
+      "title": "Add a colorbar",
+      "problem": "Interpret scalar color mapping.",
+      "trigger": "You use `imshow`, `contourf`, `pcolormesh`, or similar.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\ndata = np.random.default_rng(0).random((20, 20))\nfig, ax = plt.subplots()\nim = ax.imshow(data, cmap=\"viridis\")\nfig.colorbar(im, ax=ax, label=\"Intensity\")\nplt.show()",
+      "minimal_notes": "Colorbars should be attached to the mappable object. Label the scale when the values matter.",
+      "common_bug": "Creating a colorbar without passing the actual image or contour object.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.colorbar.html"
+    },
+    {
+      "title": "Add an inset indicator",
+      "problem": "Mark the zoomed region on the parent plot.",
+      "trigger": "You have an inset and need to show where it came from.",
+      "snippet": "import matplotlib.pyplot as plt\nfrom mpl_toolkits.axes_grid1.inset_locator import inset_axes, mark_inset\n\nfig, ax = plt.subplots()\nax.plot([1, 2, 3, 4], [1, 4, 9, 16])\n\naxins = inset_axes(ax, width=\"40%\", height=\"40%\", loc=\"upper left\")\naxins.plot([1, 2, 3], [1, 4, 9])\nmark_inset(ax, axins, loc1=2, loc2=4)\nplt.show()",
+      "minimal_notes": "Indicators connect inset and source region. They are common in publication figures.",
+      "common_bug": "Forgetting to set the inset limits before drawing the connector.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/mpl_toolkits.axes_grid1.inset_locator.mark_inset.html"
+    },
+    {
+      "title": "Save as PNG",
+      "problem": "Export a raster figure for reports or slides.",
+      "trigger": "You need a pixel-based image file.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots(figsize=(6, 4), dpi=150)\nax.plot([1, 2, 3], [1, 4, 9])\nfig.savefig(\"figure.png\", dpi=300)",
+      "minimal_notes": "PNG is the common default for raster export. Set `dpi` explicitly for predictable output quality.",
+      "common_bug": "Saving with low DPI and getting blurry text.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.savefig.html"
+    },
+    {
+      "title": "Save as SVG",
+      "problem": "Export scalable vector graphics for editing or web.",
+      "trigger": "You need crisp line art at any zoom level.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 9])\nfig.savefig(\"figure.svg\")",
+      "minimal_notes": "SVG is useful for web and vector editors. It preserves scalable text and paths.",
+      "common_bug": "Expecting SVG to behave like a raster image in every viewer.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.savefig.html"
+    },
+    {
+      "title": "Save as PDF",
+      "problem": "Export a vector figure for papers and print.",
+      "trigger": "You need publication-ready document output.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 9])\nfig.savefig(\"figure.pdf\")",
+      "minimal_notes": "PDF is the standard vector export for many journals. It is often the safest archival format.",
+      "common_bug": "Rasterizing the whole figure accidentally when vector output is desired.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.savefig.html"
+    },
+    {
+      "title": "Save with transparent background",
+      "problem": "Place a figure over another background.",
+      "trigger": "You need a logo, overlay, or web asset.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 9])\nfig.savefig(\"figure.png\", transparent=True)",
+      "minimal_notes": "Transparency is useful for overlays and slides. Check that text remains readable on the target background.",
+      "common_bug": "Exporting transparent figures with low-contrast labels.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.savefig.html"
+    },
+    {
+      "title": "Save with tight bounding box",
+      "problem": "Trim extra whitespace around the figure.",
+      "trigger": "You need compact export output.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 9])\nfig.savefig(\"figure.png\", bbox_inches=\"tight\")",
+      "minimal_notes": "`bbox_inches=\"tight\"` is common for papers and reports. It trims surrounding whitespace.",
+      "common_bug": "Cropping away annotation text placed near the edges.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.savefig.html"
+    },
+    {
+      "title": "Add metadata when saving",
+      "problem": "Embed author or title information in output files.",
+      "trigger": "You need tracked or publication metadata.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 9])\nfig.savefig(\"figure.pdf\", metadata={\"Title\": \"Example Figure\", \"Author\": \"AENS\"})",
+      "minimal_notes": "Metadata is supported on several output formats. Use it for document management and provenance.",
+      "common_bug": "Assuming every format stores the same metadata keys.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.savefig.html"
+    },
+    {
+      "title": "Rasterize dense artists in vector output",
+      "problem": "Keep vector exports small and fast.",
+      "trigger": "Your figure has huge scatter or heatmap layers.",
+      "snippet": "import matplotlib.pyplot as plt\nimport numpy as np\n\nrng = np.random.default_rng(0)\nx = rng.normal(size=200000)\ny = rng.normal(size=200000)\n\nfig, ax = plt.subplots()\nsc = ax.scatter(x, y, s=1, rasterized=True)\nfig.savefig(\"dense.pdf\")\nplt.show()",
+      "minimal_notes": "Rasterization is useful inside PDF or SVG when a layer is too dense. Keep text and axes vector while rasterizing only heavy artists.",
+      "common_bug": "Rasterizing the entire figure instead of only the dense layer.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.artist.Artist.set_rasterized.html"
+    },
+    {
+      "title": "Simplify paths for large plots",
+      "problem": "Reduce draw cost for long line series.",
+      "trigger": "You plot very dense polylines.",
+      "snippet": "import matplotlib as mpl\nimport matplotlib.pyplot as plt\nimport numpy as np\n\nmpl.rcParams[\"path.simplify\"] = True\nmpl.rcParams[\"path.simplify_threshold\"] = 0.5\n\nx = np.linspace(0, 1000, 200000)\ny = np.sin(x)\n\nfig, ax = plt.subplots()\nax.plot(x, y)\nplt.show()",
+      "minimal_notes": "Path simplification can speed up rendering for dense lines. Keep the threshold conservative.",
+      "common_bug": "Simplifying too aggressively and altering important detail.",
+      "docs_url": "https://matplotlib.org/stable/users/explain/artists/performance.html"
+    },
+    {
+      "title": "Reuse figures in loops",
+      "problem": "Generate many similar plots efficiently.",
+      "trigger": "You are batch-rendering charts.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nfor i in range(3):\n    ax.clear()\n    ax.plot([1, 2, 3], [j + i for j in [1, 4, 9]])\n    fig.canvas.draw()",
+      "minimal_notes": "Reusing the same figure can be faster than recreating it repeatedly. Clear the Axes between draws.",
+      "common_bug": "Forgetting to clear the Axes and accumulating old lines.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.clear.html"
+    },
+    {
+      "title": "Use interactive callbacks efficiently",
+      "problem": "Update plots in response to user actions.",
+      "trigger": "You need live interaction or GUI-driven plots.",
+      "snippet": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nline, = ax.plot([1, 2, 3], [1, 4, 9])\n\ndef on_click(event):\n    if event.inaxes == ax:\n        line.set_ydata([1, 2, 3])\n        fig.canvas.draw_idle()\n\nfig.canvas.mpl_connect(\"button_press_event\", on_click)\nplt.show()",
+      "minimal_notes": "Use `draw_idle()` for event-driven updates. Keep callback work small.",
+      "common_bug": "Doing heavy computation directly inside GUI event handlers.",
+      "docs_url": "https://matplotlib.org/stable/api/backend_bases_api.html#matplotlib.backend_bases.FigureCanvasBase.mpl_connect"
+    },
+    {
+      "title": "Create a FuncAnimation",
+      "problem": "Animate changing plot data over time.",
+      "trigger": "You need frame-by-frame updates from a function.",
+      "snippet": "import matplotlib.pyplot as plt\nfrom matplotlib.animation import FuncAnimation\nimport numpy as np\n\nfig, ax = plt.subplots()\nx = np.linspace(0, 2 * np.pi, 200)\nline, = ax.plot(x, np.sin(x))\n\ndef update(frame):\n    line.set_ydata(np.sin(x + frame / 10))\n    return line,\n\nani = FuncAnimation(fig, update, frames=60, interval=30, blit=True)\nplt.show()",
+      "minimal_notes": "`FuncAnimation` is the standard dynamic animation API. Return the modified artists for blitting.",
+      "common_bug": "Not retaining a reference to the animation object.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.animation.FuncAnimation.html"
+    },
+    {
+      "title": "Create an ArtistAnimation",
+      "problem": "Animate a sequence of prebuilt frames.",
+      "trigger": "Your frames already exist as artists.",
+      "snippet": "import matplotlib.pyplot as plt\nfrom matplotlib.animation import ArtistAnimation\n\nfig, ax = plt.subplots()\nframes = []\nfor i in range(3):\n    art = ax.plot([1, 2, 3], [1 + i, 4 + i, 9 + i], color=\"tab:blue\")\n    frames.append(art)\n\nani = ArtistAnimation(fig, frames, interval=300, blit=True)\nplt.show()",
+      "minimal_notes": "`ArtistAnimation` is suitable when frames are already available. It is less flexible than `FuncAnimation`.",
+      "common_bug": "Generating too many artists and using excessive memory.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.animation.ArtistAnimation.html"
+    },
+    {
+      "title": "Save an animation",
+      "problem": "Export an animation to a file.",
+      "trigger": "You need MP4 or GIF output from a Matplotlib animation.",
+      "snippet": "import matplotlib.pyplot as plt\nfrom matplotlib.animation import FuncAnimation\nimport numpy as np\n\nfig, ax = plt.subplots()\nx = np.linspace(0, 2 * np.pi, 200)\nline, = ax.plot(x, np.sin(x))\n\ndef update(frame):\n    line.set_ydata(np.sin(x + frame / 10))\n    return line,\n\nani = FuncAnimation(fig, update, frames=30, interval=30, blit=True)\nani.save(\"anim.gif\", writer=\"pillow\", fps=20)",
+      "minimal_notes": "Choose the writer based on your environment. Saving animation usually requires an installed encoder or Pillow.",
+      "common_bug": "Trying to save without a supported writer installed.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.animation.Animation.html#matplotlib.animation.Animation.save"
+    }
+  ],
+  "quick_references": [
+    {
+      "title": "Figure and Axes",
+      "headers": [
+        "Task",
+        "Preferred API",
+        "Notes"
+      ],
+      "rows": [
+        [
+          "Create a standard plot",
+          "`plt.subplots()`",
+          "Best default OO entry point."
+        ],
+        [
+          "Create a custom canvas",
+          "`plt.figure()` + `fig.add_subplot()`",
+          "Use when layout is manual."
+        ],
+        [
+          "Add panels with spans",
+          "`fig.add_gridspec()`",
+          "Best for asymmetric layouts."
+        ],
+        [
+          "Create nested layouts",
+          "`fig.subfigures()`",
+          "Good for grouped sections."
+        ]
+      ]
+    },
+    {
+      "title": "Common plot functions",
+      "headers": [
+        "Task",
+        "Axes method"
+      ],
+      "rows": [
+        [
+          "Line",
+          "`ax.plot()`"
+        ],
+        [
+          "Scatter",
+          "`ax.scatter()`"
+        ],
+        [
+          "Bar",
+          "`ax.bar()`"
+        ],
+        [
+          "Horizontal bar",
+          "`ax.barh()`"
+        ],
+        [
+          "Histogram",
+          "`ax.hist()`"
+        ],
+        [
+          "Pie",
+          "`ax.pie()`"
+        ],
+        [
+          "Box",
+          "`ax.boxplot()`"
+        ],
+        [
+          "Violin",
+          "`ax.violinplot()`"
+        ],
+        [
+          "Step",
+          "`ax.step()`"
+        ],
+        [
+          "Stem",
+          "`ax.stem()`"
+        ],
+        [
+          "Error bars",
+          "`ax.errorbar()`"
+        ]
+      ]
+    },
+    {
+      "title": "Layout APIs",
+      "headers": [
+        "Task",
+        "API"
+      ],
+      "rows": [
+        [
+          "Automatic spacing",
+          "`layout=\"constrained\"`"
+        ],
+        [
+          "Quick spacing fix",
+          "`fig.tight_layout()`"
+        ],
+        [
+          "Manual panel spacing",
+          "`fig.subplots_adjust()`"
+        ],
+        [
+          "Named panel layouts",
+          "`plt.subplot_mosaic()`"
+        ],
+        [
+          "Spanning panels",
+          "`fig.add_gridspec()`"
+        ]
+      ]
+    },
+    {
+      "title": "Legend locations",
+      "headers": [
+        "Location",
+        "Typical use"
+      ],
+      "rows": [
+        [
+          "`upper right`",
+          "Default when plot area is free."
+        ],
+        [
+          "`upper left`",
+          "Common for trend plots."
+        ],
+        [
+          "`lower right`",
+          "Good when upper area is dense."
+        ],
+        [
+          "`outside right upper`",
+          "Multi-panel figures with constrained layout."
+        ],
+        [
+          "`outside upper right`",
+          "Shared figure legend above axes."
+        ]
+      ]
+    },
+    {
+      "title": "Tick locators and formatters",
+      "headers": [
+        "Task",
+        "API"
+      ],
+      "rows": [
+        [
+          "Monthly ticks",
+          "`mdates.MonthLocator()`"
+        ],
+        [
+          "Date labels",
+          "`mdates.DateFormatter()`"
+        ],
+        [
+          "Manual ticks",
+          "`ax.set_xticks()` / `ax.set_yticks()`"
+        ],
+        [
+          "Tick appearance",
+          "`ax.tick_params()`"
+        ]
+      ]
+    },
+    {
+      "title": "Color and colormap tools",
+      "headers": [
+        "Task",
+        "API"
+      ],
+      "rows": [
+        [
+          "Continuous mapping",
+          "`cmap=\"viridis\"`"
+        ],
+        [
+          "Linear scaling",
+          "`Normalize()`"
+        ],
+        [
+          "Threshold bins",
+          "`BoundaryNorm()`"
+        ],
+        [
+          "Colorbar",
+          "`fig.colorbar()`"
+        ],
+        [
+          "Discrete levels",
+          "`contourf(..., levels=...)`"
+        ]
+      ]
+    },
+    {
+      "title": "Export formats",
+      "headers": [
+        "Format",
+        "Use"
+      ],
+      "rows": [
+        [
+          "PNG",
+          "Raster reports and slides."
+        ],
+        [
+          "SVG",
+          "Web and vector editing."
+        ],
+        [
+          "PDF",
+          "Papers and print."
+        ],
+        [
+          "TIFF",
+          "Publication workflows that require it."
+        ]
+      ]
+    }
+  ],
+  "common_errors": [
+    {
+      "error": "Figure not displayed",
+      "cause": "Missing `show()` in script workflow.",
+      "solution": "Call `plt.show()` after building the figure."
+    },
+    {
+      "error": "Overlapping labels",
+      "cause": "Figure too small or layout not managed.",
+      "solution": "Use `layout=\"constrained\"` or `fig.tight_layout()`."
+    },
+    {
+      "error": "Empty legend",
+      "cause": "Artists have no labels.",
+      "solution": "Add labels when creating the artists."
+    },
+    {
+      "error": "Incorrect axis limits",
+      "cause": "Limits set too early or too narrowly.",
+      "solution": "Set limits after plotting and verify units."
+    },
+    {
+      "error": "Memory leak from unclosed figures",
+      "cause": "Many figures left open in loops.",
+      "solution": "Call `plt.close(fig)` after saving or displaying."
+    },
+    {
+      "error": "Blurry exported images",
+      "cause": "Low DPI or wrong export size.",
+      "solution": "Increase `dpi` and figure size before saving."
+    },
+    {
+      "error": "Backend errors",
+      "cause": "Unsupported GUI backend or missing display.",
+      "solution": "Use a suitable backend for the environment."
+    }
+  ],
+  "performance_checklist": [
+    {
+      "area": "API Selection",
+      "recommendations": "Prefer `Axes` methods over repeated stateful pyplot calls."
+    },
+    {
+      "area": "Memory Management",
+      "recommendations": "Close figures after saving in batch jobs."
+    },
+    {
+      "area": "Vector Export",
+      "recommendations": "Rasterize dense scatter, image, or contour layers in vector exports."
+    },
+    {
+      "area": "Rendering Speed",
+      "recommendations": "Simplify long line paths when plots are visually unchanged."
+    },
+    {
+      "area": "Figure Reuse",
+      "recommendations": "Reuse a figure in loops when generating many similar charts."
+    },
+    {
+      "area": "Backend",
+      "recommendations": "Use a suitable backend for interactive sessions and scripts."
+    },
+    {
+      "area": "Callbacks",
+      "recommendations": "Keep callbacks lightweight in interactive plots."
+    },
+    {
+      "area": "Data Scale",
+      "recommendations": "Prefer smaller datasets or downsample before plotting when possible."
+    }
+  ],
+  "production_checklist": [
+    "Use the OO API by default.",
+    "Set explicit figure size and DPI for final output.",
+    "Use readable labels, units, and titles.",
+    "Keep layouts consistent with `constrained_layout` or a controlled alternative.",
+    "Choose colorblind-safe, distinguishable colors.",
+    "Verify exports in the target format before release.",
+    "Save vector formats for publication when appropriate.",
+    "Avoid duplicate legends, ambiguous scales, and overdecorated plots.",
+    "Close figures in automation and notebooks when done.",
+    "Keep snippets stable, runnable, and import complete."
+  ],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready"
+}

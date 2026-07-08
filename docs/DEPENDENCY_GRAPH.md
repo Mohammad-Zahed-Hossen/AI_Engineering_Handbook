@@ -44,7 +44,12 @@ AGENTS.md (Entry Point)
 │   ├─→ adding-package.md (ai_priority: 4)
 │   ├─→ adding-model.md (ai_priority: 4)
 │   ├─→ adding-workflow.md (ai_priority: 4)
-│   └─→ adding-cheatsheet.md (ai_priority: 4)
+│   ├─→ adding-cheatsheet.md (ai_priority: 4)
+│   ├─→ adding-pattern.md (ai_priority: 4)
+│   ├─→ adding-debug-guide.md (ai_priority: 4)
+│   ├─→ adding-registry.md (ai_priority: 4)
+│   ├─→ adding-decision-guide.md (ai_priority: 4)
+│   └─→ adding-principle.md (ai_priority: 4)
 │
 └─→ ADR Layer
     └─→ adr/*.md (ai_priority: 6)
@@ -155,6 +160,36 @@ AGENTS.md (Entry Point)
 - **ai_priority**: 4
 - **Purpose**: Cheatsheet addition guide
 
+#### adding-pattern.md
+- **Depends on**: content-schema.md, validation.md
+- **Dependents**: None
+- **ai_priority**: 4
+- **Purpose**: Pattern addition guide
+
+#### adding-debug-guide.md
+- **Depends on**: content-schema.md, validation.md
+- **Dependents**: None
+- **ai_priority**: 4
+- **Purpose**: Debug guide addition guide
+
+#### adding-registry.md
+- **Depends on**: content-schema.md, validation.md
+- **Dependents**: None
+- **ai_priority**: 4
+- **Purpose**: Registry entry addition guide
+
+#### adding-decision-guide.md
+- **Depends on**: content-schema.md, validation.md
+- **Dependents**: None
+- **ai_priority**: 4
+- **Purpose**: Decision guide addition guide
+
+#### adding-principle.md
+- **Depends on**: content-schema.md, validation.md
+- **Dependents**: None
+- **ai_priority**: 4
+- **Purpose**: Principle addition guide
+
 ### Reference Layer
 
 #### naming.md
@@ -216,6 +251,13 @@ AI agents should load documents in this order:
 4. engineering/validation.md
 5. guides/adding-package.md
 6. reference/naming.md (if needed)
+
+**Task: Add a new debug guide**
+1. AGENTS.md
+2. engineering/project-rules.md
+3. engineering/content-schema.md
+4. engineering/validation.md
+5. guides/adding-debug-guide.md
 
 **Task: Fix search functionality**
 1. AGENTS.md

@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { BaseMetaSchema, ContentRefSchema } from '@/lib/schemas/meta';
+import { BaseMetaSchema, ContentRefSchema } from '@/lib/schemas/base';
 
 export type BaseMeta = z.infer<typeof BaseMetaSchema>;
 export type ContentRef = z.infer<typeof ContentRefSchema>;
+

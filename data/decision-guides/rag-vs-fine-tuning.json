@@ -1,0 +1,157 @@
+{
+  "id": "rag-vs-fine-tuning",
+  "title": "RAG vs Fine-tuning",
+  "slug": "rag-vs-fine-tuning",
+  "description": "Decision guide to help developers choose between Retrieval-Augmented Generation (RAG) and Fine-Tuning.",
+  "name": "RAG vs Fine-tuning",
+  "category": "llm",
+  "problem": "Choosing the optimal method for adapting a pre-trained large language model to proprietary or domain-specific knowledge bases.",
+  "created_at": "2026-07-03",
+  "updated_at": "2026-07-03",
+  "sources": [
+    "https://arxiv.org/abs/2312.10997"
+  ],
+  "tags": [
+    "llm",
+    "rag",
+    "fine-tuning",
+    "decision-guide"
+  ],
+  "aliases": [
+    "rag-vs-ft"
+  ],
+  "keywords": [
+    "rag",
+    "fine-tuning",
+    "llm-adaptation",
+    "trade-offs"
+  ],
+  "search_tokens": [
+    "rag-vs-ft",
+    "rag-vs-finetuning",
+    "model-adaptation"
+  ],
+  "domain": "llm",
+  "difficulty": "intermediate",
+  "engineering_area": "modeling",
+  "estimated_reading_time": 35,
+  "prerequisites": [
+    "build-rag-system"
+  ],
+  "recommended_next": [],
+  "related_content": [
+    {
+      "id": "pytorch",
+      "type": "package",
+      "relationship_type": "related_to"
+    },
+    {
+      "id": "build-rag-system",
+      "type": "workflow",
+      "relationship_type": "related_to"
+    },
+    {
+      "id": "bert",
+      "type": "model",
+      "relationship_type": "related_to"
+    },
+    {
+      "id": "llama-3-3",
+      "type": "registry",
+      "relationship_type": "related_to"
+    }
+  ],
+  "last_verified": "2026-07-03",
+  "review_frequency": "quarterly",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "evaluation_criteria": [
+    {
+      "criterion": "Dynamic Knowledge Access",
+      "weight": 1,
+      "description": "How frequently the source information changes and whether the model must access updates in real time."
+    },
+    {
+      "criterion": "Hallucination Control",
+      "weight": 1,
+      "description": "The degree to which the system must guarantee strict factual alignment and citation trace."
+    },
+    {
+      "criterion": "Development and Compute Cost",
+      "weight": 0.8,
+      "description": "Upfront and ongoing computational resources required to deploy and maintain the adaptation pipeline."
+    }
+  ],
+  "options": [
+    {
+      "name": "Retrieval-Augmented Generation (RAG)",
+      "id": "build-rag-system",
+      "strengths": [
+        "Dynamic updates: Ingesting new documents requires zero training run-time cost.",
+        "Auditability: Output response statements can be explicitly linked back to retrieved context document chunks."
+      ],
+      "weaknesses": [
+        "Context window constraints: Retrieving multiple blocks consumes prompt space.",
+        "Relies heavily on search index performance."
+      ],
+      "best_for": "Applications with frequently changing external documents or data formats where factual grounding is critical.",
+      "avoid_when": "The primary objective is teaching the model structural styling, task rules, or adapting to highly structured programming languages."
+    },
+    {
+      "name": "Supervised Fine-Tuning (SFT)",
+      "id": "fine-tuning",
+      "strengths": [
+        "Custom style and tone adaptation: Excellent for adjusting task formatting.",
+        "Zero retrieval latency: The model stores parameters natively, saving database query steps."
+      ],
+      "weaknesses": [
+        "Static knowledge: Updating training data requires rebuilding checkpoint runs.",
+        "High hallucination risk: Lacks direct citation verification capability."
+      ],
+      "best_for": "Aligning tone, instructions, domain nomenclature, or optimizing latency by avoiding external retrieval pipelines.",
+      "avoid_when": "The proprietary knowledge base updates hourly or requires exact mathematical proof matching."
+    }
+  ],
+  "comparison_table": {
+    "Retrieval Cost": "Low setup cost, variable per-token query costs.",
+    "Training Cost": "Zero model training cost.",
+    "Updating Frequency": "Near-instantaneous document upserts.",
+    "Task Specialization": "Limited by the pre-trained capability of the base model."
+  },
+  "recommendations": "Use RAG by default for knowledge retrieval tasks. Complement with Fine-tuning when model style, format constraints, or specific task instructions need adjustment.",
+  "use_cases": [
+    "Enterprise search engine over internal wikis (RAG)",
+    "Converting user prompts into specialized DSL codes (Fine-tuning)"
+  ],
+  "related_workflows": [
+    {
+      "id": "build-rag-system",
+      "type": "workflow",
+      "relationship_type": "related_to"
+    }
+  ],
+  "related_packages": [
+    {
+      "id": "pytorch",
+      "type": "package",
+      "relationship_type": "related_to"
+    }
+  ],
+  "related_models": [
+    {
+      "id": "bert",
+      "type": "model",
+      "relationship_type": "related_to"
+    }
+  ],
+  "related_model_subcategory": {
+    "category": "llm",
+    "subcategory": "embedding_llm"
+  }
+}

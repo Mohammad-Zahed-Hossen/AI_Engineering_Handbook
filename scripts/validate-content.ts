@@ -7,8 +7,13 @@ import {
   RegistryModelSchema,
   WorkflowSchema,
   CheatsheetSchema,
-} from '../lib/schemas';
+  PatternSchema,
+  DebugGuideSchema,
+  DecisionGuideSchema,
+  PrincipleSchema,
+} from '../lib/schemas/index.js';
 import { REGISTRY_FILE_TO_TASK } from '../lib/config/registry';
+import type { VisualizationEquivalent } from '../types/package';
 
 const dataDir = path.join(process.cwd(), 'data');
 const STRICT_MODE = process.env.STRICT_REFERENCE_MODE === 'true';
@@ -16,7 +21,7 @@ const STRICT_MODE = process.env.STRICT_REFERENCE_MODE === 'true';
 // ── Constants ───────────────────────────────────────────────
 
 const SLUG_REGEX = /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/;
-const VALID_REF_TYPES = new Set(['model', 'package', 'workflow', 'cheatsheet', 'registry']);
+const VALID_REF_TYPES = new Set(['model', 'package', 'workflow', 'cheatsheet', 'registry', 'pattern', 'debug_guide', 'decision_guide', 'principle']);
 
 const PLACEHOLDER_SUBSTRINGS = [
   'Placeholder',
@@ -40,7 +45,7 @@ let warningCount = 0;
 const idRegistry = new Map<string, string>();      // "type:id" → file path
 const nameRegistry = new Map<string, string>();    // "type:name_lower" → file path
 
-const refsToCheck: Array<{ sourceFile: string; ref: { id: string; type: string } }> = [];
+const refsToCheck: Array<{ sourceFile: string; ref: { id: string; type: string; relationship_type?: string } }> = [];
 const docsUrlRegistry = new Map<string, string[]>(); // url → array of "file+fn" locations
 
 // ── Helpers ─────────────────────────────────────────────────
@@ -88,6 +93,11 @@ function detectContentType(normalizedPath: string): string | null {
   if (normalizedPath.startsWith('data/workflows/')) return 'workflow';
   if (normalizedPath.startsWith('data/cheatsheets/')) return 'cheatsheet';
   if (normalizedPath.startsWith('data/registry/')) return 'registry';
+  if (normalizedPath.startsWith('data/patterns/')) return 'pattern';
+  if (normalizedPath.startsWith('data/debug-guides/')) return 'debug_guide';
+  if (normalizedPath.startsWith('data/decision-guides/')) return 'decision_guide';
+  if (normalizedPath.startsWith('data/principles/')) return 'principle';
+  if (normalizedPath.startsWith('data/problem-index/')) return 'problem_index'; // No schema - generated navigation
   return null;
 }
 
@@ -95,6 +105,11 @@ function detectContentType(normalizedPath: string): string | null {
 
 const files = getJsonFiles(dataDir);
 console.log(`📊 Starting content validation. Scanning ${files.length} JSON files in ${dataDir}...\n`);
+
+if (files.length === 0) {
+  console.log('ℹ️  No content files found in data directory. Skipping validation.');
+  process.exit(0);
+}
 
 for (const file of files) {
   const relativePath = path.relative(process.cwd(), file);
@@ -116,6 +131,14 @@ for (const file of files) {
   else if (normalizedPath.startsWith('data/registry/')) schema = z.array(RegistryModelSchema);
   else if (normalizedPath.startsWith('data/workflows/')) schema = WorkflowSchema;
   else if (normalizedPath.startsWith('data/cheatsheets/')) schema = CheatsheetSchema;
+  else if (normalizedPath.startsWith('data/patterns/')) schema = PatternSchema;
+  else if (normalizedPath.startsWith('data/debug-guides/')) schema = DebugGuideSchema;
+  else if (normalizedPath.startsWith('data/decision-guides/')) schema = DecisionGuideSchema;
+  else if (normalizedPath.startsWith('data/principles/')) schema = PrincipleSchema;
+  else if (normalizedPath.startsWith('data/problem-index/')) {
+    // Problem Index has no schema per specification - skip validation
+    continue;
+  }
   else {
     reportWarning(`Unknown file path '${normalizedPath}' — no schema mapping`);
     continue;
@@ -169,8 +192,32 @@ for (const file of files) {
       (model.pros ?? []).forEach((pro, idx) => checkPlaceholder(normalizedPath, `pros[${idx}]`, pro));
       (model.cons ?? []).forEach((con, idx) => checkPlaceholder(normalizedPath, `cons[${idx}]`, con));
     } else if (type === 'package') {
-      const pkg = obj as { summary?: string };
+      const pkg = obj as { summary?: string; id?: string; tasks?: Array<{ visualization_equivalents?: VisualizationEquivalent[] }> };
       checkPlaceholder(normalizedPath, 'summary', pkg.summary);
+
+      if (Array.isArray(pkg.tasks)) {
+        pkg.tasks.forEach((task, taskIndex) => {
+          const equivalents = Array.isArray(task.visualization_equivalents) ? task.visualization_equivalents : [];
+          const seen = new Set<string>();
+
+          equivalents.forEach((equivalent, relIndex) => {
+            const key = `${equivalent.package}:${equivalent.task}`;
+            if (seen.has(key)) {
+              reportWarning(`Duplicate visualization equivalent '${key}' in package '${normalizedPath}' task ${taskIndex + 1}`);
+            } else {
+              seen.add(key);
+            }
+
+            if (equivalent.package === pkg.id) {
+              reportWarning(`Self-referential visualization equivalent in package '${normalizedPath}' task ${taskIndex + 1}`);
+            }
+
+            if (!equivalent.task || !equivalent.reason) {
+              reportError(`Incomplete visualization equivalent at '${normalizedPath}' task ${taskIndex + 1} equivalent ${relIndex + 1}`);
+            }
+          });
+        });
+      }
     } else if (type === 'workflow') {
       const wf = obj as { overview?: string };
       checkPlaceholder(normalizedPath, 'overview', wf.overview);
@@ -183,6 +230,7 @@ for (const file of files) {
         cons?: string[];
         key_hyperparams?: unknown[];
         problem_types?: string[];
+        subcategory?: string;
       };
       if (!Array.isArray(model.pros) || model.pros.length < 3) {
         reportError(`Model '${normalizedPath}' has fewer than 3 pros (${model.pros?.length ?? 0})`);
@@ -196,6 +244,9 @@ for (const file of files) {
         model.problem_types[0] === 'detection';
       if (!isDetectionOnly && (!Array.isArray(model.key_hyperparams) || model.key_hyperparams.length < 1)) {
         reportError(`Model '${normalizedPath}' has fewer than 1 key_hyperparams (${model.key_hyperparams?.length ?? 0})`);
+      }
+      if (!model.subcategory) {
+        reportError(`Model '${normalizedPath}' is missing required 'subcategory' field`);
       }
     } else if (type === 'package') {
       const pkg = obj as { tasks?: unknown[] };
@@ -211,6 +262,38 @@ for (const file of files) {
       const cs = obj as { entries?: unknown[] };
       if (!Array.isArray(cs.entries) || cs.entries.length < 1) {
         reportError(`Cheatsheet '${normalizedPath}' has fewer than 1 entries (${cs.entries?.length ?? 0})`);
+      }
+    } else if (type === 'pattern') {
+      const pattern = obj as { concept?: string; applicability?: string };
+      if (!pattern.concept) {
+        reportError(`Pattern '${normalizedPath}' is missing 'concept' field`);
+      }
+      if (!pattern.applicability) {
+        reportError(`Pattern '${normalizedPath}' is missing 'applicability' field`);
+      }
+    } else if (type === 'debug_guide') {
+      const dg = obj as { symptoms?: unknown[]; root_causes?: unknown[]; solutions?: unknown[] };
+      if (!Array.isArray(dg.symptoms) || dg.symptoms.length < 1) {
+        reportError(`Debug Guide '${normalizedPath}' has fewer than 1 symptoms (${dg.symptoms?.length ?? 0})`);
+      }
+      if (!Array.isArray(dg.root_causes) || dg.root_causes.length < 1) {
+        reportError(`Debug Guide '${normalizedPath}' has fewer than 1 root_causes (${dg.root_causes?.length ?? 0})`);
+      }
+      if (!Array.isArray(dg.solutions) || dg.solutions.length < 1) {
+        reportError(`Debug Guide '${normalizedPath}' has fewer than 1 solutions (${dg.solutions?.length ?? 0})`);
+      }
+    } else if (type === 'decision_guide') {
+      const dg = obj as { options?: unknown[]; evaluation_criteria?: unknown[] };
+      if (!Array.isArray(dg.options) || dg.options.length < 2) {
+        reportError(`Decision Guide '${normalizedPath}' has fewer than 2 options (${dg.options?.length ?? 0})`);
+      }
+      if (!Array.isArray(dg.evaluation_criteria) || dg.evaluation_criteria.length < 1) {
+        reportError(`Decision Guide '${normalizedPath}' has fewer than 1 evaluation_criteria (${dg.evaluation_criteria?.length ?? 0})`);
+      }
+    } else if (type === 'principle') {
+      const principle = obj as { statement?: string };
+      if (!principle.statement) {
+        reportError(`Principle '${normalizedPath}' is missing 'statement' field`);
       }
     }
 
@@ -233,8 +316,8 @@ for (const file of files) {
       }
     }
 
-    // ── STEP 8: Collect Alternatives ──────────────────────
-    const alternatives = obj.alternatives as Array<{ id?: string; type?: string }> | undefined;
+    // ── STEP 8: Collect Relationships ──────────────────────
+    const alternatives = obj.alternatives as Array<{ id?: string; type?: string; relationship_type?: string }> | undefined;
     if (Array.isArray(alternatives)) {
       for (const alt of alternatives) {
         if (typeof alt === 'string') {
@@ -248,7 +331,25 @@ for (const file of files) {
         if (!VALID_REF_TYPES.has(alt.type)) {
           reportError(`Invalid alternative type '${alt.type}' in '${normalizedPath}'.`);
         }
-        refsToCheck.push({ sourceFile: normalizedPath, ref: { id: alt.id, type: alt.type } });
+        refsToCheck.push({ sourceFile: normalizedPath, ref: { id: alt.id, type: alt.type, relationship_type: alt.relationship_type } });
+      }
+    }
+
+    const relatedContent = obj.related_content as Array<{ id?: string; type?: string; relationship_type?: string }> | undefined;
+    if (Array.isArray(relatedContent)) {
+      for (const ref of relatedContent) {
+        if (typeof ref === 'string') {
+          reportError(`Legacy string reference in '${normalizedPath}': '${ref}'. Use { id, type } object.`);
+          continue;
+        }
+        if (!ref?.id || !ref?.type) {
+          reportError(`Malformed reference in '${normalizedPath}': missing id or type.`);
+          continue;
+        }
+        if (!VALID_REF_TYPES.has(ref.type)) {
+          reportError(`Invalid reference type '${ref.type}' in '${normalizedPath}'.`);
+        }
+        refsToCheck.push({ sourceFile: normalizedPath, ref: { id: ref.id, type: ref.type, relationship_type: ref.relationship_type } });
       }
     }
   }
@@ -309,6 +410,55 @@ for (const check of refsToCheck) {
       reportError(message);
     } else {
       reportWarning(message);
+    }
+  }
+}
+
+// ── STEP 8.5: Bidirectional Relationship Validation ─────────
+console.log(`\n📊 Checking bidirectional relationship consistency...`);
+
+// Build a map of all relationships: "sourceType:sourceId" -> Array of { targetType, targetId, relationshipType }
+const relationshipMap = new Map<string, Array<{ targetType: string; targetId: string; relationshipType?: string }>>();
+
+for (const check of refsToCheck) {
+  const sourceType = detectContentType(check.sourceFile);
+  if (!sourceType) continue;
+
+  const sourceId = check.sourceFile.split('/').pop()?.replace('.json', '');
+  if (!sourceId) continue;
+
+  const sourceKey = `${sourceType}:${sourceId}`;
+  const relationships = relationshipMap.get(sourceKey) || [];
+  relationships.push({
+    targetType: check.ref.type,
+    targetId: check.ref.id,
+    relationshipType: check.ref.relationship_type,
+  });
+  relationshipMap.set(sourceKey, relationships);
+}
+
+// Check bidirectional consistency
+for (const [sourceKey, relationships] of relationshipMap.entries()) {
+  for (const rel of relationships) {
+    const targetKey = `${rel.targetType}:${rel.targetId}`;
+    const targetRelationships = relationshipMap.get(targetKey);
+
+    if (!targetRelationships) {
+      // Target exists (we checked earlier) but has no relationships back to source
+      continue;
+    }
+
+    // Check if target has a reciprocal relationship
+    const hasReciprocal = targetRelationships.some(targetRel => {
+      const targetSourceKey = `${targetRel.targetType}:${targetRel.targetId}`;
+      return targetSourceKey === sourceKey;
+    });
+
+    if (!hasReciprocal && rel.relationshipType) {
+      // Only error for explicit relationship types, not generic 'related_to'
+      if (rel.relationshipType !== 'related_to') {
+        reportError(`Relationship integrity violation: '${sourceKey}' → '${targetKey}' (type: '${rel.relationshipType}') has no reciprocal relationship. Bidirectional relationships are required.`);
+      }
     }
   }
 }

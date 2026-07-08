@@ -21,42 +21,155 @@ This document serves as the ground truth reference for populating content within
 
 ## Global Metadata Fields (`BaseMetaSchema`)
 
-All main data objects extend `BaseMetaSchema` at the Zod level. Even if these fields are not explicitly visible in basic TypeScript domain interfaces, they are **mandatory** in all JSON files (with the exception of `_index.json` indices and `meta.json`).
+All main data objects extend `BaseMetaSchema` at the Zod level (defined in `lib/schemas/base.ts`). Even if these fields are not explicitly visible in basic TypeScript domain interfaces, they are **mandatory** in all JSON files (with the exception of `_index.json` indices and `meta.json`).
 
-### 1. `created_at`
+### Identity Fields
+
+### 1. `id`
+* **What belongs**: A unique, lowercase, kebab-case string representing the content (e.g., `"numpy"`, `"random-forest"`).
+* **What does NOT belong**: Upper/mixed-case strings, spaces, or extensions.
+* **Manual Verification**: Must exactly match the JSON filename (excluding `.json`).
+
+### 2. `title`
+* **What belongs**: Display title for the content (e.g., `"NumPy"`, `"Random Forest"`).
+* **What does NOT belong**: Descriptions or technical details.
+
+### 3. `name`
+* **What belongs**: The official, properly cased name (e.g., `"NumPy"`, `"PyTorch"`).
+* **What does NOT belong**: Install commands, version numbers, or generic descriptions.
+
+### 4. `slug`
+* **What belongs**: URL-friendly slug (typically same as `id`).
+
+### 5. `description`
+* **What belongs**: Brief description of the content.
+
+### Discovery Fields
+
+### 6. `tags`
+* **What belongs**: Array of descriptive tags.
+* **What does NOT belong**: Empty arrays.
+
+### 7. `aliases`
+* **What belongs**: Array of alternative names or abbreviations.
+
+### 8. `keywords`
+* **What belongs**: Array of search keywords.
+
+### 9. `search_tokens`
+* **What belongs**: Array of tokens for search optimization.
+
+### Classification Fields
+
+### 10. `domain`
+* **What belongs**: Engineering domain (optional).
+
+### 11. `category`
+* **What belongs**: Content category (optional).
+
+### 12. `difficulty`
+* **What belongs**: One of: `"beginner"`, `"intermediate"`, `"advanced"`, `"expert"`.
+
+### 13. `engineering_area`
+* **What belongs**: Specific engineering area (optional).
+
+### Learning Fields
+
+### 14. `estimated_reading_time`
+* **What belongs**: Estimated reading time in minutes (number).
+
+### 15. `prerequisites`
+* **What belongs**: Array of prerequisite content IDs.
+
+### 16. `recommended_next`
+* **What belongs**: Array of recommended next content IDs.
+
+### 17. `related_content`
+* **What belongs**: Array of `ContentRef` objects with structure `{"id": string, "type": string, "relationship_type": string?}`.
+* **What does NOT belong**: Plain string IDs.
+
+### Maintenance Fields
+
+### 18. `created_at`
 * **What belongs**: A date string representing the initial creation date of the entry in strict `YYYY-MM-DD` format (e.g., `"2026-06-24"`).
 * **What does NOT belong**: Relative dates (e.g., `"today"`), fully qualified ISO timestamps (e.g., `"2026-06-24T02:19:44Z"`), or custom formats (e.g., `"06/24/2026"`).
 * **Common AI Mistakes**: Generating full timestamps, empty values, or system dates containing timezone modifiers.
 * **Manual Verification**: Verify format matches regex `^\d{4}-\d{2}-\d{2}$`.
 
-### 2. `updated_at`
+### 19. `updated_at`
 * **What belongs**: A date string representing the last revision date of the entry in strict `YYYY-MM-DD` format.
 * **What does NOT belong**: Timestamps, relative text, or a date prior to `created_at`.
 * **Common AI Mistakes**: Leaving it unmodified when revising an existing entry, or formatting as a date-time.
 * **Manual Verification**: Must match regex `^\d{4}-\d{2}-\d{2}$` and must be greater than or equal to `created_at`.
 
-### 3. `sources`
+### 20. `last_verified`
+* **What belongs**: Date when content was last verified (optional).
+
+### 21. `review_frequency`
+* **What belongs**: One of: `"monthly"`, `"quarterly"`, `"semi_annually"`, `"annually"`.
+
+### Versioning Fields
+
+### 22. `verified_against`
+* **What belongs**: Version or reference this was verified against (optional).
+
+### 23. `compatible_versions`
+* **What belongs**: Array of compatible version strings.
+
+### 24. `breaking_changes`
+* **What belongs**: Array of breaking change descriptions.
+
+### Governance Fields
+
+### 25. `owner`
+* **What belongs**: Content owner (optional).
+
+### 26. `canonical_status`
+* **What belongs**: One of: `"canonical"`, `"reference"`, `"generated"`. Default: `"canonical"`.
+
+### 27. `lifecycle`
+* **What belongs**: One of: `"draft"`, `"verified"`, `"stable"`, `"deprecated"`, `"archived"`. Default: `"draft"`.
+
+### 28. `stability`
+* **What belongs**: One of: `"stable"`, `"semi_stable"`, `"volatile"`. Default: `"volatile"`.
+
+### 29. `confidence`
+* **What belongs**: One of: `"verified"`, `"production_proven"`, `"community_accepted"`, `"experimental"`, `"research"`.
+
+### 30. `engineering_maturity`
+* **What belongs**: One of: `"research"`, `"experimental"`, `"emerging"`, `"production_ready"`, `"legacy"`.
+
+### Sources Fields
+
+### 31. `sources`
 * **What belongs**: An array of string references used to compile the data (e.g., `["https://numpy.org"]`, `["Attention Is All You Need paper"]`, `["Internal developer notes"]`). Can be a URL, paper title, or personal note.
 * **What does NOT belong**: Empty lists.
 * **Common AI Mistakes**: Leaving the array empty.
 * **Manual Verification**: Ensure at least one source reference is provided.
 
+### 32. `github_repo`
+* **What belongs**: A URL pointing to the official GitHub repository (e.g., `"https://github.com/numpy/numpy"`).
+* **What does NOT belong**: Non-GitHub URLs or generic search engine queries.
+* **Manual Verification**: Must be a valid absolute HTTPS URL starting with `https://github`.
+
 ---
 
-## 1. Packages (`types/package.ts`)
+## 1. Packages (`lib/schemas/package.ts`)
 
 Defines the structure for libraries/packages (e.g., `numpy.json`, `pandas.json`).
 
 ```typescript
-export interface Package {
-  id: string;
-  name: string;
+export interface Package extends BaseMeta {
   version: string;
   install: string;
   import_as: string;
+  language: string;
   summary: string;
   tasks: PackageTask[];
   alternatives: ContentRef[];
+  package_specific_debugging: string[];
+  migration_notes: string[];
+  breaking_changes: string[];
 }
 ```
 
@@ -169,9 +282,18 @@ Contains task-based function references.
 * **Common AI Mistakes**: Using old string format instead of ContentRef objects.
 * **Manual Verification**: Must use format `{ "id": string, "type": "package" }`.
 
+### `package_specific_debugging`
+* **What belongs**: Array of package-specific debugging notes.
+
+### `migration_notes`
+* **What belongs**: Array of migration notes between versions.
+
+### `breaking_changes`
+* **What belongs**: Array of breaking change descriptions.
+
 ---
 
-## 2. Models (`types/model.ts`)
+## 2. Models (`lib/schemas/model.ts`)
 
 Defines ML/DL/LLM models (e.g., `random-forest.json`, `transformer.json`, `llama3.json`).
 
@@ -283,9 +405,113 @@ export interface Model {
   - `type` (string, required): Must be `"model"`.
   - Note: The model's category is resolved dynamically from the data directory.
 
+### `related_workflows`
+* **What belongs**: Array of workflow IDs (plain strings, not ContentRef objects).
+* **What does NOT belong**: ContentRef objects.
+
+### `decision_notes`
+* **What belongs**: Decision guidance on model selection.
+
+### `competitors`
+* **What belongs**: Array of `ContentRef` objects for competing models.
+
+### `research_background`
+* **What belongs**: Research paper or background information.
+
+### `computational_requirements`
+* **What belongs**: Computational resource requirements.
+
 ---
 
-## 3. Registries (`types/registry.ts`)
+## 3. Patterns (`lib/schemas/pattern.ts`)
+
+Defines reusable engineering patterns (e.g., `early-stopping.json`, `batch-inference.json`).
+
+```typescript
+export interface Pattern extends BaseMeta {
+  concept: string;
+  applicability: string;
+  anti_patterns: string[];
+  implementation_notes: string;
+  examples: string[];
+  related_workflows: string[];
+  related_models: string[];
+  related_packages: string[];
+  related_principles: string[];
+}
+```
+
+### `concept`
+* **What belongs**: The core engineering concept.
+
+### `applicability`
+* **What belongs**: When this pattern applies.
+
+### `anti_patterns`
+* **What belongs**: Common mistakes to avoid.
+
+### `implementation_notes`
+* **What belongs**: Implementation guidance without library specifics.
+
+### `examples`
+* **What belongs**: Language-agnostic examples.
+
+### Cross-reference fields (all plain string arrays)
+* **`related_workflows`**: Array of workflow IDs.
+* **`related_models`**: Array of model IDs.
+* **`related_packages`**: Array of package IDs.
+* **`related_principles`**: Array of principle IDs.
+
+---
+
+## 4. Principles (`lib/schemas/principle.ts`)
+
+Defines fundamental engineering principles (e.g., `scaling-law.json`, `bias-variance-tradeoff.json`).
+
+```typescript
+export interface Principle extends BaseMeta {
+  category: PrincipleCategory;
+  statement: string;
+  mathematical_formulation: string;
+  intuition: string;
+  implications: string[];
+  limitations: string[];
+  related_concepts: string[];
+  referenced_by_patterns: string[];
+  referenced_by_models: string[];
+  referenced_by_workflows: string[];
+}
+```
+
+### `category`
+* **What belongs**: One of: `"learning_theory"`, `"optimization"`, `"representation"`, `"systems"`, `"information_theory"`, `"statistics"`, `"probability"`.
+
+### `statement`
+* **What belongs**: The fundamental principle statement.
+
+### `mathematical_formulation`
+* **What belongs**: Mathematical representation if applicable.
+
+### `intuition`
+* **What belongs**: Intuitive explanation.
+
+### `implications`
+* **What belongs**: Engineering implications.
+
+### `limitations`
+* **What belongs**: When this principle doesn't apply.
+
+### `related_concepts`
+* **What belongs**: Related principles or concepts.
+
+### Cross-reference fields (inverse direction, plain string arrays)
+* **`referenced_by_patterns`**: Array of pattern IDs that reference this principle.
+* **`referenced_by_models`**: Array of model IDs that reference this principle.
+* **`referenced_by_workflows`**: Array of workflow IDs that reference this principle.
+
+---
+
+## 5. Registries (`lib/schemas/registry.ts`)
 
 Defines entries in task-specific registry tables (e.g., `embeddings.json` containing an array of `RegistryModel`).
 
@@ -330,9 +556,30 @@ export interface RegistryModel {
 * **Common AI Mistakes**: Confusing it with the `id` field or using invalid URLs.
 * **Manual Verification**: If string, verify it's a valid identifier or URL. If MissingModelRef, verify structure.
 
+### `category`
+* **What belongs**: One of: `"models"`, `"datasets"`, `"benchmarks"`, `"services"`, `"leaderboards"`, `"mcp_servers"`, `"repos"`.
+
+### `hardware_requirements`
+* **What belongs**: Hardware requirements description.
+
+### `download_location`
+* **What belongs**: Download location URL.
+
+### `license`
+* **What belongs**: License information.
+
+### `supported_tasks`
+* **What belongs**: Array of supported task types.
+
+### `version_compatibility`
+* **What belongs**: Array of compatible versions.
+
+### `official_resources`
+* **What belongs**: Array of official resource URLs.
+
 ---
 
-## 4. Workflows (`types/workflow.ts`)
+## 6. Workflows (`lib/schemas/workflow.ts`)
 
 Defines step-by-step pipeline architectures and engineering workflows (e.g., `rag.json`).
 
@@ -411,9 +658,24 @@ Sequential description of the pipeline.
 * **What belongs**: IDs of related workflows to explore next.
 * **What does NOT belong**: Full URLs or descriptions.
 
+### `worked_examples` (array of `WorkedExample`)
+* **What belongs**: Worked examples embedded within workflows.
+
+### `production_notes`
+* **What belongs**: Production deployment notes.
+
+### `scaling_notes`
+* **What belongs**: Scaling considerations.
+
+### Cross-reference fields (ContentRef arrays)
+* **`related_patterns`**: Array of `ContentRef` objects.
+* **`related_models`**: Array of `ContentRef` objects.
+* **`related_packages`**: Array of `ContentRef` objects.
+* **`related_debug_guides`**: Array of `ContentRef` objects.
+
 ---
 
-## 5. Cheatsheets (`types/cheatsheet.ts`)
+## 7. Cheatsheets (`lib/schemas/cheatsheet.ts`)
 
 Defines syntax references for AI packages (e.g., `pytorch.json`).
 
@@ -427,10 +689,10 @@ export interface CheatsheetEntry {
   docs_url: string;
 }
 
-export interface Cheatsheet {
-  id: string;
+export interface Cheatsheet extends BaseMeta {
   name: string;
   entries: CheatsheetEntry[];
+  package_reference: string;
 }
 ```
 
@@ -469,6 +731,104 @@ Individual problem-solution pairs.
   * **What does NOT belong**: Package homepage URLs or general documentation landing pages.
   * **Manual Verification**: Must be a valid URL to the specific function/method documentation.
 
+### `package_reference`
+* **What belongs**: Singular package ID this cheatsheet references.
+* **What does NOT belong**: ContentRef objects or multiple packages.
+
+---
+
+## 8. Debug Guides (`lib/schemas/debug-guide.ts`)
+
+Defines troubleshooting guides (e.g., `cuda-oom.json`, `nan-loss.json`).
+
+```typescript
+export interface DebugGuide extends BaseMeta {
+  category: DebugCategory;
+  symptoms: DebugSymptom[];
+  root_causes: DebugRootCause[];
+  diagnosis: DebugDiagnosis[];
+  solutions: DebugSolution[];
+  prevention: DebugPrevention[];
+  related_packages: ContentRef[];
+  related_workflows: ContentRef[];
+  related_patterns: ContentRef[];
+  related_models: ContentRef[];
+  related_registry: ContentRef[];
+}
+```
+
+### `category`
+* **What belongs**: One of: `"training"`, `"gpu"`, `"data"`, `"llm"`, `"python"`, `"deployment"`, `"performance"`, `"memory"`.
+
+### `symptoms` (array of `DebugSymptom`)
+* **What belongs**: Observable failures.
+
+### `root_causes` (array of `DebugRootCause`)
+* **What belongs**: Possible reasons ordered by probability.
+
+### `diagnosis` (array of `DebugDiagnosis`)
+* **What belongs**: How to verify each cause.
+
+### `solutions` (array of `DebugSolution`)
+* **What belongs**: Step-by-step fixes.
+
+### `prevention` (array of `DebugPrevention`)
+* **What belongs**: How to avoid it next time.
+
+### Cross-reference fields (ContentRef arrays)
+* **`related_packages`**: Array of `ContentRef` objects.
+* **`related_workflows`**: Array of `ContentRef` objects.
+* **`related_patterns`**: Array of `ContentRef` objects.
+* **`related_models`**: Array of `ContentRef` objects.
+* **`related_registry`**: Array of `ContentRef` objects.
+
+---
+
+## 9. Decision Guides (`lib/schemas/decision-guide.ts`)
+
+Defines engineering trade-off guides (e.g., `pytorch-vs-tensorflow.json`).
+
+```typescript
+export interface DecisionGuide extends BaseMeta {
+  category: DecisionCategory;
+  problem: string;
+  evaluation_criteria: DecisionCriteria[];
+  options: DecisionOption[];
+  comparison_table: Record<string, string>;
+  recommendations: string;
+  use_cases: string[];
+  related_workflows: ContentRef[];
+  related_packages: ContentRef[];
+  related_models: ContentRef[];
+}
+```
+
+### `category`
+* **What belongs**: One of: `"models"`, `"frameworks"`, `"llm"`, `"infrastructure"`, `"data_processing"`, `"deployment"`.
+
+### `problem`
+* **What belongs**: The engineering decision problem.
+
+### `evaluation_criteria` (array of `DecisionCriteria`)
+* **What belongs**: Criteria for comparison with optional weights.
+
+### `options` (array of `DecisionOption`)
+* **What belongs**: At least 2 options to compare.
+
+### `comparison_table`
+* **What belongs**: Optional structured comparison table.
+
+### `recommendations`
+* **What belongs**: When to choose each option.
+
+### `use_cases`
+* **What belongs**: Array of use case descriptions.
+
+### Cross-reference fields (ContentRef arrays)
+* **`related_workflows`**: Array of `ContentRef` objects.
+* **`related_packages`**: Array of `ContentRef` objects.
+* **`related_models`**: Array of `ContentRef` objects.
+
 ---
 
 ## Core Content Validation Checklist
@@ -480,6 +840,26 @@ Before saving any new content JSON file, manually verify the following:
 3. **No Markdown Fencing in Snippets**: Review `quick_start`, `example`, `install`, `import_as`, and `fn` fields. They must be raw code strings without any markdown code blocks (e.g., `` ```python `` or backticks).
 4. **Enum Matching**: Double-check that categorical enums (`ModelCategory`, `ProblemType`, `SpeedRating`, `SizeRating`, `InterpretabilityRating`, `RegistryTask`, `ModelStatus`, `WorkflowType`) are strictly lowercase, exact matches.
 5. **Types and Dimensions**: Ensure numeric fields like `dimension`, `size_mb`, and `step` are written as raw numbers, not strings.
+
+---
+
+## Relationship Field Shapes by Content Type
+
+**Critical**: Different content types use different field shapes for relationships. This is a common source of validation errors.
+
+| Content Type | Relationship Fields | Field Shape |
+|---|---|---|
+| Package | `related_workflows`, `related_cheatsheets` (nested in tasks) | `string[]` (plain IDs) |
+| Model | `related_workflows` | `string[]` |
+| Pattern | `related_workflows`, `related_models`, `related_packages`, `related_principles` | `string[]` |
+| Principle | `referenced_by_patterns`, `referenced_by_models`, `referenced_by_workflows` | `string[]` (inverse direction) |
+| Workflow | `related_patterns`, `related_models`, `related_packages`, `related_debug_guides` | `ContentRef[]` (objects) |
+| Debug Guide | `related_packages`, `related_workflows`, `related_patterns`, `related_models`, `related_registry` | `ContentRef[]` |
+| Decision Guide | `related_workflows`, `related_packages`, `related_models` | `ContentRef[]` |
+| Cheatsheet | `package_reference` (singular) | `string` |
+| Registry | none | — |
+
+**Note**: All content types also inherit `related_content` from `BaseMetaSchema`, which uses `ContentRef[]`.
 
 ---
 
@@ -518,9 +898,3 @@ All external links — documentation, papers, model cards, and GitHub — must g
   ```
 
 * **External References**: Any other relevant URLs (blogs, tutorials, benchmarks) can also be included in `sources[]` and will be categorized as external references.
-
-### `github_repo` (optional)
-
-* **What belongs**: A URL pointing to the official GitHub repository (e.g., `"https://github.com/numpy/numpy"`, `"https://github.com/huggingface/transformers"`).
-* **What does NOT belong**: Non-GitHub URLs or generic search engine queries.
-* **Manual Verification**: Must be a valid absolute HTTPS URL starting with `https://github.com`.

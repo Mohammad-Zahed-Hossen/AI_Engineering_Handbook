@@ -1,75 +1,112 @@
 {
-  "created_at": "2026-06-24",
-  "updated_at": "2026-06-24",
-  "sources": [
-    "https://arxiv.org/abs/1706.03762"
-  ],
-  "github_repo": "https://github.com/pytorch/pytorch",
   "id": "transformer",
+  "title": "Transformer",
+  "slug": "transformer",
+  "description": "Foundational seq2seq architecture utilizing self-attention mechanism.",
   "name": "Transformer",
   "category": "dl",
+  "subcategory": "transformer_encoder",
   "problem_types": [
     "generation",
     "embedding"
   ],
-  "summary": "Deep learning architecture based on self-attention mechanisms, widely used in NLP and computer vision.",
-  "use_when": "Sequence-to-sequence tasks, language modeling, large-scale feature extraction.",
-  "avoid_when": "Extremely resource-constrained environments or small datasets where simple ML suffices.",
+  "summary": "The Transformer is a sequence transduction architecture relying entirely on self-attention mechanisms to compute representations of its input and output without using sequence-aligned RNNs or convolutions.",
+  "use_when": "Building machine translation, summarization, or text generation systems requiring long-range context modeling.",
+  "avoid_when": "Working with short sequences under extreme edge latency budgets where small CNNs/LSTMs suffice.",
   "pros": [
-    "Parallelizable training compared to RNNs",
-    "Captures long-range dependencies effectively",
-    "Scales exceptionally well with data size"
+    "Allows massive parallelization during training, drastically outperforming LSTMs.",
+    "Natively models long-range sequence dependencies without signal degradation.",
+    "Serves as the foundational block for nearly all modern SOTA NLP/LLM models."
   ],
   "cons": [
-    "Quadratic complexity with respect to sequence length",
-    "High training resource footprint",
-    "Requires massive datasets to generalize well without pre-training"
+    "Quadratic memory complexity O(L^2) with respect to input sequence length.",
+    "Requires massive scale datasets and compute budgets to train effectively from scratch.",
+    "Requires complex positional encodings because it possesses no natural inductive bias for sequence order."
   ],
   "key_hyperparams": [
     {
-      "name": "d_model",
-      "default": 512,
-      "note": "Dimensionality of input and output layers."
-    },
-    {
-      "name": "nhead",
+      "name": "n_heads",
       "default": 8,
-      "note": "Number of multi-head attention heads."
+      "note": "Number of multi-head attention components. Enables parallel modeling of diverse attention spaces."
     }
   ],
   "training_speed": "slow",
   "inference_speed": "medium",
   "memory_usage": "high",
   "interpretability": "low",
-  "quick_start": "import torch.nn as nn\ntransformer_model = nn.Transformer(nhead=16, num_encoder_layers=12)",
+  "quick_start": "import torch\nimport torch.nn as nn\n\ntransformer_model = nn.Transformer(nhead=8, num_encoder_layers=6)\nsrc = torch.rand((10, 32, 512))\ntg = torch.rand((20, 32, 512))\nout = transformer_model(src, tg)",
   "alternatives": [
     {
-      "id": "lstm",
-      "type": "model"
+      "id": "bert",
+      "type": "model",
+      "relationship_type": "alternative_to"
     },
     {
-      "id": "mamba",
-      "type": "model"
+      "id": "gpt-decoder",
+      "type": "model",
+      "relationship_type": "alternative_to"
     },
-    {
-      "id": "rwkv",
-      "type": "model"
-    }
-  ],
-  "decision_notes": "Choose Transformer for maximum parallelization and long-context performance. Use LSTM or Mamba for memory-constrained streaming or when sequential modeling is preferred.",
-  "competitors": [
     {
       "id": "lstm",
-      "type": "model"
-    },
-    {
-      "id": "mamba",
-      "type": "model"
-    },
-    {
-      "id": "rwkv",
-      "type": "model"
+      "type": "model",
+      "relationship_type": "alternative_to"
     }
   ],
-  "related_workflows": []
+  "related_workflows": [],
+  "sources": [
+    "https://arxiv.org/abs/1706.03762"
+  ],
+  "tags": [
+    "transformer",
+    "attention",
+    "seq2seq",
+    "deep-learning"
+  ],
+  "aliases": [
+    "attention-is-all-you-need"
+  ],
+  "keywords": [
+    "transformer",
+    "attention",
+    "seq2seq"
+  ],
+  "search_tokens": [
+    "transformer",
+    "attention-is-all-you-need",
+    "self-attention"
+  ],
+  "domain": "deep-learning",
+  "difficulty": "advanced",
+  "engineering_area": "modeling",
+  "estimated_reading_time": 20,
+  "prerequisites": [
+    "pytorch"
+  ],
+  "recommended_next": [
+    "bert"
+  ],
+  "related_content": [
+    {
+      "id": "pytorch",
+      "type": "package",
+      "relationship_type": "related_to"
+    },
+    {
+      "id": "training-loop",
+      "type": "pattern",
+      "relationship_type": "related_to"
+    }
+  ],
+  "created_at": "2026-07-08",
+  "updated_at": "2026-07-08",
+  "last_verified": "2026-07-08",
+  "review_frequency": "annually",
+  "verified_against": "1.0.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready"
 }

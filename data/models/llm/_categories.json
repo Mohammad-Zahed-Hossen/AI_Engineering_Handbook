@@ -1,0 +1,67 @@
+{
+  "foundation_llm": {
+    "label": "Foundation LLM",
+    "description": "Billions-parameter scale language predictors pre-trained on massive web crawl corpora.",
+    "comparison_columns": ["interpretability", "training_speed", "memory_usage", "use_when"],
+    "decision_flow": [
+      {
+        "question": "Do you need raw, unbiased text completion and parameter scale?",
+        "if_yes": "Use dense Decoder-only LLMs.",
+        "if_no": "Consider Mixture-of-Experts (MoE) models for sparse computation savings."
+      }
+    ],
+    "linked_decision_guide": null
+  },
+  "instruction_tuned_llm": {
+    "label": "Instruction-Tuned / Aligned LLM",
+    "description": "Models fine-tuned to follow user prompts and aligned via safety feedback.",
+    "comparison_columns": ["interpretability", "training_speed", "memory_usage", "use_when"],
+    "decision_flow": [
+      {
+        "question": "Are you building a user-facing chatbot or zero-shot assistant agent?",
+        "if_yes": "Use Instruction-Tuned LLMs (aligned via RLHF/DPO).",
+        "if_no": "Use base Foundation LLMs for raw text completions."
+      }
+    ],
+    "linked_decision_guide": "rag-vs-fine-tuning"
+  },
+  "multimodal_llm": {
+    "label": "Multimodal LLM",
+    "description": "Language architectures integrating image tokens to read visual inputs.",
+    "comparison_columns": ["interpretability", "training_speed", "memory_usage", "use_when"],
+    "decision_flow": [
+      {
+        "question": "Does your reasoning task require reading visual elements, diagrams, or UI layouts?",
+        "if_yes": "Use Multimodal LLMs.",
+        "if_no": "Use cheaper, faster text-only decoder models."
+      }
+    ],
+    "linked_decision_guide": null
+  },
+  "small_efficient_llm": {
+    "label": "Small / Efficient LLM",
+    "description": "Compact parameter models optimized for local edge deployment and CPU architectures.",
+    "comparison_columns": ["interpretability", "training_speed", "memory_usage", "use_when"],
+    "decision_flow": [
+      {
+        "question": "Are you running models offline on-device or need sub-cent hosting budgets?",
+        "if_yes": "Use quantized Small/Efficient LLMs.",
+        "if_no": "Use API-hosted foundation models for advanced logical tasks."
+      }
+    ],
+    "linked_decision_guide": "rag-vs-fine-tuning"
+  },
+  "embedding_llm": {
+    "label": "Text Embedding Models",
+    "description": "Encoder transformers projecting semantic inputs into vector coordinates.",
+    "comparison_columns": ["interpretability", "training_speed", "memory_usage", "use_when"],
+    "decision_flow": [
+      {
+        "question": "Are you indexing documents for semantic search retrieval or RAG databases?",
+        "if_yes": "Use Text Embedding Models.",
+        "if_no": "Use decoder language models for text generation."
+      }
+    ],
+    "linked_decision_guide": "rag-vs-fine-tuning"
+  }
+}

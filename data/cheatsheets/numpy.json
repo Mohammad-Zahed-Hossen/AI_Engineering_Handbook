@@ -1,0 +1,1072 @@
+{
+  "id": "numpy",
+  "title": "NumPy Cheatsheet",
+  "name": "NumPy Cheatsheet",
+  "slug": "numpy-cheatsheet",
+  "description": "Canonical syntax recall for daily NumPy workflows in scientific computing, data preprocessing, and AI engineering.",
+  "package_reference": "numpy",
+  "verified_against": "2.5.0",
+  "created_at": "2026-07-06",
+  "updated_at": "2026-07-06",
+  "sources": [
+    "https://numpy.org/doc/stable/reference/arrays.ndarray.html",
+    "https://numpy.org/doc/stable/release.html",
+    "https://numpy.org/doc/stable/reference/routines.array-creation.html",
+    "https://numpy.org/doc/stable/reference/routines.ndarray.html",
+    "https://numpy.org/doc/stable/reference/routines.math.html",
+    "https://numpy.org/doc/stable/reference/routines.linalg.html",
+    "https://numpy.org/doc/stable/reference/random/generator.html",
+    "https://numpy.org/doc/stable/reference/routines.io.html"
+  ],
+  "related_content": [
+    {
+      "id": "numpy",
+      "type": "package",
+      "relationship_type": "references"
+    }
+  ],
+  "entries": [
+    {
+      "problem": "Import NumPy library",
+      "trigger": "At the start of every script using NumPy.",
+      "snippet": "import numpy as np",
+      "minimal_notes": "Standard convention is to alias numpy as `np`.",
+      "common_bug": "Using non-standard aliases makes your code less readable for team members.",
+      "docs_url": "https://numpy.org/doc/stable/reference/index.html"
+    },
+    {
+      "problem": "Configure printing options",
+      "trigger": "When debugging or inspecting large arrays to avoid float noise and wrap issues.",
+      "snippet": "import numpy as np\n\nnp.set_printoptions(precision=4, suppress=True, linewidth=120)",
+      "minimal_notes": "Modifies console representation globally. Does not change underlying data precision.",
+      "common_bug": "Forgetting to suppress scientific notation, making simple float comparisons hard to read.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.set_printoptions.html"
+    },
+    {
+      "problem": "Create array from Python sequences",
+      "trigger": "When you already have python lists, tuples, or nested sequences.",
+      "snippet": "import numpy as np\n\na = np.array([[1, 2, 3], [4, 5, 6]], dtype=np.int64)",
+      "minimal_notes": "Allocates a new ndarray. Always set `dtype` for numeric precision consistency.",
+      "common_bug": "Forgetting `dtype` can lead to platform-dependent integer sizes (int32 vs int64) or object arrays.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.array.html"
+    },
+    {
+      "problem": "Convert inputs with minimal copying",
+      "trigger": "When writing functions accepting array-likes without forcing copies.",
+      "snippet": "import numpy as np\n\nx = [1.0, 2.0, 3.0]\na = np.asarray(x, dtype=np.float64)",
+      "minimal_notes": "Reuses existing ndarray buffers directly if shape/dtype are already compatible.",
+      "common_bug": "Modifying the resulting array can mutate the source object if memory is shared.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.asarray.html"
+    },
+    {
+      "problem": "Clone array explicitly",
+      "trigger": "When you need an independent duplicate of an array before destructive mutations.",
+      "snippet": "import numpy as np\n\nx = np.arange(5)\ny = np.copy(x)",
+      "minimal_notes": "Allocates a new data buffer. Changes to `y` will never modify `x`.",
+      "common_bug": "Modifying a slice view thinking it is isolated, which silently alters the original array.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.copy.html"
+    },
+    {
+      "problem": "Initialize zeros and ones buffers",
+      "trigger": "When pre-allocating grids for counters, masks, or baseline scales.",
+      "snippet": "import numpy as np\n\nzeros_arr = np.zeros((2, 3), dtype=np.float32)\nones_arr = np.ones((2, 3), dtype=np.float32)",
+      "minimal_notes": "Defaults to float64 if `dtype` is omitted. Choose smallest compatible numeric type.",
+      "common_bug": "Using the default float64 dtype on large allocations when integers or float32 are sufficient.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.zeros.html"
+    },
+    {
+      "problem": "Initialize constant-filled arrays",
+      "trigger": "When padding dimensions or populating sentinel values.",
+      "snippet": "import numpy as np\n\na = np.full((2, 3), 7, dtype=np.int32)",
+      "minimal_notes": "More efficient than zeros/ones followed by multiplication or manual filling.",
+      "common_bug": "Unexpected casting or values truncated when the scalar constant cannot fit the target dtype.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.full.html"
+    },
+    {
+      "problem": "Allocate uninitialized memory",
+      "trigger": "When allocating output buffers where every element is immediately overwritten.",
+      "snippet": "import numpy as np\n\na = np.empty((2, 3), dtype=np.float64)\na.fill(0.0) # Or overwrite directly with inputs",
+      "minimal_notes": "Extremely fast allocation because it skips zero-fill, but contents are arbitrary garbage.",
+      "common_bug": "Reading values from `np.empty` before writing to them, which yields random garbage data.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.empty.html"
+    },
+    {
+      "problem": "Generate step-based integer ranges",
+      "trigger": "When generating coordinate indices or regular integer intervals.",
+      "snippet": "import numpy as np\n\na = np.arange(0, 10, 2)",
+      "minimal_notes": "The upper bound is exclusive. Use primarily for integer steps, not floating counts.",
+      "common_bug": "Using float steps in `arange`, leading to inconsistent shape sizes due to rounding errors.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.arange.html"
+    },
+    {
+      "problem": "Generate linear, logarithmic, and geometric scales",
+      "trigger": "When sweeping coefficients, learning rates, or plot grids across linear or ratio scales.",
+      "snippet": "import numpy as np\n\nlin = np.linspace(0.0, 1.0, num=5)\nlog = np.logspace(0, 3, num=4, base=10.0)\ngeom = np.geomspace(1, 1000, num=4)",
+      "minimal_notes": "Endpoints are included by default. Guaranteed to produce the exact number of elements requested.",
+      "common_bug": "Using `arange` for exact divisions, which frequently drops the final endpoint.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.linspace.html"
+    },
+    {
+      "problem": "Construct coordinate grids",
+      "trigger": "When evaluating multivariate functions over coordinate domains.",
+      "snippet": "import numpy as np\n\nx = np.linspace(-1, 1, 3)\ny = np.linspace(-2, 2, 4)\nX, Y = np.meshgrid(x, y, indexing=\"xy\")\ndense_X, dense_Y = np.mgrid[0:3, 0:4]\nopen_u, open_v = np.ogrid[0:3, 0:4]",
+      "minimal_notes": "`ogrid` is open/sparse (saves memory), `mgrid` is dense. Set `indexing='ij'` for matrix grids.",
+      "common_bug": "Forgetting that `meshgrid` uses Cartesian coordinates (`xy` order) by default, while shape is `(len(y), len(x))`.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.meshgrid.html"
+    },
+    {
+      "problem": "Build identity and diagonal structures",
+      "trigger": "When preparing covariance priors, basis arrays, or linear solvers.",
+      "snippet": "import numpy as np\n\neye = np.eye(4, 4, k=0, dtype=np.float64)\ndiag = np.diag([1, 2, 3])\next_diag = np.diag(diag)",
+      "minimal_notes": "`eye` supports rectangular layouts and offset diagonal alignments. `diag` extracts or builds diagonal arrays.",
+      "common_bug": "Using `np.identity` when you need rectangular structures or diagonal shift offsets.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.eye.html"
+    },
+    {
+      "problem": "Build triangular structures",
+      "trigger": "When building triangular masks for causal attention or covariance roots.",
+      "snippet": "import numpy as np\n\ntri_mask = np.tri(4, 4, k=0, dtype=np.int8)",
+      "minimal_notes": "Generates ones at and below the k-th diagonal, zeros elsewhere.",
+      "common_bug": "Passing wrong diagonal shift parameters `k`, shifting mask boundaries incorrectly.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.tri.html"
+    },
+    {
+      "problem": "Programmatic sequence creation",
+      "trigger": "When constructing grids via functions or reading generators/streams.",
+      "snippet": "import numpy as np\n\nfunc = np.fromfunction(lambda i, j: i + j, (3, 4), dtype=int)\nstream = np.fromiter((i*i for i in range(5)), dtype=np.int64, count=5)",
+      "minimal_notes": "`fromiter` avoids loading iteration into a python list first. Specify `count` for pre-allocation.",
+      "common_bug": "Omitting the `count` argument in `fromiter`, forcing multiple buffer reallocations.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.fromiter.html"
+    },
+    {
+      "problem": "Inspect array layout and size",
+      "trigger": "Before performing reshape transformations, reductions, or axis merges.",
+      "snippet": "import numpy as np\n\na = np.arange(12).reshape(3, 4)\nshape = a.shape\nndim = a.ndim\nsize = a.size",
+      "minimal_notes": "`shape` is the shape tuple, `ndim` is axis count, `size` is total elements.",
+      "common_bug": "Using `len(a)` on multi-dimensional arrays, which only reports size of the first axis.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.ndarray.shape.html"
+    },
+    {
+      "problem": "Inspect element details and footprint",
+      "trigger": "When estimating RAM limits, alignment limits, or storage sizes.",
+      "snippet": "import numpy as np\n\na = np.arange(3, dtype=np.int64)\ndt = a.dtype\nitem_bytes = a.itemsize\ntotal_bytes = a.nbytes",
+      "minimal_notes": "`nbytes` reports the memory allocation of the raw data buffer. It excludes object overhead.",
+      "common_bug": "Assuming `nbytes` accurately represents object array contents (which only counts reference bytes).",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.ndarray.nbytes.html"
+    },
+    {
+      "problem": "Inspect memory step layout",
+      "trigger": "When troubleshooting memory contiguity or passing buffers to C/CUDA backends.",
+      "snippet": "import numpy as np\n\na = np.arange(12).reshape(3, 4)\nstrides = a.strides\nflags = a.flags\nis_contiguous = flags['C_CONTIGUOUS']",
+      "minimal_notes": "Strides are the bytes required to move 1 step along each axis. Transposed views change strides.",
+      "common_bug": "Assuming a slice or transposed array remains contiguous in memory.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.ndarray.strides.html"
+    },
+    {
+      "problem": "Expose real, imaginary, and transpose views",
+      "trigger": "When quickly swapping layout axes or filtering complex-number matrices.",
+      "snippet": "import numpy as np\n\na = np.array([1 + 2j, 3 + 4j])\nreal_part = a.real\nimag_part = a.imag\ntransposed = a.T",
+      "minimal_notes": "All properties return views. Modifying real or imaginary slices modifies the parent array.",
+      "common_bug": "Attempting to assign complex values to `.real`, which silently discards the imaginary inputs.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.ndarray.T.html"
+    },
+    {
+      "problem": "Cast and promote dtypes",
+      "trigger": "When quantizing inputs, promoting precision, or converting data types.",
+      "snippet": "import numpy as np\n\na = np.array([1, 2, 3], dtype=np.int32)\nb = a.astype(np.float32, copy=False)\npromoted = np.result_type(a, np.float64)",
+      "minimal_notes": "Pass `copy=False` to `astype` to avoid allocations when type matches. `result_type` predicts promotion.",
+      "common_bug": "Silent casting that results in value truncation or severe precision degradation.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.ndarray.astype.html"
+    },
+    {
+      "problem": "Slice contiguous array ranges",
+      "trigger": "When slicing arrays across slices, rows, or columns.",
+      "snippet": "import numpy as np\n\na = np.arange(12).reshape(3, 4)\nsub = a[1:, :2]",
+      "minimal_notes": "Basic slicing creates a view. Shared memory is updated if either is mutated.",
+      "common_bug": "Forgetting that basic slices share memory with parent arrays, leading to side effects.",
+      "docs_url": "https://numpy.org/doc/stable/user/basics.indexing.html"
+    },
+    {
+      "problem": "Gather entries via advanced integer indexing",
+      "trigger": "When collecting non-contiguous coordinates or picking specific indexes.",
+      "snippet": "import numpy as np\n\na = np.arange(12).reshape(3, 4)\nrow_idx = [0, 2]\ncol_idx = [1, 3]\npicked = a[row_idx, col_idx]",
+      "minimal_notes": "Advanced/Fancy indexing always extracts a copy, never a view.",
+      "common_bug": "Expecting advanced indexing to return a view and attempting to assign updates to it.",
+      "docs_url": "https://numpy.org/doc/stable/user/basics.indexing.html#advanced-indexing"
+    },
+    {
+      "problem": "Filter elements with boolean masks",
+      "trigger": "When extracting elements that meet a conditional rule.",
+      "snippet": "import numpy as np\n\na = np.arange(10)\nmask = a % 2 == 0\neven = a[mask]",
+      "minimal_notes": "Boolean indexing returns a flat 1D array of matched values. Always a copy.",
+      "common_bug": "Passing logical conditions with wrong lengths or incompatible dimensions.",
+      "docs_url": "https://numpy.org/doc/stable/user/basics.indexing.html#boolean-array-indexing"
+    },
+    {
+      "problem": "Add singleton dimensions",
+      "trigger": "When preparing arrays for broadcasting alignment (e.g. extending rank).",
+      "snippet": "import numpy as np\n\na = np.arange(3)\ncol_vec = a[:, np.newaxis]\nrow_vec = a[np.newaxis, :]",
+      "minimal_notes": "`np.newaxis` is an alias for `None` and inserts a dimension of length 1.",
+      "common_bug": "Using manual tile operations when simple singleton axes and broadcasting would work.",
+      "docs_url": "https://numpy.org/doc/stable/user/basics.indexing.html"
+    },
+    {
+      "problem": "Select elements with ellipsis in rank-agnostic code",
+      "trigger": "When slicing arrays with varying, higher, or dynamic ranks.",
+      "snippet": "import numpy as np\n\na = np.zeros((2, 3, 4, 5))\nsub = a[..., 0] # Same as a[:, :, :, 0]",
+      "minimal_notes": "Only a single ellipsis `...` can be used in an indexing expression.",
+      "common_bug": "Hardcoding exact axis counts in slices, causing failures on rank changes.",
+      "docs_url": "https://numpy.org/doc/stable/user/basics.indexing.html"
+    },
+    {
+      "problem": "Locate indices of condition-matched elements",
+      "trigger": "When you need coordinates or indices of matched items rather than boolean masks.",
+      "snippet": "import numpy as np\n\na = np.array([[0, 1], [2, 0]])\nnz_idx = np.nonzero(a) # Returns tuple of coordinate arrays\ncoords = np.argwhere(a) # Returns list of coordinates",
+      "minimal_notes": "`nonzero` returns coordinates as index arrays per dimension. `argwhere` returns coordinates grouped by elements.",
+      "common_bug": "Confusing the tuple return format of `nonzero` with structured coordinate matrices.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.nonzero.html"
+    },
+    {
+      "problem": "Indexed gather, scatter, and conditional extraction",
+      "trigger": "When performing axis-aware indexing, conditional array selection, or multi-choice picking.",
+      "snippet": "import numpy as np\n\na = np.arange(12).reshape(3, 4)\ntaken = np.take(a, [0, 2], axis=0)\ncompressed = np.compress([True, False, True], a, axis=0)\nchoices = np.choose([0, 1, 0], [10, 20, 30])",
+      "minimal_notes": "`take` is faster than fancy indexing along a single axis. `compress` filters elements by boolean flags.",
+      "common_bug": "Using indices that exceed dimensions or wrong mask lengths for targeted axes.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.take.html"
+    },
+    {
+      "problem": "Reshape and resize array geometry",
+      "trigger": "When transforming layout structure without mutating underlying values.",
+      "snippet": "import numpy as np\n\na = np.arange(6)\nb = a.reshape(2, 3)\na.resize((2, 3), refcheck=True)",
+      "minimal_notes": "`reshape` returns a view when possible. `resize` modifies memory layout in-place.",
+      "common_bug": "Calling `resize` in-place on arrays that share memory buffers with other variables (raises ValueError).",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.reshape.html"
+    },
+    {
+      "problem": "Flatten arrays to views or copies",
+      "trigger": "When converting multi-dimensional arrays to 1D layouts.",
+      "snippet": "import numpy as np\n\na = np.array([[1, 2], [3, 4]])\nflat_c = a.flatten() # Copy\nflat_v = a.ravel() # View when possible",
+      "minimal_notes": "`ravel` is faster than `flatten` because it avoids memory copies whenever possible.",
+      "common_bug": "Modifying output from `ravel()` expecting it to be independent, which mutates the parent array.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.ravel.html"
+    },
+    {
+      "problem": "Permute and swap axes",
+      "trigger": "When rearranging dimension order or transposing coordinates.",
+      "snippet": "import numpy as np\n\na = np.zeros((2, 3, 4))\npermuted = np.transpose(a, (1, 0, 2))\nswapped = np.swapaxes(a, 0, 2)\nmoved = np.moveaxis(a, 0, -1)",
+      "minimal_notes": "These operations permute the strides and return views without copying memory.",
+      "common_bug": "Assuming that transposing elements clones the buffer, leading to unexpected shared mutations.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.transpose.html"
+    },
+    {
+      "problem": "Remove singleton dimensions",
+      "trigger": "When removing dimensions of length 1 (e.g. batch size of 1).",
+      "snippet": "import numpy as np\n\na = np.zeros((1, 3, 1))\nsqueezed = np.squeeze(a, axis=0)",
+      "minimal_notes": "If `axis` is specified, only that dimension is dropped. Otherwise, all size-1 axes are removed.",
+      "common_bug": "Squeezing without specifying an axis, which can drop dimensions intended for broadcasting.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.squeeze.html"
+    },
+    {
+      "problem": "Stack arrays along existing or new axes",
+      "trigger": "When merging batches, lists of features, or grid arrays.",
+      "snippet": "import numpy as np\n\na = np.array([1, 2])\nb = np.array([3, 4])\nnew_axis = np.stack([a, b], axis=0)\nexist_axis = np.concatenate([a, b], axis=0)\nblock_grid = np.block([[a], [b]])",
+      "minimal_notes": "`np.block` builds structured grids recursively. `stack` creates a new axis; `concatenate` joins on existing.",
+      "common_bug": "Mismatched dimensions or array shapes during concatenation.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.stack.html"
+    },
+    {
+      "problem": "Split arrays into sub-arrays",
+      "trigger": "When partitioning batches or tensors into smaller splits.",
+      "snippet": "import numpy as np\n\na = np.arange(8)\nequal_splits = np.split(a, 4)\nunequal_splits = np.array_split(a, 3)",
+      "minimal_notes": "`split` raises a ValueError if elements cannot divide equally. `array_split` handles unequal divisions.",
+      "common_bug": "Using `split` on variable batches, causing crashes if batch size isn't exactly divisible.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.split.html"
+    },
+    {
+      "problem": "Add padding to array boundaries",
+      "trigger": "When padding array edges with constants, zeros, or reflective bounds.",
+      "snippet": "import numpy as np\n\na = np.array([1, 2, 3])\npadded = np.pad(a, (1, 2), mode=\"constant\", constant_values=0)",
+      "minimal_notes": "Supports edge replication, reflection, linear ramp, and custom callbacks.",
+      "common_bug": "Incorrect tuple format for padding widths when working with higher-dimensional arrays.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.pad.html"
+    },
+    {
+      "problem": "Broadcast arithmetic across incompatible dimensions",
+      "trigger": "When computing elementwise operations on arrays with differing dimensions without copies.",
+      "snippet": "import numpy as np\n\na = np.arange(3)[:, np.newaxis]\nb = np.array([10, 20, 30])\nc = a + b",
+      "minimal_notes": "Dimensions are compared from right to left. They are compatible if equal, or if one of them is 1.",
+      "common_bug": "Mismatched dimensions that fail broadcasting constraints, raising ValueError.",
+      "docs_url": "https://numpy.org/doc/stable/user/basics.broadcasting.html"
+    },
+    {
+      "problem": "Construct broadcasted read-only views",
+      "trigger": "When expanding smaller arrays to larger target layouts without memory copies.",
+      "snippet": "import numpy as np\n\na = np.array([1, 2, 3])\nb = np.broadcast_to(a, (4, 3))",
+      "minimal_notes": "Returns a read-only view. The strides are zeroed out on expanded axes.",
+      "common_bug": "Writing to or mutating the resulting broadcasted array (which is read-only).",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.broadcast_to.html"
+    },
+    {
+      "problem": "Normalize shapes before vectorized math",
+      "trigger": "When matching and verifying broadcasting shapes of multiple inputs before math execution.",
+      "snippet": "import numpy as np\n\na = np.array([1, 2, 3])\nb = np.array([[10], [20]])\nx, y = np.broadcast_arrays(a, b)",
+      "minimal_notes": "Returns read-only broadcasted views for each input array.",
+      "common_bug": "Assuming that `broadcast_arrays` creates copies that are safe to mutate independently.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.broadcast_arrays.html"
+    },
+    {
+      "problem": "Perform vectorized arithmetic with Ufuncs",
+      "trigger": "When running fast, elementwise math operations on arrays.",
+      "snippet": "import numpy as np\n\na = np.array([1.0, 2.0, 3.0])\nb = np.array([4.0, 5.0, 6.0])\nsum_val = np.add(a, b)\ndiv_val = np.divide(a, b)\npow_val = np.power(a, 2.0)",
+      "minimal_notes": "NumPy ufuncs run in compiled C. Avoid using python math functions in loops.",
+      "common_bug": "Integer overflow or silent value clipping when computing on limited dtypes (like int8).",
+      "docs_url": "https://numpy.org/doc/stable/reference/ufuncs.html"
+    },
+    {
+      "problem": "Compare elements and build logical masks",
+      "trigger": "When constructing relational masks for element selection.",
+      "snippet": "import numpy as np\n\na = np.array([1, 2, 3, 4])\nmask = np.greater(a, 2) # Equivalent to a > 2",
+      "minimal_notes": "NumPy comparison operators call comparison ufuncs (`np.greater`, `np.equal`, etc.) underneath.",
+      "common_bug": "Using python `and` or `or` on arrays, which raises ambiguity errors.",
+      "docs_url": "https://numpy.org/doc/stable/reference/ufuncs.html#comparison-functions"
+    },
+    {
+      "problem": "Combine conditions elementwise",
+      "trigger": "When evaluating multiple boolean masks to build composite criteria.",
+      "snippet": "import numpy as np\n\na = np.array([1, 2, 3, 4])\nmask = np.logical_and(a > 1, a < 4)",
+      "minimal_notes": "Logical ufuncs (`np.logical_and`, `np.logical_or`, `np.logical_not`) evaluate elementwise.",
+      "common_bug": "Using `and` / `or` in multi-conditional array filters instead of logical ufuncs or operators like `&` / `|`.",
+      "docs_url": "https://numpy.org/doc/stable/reference/ufuncs.html#logical-functions"
+    },
+    {
+      "problem": "Apply trigonometric functions",
+      "trigger": "When calculating geometry, periodic trends, or spatial orientations.",
+      "snippet": "import numpy as np\n\nx = np.array([0.0, np.pi/2, np.pi])\ns = np.sin(x)\nc = np.cos(x)",
+      "minimal_notes": "All trigonometric functions expect input arguments to be in radians.",
+      "common_bug": "Passing angles in degrees, which leads to completely wrong outputs.",
+      "docs_url": "https://numpy.org/doc/stable/reference/ufuncs.html#trigonometric-functions"
+    },
+    {
+      "problem": "Apply exponential and logarithmic scales",
+      "trigger": "When transforming numbers between log and linear scales.",
+      "snippet": "import numpy as np\n\nx = np.array([1.0, 2.0, 10.0])\ny = np.exp(x)\nz = np.log(x)\nlog_eps = np.log1p(x) # Precise for small float values",
+      "minimal_notes": "`log` computes natural log. `log1p` computes log(1+x), which is stable for inputs near 0.",
+      "common_bug": "Passing zero or negative numbers to `log`, resulting in `-inf` or `nan` outputs.",
+      "docs_url": "https://numpy.org/doc/stable/reference/ufuncs.html#exponential-and-logarithmic-functions"
+    },
+    {
+      "problem": "Clip values and round bounds",
+      "trigger": "When clipping outliers or rounding values to integers or decimals.",
+      "snippet": "import numpy as np\n\nx = np.array([1.25, 2.75, -3.5])\nclipped = np.clip(x, -1.0, 2.0)\nrounded = np.round(x, decimals=1)\nfloored = np.floor(x)",
+      "minimal_notes": "`clip` sets lower/upper bounds. `round` returns floats rounded to specified decimal positions.",
+      "common_bug": "Clipping after integer cast, hiding values that already overflowed the dtype.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.clip.html"
+    },
+    {
+      "problem": "Calculate magnitude, sign, and square roots",
+      "trigger": "When processing absolute values or solving Euclidean metrics.",
+      "snippet": "import numpy as np\n\nx = np.array([-3, 0, 4])\nsigns = np.sign(x)\nabsolutes = np.abs(x)\nroots = np.sqrt(absolutes)",
+      "minimal_notes": "These are basic preprocessing transforms. Both `abs` and `sqrt` support complex numbers.",
+      "common_bug": "Evaluating `sqrt` on negative values in real arrays, generating `nan` values.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.sqrt.html"
+    },
+    {
+      "problem": "Compute sum and product totals",
+      "trigger": "When sum-accumulating variables or multiplying probabilities.",
+      "snippet": "import numpy as np\n\na = np.arange(6).reshape(2, 3)\ntotal_sum = np.sum(a, axis=1, keepdims=True)\ntotal_prod = np.prod(a, axis=1)",
+      "minimal_notes": "Use `keepdims=True` to maintain axis compatibility for broadcasting. Prevent integer overflow.",
+      "common_bug": "Integer overflow in `prod` or `sum` when compiling values in limited integer types.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.sum.html"
+    },
+    {
+      "problem": "Measure central tendency",
+      "trigger": "When calculating averages or robust outlier-resistant medians.",
+      "snippet": "import numpy as np\n\na = np.array([1.0, 2.0, 100.0])\nmean_val = np.mean(a)\nmed_val = np.median(a)",
+      "minimal_notes": "`median` handles sorting internally. Averages are best computed on floating-point dtypes.",
+      "common_bug": "Averaging integer-filled arrays and losing precision when integer division rules apply.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.mean.html"
+    },
+    {
+      "problem": "Measure statistical dispersion",
+      "trigger": "When standardizing variables or measuring spreads.",
+      "snippet": "import numpy as np\n\na = np.array([1.0, 2.0, 3.0])\nstd_val = np.std(a, ddof=1) # Sample standard dev\nvar_val = np.var(a, ddof=1) # Sample variance",
+      "minimal_notes": "NumPy default is population variance (`ddof=0`). Pass `ddof=1` for sample variance.",
+      "common_bug": "Forgetting that standard variance defaults to population, leading to discrepancies in model statistics.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.std.html"
+    },
+    {
+      "problem": "Locate minimum and maximum values and indices",
+      "trigger": "When locating extreme values or finding argmax indices.",
+      "snippet": "import numpy as np\n\na = np.array([3, 1, 9, 2])\nmin_val = np.min(a)\nargmax_idx = np.argmax(a)",
+      "minimal_notes": "`argmax`/`argmin` return flat indices unless an `axis` argument is provided.",
+      "common_bug": "Using `argmax` on multidimensional arrays without specifying an axis, returning a flat index.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.argmax.html"
+    },
+    {
+      "problem": "Verify conditions across elements",
+      "trigger": "When evaluating validations or counting true matches in masks.",
+      "snippet": "import numpy as np\n\na = np.array([True, False, True])\nany_true = np.any(a)\nall_true = np.all(a)\nnonzeros = np.count_nonzero(a)",
+      "minimal_notes": "NumPy reductions are significantly faster than python's standard loops or list comprehensions.",
+      "common_bug": "Using native python loops to sum boolean lists instead of using `count_nonzero` or `np.sum`.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.any.html"
+    },
+    {
+      "problem": "Compute robust quantiles and percentiles",
+      "trigger": "When analyzing distribution ranges or establishing outlier boundaries.",
+      "snippet": "import numpy as np\n\na = np.array([1, 2, 3, 4, 5])\np90 = np.percentile(a, 90)\nq90 = np.quantile(a, 0.9)",
+      "minimal_notes": "`percentile` works on scale `[0, 100]`, while `quantile` works on scale `[0.0, 1.0]`.",
+      "common_bug": "Confusing percentile and quantile scales, leading to out-of-bounds metrics.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.percentile.html"
+    },
+    {
+      "problem": "Sort array values and retrieve sorted indices",
+      "trigger": "When ranking scores or obtaining sort permutations.",
+      "snippet": "import numpy as np\n\na = np.array([3, 1, 2])\nsorted_a = np.sort(a)\nindices = np.argsort(a)",
+      "minimal_notes": "`np.sort` returns a sorted copy. Use `a.sort()` for in-place sorting. `argsort` is useful for alignment.",
+      "common_bug": "Expecting `a.sort()` to return a value instead of sorting in-place.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.sort.html"
+    },
+    {
+      "problem": "Partition arrays around a threshold pivot",
+      "trigger": "When extracting the top-K elements without sorting the entire array.",
+      "snippet": "import numpy as np\n\na = np.array([3, 1, 4, 2, 5])\npartitioned = np.partition(a, 2)",
+      "minimal_notes": "Guarantees that the element at the pivot index is in its sorted position, partition is faster than full sort.",
+      "common_bug": "Assuming the whole array is sorted. The partition only guarantees ordering relative to the pivot.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.partition.html"
+    },
+    {
+      "problem": "Find insertion indices in sorted arrays",
+      "trigger": "When locating bins, resolving cut-points, or performing binary search.",
+      "snippet": "import numpy as np\n\na = np.array([1, 3, 5, 7])\npos = np.searchsorted(a, [0, 4, 8])",
+      "minimal_notes": "Requires the input array to be sorted. Returns index positions that preserve sorted order.",
+      "common_bug": "Calling `searchsorted` on an unsorted array, returning invalid boundaries.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.searchsorted.html"
+    },
+    {
+      "problem": "Deduplicate values and count occurrences",
+      "trigger": "When extracting unique labels or calculating histograms.",
+      "snippet": "import numpy as np\n\na = np.array([3, 1, 3, 2])\nvals, counts = np.unique(a, return_counts=True)",
+      "minimal_notes": "Returns unique values sorted. Can also return inverse maps for reconstruction.",
+      "common_bug": "Assuming `unique` preserves the order of elements (it always sorts them).",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.unique.html"
+    },
+    {
+      "problem": "Vectorized set membership checks",
+      "trigger": "When checking element membership against a reference list.",
+      "snippet": "import numpy as np\n\na = np.array([1, 2, 3, 4])\nmask = np.isin(a, [2, 4])",
+      "minimal_notes": "Highly optimized replacement for python containment tests.",
+      "common_bug": "Using python `in` on arrays (e.g. `x in a`), which tests structural containment rather than elementwise matches.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.isin.html"
+    },
+    {
+      "problem": "Perform 1D set operations",
+      "trigger": "When computing intersections, unions, or differences on 1D arrays.",
+      "snippet": "import numpy as np\n\na = np.array([1, 2, 3])\nb = np.array([2, 3, 4])\ninter = np.intersect1d(a, b)\nunion = np.union1d(a, b)\ndiff = np.setdiff1d(a, b)",
+      "minimal_notes": "Set operations automatically flatten inputs and return unique sorted outputs.",
+      "common_bug": "Expecting set operations to preserve duplicates or multi-dimensional structures.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.intersect1d.html"
+    },
+    {
+      "problem": "Matrix multiplication",
+      "trigger": "When computing linear projections, transformations, or layer calculations.",
+      "snippet": "import numpy as np\n\na = np.array([[1, 2], [3, 4]])\nb = np.array([[5, 6], [7, 8]])\nout_matmul = a @ b\nout_dot = np.dot(a, b)",
+      "minimal_notes": "`@` maps to `np.matmul`. Avoid legacy `np.matrix` structures; use standard ndarrays.",
+      "common_bug": "Using `*` for matrix multiplication (which does elementwise multiplication instead).",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.matmul.html"
+    },
+    {
+      "problem": "Vector algebra operations",
+      "trigger": "When computing projections, directions, or pairwise interactions.",
+      "snippet": "import numpy as np\n\na = np.array([1, 2, 3])\nb = np.array([4, 5, 6])\ncross_p = np.cross(a, b)\nouter_p = np.outer(a, b)\ninner_p = np.inner(a, b)",
+      "minimal_notes": "`outer` yields matrix coordinate combinations. `inner` calculates projection maps.",
+      "common_bug": "Using `outer` on extremely large dimensions, leading to out-of-memory errors.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.outer.html"
+    },
+    {
+      "problem": "Multi-axis tensor contractions",
+      "trigger": "When writing compact multi-axis reductions or contracts.",
+      "snippet": "import numpy as np\n\na = np.arange(6).reshape(2, 3)\nb = np.arange(6).reshape(3, 2)\nc = np.einsum(\"ij,jk->ik\", a, b)",
+      "minimal_notes": "`einsum` avoids multiple transpose/reshape allocations and is highly optimized.",
+      "common_bug": "Using incorrect subscripts, causing mismatch or logic errors in contraction paths.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.einsum.html"
+    },
+    {
+      "problem": "Compute matrix norm and properties",
+      "trigger": "When calculating magnitude, ranks, or diagnostics on matrices.",
+      "snippet": "import numpy as np\n\na = np.array([[1.0, 2.0], [3.0, 4.0]])\nnorm_val = np.linalg.norm(a)\ndet_val = np.linalg.det(a)\nrank_val = np.linalg.matrix_rank(a)",
+      "minimal_notes": "`det` can be unstable for high ranks. Use `matrix_rank` to detect singular systems.",
+      "common_bug": "Relying on determinant of large matrices, leading to overflow or numerical noise.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.norm.html"
+    },
+    {
+      "problem": "Solve linear systems and matrix inversion",
+      "trigger": "When solving Ax = b or computing inverses.",
+      "snippet": "import numpy as np\n\nA = np.array([[3.0, 1.0], [1.0, 2.0]])\nb = np.array([9.0, 8.0])\nx = np.linalg.solve(A, b)\nA_inv = np.linalg.inv(A)\nA_pinv = np.linalg.pinv(A)",
+      "minimal_notes": "Always prefer `solve` over `inv(A) @ b` for speed and stability. Use `pinv` for singular systems.",
+      "common_bug": "Calling `inv` on singular systems, throwing a LinAlgError.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.solve.html"
+    },
+    {
+      "problem": "Eigenvalue and eigenvector decomposition",
+      "trigger": "When extracting spectrums or principal directions.",
+      "snippet": "import numpy as np\n\na = np.array([[2.0, 1.0], [1.0, 3.0]])\nvals, vecs = np.linalg.eig(a)\nh_vals, h_vecs = np.linalg.eigh(a) # Symmetric/Hermitian",
+      "minimal_notes": "Use `eigh` for symmetric/Hermitian matrices; it is faster and mathematically stable.",
+      "common_bug": "Forgetting that eigenvectors are column-wise (retrieve with `vecs[:, i]`).",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.eig.html"
+    },
+    {
+      "problem": "Singular Value Decomposition (SVD)",
+      "trigger": "When performing principal component reductions or low-rank updates.",
+      "snippet": "import numpy as np\n\na = np.array([[1.0, 2.0], [3.0, 4.0]])\nU, S, Vh = np.linalg.svd(a)",
+      "minimal_notes": "Decomposes `a` to `U @ diag(S) @ Vh`. `Vh` is returned transposed.",
+      "common_bug": "Reconstructing using `U @ S @ Vh` directly without converting S to a diagonal matrix.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.svd.html"
+    },
+    {
+      "problem": "Cholesky and QR decompositions",
+      "trigger": "When factorizing systems into triangular roots or orthogonal representations.",
+      "snippet": "import numpy as np\n\na = np.array([[4.0, 2.0], [2.0, 3.0]])\nL = np.linalg.cholesky(a)\nQ, R = np.linalg.qr(a)",
+      "minimal_notes": "`cholesky` requires symmetric positive-definite inputs. `qr` is general.",
+      "common_bug": "Calling `cholesky` on systems with zero or negative eigenvalues.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.cholesky.html"
+    },
+    {
+      "problem": "Create modern random generator",
+      "trigger": "At the start of workflows requiring random generations.",
+      "snippet": "import numpy as np\n\nrng = np.random.default_rng(seed=42)",
+      "minimal_notes": "Always use the Generator API (`default_rng`) over legacy `np.random.*` global states.",
+      "common_bug": "Seeding the global `np.random.seed()` which affects concurrent libraries.",
+      "docs_url": "https://numpy.org/doc/stable/reference/random/default_rng.html"
+    },
+    {
+      "problem": "Draw uniform and normal continuous samples",
+      "trigger": "When initializing weights or generating continuous noise.",
+      "snippet": "import numpy as np\n\nrng = np.random.default_rng(seed=42)\nuni = rng.uniform(low=0.0, high=1.0, size=(2, 3))\nnorm = rng.normal(loc=0.0, scale=1.0, size=5)",
+      "minimal_notes": "`scale` parameter is standard deviation, not variance.",
+      "common_bug": "Passing variance instead of standard deviation to scale in normal distributions.",
+      "docs_url": "https://numpy.org/doc/stable/reference/random/generated/numpy.random.Generator.normal.html"
+    },
+    {
+      "problem": "Draw random integers",
+      "trigger": "When sampling discrete integer indices or classes.",
+      "snippet": "import numpy as np\n\nrng = np.random.default_rng(seed=42)\nx = rng.integers(low=0, high=10, size=5, endpoint=False)",
+      "minimal_notes": "The upper bound `high` is exclusive by default unless `endpoint=True` is set.",
+      "common_bug": "Forgetting that the upper boundary is exclusive, causing index bounds bugs.",
+      "docs_url": "https://numpy.org/doc/stable/reference/random/generated/numpy.random.Generator.integers.html"
+    },
+    {
+      "problem": "Categorical sampling and shuffles",
+      "trigger": "When shuffling datasets or selecting from discrete populations.",
+      "snippet": "import numpy as np\n\nrng = np.random.default_rng(seed=42)\nsampled = rng.choice([10, 20, 30], size=5, replace=True, p=[0.2, 0.3, 0.5])\na = np.arange(5)\nrng.shuffle(a) # In-place\nperm = rng.permutation(5) # Returns copy",
+      "minimal_notes": "`shuffle` mutates the input array. `permutation` returns a permuted copy.",
+      "common_bug": "Assuming `shuffle` returns the shuffled array (it mutates in place and returns None).",
+      "docs_url": "https://numpy.org/doc/stable/reference/random/generated/numpy.random.Generator.choice.html"
+    },
+    {
+      "problem": "Simulate discrete distributions",
+      "trigger": "When modeling event counts, success rates, or trial choices.",
+      "snippet": "import numpy as np\n\nrng = np.random.default_rng(seed=42)\nmulti = rng.multinomial(n=10, pvals=[0.2, 0.3, 0.5])\nbinom = rng.binomial(n=10, p=0.3, size=5)\npoiss = rng.poisson(lam=3.0, size=5)",
+      "minimal_notes": "`pvals` must sum to 1.0. `lam` represents the average event rate.",
+      "common_bug": "Passing negative lambda values to Poisson or probabilities out of range [0,1] to Binomial.",
+      "docs_url": "https://numpy.org/doc/stable/reference/random/generated/numpy.random.Generator.poisson.html"
+    },
+    {
+      "problem": "Detect NaN and infinite values",
+      "trigger": "When sanitizing inputs and identifying missing or overflowing entries.",
+      "snippet": "import numpy as np\n\na = np.array([1.0, np.nan, np.inf])\nis_nan = np.isnan(a)\nis_inf = np.isinf(a)\nis_finite = np.isfinite(a)",
+      "minimal_notes": "`isfinite` returns True for valid real numbers (excluding NaN and Inf).",
+      "common_bug": "Comparing elements using `a == np.nan` (which always yields False). Use `np.isnan(a)`.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.isnan.html"
+    },
+    {
+      "problem": "Sanitize and replace invalid values",
+      "trigger": "When converting NaN and infinite values to default boundaries.",
+      "snippet": "import numpy as np\n\na = np.array([1.0, np.nan, np.inf, -np.inf])\nclean = np.nan_to_num(a, nan=0.0, posinf=999.0, neginf=-999.0)",
+      "minimal_notes": "Defaults to zero for nan, large numbers for inf, unless custom targets are set.",
+      "common_bug": "Relying on default replacement boundaries when specific defaults are required.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.nan_to_num.html"
+    },
+    {
+      "problem": "Perform statistics and reductions ignoring NaNs",
+      "trigger": "When averaging columns or doing reductions on incomplete records.",
+      "snippet": "import numpy as np\n\na = np.array([1.0, np.nan, 3.0])\nmean_val = np.nanmean(a)\nmed_val = np.nanmedian(a)\nstd_val = np.nanstd(a)\npct_val = np.nanpercentile(a, 95)",
+      "minimal_notes": "Standard aggregation functions return `nan` when a single `nan` is present in the data.",
+      "common_bug": "Propagating NaNs throughout operations because standard `mean()` was called on dirty data.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.nanmean.html"
+    },
+    {
+      "problem": "Compare arrays elementwise and with tolerance",
+      "trigger": "When performing assertion statements or matching floats inside tests.",
+      "snippet": "import numpy as np\n\na = np.array([1.0, 2.0, 3.0])\nb = np.array([1.00001, 2.0, 3.0])\nexact = np.array_equal(a, b)\nclose = np.allclose(a, b, rtol=1e-5, atol=1e-8)\nmask = np.isclose(a, b)",
+      "minimal_notes": "Always use `allclose` or `isclose` for float comparisons to ignore machine noise.",
+      "common_bug": "Using `==` or `array_equal` on floats, which easily triggers test failures due to epsilon noise.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.allclose.html"
+    },
+    {
+      "problem": "Save and load single arrays in binary format",
+      "trigger": "When storing intermediate arrays in space-efficient format.",
+      "snippet": "import numpy as np\n\na = np.arange(5)\np.save(\"array.npy\", a) # Note typo in python code snippet would be np.save. Snippet follows: \nnp.save(\"array.npy\", a)\nb = np.load(\"array.npy\", allow_pickle=False)",
+      "minimal_notes": "`.npy` is space-efficient and stores data structure details. Disable pickles for safety.",
+      "common_bug": "Allowing pickling (`allow_pickle=True`) when loading files from untrusted sources.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.save.html"
+    },
+    {
+      "problem": "Save multiple arrays to zipped archives",
+      "trigger": "When grouping train/val datasets into a single file bundle.",
+      "snippet": "import numpy as np\n\nX = np.arange(3)\ny = np.arange(4)\nnp.savez(\"dataset.npz\", X=X, y=y)\nnp.savez_compressed(\"dataset_comp.npz\", X=X, y=y)",
+      "minimal_notes": "`savez_compressed` applies zip compression to make files smaller on disk.",
+      "common_bug": "Forgetting to close the archive handle after loading multiple arrays from `.npz`.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.savez.html"
+    },
+    {
+      "problem": "Save and load text-based formats",
+      "trigger": "When writing data to CSV or loading plain-text tables.",
+      "snippet": "import numpy as np\n\na = np.arange(6).reshape(2, 3)\nnp.savetxt(\"data.csv\", a, delimiter=\",\", fmt=\"%.6f\")\nb = np.loadtxt(\"data.csv\", delimiter=\",\")",
+      "minimal_notes": "Use `fmt` in `savetxt` to limit decimal print noise. Text formats are slow for large arrays.",
+      "common_bug": "Loading files with string labels using `loadtxt` (which requires `genfromtxt` instead).",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.loadtxt.html"
+    },
+    {
+      "problem": "Read and write raw unformatted binary files",
+      "trigger": "When interfacing directly with raw system files or C-style binary dumps.",
+      "snippet": "import numpy as np\n\na = np.arange(6, dtype=np.float32)\na.tofile(\"data.bin\")\nb = np.fromfile(\"data.bin\", dtype=np.float32)",
+      "minimal_notes": "Discards shape and type details. You must set shape manually after loading.",
+      "common_bug": "Reading raw binary dumps with wrong dtype specifications, scrambling values.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.fromfile.html"
+    },
+    {
+      "problem": "Create out-of-core memory-mapped arrays",
+      "trigger": "When reading or updating massive files that exceed standard RAM capacities.",
+      "snippet": "import numpy as np\n\nmm = np.memmap(\"large.dat\", dtype=np.float32, mode=\"w+\", shape=(1000, 1000))\nmm[0, 0] = 1.0\nmm.flush()",
+      "minimal_notes": "Loads array slices lazily. Always call `flush()` to commit updates to physical disk.",
+      "common_bug": "Modifying memory-mapped cells and forgetting to call `flush()`, losing mutations.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.memmap.html"
+    },
+    {
+      "problem": "Manage memory sharing (Views vs Copies)",
+      "trigger": "When verifying if slice operations share underlying memory slots.",
+      "snippet": "import numpy as np\n\na = np.arange(5)\nv = a[:3]\nc = a.copy()\nshares = np.shares_memory(a, v)\nmay_share = np.may_share_memory(a, v)",
+      "minimal_notes": "Modifying views updates parents. `shares_memory` runs a rigorous address lookup.",
+      "common_bug": "Mutating shared memory views thinking they are safe copies, corrupting other variables.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.shares_memory.html"
+    },
+    {
+      "problem": "Control memory alignment and contiguity",
+      "trigger": "When aligning array layout blocks for fast compiler or GPU processing.",
+      "snippet": "import numpy as np\n\na = np.arange(12).reshape(3, 4).T\nc_arr = np.ascontiguousarray(a, dtype=np.float32)\nf_arr = np.asfortranarray(a)",
+      "minimal_notes": "`ascontiguousarray` enforces row-major sequence order. Fast for C integration.",
+      "common_bug": "Passing transposed stride arrays to external library functions, causing huge lag.",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.ascontiguousarray.html"
+    },
+    {
+      "problem": "Vectorize repeating arrays and tiles",
+      "trigger": "When replicating arrays along axes for block or element expansions.",
+      "snippet": "import numpy as np\n\na = np.array([1, 2, 3])\nrep = np.repeat(a, 3)\ntile = np.tile(a, 3)",
+      "minimal_notes": "`repeat` operates elementwise, `tile` operates layout-wise. Prefer broadcasting when possible.",
+      "common_bug": "Using `tile` to match shapes, which allocates redundant buffers (broadcasting is free).",
+      "docs_url": "https://numpy.org/doc/stable/reference/generated/numpy.tile.html"
+    }
+  ],
+  "quick_references": [
+    {
+      "title": "Common array constructors",
+      "headers": [
+        "Task",
+        "API",
+        "Typical use"
+      ],
+      "rows": [
+        [
+          "Create from data",
+          "np.array",
+          "Copy or normalize Python data"
+        ],
+        [
+          "Minimal-copy input",
+          "np.asarray",
+          "Accept array-like input"
+        ],
+        [
+          "Uninitialized buffer",
+          "np.empty",
+          "Overwrite immediately"
+        ],
+        [
+          "Zero/one/full buffers",
+          "np.zeros, np.ones, np.full",
+          "Safe initialization and constant padding"
+        ],
+        [
+          "Coordinate grids",
+          "np.meshgrid, np.mgrid, np.ogrid",
+          "2D/3D grids and mesh construction"
+        ],
+        [
+          "Structured matrices",
+          "np.eye, np.identity, np.diag, np.tri",
+          "Basis, identity, diagonals, causal masks"
+        ],
+        [
+          "Range generation",
+          "np.arange",
+          "Step-based ranges"
+        ],
+        [
+          "Value scale sweeps",
+          "np.linspace, np.logspace, np.geomspace",
+          "Linear, logarithmic, and geometric sample spaces"
+        ]
+      ]
+    },
+    {
+      "title": "Common array attributes & layout",
+      "headers": [
+        "Attribute / API",
+        "Meaning",
+        "Notes"
+      ],
+      "rows": [
+        [
+          "shape",
+          "Axis dimensions",
+          "Check before reshape"
+        ],
+        [
+          "ndim",
+          "Dimension rank count",
+          "Scalars have ndim = 0"
+        ],
+        [
+          "size",
+          "Total element count",
+          "Product of axis shapes"
+        ],
+        [
+          "dtype",
+          "Data type precision",
+          "Controls range and memory footprint"
+        ],
+        [
+          "itemsize",
+          "Bytes per single element",
+          "Useful for storage debugs"
+        ],
+        [
+          "nbytes",
+          "Total raw buffer size",
+          "Excludes Python container overhead"
+        ],
+        [
+          "strides",
+          "Byte steps per axis",
+          "Permuted during transpositions"
+        ],
+        [
+          "flags",
+          "Layout contiguity flags",
+          "C_CONTIGUOUS, F_CONTIGUOUS"
+        ]
+      ]
+    },
+    {
+      "title": "Casting, view vs copy, & layout alignment",
+      "headers": [
+        "Operation",
+        "API",
+        "Memory Allocation"
+      ],
+      "rows": [
+        [
+          "Type casting",
+          "astype(dtype, copy=False)",
+          "Copy only when type changes"
+        ],
+        [
+          "Memory checking",
+          "np.shares_memory(a, b)",
+          "None (address diagnostics)"
+        ],
+        [
+          "Contiguous C format",
+          "np.ascontiguousarray(a)",
+          "Copy when strides are non-C"
+        ],
+        [
+          "Contiguous Fortran format",
+          "np.asfortranarray(a)",
+          "Copy when strides are non-F"
+        ],
+        [
+          "Reshape geometry",
+          "reshape(shape)",
+          "View when contiguous, else copy"
+        ],
+        [
+          "Flat representation",
+          "ravel()",
+          "View when possible"
+        ],
+        [
+          "Flat duplicate",
+          "flatten()",
+          "Always allocates new copy"
+        ]
+      ]
+    },
+    {
+      "title": "Common arithmetic & logical ufuncs",
+      "headers": [
+        "Group",
+        "APIs",
+        "Details"
+      ],
+      "rows": [
+        [
+          "Basic math",
+          "add, subtract, multiply, divide, power",
+          "Vectorized in-place or output bounds"
+        ],
+        [
+          "Trigonometry",
+          "sin, cos, tan",
+          "Parameters must be in radians"
+        ],
+        [
+          "Exponential/Log",
+          "exp, log, log1p",
+          "Log computes natural log; log1p is stable for x near 0"
+        ],
+        [
+          "Rounding/Clipping",
+          "clip, round, floor, ceil",
+          "Clip sets bounds; round quantizes floats"
+        ],
+        [
+          "Logical evaluations",
+          "logical_and, logical_or, logical_not",
+          "Avoid Python boolean word operators"
+        ],
+        [
+          "Magnitudes",
+          "abs, sign, sqrt",
+          "Elementwise values; support complex inputs"
+        ]
+      ]
+    },
+    {
+      "title": "Linear algebra routines",
+      "headers": [
+        "Task",
+        "API",
+        "Stability Tip"
+      ],
+      "rows": [
+        [
+          "Matrix product",
+          "@ / np.matmul / np.dot",
+          "Use @ or matmul instead of legacy dot"
+        ],
+        [
+          "Vector math",
+          "np.cross, np.outer, np.inner",
+          "Avoid outer on large shapes (RAM explosion)"
+        ],
+        [
+          "Contraction",
+          "np.einsum",
+          "Compact subscript notation for multi-axis math"
+        ],
+        [
+          "Diagnostics",
+          "np.linalg.norm, det, matrix_rank",
+          "Avoid det for large dims; use matrix_rank"
+        ],
+        [
+          "Equation solving",
+          "np.linalg.solve, inv, pinv",
+          "Prefer solve over inv(A) @ b; use pinv for singular matrices"
+        ],
+        [
+          "Decomposition",
+          "np.linalg.eig, eigh, svd",
+          "Use eigh for symmetric; SVD returns Vh already transposed"
+        ]
+      ]
+    },
+    {
+      "title": "Modern random API (default_rng)",
+      "headers": [
+        "Workflow",
+        "API",
+        "Notes"
+      ],
+      "rows": [
+        [
+          "Generator creation",
+          "np.random.default_rng(seed)",
+          "Modern replacement for np.random.seed()"
+        ],
+        [
+          "Continuous scale",
+          "rng.uniform, rng.normal",
+          "Scale is standard deviation, not variance"
+        ],
+        [
+          "Discrete scale",
+          "rng.integers",
+          "Upper bound exclusive by default"
+        ],
+        [
+          "Permutations",
+          "rng.choice, shuffle, permutation",
+          "shuffle is in-place; permutation returns a copy"
+        ],
+        [
+          "Distributions",
+          "rng.multinomial, binomial, poisson",
+          "Poisson requires lam > 0"
+        ]
+      ]
+    },
+    {
+      "title": "File I/O formats",
+      "headers": [
+        "Format",
+        "APIs",
+        "Use Case"
+      ],
+      "rows": [
+        [
+          "Native Single (.npy)",
+          "np.save, np.load",
+          "NumPy native round-tripping; disable pickle for safety"
+        ],
+        [
+          "Native Archive (.npz)",
+          "np.savez, np.savez_compressed",
+          "Save multiple arrays; compressed saves space"
+        ],
+        [
+          "Plain Text (CSV)",
+          "np.savetxt, np.loadtxt",
+          "Human-readable imports; slow on large arrays"
+        ],
+        [
+          "Raw Binary (.bin)",
+          "a.tofile, np.fromfile",
+          "Direct C dumps; discards shape/dtype details"
+        ],
+        [
+          "Out-of-core",
+          "np.memmap",
+          "Lazy slicing on files exceeding available RAM"
+        ]
+      ]
+    }
+  ],
+  "common_errors": [
+    {
+      "error": "Shape mismatch",
+      "cause": "Arrays do not align for stacking, concatenation, or broadcasting",
+      "solution": "Compare `shape` and insert singleton dimensions (`np.newaxis`) where necessary"
+    },
+    {
+      "error": "Wrong axis",
+      "cause": "Reduction or join used the wrong axis index",
+      "solution": "Verify axis mapping relative to dimensions before execution"
+    },
+    {
+      "error": "Unexpected copy",
+      "cause": "Fancy indexing or flattening returned a copy instead of a view",
+      "solution": "Assign directly to source array or use basic slices to maintain views"
+    },
+    {
+      "error": "Garbage values",
+      "cause": "Read from `np.empty` before writing",
+      "solution": "Ensure all elements are overwritten before calling read operations"
+    },
+    {
+      "error": "Silent upcast",
+      "cause": "Mixed types promoted the dtype, inflating memory footprint",
+      "solution": "Set `dtype` explicitly on array initialization"
+    },
+    {
+      "error": "In-place mutation surprise",
+      "cause": "`asarray` or slicing reused input memory and updated original variable",
+      "solution": "Use `np.copy` when memory isolation is explicitly required"
+    },
+    {
+      "error": "Dtype overflow",
+      "cause": "Integer accumulator exceeded range limit (e.g. summing int8)",
+      "solution": "Cast to float or larger integer (int64) before reducing"
+    },
+    {
+      "error": "Integer division mistakes",
+      "cause": "Integer division truncated float remainders silently",
+      "solution": "Cast inputs to float before division"
+    },
+    {
+      "error": "Object dtype problems",
+      "cause": "Mixed types forced fallback to object arrays, degrading performance",
+      "solution": "Ensure input lists are homogeneous before array conversion"
+    }
+  ],
+  "performance_checklist": [
+    {
+      "area": "Vectorization",
+      "recommendations": "Prefer vectorized array expressions over explicit Python loops."
+    },
+    {
+      "area": "Memory Management",
+      "recommendations": "Use `np.asarray` when you do not need a guaranteed copy."
+    },
+    {
+      "area": "Memory Management",
+      "recommendations": "Avoid `flatten()` in hot paths when a view via `ravel()` is acceptable."
+    },
+    {
+      "area": "Memory Management",
+      "recommendations": "Use `np.empty` only when immediate overwrite of all elements is guaranteed."
+    },
+    {
+      "area": "Random Number Generation",
+      "recommendations": "Prefer `default_rng` and reuse one generator instance."
+    },
+    {
+      "area": "Vectorization",
+      "recommendations": "Avoid repeated concatenation inside loops; collect first, concatenate once."
+    },
+    {
+      "area": "File I/O",
+      "recommendations": "Use binary IO for large arrays; use text IO only for small inspection cases."
+    },
+    {
+      "area": "Precision & Storage",
+      "recommendations": "Check dtype size before scaling to large datasets."
+    },
+    {
+      "area": "Broadcasting",
+      "recommendations": "Prefer broadcasting and singleton axes over manual `tile()` operations to save memory."
+    },
+    {
+      "area": "Memory Management",
+      "recommendations": "Verify if your code creates unnecessary copies using `np.shares_memory()` during debugging."
+    },
+    {
+      "area": "Performance Layout",
+      "recommendations": "Ensure C-contiguity using `np.ascontiguousarray()` before passing arrays to C/CUDA accelerators."
+    }
+  ],
+  "production_checklist": [
+    "Set `dtype` explicitly when precision and range limits matter.",
+    "Validate `shape` and `ndim` at API boundaries.",
+    "Seed random generation using `default_rng` for reproducible outputs.",
+    "Prefer explicit axis arguments in reductions and reshaping.",
+    "Confirm whether an operation returns a view or a copy before mutating.",
+    "Keep array layouts consistent across pipeline stages (C-contiguous vs Fortran-contiguous).",
+    "Use binary save/load for stable round-tripping.",
+    "Write snippets that are copy-paste ready and deterministic.",
+    "Prefer `np.linalg.solve` over computing explicit inverse `inv(A) @ b`.",
+    "Handle NaN and infinity values explicitly using `isnan`/`isfinite` check branches."
+  ]
+}

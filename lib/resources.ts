@@ -36,6 +36,7 @@ export function categorizeSources(sources: string[]): CategorizedSources {
       host.endsWith('.dev') ||
       host.includes('pytorch.org') ||
       host.includes('scikit-learn.org') ||
+      host.includes('matplotlib.org') ||
       host.includes('platform.openai.com') ||
       host.includes('docs.cohere.com') ||
       host.includes('tesseract-ocr.github.io') ||

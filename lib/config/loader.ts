@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import Ajv, { JSONSchemaType } from 'ajv';
+import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import configSchema from '../../schema/config.schema.json';
 

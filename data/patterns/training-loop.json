@@ -1,0 +1,102 @@
+{
+  "id": "training-loop",
+  "title": "Training Loop",
+  "slug": "training-loop",
+  "description": "Standard neural network training loop pattern detailing backward optimization.",
+  "name": "Training Loop",
+  "concept": "The training loop is a fundamental pattern in deep learning where a model iteratively processes inputs, computes error, calculates gradients, and updates its weights.",
+  "applicability": "Applies when training any parametric machine learning model using gradient descent, such as multi-layer perceptrons, convolutional networks, or transformers.",
+  "anti_patterns": [
+    "Forgetting to zero the gradients between steps, leading to gradient accumulation across batches and training divergence.",
+    "Leaving the model in evaluation mode (model.eval()) during training, which disables dropout and batch normalization updates.",
+    "Performing gradient updates without scaling under mixed-precision operations, resulting in underflow issues."
+  ],
+  "implementation_notes": "A training loop contains three main steps per batch: forward pass, backward pass, and parameter update. Ensure that your loss function, optimizer, and model are aligned on the same device (CPU or GPU) before execution. Use gradient clipping to stabilize training for recurrent networks or deep transformers.",
+  "examples": [
+    "for epoch in range(num_epochs):\n    model.train()\n    for inputs, labels in dataloader:\n      inputs, labels = inputs.to(device), labels.to(device)\n      optimizer.zero_grad()\n      outputs = model(inputs)\n      loss = criterion(outputs, labels)\n      loss.backward()\n      optimizer.step()"
+  ],
+  "created_at": "2026-07-03",
+  "updated_at": "2026-07-03",
+  "sources": [
+    "https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html#train-the-network"
+  ],
+  "tags": [
+    "deep-learning",
+    "training",
+    "optimization",
+    "patterns"
+  ],
+  "aliases": [
+    "optimization-loop"
+  ],
+  "keywords": [
+    "training-loop",
+    "gradient-descent",
+    "backpropagation",
+    "pytorch"
+  ],
+  "search_tokens": [
+    "training-loop",
+    "epoch-loop",
+    "backprop"
+  ],
+  "domain": "deep-learning",
+  "difficulty": "intermediate",
+  "engineering_area": "modeling",
+  "estimated_reading_time": 25,
+  "prerequisites": [
+    "pytorch"
+  ],
+  "recommended_next": [
+    "bert"
+  ],
+  "related_content": [
+    {
+      "id": "pytorch",
+      "type": "package",
+      "relationship_type": "implements"
+    },
+    {
+      "id": "build-rag-system",
+      "type": "workflow",
+      "relationship_type": "related_to"
+    },
+    {
+      "id": "bert",
+      "type": "model",
+      "relationship_type": "related_to"
+    },
+    {
+      "id": "cuda-out-of-memory",
+      "type": "debug_guide",
+      "relationship_type": "related_to"
+    },
+    {
+      "id": "single-source-of-truth",
+      "type": "principle",
+      "relationship_type": "related_to"
+    }
+  ],
+  "last_verified": "2026-07-03",
+  "review_frequency": "annually",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "related_workflows": [
+    "build-rag-system"
+  ],
+  "related_models": [
+    "bert"
+  ],
+  "related_packages": [
+    "pytorch"
+  ],
+  "related_principles": [
+    "single-source-of-truth"
+  ]
+}

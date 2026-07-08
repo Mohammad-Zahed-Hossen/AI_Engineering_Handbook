@@ -1,0 +1,917 @@
+{
+  "id": "plotly-express",
+  "title": "Plotly Express Cheatsheet",
+  "name": "Plotly Express Cheatsheet",
+  "slug": "plotly-express-cheatsheet",
+  "description": "High-density syntax recall for plotly.express (plotly.py 6.8.0), focused on rapid figure generation, Cartesian and statistical charts, 3D/geographic plots, faceting, and animations.",
+  "package_reference": "plotly",
+  "verified_against": "6.8.0",
+  "created_at": "2026-07-06",
+  "updated_at": "2026-07-06",
+  "sources": [
+    "https://plotly.com/python-api-reference/plotly.express.html",
+    "https://plotly.com/python-api-reference/generated/plotly.express.scatter.html",
+    "https://plotly.com/python-api-reference/generated/plotly.express.line.html",
+    "https://plotly.com/python-api-reference/generated/plotly.express.imshow.html"
+  ],
+  "tags": [
+    "plotly",
+    "plotly-express",
+    "visualization",
+    "plotting",
+    "python",
+    "interactive-plots",
+    "data-science"
+  ],
+  "aliases": [
+    "plotly-express-cheatsheet",
+    "px-cheatsheet"
+  ],
+  "keywords": [
+    "plotly",
+    "plotly-express",
+    "px",
+    "scatter",
+    "line",
+    "bar",
+    "histogram",
+    "box",
+    "violin",
+    "sunburst",
+    "treemap",
+    "imshow",
+    "animation",
+    "faceting"
+  ],
+  "search_tokens": [
+    "plotly-express-cheatsheet",
+    "plotly-express-plots",
+    "px-plots",
+    "px-theme",
+    "px-colors"
+  ],
+  "domain": "data-science",
+  "category": "visualization",
+  "difficulty": "intermediate",
+  "engineering_area": "visualization",
+  "estimated_reading_time": 7,
+  "prerequisites": [
+    "pandas",
+    "numpy"
+  ],
+  "recommended_next": [
+    "plotly-go"
+  ],
+  "related_content": [
+    {
+      "id": "plotly-go",
+      "type": "cheatsheet",
+      "relationship_type": "references"
+    }
+  ],
+  "last_verified": "2026-07-06",
+  "compatible_versions": [
+    "6.8.0"
+  ],
+  "breaking_changes": [],
+  "entries": [
+    {
+      "title": "Initialize Plotly Express defaults",
+      "problem": "Set global figure defaults for a project.",
+      "trigger": "When starting a notebook, script, or service that creates many figures.",
+      "snippet": "import plotly.express as px\nimport plotly.io as pio\n\npx.defaults.template = \"plotly_white\"\npx.defaults.width = 900\npx.defaults.height = 540\npio.renderers.default = \"notebook\"\nfig = px.scatter(px.data.iris(), x=\"sepal_width\", y=\"sepal_length\", color=\"species\")\nfig.show()",
+      "minimal_notes": "Set defaults once per process. Use a shared template for consistency.",
+      "common_bug": "Forgetting the renderer in headless or notebook environments.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a figure from a pandas DataFrame",
+      "problem": "Build a chart from tidy tabular data.",
+      "trigger": "When your input is a DataFrame with one row per observation.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\", color=\"species\")\nfig.show()",
+      "minimal_notes": "DataFrame columns map directly to arguments. This is the default workflow.",
+      "common_bug": "Passing column names without a DataFrame.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.scatter.html"
+    },
+    {
+      "title": "Use array-like inputs without a DataFrame",
+      "problem": "Plot quick data without constructing a DataFrame first.",
+      "trigger": "When values already exist as lists, numpy arrays, or Series.",
+      "snippet": "import plotly.express as px\nimport numpy as np\n\nx = np.arange(10)\ny = np.array([1, 4, 9, 16, 25, 36, 49, 64, 81, 100])\nfig = px.line(x=x, y=y, title=\"Array input\")\nfig.show()",
+      "minimal_notes": "Array-like inputs are converted internally. A DataFrame is still better for multi-encoding workflows.",
+      "common_bug": "Expecting column-name behavior without providing a DataFrame.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.line.html"
+    },
+    {
+      "title": "Use wide-format data",
+      "problem": "Plot multiple series from wide columns.",
+      "trigger": "When each metric already lives in its own column.",
+      "snippet": "import plotly.express as px\nimport pandas as pd\nimport numpy as np\n\ndf = pd.DataFrame({\"x\": np.arange(6), \"a\": [1, 2, 3, 4, 5, 6], \"b\": [2, 4, 1, 6, 5, 7] })\nfig = px.line(df, x=\"x\", y=[\"a\", \"b\"], title=\"Wide format line\")\nfig.show()",
+      "minimal_notes": "Passing a list to x or y switches the figure into wide mode. Keep series names meaningful.",
+      "common_bug": "Forgetting that wide mode changes the legend and trace splitting behavior.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.line.html"
+    },
+    {
+      "title": "Use tidy long-form data",
+      "problem": "Plot the same measure across categories in one column.",
+      "trigger": "When your data is already normalized into variable/value columns.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips()\nfig = px.bar(df, x=\"day\", y=\"total_bill\", color=\"sex\", title=\"Long-form bar\")\nfig.show()",
+      "minimal_notes": "Long-form is the safest default for px. It scales well to faceting and animation.",
+      "common_bug": "Trying to encode multiple wide columns when the data is already long.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a customized scatter plot",
+      "problem": "Show relationships with color, size, hover fields, and labels.",
+      "trigger": "When exploring two continuous variables with extra encodings.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.iris()\nfig = px.scatter(\n    df,\n    x=\"sepal_width\",\n    y=\"sepal_length\",\n    color=\"species\",\n    size=\"petal_length\",\n    hover_name=\"species\",\n    hover_data=[\"petal_width\"],\n    title=\"Customized scatter\"\n)\nfig.show()",
+      "minimal_notes": "Scatter is the most common px entry point. Use hover_data for extra context.",
+      "common_bug": "Over-encoding too many variables and making the plot unreadable.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.scatter.html"
+    },
+    {
+      "title": "Create a large scatter plot with WebGL",
+      "problem": "Keep point rendering responsive for large datasets.",
+      "trigger": "When plotting thousands of markers.",
+      "snippet": "import plotly.express as px\nimport pandas as pd\nimport numpy as np\n\ndf = pd.DataFrame({\"x\": np.random.randn(50000), \"y\": np.random.randn(50000)})\nfig = px.scatter(df, x=\"x\", y=\"y\", render_mode=\"webgl\", opacity=0.55, title=\"WebGL scatter\")\nfig.show()",
+      "minimal_notes": "Use webgl for large point counts. It improves interactivity but reduces pure vector output.",
+      "common_bug": "Assuming WebGL solves every performance issue in very large figures.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.scatter.html"
+    },
+    {
+      "title": "Create a line chart",
+      "problem": "Show ordered values over time or another continuous axis.",
+      "trigger": "When one dimension must be connected in sequence.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.gapminder().query(\"country == 'Canada'\")\nfig = px.line(df, x=\"year\", y=\"lifeExp\", title=\"Canada life expectancy\")\nfig.show()",
+      "minimal_notes": "line supports wide and long data. Use markers only when you need discrete points visible.",
+      "common_bug": "Using line charts for unordered categories.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.line.html"
+    },
+    {
+      "title": "Create a line chart with markers",
+      "problem": "Show trends while keeping individual observations visible.",
+      "trigger": "When each sampled point matters.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.gapminder().query(\"country == 'Canada'\")\nfig = px.line(df, x=\"year\", y=\"lifeExp\", markers=True, title=\"Line with markers\")\nfig.show()",
+      "minimal_notes": "markers=True adds visible vertices. Useful for sparse time series.",
+      "common_bug": "Turning on markers for dense series and cluttering the plot.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.line.html"
+    },
+    {
+      "title": "Create an area chart",
+      "problem": "Show cumulative or filled time-series style data.",
+      "trigger": "When filled lines communicate magnitude better than plain lines.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.gapminder().query(\"continent == 'Asia' and year >= 1970\")\nfig = px.area(df, x=\"year\", y=\"pop\", color=\"country\", title=\"Area chart\")\nfig.show()",
+      "minimal_notes": "Area is a filled line workflow. Use with care when multiple series overlap.",
+      "common_bug": "Stacking many filled series without checking legend order.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a grouped bar chart",
+      "problem": "Compare category totals side by side.",
+      "trigger": "When summarizing categorical metrics across groups.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips()\nfig = px.bar(df, x=\"day\", y=\"total_bill\", color=\"sex\", barmode=\"group\", title=\"Grouped bars\")\nfig.show()",
+      "minimal_notes": "Use color plus barmode='group' for side-by-side comparison. This is a standard reporting chart.",
+      "common_bug": "Forgetting to aggregate when raw rows should be summarized first.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a stacked bar chart",
+      "problem": "Show part-to-whole composition within each category.",
+      "trigger": "When the total and its components both matter.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips()\nfig = px.bar(df, x=\"day\", y=\"total_bill\", color=\"sex\", barmode=\"stack\", title=\"Stacked bars\")\nfig.show()",
+      "minimal_notes": "Stacking works best when categories are few. Use category_orders to control order.",
+      "common_bug": "Stacking too many categories and hiding differences.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a horizontal bar chart",
+      "problem": "Improve readability for long category labels.",
+      "trigger": "When category names are too long for vertical bars.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips().groupby(\"day\", as_index=False)[\"total_bill\"].sum()\nfig = px.bar(df, x=\"total_bill\", y=\"day\", orientation=\"h\", title=\"Horizontal bars\")\nfig.show()",
+      "minimal_notes": "orientation='h' flips the axes. This is useful for ranked lists.",
+      "common_bug": "Forgetting to swap x and y when changing orientation.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.scatter.html"
+    },
+    {
+      "title": "Create a bar chart with labels",
+      "problem": "Show values directly on bars.",
+      "trigger": "When the chart will be read without tooltips.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips().groupby(\"day\", as_index=False)[\"total_bill\"].sum()\nfig = px.bar(df, x=\"day\", y=\"total_bill\", text_auto=True, title=\"Bars with labels\")\nfig.update_traces(textposition=\"outside\")\nfig.show()",
+      "minimal_notes": "text_auto is a fast way to add readable labels. Use it for summary charts.",
+      "common_bug": "Labels collide on small figures without enough margin.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a funnel chart",
+      "problem": "Show stage-by-stage drop-off.",
+      "trigger": "When modeling pipelines, conversions, or process steps.",
+      "snippet": "import plotly.express as px\nimport pandas as pd\n\ndf = pd.DataFrame({\"stage\": [\"Visit\", \"Sign up\", \"Trial\", \"Purchase\"], \"count\": [100, 60, 40, 20]})\nfig = px.funnel(df, x=\"count\", y=\"stage\", title=\"Funnel\")\nfig.show()",
+      "minimal_notes": "Funnel uses ordered stages. It is best for linear progression.",
+      "common_bug": "Reordering stages incorrectly and changing the meaning.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a funnel area chart",
+      "problem": "Compare funnel stages with area emphasis.",
+      "trigger": "When visual emphasis should widen or narrow by stage value.",
+      "snippet": "import plotly.express as px\nimport pandas as pd\n\ndf = pd.DataFrame({\"stage\": [\"Visit\", \"Sign up\", \"Trial\", \"Purchase\"], \"count\": [100, 60, 40, 20]})\nfig = px.funnel_area(df, names=\"stage\", values=\"count\", title=\"Funnel area\")\nfig.show()",
+      "minimal_notes": "funnel_area is useful for compact stage comparison. Keep stage count small.",
+      "common_bug": "Treating funnel area as an exact quantitative chart.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a timeline chart",
+      "problem": "Show task durations with start and end dates.",
+      "trigger": "When visualizing schedules or project timelines.",
+      "snippet": "import plotly.express as px\nimport pandas as pd\n\ndf = pd.DataFrame([\n    {\"task\": \"Design\", \"start\": \"2026-01-01\", \"finish\": \"2026-01-20\"},\n    {\"task\": \"Build\", \"start\": \"2026-01-15\", \"finish\": \"2026-02-28\"},\n    {\"task\": \"Launch\", \"start\": \"2026-03-01\", \"finish\": \"2026-03-10\"},\n])\nfig = px.timeline(df, x_start=\"start\", x_end=\"finish\", y=\"task\", title=\"Project timeline\")\nfig.update_yaxes(autorange=\"reversed\")\nfig.show()",
+      "minimal_notes": "Use x_start and x_end. Reverse the y-axis for conventional Gantt ordering.",
+      "common_bug": "Leaving date strings unparsed when the input is inconsistent.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a scatter plot with error bars",
+      "problem": "Show uncertainty or measurement variation.",
+      "trigger": "When values have known error ranges.",
+      "snippet": "import plotly.express as px\nimport pandas as pd\n\ndf = pd.DataFrame({\"x\": [1, 2, 3], \"y\": [2.2, 2.8, 3.6], \"err\": [0.2, 0.3, 0.15]})\nfig = px.scatter(df, x=\"x\", y=\"y\", error_y=\"err\", title=\"Scatter with error bars\")\nfig.show()",
+      "minimal_notes": "Use error_x and error_y for uncertainty ranges. Symmetric bars are the default.",
+      "common_bug": "Mixing absolute and relative error values without documenting the units.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.scatter.html"
+    },
+    {
+      "title": "Create a line chart with asymmetric error bars",
+      "problem": "Show separate positive and negative uncertainty.",
+      "trigger": "When lower and upper confidence bounds differ.",
+      "snippet": "import plotly.express as px\nimport pandas as pd\n\ndf = pd.DataFrame({\n    \"x\": [1, 2, 3],\n    \"y\": [2.0, 3.0, 2.5],\n    \"plus\": [1.0, 0.8, 1.2],\n    \"minus\": [0.5, 0.6, 0.4],\n})\nfig = px.line(df, x=\"x\", y=\"y\", error_y=\"plus\", error_y_minus=\"minus\", title=\"Asymmetric error bars\")\nfig.show()",
+      "minimal_notes": "Use *_minus columns for asymmetric bars. This is the cleanest px interface for bounds.",
+      "common_bug": "Reversing positive and negative error columns.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.line.html"
+    },
+    {
+      "title": "Create a histogram",
+      "problem": "Show the distribution of a single numeric variable.",
+      "trigger": "When you need frequency counts or binning.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips()\nfig = px.histogram(df, x=\"total_bill\", nbins=30, title=\"Histogram\")\nfig.show()",
+      "minimal_notes": "Histogram is the default distribution chart. Adjust bins for readability.",
+      "common_bug": "Comparing raw distributions without normalizing or grouping when needed.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a normalized histogram",
+      "problem": "Compare distributions by percentage instead of counts.",
+      "trigger": "When groups have different sample sizes.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips()\nfig = px.histogram(df, x=\"total_bill\", color=\"sex\", histnorm=\"percent\", barmode=\"overlay\", opacity=0.6, title=\"Percent histogram\")\nfig.show()",
+      "minimal_notes": "histnorm controls the y-axis meaning. Overlay plus opacity is common for comparisons.",
+      "common_bug": "Reading normalized histograms as if they were raw counts.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.scatter.html"
+    },
+    {
+      "title": "Create a histogram with marginal rug",
+      "problem": "Add raw-value context to a distribution plot.",
+      "trigger": "When you want the histogram plus data density hints.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips()\nfig = px.histogram(df, x=\"total_bill\", marginal=\"rug\", title=\"Histogram with rug\")\nfig.show()",
+      "minimal_notes": "Marginal plots are compact and useful for quick diagnostics. Rug shows individual samples.",
+      "common_bug": "Using too many marginal layers and cluttering the view.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.scatter.html"
+    },
+    {
+      "title": "Create a box plot",
+      "problem": "Compare quartiles and outliers across categories.",
+      "trigger": "When summarizing distribution shape.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips()\nfig = px.box(df, x=\"day\", y=\"total_bill\", color=\"sex\", title=\"Box plot\")\nfig.show()",
+      "minimal_notes": "Box plots are efficient for group comparisons. Use category_orders for stable ordering.",
+      "common_bug": "Interpreting sparse categories as statistically meaningful.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a violin plot with points",
+      "problem": "Show distribution shape plus raw samples.",
+      "trigger": "When you want a richer view than a box plot.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips()\nfig = px.violin(df, x=\"day\", y=\"total_bill\", box=True, points=\"all\", color=\"sex\", title=\"Violin plot\")\nfig.show()",
+      "minimal_notes": "box=True and points=\"all\" are the common production combination. Use opacity carefully.",
+      "common_bug": "Overplotting too many raw points on large datasets.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a strip plot",
+      "problem": "Show individual observations without aggregation.",
+      "trigger": "When each row is important and categories are few.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips()\nfig = px.strip(df, x=\"day\", y=\"total_bill\", color=\"sex\", title=\"Strip plot\")\nfig.show()",
+      "minimal_notes": "Strip plots are useful for small-to-medium samples. They complement box and violin charts.",
+      "common_bug": "Using strip plots on very large datasets without jitter control.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create an ECDF plot",
+      "problem": "Show cumulative distribution without binning.",
+      "trigger": "When comparing percentiles or distribution dominance.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips()\nfig = px.ecdf(df, x=\"total_bill\", color=\"sex\", title=\"ECDF\")\nfig.show()",
+      "minimal_notes": "ECDF is a good alternative to histograms for precise cumulative comparison. It preserves sample ordering.",
+      "common_bug": "Using ECDF when the audience expects frequency bins.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a density heatmap",
+      "problem": "Show 2D concentration for large scatter clouds.",
+      "trigger": "When scatter points overlap heavily.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.iris()\nfig = px.density_heatmap(df, x=\"sepal_width\", y=\"sepal_length\", nbinsx=40, nbinsy=40, title=\"Density heatmap\")\nfig.show()",
+      "minimal_notes": "Density heatmap bins points into a grid. It is useful for crowded relationships.",
+      "common_bug": "Choosing bins too coarse or too fine for the data scale.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a density contour plot",
+      "problem": "Show isolines of concentration in 2D.",
+      "trigger": "When you need density structure instead of filled bins.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.iris()\nfig = px.density_contour(df, x=\"sepal_width\", y=\"sepal_length\", color=\"species\", title=\"Density contour\")\nfig.show()",
+      "minimal_notes": "Density contours are useful for smooth cluster structure. Pair with scatter only when necessary.",
+      "common_bug": "Overlaying too many contours and making the figure hard to parse.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a pie chart",
+      "problem": "Show simple part-to-whole composition.",
+      "trigger": "When there are few categories and totals matter.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips().groupby(\"day\", as_index=False)[\"total_bill\"].sum()\nfig = px.pie(df, names=\"day\", values=\"total_bill\", title=\"Pie chart\")\nfig.show()",
+      "minimal_notes": "Pie charts should stay simple. Use only for small category counts.",
+      "common_bug": "Using pie charts with many slices or similar values.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a donut chart",
+      "problem": "Show part-to-whole with center space.",
+      "trigger": "When a pie chart needs a label area or visual emphasis.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips().groupby(\"day\", as_index=False)[\"total_bill\"].sum()\nfig = px.pie(df, names=\"day\", values=\"total_bill\", hole=0.4, title=\"Donut chart\")\nfig.show()",
+      "minimal_notes": "hole creates the donut shape. Keep labels concise.",
+      "common_bug": "Treating donut holes as extra data space instead of decoration.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a sunburst chart",
+      "problem": "Show hierarchical totals in radial form.",
+      "trigger": "When you need nested categories with parent-child structure.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips().groupby([\"day\", \"sex\"], as_index=False)[\"total_bill\"].sum()\nfig = px.sunburst(df, path=[\"day\", \"sex\"], values=\"total_bill\", title=\"Sunburst\")\nfig.show()",
+      "minimal_notes": "Use path for hierarchy. Values control sector size.",
+      "common_bug": "Mixing incompatible hierarchy columns or missing parents.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a treemap",
+      "problem": "Show hierarchical composition in nested rectangles.",
+      "trigger": "When the hierarchy is deep and labels must remain compact.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips().groupby([\"day\", \"sex\"], as_index=False)[\"total_bill\"].sum()\nfig = px.treemap(df, path=[\"day\", \"sex\"], values=\"total_bill\", title=\"Treemap\")\nfig.show()",
+      "minimal_notes": "Treemaps are compact hierarchical summaries. They are usually denser than sunburst charts.",
+      "common_bug": "Using treemaps for precise comparison of many similar values.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create an icicle chart",
+      "problem": "Show hierarchy with top-down rectangular levels.",
+      "trigger": "When hierarchy depth is important and a top-down layout helps.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips().groupby([\"day\", \"sex\"], as_index=False)[\"total_bill\"].sum()\nfig = px.icicle(df, path=[\"day\", \"sex\"], values=\"total_bill\", title=\"Icicle\")\nfig.show()",
+      "minimal_notes": "Icicles are useful for clear level separation. Use them for tree-like breakdowns.",
+      "common_bug": "Supplying an unbalanced hierarchy and expecting equal visual depth.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a scatter matrix",
+      "problem": "Inspect pairwise relationships across several numeric variables.",
+      "trigger": "When you need a quick multivariate overview.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.iris()\nfig = px.scatter_matrix(\n    df,\n    dimensions=[\"sepal_length\", \"sepal_width\", \"petal_length\", \"petal_width\"],\n    color=\"species\",\n    title=\"Scatter matrix\"\n)\nfig.show()",
+      "minimal_notes": "Limit dimensions to a small set of useful columns. SPLOMs get crowded fast.",
+      "common_bug": "Using too many dimensions and losing readability.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create parallel coordinates",
+      "problem": "Compare many continuous variables per row.",
+      "trigger": "When you need a compact multivariate line view.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.iris()\nfig = px.parallel_coordinates(df, color=\"sepal_length\", title=\"Parallel coordinates\")\nfig.show()",
+      "minimal_notes": "Color can be numeric for continuous encoding. This is useful for feature comparison.",
+      "common_bug": "Forgetting that many rows can make the lines unreadable.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create parallel categories",
+      "problem": "Show categorical relationships across multiple dimensions.",
+      "trigger": "When comparing category flows or attribute combinations.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips()\nfig = px.parallel_categories(df, dimensions=[\"day\", \"time\", \"sex\", \"smoker\"], title=\"Parallel categories\")\nfig.show()",
+      "minimal_notes": "This is the categorical companion to parallel coordinates. Keep dimensions small.",
+      "common_bug": "Adding too many categories and creating spaghetti-like flows.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a 3D scatter plot",
+      "problem": "Show three numeric dimensions and category color together.",
+      "trigger": "When 3D structure matters more than flat projections.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.iris()\nfig = px.scatter_3d(df, x=\"sepal_length\", y=\"sepal_width\", z=\"petal_length\", color=\"species\", title=\"3D scatter\")\nfig.show()",
+      "minimal_notes": "3D plots are interactive and rotate in browser. Use them selectively.",
+      "common_bug": "Overusing 3D when 2D plus facets would be clearer.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a 3D line plot",
+      "problem": "Plot a path through 3D space.",
+      "trigger": "When trajectory or path geometry must be shown.",
+      "snippet": "import plotly.express as px\nimport pandas as pd\nimport numpy as np\n\nt = np.linspace(0, 12, 200)\ndf = pd.DataFrame({\"x\": np.cos(t), \"y\": np.sin(t), \"z\": t})\nfig = px.line_3d(df, x=\"x\", y=\"y\", z=\"z\", title=\"3D line\")\nfig.show()",
+      "minimal_notes": "line_3d is useful for trajectories and parametric curves. Keep paths smooth and sparse enough to inspect.",
+      "common_bug": "Expecting 3D lines to export as clean vectors in every backend.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a polar scatter plot",
+      "problem": "Plot radius and angle data.",
+      "trigger": "When working with circular measurements or directional data.",
+      "snippet": "import plotly.express as px\nimport pandas as pd\nimport numpy as np\n\ndf = pd.DataFrame({\"r\": np.random.rand(30), \"theta\": np.linspace(0, 360, 30), \"group\": [\"A\"]*15 + [\"B\"]*15})\nfig = px.scatter_polar(df, r=\"r\", theta=\"theta\", color=\"group\", title=\"Polar scatter\")\nfig.show()",
+      "minimal_notes": "Polar plots need angle conventions to be clear. Label the domain explicitly.",
+      "common_bug": "Confusing degrees and radians in theta values.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a polar line chart",
+      "problem": "Show radial sequences connected by angle.",
+      "trigger": "When polar observations are ordered along a circle.",
+      "snippet": "import plotly.express as px\nimport pandas as pd\nimport numpy as np\n\ndf = pd.DataFrame({\"r\": np.random.rand(20), \"theta\": np.linspace(0, 360, 20)})\nfig = px.line_polar(df, r=\"r\", theta=\"theta\", line_close=True, title=\"Polar line\")\nfig.show()",
+      "minimal_notes": "line_close closes the polygon when needed. It is useful for cyclical profiles.",
+      "common_bug": "Leaving a cyclic series open when the first and last points should connect.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a polar bar chart",
+      "problem": "Show category magnitudes on a circular axis.",
+      "trigger": "When a radial bar layout is useful for directional summaries.",
+      "snippet": "import plotly.express as px\nimport pandas as pd\n\ndf = pd.DataFrame({\"theta\": [\"N\", \"E\", \"S\", \"W\"], \"r\": [1, 2, 3, 4]})\nfig = px.bar_polar(df, r=\"r\", theta=\"theta\", title=\"Polar bars\")\nfig.show()",
+      "minimal_notes": "Polar bars are compact but should remain simple. They work best with a few categories.",
+      "common_bug": "Using too many bars and making angle comparisons difficult.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a ternary scatter plot",
+      "problem": "Plot compositional data with three parts summing to a whole.",
+      "trigger": "When every point is a three-part mixture.",
+      "snippet": "import plotly.express as px\nimport pandas as pd\n\ndf = pd.DataFrame({\"a\": [0.2, 0.4, 0.3], \"b\": [0.5, 0.2, 0.4], \"c\": [0.3, 0.4, 0.3], \"grp\": [\"X\", \"Y\", \"Z\"]})\nfig = px.scatter_ternary(df, a=\"a\", b=\"b\", c=\"c\", color=\"grp\", title=\"Ternary scatter\")\nfig.show()",
+      "minimal_notes": "Ternary plots require compositional interpretation. Ensure values are normalized consistently.",
+      "common_bug": "Feeding non-compositional values without normalization.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a ternary line plot",
+      "problem": "Show a connected path through ternary space.",
+      "trigger": "When mixtures evolve over ordered steps.",
+      "snippet": "import plotly.express as px\nimport pandas as pd\n\ndf = pd.DataFrame({\"a\": [0.7, 0.5, 0.3, 0.2], \"b\": [0.2, 0.3, 0.4, 0.5], \"c\": [0.1, 0.2, 0.3, 0.3]})\nfig = px.line_ternary(df, a=\"a\", b=\"b\", c=\"c\", title=\"Ternary line\")\nfig.show()",
+      "minimal_notes": "Ternary lines are useful for trajectories in composition space. Keep the sequence ordered.",
+      "common_bug": "Unsorted rows causing a misleading path.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a geographic scatter plot",
+      "problem": "Plot points on a global map without tiles.",
+      "trigger": "When lat/lon coordinates are available.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.gapminder().query(\"year == 2007\")\nfig = px.scatter_geo(df, lat=\"lat\", lon=\"lon\", color=\"continent\", hover_name=\"country\", size=\"pop\", title=\"Geo scatter\")\nfig.show()",
+      "minimal_notes": "scatter_geo is the stable non-Mapbox geo workflow. Good for world-scale maps.",
+      "common_bug": "Supplying coordinates with the wrong latitude/longitude columns.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a choropleth map",
+      "problem": "Color regions by a numeric metric.",
+      "trigger": "When each geometry has a matching code or name.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.gapminder().query(\"year == 2007\")\nfig = px.choropleth(df, locations=\"iso_alpha\", color=\"lifeExp\", hover_name=\"country\", color_continuous_scale=\"Viridis\", title=\"Choropleth\")\nfig.show()",
+      "minimal_notes": "Choropleths require valid location codes or geojson. Use a continuous scale for numeric values.",
+      "common_bug": "Mismatching location identifiers with the geometry source.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a density map",
+      "problem": "Visualize point density on a geographic map.",
+      "trigger": "When point concentration matters more than each point.",
+      "snippet": "import plotly.express as px\nimport pandas as pd\n\ndf = pd.DataFrame({\"lat\": [23.8103, 23.7806, 23.7465], \"lon\": [90.4125, 90.2794, 90.3750], \"value\": [10, 20, 30]})\nfig = px.density_map(df, lat=\"lat\", lon=\"lon\", z=\"value\", radius=20, center=dict(lat=23.8103, lon=90.4125), zoom=9, title=\"Density map\")\nfig.show()",
+      "minimal_notes": "density_map is the stable map density workflow. Keep point coordinates accurate.",
+      "common_bug": "Mixing up density_map with point scatter and expecting one marker per row.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a map-style scatter plot",
+      "problem": "Plot geographic points on a tile-based map when needed.",
+      "trigger": "When you want map tiles and interactive pan/zoom.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.carshare()\nfig = px.scatter_map(df, lat=\"centroid_lat\", lon=\"centroid_lon\", color=\"peak_hour\", size=\"car_hours\", title=\"Scatter map\")\nfig.show()",
+      "minimal_notes": "Use the stable map API rather than older mapbox-specific examples where possible. Keep the map centered.",
+      "common_bug": "Using deprecated or legacy mapbox naming in new code.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a choropleth map with modern mapping workflow",
+      "problem": "Render region shading on a map-style interface.",
+      "trigger": "When a tile-based or map-oriented choropleth is required.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.gapminder().query(\"year == 2007\")\nfig = px.choropleth_map(df, geojson=None, locations=\"iso_alpha\", color=\"lifeExp\", title=\"Choropleth map\")\nfig.show()",
+      "minimal_notes": "Use the modern map-oriented chart when the workflow requires map styling. Validate location fields carefully.",
+      "common_bug": "Assuming the same location encoding works across every choropleth variant.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create an animated scatter plot",
+      "problem": "Show how a relationship changes across time.",
+      "trigger": "When you need a frame-by-frame progression.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.gapminder()\nfig = px.scatter(\n    df, x=\"gdpPercap\", y=\"lifeExp\",\n    animation_frame=\"year\", animation_group=\"country\",\n    size=\"pop\", color=\"continent\", hover_name=\"country\",\n    log_x=True, size_max=60, title=\"Animated scatter\"\n)\nfig.show()",
+      "minimal_notes": "animation_frame selects frames and animation_group preserves identity. This is the classic px animation pattern.",
+      "common_bug": "Leaving out animation_group and losing object constancy.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.scatter.html"
+    },
+    {
+      "title": "Create an animated line chart",
+      "problem": "Animate a series over time.",
+      "trigger": "When each row or entity evolves frame-by-frame.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.gapminder()\nfig = px.line(\n    df, x=\"year\", y=\"lifeExp\",\n    color=\"continent\",\n    animation_frame=\"year\",\n    animation_group=\"country\",\n    title=\"Animated line\"\n)\nfig.show()",
+      "minimal_notes": "Animated line charts are best for small frame counts. Keep traces simple.",
+      "common_bug": "Combining too many groups with many frames and making playback sluggish.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.line.html"
+    },
+    {
+      "title": "Create a faceted scatter plot",
+      "problem": "Split a scatter chart by category.",
+      "trigger": "When comparing the same relationship across groups.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips()\nfig = px.scatter(df, x=\"total_bill\", y=\"tip\", color=\"sex\", facet_col=\"time\", title=\"Faceted scatter\")\nfig.show()",
+      "minimal_notes": "Facets are ideal for side-by-side subgroup comparisons. Use consistent axes for easier reading.",
+      "common_bug": "Forgetting that facets can shrink the plot and make labels tiny.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.scatter.html"
+    },
+    {
+      "title": "Create a faceted histogram with wrap",
+      "problem": "Split a histogram across multiple panels with wrapping.",
+      "trigger": "When one categorical dimension has several levels.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips()\nfig = px.histogram(df, x=\"total_bill\", facet_col=\"day\", facet_col_wrap=2, color=\"sex\", title=\"Wrapped facets\")\nfig.show()",
+      "minimal_notes": "facet_col_wrap keeps layouts compact. This is useful for 3+ categories.",
+      "common_bug": "Setting too many facets per row and making each panel too small.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.scatter.html"
+    },
+    {
+      "title": "Create a faceted box plot",
+      "problem": "Compare distributions across two grouping dimensions.",
+      "trigger": "When category interaction matters.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips()\nfig = px.box(df, x=\"day\", y=\"total_bill\", facet_col=\"time\", color=\"sex\", title=\"Faceted box plot\")\nfig.show()",
+      "minimal_notes": "Faceting plus box plots is a common statistical reporting pattern. Keep the number of categories moderate.",
+      "common_bug": "Using facets and too many hue levels at the same time.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Create a faceted line chart",
+      "problem": "Compare time series across categories in separate panels.",
+      "trigger": "When overlapping lines become too dense.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.gapminder().query(\"country in ['Canada', 'United States', 'Mexico']\")\nfig = px.line(df, x=\"year\", y=\"lifeExp\", color=\"country\", facet_col=\"country\", title=\"Faceted line chart\")\nfig.show()",
+      "minimal_notes": "Faceting often reads better than stacking many lines in one panel. Use identical axes for comparison.",
+      "common_bug": "Forgetting to share axes, which breaks comparison between panels.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.line.html"
+    },
+    {
+      "title": "Control facet spacing",
+      "problem": "Tighten or loosen space between panels.",
+      "trigger": "When layout density needs adjustment.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips()\nfig = px.scatter(df, x=\"total_bill\", y=\"tip\", facet_col=\"day\", facet_col_spacing=0.03, facet_row_spacing=0.03, title=\"Facet spacing\")\nfig.show()",
+      "minimal_notes": "Fine-tune spacing when panels feel too cramped. Spacing is in paper units.",
+      "common_bug": "Making spacing too small and causing label overlap.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.scatter.html"
+    },
+    {
+      "title": "Apply discrete color sequencing",
+      "problem": "Use a consistent categorical palette.",
+      "trigger": "When category colors must remain stable across charts.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.iris()\nfig = px.scatter(\n    df, x=\"sepal_width\", y=\"sepal_length\", color=\"species\",\n    color_discrete_sequence=px.colors.qualitative.Dark24,\n    title=\"Discrete palette\"\n)\nfig.show()",
+      "minimal_notes": "Use qualitative palettes for categories. Keep palette choice consistent across a project.",
+      "common_bug": "Using a continuous palette for categorical data.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.scatter.html"
+    },
+    {
+      "title": "Apply continuous color scaling",
+      "problem": "Map numeric values to a gradient.",
+      "trigger": "When color represents a measurable quantity.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.iris()\nfig = px.scatter(\n    df, x=\"sepal_width\", y=\"sepal_length\", color=\"petal_length\",\n    color_continuous_scale=px.colors.sequential.Viridis,\n    title=\"Continuous color scale\"\n)\nfig.show()",
+      "minimal_notes": "Use sequential or diverging scales for numeric fields. Normalize ranges when comparing figures.",
+      "common_bug": "Using a diverging scale without a meaningful midpoint.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.scatter.html"
+    },
+    {
+      "title": "Reorder categories explicitly",
+      "problem": "Enforce stable axis and legend order.",
+      "trigger": "When default category order is not acceptable.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.tips()\nfig = px.bar(\n    df, x=\"day\", y=\"total_bill\", color=\"sex\",\n    category_orders={\"day\": [\"Thur\", \"Fri\", \"Sat\", \"Sun\"], \"sex\": [\"Female\", \"Male\"]},\n    title=\"Ordered categories\"\n)\nfig.show()",
+      "minimal_notes": "category_orders controls axes, legends, and facets. Use it for reproducibility.",
+      "common_bug": "Assuming alphabetical order when data order changes by input source.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.scatter.html"
+    },
+    {
+      "title": "Rename labels for publication output",
+      "problem": "Replace raw column names with presentation-friendly text.",
+      "trigger": "When the output will be shown to users or stakeholders.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.iris()\nfig = px.scatter(\n    df, x=\"sepal_width\", y=\"sepal_length\", color=\"species\",\n    labels={\"sepal_width\": \"Sepal Width\", \"sepal_length\": \"Sepal Length\", \"species\": \"Species\"},\n    title=\"Renamed labels\"\n)\nfig.show()",
+      "minimal_notes": "labels updates axis titles, legend names, and hover labels. It is the cleanest naming control in px.",
+      "common_bug": "Leaving raw database column names in stakeholder-facing charts.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.scatter.html"
+    },
+    {
+      "title": "Set title and subtitle",
+      "problem": "Add chart context without manual annotations.",
+      "trigger": "When the figure needs a report-ready heading.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.iris()\nfig = px.scatter(\n    df, x=\"sepal_width\", y=\"sepal_length\", color=\"species\",\n    title=\"Iris scatter\",\n    subtitle=\"Sepal width vs sepal length\"\n)\nfig.show()",
+      "minimal_notes": "title and subtitle are first-class px arguments. Use them before custom layout annotations.",
+      "common_bug": "Overloading the title with too much explanatory text.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.scatter.html"
+    },
+    {
+      "title": "Update layout after figure creation",
+      "problem": "Adjust margins, legends, and overall layout.",
+      "trigger": "When px defaults are close but not final.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\", color=\"species\", title=\"Layout updates\")\nfig.update_layout(legend_title_text=\"Species\", margin=dict(l=40, r=20, t=60, b=40))\nfig.show()",
+      "minimal_notes": "update_layout is the standard post-processing step. Keep figure construction separate from styling.",
+      "common_bug": "Applying layout edits before figure construction is complete.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Update traces after figure creation",
+      "problem": "Standardize marker, line, or hover behavior across traces.",
+      "trigger": "When a chart needs final production polishing.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\", color=\"species\", title=\"Trace updates\")\nfig.update_traces(marker=dict(size=10, opacity=0.8))\nfig.show()",
+      "minimal_notes": "update_traces affects all traces unless filtered. Use it for common styling.",
+      "common_bug": "Accidentally changing every trace when only one should be modified.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Update x-axes and y-axes",
+      "problem": "Format axes after a px chart is created.",
+      "trigger": "When axis titles, ticks, or ranges need final control.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.gapminder().query(\"country == 'Canada'\")\nfig = px.line(df, x=\"year\", y=\"lifeExp\", title=\"Axis formatting\")\nfig.update_xaxes(title=\"Year\")\nfig.update_yaxes(title=\"Life Expectancy\", range=[50, 90])\nfig.show()",
+      "minimal_notes": "Use axis-specific methods for final formatting. They are clearer than editing layout directly.",
+      "common_bug": "Setting a range that clips valid data points.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.express.line.html"
+    },
+    {
+      "title": "Show a figure interactively",
+      "problem": "Render the chart in the current environment.",
+      "trigger": "When you want browser or notebook display.",
+      "snippet": "import plotly.express as px\n\nfig = px.scatter(px.data.iris(), x=\"sepal_width\", y=\"sepal_length\", color=\"species\")\nfig.show()",
+      "minimal_notes": "show() uses the current renderer. Choose the renderer once in project setup.",
+      "common_bug": "Expecting show() to persist as a file artifact.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Write an interactive HTML file",
+      "problem": "Save a self-contained chart for sharing.",
+      "trigger": "When the output must be opened without Python.",
+      "snippet": "import plotly.express as px\n\nfig = px.scatter(px.data.iris(), x=\"sepal_width\", y=\"sepal_length\", color=\"species\")\nfig.write_html(\"iris_scatter.html\", include_plotlyjs=\"cdn\")",
+      "minimal_notes": "HTML export is self-contained and easy to distribute. CDN mode reduces file size.",
+      "common_bug": "Forgetting that offline environments may not load CDN assets.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Write a static image",
+      "problem": "Export a PNG for reports or slides.",
+      "trigger": "When a fixed-resolution artifact is needed.",
+      "snippet": "import plotly.express as px\n\nfig = px.scatter(px.data.iris(), x=\"sepal_width\", y=\"sepal_length\", color=\"species\")\nfig.write_image(\"iris_scatter.png\", scale=2)",
+      "minimal_notes": "Static image export requires a supported image engine such as kaleido. Use scale for resolution.",
+      "common_bug": "Running export in a container without the required image backend.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Extract trendline results",
+      "problem": "Retrieve regression outputs from a trendline figure.",
+      "trigger": "When you need model statistics from an OLS fit.",
+      "snippet": "import plotly.express as px\n\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\", trendline=\"ols\")\nresults = px.get_trendline_results(fig)\nprint(results[[\"px_fit_results\"]])",
+      "minimal_notes": "get_trendline_results is only meaningful for OLS trendlines. It returns statsmodels results objects.",
+      "common_bug": "Expecting this to work for non-OLS trendline types.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    },
+    {
+      "title": "Use px defaults for repeated styling",
+      "problem": "Standardize theme, size, and rendering across many figures.",
+      "trigger": "When a project repeatedly reuses the same chart style.",
+      "snippet": "import plotly.express as px\n\npx.defaults.template = \"plotly_white\"\npx.defaults.width = 960\npx.defaults.height = 540\nfig = px.bar(px.data.tips(), x=\"day\", y=\"total_bill\", color=\"sex\")\nfig.show()",
+      "minimal_notes": "px.defaults reduces repeated boilerplate. It is ideal for team-wide chart consistency.",
+      "common_bug": "Mutating defaults deep in application code and creating inconsistent figures.",
+      "docs_url": "https://plotly.com/python-api-reference/plotly.express.html"
+    }
+  ],
+  "quick_references": [
+    {
+      "title": "Common px keyword arguments",
+      "headers": [
+        "Argument",
+        "Use"
+      ],
+      "rows": [
+        [
+          "`color`",
+          "Encode a variable by color."
+        ],
+        [
+          "`symbol`",
+          "Encode a variable by marker symbol."
+        ],
+        [
+          "`size`",
+          "Encode a variable by marker size."
+        ],
+        [
+          "`hover_name`",
+          "Bold label in hover."
+        ],
+        [
+          "`hover_data`",
+          "Extra hover fields."
+        ],
+        [
+          "`text`",
+          "On-chart text labels."
+        ],
+        [
+          "`facet_row`",
+          "Vertical faceting."
+        ],
+        [
+          "`facet_col`",
+          "Horizontal faceting."
+        ],
+        [
+          "`facet_col_wrap`",
+          "Wrap facet columns."
+        ],
+        [
+          "`animation_frame`",
+          "Frame variable."
+        ],
+        [
+          "`animation_group`",
+          "Preserve identity across frames."
+        ],
+        [
+          "`category_orders`",
+          "Force display order."
+        ],
+        [
+          "`labels`",
+          "Rename axis/legend labels."
+        ],
+        [
+          "`template`",
+          "Set figure theme."
+        ],
+        [
+          "`render_mode`",
+          "Choose svg/webgl/auto."
+        ]
+      ]
+    },
+    {
+      "title": "Faceting parameters",
+      "headers": [
+        "Parameter",
+        "Behavior"
+      ],
+      "rows": [
+        [
+          "`facet_row`",
+          "Split vertically."
+        ],
+        [
+          "`facet_col`",
+          "Split horizontally."
+        ],
+        [
+          "`facet_col_wrap`",
+          "Wrap columns across rows."
+        ],
+        [
+          "`facet_row_spacing`",
+          "Control row spacing."
+        ],
+        [
+          "`facet_col_spacing`",
+          "Control column spacing."
+        ]
+      ]
+    },
+    {
+      "title": "Animation parameters",
+      "headers": [
+        "Parameter",
+        "Behavior"
+      ],
+      "rows": [
+        [
+          "`animation_frame`",
+          "Selects frames."
+        ],
+        [
+          "`animation_group`",
+          "Maintains object constancy."
+        ],
+        [
+          "`size_max`",
+          "Caps animated marker size."
+        ]
+      ]
+    },
+    {
+      "title": "Color scales",
+      "headers": [
+        "Type",
+        "Examples"
+      ],
+      "rows": [
+        [
+          "Qualitative",
+          "`px.colors.qualitative.Dark24`, `Plotly`, `D3`."
+        ],
+        [
+          "Sequential",
+          "`px.colors.sequential.Viridis`, `Blues`, `Plasma`."
+        ],
+        [
+          "Diverging",
+          "`px.colors.diverging.RdYlBu`, `Tealrose`."
+        ]
+      ]
+    },
+    {
+      "title": "Export methods",
+      "headers": [
+        "Method",
+        "Output"
+      ],
+      "rows": [
+        [
+          "`fig.show()`",
+          "Interactive display."
+        ],
+        [
+          "`fig.write_html()`",
+          "Shareable HTML file."
+        ],
+        [
+          "`fig.write_image()`",
+          "Static PNG/SVG/PDF export."
+        ]
+      ]
+    }
+  ],
+  "common_errors": [
+    {
+      "error": "Figure does not render in headless environment.",
+      "cause": "Default renderer requires a browser or GUI environment, which is missing in headless runners.",
+      "solution": "Explicitly configure a headless renderer (e.g., pio.renderers.default = 'json' or 'browser') or save directly to a file."
+    },
+    {
+      "error": "Column name mismatch or KeyError.",
+      "cause": "Passing column names to px functions that do not match the columns in the supplied DataFrame.",
+      "solution": "Verify column names in df.columns before plotting, or use array-like inputs directly without a DataFrame."
+    },
+    {
+      "error": "Sluggish zoom/pan with thousands of data points.",
+      "cause": "Default SVG rendering mode struggles with high marker counts.",
+      "solution": "Set render_mode='webgl' in px.scatter or px.line to offload rendering to the GPU."
+    },
+    {
+      "error": "Animation frames out of sequence or missing categories.",
+      "cause": "Data frame is not sorted by the animation frame key, causing random playback ordering.",
+      "solution": "Sort the DataFrame by the animation column (e.g., df.sort_values('year')) before creating the plot."
+    },
+    {
+      "error": "Color sequence does not map consistently across plots.",
+      "cause": "Depending on default color ordering, which changes based on which categories appear first in the data.",
+      "solution": "Use category_orders to force a stable categorical order and layout mapping."
+    }
+  ],
+  "performance_checklist": [
+    {
+      "area": "Large point clouds",
+      "recommendations": "Use render_mode='webgl' for scatter charts with over 5,000 markers to prevent SVG rendering bottlenecks."
+    },
+    {
+      "area": "Memory optimization",
+      "recommendations": "Drop unused columns and filter rows from DataFrames before passing them to Plotly Express to reduce serialization overhead."
+    },
+    {
+      "area": "WebGL contexts",
+      "recommendations": "Limit the number of active WebGL contexts on a single page to prevent browser crashes."
+    },
+    {
+      "area": "Notebook file size",
+      "recommendations": "Use write_html with include_plotlyjs='cdn' to keep exported HTML files small (under 3MB instead of 6MB+)."
+    },
+    {
+      "area": "Animation efficiency",
+      "recommendations": "Reduce animation frames and groups when creating interactive animations; pre-aggregate data where possible."
+    }
+  ],
+  "production_checklist": [
+    "Verify figure sizes (width and height) explicitly rather than relying on browser window defaults.",
+    "Use category_orders to ensure categorical values appear in a deterministic, logical sequence.",
+    "Replace raw database/DataFrame column names with presentation-friendly text using the labels dictionary.",
+    "Check continuous color scales for colorblind accessibility and appropriate luminance range.",
+    "Configure the appropriate renderer or default template once at the entry point of the project.",
+    "Export high-resolution static images using scale>=2 to prevent blurriness in reports or slide decks.",
+    "Clean hover labels by using hover_name and hover_data to exclude raw keys that confuse stakeholders."
+  ],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready"
+}

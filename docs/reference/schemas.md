@@ -17,23 +17,57 @@ ai_priority: 5
 ## Package Schema
 
 ### Location
-- TypeScript: `types/package.ts`
 - Zod Schema: `lib/schemas/package.ts`
+- Base Schema: `lib/schemas/base.ts`
 
 ### Required Fields
 ```typescript
 {
-  id: string;              // kebab-case, matches filename
-  name: string;            // official properly-cased name
+  // BaseMeta fields (inherited from BaseMetaSchema)
+  id: string;
+  title: string;
+  name: string;
+  slug: string;
+  description: string;
+  tags: string[];
+  aliases: string[];
+  keywords: string[];
+  search_tokens: string[];
+  domain: string;
+  category: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  engineering_area: string;
+  estimated_reading_time: number;
+  prerequisites: string[];
+  recommended_next: string[];
+  related_content: ContentRef[];
+  created_at: string;      // YYYY-MM-DD
+  updated_at: string;      // YYYY-MM-DD
+  last_verified: string;
+  review_frequency: 'monthly' | 'quarterly' | 'semi_annually' | 'annually';
+  verified_against: string;
+  compatible_versions: string[];
+  breaking_changes: string[];
+  owner: string;
+  canonical_status: 'canonical' | 'reference' | 'generated';
+  lifecycle: 'draft' | 'verified' | 'stable' | 'deprecated' | 'archived';
+  stability: 'stable' | 'semi_stable' | 'volatile';
+  confidence: 'verified' | 'production_proven' | 'community_accepted' | 'experimental' | 'research';
+  engineering_maturity: 'research' | 'experimental' | 'emerging' | 'production_ready' | 'legacy';
+  sources: string[];       // at least one URL
+  github_repo: string;
+  
+  // Package-specific fields
   version: string;         // semantic version (X.Y.Z)
   install: string;         // exact CLI command
   import_as: string;       // canonical Python import
+  language: string;        // default: 'python'
   summary: string;         // 1-2 sentence description
   tasks: PackageTask[];    // at least 1 task
   alternatives: ContentRef[];
-  sources: string[];       // at least one URL
-  created_at: string;      // YYYY-MM-DD
-  updated_at: string;      // YYYY-MM-DD
+  package_specific_debugging: string[];
+  migration_notes: string[];
+  breaking_changes: string[];
 }
 ```
 
@@ -58,39 +92,75 @@ ai_priority: 5
 ## Model Schema
 
 ### Location
-- TypeScript: `types/model.ts`
 - Zod Schema: `lib/schemas/model.ts`
+- Base Schema: `lib/schemas/base.ts`
 
 ### Required Fields
 ```typescript
 {
-  id: string;                    // kebab-case, matches filename
-  name: string;                  // official model name
+  // BaseMeta fields (inherited from BaseMetaSchema)
+  id: string;
+  title: string;
+  name: string;
+  slug: string;
+  description: string;
+  tags: string[];
+  aliases: string[];
+  keywords: string[];
+  search_tokens: string[];
+  domain: string;
+  category: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  engineering_area: string;
+  estimated_reading_time: number;
+  prerequisites: string[];
+  recommended_next: string[];
+  related_content: ContentRef[];
+  created_at: string;      // YYYY-MM-DD
+  updated_at: string;      // YYYY-MM-DD
+  last_verified: string;
+  review_frequency: 'monthly' | 'quarterly' | 'semi_annually' | 'annually';
+  verified_against: string;
+  compatible_versions: string[];
+  breaking_changes: string[];
+  owner: string;
+  canonical_status: 'canonical' | 'reference' | 'generated';
+  lifecycle: 'draft' | 'verified' | 'stable' | 'deprecated' | 'archived';
+  stability: 'stable' | 'semi_stable' | 'volatile';
+  confidence: 'verified' | 'production_proven' | 'community_accepted' | 'experimental' | 'research';
+  engineering_maturity: 'research' | 'experimental' | 'emerging' | 'production_ready' | 'legacy';
+  sources: string[];       // at least one URL
+  github_repo: string;
+  
+  // Model-specific fields
   category: 'ml' | 'dl' | 'llm'; // model category
+  problem_types: ProblemType[];
   summary: string;               // 1-2 sentence description
   use_when: string;              // when to use
   avoid_when: string;            // when to avoid
-  decision_notes: string;        // decision guidance
   pros: string[];                // at least 3 pros
   cons: string[];                // at least 3 cons
+  key_hyperparams: HyperParameter[];
+  training_speed: 'fast' | 'medium' | 'slow';
   inference_speed: 'fast' | 'medium' | 'slow';
   memory_usage: 'low' | 'medium' | 'high';
-  problem_types: string[];       // problem type enum
-  key_hyperparams: Hyperparam[]; // at least 1 (unless detection-only)
+  interpretability: 'high' | 'medium' | 'low';
   quick_start: string;           // example code
   alternatives: ContentRef[];
-  sources: string[];             // at least one URL
-  created_at: string;            // YYYY-MM-DD
-  updated_at: string;            // YYYY-MM-DD
+  related_workflows: string[];  // plain IDs, not ContentRef
+  decision_notes: string;        // decision guidance
+  competitors: ContentRef[];
+  research_background: string;
+  computational_requirements: string;
 }
 ```
 
-### Hyperparam Schema
+### HyperParameter Schema
 ```typescript
 {
-  param: string;           // parameter name
-  default: any;            // default value
-  description: string;     // parameter description
+  name: string;           // parameter name
+  default: string | number | null;  // default value
+  note: string;           // parameter note
 }
 ```
 
@@ -99,33 +169,197 @@ ai_priority: 5
 ## Workflow Schema
 
 ### Location
-- TypeScript: `types/workflow.ts`
 - Zod Schema: `lib/schemas/workflow.ts`
+- Base Schema: `lib/schemas/base.ts`
 
 ### Required Fields
 ```typescript
 {
-  id: string;              // kebab-case, matches filename
-  name: string;            // workflow name
-  summary: string;          // 1-2 sentence description
-  starter_stack: string[]; // tools and libraries
-  steps: WorkflowStep[];   // at least 3 steps
-  alternatives: ContentRef[];
-  sources: string[];       // at least one URL
+  // BaseMeta fields (inherited from BaseMetaSchema)
+  id: string;
+  title: string;
+  name: string;
+  slug: string;
+  description: string;
+  tags: string[];
+  aliases: string[];
+  keywords: string[];
+  search_tokens: string[];
+  domain: string;
+  category: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  engineering_area: string;
+  estimated_reading_time: number;
+  prerequisites: string[];
+  recommended_next: string[];
+  related_content: ContentRef[];
   created_at: string;      // YYYY-MM-DD
   updated_at: string;      // YYYY-MM-DD
+  last_verified: string;
+  review_frequency: 'monthly' | 'quarterly' | 'semi_annually' | 'annually';
+  verified_against: string;
+  compatible_versions: string[];
+  breaking_changes: string[];
+  owner: string;
+  canonical_status: 'canonical' | 'reference' | 'generated';
+  lifecycle: 'draft' | 'verified' | 'stable' | 'deprecated' | 'archived';
+  stability: 'stable' | 'semi_stable' | 'volatile';
+  confidence: 'verified' | 'production_proven' | 'community_accepted' | 'experimental' | 'research';
+  engineering_maturity: 'research' | 'experimental' | 'emerging' | 'production_ready' | 'legacy';
+  sources: string[];       // at least one URL
+  github_repo: string;
+  
+  // Workflow-specific fields
+  type: 'pipeline' | 'snippet';
+  category: string;            // workflow category
+  overview: string;            // 1-2 sentence description
+  starter_stack: string[];     // tools and libraries
+  steps: WorkflowStep[];      // at least 3 steps
+  common_failure_points: string[];
+  evaluation_checks: string[];
+  next_links: string[];
+  worked_examples: WorkedExample[];
+  production_notes: string;
+  scaling_notes: string;
+  related_patterns: ContentRef[];
+  related_models: ContentRef[];
+  related_packages: ContentRef[];
+  related_debug_guides: ContentRef[];
 }
 ```
 
 ### WorkflowStep Schema
 ```typescript
 {
-  name: string;            // step name
-  what: string;            // what this step does
-  tools: string[];         // tools used
-  decision: string;        // decision guidance
-  failure: string;         // failure points
-  uses: ContentRef[];      // related content
+  step: number;
+  name: string;
+  what: string;
+  tools: string[];
+  decision: string;
+  uses: {
+    packages: string[];
+    models: string[];
+    cheatsheets: string[];
+  };
+  failure_points: string[];
+}
+```
+
+---
+
+## Pattern Schema
+
+### Location
+- Zod Schema: `lib/schemas/pattern.ts`
+- Base Schema: `lib/schemas/base.ts`
+
+### Required Fields
+```typescript
+{
+  // BaseMeta fields (inherited from BaseMetaSchema)
+  id: string;
+  title: string;
+  name: string;
+  slug: string;
+  description: string;
+  tags: string[];
+  aliases: string[];
+  keywords: string[];
+  search_tokens: string[];
+  domain: string;
+  category: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  engineering_area: string;
+  estimated_reading_time: number;
+  prerequisites: string[];
+  recommended_next: string[];
+  related_content: ContentRef[];
+  created_at: string;      // YYYY-MM-DD
+  updated_at: string;      // YYYY-MM-DD
+  last_verified: string;
+  review_frequency: 'monthly' | 'quarterly' | 'semi_annually' | 'annually';
+  verified_against: string;
+  compatible_versions: string[];
+  breaking_changes: string[];
+  owner: string;
+  canonical_status: 'canonical' | 'reference' | 'generated';
+  lifecycle: 'draft' | 'verified' | 'stable' | 'deprecated' | 'archived';
+  stability: 'stable' | 'semi_stable' | 'volatile';
+  confidence: 'verified' | 'production_proven' | 'community_accepted' | 'experimental' | 'research';
+  engineering_maturity: 'research' | 'experimental' | 'emerging' | 'production_ready' | 'legacy';
+  sources: string[];       // at least one URL
+  github_repo: string;
+  
+  // Pattern-specific fields
+  category: PatternCategory;
+  concept: string;
+  applicability: string;
+  anti_patterns: string[];
+  implementation_notes: string;
+  examples: string[];
+  related_workflows: string[];  // plain IDs
+  related_models: string[];     // plain IDs
+  related_packages: string[];   // plain IDs
+  related_principles: string[]; // plain IDs
+}
+```
+
+---
+
+## Principle Schema
+
+### Location
+- Zod Schema: `lib/schemas/principle.ts`
+- Base Schema: `lib/schemas/base.ts`
+
+### Required Fields
+```typescript
+{
+  // BaseMeta fields (inherited from BaseMetaSchema)
+  id: string;
+  title: string;
+  name: string;
+  slug: string;
+  description: string;
+  tags: string[];
+  aliases: string[];
+  keywords: string[];
+  search_tokens: string[];
+  domain: string;
+  category: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  engineering_area: string;
+  estimated_reading_time: number;
+  prerequisites: string[];
+  recommended_next: string[];
+  related_content: ContentRef[];
+  created_at: string;      // YYYY-MM-DD
+  updated_at: string;      // YYYY-MM-DD
+  last_verified: string;
+  review_frequency: 'monthly' | 'quarterly' | 'semi_annually' | 'annually';
+  verified_against: string;
+  compatible_versions: string[];
+  breaking_changes: string[];
+  owner: string;
+  canonical_status: 'canonical' | 'reference' | 'generated';
+  lifecycle: 'draft' | 'verified' | 'stable' | 'deprecated' | 'archived';
+  stability: 'stable' | 'semi_stable' | 'volatile';
+  confidence: 'verified' | 'production_proven' | 'community_accepted' | 'experimental' | 'research';
+  engineering_maturity: 'research' | 'experimental' | 'emerging' | 'production_ready' | 'legacy';
+  sources: string[];       // at least one URL
+  github_repo: string;
+  
+  // Principle-specific fields
+  category: PrincipleCategory;
+  statement: string;
+  mathematical_formulation: string;
+  intuition: string;
+  implications: string[];
+  limitations: string[];
+  related_concepts: string[];
+  referenced_by_patterns: string[];  // inverse direction, plain IDs
+  referenced_by_models: string[];     // inverse direction, plain IDs
+  referenced_by_workflows: string[];  // inverse direction, plain IDs
 }
 ```
 
@@ -134,20 +368,50 @@ ai_priority: 5
 ## Cheatsheet Schema
 
 ### Location
-- TypeScript: `types/cheatsheet.ts`
 - Zod Schema: `lib/schemas/cheatsheet.ts`
+- Base Schema: `lib/schemas/base.ts`
 
 ### Required Fields
 ```typescript
 {
-  id: string;              // kebab-case, matches filename
-  name: string;            // cheatsheet name
-  summary: string;          // 1-2 sentence description
-  entries: CheatsheetEntry[]; // at least 1 entry
-  alternatives: ContentRef[];
-  sources: string[];       // at least one URL
+  // BaseMeta fields (inherited from BaseMetaSchema)
+  id: string;
+  title: string;
+  name: string;
+  slug: string;
+  description: string;
+  tags: string[];
+  aliases: string[];
+  keywords: string[];
+  search_tokens: string[];
+  domain: string;
+  category: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  engineering_area: string;
+  estimated_reading_time: number;
+  prerequisites: string[];
+  recommended_next: string[];
+  related_content: ContentRef[];
   created_at: string;      // YYYY-MM-DD
   updated_at: string;      // YYYY-MM-DD
+  last_verified: string;
+  review_frequency: 'monthly' | 'quarterly' | 'semi_annually' | 'annually';
+  verified_against: string;
+  compatible_versions: string[];
+  breaking_changes: string[];
+  owner: string;
+  canonical_status: 'canonical' | 'reference' | 'generated';
+  lifecycle: 'draft' | 'verified' | 'stable' | 'deprecated' | 'archived';
+  stability: 'stable' | 'semi_stable' | 'volatile';
+  confidence: 'verified' | 'production_proven' | 'community_accepted' | 'experimental' | 'research';
+  engineering_maturity: 'research' | 'experimental' | 'emerging' | 'production_ready' | 'legacy';
+  sources: string[];       // at least one URL
+  github_repo: string;
+  
+  // Cheatsheet-specific fields
+  name: string;
+  entries: CheatsheetEntry[]; // at least 1 entry, max 60
+  package_reference: string;  // singular package ID
 }
 ```
 
@@ -165,28 +429,188 @@ ai_priority: 5
 
 ---
 
-## Registry Schema
+## Debug Guide Schema
 
 ### Location
-- TypeScript: `types/registry.ts`
-- Zod Schema: `lib/schemas/registry.ts`
+- Zod Schema: `lib/schemas/debug-guide.ts`
+- Base Schema: `lib/schemas/base.ts`
 
 ### Required Fields
 ```typescript
 {
-  id: string;              // model ID
-  task: RegistryTask;      // task enum
-  size_mb: number;         // model size in MB
-  link: string;            // model URL
+  // BaseMeta fields (inherited from BaseMetaSchema)
+  id: string;
+  title: string;
+  name: string;
+  slug: string;
+  description: string;
+  tags: string[];
+  aliases: string[];
+  keywords: string[];
+  search_tokens: string[];
+  domain: string;
+  category: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  engineering_area: string;
+  estimated_reading_time: number;
+  prerequisites: string[];
+  recommended_next: string[];
+  related_content: ContentRef[];
+  created_at: string;      // YYYY-MM-DD
+  updated_at: string;      // YYYY-MM-DD
+  last_verified: string;
+  review_frequency: 'monthly' | 'quarterly' | 'semi_annually' | 'annually';
+  verified_against: string;
+  compatible_versions: string[];
+  breaking_changes: string[];
+  owner: string;
+  canonical_status: 'canonical' | 'reference' | 'generated';
+  lifecycle: 'draft' | 'verified' | 'stable' | 'deprecated' | 'archived';
+  stability: 'stable' | 'semi_stable' | 'volatile';
+  confidence: 'verified' | 'production_proven' | 'community_accepted' | 'experimental' | 'research';
+  engineering_maturity: 'research' | 'experimental' | 'emerging' | 'production_ready' | 'legacy';
+  sources: string[];       // at least one URL
+  github_repo: string;
+  
+  // Debug Guide-specific fields
+  category: DebugCategory;
+  symptoms: DebugSymptom[];
+  root_causes: DebugRootCause[];
+  diagnosis: DebugDiagnosis[];
+  solutions: DebugSolution[];
+  prevention: DebugPrevention[];
+  related_packages: ContentRef[];
+  related_workflows: ContentRef[];
+  related_patterns: ContentRef[];
+  related_models: ContentRef[];
+  related_registry: ContentRef[];
+}
+```
+
+---
+
+## Decision Guide Schema
+
+### Location
+- Zod Schema: `lib/schemas/decision-guide.ts`
+- Base Schema: `lib/schemas/base.ts`
+
+### Required Fields
+```typescript
+{
+  // BaseMeta fields (inherited from BaseMetaSchema)
+  id: string;
+  title: string;
+  name: string;
+  slug: string;
+  description: string;
+  tags: string[];
+  aliases: string[];
+  keywords: string[];
+  search_tokens: string[];
+  domain: string;
+  category: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  engineering_area: string;
+  estimated_reading_time: number;
+  prerequisites: string[];
+  recommended_next: string[];
+  related_content: ContentRef[];
+  created_at: string;      // YYYY-MM-DD
+  updated_at: string;      // YYYY-MM-DD
+  last_verified: string;
+  review_frequency: 'monthly' | 'quarterly' | 'semi_annually' | 'annually';
+  verified_against: string;
+  compatible_versions: string[];
+  breaking_changes: string[];
+  owner: string;
+  canonical_status: 'canonical' | 'reference' | 'generated';
+  lifecycle: 'draft' | 'verified' | 'stable' | 'deprecated' | 'archived';
+  stability: 'stable' | 'semi_stable' | 'volatile';
+  confidence: 'verified' | 'production_proven' | 'community_accepted' | 'experimental' | 'research';
+  engineering_maturity: 'research' | 'experimental' | 'emerging' | 'production_ready' | 'legacy';
+  sources: string[];       // at least one URL
+  github_repo: string;
+  
+  // Decision Guide-specific fields
+  category: DecisionCategory;
+  problem: string;
+  evaluation_criteria: DecisionCriteria[];
+  options: DecisionOption[];
+  comparison_table: Record<string, string>;
+  recommendations: string;
+  use_cases: string[];
+  related_workflows: ContentRef[];
+  related_packages: ContentRef[];
+  related_models: ContentRef[];
+}
+```
+
+---
+
+## Registry Schema
+
+### Location
+- Zod Schema: `lib/schemas/registry.ts`
+- Base Schema: `lib/schemas/base.ts`
+
+### Required Fields
+```typescript
+{
+  // BaseMeta fields (inherited from BaseMetaSchema)
+  id: string;
+  title: string;
+  name: string;
+  slug: string;
+  description: string;
+  tags: string[];
+  aliases: string[];
+  keywords: string[];
+  search_tokens: string[];
+  domain: string;
+  category: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  engineering_area: string;
+  estimated_reading_time: number;
+  prerequisites: string[];
+  recommended_next: string[];
+  related_content: ContentRef[];
+  created_at: string;      // YYYY-MM-DD
+  updated_at: string;      // YYYY-MM-DD
+  last_verified: string;
+  review_frequency: 'monthly' | 'quarterly' | 'semi_annually' | 'annually';
+  verified_against: string;
+  compatible_versions: string[];
+  breaking_changes: string[];
+  owner: string;
+  canonical_status: 'canonical' | 'reference' | 'generated';
+  lifecycle: 'draft' | 'verified' | 'stable' | 'deprecated' | 'archived';
+  stability: 'stable' | 'semi_stable' | 'volatile';
+  confidence: 'verified' | 'production_proven' | 'community_accepted' | 'experimental' | 'research';
+  engineering_maturity: 'research' | 'experimental' | 'emerging' | 'production_ready' | 'legacy';
+  sources: string[];       // at least one URL
+  github_repo: string;
+  
+  // Registry-specific fields
+  task: RegistryTask;
+  category: RegistryCategory;
+  size_mb: number;
+  link: string | MissingModelRef;
+  hardware_requirements: string;
+  download_location: string;
+  license: string;
+  supported_tasks: string[];
+  version_compatibility: string[];
+  official_resources: string[];
 }
 ```
 
 ### RegistryTask Enum
 - `embedding`
-- `llms`
-- `rerankers`
+- `reranker`
 - `vision`
 - `speech`
+- `llm`
 - `multimodal`
 - `ocr`
 
@@ -195,15 +619,58 @@ ai_priority: 5
 ## BaseMeta Schema
 
 ### Location
-- TypeScript: `types/meta.ts`
-- Zod Schema: `lib/schemas/meta.ts`
+- Zod Schema: `lib/schemas/base.ts`
 
 ### Fields (inherited by all content types)
 ```typescript
 {
+  // Identity
+  id: string;
+  title: string;
+  name: string;
+  slug: string;
+  description: string;
+  
+  // Discovery
+  tags: string[];
+  aliases: string[];
+  keywords: string[];
+  search_tokens: string[];
+  
+  // Classification
+  domain: string;
+  category: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  engineering_area: string;
+  
+  // Learning
+  estimated_reading_time: number;
+  prerequisites: string[];
+  recommended_next: string[];
+  related_content: ContentRef[];
+  
+  // Maintenance
   created_at: string;   // YYYY-MM-DD
   updated_at: string;   // YYYY-MM-DD
+  last_verified: string;
+  review_frequency: 'monthly' | 'quarterly' | 'semi_annually' | 'annually';
+  
+  // Versioning
+  verified_against: string;
+  compatible_versions: string[];
+  breaking_changes: string[];
+  
+  // Governance
+  owner: string;
+  canonical_status: 'canonical' | 'reference' | 'generated';
+  lifecycle: 'draft' | 'verified' | 'stable' | 'deprecated' | 'archived';
+  stability: 'stable' | 'semi_stable' | 'volatile';
+  confidence: 'verified' | 'production_proven' | 'community_accepted' | 'experimental' | 'research';
+  engineering_maturity: 'research' | 'experimental' | 'emerging' | 'production_ready' | 'legacy';
+  
+  // Sources
   sources: string[];    // at least one URL
+  github_repo: string;
 }
 ```
 
@@ -212,14 +679,14 @@ ai_priority: 5
 ## ContentRef Schema
 
 ### Location
-- TypeScript: `types/meta.ts`
-- Zod Schema: `lib/schemas/meta.ts`
+- Zod Schema: `lib/schemas/base.ts`
 
 ### Structure
 ```typescript
 {
   id: string;           // target content ID
-  type: ContentType;   // package | model | workflow | cheatsheet
+  type: ContentType;   // workflow | pattern | model | package | cheatsheet | debug_guide | registry | decision_guide | principle
+  relationship_type: RelationshipType; // optional: uses | implements | requires | depends_on | alternative_to | extends | built_with | optimized_by | benchmarked_by | debugged_by | deployed_with | references | supersedes | related_to
 }
 ```
 

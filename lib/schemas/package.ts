@@ -1,28 +1,42 @@
 import { z } from 'zod';
-import { BaseMetaSchema, ContentRefSchema } from './meta';
+import { BaseMetaSchema, ContentRefSchema } from './base';
+
+export const VisualizationEquivalentSchema = z.object({
+  package: z.string().min(1),
+  task: z.string().min(1),
+  reason: z.string().min(1),
+});
 
 export const PackageTaskSchema = z.object({
   task: z.string(),
-  mental_trigger: z.string(),
+  resource_id: z.string().optional(),
+  mental_trigger: z.string().optional(),
   syntax: z.string(),
-  important_params: z.array(z.string()).max(5),
+  important_params: z.array(z.string()).max(7).optional().default([]),
   example: z.string(),
-  use_when: z.string(),
-  avoid_when: z.string(),
-  decision_notes: z.string(),
-  gotchas: z.array(z.string()),
-  official_docs: z.string().url(),
-  related_workflows: z.array(z.string()),
-  related_cheatsheets: z.array(z.string()),
+  use_when: z.string().optional(),
+  avoid_when: z.string().optional(),
+  decision_notes: z.string().optional(),
+  gotchas: z.array(z.string()).optional().default([]),
+  official_docs: z.string().url().optional(),
+  related_workflows: z.array(z.string()).optional().default([]),
+  related_cheatsheets: z.array(z.string()).optional().default([]),
+  visualization_equivalents: z.array(VisualizationEquivalentSchema).optional().default([]),
 });
 
 export const PackageSchema = BaseMetaSchema.extend({
-  id: z.string(),
+  // Package-specific fields
   name: z.string(),
   version: z.string(),
-  install: z.string(),
-  import_as: z.string(),
+  install: z.string().optional(),
+  import_as: z.string().optional(),
+  language: z.string().optional().default('python'),
   summary: z.string(),
   tasks: z.array(PackageTaskSchema),
-  alternatives: z.array(ContentRefSchema),
+  alternatives: z.array(ContentRefSchema).optional().default([]),
+  
+  // Package-specific debugging
+  package_specific_debugging: z.array(z.string()).default([]),
+  migration_notes: z.array(z.string()).default([]),
+  breaking_changes: z.array(z.string()).default([]),
 });

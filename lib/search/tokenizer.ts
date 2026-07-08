@@ -240,6 +240,14 @@ function splitDotNotation(input: string): string[] {
   return input.split('.').filter(part => part.length > 0);
 }
 
+function getStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === 'string');
+  }
+
+  return [];
+}
+
 /**
  * Generate prefix segments for dot-notation identifiers.
  * Example: "np.linalg.inv" → ["np", "np.linalg", "np.linalg.inv"]
@@ -278,10 +286,8 @@ export function tokenizeCodeField(input: string): string {
       const dotParts = splitDotNotation(normalized);
       dotParts.forEach(dotPart => {
         tokens.add(dotPart);
-        const aliases = PACKAGE_ALIASES[dotPart];
-        if (aliases) {
-          aliases.forEach(alias => tokens.add(alias));
-        }
+        const aliases = getStringArray(PACKAGE_ALIASES[dotPart]);
+        aliases.forEach(alias => tokens.add(alias));
         const camelParts = splitCamelCase(dotPart);
         camelParts.forEach(word => {
           const normalizedWord = word.trim().toLowerCase();
@@ -292,10 +298,8 @@ export function tokenizeCodeField(input: string): string {
           const normalizedWord = word.trim().toLowerCase();
           if (normalizedWord.length >= 2) tokens.add(normalizedWord);
         });
-        const expansions = ABBREVIATION_EXPANSIONS[dotPart];
-        if (expansions) {
-          expansions.forEach(expansion => tokens.add(expansion));
-        }
+        const expansions = getStringArray(ABBREVIATION_EXPANSIONS[dotPart]);
+        expansions.forEach(expansion => tokens.add(expansion));
       });
 
       if (dotParts.length > 1) {
@@ -337,10 +341,8 @@ export function tokenize(input: string): string[] {
   
   // Rule 3: Package alias expansion
   dotParts.forEach(part => {
-    const aliases = PACKAGE_ALIASES[part];
-    if (aliases) {
-      aliases.forEach(alias => tokens.add(alias));
-    }
+    const aliases = getStringArray(PACKAGE_ALIASES[part]);
+    aliases.forEach(alias => tokens.add(alias));
   });
   
   // Rule 4: CamelCase split (for each dot part)
@@ -357,10 +359,8 @@ export function tokenize(input: string): string[] {
   
   // Rule 6: Abbreviation expansion (for each dot part)
   dotParts.forEach(part => {
-    const expansions = ABBREVIATION_EXPANSIONS[part];
-    if (expansions) {
-      expansions.forEach(exp => tokens.add(exp));
-    }
+    const expansions = getStringArray(ABBREVIATION_EXPANSIONS[part]);
+    expansions.forEach(exp => tokens.add(exp));
   });
   
   // Rule 7: Return as array (already deduplicated via Set)

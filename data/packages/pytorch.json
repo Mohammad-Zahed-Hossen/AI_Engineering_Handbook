@@ -1,0 +1,141 @@
+{
+  "id": "pytorch",
+  "title": "PyTorch",
+  "slug": "pytorch",
+  "description": "PyTorch is an open-source deep learning framework for tensor computation, automatic differentiation, and GPUaccelerated model training.",
+  "name": "PyTorch",
+  "version": "2.12",
+  "install": "pip install torch torchvision torchaudio",
+  "import_as": "import torch",
+  "language": "python",
+  "summary": "PyTorch is a dynamic deep learning framework with strong Python integration, GPU acceleration, and flexible model definition for research and production.",
+  "created_at": "2016-01-01",
+  "updated_at": "2026-07-03",
+  "last_verified": "2026-07-03",
+  "review_frequency": "quarterly",
+  "verified_against": "2.12",
+  "compatible_versions": [
+    "2.0",
+    "2.1",
+    "2.12"
+  ],
+  "owner": "PyTorch Developers",
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "domain": "data_processing",
+  "category": "data",
+  "difficulty": "intermediate",
+  "engineering_area": "data_engineering",
+  "estimated_reading_time": 85,
+  "prerequisites": [
+    "numpy"
+  ],
+  "recommended_next": [
+    "scikit-learn"
+  ],
+  "related_content": [
+    {
+      "id": "scikit-learn",
+      "type": "package",
+      "relationship_type": "references"
+    },
+    {
+      "id": "training-loop",
+      "type": "pattern",
+      "relationship_type": "implemented_by"
+    },
+    {
+      "id": "build-rag-system",
+      "type": "workflow",
+      "relationship_type": "used_by"
+    }
+  ],
+  "tags": [
+    "deep-learning",
+    "gpu",
+    "tensor",
+    "autograd",
+    "neural-networks"
+  ],
+  "aliases": [
+    "torch"
+  ],
+  "keywords": [
+    "pytorch",
+    "torch",
+    "deep learning",
+    "tensor",
+    "gpu",
+    "autograd"
+  ],
+  "search_tokens": [
+    "pytorch",
+    "torch",
+    "Tensor",
+    "autograd",
+    "nn",
+    "cuda"
+  ],
+  "sources": [
+    "https://pytorch.org/docs/stable/",
+    "https://github.com/pytorch/pytorch"
+  ],
+  "github_repo": "https://github.com/pytorch/pytorch",
+  "tasks": [
+    {
+      "task": "Create a Tensor",
+      "mental_trigger": "I need a tensor for numeric data.",
+      "syntax": "torch.tensor(data, dtype=None, device=None, requires_grad=False)",
+      "example": "import torch\n\nx = torch.tensor([1.0, 2.0, 3.0])\nprint(x, x.shape)",
+      "important_params": [
+        "data",
+        "dtype",
+        "device",
+        "requires_grad"
+      ],
+      "use_when": "1) You need PyTorch tensor arithmetic or model input data.",
+      "avoid_when": "Your data is only for NumPy-based workflows and no autograd is required.",
+      "gotchas": [
+        "Default dtype may be inferred as int64 for integer lists.",
+        "Tensors on different devices cannot be combined without transfer.",
+        "requires_grad=False by default.",
+        "Tensor construction may copy data depending on the input type."
+      ],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.tensor.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Tensor Creation\nModule: `torch`\nReturn Value: torch.Tensor\nExpected Output: A PyTorch tensor backed by CPU or GPU memory.\nCommon Mistakes: Default dtype inference can produce int tensors; tensors on different devices cannot be combined without transfer; requires_grad=False is the default.\nRelated APIs: torch.zeros, torch.ones, torch.arange."
+    },
+    {
+      "task": "Move a Tensor to GPU",
+      "mental_trigger": "I want to use CUDA for faster training.",
+      "syntax": "tensor.to(device, dtype=None, non_blocking=False, copy=False)",
+      "example": "import torch\n\nif torch.cuda.is_available():\n    x = torch.tensor([1.0, 2.0, 3.0])\n    x_gpu = x.to('cuda')\n    print(x_gpu.device)",
+      "important_params": [
+        "device",
+        "dtype",
+        "non_blocking"
+      ],
+      "use_when": "1) You need to execute tensor operations on GPU for speed.",
+      "avoid_when": "Your model and data are small enough that CPU performance is sufficient.",
+      "gotchas": [
+        "CUDA must be installed and available.",
+        "Tensor device and model device must match.",
+        "Transfers add overhead and can slow small workloads."
+      ],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.Tensor.to.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Device Management\nModule: `torch.Tensor`\nReturn Value: A tensor on the requested device.\nExpected Output: A tensor allocated on CUDA or CPU based on the target device.\nCommon Mistakes: Device mismatch errors can occur when tensors and models are on different devices; transfers add latency; CUDA must be available.\nRelated APIs: torch.cuda.is_available, tensor.cpu, tensor.cuda."
+    }
+  ],
+  "alternatives": [],
+  "package_specific_debugging": [],
+  "migration_notes": [],
+  "breaking_changes": []
+}

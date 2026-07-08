@@ -1,0 +1,314 @@
+# Directory Structure
+
+> Generated for the repository root `d:/Project/ai-engineering-handbook`
+
+- .agents
+  - .agents/skills
+    - .agents/skills/references
+      - .agents/skills/references/foundation
+        - .agents/skills/references/foundation/01-project-philosophy.md
+        - .agents/skills/references/foundation/02-content-taxonomy.md
+        - .agents/skills/references/foundation/03-writing-standards.md
+        - .agents/skills/references/foundation/04-json-conventions.md
+        - .agents/skills/references/foundation/05-naming-conventions.md
+        - .agents/skills/references/foundation/06-official-resource-policy.md
+        - .agents/skills/references/foundation/07-research-guidelines.md
+        - .agents/skills/references/foundation/08-cross-linking.md
+        - .agents/skills/references/foundation/09-quality-checklist.md
+        - .agents/skills/references/foundation/10-maintenance-policy.md
+      - .agents/skills/references/schemas
+        - .agents/skills/references/schemas/model.md
+        - .agents/skills/references/schemas/package.md
+        - .agents/skills/references/schemas/workflow.md
+- .claude
+  - .claude/skills
+    - .claude/skills/references
+      - .claude/skills/references/foundation
+        - .claude/skills/references/foundation/01-project-philosophy.md
+        - .claude/skills/references/foundation/02-content-taxonomy.md
+        - .claude/skills/references/foundation/03-writing-standards.md
+        - .claude/skills/references/foundation/04-json-conventions.md
+        - .claude/skills/references/foundation/05-naming-conventions.md
+        - .claude/skills/references/foundation/06-official-resource-policy.md
+        - .claude/skills/references/foundation/07-research-guidelines.md
+        - .claude/skills/references/foundation/08-cross-linking.md
+        - .claude/skills/references/foundation/09-quality-checklist.md
+        - .claude/skills/references/foundation/10-maintenance-policy.md
+      - .claude/skills/references/schemas
+        - .claude/skills/references/schemas/model.md
+        - .claude/skills/references/schemas/package.md
+        - .claude/skills/references/schemas/workflow.md
+- .gitignore
+- aens.config.json
+- app
+  - app/cheatsheets
+    - app/cheatsheets/[id]
+      - app/cheatsheets/[id]/page.tsx
+    - app/cheatsheets/page.tsx
+  - app/debug-guides
+    - app/debug-guides/[id]
+      - app/debug-guides/[id]/page.tsx
+  - app/decision-guides
+    - app/decision-guides/[id]
+      - app/decision-guides/[id]/page.tsx
+  - app/error.tsx
+  - app/favicon.ico
+  - app/globals.css
+  - app/layout.tsx
+  - app/models
+    - app/models/[category]
+      - app/models/[category]/[id]
+        - app/models/[category]/[id]/page.tsx
+      - app/models/[category]/page.tsx
+    - app/models/page.tsx
+  - app/not-found.tsx
+  - app/packages
+    - app/packages/[id]
+      - app/packages/[id]/page.tsx
+    - app/packages/page.tsx
+  - app/page.tsx
+  - app/patterns
+    - app/patterns/[id]
+      - app/patterns/[id]/page.tsx
+  - app/principles
+    - app/principles/[id]
+      - app/principles/[id]/page.tsx
+  - app/problem-index
+    - app/problem-index/ProblemIndexDashboard.tsx
+    - app/problem-index/page.tsx
+  - app/registry
+    - app/registry/[task]
+      - app/registry/[task]/page.tsx
+    - app/registry/page.tsx
+  - app/workflows
+    - app/workflows/[id]
+      - app/workflows/[id]/page.tsx
+    - app/workflows/page.tsx
+- components
+- components.json
+  - components/layout
+    - components/layout/DarkModeToggle.tsx
+    - components/layout/MobileSidebarTrigger.tsx
+    - components/layout/Sidebar.tsx
+    - components/layout/ThemeInitializer.tsx
+    - components/layout/TopBar.tsx
+  - components/shared
+    - components/shared/AlternativesList.tsx
+    - components/shared/BackToTop.tsx
+    - components/shared/Breadcrumbs.tsx
+    - components/shared/CheatsheetEntry.tsx
+    - components/shared/CodeBlock.tsx
+    - components/shared/ContentPageLayout.tsx
+    - components/shared/ContentTypeBadge.tsx
+    - components/shared/ContinueReadingSection.tsx
+    - components/shared/ExpandableText.tsx
+    - components/shared/FilterBar.tsx
+    - components/shared/MetadataBadges.tsx
+    - components/shared/ModelCollapsibleSections.tsx
+    - components/shared/OfficialResources.tsx
+    - components/shared/PackageTaskList.tsx
+    - components/shared/PageVisitTracker.tsx
+    - components/shared/QuickSetupSection.tsx
+    - components/shared/ReadingProgress.tsx
+    - components/shared/ReadingSessionTracker.tsx
+    - components/shared/RecentKnowledgeSection.tsx
+    - components/shared/RelatedContent.tsx
+    - components/shared/ScrollRestore.tsx
+    - components/shared/SearchBox.tsx
+    - components/shared/SectionCard.tsx
+    - components/shared/StatusBadge.tsx
+    - components/shared/StickyActionBar.tsx
+    - components/shared/TableOfContents.tsx
+    - components/shared/WorkflowStepList.tsx
+  - components/ui
+    - components/ui/badge.tsx
+    - components/ui/button.tsx
+    - components/ui/card.tsx
+    - components/ui/separator.tsx
+    - components/ui/sheet.tsx
+- content
+  - content/packages
+    - content/packages/.gitkeep
+- data
+- docs
+  - docs/adr
+    - docs/adr/.gitkeep
+    - docs/adr/001-content-schema-specification-approach.md
+    - docs/adr/002-category-assignment-strategy.md
+    - docs/adr/003-search-behavior-specification.md
+    - docs/adr/004-model-id-format.md
+  - docs/AGENTS.md
+  - docs/architecture
+  - docs/ARCHITECTURE_REDESIGN_REPORT.md
+    - docs/architecture/components.md
+    - docs/architecture/data-flow.md
+    - docs/architecture/design-principles.md
+    - docs/architecture/navigation.md
+    - docs/architecture/overview.md
+    - docs/architecture/repository.md
+    - docs/architecture/search.md
+  - docs/archive
+    - docs/archive/completed
+      - docs/archive/completed/Documentation_Synchronization_Summary.md
+    - docs/archive/prompt
+      - docs/archive/prompt/AENS — Final UX Implementation Prompts (Pre-Freeze).md
+      - docs/archive/prompt/AENS Home Page — Information Architecture Report.md
+      - docs/archive/prompt/AENS Home Page — UX Architecture Report.md
+      - docs/archive/prompt/AENS Mobile Cognitive Interface Audit.md
+      - docs/archive/prompt/AENS UX Inspection - Continue Reading System.md
+      - docs/archive/prompt/AENS_Models_Workflows_Fix_Prompts.md
+      - docs/archive/prompt/AENS_PreFreeze_Fix_Prompts.md
+      - docs/archive/prompt/AENS_Search_Implementation_Prompts.md
+      - docs/archive/prompt/AENS_UI_Pareto_Prompts.md
+      - docs/archive/prompt/Codeblock Overflow Investigation Report.md
+      - docs/archive/prompt/On_this_page (Sticky) issue.md
+    - docs/archive/report
+      - docs/archive/report/AENS Home Page — Reconciled Pre-Freeze Plan.md
+      - docs/archive/report/AENS Mobile UI UX Freeze Audit - V2.md
+      - docs/archive/report/AENS Skill Design Specification (SDS).md
+      - docs/archive/report/AENS v2 Architecture Blueprint.md
+      - docs/archive/report/aens_skill_implementation_plan.svg
+      - docs/archive/report/AENS_System_Audit_Report (windsurf).md
+      - docs/archive/report/AENS_v2_Content_Audit_Report.md
+      - docs/archive/report/AENS_V2_Search_Architecture.md
+      - docs/archive/report/AI Engineer Navigation System - Knowledge Architecture Audit Report.md
+      - docs/archive/report/AI Engineer Navigation System (AENS).md
+      - docs/archive/report/ARCHITECTURAL_REVIEW.md
+      - docs/archive/report/Claude_Archi_Review.md
+      - docs/archive/report/Claude_Infrastructure_Audit.md
+      - docs/archive/report/Final Architecture Fixing Report.md
+  - docs/CLAUDE.md
+  - docs/data
+    - docs/data/.gitkeep
+    - docs/data/numpy
+    - docs/data/pandas
+      - docs/data/pandas/AENS Canonical Knowledge Blueprint Claude Audit (v1).md
+      - docs/data/pandas/aens_architecture_audit.md
+      - docs/data/pandas/ARCHITECTURE_IMPLEMENTATION_CHANGELOG.md
+      - docs/data/pandas/ARCHITECTURE_RECONCILIATION_REPORT.md
+      - docs/data/pandas/CANONICAL_PACKAGE_BLUEPRINT_SPECIFICATION_v2.md
+      - docs/data/pandas/CANONICAL_PACKAGE_BLUEPRINT_SPECIFICATION.md
+      - docs/data/pandas/Codex_Audit.md
+      - docs/data/pandas/PANDAS_KNOWLEDGE_BLUEPRINT_v2.md
+      - docs/data/pandas/perflexity research.md
+  - docs/DEPENDENCY_GRAPH.md
+  - docs/engineering
+    - docs/engineering/content-schema.md
+    - docs/engineering/project-rules.md
+    - docs/engineering/validation.md
+  - docs/guides
+    - docs/guides/adding-cheatsheet.md
+    - docs/guides/adding-model.md
+    - docs/guides/adding-package.md
+    - docs/guides/adding-workflow.md
+    - docs/guides/validation-workflow.md
+  - docs/migration
+  - docs/migration_v2
+    - docs/migration_v2/AENS_REBUILD_MASTER_PLAN.md
+    - docs/migration_v2/AI_EXECUTION_PROTOCOL.md
+    - docs/migration_v2/AI_IMPLEMENTATION_PLAYBOOK.md
+    - docs/migration_v2/AI_IMPLEMENTATION_READINESS_REVIEW.md
+    - docs/migration_v2/ARCHITECTURE_AUDIT_REPORT_Claude.md
+    - docs/migration_v2/ARCHITECTURE_AUDIT_REPORT_Kimi.md
+    - docs/migration_v2/BUILD_PIPELINE_SPECIFICATION.md
+    - docs/migration_v2/FINAL_ARCHITECTURE_AUDIT_REPORT_Antigravity.md
+    - docs/migration_v2/FOUNDATION_IMPLEMENTATION_BLUEPRINT.md
+    - docs/migration_v2/IMPLEMENTATION_MILESTONES.md
+    - docs/migration_v2/IMPLEMENTATION_ROADMAP.md
+    - docs/migration_v2/IMPLEMENTATION_SPECIFICATION.md
+    - docs/migration_v2/PHASE_1_CLEANUP_REPORT.md
+    - docs/migration_v2/REBUILD_PHASE_CHECKLIST.md
+    - docs/migration_v2/TESTING_SPECIFICATION.md
+    - docs/migration_v2/v2.1 Freeze Plan
+      - docs/migration_v2/v2.1 Freeze Plan/REPOSITORY_FOUNDATION_SPECIFICATION_v2.md
+      - docs/migration_v2/v2.1 Freeze Plan/SPECIFICATION_GAP_LOG.md
+      - docs/migration_v2/v2.1 Freeze Plan/V2.1_FIX_CLASSIFICATION.md
+      - docs/migration_v2/v2.1 Freeze Plan/V2.1_SPECIFICATION_FREEZE_PLAN.md
+    - docs/migration_v2/V2.1_CONSISTENCY_AUDIT.md
+    - docs/migration/AENS v2 - Repository Freeze Decision Document Revision.md
+    - docs/migration/AENS v2 — Architecture Freeze Decision Document.md
+    - docs/migration/AENS v2 — File System Mapping & Migration Plan.md
+    - docs/migration/AENS v2 — Repository Foundation Specification v1.1.md
+    - docs/migration/AENS v2 — Repository Freeze Decision Register.md
+    - docs/migration/ARCHITECTURE_DECISION_REVIEW.md
+    - docs/migration/decision-index.json
+    - docs/migration/IMPLEMENTATION_ROADMAP.md
+    - docs/migration/INTEGRATION_ARCHITECTURE.md
+    - docs/migration/Step 2B Roadmap (Final).md
+    - docs/migration/Step 2B Roadmap.md
+  - docs/reference
+    - docs/reference/naming.md
+    - docs/reference/quick-reference.md
+    - docs/reference/schemas.md
+- eslint.config.mjs
+- lib
+  - lib/config
+    - lib/config/loader.ts
+    - lib/config/registry.ts
+  - lib/content
+    - lib/content/.gitkeep
+  - lib/data.ts
+  - lib/hooks
+    - lib/hooks/useLocalStorage.ts
+    - lib/hooks/useReadingSession.ts
+  - lib/resources.ts
+  - lib/route-params.ts
+  - lib/schemas
+    - lib/schemas/base.ts
+    - lib/schemas/cheatsheet.ts
+    - lib/schemas/debug-guide.ts
+    - lib/schemas/decision-guide.ts
+    - lib/schemas/index.ts
+    - lib/schemas/model.ts
+    - lib/schemas/package.ts
+    - lib/schemas/pattern.ts
+    - lib/schemas/principle.ts
+    - lib/schemas/registry.ts
+    - lib/schemas/workflow.ts
+  - lib/search
+  - lib/search-types.ts
+  - lib/search.ts
+    - lib/search/engine.ts
+    - lib/search/inverted-index.ts
+    - lib/search/related-search.ts
+    - lib/search/synonym-expander.ts
+    - lib/search/tokenizer.ts
+  - lib/session-tracking.ts
+  - lib/utils.ts
+  - lib/validation
+    - lib/validation/.gitkeep
+- next-env.d.ts
+- next.config.ts
+- package-lock.json
+- package.json
+- postcss.config.mjs
+- public
+  - public/file.svg
+  - public/globe.svg
+  - public/next.svg
+  - public/vercel.svg
+  - public/window.svg
+- README.md
+- schema
+  - schema/config.schema.json
+  - schema/v2
+    - schema/v2/.gitkeep
+- scripts
+  - scripts/build-nav-index.ts
+  - scripts/migrate-to-v2.ts
+  - scripts/validate-content.ts
+- tsconfig.json
+- tsconfig.tsbuildinfo
+- types
+  - types/cheatsheet.ts
+  - types/config.ts
+  - types/debug-guide.ts
+  - types/decision-guide.ts
+  - types/index.ts
+  - types/meta.ts
+  - types/model.ts
+  - types/package.ts
+  - types/pattern.ts
+  - types/principle.ts
+  - types/registry.ts
+  - types/workflow.ts

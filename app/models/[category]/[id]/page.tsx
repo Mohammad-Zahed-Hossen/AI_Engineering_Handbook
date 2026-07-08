@@ -9,6 +9,7 @@ import AlternativesList from '@/components/shared/AlternativesList';
 import ModelCollapsibleSections from '@/components/shared/ModelCollapsibleSections';
 import { validateModelCategory } from '@/lib/route-params';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
+import ExpandableText from '@/components/shared/ExpandableText';
 
 export async function generateStaticParams() {
   const categories: ModelCategory[] = ['ml', 'dl', 'llm'];
@@ -69,7 +70,9 @@ export default async function ModelDetailPage({ params }: PageProps) {
           category={model.category}
           problemTypes={model.problem_types}
         />
-        <p className="content-prose text-sm text-muted-foreground">{model.summary}</p>
+        <ExpandableText cacheKey={`model-summary-${model.id}`} fadeClass="from-background to-transparent">
+          <p className="content-prose text-sm text-muted-foreground">{model.summary}</p>
+        </ExpandableText>
       </header>
 
       <OfficialResources sources={model.sources} githubRepo={model.github_repo} />
@@ -77,11 +80,15 @@ export default async function ModelDetailPage({ params }: PageProps) {
       <section id="decision-guide" className="grid grid-cols-1 md:grid-cols-2 gap-4 scroll-mt-24">
         <div className="rounded-lg border border-border bg-card p-4 border-l-2 border-l-emerald-500">
           <h2 className="text-emerald-700 dark:text-emerald-400">Use When</h2>
-          <p className="mt-2 text-sm text-muted-foreground">{model.use_when}</p>
+          <ExpandableText cacheKey={`model-use-${model.id}`}>
+            <p className="mt-2 text-sm text-muted-foreground">{model.use_when}</p>
+          </ExpandableText>
         </div>
         <div className="rounded-lg border border-border bg-card p-4 border-l-2 border-l-amber-500">
           <h2 className="text-rose-700 dark:text-rose-400">Avoid When</h2>
-          <p className="mt-2 text-sm text-muted-foreground">{model.avoid_when}</p>
+          <ExpandableText cacheKey={`model-avoid-${model.id}`}>
+            <p className="mt-2 text-sm text-muted-foreground">{model.avoid_when}</p>
+          </ExpandableText>
         </div>
       </section>
 
@@ -90,9 +97,11 @@ export default async function ModelDetailPage({ params }: PageProps) {
           <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">
             Decision Notes
           </span>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {model.decision_notes}
-          </p>
+          <ExpandableText cacheKey={`model-decision-${model.id}`}>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {model.decision_notes}
+            </p>
+          </ExpandableText>
         </div>
       )}
 

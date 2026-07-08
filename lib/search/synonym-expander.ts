@@ -1,8 +1,7 @@
-import synonymsData from '@/data/search/synonyms.json';
-import conceptGroupsData from '@/data/search/concept-groups.json';
-
-const synonyms = synonymsData as Record<string, string[]>;
-const conceptGroups = conceptGroupsData as Record<string, string[]>;
+// Search expansion data removed during Phase 1 knowledge layer cleanup
+// TODO: Re-implement search expansion in Phase 2+ when canonical content is available
+const synonyms: Record<string, string[]> = {};
+const conceptGroups: Record<string, string[]> = {};
 
 function normalizeToken(token: string): string {
   return token.toLowerCase().trim();

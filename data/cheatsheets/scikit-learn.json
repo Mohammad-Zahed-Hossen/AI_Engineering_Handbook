@@ -1,0 +1,1442 @@
+{
+  "id": "scikit-learn",
+  "title": "scikit-learn Cheatsheet",
+  "name": "scikit-learn Cheatsheet",
+  "slug": "scikit-learn-cheatsheet",
+  "description": "High-density quick-reference for common scikit-learn engineering tasks, syntax, and API recall.",
+  "package_reference": "scikit-learn",
+  "verified_against": "1.9.0",
+  "created_at": "2026-07-07",
+  "updated_at": "2026-07-07",
+  "sources": [
+    "https://scikit-learn.org/stable/modules/classes.html",
+    "https://scikit-learn.org/stable/user_guide.html"
+  ],
+  "related_content": [
+    {
+      "id": "scikit-learn",
+      "type": "package",
+      "relationship_type": "references"
+    }
+  ],
+  "entries": [
+    {
+      "problem": "Import scikit-learn",
+      "trigger": "Start any scikit-learn script or notebook.",
+      "snippet": "import sklearn\nfrom sklearn.linear_model import LogisticRegression\n\nprint(sklearn.__version__)\nmodel = LogisticRegression()",
+      "minimal_notes": "Keep imports explicit for readability. Version checks help avoid silent API drift.",
+      "common_bug": "Issue:\nImporting from stale examples.\n\nCause:\nMixing old module paths with the current release.\n\nQuick Fix:\nVerify against the current official API page.",
+      "docs_url": "https://scikit-learn.org/stable/modules/classes.html"
+    },
+    {
+      "problem": "Configure global output",
+      "trigger": "Standardize estimator display and dataframe output in one place.",
+      "snippet": "from sklearn import set_config, config_context\nfrom sklearn.preprocessing import StandardScaler\nimport pandas as pd\n\nset_config(transform_output=\"pandas\")\nX = pd.DataFrame({\"a\": [1, 2], \"b\": [3, 4]})\nscaled = StandardScaler().fit_transform(X)\n\nwith config_context(transform_output=\"default\"):\n    scaled_default = StandardScaler().fit_transform(X)",
+      "minimal_notes": "`set_config` changes global behavior. `config_context` scopes it temporarily.",
+      "common_bug": "Issue:\nUnexpected output type.\n\nCause:\nGlobal config changed earlier in the session.\n\nQuick Fix:\nReset or use `config_context`.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.set_config.html"
+    },
+    {
+      "problem": "Clone an estimator",
+      "trigger": "Reuse an estimator structure without reusing fitted state.",
+      "snippet": "from sklearn.base import clone\nfrom sklearn.linear_model import Ridge\n\nest = Ridge(alpha=1.0)\ncopy_est = clone(est)",
+      "minimal_notes": "`clone` copies parameters only, not learned attributes.",
+      "common_bug": "Issue:\nAccidentally reusing fitted state.\n\nCause:\nReassigning the same estimator object.\n\nQuick Fix:\nClone before each independent fit.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.base.clone.html"
+    },
+    {
+      "problem": "Check fitted state",
+      "trigger": "Guard against calling prediction before fitting.",
+      "snippet": "from sklearn.utils.validation import check_is_fitted\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nmodel = LogisticRegression(max_iter=200).fit(X, y)\ncheck_is_fitted(model)",
+      "minimal_notes": "Use after `fit` in custom code or wrappers.",
+      "common_bug": "Issue:\nAttribute error during prediction.\n\nCause:\nModel was not fit or fit failed earlier.\n\nQuick Fix:\nCall `fit` first and validate trained state.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.utils.validation.check_is_fitted.html"
+    },
+    {
+      "problem": "Load built-in datasets",
+      "trigger": "Need a small canonical dataset for experiments or demos.",
+      "snippet": "from sklearn.datasets import load_iris\n\ndata = load_iris(as_frame=True)\nX = data.data\ny = data.target",
+      "minimal_notes": "`as_frame=True` returns pandas objects. Most `load_*` functions follow the same pattern.",
+      "common_bug": "Issue:\nConfusing target shape or names.\n\nCause:\nDefault return is not a DataFrame.\n\nQuick Fix:\nUse `as_frame=True` when you want labeled columns.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_iris.html"
+    },
+    {
+      "problem": "Fetch OpenML dataset",
+      "trigger": "Need a larger or community-standard benchmark dataset.",
+      "snippet": "from sklearn.datasets import fetch_openml\n\nX, y = fetch_openml(name=\"adult\", as_frame=True, return_X_y=True)",
+      "minimal_notes": "OpenML fetches remote datasets and may take time on first run.",
+      "common_bug": "Issue:\nSlow first download.\n\nCause:\nRemote dataset retrieval and caching.\n\nQuick Fix:\nCache locally and reuse the cached copy.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.datasets.fetch_openml.html"
+    },
+    {
+      "problem": "Generate synthetic classification data",
+      "trigger": "Need controlled classification data for testing pipelines.",
+      "snippet": "from sklearn.datasets import make_classification\n\nX, y = make_classification(\n    n_samples=1000,\n    n_features=20,\n    n_informative=5,\n    n_redundant=2,\n    random_state=42,\n)",
+      "minimal_notes": "Use `random_state` for reproducibility.",
+      "common_bug": "Issue:\nTrivial or degenerate data.\n\nCause:\nBad class/feature settings.\n\nQuick Fix:\nIncrease informative features or class separation.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_classification.html"
+    },
+    {
+      "problem": "Generate synthetic regression data",
+      "trigger": "Need controlled regression data for model checks.",
+      "snippet": "from sklearn.datasets import make_regression\n\nX, y = make_regression(\n    n_samples=1000,\n    n_features=20,\n    n_informative=5,\n    noise=10.0,\n    random_state=42,\n)",
+      "minimal_notes": "`noise` makes the problem less perfectly linear.",
+      "common_bug": "Issue:\nUnrealistically easy regression.\n\nCause:\nZero or tiny noise.\n\nQuick Fix:\nAdd noise when testing realistic workflows.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_regression.html"
+    },
+    {
+      "problem": "Split train and test sets",
+      "trigger": "Need a holdout set for final evaluation.",
+      "snippet": "from sklearn.model_selection import train_test_split\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True, as_frame=True)\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42, stratify=y\n)",
+      "minimal_notes": "Use `stratify=y` for classification. Keep `random_state` fixed.",
+      "common_bug": "Issue:\nClass imbalance in split.\n\nCause:\nRandom split without stratification.\n\nQuick Fix:\nAdd `stratify=y` when classes matter.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html"
+    },
+    {
+      "problem": "Use k-fold cross-validation",
+      "trigger": "Need a standard CV splitter for model evaluation.",
+      "snippet": "from sklearn.model_selection import KFold\n\ncv = KFold(n_splits=5, shuffle=True, random_state=42)",
+      "minimal_notes": "Shuffle only when sample order is not meaningful.",
+      "common_bug": "Issue:\nUnstable fold results.\n\nCause:\nNo shuffling on ordered data.\n\nQuick Fix:\nShuffle when order is arbitrary.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.KFold.html"
+    },
+    {
+      "problem": "Use stratified k-fold cross-validation",
+      "trigger": "Need class-balanced folds for classification.",
+      "snippet": "from sklearn.model_selection import StratifiedKFold\n\ncv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)",
+      "minimal_notes": "Prefer this for classification tasks.",
+      "common_bug": "Issue:\nFold class distribution drifts.\n\nCause:\nNon-stratified splitter.\n\nQuick Fix:\nUse `StratifiedKFold` for classification.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.StratifiedKFold.html"
+    },
+    {
+      "problem": "Use grouped cross-validation",
+      "trigger": "Samples from the same subject/customer/device must stay together.",
+      "snippet": "from sklearn.model_selection import GroupKFold\nimport numpy as np\n\ngroups = np.array([1, 1, 2, 2, 3, 3])\ncv = GroupKFold(n_splits=3)",
+      "minimal_notes": "Pass `groups` to `split` or to CV helpers that accept it.",
+      "common_bug": "Issue:\nLeakage across groups.\n\nCause:\nGroup members split into different folds.\n\nQuick Fix:\nUse grouped splitters whenever group identity matters.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GroupKFold.html"
+    },
+    {
+      "problem": "Use time-series splits",
+      "trigger": "Need ordered validation for temporal data.",
+      "snippet": "from sklearn.model_selection import TimeSeriesSplit\n\ncv = TimeSeriesSplit(n_splits=5)",
+      "minimal_notes": "This preserves order and avoids future-to-past leakage.",
+      "common_bug": "Issue:\nLook-ahead bias.\n\nCause:\nRandom shuffling on temporal data.\n\nQuick Fix:\nUse time-aware splitters only.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html"
+    },
+    {
+      "problem": "Use shuffle-based splits",
+      "trigger": "Need repeated random holdout evaluation.",
+      "snippet": "from sklearn.model_selection import ShuffleSplit\n\ncv = ShuffleSplit(n_splits=5, test_size=0.2, random_state=42)",
+      "minimal_notes": "Good for quick variability checks.",
+      "common_bug": "Issue:\nOverlapping test sets.\n\nCause:\nRandom repeated sampling.\n\nQuick Fix:\nUse a single holdout for strict separation.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.ShuffleSplit.html"
+    },
+    {
+      "problem": "Use stratified shuffle splits",
+      "trigger": "Need repeated random splits with preserved class ratios.",
+      "snippet": "from sklearn.model_selection import StratifiedShuffleSplit\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\ncv = StratifiedShuffleSplit(n_splits=5, test_size=0.2, random_state=42)",
+      "minimal_notes": "Useful for imbalanced classification benchmarking.",
+      "common_bug": "Issue:\nSkewed class ratios in random splits.\n\nCause:\nPlain shuffle split.\n\nQuick Fix:\nStratify the split when target balance matters.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.StratifiedShuffleSplit.html"
+    },
+    {
+      "problem": "Use repeated k-fold cross-validation",
+      "trigger": "Need a more stable estimate than one CV run.",
+      "snippet": "from sklearn.model_selection import RepeatedKFold\n\ncv = RepeatedKFold(n_splits=5, n_repeats=3, random_state=42)",
+      "minimal_notes": "Repeats reduce variance in score estimates.",
+      "common_bug": "Issue:\nToo much evaluation cost.\n\nCause:\nMany repeated fits.\n\nQuick Fix:\nUse fewer repeats for expensive models.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RepeatedKFold.html"
+    },
+    {
+      "problem": "Standardize features",
+      "trigger": "Model is sensitive to feature scale.",
+      "snippet": "from sklearn.preprocessing import StandardScaler\nimport numpy as np\n\nX = np.array([[1.0, 10.0], [2.0, 20.0], [3.0, 30.0]])\nX_scaled = StandardScaler().fit_transform(X)",
+      "minimal_notes": "Fit on training data only inside a pipeline.",
+      "common_bug": "Issue:\nData leakage.\n\nCause:\nFitting scaler on full dataset.\n\nQuick Fix:\nFit scaler only on training folds.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html"
+    },
+    {
+      "problem": "Scale to a fixed range",
+      "trigger": "Need bounded feature values.",
+      "snippet": "from sklearn.preprocessing import MinMaxScaler\nimport numpy as np\n\nX = np.array([[1.0, 10.0], [2.0, 20.0], [3.0, 30.0]])\nX_scaled = MinMaxScaler().fit_transform(X)",
+      "minimal_notes": "Preserves relative ordering within each feature.",
+      "common_bug": "Issue:\nOutliers squash most values.\n\nCause:\nMin-max scaling is range-sensitive.\n\nQuick Fix:\nUse `RobustScaler` if outliers are present.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html"
+    },
+    {
+      "problem": "Scale robustly with outliers",
+      "trigger": "Data has heavy tails or extreme values.",
+      "snippet": "from sklearn.preprocessing import RobustScaler\nimport numpy as np\n\nX = np.array([[1.0, 10.0], [2.0, 20.0], [100.0, 300.0]])\nX_scaled = RobustScaler().fit_transform(X)",
+      "minimal_notes": "Uses median and IQR, not mean and variance.",
+      "common_bug": "Issue:\nOverreacting to outliers with standard scaling.\n\nCause:\nMean/variance are outlier-sensitive.\n\nQuick Fix:\nUse `RobustScaler` for skewed or outlier-heavy data.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.RobustScaler.html"
+    },
+    {
+      "problem": "Preserve sparsity with max-abs scaling",
+      "trigger": "Scale sparse features without densifying them.",
+      "snippet": "from sklearn.preprocessing import MaxAbsScaler\nfrom scipy import sparse\n\nX = sparse.csr_matrix([[0, 1], [2, 0], [0, 3]])\nX_scaled = MaxAbsScaler().fit_transform(X)",
+      "minimal_notes": "Good for sparse matrices and signed data.",
+      "common_bug": "Issue:\nMemory blow-up.\n\nCause:\nDense scaling on sparse matrices.\n\nQuick Fix:\nUse `MaxAbsScaler` for sparse input.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MaxAbsScaler.html"
+    },
+    {
+      "problem": "Normalize samples",
+      "trigger": "Need unit-length rows, often for text or similarity tasks.",
+      "snippet": "from sklearn.preprocessing import Normalizer\nimport numpy as np\n\nX = np.array([[1.0, 2.0], [3.0, 4.0]])\nX_norm = Normalizer().fit_transform(X)",
+      "minimal_notes": "Normalization acts row-wise, not feature-wise.",
+      "common_bug": "Issue:\nConfusing normalization with standardization.\n\nCause:\nApplying the wrong axis logic.\n\nQuick Fix:\nUse `Normalizer` for sample vectors, not column scaling.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.Normalizer.html"
+    },
+    {
+      "problem": "Gaussianize skewed features",
+      "trigger": "Numeric distributions are highly skewed.",
+      "snippet": "from sklearn.preprocessing import PowerTransformer\nimport numpy as np\n\nX = np.array([[1.0, 10.0], [2.0, 20.0], [4.0, 40.0]])\nX_trans = PowerTransformer().fit_transform(X)",
+      "minimal_notes": "Useful before linear models or distance-based models.",
+      "common_bug": "Issue:\nInvalid transform on non-positive data with some methods.\n\nCause:\nMethod assumptions on input values.\n\nQuick Fix:\nCheck method choice and data domain first.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PowerTransformer.html"
+    },
+    {
+      "problem": "Rank-gauss transform features",
+      "trigger": "Need non-parametric distribution mapping.",
+      "snippet": "from sklearn.preprocessing import QuantileTransformer\nimport numpy as np\n\nX = np.array([[1.0, 10.0], [2.0, 20.0], [3.0, 30.0]])\nX_trans = QuantileTransformer(output_distribution=\"normal\", random_state=42).fit_transform(X)",
+      "minimal_notes": "Can distort distances if used carelessly.",
+      "common_bug": "Issue:\nOverfitting to small samples.\n\nCause:\nQuantile mapping uses empirical ranks.\n\nQuick Fix:\nUse on sufficiently large datasets.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.QuantileTransformer.html"
+    },
+    {
+      "problem": "Discretize numeric features",
+      "trigger": "Need bins instead of raw continuous values.",
+      "snippet": "from sklearn.preprocessing import KBinsDiscretizer\nimport numpy as np\n\nX = np.array([[1.0], [2.0], [3.0], [4.0]])\nX_binned = KBinsDiscretizer(n_bins=3, encode=\"onehot-dense\", strategy=\"quantile\").fit_transform(X)",
+      "minimal_notes": "Useful for coarse bucketization or monotonic effects.",
+      "common_bug": "Issue:\nToo many sparse empty bins.\n\nCause:\nWrong binning strategy.\n\nQuick Fix:\nMatch strategy to data distribution.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.KBinsDiscretizer.html"
+    },
+    {
+      "problem": "Create polynomial features",
+      "trigger": "Need interaction terms for linear models.",
+      "snippet": "from sklearn.preprocessing import PolynomialFeatures\nimport numpy as np\n\nX = np.array([[1.0, 2.0], [3.0, 4.0]])\nX_poly = PolynomialFeatures(degree=2, include_bias=False).fit_transform(X)",
+      "minimal_notes": "Feature count grows quickly with degree.",
+      "common_bug": "Issue:\nFeature explosion.\n\nCause:\nHigh degree or many input columns.\n\nQuick Fix:\nKeep degree low or use feature selection.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html"
+    },
+    {
+      "problem": "One-hot encode categories",
+      "trigger": "Convert categorical input for linear or tree-based models.",
+      "snippet": "from sklearn.preprocessing import OneHotEncoder\nimport numpy as np\n\nX = np.array([[\"red\"], [\"blue\"], [\"red\"]])\nenc = OneHotEncoder(handle_unknown=\"ignore\", sparse_output=False)\nX_enc = enc.fit_transform(X)",
+      "minimal_notes": "`handle_unknown=\"ignore\"` prevents runtime errors on new labels.",
+      "common_bug": "Issue:\nUnseen categories crash inference.\n\nCause:\nDefault unknown-category behavior.\n\nQuick Fix:\nSet `handle_unknown=\"ignore\"`.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html"
+    },
+    {
+      "problem": "Ordinal-encode categories",
+      "trigger": "Need integer-coded categories with a defined order.",
+      "snippet": "from sklearn.preprocessing import OrdinalEncoder\nimport numpy as np\n\nX = np.array([[\"low\"], [\"medium\"], [\"high\"]])\nenc = OrdinalEncoder(categories=[[\"low\", \"medium\", \"high\"]])\nX_enc = enc.fit_transform(X)",
+      "minimal_notes": "Use only when order is meaningful.",
+      "common_bug": "Issue:\nImplied order where none exists.\n\nCause:\nTreating nominal categories as ordinal.\n\nQuick Fix:\nUse `OneHotEncoder` for nominal features.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OrdinalEncoder.html"
+    },
+    {
+      "problem": "Label-encode targets",
+      "trigger": "Convert class labels to integers for target arrays.",
+      "snippet": "from sklearn.preprocessing import LabelEncoder\n\ny = [\"spam\", \"ham\", \"spam\"]\nle = LabelEncoder()\ny_enc = le.fit_transform(y)",
+      "minimal_notes": "Intended for targets, not feature columns.",
+      "common_bug": "Issue:\nMisusing for feature encoding.\n\nCause:\n`LabelEncoder` is target-oriented.\n\nQuick Fix:\nUse `OneHotEncoder` or `OrdinalEncoder` for features.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html"
+    },
+    {
+      "problem": "Apply a custom function",
+      "trigger": "Need a lightweight custom transform in a pipeline.",
+      "snippet": "from sklearn.preprocessing import FunctionTransformer\nimport numpy as np\n\ndef log1p_clip(X):\n    return np.log1p(np.clip(X, a_min=0, a_max=None))\n\ntransformer = FunctionTransformer(log1p_clip)\nX_out = transformer.fit_transform(np.array([[1.0, 2.0], [3.0, 4.0]]))",
+      "minimal_notes": "Good for small, stateless transformations.",
+      "common_bug": "Issue:\nPipeline incompatibility.\n\nCause:\nFunction changes shape unexpectedly.\n\nQuick Fix:\nPreserve sample count and feature alignment.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.FunctionTransformer.html"
+    },
+    {
+      "problem": "Binarize values",
+      "trigger": "Need hard thresholding for numeric data.",
+      "snippet": "from sklearn.preprocessing import Binarizer\nimport numpy as np\n\nX = np.array([[0.2, 0.8], [1.5, -0.1]])\nX_bin = Binarizer(threshold=0.5).fit_transform(X)",
+      "minimal_notes": "Applies an elementwise threshold.",
+      "common_bug": "Issue:\nThreshold applied to wrong scale.\n\nCause:\nUnscaled numeric inputs.\n\nQuick Fix:\nChoose threshold after checking feature ranges.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.Binarizer.html"
+    },
+    {
+      "problem": "Impute missing values",
+      "trigger": "Data contains NaN or missing categorical values.",
+      "snippet": "from sklearn.impute import SimpleImputer\nimport numpy as np\n\nX = np.array([[1.0, np.nan], [2.0, 3.0], [np.nan, 4.0]])\nimp = SimpleImputer(strategy=\"median\")\nX_imp = imp.fit_transform(X)",
+      "minimal_notes": "Fit imputers on training data only.",
+      "common_bug": "Issue:\nLeakage through imputation.\n\nCause:\nComputing statistics on full dataset.\n\nQuick Fix:\nPlace imputer inside a pipeline.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.impute.SimpleImputer.html"
+    },
+    {
+      "problem": "Select columns by type",
+      "trigger": "Need automatic column routing in mixed-type tabular data.",
+      "snippet": "from sklearn.compose import make_column_selector\nselector = make_column_selector(dtype_include=\"number\")",
+      "minimal_notes": "Use with `ColumnTransformer` for robust tabular pipelines.",
+      "common_bug": "Issue:\nWrong columns selected.\n\nCause:\nMismatched dtypes.\n\nQuick Fix:\nInspect dataframe dtypes before building the selector.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.compose.make_column_selector.html"
+    },
+    {
+      "problem": "Apply different transforms to columns",
+      "trigger": "Numeric and categorical features need different preprocessing.",
+      "snippet": "from sklearn.compose import ColumnTransformer\nfrom sklearn.preprocessing import StandardScaler, OneHotEncoder\nimport pandas as pd\n\nX = pd.DataFrame({\"age\": [20, 30], \"city\": [\"a\", \"b\"]})\nct = ColumnTransformer(\n    [\n        (\"num\", StandardScaler(), [\"age\"]),\n        (\"cat\", OneHotEncoder(handle_unknown=\"ignore\", sparse_output=False), [\"city\"]),\n    ]\n)\nX_out = ct.fit_transform(X)",
+      "minimal_notes": "This is the standard tabular preprocessing pattern.",
+      "common_bug": "Issue:\nFeature name confusion.\n\nCause:\nMixed output types and encoders.\n\nQuick Fix:\nUse `set_output` or `get_feature_names_out`.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.compose.ColumnTransformer.html"
+    },
+    {
+      "problem": "Control transformer output as pandas",
+      "trigger": "Need DataFrame outputs with preserved names.",
+      "snippet": "from sklearn.preprocessing import StandardScaler\nimport pandas as pd\n\nX = pd.DataFrame({\"a\": [1, 2], \"b\": [3, 4]})\nscaler = StandardScaler().set_output(transform=\"pandas\")\nX_out = scaler.fit_transform(X)",
+      "minimal_notes": "Works on many transformers and pipelines.",
+      "common_bug": "Issue:\nLosing column names.\n\nCause:\nDefault NumPy output.\n\nQuick Fix:\nCall `set_output(transform=\"pandas\")`.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.base.TransformerMixin.set_output.html"
+    },
+    {
+      "problem": "Get output feature names",
+      "trigger": "Need transformed column names after preprocessing.",
+      "snippet": "from sklearn.compose import ColumnTransformer\nfrom sklearn.preprocessing import StandardScaler, OneHotEncoder\nimport pandas as pd\n\nX = pd.DataFrame({\"age\": [20, 30], \"city\": [\"a\", \"b\"]})\nct = ColumnTransformer(\n    [\n        (\"num\", StandardScaler(), [\"age\"]),\n        (\"cat\", OneHotEncoder(handle_unknown=\"ignore\", sparse_output=False), [\"city\"]),\n    ]\n).fit(X)\nnames = ct.get_feature_names_out()",
+      "minimal_notes": "Helpful for debugging and downstream feature tracking.",
+      "common_bug": "Issue:\nName mismatches after encoding.\n\nCause:\nTransformed features expand into multiple columns.\n\nQuick Fix:\nInspect feature names after fitting.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.compose.ColumnTransformer.get_feature_names_out.html"
+    },
+    {
+      "problem": "Filter low-variance features",
+      "trigger": "Need to remove constant or near-constant columns.",
+      "snippet": "from sklearn.feature_selection import VarianceThreshold\nimport numpy as np\n\nX = np.array([[1, 0], [1, 1], [1, 2]])\nX_sel = VarianceThreshold(threshold=0.0).fit_transform(X)",
+      "minimal_notes": "Fast unsupervised filter before modeling.",
+      "common_bug": "Issue:\nRemoving too many sparse indicators.\n\nCause:\nThreshold too aggressive.\n\nQuick Fix:\nStart with `threshold=0.0`.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html"
+    },
+    {
+      "problem": "Select top-k features",
+      "trigger": "Need a quick univariate feature filter.",
+      "snippet": "from sklearn.feature_selection import SelectKBest, mutual_info_classif\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nX_sel = SelectKBest(mutual_info_classif, k=2).fit_transform(X, y)",
+      "minimal_notes": "Useful for rough ranking before a stronger model.",
+      "common_bug": "Issue:\nWrong scoring function for target type.\n\nCause:\nMixing classification and regression criteria.\n\nQuick Fix:\nUse `mutual_info_classif` or `mutual_info_regression` appropriately.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SelectKBest.html"
+    },
+    {
+      "problem": "Select features with a model",
+      "trigger": "Need embedded feature selection from trained coefficients or importances.",
+      "snippet": "from sklearn.feature_selection import SelectFromModel\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nsel = SelectFromModel(LogisticRegression(max_iter=200)).fit(X, y)\nX_sel = sel.transform(X)",
+      "minimal_notes": "Works well with sparse or linear models.",
+      "common_bug": "Issue:\nNo features selected.\n\nCause:\nThreshold too strict.\n\nQuick Fix:\nLower the threshold or use a stronger estimator.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SelectFromModel.html"
+    },
+    {
+      "problem": "Recursive feature elimination",
+      "trigger": "Need wrapper-based feature ranking.",
+      "snippet": "from sklearn.feature_selection import RFE\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nrfe = RFE(LogisticRegression(max_iter=200), n_features_to_select=2)\nX_sel = rfe.fit_transform(X, y)",
+      "minimal_notes": "Iteratively removes the weakest features.",
+      "common_bug": "Issue:\nSlow runtime.\n\nCause:\nRepeated refits.\n\nQuick Fix:\nUse on small/medium feature sets only.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFE.html"
+    },
+    {
+      "problem": "Recursive feature elimination with CV",
+      "trigger": "Need CV-backed feature count selection.",
+      "snippet": "from sklearn.feature_selection import RFECV\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.datasets import load_iris\nfrom sklearn.model_selection import StratifiedKFold\n\nX, y = load_iris(return_X_y=True)\ncv = StratifiedKFold(5, shuffle=True, random_state=42)\nrfecv = RFECV(LogisticRegression(max_iter=200), cv=cv)\nX_sel = rfecv.fit_transform(X, y)",
+      "minimal_notes": "More expensive than `RFE`, but more defensible.",
+      "common_bug": "Issue:\nLong training times.\n\nCause:\nNested repeated fitting.\n\nQuick Fix:\nReduce folds or feature count.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFECV.html"
+    },
+    {
+      "problem": "Run PCA",
+      "trigger": "Need orthogonal compression of dense numeric data.",
+      "snippet": "from sklearn.decomposition import PCA\nimport numpy as np\n\nX = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])\nX_pca = PCA(n_components=1, random_state=42).fit_transform(X)",
+      "minimal_notes": "Standard choice for dense, centered numeric matrices.",
+      "common_bug": "Issue:\nPoor results on unscaled features.\n\nCause:\nLarge-magnitude columns dominate variance.\n\nQuick Fix:\nScale before PCA when units differ.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html"
+    },
+    {
+      "problem": "Run incremental PCA",
+      "trigger": "Need PCA-style reduction on larger datasets.",
+      "snippet": "from sklearn.decomposition import IncrementalPCA\nimport numpy as np\n\nX = np.random.RandomState(42).randn(100, 10)\nipca = IncrementalPCA(n_components=3, batch_size=20)\nX_red = ipca.fit_transform(X)",
+      "minimal_notes": "Processes data in chunks.",
+      "common_bug": "Issue:\nBatch-size instability.\n\nCause:\nToo-small chunks.\n\nQuick Fix:\nUse a reasonable batch size.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.IncrementalPCA.html"
+    },
+    {
+      "problem": "Run truncated SVD",
+      "trigger": "Need low-rank reduction on sparse text-like matrices.",
+      "snippet": "from sklearn.decomposition import TruncatedSVD\nfrom scipy import sparse\nimport numpy as np\n\nX = sparse.csr_matrix(np.array([[1, 0, 2], [0, 1, 0], [3, 0, 1]]))\nX_red = TruncatedSVD(n_components=2, random_state=42).fit_transform(X)",
+      "minimal_notes": "Works without centering sparse input.",
+      "common_bug": "Issue:\nDensifying sparse matrices.\n\nCause:\nUsing PCA where SVD is needed.\n\nQuick Fix:\nPrefer `TruncatedSVD` for sparse matrices.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.TruncatedSVD.html"
+    },
+    {
+      "problem": "Run kernel PCA",
+      "trigger": "Need nonlinear dimensionality reduction.",
+      "snippet": "from sklearn.decomposition import KernelPCA\nimport numpy as np\n\nX = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])\nX_kpca = KernelPCA(n_components=1, kernel=\"rbf\", gamma=0.1).fit_transform(X)",
+      "minimal_notes": "Useful for nonlinear manifolds on small data.",
+      "common_bug": "Issue:\nSlow scaling.\n\nCause:\nKernel methods scale poorly with sample count.\n\nQuick Fix:\nUse on smaller datasets.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.KernelPCA.html"
+    },
+    {
+      "problem": "Run ICA",
+      "trigger": "Need latent source separation.",
+      "snippet": "from sklearn.decomposition import FastICA\nimport numpy as np\n\nX = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])\nX_ica = FastICA(n_components=1, random_state=42).fit_transform(X)",
+      "minimal_notes": "Best when components are statistically independent.",
+      "common_bug": "Issue:\nInstability across runs.\n\nCause:\nRandom initialization.\n\nQuick Fix:\nSet `random_state`.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.FastICA.html"
+    },
+    {
+      "problem": "Run NMF",
+      "trigger": "Need additive parts-based decomposition on non-negative data.",
+      "snippet": "from sklearn.decomposition import NMF\nimport numpy as np\n\nX = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])\nX_nmf = NMF(n_components=1, init=\"nndsvda\", random_state=42).fit_transform(X)",
+      "minimal_notes": "Input must be non-negative.",
+      "common_bug": "Issue:\nNegative input errors or poor convergence.\n\nCause:\nData violates NMF constraints.\n\nQuick Fix:\nShift or transform data to non-negative values.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.NMF.html"
+    },
+    {
+      "problem": "Fit logistic regression",
+      "trigger": "Need a fast, interpretable linear classifier.",
+      "snippet": "from sklearn.linear_model import LogisticRegression\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = LogisticRegression(max_iter=200).fit(X, y)\ny_pred = clf.predict(X)",
+      "minimal_notes": "Often a strong baseline for tabular classification.",
+      "common_bug": "Issue:\nConvergence warnings.\n\nCause:\nInsufficient iterations or unscaled inputs.\n\nQuick Fix:\nScale features and raise `max_iter`.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html"
+    },
+    {
+      "problem": "Fit SGD classifier",
+      "trigger": "Need scalable linear classification on large sparse data.",
+      "snippet": "from sklearn.linear_model import SGDClassifier\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = SGDClassifier(loss=\"log_loss\", random_state=42).fit(X, y)",
+      "minimal_notes": "Good for large or streaming-style workloads.",
+      "common_bug": "Issue:\nSensitive to feature scaling.\n\nCause:\nGradient-based optimization.\n\nQuick Fix:\nScale input features.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDClassifier.html"
+    },
+    {
+      "problem": "Fit passive-aggressive classifier",
+      "trigger": "Need online-style linear classification with fast updates.",
+      "snippet": "from sklearn.linear_model import PassiveAggressiveClassifier\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = PassiveAggressiveClassifier(random_state=42).fit(X, y)",
+      "minimal_notes": "Useful for large sparse problems.",
+      "common_bug": "Issue:\nUnstable performance.\n\nCause:\nAggressive online updates.\n\nQuick Fix:\nScale features and tune regularization.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.PassiveAggressiveClassifier.html"
+    },
+    {
+      "problem": "Fit a decision tree classifier",
+      "trigger": "Need interpretable rules and nonlinear splits.",
+      "snippet": "from sklearn.tree import DecisionTreeClassifier\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = DecisionTreeClassifier(random_state=42).fit(X, y)",
+      "minimal_notes": "Easy to inspect, easy to overfit.",
+      "common_bug": "Issue:\nDeep overfitting.\n\nCause:\nUnrestricted tree growth.\n\nQuick Fix:\nSet `max_depth`, `min_samples_leaf`, or prune.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html"
+    },
+    {
+      "problem": "Fit a random forest classifier",
+      "trigger": "Need a robust default classifier for tabular data.",
+      "snippet": "from sklearn.ensemble import RandomForestClassifier\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = RandomForestClassifier(n_estimators=200, random_state=42).fit(X, y)",
+      "minimal_notes": "Strong general-purpose model with feature importance.",
+      "common_bug": "Issue:\nSlow training on large forests.\n\nCause:\nMany trees with deep splits.\n\nQuick Fix:\nReduce tree count or depth.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html"
+    },
+    {
+      "problem": "Fit an extra-trees classifier",
+      "trigger": "Need a high-variance, often strong tree ensemble.",
+      "snippet": "from sklearn.ensemble import ExtraTreesClassifier\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = ExtraTreesClassifier(n_estimators=200, random_state=42).fit(X, y)",
+      "minimal_notes": "Often faster than random forests on some tabular data.",
+      "common_bug": "Issue:\nLess interpretability.\n\nCause:\nMore randomized splits.\n\nQuick Fix:\nUse feature importance or simpler models for explanations.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html"
+    },
+    {
+      "problem": "Fit a histogram gradient boosting classifier",
+      "trigger": "Need a strong modern gradient-boosted tabular classifier.",
+      "snippet": "from sklearn.ensemble import HistGradientBoostingClassifier\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = HistGradientBoostingClassifier(random_state=42).fit(X, y)",
+      "minimal_notes": "Good default for many structured-data classification tasks.",
+      "common_bug": "Issue:\nUnexpected missing-value behavior assumptions.\n\nCause:\nDifferent trees handle NaNs differently.\n\nQuick Fix:\nVerify estimator-specific missing-value support.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.HistGradientBoostingClassifier.html"
+    },
+    {
+      "problem": "Fit an AdaBoost classifier",
+      "trigger": "Need boosting with simple weak learners.",
+      "snippet": "from sklearn.ensemble import AdaBoostClassifier\nfrom sklearn.tree import DecisionTreeClassifier\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = AdaBoostClassifier(\n    estimator=DecisionTreeClassifier(max_depth=1),\n    n_estimators=100,\n    random_state=42,\n).fit(X, y)",
+      "minimal_notes": "Often paired with shallow trees.",
+      "common_bug": "Issue:\nWeak improvement over baseline.\n\nCause:\nWeak learner too weak or noisy data.\n\nQuick Fix:\nTune base estimator and learning rate.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html"
+    },
+    {
+      "problem": "Fit a bagging classifier",
+      "trigger": "Need bootstrap aggregation around a base estimator.",
+      "snippet": "from sklearn.ensemble import BaggingClassifier\nfrom sklearn.tree import DecisionTreeClassifier\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = BaggingClassifier(\n    estimator=DecisionTreeClassifier(),\n    n_estimators=20,\n    random_state=42,\n).fit(X, y)",
+      "minimal_notes": "Reduces variance of unstable learners.",
+      "common_bug": "Issue:\nSlow if the base estimator is already expensive.\n\nCause:\nMany repeated fits.\n\nQuick Fix:\nUse a cheaper base estimator or fewer bags.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.BaggingClassifier.html"
+    },
+    {
+      "problem": "Fit a voting classifier",
+      "trigger": "Need to combine multiple trained classifiers.",
+      "snippet": "from sklearn.ensemble import VotingClassifier\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.tree import DecisionTreeClassifier\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = VotingClassifier(\n    estimators=[\n        (\"lr\", LogisticRegression(max_iter=200)),\n        (\"dt\", DecisionTreeClassifier(random_state=42)),\n    ],\n    voting=\"soft\",\n).fit(X, y)",
+      "minimal_notes": "Soft voting needs probability-supporting estimators.",
+      "common_bug": "Issue:\nSoft voting fails to work as expected.\n\nCause:\nA member estimator lacks `predict_proba`.\n\nQuick Fix:\nUse compatible estimators or hard voting.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.VotingClassifier.html"
+    },
+    {
+      "problem": "Fit a stacking classifier",
+      "trigger": "Need a meta-model over multiple base classifiers.",
+      "snippet": "from sklearn.ensemble import StackingClassifier\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.tree import DecisionTreeClassifier\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = StackingClassifier(\n    estimators=[\n        (\"lr\", LogisticRegression(max_iter=200)),\n        (\"dt\", DecisionTreeClassifier(random_state=42)),\n    ],\n    final_estimator=LogisticRegression(max_iter=200),\n).fit(X, y)",
+      "minimal_notes": "Stacking usually benefits from out-of-fold training.",
+      "common_bug": "Issue:\nLeakage in meta-features.\n\nCause:\nImproper stacking setup.\n\nQuick Fix:\nUse the built-in stacking estimator.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.StackingClassifier.html"
+    },
+    {
+      "problem": "Fit an SVC",
+      "trigger": "Need a kernelized classifier for smaller datasets.",
+      "snippet": "from sklearn.svm import SVC\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = SVC(probability=True, random_state=42).fit(X, y)",
+      "minimal_notes": "Often powerful but slower on large datasets.",
+      "common_bug": "Issue:\nSlow training.\n\nCause:\nKernel methods scale poorly.\n\nQuick Fix:\nUse linear models for large data.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html"
+    },
+    {
+      "problem": "Fit a linear SVC",
+      "trigger": "Need a fast linear margin classifier.",
+      "snippet": "from sklearn.svm import LinearSVC\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = LinearSVC(random_state=42).fit(X, y)",
+      "minimal_notes": "Good for large sparse data.",
+      "common_bug": "Issue:\nNo probability output.\n\nCause:\nLinearSVC does not expose `predict_proba`.\n\nQuick Fix:\nUse calibration if probabilities are needed.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html"
+    },
+    {
+      "problem": "Fit a k-nearest neighbors classifier",
+      "trigger": "Need a simple similarity-based classifier.",
+      "snippet": "from sklearn.neighbors import KNeighborsClassifier\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = KNeighborsClassifier(n_neighbors=5).fit(X, y)",
+      "minimal_notes": "Sensitive to feature scaling.",
+      "common_bug": "Issue:\nPoor accuracy on unscaled data.\n\nCause:\nDistance calculations are scale-dependent.\n\nQuick Fix:\nScale features first.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html"
+    },
+    {
+      "problem": "Fit Gaussian Naive Bayes",
+      "trigger": "Need a fast probabilistic baseline for continuous features.",
+      "snippet": "from sklearn.naive_bayes import GaussianNB\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = GaussianNB().fit(X, y)",
+      "minimal_notes": "Strong baseline when class-conditional Gaussianity is reasonable.",
+      "common_bug": "Issue:\nPoor calibration or unrealistic assumptions.\n\nCause:\nFeature independence and Gaussian assumptions.\n\nQuick Fix:\nCompare against a discriminative baseline.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html"
+    },
+    {
+      "problem": "Fit multinomial Naive Bayes",
+      "trigger": "Need a sparse count-based classifier for text-like data.",
+      "snippet": "from sklearn.naive_bayes import MultinomialNB\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = MultinomialNB().fit(X, y)",
+      "minimal_notes": "Best on non-negative counts or frequencies.",
+      "common_bug": "Issue:\nInvalid input domain.\n\nCause:\nNegative feature values.\n\nQuick Fix:\nUse count/frequency features or another model.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.MultinomialNB.html"
+    },
+    {
+      "problem": "Fit an MLP classifier",
+      "trigger": "Need a flexible neural baseline inside scikit-learn.",
+      "snippet": "from sklearn.neural_network import MLPClassifier\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = MLPClassifier(hidden_layer_sizes=(50,), max_iter=500, random_state=42).fit(X, y)",
+      "minimal_notes": "Scale features before training.",
+      "common_bug": "Issue:\nConvergence problems.\n\nCause:\nUnscaled inputs or low iteration cap.\n\nQuick Fix:\nStandardize features and increase `max_iter`.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html"
+    },
+    {
+      "problem": "Use a dummy classifier",
+      "trigger": "Need a baseline for comparison.",
+      "snippet": "from sklearn.dummy import DummyClassifier\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = DummyClassifier(strategy=\"most_frequent\", random_state=42).fit(X, y)",
+      "minimal_notes": "Always compare real models against a trivial baseline.",
+      "common_bug": "Issue:\nMisreading a baseline as a useful model.\n\nCause:\nBaseline scores can look acceptable on skewed data.\n\nQuick Fix:\nTreat as a floor, not a solution.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html"
+    },
+    {
+      "problem": "Calibrate classifier probabilities",
+      "trigger": "Need better probability estimates from a classifier.",
+      "snippet": "from sklearn.calibration import CalibratedClassifierCV\nfrom sklearn.svm import LinearSVC\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = CalibratedClassifierCV(LinearSVC(random_state=42)).fit(X, y)",
+      "minimal_notes": "Useful when the base classifier lacks good probabilities.",
+      "common_bug": "Issue:\nOverconfident probabilities.\n\nCause:\nRaw decision scores are not calibrated.\n\nQuick Fix:\nCalibrate on held-out folds.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.calibration.CalibratedClassifierCV.html"
+    },
+    {
+      "problem": "Fit linear regression",
+      "trigger": "Need a simple continuous baseline.",
+      "snippet": "from sklearn.linear_model import LinearRegression\nfrom sklearn.datasets import load_diabetes\n\nX, y = load_diabetes(return_X_y=True)\nreg = LinearRegression().fit(X, y)",
+      "minimal_notes": "Good for linear relationships and quick baselines.",
+      "common_bug": "Issue:\nPoor fit on nonlinear data.\n\nCause:\nLinear functional form.\n\nQuick Fix:\nTry transformed features or nonlinear models.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html"
+    },
+    {
+      "problem": "Fit ridge regression",
+      "trigger": "Need regularized linear regression.",
+      "snippet": "from sklearn.linear_model import Ridge\nfrom sklearn.datasets import load_diabetes\n\nX, y = load_diabetes(return_X_y=True)\nreg = Ridge(alpha=1.0).fit(X, y)",
+      "minimal_notes": "Good default when multicollinearity exists.",
+      "common_bug": "Issue:\nUnderfitting.\n\nCause:\nRegularization too strong.\n\nQuick Fix:\nLower `alpha`.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Ridge.html"
+    },
+    {
+      "problem": "Fit lasso regression",
+      "trigger": "Need sparse linear regression with feature selection.",
+      "snippet": "from sklearn.linear_model import Lasso\nfrom sklearn.datasets import load_diabetes\n\nX, y = load_diabetes(return_X_y=True)\nreg = Lasso(alpha=0.1, max_iter=5000).fit(X, y)",
+      "minimal_notes": "Can drive coefficients to zero.",
+      "common_bug": "Issue:\nNon-convergence.\n\nCause:\nToo few iterations or poorly scaled data.\n\nQuick Fix:\nScale features and increase `max_iter`.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html"
+    },
+    {
+      "problem": "Fit elastic net regression",
+      "trigger": "Need a blend of ridge and lasso.",
+      "snippet": "from sklearn.linear_model import ElasticNet\nfrom sklearn.datasets import load_diabetes\n\nX, y = load_diabetes(return_X_y=True)\nreg = ElasticNet(alpha=0.1, l1_ratio=0.5, max_iter=5000).fit(X, y)",
+      "minimal_notes": "Useful when correlated predictors matter.",
+      "common_bug": "Issue:\nWeak feature sparsity or fit.\n\nCause:\nPoor alpha/L1 balance.\n\nQuick Fix:\nTune `alpha` and `l1_ratio`.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html"
+    },
+    {
+      "problem": "Fit SGD regressor",
+      "trigger": "Need scalable regression on large data.",
+      "snippet": "from sklearn.linear_model import SGDRegressor\nfrom sklearn.datasets import load_diabetes\n\nX, y = load_diabetes(return_X_y=True)\nreg = SGDRegressor(random_state=42, max_iter=1000, tol=1e-3).fit(X, y)",
+      "minimal_notes": "Good for large and sparse regression tasks.",
+      "common_bug": "Issue:\nNoisy convergence.\n\nCause:\nStep sizes and scaling.\n\nQuick Fix:\nScale features and tune learning settings.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDRegressor.html"
+    },
+    {
+      "problem": "Fit huber regression",
+      "trigger": "Need robust linear regression with outliers.",
+      "snippet": "from sklearn.linear_model import HuberRegressor\nfrom sklearn.datasets import load_diabetes\n\nX, y = load_diabetes(return_X_y=True)\nreg = HuberRegressor().fit(X, y)",
+      "minimal_notes": "More robust than ordinary least squares.",
+      "common_bug": "Issue:\nSlow convergence on unscaled data.\n\nCause:\nGradient optimization sensitivity.\n\nQuick Fix:\nScale features first.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.HuberRegressor.html"
+    },
+    {
+      "problem": "Fit RANSAC regression",
+      "trigger": "Need a robust model in the presence of outliers.",
+      "snippet": "from sklearn.linear_model import RANSACRegressor, LinearRegression\nfrom sklearn.datasets import load_diabetes\n\nX, y = load_diabetes(return_X_y=True)\nreg = RANSACRegressor(estimator=LinearRegression(), random_state=42).fit(X, y)",
+      "minimal_notes": "Uses repeated sampling to ignore outliers.",
+      "common_bug": "Issue:\nUnstable results.\n\nCause:\nRandom sampling behavior.\n\nQuick Fix:\nSet `random_state`.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RANSACRegressor.html"
+    },
+    {
+      "problem": "Fit a decision tree regressor",
+      "trigger": "Need an interpretable nonlinear regressor.",
+      "snippet": "from sklearn.tree import DecisionTreeRegressor\nfrom sklearn.datasets import load_diabetes\n\nX, y = load_diabetes(return_X_y=True)\nreg = DecisionTreeRegressor(random_state=42).fit(X, y)",
+      "minimal_notes": "Easy to overfit, but simple to explain.",
+      "common_bug": "Issue:\nHighly variable predictions.\n\nCause:\nDeep tree growth.\n\nQuick Fix:\nRegularize tree depth or leaf size.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html"
+    },
+    {
+      "problem": "Fit a random forest regressor",
+      "trigger": "Need a strong general-purpose tabular regressor.",
+      "snippet": "from sklearn.ensemble import RandomForestRegressor\nfrom sklearn.datasets import load_diabetes\n\nX, y = load_diabetes(return_X_y=True)\nreg = RandomForestRegressor(n_estimators=200, random_state=42).fit(X, y)",
+      "minimal_notes": "Strong baseline for nonlinear tabular regression.",
+      "common_bug": "Issue:\nLarge memory use.\n\nCause:\nMany deep trees.\n\nQuick Fix:\nReduce `n_estimators` or tree depth.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html"
+    },
+    {
+      "problem": "Fit an extra-trees regressor",
+      "trigger": "Need a randomized ensemble regressor.",
+      "snippet": "from sklearn.ensemble import ExtraTreesRegressor\nfrom sklearn.datasets import load_diabetes\n\nX, y = load_diabetes(return_X_y=True)\nreg = ExtraTreesRegressor(n_estimators=200, random_state=42).fit(X, y)",
+      "minimal_notes": "Often a good high-variance ensemble baseline.",
+      "common_bug": "Issue:\nLess stable feature importances.\n\nCause:\nStronger randomness.\n\nQuick Fix:\nUse repeated evaluation.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesRegressor.html"
+    },
+    {
+      "problem": "Fit a histogram gradient boosting regressor",
+      "trigger": "Need a modern boosted tree regressor.",
+      "snippet": "from sklearn.ensemble import HistGradientBoostingRegressor\nfrom sklearn.datasets import load_diabetes\n\nX, y = load_diabetes(return_X_y=True)\nreg = HistGradientBoostingRegressor(random_state=42).fit(X, y)",
+      "minimal_notes": "Strong on structured data.",
+      "common_bug": "Issue:\nPerformance depends on good hyperparameters.\n\nCause:\nBoosted trees are sensitive to tuning.\n\nQuick Fix:\nTune depth, learning rate, and iterations.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.HistGradientBoostingRegressor.html"
+    },
+    {
+      "problem": "Fit an AdaBoost regressor",
+      "trigger": "Need boosting for regression with weak base learners.",
+      "snippet": "from sklearn.ensemble import AdaBoostRegressor\nfrom sklearn.tree import DecisionTreeRegressor\nfrom sklearn.datasets import load_diabetes\n\nX, y = load_diabetes(return_X_y=True)\nreg = AdaBoostRegressor(\n    estimator=DecisionTreeRegressor(max_depth=3),\n    n_estimators=100,\n    random_state=42,\n).fit(X, y)",
+      "minimal_notes": "Pair with shallow trees for common use.",
+      "common_bug": "Issue:\nMarginal gains over simpler models.\n\nCause:\nWeak learner mismatch.\n\nQuick Fix:\nTune the base estimator carefully.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostRegressor.html"
+    },
+    {
+      "problem": "Fit a bagging regressor",
+      "trigger": "Need variance reduction for an unstable regressor.",
+      "snippet": "from sklearn.ensemble import BaggingRegressor\nfrom sklearn.tree import DecisionTreeRegressor\nfrom sklearn.datasets import load_diabetes\n\nX, y = load_diabetes(return_X_y=True)\nreg = BaggingRegressor(\n    estimator=DecisionTreeRegressor(),\n    n_estimators=20,\n    random_state=42,\n).fit(X, y)",
+      "minimal_notes": "Helps stabilize noisy base regressors.",
+      "common_bug": "Issue:\nExpensive repeated fitting.\n\nCause:\nLarge ensemble size.\n\nQuick Fix:\nReduce bags or choose a cheaper base estimator.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.BaggingRegressor.html"
+    },
+    {
+      "problem": "Fit SVR",
+      "trigger": "Need kernel regression on small/medium datasets.",
+      "snippet": "from sklearn.svm import SVR\nfrom sklearn.datasets import load_diabetes\n\nX, y = load_diabetes(return_X_y=True)\nreg = SVR().fit(X, y)",
+      "minimal_notes": "Kernel choice strongly affects behavior.",
+      "common_bug": "Issue:\nSlow on large datasets.\n\nCause:\nKernel scaling limits.\n\nQuick Fix:\nUse linear or tree-based models on large data.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html"
+    },
+    {
+      "problem": "Fit k-nearest neighbors regressor",
+      "trigger": "Need a local similarity-based regressor.",
+      "snippet": "from sklearn.neighbors import KNeighborsRegressor\nfrom sklearn.datasets import load_diabetes\n\nX, y = load_diabetes(return_X_y=True)\nreg = KNeighborsRegressor(n_neighbors=5).fit(X, y)",
+      "minimal_notes": "Sensitive to scaling and feature relevance.",
+      "common_bug": "Issue:\nPoor performance on mixed-scale data.\n\nCause:\nEuclidean distances dominate.\n\nQuick Fix:\nStandardize features first.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsRegressor.html"
+    },
+    {
+      "problem": "Use a dummy regressor",
+      "trigger": "Need a regression baseline.",
+      "snippet": "from sklearn.dummy import DummyRegressor\nfrom sklearn.datasets import load_diabetes\n\nX, y = load_diabetes(return_X_y=True)\nreg = DummyRegressor(strategy=\"mean\").fit(X, y)",
+      "minimal_notes": "Baseline for MAE, MSE, and R² comparisons.",
+      "common_bug": "Issue:\nBaseline mistaken for actual predictive power.\n\nCause:\nStrong mean target structure.\n\nQuick Fix:\nCompare against domain-appropriate metrics.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyRegressor.html"
+    },
+    {
+      "problem": "Fit KMeans",
+      "trigger": "Need centroid-based clustering.",
+      "snippet": "from sklearn.cluster import KMeans\nimport numpy as np\n\nX = np.array([[1, 2], [1, 4], [5, 8], [8, 8]])\nlabels = KMeans(n_clusters=2, random_state=42, n_init=\"auto\").fit_predict(X)",
+      "minimal_notes": "Scale features before distance-based clustering.",
+      "common_bug": "Issue:\nPoor clusters due to feature scale.\n\nCause:\nDistances dominated by large-range features.\n\nQuick Fix:\nStandardize input first.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html"
+    },
+    {
+      "problem": "Fit MiniBatchKMeans",
+      "trigger": "Need scalable KMeans for large datasets.",
+      "snippet": "from sklearn.cluster import MiniBatchKMeans\nimport numpy as np\n\nX = np.random.RandomState(42).randn(1000, 10)\nlabels = MiniBatchKMeans(n_clusters=3, random_state=42).fit_predict(X)",
+      "minimal_notes": "Faster and lighter than full KMeans.",
+      "common_bug": "Issue:\nSlightly lower cluster quality.\n\nCause:\nMini-batch approximation.\n\nQuick Fix:\nUse for speed, not exactness.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.cluster.MiniBatchKMeans.html"
+    },
+    {
+      "problem": "Fit DBSCAN",
+      "trigger": "Need density-based clustering with noise handling.",
+      "snippet": "from sklearn.cluster import DBSCAN\nimport numpy as np\n\nX = np.array([[1, 2], [1, 2.1], [10, 10], [10.1, 10]])\nlabels = DBSCAN(eps=0.5, min_samples=2).fit_predict(X)",
+      "minimal_notes": "Does not require a preset cluster count.",
+      "common_bug": "Issue:\nAll points become noise or one cluster.\n\nCause:\nPoor `eps` choice.\n\nQuick Fix:\nTune `eps` with scaled features.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html"
+    },
+    {
+      "problem": "Fit OPTICS",
+      "trigger": "Need density clustering with varying density.",
+      "snippet": "from sklearn.cluster import OPTICS\nimport numpy as np\n\nX = np.array([[1, 2], [1, 2.1], [10, 10], [10.1, 10]])\nlabels = OPTICS(min_samples=2).fit_predict(X)",
+      "minimal_notes": "More flexible than DBSCAN in some settings.",
+      "common_bug": "Issue:\nHard-to-interpret outputs.\n\nCause:\nDensity-based clustering complexity.\n\nQuick Fix:\nInspect reachability and labels carefully.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.cluster.OPTICS.html"
+    },
+    {
+      "problem": "Fit agglomerative clustering",
+      "trigger": "Need hierarchical clustering.",
+      "snippet": "from sklearn.cluster import AgglomerativeClustering\nimport numpy as np\n\nX = np.array([[1, 2], [1, 4], [5, 8], [8, 8]])\nlabels = AgglomerativeClustering(n_clusters=2).fit_predict(X)",
+      "minimal_notes": "Good when hierarchy matters.",
+      "common_bug": "Issue:\nOmitted distance scaling causes poor merges.\n\nCause:\nRaw feature distances dominate.\n\nQuick Fix:\nStandardize features first.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.cluster.AgglomerativeClustering.html"
+    },
+    {
+      "problem": "Fit Birch",
+      "trigger": "Need incremental clustering on larger data.",
+      "snippet": "from sklearn.cluster import Birch\nimport numpy as np\n\nX = np.random.RandomState(42).randn(100, 2)\nlabels = Birch(n_clusters=3).fit_predict(X)",
+      "minimal_notes": "Can be useful for large-scale clustering.",
+      "common_bug": "Issue:\nSensitive to threshold settings.\n\nCause:\nTree branching depends on compactness criteria.\n\nQuick Fix:\nTune `threshold` and `branching_factor`.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.cluster.Birch.html"
+    },
+    {
+      "problem": "Fit spectral clustering",
+      "trigger": "Need graph-based clustering for non-convex structures.",
+      "snippet": "from sklearn.cluster import SpectralClustering\nimport numpy as np\n\nX = np.array([[1, 2], [1, 4], [5, 8], [8, 8]])\nlabels = SpectralClustering(n_clusters=2, random_state=42, affinity=\"nearest_neighbors\").fit_predict(X)",
+      "minimal_notes": "Better for complex cluster shapes, slower than KMeans.",
+      "common_bug": "Issue:\nPoor scaling on large sample counts.\n\nCause:\nGraph construction and eigendecomposition cost.\n\nQuick Fix:\nUse on smaller datasets.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.cluster.SpectralClustering.html"
+    },
+    {
+      "problem": "Compute classification metrics",
+      "trigger": "Need a standard classification score set.",
+      "snippet": "from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score\n\ny_true = [0, 1, 1, 0]\ny_pred = [0, 1, 0, 0]\nacc = accuracy_score(y_true, y_pred)\nprec = precision_score(y_true, y_pred)\nrec = recall_score(y_true, y_pred)\nf1 = f1_score(y_true, y_pred)",
+      "minimal_notes": "Choose averaging carefully for multiclass or multilabel problems.",
+      "common_bug": "Issue:\nMetric errors on multiclass data.\n\nCause:\nDefault binary averaging.\n\nQuick Fix:\nSet `average=` explicitly.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.accuracy_score.html"
+    },
+    {
+      "problem": "Compute balanced classification scores",
+      "trigger": "Need metrics robust to class imbalance.",
+      "snippet": "from sklearn.metrics import balanced_accuracy_score, matthews_corrcoef, cohen_kappa_score\n\ny_true = [0, 1, 1, 0]\ny_pred = [0, 1, 0, 0]\nbal_acc = balanced_accuracy_score(y_true, y_pred)\nmcc = matthews_corrcoef(y_true, y_pred)\nkappa = cohen_kappa_score(y_true, y_pred)",
+      "minimal_notes": "Useful when raw accuracy is misleading.",
+      "common_bug": "Issue:\nImbalanced classes hide poor minority performance.\n\nCause:\nAccuracy overweights the majority class.\n\nQuick Fix:\nUse imbalance-aware metrics.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.balanced_accuracy_score.html"
+    },
+    {
+      "problem": "Compute probability-based metrics",
+      "trigger": "Need ROC AUC or log loss from predicted probabilities.",
+      "snippet": "from sklearn.metrics import roc_auc_score, log_loss\n\ny_true = [0, 1, 1, 0]\ny_prob = [0.1, 0.9, 0.7, 0.2]\nauc = roc_auc_score(y_true, y_prob)\nloss = log_loss(y_true, y_prob)",
+      "minimal_notes": "Use probabilities, not labels, for these metrics.",
+      "common_bug": "Issue:\nWrong input format.\n\nCause:\nPassing labels into probability metrics.\n\nQuick Fix:\nUse `predict_proba` outputs.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html"
+    },
+    {
+      "problem": "Compute regression metrics",
+      "trigger": "Need standard regression evaluation.",
+      "snippet": "from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score\n\ny_true = [3.0, 2.0, 5.0]\ny_pred = [2.5, 2.0, 4.0]\nmae = mean_absolute_error(y_true, y_pred)\nmse = mean_squared_error(y_true, y_pred)\nrmse = mean_squared_error(y_true, y_pred, squared=False)\nr2 = r2_score(y_true, y_pred)",
+      "minimal_notes": "RMSE is just MSE with `squared=False`.",
+      "common_bug": "Issue:\nComparing metrics across incompatible scales.\n\nCause:\nTarget units not standardized.\n\nQuick Fix:\nInterpret regression metrics in domain units.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_absolute_error.html"
+    },
+    {
+      "problem": "Compute clustering metrics",
+      "trigger": "Need intrinsic cluster quality scores.",
+      "snippet": "from sklearn.metrics import silhouette_score, davies_bouldin_score, calinski_harabasz_score\nimport numpy as np\n\nX = np.array([[1, 2], [1, 4], [5, 8], [8, 8]])\nlabels = np.array([0, 0, 1, 1])\nsil = silhouette_score(X, labels)\ndb = davies_bouldin_score(X, labels)\nch = calinski_harabasz_score(X, labels)",
+      "minimal_notes": "Use these only when labels are meaningful.",
+      "common_bug": "Issue:\nMisleading cluster scores on poor embeddings.\n\nCause:\nRaw features may not reflect structure.\n\nQuick Fix:\nCompare multiple metrics and inspect clusters visually.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.silhouette_score.html"
+    },
+    {
+      "problem": "Plot confusion matrix",
+      "trigger": "Need a visual error breakdown for classification.",
+      "snippet": "from sklearn.metrics import ConfusionMatrixDisplay\nfrom sklearn.datasets import load_iris\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.model_selection import train_test_split\n\nX, y = load_iris(return_X_y=True)\nX_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, stratify=y)\nclf = LogisticRegression(max_iter=200).fit(X_train, y_train)\nConfusionMatrixDisplay.from_estimator(clf, X_test, y_test)",
+      "minimal_notes": "Great for spotting class-specific confusion.",
+      "common_bug": "Issue:\nMisread axes or normalization.\n\nCause:\nPlot defaults vary.\n\nQuick Fix:\nCheck the display options before interpreting values.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.ConfusionMatrixDisplay.html"
+    },
+    {
+      "problem": "Plot ROC curve",
+      "trigger": "Need threshold-sensitive binary classifier visualization.",
+      "snippet": "from sklearn.metrics import RocCurveDisplay\nfrom sklearn.datasets import load_iris\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.model_selection import train_test_split\n\nX, y = load_iris(return_X_y=True)\nmask = y != 2\nX, y = X[mask], y[mask]\nX_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, stratify=y)\nclf = LogisticRegression(max_iter=200).fit(X_train, y_train)\nRocCurveDisplay.from_estimator(clf, X_test, y_test)",
+      "minimal_notes": "Requires probabilities or decision scores.",
+      "common_bug": "Issue:\nInvalid multiclass use.\n\nCause:\nROC curve example expects binary setup unless specialized.\n\nQuick Fix:\nUse binary labels or one-vs-rest logic.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.RocCurveDisplay.html"
+    },
+    {
+      "problem": "Plot precision-recall curve",
+      "trigger": "Need PR evaluation for imbalanced classification.",
+      "snippet": "from sklearn.metrics import PrecisionRecallDisplay\nfrom sklearn.datasets import load_iris\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.model_selection import train_test_split\n\nX, y = load_iris(return_X_y=True)\nmask = y != 2\nX, y = X[mask], y[mask]\nX_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, stratify=y)\nclf = LogisticRegression(max_iter=200).fit(X_train, y_train)\nPrecisionRecallDisplay.from_estimator(clf, X_test, y_test)",
+      "minimal_notes": "More informative than ROC in heavily imbalanced settings.",
+      "common_bug": "Issue:\nMisleading comparison with accuracy.\n\nCause:\nDifferent threshold behavior.\n\nQuick Fix:\nUse PR curve for rare positives.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.PrecisionRecallDisplay.html"
+    },
+    {
+      "problem": "Plot calibration curve",
+      "trigger": "Need to inspect predicted probability calibration.",
+      "snippet": "from sklearn.calibration import CalibrationDisplay\nfrom sklearn.datasets import load_iris\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.model_selection import train_test_split\n\nX, y = load_iris(return_X_y=True)\nmask = y != 2\nX, y = X[mask], y[mask]\nX_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, stratify=y)\nclf = LogisticRegression(max_iter=200).fit(X_train, y_train)\nCalibrationDisplay.from_estimator(clf, X_test, y_test)",
+      "minimal_notes": "Useful for probability quality checks.",
+      "common_bug": "Issue:\nGood classification but poor calibration.\n\nCause:\nDecision quality and probability quality are different.\n\nQuick Fix:\nCalibrate separately if probabilities matter.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.calibration.CalibrationDisplay.html"
+    },
+    {
+      "problem": "Plot decision boundary",
+      "trigger": "Need to visualize a 2D classifier boundary.",
+      "snippet": "from sklearn.inspection import DecisionBoundaryDisplay\nfrom sklearn.svm import SVC\nfrom sklearn.datasets import load_iris\nimport numpy as np\n\nX, y = load_iris(return_X_y=True)\nX2 = X[:, :2]\nclf = SVC(kernel=\"linear\").fit(X2, y)\nDecisionBoundaryDisplay.from_estimator(clf, X2, response_method=\"predict\")",
+      "minimal_notes": "Works best with two input features.",
+      "common_bug": "Issue:\nHard-to-read plots in high dimensions.\n\nCause:\nBoundary plots are 2D projections.\n\nQuick Fix:\nReduce to two features for visualization only.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.inspection.DecisionBoundaryDisplay.html"
+    },
+    {
+      "problem": "Compute cross-validated scores",
+      "trigger": "Need one metric across folds.",
+      "snippet": "from sklearn.model_selection import cross_val_score, StratifiedKFold\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\ncv = StratifiedKFold(5, shuffle=True, random_state=42)\nscores = cross_val_score(LogisticRegression(max_iter=200), X, y, cv=cv, scoring=\"accuracy\")",
+      "minimal_notes": "Quickest standard CV helper.",
+      "common_bug": "Issue:\nLeakage from preprocessing outside CV.\n\nCause:\nTransformations done before cross-validation.\n\nQuick Fix:\nWrap preprocessing in a pipeline.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_val_score.html"
+    },
+    {
+      "problem": "Compute multiple CV metrics",
+      "trigger": "Need richer evaluation than a single score.",
+      "snippet": "from sklearn.model_selection import cross_validate, StratifiedKFold\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\ncv = StratifiedKFold(5, shuffle=True, random_state=42)\nresults = cross_validate(\n    LogisticRegression(max_iter=200),\n    X, y,\n    cv=cv,\n    scoring={\"acc\": \"accuracy\", \"f1\": \"f1_macro\"},\n    return_train_score=True,\n)",
+      "minimal_notes": "Returns per-fold metrics and fit times.",
+      "common_bug": "Issue:\nMisreading score keys.\n\nCause:\nCustom scorer names become result keys.\n\nQuick Fix:\nCheck the returned dictionary keys.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_validate.html"
+    },
+    {
+      "problem": "Get out-of-fold predictions",
+      "trigger": "Need predictions for stacking, calibration, or error analysis.",
+      "snippet": "from sklearn.model_selection import cross_val_predict, StratifiedKFold\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\ncv = StratifiedKFold(5, shuffle=True, random_state=42)\ny_pred = cross_val_predict(LogisticRegression(max_iter=200), X, y, cv=cv)",
+      "minimal_notes": "Predictions are generated from held-out folds.",
+      "common_bug": "Issue:\nMisusing out-of-fold predictions as final model output.\n\nCause:\nThey are CV predictions, not a refit on all data.\n\nQuick Fix:\nFit a final model separately if needed.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_val_predict.html"
+    },
+    {
+      "problem": "Plot learning curves",
+      "trigger": "Need to diagnose data size vs bias/variance behavior.",
+      "snippet": "from sklearn.model_selection import learning_curve\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\ntrain_sizes, train_scores, test_scores = learning_curve(\n    LogisticRegression(max_iter=200),\n    X, y,\n    cv=5,\n    train_sizes=[0.1, 0.5, 1.0],\n)",
+      "minimal_notes": "Useful for spotting underfitting and overfitting patterns.",
+      "common_bug": "Issue:\nNoisy curves.\n\nCause:\nToo few folds or unstable data.\n\nQuick Fix:\nUse more folds or repeated CV.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.learning_curve.html"
+    },
+    {
+      "problem": "Plot validation curves",
+      "trigger": "Need to tune one hyperparameter across a range.",
+      "snippet": "from sklearn.model_selection import validation_curve\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.datasets import load_iris\nimport numpy as np\n\nX, y = load_iris(return_X_y=True)\nparam_range = np.logspace(-3, 2, 6)\ntrain_scores, test_scores = validation_curve(\n    LogisticRegression(max_iter=200),\n    X, y,\n    param_name=\"C\",\n    param_range=param_range,\n    cv=5,\n)",
+      "minimal_notes": "Helps identify over- or under-regularization.",
+      "common_bug": "Issue:\nTuning the wrong parameter scale.\n\nCause:\nLinear spacing on log-scale hyperparameters.\n\nQuick Fix:\nUse logarithmic ranges for `C`, `alpha`, and similar parameters.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.validation_curve.html"
+    },
+    {
+      "problem": "Run grid search",
+      "trigger": "Need exhaustive search over a small parameter grid.",
+      "snippet": "from sklearn.model_selection import GridSearchCV\nfrom sklearn.svm import SVC\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\ngrid = GridSearchCV(SVC(), {\"C\": [0.1, 1, 10], \"kernel\": [\"linear\", \"rbf\"]}, cv=5)\ngrid.fit(X, y)",
+      "minimal_notes": "Good when the grid is small and meaningful.",
+      "common_bug": "Issue:\nSearch takes too long.\n\nCause:\nLarge grid and expensive estimator.\n\nQuick Fix:\nReduce the grid or switch to randomized search.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html"
+    },
+    {
+      "problem": "Run randomized search",
+      "trigger": "Need broad hyperparameter exploration.",
+      "snippet": "from sklearn.model_selection import RandomizedSearchCV\nfrom sklearn.svm import SVC\nfrom sklearn.datasets import load_iris\nfrom scipy.stats import loguniform\n\nX, y = load_iris(return_X_y=True)\nsearch = RandomizedSearchCV(\n    SVC(),\n    {\"C\": loguniform(1e-3, 1e3), \"gamma\": loguniform(1e-4, 1e0)},\n    n_iter=10,\n    cv=5,\n    random_state=42,\n)\nsearch.fit(X, y)",
+      "minimal_notes": "Better for large spaces than grid search.",
+      "common_bug": "Issue:\nPoor parameter coverage.\n\nCause:\nToo few iterations.\n\nQuick Fix:\nIncrease `n_iter` or narrow the search space.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RandomizedSearchCV.html"
+    },
+    {
+      "problem": "Run successive halving grid search",
+      "trigger": "Need resource-aware search with a grid.",
+      "snippet": "from sklearn.experimental import enable_halving_search_cv  # noqa: F401\nfrom sklearn.model_selection import HalvingGridSearchCV\nfrom sklearn.svm import SVC\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nsearch = HalvingGridSearchCV(SVC(), {\"C\": [0.1, 1, 10]}, cv=5)\nsearch.fit(X, y)",
+      "minimal_notes": "Requires the experimental import in current releases.",
+      "common_bug": "Issue:\nImport error.\n\nCause:\nHalving search is experimental.\n\nQuick Fix:\nEnable the experimental namespace first.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.HalvingGridSearchCV.html"
+    },
+    {
+      "problem": "Run successive halving random search",
+      "trigger": "Need resource-aware randomized search.",
+      "snippet": "from sklearn.experimental import enable_halving_search_cv  # noqa: F401\nfrom sklearn.model_selection import HalvingRandomSearchCV\nfrom sklearn.svm import SVC\nfrom sklearn.datasets import load_iris\nfrom scipy.stats import loguniform\n\nX, y = load_iris(return_X_y=True)\nsearch = HalvingRandomSearchCV(\n    SVC(),\n    {\"C\": loguniform(1e-3, 1e3)},\n    cv=5,\n    random_state=42,\n)\nsearch.fit(X, y)",
+      "minimal_notes": "Good when both search space and compute are limited.",
+      "common_bug": "Issue:\nToo aggressive pruning.\n\nCause:\nEarly resource allocation can eliminate good candidates.\n\nQuick Fix:\nTune the halving settings carefully.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.HalvingRandomSearchCV.html"
+    },
+    {
+      "problem": "Build a preprocessing pipeline",
+      "trigger": "Need to prevent leakage and keep training steps together.",
+      "snippet": "from sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\npipe = Pipeline([\n    (\"scaler\", StandardScaler()),\n    (\"clf\", LogisticRegression(max_iter=200)),\n])\npipe.fit(X, y)",
+      "minimal_notes": "Pipelines are the default safe pattern for preprocessing + model fitting.",
+      "common_bug": "Issue:\nLeakage from manual preprocessing.\n\nCause:\nTransforming before train/test split or CV.\n\nQuick Fix:\nPut transforms inside the pipeline.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html"
+    },
+    {
+      "problem": "Create a pipeline quickly",
+      "trigger": "Need a compact pipeline without naming each step manually.",
+      "snippet": "from sklearn.pipeline import make_pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.linear_model import LogisticRegression\n\npipe = make_pipeline(StandardScaler(), LogisticRegression(max_iter=200))",
+      "minimal_notes": "Step names are auto-generated.",
+      "common_bug": "Issue:\nHarder parameter access.\n\nCause:\nAuto-generated names can be less explicit.\n\nQuick Fix:\nUse `Pipeline` when you need stable step names.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.make_pipeline.html"
+    },
+    {
+      "problem": "Tune nested pipeline parameters",
+      "trigger": "Need to search hyperparameters inside a pipeline.",
+      "snippet": "from sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.model_selection import GridSearchCV\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\npipe = Pipeline([(\"scaler\", StandardScaler()), (\"clf\", LogisticRegression(max_iter=200))])\ngrid = GridSearchCV(pipe, {\"clf__C\": [0.1, 1, 10]}, cv=5)\ngrid.fit(X, y)",
+      "minimal_notes": "Double underscores address nested parameters.",
+      "common_bug": "Issue:\nParameter not found.\n\nCause:\nWrong step prefix.\n\nQuick Fix:\nUse `step__param` naming exactly.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html"
+    },
+    {
+      "problem": "Cache pipeline steps",
+      "trigger": "Need to reuse expensive transforms during search.",
+      "snippet": "from sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.linear_model import LogisticRegression\nfrom joblib import Memory\nimport tempfile\n\nmemory = Memory(location=tempfile.mkdtemp())\npipe = Pipeline(\n    [(\"scaler\", StandardScaler()), (\"clf\", LogisticRegression(max_iter=200))],\n    memory=memory,\n)",
+      "minimal_notes": "Caching helps when intermediate steps are expensive and repeated.",
+      "common_bug": "Issue:\nRecomputing the same transforms.\n\nCause:\nNo pipeline cache.\n\nQuick Fix:\nUse `memory=` with a cache backend.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html"
+    },
+    {
+      "problem": "Combine feature branches",
+      "trigger": "Need parallel feature paths before concatenation.",
+      "snippet": "from sklearn.pipeline import FeatureUnion\nfrom sklearn.decomposition import PCA, TruncatedSVD\n\nunion = FeatureUnion([\n    (\"pca\", PCA(n_components=2)),\n    (\"svd\", TruncatedSVD(n_components=2, random_state=42)),\n])",
+      "minimal_notes": "Use when separate feature generators should be merged.",
+      "common_bug": "Issue:\nFeature duplication or redundancy.\n\nCause:\nParallel transforms may overlap heavily.\n\nQuick Fix:\nUse only when branches add distinct information.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.FeatureUnion.html"
+    },
+    {
+      "problem": "Measure permutation importance",
+      "trigger": "Need model-agnostic feature importance.",
+      "snippet": "from sklearn.inspection import permutation_importance\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.datasets import load_iris\nfrom sklearn.model_selection import train_test_split\n\nX, y = load_iris(return_X_y=True)\nX_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, stratify=y)\nclf = RandomForestClassifier(random_state=42).fit(X_train, y_train)\nresult = permutation_importance(clf, X_test, y_test, n_repeats=10, random_state=42)",
+      "minimal_notes": "Works on any fitted estimator with a scoring metric.",
+      "common_bug": "Issue:\nSlow computation.\n\nCause:\nRepeated scoring over many features.\n\nQuick Fix:\nReduce repeats or sample features.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.inspection.permutation_importance.html"
+    },
+    {
+      "problem": "Plot partial dependence",
+      "trigger": "Need a global view of feature effect on predictions.",
+      "snippet": "from sklearn.inspection import PartialDependenceDisplay\nfrom sklearn.ensemble import RandomForestRegressor\nfrom sklearn.datasets import load_diabetes\n\nX, y = load_diabetes(return_X_y=True)\nreg = RandomForestRegressor(random_state=42).fit(X, y)\nPartialDependenceDisplay.from_estimator(reg, X, [0, 1])",
+      "minimal_notes": "Best for fitted models and a small number of features.",
+      "common_bug": "Issue:\nMisreading correlated-feature effects.\n\nCause:\nPartial dependence averages across the data.\n\nQuick Fix:\nValidate with domain knowledge and other diagnostics.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.inspection.PartialDependenceDisplay.html"
+    },
+    {
+      "problem": "Save and load with joblib",
+      "trigger": "Need to persist scikit-learn models efficiently.",
+      "snippet": "from joblib import dump, load\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = LogisticRegression(max_iter=200).fit(X, y)\ndump(clf, \"model.joblib\")\nloaded = load(\"model.joblib\")",
+      "minimal_notes": "Preferred for scikit-learn estimators and pipelines.",
+      "common_bug": "Issue:\nLoading fails after code changes.\n\nCause:\nVersion or environment mismatch.\n\nQuick Fix:\nSave the environment and version alongside the artifact.",
+      "docs_url": "https://joblib.readthedocs.io/en/latest/generated/joblib.dump.html"
+    },
+    {
+      "problem": "Save and load with pickle",
+      "trigger": "Need Python-native serialization for quick local workflows.",
+      "snippet": "import pickle\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nclf = LogisticRegression(max_iter=200).fit(X, y)\nwith open(\"model.pkl\", \"wb\") as f:\n    pickle.dump(clf, f)\nwith open(\"model.pkl\", \"rb\") as f:\n    loaded = pickle.load(f)",
+      "minimal_notes": "Use carefully with trusted artifacts only.",
+      "common_bug": "Issue:\nSecurity risk from untrusted files.\n\nCause:\nPickle executes arbitrary code on load.\n\nQuick Fix:\nOnly load trusted artifacts.",
+      "docs_url": "https://docs.python.org/3/library/pickle.html"
+    },
+    {
+      "problem": "Compute class weights",
+      "trigger": "Need to compensate for imbalanced classes.",
+      "snippet": "from sklearn.utils.class_weight import compute_class_weight\nimport numpy as np\n\nclasses = np.array([0, 1])\ny = np.array([0, 0, 0, 1])\nweights = compute_class_weight(class_weight=\"balanced\", classes=classes, y=y)",
+      "minimal_notes": "Useful for weighted classifiers or sample weighting.",
+      "common_bug": "Issue:\nWrong class ordering.\n\nCause:\nClasses must match the estimator's label set.\n\nQuick Fix:\nPass the exact class array.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.utils.class_weight.compute_class_weight.html"
+    },
+    {
+      "problem": "Use a dummy model for baselines",
+      "trigger": "Need a benchmark floor for classification or regression.",
+      "snippet": "from sklearn.dummy import DummyClassifier, DummyRegressor",
+      "minimal_notes": "Always compare against a trivial baseline before trusting results.",
+      "common_bug": "Issue:\nInflated model confidence.\n\nCause:\nNo baseline comparison.\n\nQuick Fix:\nMeasure real gains over a dummy model.",
+      "docs_url": "https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html"
+    }
+  ],
+  "quick_references": [
+    {
+      "title": "Core Objects",
+      "headers": [
+        "Object",
+        "Main use"
+      ],
+      "rows": [
+        [
+          "`Estimator`",
+          "Unified fit/predict API."
+        ],
+        [
+          "`Transformer`",
+          "`fit`, `transform`, `fit_transform`."
+        ],
+        [
+          "`Pipeline`",
+          "Sequential preprocessing + model."
+        ],
+        [
+          "`ColumnTransformer`",
+          "Different transforms per column set."
+        ],
+        [
+          "`GridSearchCV`",
+          "Exhaustive hyperparameter search."
+        ],
+        [
+          "`Cross-validator`",
+          "Split data for evaluation."
+        ]
+      ]
+    },
+    {
+      "title": "Estimator Selection",
+      "headers": [
+        "Need",
+        "Preferred estimators"
+      ],
+      "rows": [
+        [
+          "Fast linear baseline",
+          "`LogisticRegression`, `Ridge`, `SGDClassifier`, `SGDRegressor`"
+        ],
+        [
+          "Strong tabular default",
+          "`RandomForestClassifier`, `RandomForestRegressor`, `HistGradientBoostingClassifier`, `HistGradientBoostingRegressor`"
+        ],
+        [
+          "Sparse high-dimensional text",
+          "`LinearSVC`, `SGDClassifier`, `MultinomialNB`"
+        ],
+        [
+          "Small/medium nonlinear data",
+          "`SVC`, `KNeighborsClassifier`, `KNeighborsRegressor`"
+        ],
+        [
+          "Interpretable tree rules",
+          "`DecisionTreeClassifier`, `DecisionTreeRegressor`"
+        ],
+        [
+          "Clustering tabular data",
+          "`KMeans`, `MiniBatchKMeans`, `DBSCAN`"
+        ]
+      ]
+    },
+    {
+      "title": "Capability Matrix",
+      "headers": [
+        "Estimator",
+        "`predict_proba`",
+        "Sparse input",
+        "Missing values",
+        "Needs scaling"
+      ],
+      "rows": [
+        [
+          "`LogisticRegression`",
+          "Yes",
+          "Yes",
+          "No",
+          "Yes"
+        ],
+        [
+          "`LinearSVC`",
+          "No",
+          "Yes",
+          "No",
+          "Yes"
+        ],
+        [
+          "`SVC`",
+          "Yes",
+          "Yes",
+          "No",
+          "Yes"
+        ],
+        [
+          "`RandomForestClassifier`",
+          "Yes",
+          "Limited",
+          "Yes",
+          "No"
+        ],
+        [
+          "`HistGradientBoostingClassifier`",
+          "Yes",
+          "No",
+          "Yes",
+          "No"
+        ],
+        [
+          "`KNeighborsClassifier`",
+          "Yes",
+          "Limited",
+          "No",
+          "Yes"
+        ],
+        [
+          "`GaussianNB`",
+          "Yes",
+          "No",
+          "No",
+          "Usually yes"
+        ],
+        [
+          "`MultinomialNB`",
+          "Yes",
+          "Yes",
+          "No",
+          "No"
+        ],
+        [
+          "`DummyClassifier`",
+          "Yes",
+          "Yes",
+          "Yes",
+          "No"
+        ]
+      ]
+    },
+    {
+      "title": "Common Scorers",
+      "headers": [
+        "Task",
+        "Metric function"
+      ],
+      "rows": [
+        [
+          "Accuracy",
+          "`accuracy_score`"
+        ],
+        [
+          "Balanced accuracy",
+          "`balanced_accuracy_score`"
+        ],
+        [
+          "Precision",
+          "`precision_score`"
+        ],
+        [
+          "Recall",
+          "`recall_score`"
+        ],
+        [
+          "F1",
+          "`f1_score`"
+        ],
+        [
+          "ROC AUC",
+          "`roc_auc_score`"
+        ],
+        [
+          "Log loss",
+          "`log_loss`"
+        ],
+        [
+          "MCC",
+          "`matthews_corrcoef`"
+        ],
+        [
+          "Cohen kappa",
+          "`cohen_kappa_score`"
+        ],
+        [
+          "MAE",
+          "`mean_absolute_error`"
+        ],
+        [
+          "MSE",
+          "`mean_squared_error`"
+        ],
+        [
+          "RMSE",
+          "`mean_squared_error(..., squared=False)`"
+        ],
+        [
+          "R²",
+          "`r2_score`"
+        ],
+        [
+          "Silhouette",
+          "`silhouette_score`"
+        ],
+        [
+          "Davies-Bouldin",
+          "`davies_bouldin_score`"
+        ],
+        [
+          "Calinski-Harabasz",
+          "`calinski_harabasz_score`"
+        ]
+      ]
+    },
+    {
+      "title": "Cross-Validation Strategies",
+      "headers": [
+        "Splitter",
+        "Best for"
+      ],
+      "rows": [
+        [
+          "`KFold`",
+          "General regression/classification."
+        ],
+        [
+          "`StratifiedKFold`",
+          "Classification with class balance."
+        ],
+        [
+          "`GroupKFold`",
+          "Grouped samples."
+        ],
+        [
+          "`TimeSeriesSplit`",
+          "Ordered temporal data."
+        ],
+        [
+          "`ShuffleSplit`",
+          "Repeated random splits."
+        ],
+        [
+          "`StratifiedShuffleSplit`",
+          "Stratified random splits."
+        ],
+        [
+          "`RepeatedKFold`",
+          "More stable CV estimates."
+        ]
+      ]
+    },
+    {
+      "title": "Preprocessing Transformer Selection",
+      "headers": [
+        "Goal",
+        "Transformer"
+      ],
+      "rows": [
+        [
+          "Standardize features",
+          "`StandardScaler`"
+        ],
+        [
+          "Scale to [^1]",
+          "`MinMaxScaler`"
+        ],
+        [
+          "Robust to outliers",
+          "`RobustScaler`"
+        ],
+        [
+          "Preserve sparsity range",
+          "`MaxAbsScaler`"
+        ],
+        [
+          "Normalize samples",
+          "`Normalizer`"
+        ],
+        [
+          "Gaussianize distribution",
+          "`PowerTransformer`, `QuantileTransformer`"
+        ],
+        [
+          "Discretize numeric values",
+          "`KBinsDiscretizer`"
+        ],
+        [
+          "Create interactions",
+          "`PolynomialFeatures`"
+        ],
+        [
+          "Encode categories",
+          "`OneHotEncoder`, `OrdinalEncoder`"
+        ],
+        [
+          "Encode target labels",
+          "`LabelEncoder`"
+        ],
+        [
+          "Custom transform",
+          "`FunctionTransformer`"
+        ],
+        [
+          "Threshold values",
+          "`Binarizer`"
+        ],
+        [
+          "Fill missing values",
+          "`SimpleImputer`"
+        ]
+      ]
+    },
+    {
+      "title": "Feature Selection Methods",
+      "headers": [
+        "Method",
+        "Best for"
+      ],
+      "rows": [
+        [
+          "`VarianceThreshold`",
+          "Remove constant or near-constant features."
+        ],
+        [
+          "`SelectKBest`",
+          "Quick univariate filtering."
+        ],
+        [
+          "`RFE`",
+          "Wrapper selection with estimator ranking."
+        ],
+        [
+          "`RFECV`",
+          "Wrapper selection with CV."
+        ],
+        [
+          "`SelectFromModel`",
+          "Embedded feature selection."
+        ],
+        [
+          "`mutual_info_classif`",
+          "Nonlinear classification ranking."
+        ],
+        [
+          "`mutual_info_regression`",
+          "Nonlinear regression ranking."
+        ]
+      ]
+    },
+    {
+      "title": "Hyperparameter Search",
+      "headers": [
+        "Search",
+        "Use when"
+      ],
+      "rows": [
+        [
+          "`GridSearchCV`",
+          "Small search spaces."
+        ],
+        [
+          "`RandomizedSearchCV`",
+          "Large search spaces."
+        ],
+        [
+          "`HalvingGridSearchCV`",
+          "Resource-aware grid search."
+        ],
+        [
+          "`HalvingRandomSearchCV`",
+          "Resource-aware random search."
+        ]
+      ]
+    },
+    {
+      "title": "Pipeline Parameter Naming",
+      "headers": [
+        "Pattern",
+        "Meaning"
+      ],
+      "rows": [
+        [
+          "`clf__max_depth`",
+          "`max_depth` on step named `clf`."
+        ],
+        [
+          "`preprocess__num__scaler__with_mean`",
+          "Nested parameter in pipeline/column transformer."
+        ],
+        [
+          "`model__C`",
+          "`C` on final model step."
+        ]
+      ]
+    },
+    {
+      "title": "Common Estimator Parameters",
+      "headers": [
+        "Parameter",
+        "Meaning"
+      ],
+      "rows": [
+        [
+          "`random_state`",
+          "Reproducibility."
+        ],
+        [
+          "`max_iter`",
+          "Optimization limit."
+        ],
+        [
+          "`n_estimators`",
+          "Ensemble size."
+        ],
+        [
+          "`max_depth`",
+          "Tree depth cap."
+        ],
+        [
+          "`alpha`",
+          "Regularization strength or smoothing depending on estimator."
+        ],
+        [
+          "`C`",
+          "Inverse regularization strength."
+        ],
+        [
+          "`class_weight`",
+          "Class imbalance handling."
+        ],
+        [
+          "`n_jobs`",
+          "Parallel workers where supported."
+        ]
+      ]
+    }
+  ],
+  "performance_checklist": [
+    {
+      "area": "",
+      "recommendations": "Scale features before gradient-based and distance-based estimators."
+    },
+    {
+      "area": "",
+      "recommendations": "Use sparse-aware transformers and linear models for text-like sparse data."
+    },
+    {
+      "area": "",
+      "recommendations": "Prefer `Pipeline` and CV helpers to avoid leakage and repeated manual work."
+    },
+    {
+      "area": "",
+      "recommendations": "Use `MiniBatchKMeans`, `SGD*`, or `HistGradientBoosting*` for larger datasets when appropriate."
+    },
+    {
+      "area": "",
+      "recommendations": "Keep ensembles and kernel methods on a tight budget for memory and runtime."
+    },
+    {
+      "area": "",
+      "recommendations": "Cache repeated preprocessing during grid search with `Pipeline(memory=...)`."
+    }
+  ],
+  "production_checklist": [
+    "Use stable APIs only.",
+    "Keep preprocessing inside pipelines.",
+    "Set `random_state` for reproducibility.",
+    "Compare against a dummy baseline.",
+    "Validate on a holdout set and cross-validation.",
+    "Save fitted artifacts with version metadata.",
+    "Inspect feature names after transformations.",
+    "Choose metrics that match the business objective."
+  ]
+}

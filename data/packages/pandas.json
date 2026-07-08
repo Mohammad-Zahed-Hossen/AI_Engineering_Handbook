@@ -1,137 +1,2498 @@
 {
-  "created_at": "2026-06-24",
-  "updated_at": "2026-06-26",
-  "sources": [
-    "https://pandas.pydata.org"
-  ],
-  "github_repo": "https://github.com/pandas-dev/pandas",
   "id": "pandas",
+  "title": "Pandas Package",
+  "slug": "pandas",
+  "description": "Core Python package for daily tabular data manipulation, cleaning, transformation, aggregation, and time-series workflows.",
   "name": "pandas",
-  "version": "2.2.0",
+  "version": "3.0.4",
   "install": "pip install pandas",
   "import_as": "import pandas as pd",
-  "summary": "Tabular data manipulation library for Python. Standard tool for CSV/Parquet I/O, column-level transformations, groupby aggregation, and time-series resampling.",
+  "language": "python",
+  "summary": "Python library for labeled tabular data structures and data analysis tools.",
+  "created_at": "2026-07-05",
+  "updated_at": "2026-07-05",
+  "last_verified": "2026-07-05",
+  "review_frequency": "quarterly",
+  "verified_against": "3.0.4",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "domain": "data_processing",
+  "category": "data",
+  "difficulty": "intermediate",
+  "engineering_area": "data_engineering",
+  "estimated_reading_time": 60,
+  "prerequisites": [],
+  "recommended_next": [],
+  "related_content": [],
+  "tags": [],
+  "aliases": [],
+  "keywords": [],
+  "search_tokens": [],
+  "sources": [
+    "https://pandas.pydata.org/docs/",
+    "https://pandas.pydata.org/docs/reference/index.html",
+    "https://pandas.pydata.org/docs/getting_started/install.html"
+  ],
   "tasks": [
     {
-      "task": "Load and save tabular data",
-      "mental_trigger": "I need to read from or write to CSV, Parquet, or JSON on disk",
-      "syntax": "pd.read_csv(filepath, dtype=None, usecols=None)\npd.read_parquet(filepath)\ndf.to_csv(path, index=False)\ndf.to_parquet(path, compression='snappy')",
+      "task": "Create DataFrame",
+      "mental_trigger": "I need a labeled 2D table to organize tabular data.",
+      "syntax": "pd.DataFrame(data=None, index=None, columns=None, dtype=None, copy=None)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"name\": [\"Ava\", \"Ben\", \"Chen\"],\n    \"score\": [91, 84, 77]\n})\nprint(df)",
       "important_params": [
-        "dtype — dict mapping column names to types; prevents silent object-dtype coercion",
-        "usecols — list of columns to load; skips reading unused data",
-        "compression — 'snappy' or 'gzip' for parquet; snappy is faster, gzip is smaller",
-        "index — set False on to_csv to avoid writing row numbers"
+        "data.",
+        "index.",
+        "columns.",
+        "dtype.",
+        "copy."
       ],
-      "example": "df = pd.read_csv('data.csv', dtype={'id': str, 'score': float}, usecols=['id', 'score', 'label'])\ndf.to_parquet('output.parquet', compression='snappy', index=False)",
-      "use_when": "Reading structured tabular files where column types need to be controlled upfront. Saving intermediate pipeline results in Parquet for faster re-reads.",
-      "avoid_when": "Files exceed available RAM — use polars lazy API or dask. Need millisecond I/O — Parquet is still slower than memory-mapped formats like Arrow IPC.",
-      "decision_notes": "Always prefer Parquet over CSV for any file you will read more than once — Parquet is columnar, typed, and 3-10x faster to load. Use dtype on read_csv to prevent late-stage type surprises.",
+      "use_when": "1) Building a table from lists, dicts, arrays, or records. 2) Creating a small test dataset. 3) Normalizing structured in-memory data. 4) Converting intermediate Python data into a table.",
+      "avoid_when": "1) You only need one-dimensional labeled data. 2) You need a sparse or specialized array structure. 3) You are repeatedly constructing frames inside a loop.",
       "gotchas": [
-        "pd.read_csv infers dtypes from the first chunk only; mixed-type columns appearing later silently coerce to object dtype, breaking all downstream numeric operations.",
-        "df.to_csv writes the row index by default — always pass index=False unless you explicitly want the index preserved."
+        "Mixed input types can force object dtype.",
+        "Copy behavior depends on the input structure.",
+        "Column order follows insertion order for dict inputs.",
+        "Missing keys produce NaN."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: General\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A new DataFrame populated with the input data dimensions.\nPurpose: I need a labeled 2D table to organize tabular data.\nCommon Mistakes: Mixed input types can force object dtype; Copy behavior depends on the input structure; Column order follows insertion order for dict inputs; Missing keys produce NaN\nRelated APIs: Series, read_csv"
+    },
+    {
+      "task": "Create Series",
+      "mental_trigger": "I need a single labeled column of values.",
+      "syntax": "pd.Series(data=None, index=None, dtype=None, name=None, copy=None)",
+      "example": "import pandas as pd\n\ns = pd.Series([10, 20, 30], name=\"score\")\nprint(s)",
+      "important_params": [
+        "data.",
+        "index.",
+        "dtype.",
+        "name.",
+        "copy."
+      ],
+      "use_when": "1) Representing a single feature or measurement. 2) Creating a derived column before attaching it to a DataFrame. 3) Working with indexed one-dimensional data. 4) Performing vectorized operations on one variable.",
+      "avoid_when": "1) You need row/column structure. 2) You need relational joins or table reshaping. 3) You want a plain Python list.",
+      "gotchas": [
+        "Series index alignment affects arithmetic.",
+        "Scalars broadcast differently than lists.",
+        "`NaN` may force float dtype.",
+        "Name is metadata, not a column label."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.Series.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: General\nModule: `pandas`\nReturn Value: pandas.Series\nExpected Output: A new 1D labeled Series object.\nPurpose: I need a single labeled column of values.\nCommon Mistakes: Series index alignment affects arithmetic; Scalars broadcast differently than lists; `NaN` may force float dtype; Name is metadata, not a column label\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Read CSV File",
+      "mental_trigger": "I need to load delimited text data into a DataFrame.",
+      "syntax": "pd.read_csv(filepath_or_buffer, sep=',', header='infer', index_col=None, usecols=None, dtype=None)",
+      "example": "import pandas as pd\nfrom io import StringIO\n\ndata = StringIO(\"name,score\\nAva,91\\nBen,84\\n\")\ndf = pd.read_csv(data)\nprint(df)",
+      "important_params": [
+        "filepath_or_buffer.",
+        "sep.",
+        "header.",
+        "usecols.",
+        "dtype."
+      ],
+      "use_when": "1) Ingesting spreadsheets exported as CSV. 2) Loading log extracts and flat files. 3) Reading local or remote comma-separated data. 4) Selecting only needed columns at load time.",
+      "avoid_when": "1) The file is hierarchical or nested JSON. 2) You need typed binary columnar storage. 3) Delimiters vary unpredictably within the file.",
+      "gotchas": [
+        "Type inference can surprise you on mixed columns.",
+        "Missing values may change inferred dtypes.",
+        "Date parsing should be verified explicitly.",
+        "Large files benefit from `usecols` and explicit dtypes."
       ],
       "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html",
-      "related_workflows": ["rag", "fine-tuning-lora", "text-classification"],
-      "related_cheatsheets": ["pandas-cheatsheet"]
-    },
-    {
-      "task": "Inspect DataFrame structure and data quality",
-      "mental_trigger": "I just loaded data and need to understand its shape, types, and null distribution before doing anything else",
-      "syntax": "df.info()\ndf.describe(include='all')\ndf.isnull().sum()\ndf.value_counts(subset)",
-      "important_params": [
-        "include='all' — include non-numeric columns in describe output",
-        "subset — list of columns for value_counts grouping"
-      ],
-      "example": "df.info()                             # shape, dtypes, null counts per column\ndf.describe(include='all')            # stats for all columns including categoricals\ndf.isnull().sum().sort_values(ascending=False)  # ranked null counts",
-      "use_when": "Always first step after loading any new dataset. Identifying object-dtype columns that should be numeric, spotting null patterns before imputation.",
-      "avoid_when": "Production inference path — these are EDA-only operations with no place in a serving pipeline.",
-      "decision_notes": "df.info() and df.isnull().sum() are the two mandatory first calls after read_csv. Skipping them is the single most common source of silent type bugs in data pipelines.",
-      "gotchas": [
-        "df.describe() silently excludes non-numeric columns unless you pass include='all' — you will miss null counts in string and category columns.",
-        "df.dtypes returns a pandas Series, not a dict — equality comparison with a plain dict always returns False."
-      ],
-      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.info.html",
       "related_workflows": [],
-      "related_cheatsheets": ["pandas-cheatsheet"]
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Ingestion & Inspection\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A DataFrame parsed from the delimited text file.\nPurpose: I need to load delimited text data into a DataFrame.\nCommon Mistakes: Type inference can surprise you on mixed columns; Missing values may change inferred dtypes; Date parsing should be verified explicitly; Large files benefit from `usecols` and explicit dtypes\nRelated APIs: read_excel, read_json, read_parquet"
     },
     {
-      "task": "Select and filter rows and columns",
-      "mental_trigger": "I need to extract a subset of rows by condition or columns by name",
-      "syntax": "df.loc[row_condition, col_list]\ndf.iloc[row_int, col_int]\ndf.query(expr)\ndf[boolean_mask]",
+      "task": "Read Excel File",
+      "mental_trigger": "I need to load spreadsheet data from an Excel workbook.",
+      "syntax": "pd.read_excel(io, sheet_name=0, header=0, usecols=None, dtype=None, engine=None)",
+      "example": "import pandas as pd\nfrom io import BytesIO\n\nbuffer = BytesIO()\nwith pd.ExcelWriter(buffer, engine=\"openpyxl\") as writer:\n    pd.DataFrame({\"name\": [\"Ava\", \"Ben\"], \"score\": [91, 84]}).to_excel(writer, index=False)\n\nbuffer.seek(0)\ndf = pd.read_excel(buffer)\nprint(df)",
       "important_params": [
-        "row_condition — boolean Series or label slice for loc",
-        "col_list — list of column names to return",
-        "expr — string expression for query e.g. 'age > 30 and salary < 50000'"
+        "io.",
+        "sheet_name.",
+        "usecols.",
+        "dtype.",
+        "engine."
       ],
-      "example": "# Label-based: rows where age > 30, only name and salary columns\nsubset = df.loc[df['age'] > 30, ['name', 'salary']]\n\n# String expression (readable, avoids chaining)\nactive = df.query('status == \"active\" and score >= 0.8')",
-      "use_when": "Filtering training data by label class, selecting feature columns before model input, extracting validation splits.",
-      "avoid_when": "Chained bracket indexing like df[cond1][cond2] — the second filter may silently operate on a stale copy of the original DataFrame.",
-      "decision_notes": "Use df.loc for combined row+column selection in one operation. Use df.query for readable multi-condition filtering. Never chain brackets for assignment.",
+      "use_when": "1) Reading analyst workbooks. 2) Loading multi-sheet reporting files. 3) Importing structured Excel exports. 4) Restricting reads to specific sheets or columns.",
+      "avoid_when": "1) CSV or Parquet is available instead. 2) Workbook formatting is the main data source. 3) You need high-throughput repeated ingestion.",
       "gotchas": [
-        "df.loc with integer labels on a non-default index selects by label, not position — on a reindexed DataFrame this silently picks the wrong row.",
-        "Chained assignment df[df['a']>0]['b'] = 1 triggers SettingWithCopyWarning and may not modify the original; always use df.loc for assignment."
+        "Engine availability depends on installed optional dependencies.",
+        "Sheet naming and positions can be ambiguous.",
+        "Excel dates and empty cells may infer unexpected types.",
+        "Merged cells can affect structure."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.read_excel.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Ingestion & Inspection\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A DataFrame or dict of DataFrames parsed from the Excel workbook sheets.\nPurpose: I need to load spreadsheet data from an Excel workbook.\nCommon Mistakes: Engine availability depends on installed optional dependencies; Sheet naming and positions can be ambiguous; Excel dates and empty cells may infer unexpected types; Merged cells can affect structure\nRelated APIs: read_csv, read_json, read_parquet"
+    },
+    {
+      "task": "Read Parquet File",
+      "mental_trigger": "I need fast columnar I/O with preserved types.",
+      "syntax": "pd.read_parquet(path, engine=None, columns=None, storage_options=None)",
+      "example": "import pandas as pd\nimport tempfile\nimport os\n\ndf0 = pd.DataFrame({\"name\": [\"Ava\", \"Ben\"], \"score\": [91, 84]})\npath = tempfile.mktemp(suffix=\".parquet\")\ndf0.to_parquet(path, index=False)\n\ndf = pd.read_parquet(path)\nprint(df)\nos.remove(path)",
+      "important_params": [
+        "path.",
+        "engine.",
+        "columns.",
+        "storage_options.",
+        "filters."
+      ],
+      "use_when": "1) Persisting analytical tables efficiently. 2) Preserving schema and types across reloads. 3) Loading large datasets selectively. 4) Re-reading data in pipeline stages.",
+      "avoid_when": "1) Human-editable interchange is required. 2) You need to inspect raw text easily. 3) Parquet support dependencies are unavailable.",
+      "gotchas": [
+        "Backend availability affects supported features.",
+        "Partitioned layouts behave differently than single files.",
+        "Column pruning depends on engine support.",
+        "Index handling should be explicit."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.read_parquet.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Ingestion & Inspection\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A DataFrame loaded from binary Parquet columnar file.\nPurpose: I need fast columnar I/O with preserved types.\nCommon Mistakes: Backend availability affects supported features; Partitioned layouts behave differently than single files; Column pruning depends on engine support; Index handling should be explicit\nRelated APIs: read_csv, read_excel, read_json"
+    },
+    {
+      "task": "Read JSON File",
+      "mental_trigger": "I need to load JSON records into a table.",
+      "syntax": "pd.read_json(path_or_buf, orient=None, lines=False, dtype=None, convert_dates=True)",
+      "example": "import pandas as pd\nfrom io import StringIO\n\ndata = StringIO('[{\"name\":\"Ava\",\"score\":91},{\"name\":\"Ben\",\"score\":84}]')\ndf = pd.read_json(data)\nprint(df)",
+      "important_params": [
+        "path_or_buf.",
+        "orient.",
+        "lines.",
+        "dtype.",
+        "convert_dates."
+      ],
+      "use_when": "1) Reading API responses saved as JSON. 2) Loading newline-delimited JSON logs. 3) Converting nested records into rows. 4) Pulling structured events into analysis tables.",
+      "avoid_when": "1) The source is naturally columnar. 2) The JSON structure is deeply nested without normalization. 3) CSV or Parquet is simpler and more stable.",
+      "gotchas": [
+        "`orient` must match the file layout.",
+        "`lines=True` expects one JSON object per line.",
+        "Date conversion can alter raw text fields.",
+        "Nested structures may remain object dtype."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.read_json.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Ingestion & Inspection\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A DataFrame parsed from JSON file or JSON string source.\nPurpose: I need to load JSON records into a table.\nCommon Mistakes: `orient` must match the file layout; `lines=True` expects one JSON object per line; Date conversion can alter raw text fields; Nested structures may remain object dtype\nRelated APIs: read_csv, read_excel, read_parquet"
+    },
+    {
+      "task": "View First Rows",
+      "mental_trigger": "I need a quick preview of the top of a table.",
+      "syntax": "DataFrame.head(n=5)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\", \"Ben\", \"Chen\"], \"score\": [91, 84, 77]})\nprint(df.head(2))",
+      "important_params": [
+        "n."
+      ],
+      "use_when": "1) Checking data load success. 2) Inspecting columns and sample values. 3) Debugging transformations. 4) Sharing a compact preview.",
+      "avoid_when": "1) You need random sampling. 2) The top rows are not representative. 3) You need the full dataset.",
+      "gotchas": [
+        "It returns a view-like result, not a copy guarantee.",
+        "Small tables may hide structural issues.",
+        "`n` larger than size just returns all rows."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.head.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Ingestion & Inspection\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A subset containing the first N rows (default 5) of the DataFrame or Series.\nPurpose: I need a quick preview of the top of a table.\nCommon Mistakes: It returns a view-like result, not a copy guarantee; Small tables may hide structural issues; `n` larger than size just returns all rows\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "View Last Rows",
+      "mental_trigger": "I need to inspect the bottom of a table.",
+      "syntax": "DataFrame.tail(n=5)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\", \"Ben\", \"Chen\"], \"score\": [91, 84, 77]})\nprint(df.tail(2))",
+      "important_params": [
+        "n."
+      ],
+      "use_when": "1) Checking appended rows. 2) Verifying export or ingest truncation. 3) Inspecting recent records. 4) Debugging time-ordered data.",
+      "avoid_when": "1) The table is unordered. 2) You need a random sample. 3) The dataset is too small to be informative.",
+      "gotchas": [
+        "Only works as expected when row order matters.",
+        "Negative values have special behavior.",
+        "Not a substitute for proper sorting."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.tail.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Ingestion & Inspection\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A subset containing the last N rows (default 5) of the DataFrame or Series.\nPurpose: I need to inspect the bottom of a table.\nCommon Mistakes: Only works as expected when row order matters; Negative values have special behavior; Not a substitute for proper sorting\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Inspect Shape",
+      "mental_trigger": "I need to know row and column counts fast.",
+      "syntax": "DataFrame.shape",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\", \"Ben\"], \"score\": [91, 84]})\nprint(df.shape)",
+      "important_params": [
+        "none."
+      ],
+      "use_when": "1) Checking dataset size. 2) Validating filters or joins. 3) Monitoring pipeline outputs. 4) Writing quick sanity checks.",
+      "avoid_when": "1) You need row labels or column names. 2) You need memory usage or type information.",
+      "gotchas": [
+        "Shape includes all rows, including those with missing values.",
+        "It does not imply uniqueness.",
+        "It does not reveal columns' semantic structure."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.shape.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Ingestion & Inspection\nModule: `pandas`\nReturn Value: tuple\nExpected Output: A tuple representing the dimensions: (row_count, column_count).\nPurpose: I need to know row and column counts fast.\nCommon Mistakes: Shape includes all rows, including those with missing values; It does not imply uniqueness; It does not reveal columns' semantic structure\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Inspect Columns",
+      "mental_trigger": "I need the column names in order.",
+      "syntax": "DataFrame.columns",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\"], \"score\": [^91]})\nprint(df.columns)",
+      "important_params": [
+        "none."
+      ],
+      "use_when": "1) Checking available fields. 2) Selecting or renaming columns. 3) Building dynamic pipelines. 4) Validating schema expectations.",
+      "avoid_when": "1) You need data values. 2) You need row-level inspection. 3) Schema may be duplicate or ambiguous.",
+      "gotchas": [
+        "Columns are an Index object.",
+        "Duplicate names can exist.",
+        "Order matters for some operations."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.columns.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Ingestion & Inspection\nModule: `pandas`\nReturn Value: pandas.Index\nExpected Output: A pandas Index containing column labels.\nPurpose: I need the column names in order.\nCommon Mistakes: Columns are an Index object; Duplicate names can exist; Order matters for some operations\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Inspect Dtypes",
+      "mental_trigger": "I need to see column data types.",
+      "syntax": "DataFrame.dtypes",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\"], \"score\": [^91]})\nprint(df.dtypes)",
+      "important_params": [
+        "none."
+      ],
+      "use_when": "1) Auditing schema. 2) Debugging numeric, datetime, or object columns. 3) Preparing type conversions. 4) Checking ingestion results.",
+      "avoid_when": "1) You need actual values. 2) You only need a single column's dtype.",
+      "gotchas": [
+        "Object dtype often hides mixed content.",
+        "Nullable extension dtypes may behave differently than NumPy dtypes.",
+        "Inference may vary by load path."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.dtypes.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Ingestion & Inspection\nModule: `pandas`\nReturn Value: pandas.Series\nExpected Output: A Series showing the storage data type (dtype) of each column.\nPurpose: I need to see column data types.\nCommon Mistakes: Object dtype often hides mixed content; Nullable extension dtypes may behave differently than NumPy dtypes; Inference may vary by load path\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Inspect Memory Usage",
+      "mental_trigger": "I need to estimate table memory cost.",
+      "syntax": "DataFrame.memory_usage(index=True, deep=False)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\", \"Ben\"], \"score\": [91, 84]})\nprint(df.memory_usage(deep=True))",
+      "important_params": [
+        "index.",
+        "deep."
+      ],
+      "use_when": "1) Finding large object columns. 2) Comparing memory footprint before and after cleanup. 3) Optimizing large datasets. 4) Auditing indexes and string-heavy columns.",
+      "avoid_when": "1) You only need row counts. 2) The table is tiny. 3) You need execution time measurements.",
+      "gotchas": [
+        "`deep=True` is needed for object columns.",
+        "Memory accounting is approximate for some dtypes.",
+        "Index memory can be significant."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.memory_usage.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Ingestion & Inspection\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: Memory usage of each column in bytes.\nPurpose: I need to estimate table memory cost.\nCommon Mistakes: `deep=True` is needed for object columns; Memory accounting is approximate for some dtypes; Index memory can be significant\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Summary Statistics",
+      "mental_trigger": "I need a compact numeric summary of a dataset.",
+      "syntax": "DataFrame.describe(percentiles=None, include=None, exclude=None)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"score\": [91, 84, 77, 88]})\nprint(df.describe())",
+      "important_params": [
+        "percentiles.",
+        "include.",
+        "exclude.",
+        "datetime_is_numeric."
+      ],
+      "use_when": "1) Checking distributions quickly. 2) Looking for outliers or missingness clues. 3) Summarizing numeric columns. 4) Creating exploratory reports.",
+      "avoid_when": "1) You need exact row-level values. 2) Data is mostly categorical without `include='all'`. 3) You want custom metrics.",
+      "gotchas": [
+        "Output changes by dtype.",
+        "Categorical columns require explicit inclusion.",
+        "Some statistics exclude missing values."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.describe.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: General\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A DataFrame containing count, mean, std, percentiles, and min/max metrics.\nPurpose: I need a compact numeric summary of a dataset.\nCommon Mistakes: Output changes by dtype; Categorical columns require explicit inclusion; Some statistics exclude missing values\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Unique Values",
+      "mental_trigger": "I need the distinct values in a column.",
+      "syntax": "Series.unique()",
+      "example": "import pandas as pd\n\ns = pd.Series([\"red\", \"blue\", \"red\"])\nprint(s.unique())",
+      "important_params": [
+        "none."
+      ],
+      "use_when": "1) Checking category cardinality. 2) Debugging unexpected values. 3) Preparing categorical analysis. 4) Discovering data cleanup needs.",
+      "avoid_when": "1) You need counts. 2) You need sorted output. 3) The series is extremely large and full materialization is costly.",
+      "gotchas": [
+        "Order reflects first appearance.",
+        "Missing values may appear as distinct entries.",
+        "Return type depends on dtype."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.Series.unique.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: General\nModule: `pandas`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy array containing unique elements in the collection.\nPurpose: I need the distinct values in a column.\nCommon Mistakes: Order reflects first appearance; Missing values may appear as distinct entries; Return type depends on dtype\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Value Counts",
+      "mental_trigger": "I need frequency counts for categorical values.",
+      "syntax": "Series.value_counts(normalize=False, sort=True, ascending=False, dropna=True)",
+      "example": "import pandas as pd\n\ns = pd.Series([\"red\", \"blue\", \"red\", None])\nprint(s.value_counts(dropna=False))",
+      "important_params": [
+        "normalize.",
+        "sort.",
+        "ascending.",
+        "dropna."
+      ],
+      "use_when": "1) Finding dominant categories. 2) Checking class imbalance. 3) Identifying rare values. 4) Measuring missingness frequency.",
+      "avoid_when": "1) You need row-level detail. 2) The values are already numeric and continuous. 3) You need grouped cross-tabulation.",
+      "gotchas": [
+        "Missing values are excluded unless `dropna=False`.",
+        "Sorting is descending by default.",
+        "Ties may not be stable in presentation order."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.Series.value_counts.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: General\nModule: `pandas`\nReturn Value: pandas.Series\nExpected Output: A Series of frequencies sorted descending by counts.\nPurpose: I need frequency counts for categorical values.\nCommon Mistakes: Missing values are excluded unless `dropna=False`; Sorting is descending by default; Ties may not be stable in presentation order\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Select Column",
+      "mental_trigger": "I need one column as a Series.",
+      "syntax": "df[\"col\"]",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\", \"Ben\"], \"score\": [91, 84]})\ns = df[\"score\"]\nprint(s)",
+      "important_params": [
+        "column key."
+      ],
+      "use_when": "1) Working with one variable. 2) Vectorizing calculations. 3) Passing a single field into another function. 4) Checking column contents quickly.",
+      "avoid_when": "1) You need to preserve a DataFrame. 2) You may have duplicate column names. 3) You need multiple columns.",
+      "gotchas": [
+        "Returns a Series, not a DataFrame.",
+        "Duplicate column names can create ambiguity.",
+        "Missing keys raise `KeyError`."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.__getitem__.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Selection & Filtering\nModule: `pandas`\nReturn Value: pandas.Series\nExpected Output: A Series containing the values and index of the selected column.\nPurpose: I need one column as a Series.\nCommon Mistakes: Returns a Series, not a DataFrame; Duplicate column names can create ambiguity; Missing keys raise `KeyError`\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Select Multiple Columns",
+      "mental_trigger": "I need a smaller table with chosen fields.",
+      "syntax": "df[[\"col1\", \"col2\"]]",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\", \"Ben\"], \"score\": [91, 84], \"city\": [\"SEA\", \"NYC\"]})\nsubset = df[[\"name\", \"score\"]]\nprint(subset)",
+      "important_params": [
+        "column list."
+      ],
+      "use_when": "1) Reducing to a working set of features. 2) Preparing export or display. 3) Controlling pipeline schema. 4) Reordering columns.",
+      "avoid_when": "1) You need row filtering too. 2) Column names may be dynamic and missing. 3) You want label-based slicing on rows.",
+      "gotchas": [
+        "Missing columns raise `KeyError`.",
+        "Result is a DataFrame, not a copy guarantee.",
+        "Selection order follows the list you pass."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.__getitem__.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Selection & Filtering\nModule: `pandas`\nReturn Value: pandas.Index\nExpected Output: A sub-DataFrame containing only the selected columns.\nPurpose: I need a smaller table with chosen fields.\nCommon Mistakes: Missing columns raise `KeyError`; Result is a DataFrame, not a copy guarantee; Selection order follows the list you pass\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Select Rows by Position",
+      "mental_trigger": "I need rows by integer position.",
+      "syntax": "df.iloc[row_indexer, col_indexer]",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\", \"Ben\", \"Chen\"], \"score\": [91, 84, 77]})\nprint(df.iloc[0:2, :])",
+      "important_params": [
+        "row_indexer.",
+        "col_indexer.",
+        "slices.",
+        "lists.",
+        "booleans."
+      ],
+      "use_when": "1) Taking positional slices. 2) Selecting by row number in a stable order. 3) Extracting the first or last rows. 4) Building deterministic tests.",
+      "avoid_when": "1) Index labels matter. 2) You need semantic label selection. 3) The index is not simple or not ordered.",
+      "gotchas": [
+        "End slice is exclusive.",
+        "Out-of-bounds scalar access raises errors.",
+        "Works by position, not index labels."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.iloc.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Selection & Filtering\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Select Rows by Position' operation.\nPurpose: I need rows by integer position.\nCommon Mistakes: End slice is exclusive; Out-of-bounds scalar access raises errors; Works by position, not index labels\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Select Rows by Label",
+      "mental_trigger": "I need rows by index label.",
+      "syntax": "df.loc[row_indexer, col_indexer]",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\", \"Ben\"], \"score\": [91, 84]}, index=[\"r1\", \"r2\"])\nprint(df.loc[\"r1\", :])",
+      "important_params": [
+        "row_indexer.",
+        "col_indexer.",
+        "labels.",
+        "slices.",
+        "booleans."
+      ],
+      "use_when": "1) The index encodes meaning. 2) Selecting named rows or row ranges. 3) Filtering by aligned boolean masks. 4) Working with MultiIndex labels.",
+      "avoid_when": "1) You only know integer positions. 2) Index labels are duplicated and ambiguous. 3) The index has not been set intentionally.",
+      "gotchas": [
+        "Label slices are inclusive.",
+        "Missing labels raise `KeyError`.",
+        "Boolean masks align on index labels."
       ],
       "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.loc.html",
       "related_workflows": [],
-      "related_cheatsheets": ["pandas-cheatsheet"]
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Selection & Filtering\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Select Rows by Label' operation.\nPurpose: I need rows by index label.\nCommon Mistakes: Label slices are inclusive; Missing labels raise `KeyError`; Boolean masks align on index labels\nRelated APIs: loc, iloc"
     },
     {
-      "task": "Clean data: handle nulls, duplicates, types, and column names",
-      "mental_trigger": "I need to fix missing values, deduplicate rows, cast column types, or rename columns before modeling",
-      "syntax": "df.dropna(subset=cols)\ndf.fillna(value_dict)\ndf.drop_duplicates(subset=cols, keep='first')\ndf.astype(dtype_dict)\ndf.rename(columns=mapping)",
+      "task": "Boolean Filter Rows",
+      "mental_trigger": "I need only rows matching a condition.",
+      "syntax": "df[mask]",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\", \"Ben\", \"Chen\"], \"score\": [91, 84, 77]})\nfiltered = df[df[\"score\"] >= 85]\nprint(filtered)",
       "important_params": [
-        "subset — list of columns to consider for null/duplicate checks",
-        "value_dict — per-column fill values e.g. {'age': df['age'].median()}",
-        "keep — 'first' or 'last' for which duplicate to retain",
-        "dtype_dict — {'col': type} for targeted casting"
+        "mask.",
+        "operator precedence.",
+        "parentheses."
       ],
-      "example": "df = df.dropna(subset=['label', 'text'])           # drop rows with missing target or feature\ndf = df.fillna({'score': df['score'].median(), 'category': 'unknown'})\ndf = df.drop_duplicates(subset=['user_id'], keep='first')\ndf = df.astype({'id': str, 'score': float})",
-      "use_when": "Any time raw data enters a pipeline before feature engineering or model training. Null imputation, type enforcement, and deduplication are always required.",
-      "avoid_when": "Imputing without understanding the null pattern — imputing label columns destroys dataset integrity. Always verify null distributions first with isnull().sum().",
-      "decision_notes": "Order matters: dropna → fillna → drop_duplicates → astype. Casting before handling nulls will fail with ValueError on NaN-containing columns.",
+      "use_when": "1) Removing unwanted records. 2) Selecting records by threshold. 3) Filtering before aggregation. 4) Creating cohort subsets.",
+      "avoid_when": "1) The condition is hard to read. 2) You need many string-like predicates. 3) You need safer expression parsing.",
       "gotchas": [
-        "df.fillna(0) on an object-dtype column inserts the string '0', not the integer 0 — always cast the column to numeric first.",
-        "df.drop_duplicates without specifying subset considers all columns — valid rows differing only in a timestamp or ID will be silently retained."
+        "Mask length must match the frame.",
+        "Missing booleans can drop rows.",
+        "Always parenthesize compound conditions."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.loc.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Selection & Filtering\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A filtered sub-DataFrame containing only rows matching the criteria.\nPurpose: I need only rows matching a condition.\nCommon Mistakes: Mask length must match the frame; Missing booleans can drop rows; Always parenthesize compound conditions\nRelated APIs: iloc, loc, query"
+    },
+    {
+      "task": "Query Rows",
+      "mental_trigger": "I need filter logic in an expression string.",
+      "syntax": "DataFrame.query(expr, inplace=False, **kwargs)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\", \"Ben\", \"Chen\"], \"score\": [91, 84, 77]})\nresult = df.query(\"score >= 85\")\nprint(result)",
+      "important_params": [
+        "expr.",
+        "inplace.",
+        "engine.",
+        "parser.",
+        "local_dict."
+      ],
+      "use_when": "1) Filtering with readable expressions. 2) Building dynamic queries. 3) Combining multiple conditions concisely. 4) Passing filters from configuration.",
+      "avoid_when": "1) You need arbitrary Python code. 2) Column names are awkward without quoting. 3) You need maximum explicitness for debugging.",
+      "gotchas": [
+        "Variable names in expressions can be confusing.",
+        "Not all Python syntax is supported.",
+        "String quoting inside expressions can be tricky."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.query.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Selection & Filtering\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A filtered sub-DataFrame containing only rows matching the criteria.\nPurpose: I need filter logic in an expression string.\nCommon Mistakes: Variable names in expressions can be confusing; Not all Python syntax is supported; String quoting inside expressions can be tricky\nRelated APIs: iloc, loc"
+    },
+    {
+      "task": "Slice Ranges",
+      "mental_trigger": "I need a contiguous subset of rows or columns.",
+      "syntax": "df[start:stop]",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\", \"Ben\", \"Chen\"], \"score\": [91, 84, 77]})\nprint(df[0:2])",
+      "important_params": [
+        "start.",
+        "stop.",
+        "step."
+      ],
+      "use_when": "1) Taking a simple contiguous subset by position. 2) Quick inspection of leading records. 3) Creating small samples for debugging.",
+      "avoid_when": "1) You need label-based row selection. 2) Index order is not meaningful. 3) More explicit `.iloc` would reduce ambiguity.",
+      "gotchas": [
+        "Slice semantics depend on the axis and index context.",
+        "It is often clearer to use `.iloc`.",
+        "Not ideal for production logic with labels."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.iloc.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Selection & Filtering\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Slice Ranges' operation.\nPurpose: I need a contiguous subset of rows or columns.\nCommon Mistakes: Slice semantics depend on the axis and index context; It is often clearer to use `iloc`; Not ideal for production logic with labels\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Detect Missing Values",
+      "mental_trigger": "I need to find null or NaN entries.",
+      "syntax": "DataFrame.isna()",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\", None], \"score\": [91, None]})\nprint(df.isna())",
+      "important_params": [
+        "none."
+      ],
+      "use_when": "1) Counting missingness. 2) Building cleanup masks. 3) Validating input completeness. 4) Identifying sparse columns.",
+      "avoid_when": "1) You want non-null values directly. 2) The dataset uses sentinel values instead of nulls. 3) You need imputation immediately.",
+      "gotchas": [
+        "`NaN != NaN`, so equality checks fail.",
+        "Works across pandas missing-value sentinels.",
+        "Nullable dtypes may propagate `pd.NA` differently."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.isna.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Detect Missing Values' operation.\nPurpose: I need to find null or NaN entries.\nCommon Mistakes: `NaN != NaN`, so equality checks fail; Works across pandas missing-value sentinels; Nullable dtypes may propagate `pdNA` differently\nRelated APIs: dropna, fillna, interpolate"
+    },
+    {
+      "task": "Fill Missing Values",
+      "mental_trigger": "I need to replace nulls with a value or strategy.",
+      "syntax": "DataFrame.fillna(value=None, method=None, axis=None, inplace=False, limit=None)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\", None], \"score\": [91, None]})\nfilled = df.fillna({\"name\": \"unknown\", \"score\": 0})\nprint(filled)",
+      "important_params": [
+        "value.",
+        "method.",
+        "axis.",
+        "inplace.",
+        "limit."
+      ],
+      "use_when": "1) Imputing defaults. 2) Forward- or backward-filling time-ordered data. 3) Preparing data for modeling or export. 4) Normalizing sparse fields.",
+      "avoid_when": "1) Missingness itself is meaningful. 2) You need to keep original nulls. 3) There is no documented business rule for replacement.",
+      "gotchas": [
+        "`inplace` can complicate chaining.",
+        "Type coercion may occur.",
+        "Method-based fills depend on ordering."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.fillna.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: DataFrame/Series with NaN values filled with the specified values or interpolation.\nPurpose: I need to replace nulls with a value or strategy.\nCommon Mistakes: `inplace` can complicate chaining; Type coercion may occur; Method-based fills depend on ordering\nRelated APIs: dropna, interpolate, isna"
+    },
+    {
+      "task": "Drop Missing Values",
+      "mental_trigger": "I need to remove rows or columns with nulls.",
+      "syntax": "DataFrame.dropna(axis=0, how='any', subset=None, inplace=False)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\", None], \"score\": [91, None]})\nclean = df.dropna()\nprint(clean)",
+      "important_params": [
+        "axis.",
+        "how.",
+        "subset.",
+        "inplace.",
+        "thresh."
+      ],
+      "use_when": "1) Cleaning incomplete records. 2) Keeping only fully populated rows. 3) Dropping unusable columns. 4) Preparing strict downstream inputs.",
+      "avoid_when": "1) Missingness is expected and informative. 2) You can impute safely. 3) Too much data would be lost.",
+      "gotchas": [
+        "Defaults may remove more than intended.",
+        "`subset` restricts the inspected columns.",
+        "Row loss can silently bias data."
       ],
       "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.dropna.html",
       "related_workflows": [],
-      "related_cheatsheets": ["pandas-cheatsheet"]
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: DataFrame/Series with rows or columns containing missing values omitted.\nPurpose: I need to remove rows or columns with nulls.\nCommon Mistakes: Defaults may remove more than intended; `subset` restricts the inspected columns; Row loss can silently bias data\nRelated APIs: fillna, interpolate, isna"
     },
     {
-      "task": "Aggregate data with groupby, pivot, or time-series resample",
-      "mental_trigger": "I need per-group statistics, cross-tabulations, or periodic summaries from a DataFrame",
-      "syntax": "df.groupby(by)[col].agg(func)\ndf.pivot_table(values, index, columns, aggfunc)\ndf.resample(rule)[col].mean()\ndf.merge(right, on=col, how='left')",
+      "task": "Replace Values",
+      "mental_trigger": "I need direct value substitution.",
+      "syntax": "DataFrame.replace(to_replace=None, value=None, inplace=False)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"status\": [\"ok\", \"N/A\", \"ok\"]})\nclean = df.replace(\"N/A\", None)\nprint(clean)",
       "important_params": [
-        "by — column name or list for groupby key",
-        "aggfunc — 'sum', 'mean', 'count', or dict per column",
-        "rule — time offset for resample e.g. 'D', 'W', 'M'",
-        "how — join strategy: 'left', 'inner', 'outer', 'right'"
+        "to_replace.",
+        "value.",
+        "regex.",
+        "inplace.",
+        "limit."
       ],
-      "example": "# Per-region sales and profit stats\nresult = df.groupby('region').agg({'sales': 'sum', 'profit': 'mean'})\n\n# Monthly average — requires DatetimeIndex\nmonthly = df.set_index('date').resample('M')['value'].mean()\n\n# Left join on user_id\nmerged = df.merge(user_df, on='user_id', how='left')",
-      "use_when": "Computing class-level statistics for EDA, joining feature tables before model input, resampling sensor or transaction data to fixed time windows.",
-      "avoid_when": "groupby on very high-cardinality string keys — consider integer encoding first. resample on non-datetime index — it will raise TypeError with a confusing message.",
-      "decision_notes": "For groupby with categoricals, always pass observed=True to avoid phantom groups with NaN aggregates. For merges, always check the row count after merge to detect accidental fan-out from duplicate keys.",
+      "use_when": "1) Standardizing placeholders. 2) Rewriting sentinel values. 3) Normalizing categorical text. 4) Cleaning known bad values.",
+      "avoid_when": "1) You need pattern-specific parsing better handled elsewhere. 2) Transformations should be type-aware. 3) The change belongs in ingestion rather than cleanup.",
       "gotchas": [
-        "df.groupby on a categorical column returns NaN aggregates for all categories not present in the data unless observed=True is set.",
-        "df.resample requires a DatetimeIndex — calling it on a string or integer index raises TypeError without telling you to set the index first."
+        "Broad replacements can affect more than one column.",
+        "Regex replacement can be expensive or surprising.",
+        "Replacement may alter dtype."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.replace.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Replace Values' operation.\nPurpose: I need direct value substitution.\nCommon Mistakes: Broad replacements can affect more than one column; Regex replacement can be expensive or surprising; Replacement may alter dtype\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Rename Columns",
+      "mental_trigger": "I need clearer or standardized names.",
+      "syntax": "DataFrame.rename(columns=None, index=None, inplace=False)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"first name\": [\"Ava\"], \"final score\": [^91]})\nrenamed = df.rename(columns={\"first name\": \"first_name\", \"final score\": \"final_score\"})\nprint(renamed)",
+      "important_params": [
+        "columns.",
+        "index.",
+        "inplace.",
+        "errors.",
+        "copy."
+      ],
+      "use_when": "1) Normalizing naming conventions. 2) Standardizing imported schemas. 3) Making names code-friendly. 4) Preparing merge keys.",
+      "avoid_when": "1) The data contract already uses stable names. 2) You need a full schema rewrite with validation elsewhere.",
+      "gotchas": [
+        "`inplace` is not generally a performance shortcut.",
+        "Renaming only changes labels, not values.",
+        "Missing keys can be ignored or error depending on settings."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.rename.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.Index\nExpected Output: A DataFrame with columns renamed according to the input mapper.\nPurpose: I need clearer or standardized names.\nCommon Mistakes: `inplace` is not generally a performance shortcut; Renaming only changes labels, not values; Missing keys can be ignored or error depending on settings\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Drop Columns",
+      "mental_trigger": "I need to remove one or more fields.",
+      "syntax": "DataFrame.drop(labels=None, axis=0, columns=None, inplace=False)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\"], \"score\": [^91], \"temp\": [^1]})\nclean = df.drop(columns=[\"temp\"])\nprint(clean)",
+      "important_params": [
+        "labels.",
+        "axis.",
+        "columns.",
+        "inplace.",
+        "errors."
+      ],
+      "use_when": "1) Removing temporary fields. 2) Trimming analysis output. 3) Dropping redundant columns. 4) Simplifying export schemas.",
+      "avoid_when": "1) You only need a projected subset. 2) The dropped field might be needed later. 3) You are chaining many structural changes unsafely.",
+      "gotchas": [
+        "`axis=1` is easy to misread; `columns=` is clearer.",
+        "Dropping nonexistent columns can raise.",
+        "Copies may be created depending on context."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.drop.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.Index\nExpected Output: A modified or queried object containing the result of the 'Drop Columns' operation.\nPurpose: I need to remove one or more fields.\nCommon Mistakes: `axis=1` is easy to misread; `columns=` is clearer; Dropping nonexistent columns can raise; Copies may be created depending on context\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Drop Duplicates",
+      "mental_trigger": "I need to remove repeated records.",
+      "syntax": "DataFrame.drop_duplicates(subset=None, keep='first', inplace=False, ignore_index=False)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\", \"Ava\", \"Ben\"], \"score\": [91, 91, 84]})\nunique_rows = df.drop_duplicates()\nprint(unique_rows)",
+      "important_params": [
+        "subset.",
+        "keep.",
+        "inplace.",
+        "ignore_index.",
+        "ignore."
+      ],
+      "use_when": "1) De-duplicating event or lookup tables. 2) Keeping the latest or first occurrence. 3) Cleaning repeated imports. 4) Preparing unique keys.",
+      "avoid_when": "1) \u201cDuplicate\u201d requires business logic beyond exact row equality. 2) You need groupwise deduplication with custom ranking. 3) Retaining all copies matters.",
+      "gotchas": [
+        "Equality is row-wise across selected columns.",
+        "NaNs are treated specially.",
+        "Sorting before deduplication often matters."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.drop_duplicates.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Drop Duplicates' operation.\nPurpose: I need to remove repeated records.\nCommon Mistakes: Equality is row-wise across selected columns; NaNs are treated specially; Sorting before deduplication often matters\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Change Dtype",
+      "mental_trigger": "I need a column in the correct type.",
+      "syntax": "DataFrame.astype(dtype, copy=True, errors='raise')",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"score\": [\"91\", \"84\"]})\ntyped = df.astype({\"score\": \"int64\"})\nprint(typed.dtypes)",
+      "important_params": [
+        "dtype.",
+        "copy.",
+        "errors."
+      ],
+      "use_when": "1) Converting strings to numbers. 2) Preparing categorical or datetime-like data. 3) Normalizing schema before analysis. 4) Reducing memory with appropriate dtypes.",
+      "avoid_when": "1) Parsing requires custom coercion logic. 2) Invalid values are common and should be handled more carefully. 3) Direct casting would fail on dirty data.",
+      "gotchas": [
+        "Strict casts can raise.",
+        "Nullable and NumPy dtypes behave differently.",
+        "`astype` does not parse dates from arbitrary strings."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.astype.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.Series\nExpected Output: A modified or queried object containing the result of the 'Change Dtype' operation.\nPurpose: I need a column in the correct type.\nCommon Mistakes: Strict casts can raise; Nullable and NumPy dtypes behave differently; `astype` does not parse dates from arbitrary strings\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Sort Rows",
+      "mental_trigger": "I need records in a defined order.",
+      "syntax": "DataFrame.sort_values(by, ascending=True, inplace=False, na_position='last')",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\", \"Ben\", \"Chen\"], \"score\": [91, 84, 77]})\nsorted_df = df.sort_values(by=\"score\", ascending=False)\nprint(sorted_df)",
+      "important_params": [
+        "by.",
+        "ascending.",
+        "inplace.",
+        "na_position.",
+        "kind."
+      ],
+      "use_when": "1) Ranking records. 2) Preparing deterministic output. 3) Sorting before deduplication or export. 4) Reviewing top or bottom values.",
+      "avoid_when": "1) Original order is meaningful. 2) You only need a stable subset. 3) The data is already pre-sorted and trusted.",
+      "gotchas": [
+        "Missing values are positioned separately.",
+        "Multi-column sorts can be subtle.",
+        "Sorting may not preserve ties unless stable sort is chosen."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.sort_values.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Sorting, Mapping & Vectorization\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Sort Rows' operation.\nPurpose: I need records in a defined order.\nCommon Mistakes: Missing values are positioned separately; Multi-column sorts can be subtle; Sorting may not preserve ties unless stable sort is chosen\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Sort Columns",
+      "mental_trigger": "I need column order changed.",
+      "syntax": "DataFrame.sort_index(axis=1)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"b\": [^2], \"a\": [^1]})\nprint(df.sort_index(axis=1))",
+      "important_params": [
+        "axis.",
+        "ascending.",
+        "inplace.",
+        "kind."
+      ],
+      "use_when": "1) Normalizing column order. 2) Creating predictable exports. 3) Comparing schemas. 4) Improving readability.",
+      "avoid_when": "1) Column order is semantically meaningful. 2) You need custom column placement. 3) You only want selected fields.",
+      "gotchas": [
+        "This sorts labels, not values.",
+        "Duplicate labels can complicate results.",
+        "Axis confusion is common."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.sort_index.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Sorting, Mapping & Vectorization\nModule: `pandas`\nReturn Value: pandas.Index\nExpected Output: A modified or queried object containing the result of the 'Sort Columns' operation.\nPurpose: I need column order changed.\nCommon Mistakes: This sorts labels, not values; Duplicate labels can complicate results; Axis confusion is common\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Apply Function",
+      "mental_trigger": "I need a custom function over rows, columns, or a Series.",
+      "syntax": "DataFrame.apply(func, axis=0, raw=False, result_type=None)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"score\": [91, 84, 77]})\nresult = df[\"score\"].apply(lambda x: x + 1)\nprint(result)",
+      "important_params": [
+        "func.",
+        "axis.",
+        "raw.",
+        "result_type.",
+        "by_row."
+      ],
+      "use_when": "1) Applying a custom transformation. 2) Working with non-vectorizable logic. 3) Performing row-wise feature construction carefully. 4) Reusing a function across columns.",
+      "avoid_when": "1) A vectorized expression exists. 2) Speed matters and pure Python is unnecessary. 3) You are tempted to use it for simple arithmetic.",
+      "gotchas": [
+        "`axis=1` row-wise apply is slower.",
+        "Return shape can be tricky.",
+        "`apply` often hides avoidable performance problems."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.apply.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Sorting, Mapping & Vectorization\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Apply Function' operation.\nPurpose: I need a custom function over rows, columns, or a Series.\nCommon Mistakes: `axis=1` row-wise apply is slower; Return shape can be tricky; `apply` often hides avoidable performance problems\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Map Values",
+      "mental_trigger": "I need one-to-one replacement on a Series.",
+      "syntax": "Series.map(arg, na_action=None)",
+      "example": "import pandas as pd\n\ns = pd.Series([\"A\", \"B\", \"A\"])\nmapped = s.map({\"A\": \"Apple\", \"B\": \"Banana\"})\nprint(mapped)",
+      "important_params": [
+        "arg.",
+        "na_action."
+      ],
+      "use_when": "1) Translating codes to labels. 2) Remapping categorical values. 3) Creating readable output columns. 4) Applying a small lookup dictionary.",
+      "avoid_when": "1) The mapping logic is many-to-one. 2) You need row-wise conditions. 3) Unknown keys should be silently accepted.",
+      "gotchas": [
+        "Missing keys become NaN.",
+        "Mapping a function and mapping a dict behave differently.",
+        "Results may change dtype."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.Series.map.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Sorting, Mapping & Vectorization\nModule: `pandas`\nReturn Value: pandas.Series\nExpected Output: A modified or queried object containing the result of the 'Map Values' operation.\nPurpose: I need one-to-one replacement on a Series.\nCommon Mistakes: Missing keys become NaN; Mapping a function and mapping a dict behave differently; Results may change dtype\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Assign New Column",
+      "mental_trigger": "I need to create derived columns safely.",
+      "syntax": "DataFrame.assign(**kwargs)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"score\": [91, 84, 77]})\nnew_df = df.assign(pass_fail=lambda x: x[\"score\"] >= 85)\nprint(new_df)",
+      "important_params": [
+        "kwargs.",
+        "callable values."
+      ],
+      "use_when": "1) Building chained transformations. 2) Creating multiple derived fields. 3) Avoiding temporary variables. 4) Keeping expression pipelines readable.",
+      "avoid_when": "1) You need in-place mutation for side effects. 2) The transformation is too complex for a chain. 3) You are modifying a view with unclear ownership.",
+      "gotchas": [
+        "Returns a new DataFrame.",
+        "Callable arguments receive the whole DataFrame.",
+        "Later assigned columns can depend on earlier ones in the same call."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.assign.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Sorting, Mapping & Vectorization\nModule: `pandas`\nReturn Value: pandas.Series\nExpected Output: A modified or queried object containing the result of the 'Assign New Column' operation.\nPurpose: I need to create derived columns safely.\nCommon Mistakes: Returns a new DataFrame; Callable arguments receive the whole DataFrame; Later assigned columns can depend on earlier ones in the same call\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Vectorized Arithmetic",
+      "mental_trigger": "I need fast column-wise math.",
+      "syntax": "df[\"new\"] = df[\"a\"] + df[\"b\"]",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"a\": [1, 2, 3], \"b\": [10, 20, 30]})\ndf[\"total\"] = df[\"a\"] + df[\"b\"]\nprint(df)",
+      "important_params": [
+        "operands.",
+        "alignment.",
+        "broadcasting."
+      ],
+      "use_when": "1) Computing derived measures. 2) Combining numeric columns. 3) Scaling values. 4) Applying row-wise formulas without loops.",
+      "avoid_when": "1) The logic is irregular and non-vectorizable. 2) You are tempted to loop over rows. 3) Alignment is uncertain across different indexes.",
+      "gotchas": [
+        "Index alignment can change results.",
+        "Mixed dtypes may produce object output.",
+        "Missing values propagate through arithmetic."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Sorting, Mapping & Vectorization\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Vectorized Arithmetic' operation.\nPurpose: I need fast column-wise math.\nCommon Mistakes: Index alignment can change results; Mixed dtypes may produce object output; Missing values propagate through arithmetic\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Group By Aggregate",
+      "mental_trigger": "I need summary statistics by category.",
+      "syntax": "DataFrame.groupby(by, as_index=True).agg(aggfunc)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"team\": [\"A\", \"A\", \"B\"],\n    \"score\": [91, 84, 77]\n})\nresult = df.groupby(\"team\", as_index=False).agg(mean_score=(\"score\", \"mean\"))\nprint(result)",
+      "important_params": [
+        "by.",
+        "as_index.",
+        "agg.",
+        "sort.",
+        "observed."
+      ],
+      "use_when": "1) Summarizing by category. 2) Computing per-group metrics. 3) Building reporting tables. 4) Producing KPI rollups.",
+      "avoid_when": "1) You only need raw filtered rows. 2) The grouping key is too granular. 3) Group semantics are ambiguous.",
+      "gotchas": [
+        "`as_index=False` is often easier for downstream joins.",
+        "Multiple aggregations can produce MultiIndex columns.",
+        "Missing groups may vanish unless categories are handled carefully."
       ],
       "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.groupby.html",
       "related_workflows": [],
-      "related_cheatsheets": ["pandas-cheatsheet"]
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: General\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Group By Aggregate' operation.\nPurpose: I need summary statistics by category.\nCommon Mistakes: `as_index=False` is often easier for downstream joins; Multiple aggregations can produce MultiIndex columns; Missing groups may vanish unless categories are handled carefully\nRelated APIs: agg, filter, transform"
+    },
+    {
+      "task": "Group By Transform",
+      "mental_trigger": "I need a groupwise result aligned to original rows.",
+      "syntax": "DataFrame.groupby(by).transform(func)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"team\": [\"A\", \"A\", \"B\"],\n    \"score\": [91, 84, 77]\n})\ndf[\"team_mean\"] = df.groupby(\"team\")[\"score\"].transform(\"mean\")\nprint(df)",
+      "important_params": [
+        "func.",
+        "by.",
+        "axis.",
+        "engine."
+      ],
+      "use_when": "1) Adding group-normalized features. 2) Computing per-row group statistics. 3) Broadcasting group metrics back onto records. 4) Creating z-scores or deviations.",
+      "avoid_when": "1) You need one row per group only. 2) The transformation does not preserve shape. 3) A merge would be clearer.",
+      "gotchas": [
+        "Output must align to the original index.",
+        "Misuse can create confusing shapes.",
+        "Transform is not the same as aggregate."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.core.groupby.DataFrameGroupBy.transform.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: General\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Group By Transform' operation.\nPurpose: I need a groupwise result aligned to original rows.\nCommon Mistakes: Output must align to the original index; Misuse can create confusing shapes; Transform is not the same as aggregate\nRelated APIs: agg, filter, transform"
+    },
+    {
+      "task": "Group By Filter",
+      "mental_trigger": "I need only groups that satisfy a condition.",
+      "syntax": "DataFrame.groupby(by).filter(func)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"team\": [\"A\", \"A\", \"B\"],\n    \"score\": [91, 84, 77]\n})\nresult = df.groupby(\"team\").filter(lambda g: g[\"score\"].mean() >= 85)\nprint(result)",
+      "important_params": [
+        "func.",
+        "dropna.",
+        "by."
+      ],
+      "use_when": "1) Removing weak groups. 2) Keeping cohorts meeting a threshold. 3) Pre-filtering before modeling or reporting. 4) Applying group-level business rules.",
+      "avoid_when": "1) A simple row filter is enough. 2) You need a group summary table. 3) Group functions are expensive on huge data.",
+      "gotchas": [
+        "The function receives each group as a DataFrame.",
+        "Filter preserves original rows from accepted groups.",
+        "Performance can be poor if the predicate is complex."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.core.groupby.DataFrameGroupBy.filter.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Selection & Filtering\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A filtered sub-DataFrame containing only rows matching the criteria.\nPurpose: I need only groups that satisfy a condition.\nCommon Mistakes: The function receives each group as a DataFrame; Filter preserves original rows from accepted groups; Performance can be poor if the predicate is complex\nRelated APIs: iloc, loc, query"
+    },
+    {
+      "task": "Merge Two DataFrames",
+      "mental_trigger": "I need to join tables on one or more keys.",
+      "syntax": "pd.merge(left, right, on=None, how='inner', left_on=None, right_on=None)",
+      "example": "import pandas as pd\n\nleft = pd.DataFrame({\"id\": [1, 2], \"name\": [\"Ava\", \"Ben\"]})\nright = pd.DataFrame({\"id\": [1, 2], \"score\": [91, 84]})\nmerged = pd.merge(left, right, on=\"id\", how=\"inner\")\nprint(merged)",
+      "important_params": [
+        "on.",
+        "how.",
+        "left_on.",
+        "right_on.",
+        "validate."
+      ],
+      "use_when": "1) Combining fact and lookup tables. 2) Enriching rows with metadata. 3) Joining denormalized datasets. 4) Reconstructing wide analysis tables.",
+      "avoid_when": "1) Keys are not unique and duplication is unwanted. 2) You only need vertical stacking. 3) A relational join is not the right model.",
+      "gotchas": [
+        "Duplicate keys can multiply rows.",
+        "Null join keys behave differently than SQL expectations.",
+        "Validate join cardinality when possible."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.merge.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Merging & Joining\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Merge Two DataFrames' operation.\nPurpose: I need to join tables on one or more keys.\nCommon Mistakes: Duplicate keys can multiply rows; Null join keys behave differently than SQL expectations; Validate join cardinality when possible\nRelated APIs: Series, read_csv"
+    },
+    {
+      "task": "Join on Index",
+      "mental_trigger": "I need to combine tables using their indexes.",
+      "syntax": "DataFrame.join(other, on=None, how='left', lsuffix='', rsuffix='', sort=False)",
+      "example": "import pandas as pd\n\nleft = pd.DataFrame({\"name\": [\"Ava\", \"Ben\"]}, index=[1, 2])\nright = pd.DataFrame({\"score\": [91, 84]}, index=[1, 2])\njoined = left.join(right, how=\"inner\")\nprint(joined)",
+      "important_params": [
+        "other.",
+        "how.",
+        "on.",
+        "lsuffix.",
+        "rsuffix."
+      ],
+      "use_when": "1) Index values are the natural key. 2) Joining many aligned tables. 3) Enriching an indexed frame. 4) Keeping left index structure.",
+      "avoid_when": "1) Join keys live in regular columns. 2) Index meaning is accidental. 3) Key cardinality is unclear.",
+      "gotchas": [
+        "Index alignment matters.",
+        "Overlapping columns need suffixes.",
+        "Many-to-many joins can expand unexpectedly."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.join.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Merging & Joining\nModule: `pandas`\nReturn Value: pandas.Index\nExpected Output: A modified or queried object containing the result of the 'Join on Index' operation.\nPurpose: I need to combine tables using their indexes.\nCommon Mistakes: Index alignment matters; Overlapping columns need suffixes; Many-to-many joins can expand unexpectedly\nRelated APIs: concat, merge"
+    },
+    {
+      "task": "Concatenate DataFrames",
+      "mental_trigger": "I need to stack or combine objects along an axis.",
+      "syntax": "pd.concat(objs, axis=0, join='outer', ignore_index=False)",
+      "example": "import pandas as pd\n\na = pd.DataFrame({\"name\": [\"Ava\"], \"score\": [^91]})\nb = pd.DataFrame({\"name\": [\"Ben\"], \"score\": [^84]})\ncombined = pd.concat([a, b], ignore_index=True)\nprint(combined)",
+      "important_params": [
+        "objs.",
+        "axis.",
+        "join.",
+        "ignore_index.",
+        "keys."
+      ],
+      "use_when": "1) Appending batches. 2) Combining same-shaped tables. 3) Building multi-source panels. 4) Stacking partitions.",
+      "avoid_when": "1) You need key-based relational matching. 2) Schema mismatch should be controlled explicitly. 3) `merge` or `join` would be clearer.",
+      "gotchas": [
+        "Axis choice changes the meaning completely.",
+        "Indexes may be retained unless ignored.",
+        "Column union can introduce missing values."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.concat.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Merging & Joining\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Concatenate DataFrames' operation.\nPurpose: I need to stack or combine objects along an axis.\nCommon Mistakes: Axis choice changes the meaning completely; Indexes may be retained unless ignored; Column union can introduce missing values\nRelated APIs: Series, read_csv"
+    },
+    {
+      "task": "Pivot Table",
+      "mental_trigger": "I need a grouped summary in matrix form.",
+      "syntax": "DataFrame.pivot_table(values=None, index=None, columns=None, aggfunc='mean', fill_value=None)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"team\": [\"A\", \"A\", \"B\"],\n    \"quarter\": [\"Q1\", \"Q2\", \"Q1\"],\n    \"score\": [91, 84, 77]\n})\ntable = df.pivot_table(values=\"score\", index=\"team\", columns=\"quarter\", aggfunc=\"mean\")\nprint(table)",
+      "important_params": [
+        "values.",
+        "index.",
+        "columns.",
+        "aggfunc.",
+        "fill_value."
+      ],
+      "use_when": "1) Creating report matrices. 2) Summarizing by two dimensions. 3) Aggregating duplicates into a grid. 4) Producing spreadsheet-like summaries.",
+      "avoid_when": "1) You need a pure reshape without aggregation. 2) Duplicates must be preserved exactly. 3) The table is too sparse and hard to read.",
+      "gotchas": [
+        "Duplicate combinations require aggregation.",
+        "Missing combinations become NaN.",
+        "Multi-level outputs are common."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.pivot_table.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Reshaping & Pivoting\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Pivot Table' operation.\nPurpose: I need a grouped summary in matrix form.\nCommon Mistakes: Duplicate combinations require aggregation; Missing combinations become NaN; Multi-level outputs are common\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Pivot Long to Wide",
+      "mental_trigger": "I need a one-to-one reshape from long to wide.",
+      "syntax": "DataFrame.pivot(index=None, columns=None, values=None)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"team\": [\"A\", \"B\"],\n    \"metric\": [\"score\", \"score\"],\n    \"value\": [91, 84]\n})\nwide = df.pivot(index=\"team\", columns=\"metric\", values=\"value\")\nprint(wide)",
+      "important_params": [
+        "index.",
+        "columns.",
+        "values."
+      ],
+      "use_when": "1) Reshaping records without aggregation. 2) Converting tidy long data into wide format. 3) Preparing simple matrix layouts. 4) Reindexing categorical structure.",
+      "avoid_when": "1) Duplicate key combinations exist. 2) You need aggregation. 3) The data is already wide enough.",
+      "gotchas": [
+        "Duplicate index/column pairs raise errors.",
+        "Output often gains hierarchical labels.",
+        "Missing combinations become NaN."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.pivot.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Reshaping & Pivoting\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Pivot Long to Wide' operation.\nPurpose: I need a one-to-one reshape from long to wide.\nCommon Mistakes: Duplicate index/column pairs raise errors; Output often gains hierarchical labels; Missing combinations become NaN\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Melt Wide to Long",
+      "mental_trigger": "I need to unpivot columns into rows.",
+      "syntax": "DataFrame.melt(id_vars=None, value_vars=None, var_name=None, value_name='value')",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"team\": [\"A\", \"B\"], \"score_q1\": [91, 84], \"score_q2\": [88, 79]})\nlong = df.melt(id_vars=[\"team\"], var_name=\"quarter\", value_name=\"score\")\nprint(long)",
+      "important_params": [
+        "id_vars.",
+        "value_vars.",
+        "var_name.",
+        "value_name.",
+        "ignore_index."
+      ],
+      "use_when": "1) Normalizing wide survey or report data. 2) Preparing visualization-ready tidy data. 3) Collapsing repeated measure columns. 4) Converting spreadsheet-style tables to long format.",
+      "avoid_when": "1) The table is already tidy. 2) Column identities should stay separate. 3) Aggregation is what you really need.",
+      "gotchas": [
+        "The result can be much larger than the input.",
+        "Non-id columns are stacked into rows.",
+        "Column names become data values."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.melt.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Reshaping & Pivoting\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Melt Wide to Long' operation.\nPurpose: I need to unpivot columns into rows.\nCommon Mistakes: The result can be much larger than the input; Non-id columns are stacked into rows; Column names become data values\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Stack Columns",
+      "mental_trigger": "I need to move columns into the index hierarchy.",
+      "syntax": "DataFrame.stack(level=-1, dropna=True)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"A\": [1, 2], \"B\": [3, 4]})\nstacked = df.stack()\nprint(stacked)",
+      "important_params": [
+        "level.",
+        "dropna.",
+        "future_stack."
+      ],
+      "use_when": "1) Moving wide data into a longer indexed form. 2) Working with MultiIndex columns. 3) Preparing hierarchical reshapes. 4) Feeding index-based workflows.",
+      "avoid_when": "1) A plain `melt` is simpler. 2) You want explicit column names in the output. 3) MultiIndex complexity is unnecessary.",
+      "gotchas": [
+        "Output becomes a Series or DataFrame depending on structure.",
+        "Index nesting may surprise downstream code.",
+        "Missing values may be dropped."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.stack.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Reshaping & Pivoting\nModule: `pandas`\nReturn Value: pandas.Index\nExpected Output: A modified or queried object containing the result of the 'Stack Columns' operation.\nPurpose: I need to move columns into the index hierarchy.\nCommon Mistakes: Output becomes a Series or DataFrame depending on structure; Index nesting may surprise downstream code; Missing values may be dropped\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Unstack Rows",
+      "mental_trigger": "I need to move an index level into columns.",
+      "syntax": "DataFrame.unstack(level=-1, fill_value=None)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"team\": [\"A\", \"A\", \"B\"], \"quarter\": [\"Q1\", \"Q2\", \"Q1\"], \"score\": [91, 84, 77]})\nindexed = df.set_index([\"team\", \"quarter\"])\nwide = indexed.unstack(\"quarter\")\nprint(wide)",
+      "important_params": [
+        "level.",
+        "fill_value.",
+        "sort."
+      ],
+      "use_when": "1) Converting grouped index data to a matrix. 2) Exposing hierarchical row labels as columns. 3) Reformatting MultiIndex outputs.",
+      "avoid_when": "1) The data is not indexed meaningfully. 2) You do not want hierarchical columns. 3) A pivot or pivot_table is simpler.",
+      "gotchas": [
+        "Missing combinations produce NaN.",
+        "MultiIndex structure can be awkward.",
+        "Requires a suitable index level."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.unstack.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Reshaping & Pivoting\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Unstack Rows' operation.\nPurpose: I need to move an index level into columns.\nCommon Mistakes: Missing combinations produce NaN; MultiIndex structure can be awkward; Requires a suitable index level\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Convert Datetime",
+      "mental_trigger": "I need text dates parsed into datetime objects.",
+      "syntax": "pd.to_datetime(arg, errors='raise', utc=False, format=None)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"date\": [\"2026-01-01\", \"2026-01-15\"]})\ndf[\"date\"] = pd.to_datetime(df[\"date\"])\nprint(df.dtypes)",
+      "important_params": [
+        "arg.",
+        "errors.",
+        "utc.",
+        "format.",
+        "cache."
+      ],
+      "use_when": "1) Parsing date strings. 2) Preparing time-series operations. 3) Standardizing timestamps. 4) Comparing dates safely.",
+      "avoid_when": "1) The source already has trusted datetime dtype. 2) Invalid strings should remain visible. 3) Locale or mixed formats are uncontrolled.",
+      "gotchas": [
+        "Ambiguous date formats can parse incorrectly.",
+        "Timezone handling changes comparison behavior.",
+        "Invalid parsing may coerce or raise depending on settings."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.to_datetime.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Time Series & Window Operations\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A Series cast to datetime64 type.\nPurpose: I need text dates parsed into datetime objects.\nCommon Mistakes: Ambiguous date formats can parse incorrectly; Timezone handling changes comparison behavior; Invalid parsing may coerce or raise depending on settings\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Date Filtering",
+      "mental_trigger": "I need rows within a time range.",
+      "syntax": "df[(df[\"ts\"] >= start) & (df[\"ts\"] < end)]",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"ts\": pd.to_datetime([\"2026-01-01\", \"2026-02-01\"]),\n    \"value\": [10, 20]\n})\nfiltered = df[(df[\"ts\"] >= \"2026-01-15\") & (df[\"ts\"] < \"2026-03-01\")]\nprint(filtered)",
+      "important_params": [
+        "start.",
+        "end.",
+        "inclusive logic.",
+        "timezone alignment."
+      ],
+      "use_when": "1) Restricting events to a window. 2) Building reporting periods. 3) Selecting operational slices. 4) Preparing time-based aggregates.",
+      "avoid_when": "1) Index-based slicing is more natural. 2) The datetime column is still text. 3) Timezones are inconsistent.",
+      "gotchas": [
+        "String comparisons are unsafe unless parsed.",
+        "Timezone-aware and naive timestamps do not mix cleanly.",
+        "Inclusive/exclusive boundaries must be deliberate."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.to_datetime.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Selection & Filtering\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A filtered sub-DataFrame containing only rows matching the criteria.\nPurpose: I need rows within a time range.\nCommon Mistakes: String comparisons are unsafe unless parsed; Timezone-aware and naive timestamps do not mix cleanly; Inclusive/exclusive boundaries must be deliberate\nRelated APIs: iloc, loc, query"
+    },
+    {
+      "task": "Resample Time Series",
+      "mental_trigger": "I need to aggregate data into time bins.",
+      "syntax": "DataFrame.resample(rule, on=None, label=None, closed=None).agg(func)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"ts\": pd.to_datetime([\"2026-01-01 01:00\", \"2026-01-01 13:00\", \"2026-01-02 02:00\"]),\n    \"value\": [10, 20, 30]\n})\nresult = df.resample(\"D\", on=\"ts\").sum()\nprint(result)",
+      "important_params": [
+        "rule.",
+        "on.",
+        "label.",
+        "closed.",
+        "origin."
+      ],
+      "use_when": "1) Summing by day, week, or month. 2) Creating fixed-frequency metrics. 3) Downsampling event streams. 4) Comparing periods consistently.",
+      "avoid_when": "1) The data is not time-indexed or time-addressable. 2) Irregular grouping is enough. 3) You need non-time categorical grouping.",
+      "gotchas": [
+        "Requires a datetime-like axis or `on=`.",
+        "Bin boundaries matter.",
+        "Missing periods may appear in output."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.resample.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Time Series & Window Operations\nModule: `pandas`\nReturn Value: pandas.core.resample.Resampler\nExpected Output: A modified or queried object containing the result of the 'Resample Time Series' operation.\nPurpose: I need to aggregate data into time bins.\nCommon Mistakes: Requires a datetime-like axis or `on=`; Bin boundaries matter; Missing periods may appear in output\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Rolling Window",
+      "mental_trigger": "I need moving-window statistics.",
+      "syntax": "DataFrame.rolling(window, min_periods=None, center=False).mean()",
+      "example": "import pandas as pd\n\ns = pd.Series([1, 2, 3, 4, 5])\nprint(s.rolling(window=3).mean())",
+      "important_params": [
+        "window.",
+        "min_periods.",
+        "center.",
+        "win_type.",
+        "method."
+      ],
+      "use_when": "1) Computing moving averages. 2) Smoothing noisy signals. 3) Calculating lagging features. 4) Detecting local trends.",
+      "avoid_when": "1) A cumulative metric is sufficient. 2) The window definition is unclear. 3) Very small samples make the statistic meaningless.",
+      "gotchas": [
+        "Initial windows return NaN until enough data exists.",
+        "Window alignment affects interpretation.",
+        "Time-based windows behave differently from row-count windows."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.rolling.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Time Series & Window Operations\nModule: `pandas`\nReturn Value: pandas.core.window.rolling.Rolling\nExpected Output: A modified or queried object containing the result of the 'Rolling Window' operation.\nPurpose: I need moving-window statistics.\nCommon Mistakes: Initial windows return NaN until enough data exists; Window alignment affects interpretation; Time-based windows behave differently from row-count windows\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Set Index",
+      "mental_trigger": "I need one or more columns to become the row index.",
+      "syntax": "DataFrame.set_index(keys, drop=True, append=False, inplace=False)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"id\": [1, 2], \"name\": [\"Ava\", \"Ben\"]})\nindexed = df.set_index(\"id\")\nprint(indexed)",
+      "important_params": [
+        "keys.",
+        "drop.",
+        "append.",
+        "inplace.",
+        "verify_integrity."
+      ],
+      "use_when": "1) Using a natural key for lookup. 2) Preparing joins on index. 3) Building time-series or hierarchical tables. 4) Making labels part of structure.",
+      "avoid_when": "1) The column is not unique enough. 2) You still need the column frequently in its original form. 3) Positional access is more important than labels.",
+      "gotchas": [
+        "Duplicate keys can create ambiguous indexes.",
+        "`drop=False` keeps the original column.",
+        "Index choice affects later alignment."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.set_index.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Index Operations\nModule: `pandas`\nReturn Value: pandas.Index\nExpected Output: A modified or queried object containing the result of the 'Set Index' operation.\nPurpose: I need one or more columns to become the row index.\nCommon Mistakes: Duplicate keys can create ambiguous indexes; `drop=False` keeps the original column; Index choice affects later alignment\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Reset Index",
+      "mental_trigger": "I need to turn the index back into columns.",
+      "syntax": "DataFrame.reset_index(drop=False)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\", \"Ben\"]}, index=[101, 102])\nreset = df.reset_index()\nprint(reset)",
+      "important_params": [
+        "drop.",
+        "level.",
+        "col_level.",
+        "col_fill."
+      ],
+      "use_when": "1) Flattening after grouping or reshaping. 2) Restoring a clean tabular form. 3) Preparing export to CSV or Excel. 4) Removing accidental index meaning.",
+      "avoid_when": "1) The index is intentionally part of the model. 2) You want to preserve labels only. 3) The resulting column name collisions are unresolved.",
+      "gotchas": [
+        "The index becomes a column unless dropped.",
+        "MultiIndex flattening can be surprising.",
+        "Generated column names may collide with existing ones."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.reset_index.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Index Operations\nModule: `pandas`\nReturn Value: pandas.Index\nExpected Output: A modified or queried object containing the result of the 'Reset Index' operation.\nPurpose: I need to turn the index back into columns.\nCommon Mistakes: The index becomes a column unless dropped; MultiIndex flattening can be surprising; Generated column names may collide with existing ones\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Categorical Dtype",
+      "mental_trigger": "I need efficient repeated labels or ordered categories.",
+      "syntax": "Series.astype(\"category\")",
+      "example": "import pandas as pd\n\ns = pd.Series([\"low\", \"medium\", \"low\", \"high\"])\ncat = s.astype(\"category\")\nprint(cat)",
+      "important_params": [
+        "categories.",
+        "ordered.",
+        "dtype.",
+        "observed.",
+        "copy."
+      ],
+      "use_when": "1) Repeating the same labels many times. 2) Defining ordered levels. 3) Reducing memory use. 4) Grouping or sorting discrete states.",
+      "avoid_when": "1) Labels are all unique. 2) Category order is unknown and important. 3) You need free-text values.",
+      "gotchas": [
+        "Unseen categories can behave differently in merges or comparisons.",
+        "Ordering must be explicit if it matters.",
+        "Category codes are not the same as labels."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.Categorical.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Categorical Data\nModule: `pandas`\nReturn Value: pandas.Series\nExpected Output: A modified or queried object containing the result of the 'Categorical Dtype' operation.\nPurpose: I need efficient repeated labels or ordered categories.\nCommon Mistakes: Unseen categories can behave differently in merges or comparisons; Ordering must be explicit if it matters; Category codes are not the same as labels\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Efficient Filtering",
+      "mental_trigger": "I need faster, cleaner row selection on large tables.",
+      "syntax": "mask = (df[\"col\"] >= value) & (df[\"other\"].isin(items))",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"score\": [91, 84, 77, 88],\n    \"team\": [\"A\", \"B\", \"A\", \"C\"]\n})\nmask = (df[\"score\"] >= 85) & (df[\"team\"].isin([\"A\", \"C\"]))\nprint(df.loc[mask])",
+      "important_params": [
+        "boolean masks.",
+        "isin.",
+        "query.",
+        "precomputed masks.",
+        "dtype."
+      ],
+      "use_when": "1) Reusing the same filter multiple times. 2) Avoiding row-wise Python loops. 3) Combining membership and threshold checks. 4) Filtering before joins or groupby.",
+      "avoid_when": "1) Readability suffers from overly complex masks. 2) You need expression parsing from text. 3) The logic is really row-wise custom Python.",
+      "gotchas": [
+        "Parentheses are required for compound conditions.",
+        "`.isin()` is typically better than chained equality checks.",
+        "Boolean masks can consume significant memory."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.Series.isin.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Selection & Filtering\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A filtered sub-DataFrame containing only rows matching the criteria.\nPurpose: I need faster, cleaner row selection on large tables.\nCommon Mistakes: Parentheses are required for compound conditions; `isin()` is typically better than chained equality checks; Boolean masks can consume significant memory\nRelated APIs: iloc, loc, query"
+    },
+    {
+      "task": "Avoid Iterrows",
+      "mental_trigger": "I am about to loop over rows.",
+      "syntax": "for row in df.itertuples(index=False): ...",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"a\": [1, 2, 3], \"b\": [10, 20, 30]})\ntotal = 0\nfor row in df.itertuples(index=False):\n    total += row.a + row.b\nprint(total)",
+      "important_params": [
+        "index.",
+        "name.",
+        "columns.",
+        "itertuples.",
+        "vectorization."
+      ],
+      "use_when": "1) You truly need sequential row processing. 2) A vectorized solution is not practical. 3) You want a faster row iterator than `iterrows`.",
+      "avoid_when": "1) A vectorized expression can solve the problem. 2) You need reliable dtypes from row objects. 3) You are using row loops for simple arithmetic.",
+      "gotchas": [
+        "`iterrows()` returns Series rows and is slow.",
+        "`itertuples()` is usually faster and preserves names better.",
+        "Iteration should be the exception, not the default."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.iterrows.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: General\nModule: `pandas`\nReturn Value: None\nExpected Output: A modified or queried object containing the result of the 'Avoid Iterrows' operation.\nPurpose: I am about to loop over rows.\nCommon Mistakes: `iterrows()` returns Series rows and is slow; `itertuples()` is usually faster and preserves names better; Iteration should be the exception, not the default\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Save CSV",
+      "mental_trigger": "I need to export a table as CSV.",
+      "syntax": "DataFrame.to_csv(path_or_buf, index=True, encoding=None, na_rep='', columns=None)",
+      "example": "import pandas as pd\nimport tempfile\nimport os\n\ndf = pd.DataFrame({\"name\": [\"Ava\", \"Ben\"], \"score\": [91, 84]})\npath = tempfile.mktemp(suffix=\".csv\")\ndf.to_csv(path, index=False)\nprint(pd.read_csv(path))\nos.remove(path)",
+      "important_params": [
+        "path_or_buf.",
+        "index.",
+        "encoding.",
+        "na_rep.",
+        "columns."
+      ],
+      "use_when": "1) Sharing data with external systems. 2) Creating audit artifacts. 3) Exporting analysis results. 4) Moving data into simple pipelines.",
+      "avoid_when": "1) You need schema preservation and typed storage. 2) The data is huge and CSV is too slow or large. 3) Nested types matter.",
+      "gotchas": [
+        "Index is written unless disabled.",
+        "CSV does not preserve dtypes well.",
+        "Delimiters and encoding should be chosen deliberately."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_csv.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Ingestion & Inspection\nModule: `pandas`\nReturn Value: None\nExpected Output: Delimited CSV data written to the specified file path.\nPurpose: I need to export a table as CSV.\nCommon Mistakes: Index is written unless disabled; CSV does not preserve dtypes well; Delimiters and encoding should be chosen deliberately\nRelated APIs: to_excel, to_json, to_parquet"
+    },
+    {
+      "task": "Save Excel",
+      "mental_trigger": "I need to export a DataFrame to an Excel workbook.",
+      "syntax": "DataFrame.to_excel(excel_writer, sheet_name='Sheet1', index=True, columns=None, engine=None)",
+      "example": "import pandas as pd\nimport tempfile\nimport os\n\ndf = pd.DataFrame({\"name\": [\"Ava\", \"Ben\"], \"score\": [91, 84]})\npath = tempfile.mktemp(suffix=\".xlsx\")\ndf.to_excel(path, index=False)\nprint(pd.read_excel(path))\nos.remove(path)",
+      "important_params": [
+        "excel_writer.",
+        "sheet_name.",
+        "index.",
+        "columns.",
+        "engine."
+      ],
+      "use_when": "1) Producing business-friendly exports. 2) Creating multi-sheet reports. 3) Sending tables to spreadsheet users. 4) Formatting deliverables in common office workflows.",
+      "avoid_when": "1) You need typed, compact, machine-oriented storage. 2) CSV or Parquet is sufficient. 3) Workbook size becomes unwieldy.",
+      "gotchas": [
+        "Requires optional Excel writer dependencies.",
+        "Formatting options are not the same as full Excel authoring.",
+        "Index export is on by default."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_excel.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Ingestion & Inspection\nModule: `pandas`\nReturn Value: None\nExpected Output: Excel spreadsheet written to the specified file path.\nPurpose: I need to export a DataFrame to an Excel workbook.\nCommon Mistakes: Requires optional Excel writer dependencies; Formatting options are not the same as full Excel authoring; Index export is on by default\nRelated APIs: to_csv, to_json, to_parquet"
+    },
+    {
+      "task": "Save Parquet",
+      "mental_trigger": "I need efficient persisted tabular storage.",
+      "syntax": "DataFrame.to_parquet(path, engine=None, compression='snappy', index=None)",
+      "example": "import pandas as pd\nimport tempfile\nimport os\n\ndf = pd.DataFrame({\"name\": [\"Ava\", \"Ben\"], \"score\": [91, 84]})\npath = tempfile.mktemp(suffix=\".parquet\")\ndf.to_parquet(path, index=False)\nprint(pd.read_parquet(path))\nos.remove(path)",
+      "important_params": [
+        "path.",
+        "engine.",
+        "compression.",
+        "index.",
+        "partition_cols."
+      ],
+      "use_when": "1) Storing analytical datasets compactly. 2) Preserving types across reloads. 3) Speeding up repeated reads. 4) Building data lake pipelines.",
+      "avoid_when": "1) Humans need to inspect or edit the file directly. 2) Missing backend support is an issue. 3) The workflow expects text interchange.",
+      "gotchas": [
+        "Backend and compression choices matter.",
+        "Index handling should be explicit.",
+        "Parquet is not ideal for manual debugging."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_parquet.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Ingestion & Inspection\nModule: `pandas`\nReturn Value: None\nExpected Output: Columnar Parquet binary file written to the specified file path.\nPurpose: I need efficient persisted tabular storage.\nCommon Mistakes: Backend and compression choices matter; Index handling should be explicit; Parquet is not ideal for manual debugging\nRelated APIs: to_csv, to_excel, to_json"
+    },
+    {
+      "task": "Save JSON",
+      "mental_trigger": "I need to export records as JSON.",
+      "syntax": "DataFrame.to_json(path_or_buf=None, orient=None, lines=False, date_format=None)",
+      "example": "import pandas as pd\nimport tempfile\nimport os\n\ndf = pd.DataFrame({\"name\": [\"Ava\", \"Ben\"], \"score\": [91, 84]})\npath = tempfile.mktemp(suffix=\".json\")\ndf.to_json(path, orient=\"records\", lines=True)\nprint(pd.read_json(path, lines=True))\nos.remove(path)",
+      "important_params": [
+        "path_or_buf.",
+        "orient.",
+        "lines.",
+        "date_format.",
+        "force_ascii."
+      ],
+      "use_when": "1) Producing API-style output. 2) Writing log-friendly newline-delimited JSON. 3) Exchanging nested-ish records. 4) Feeding JSON-based systems.",
+      "avoid_when": "1) Columnar performance matters more. 2) The consumer expects schema-rich storage. 3) The file will be read mostly by humans.",
+      "gotchas": [
+        "`orient` must match reader expectations.",
+        "Datetime formatting can differ from source.",
+        "JSON is less compact and typed than Parquet."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_json.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Ingestion & Inspection\nModule: `pandas`\nReturn Value: None\nExpected Output: JSON serialized data written to the specified file path.\nPurpose: I need to export records as JSON.\nCommon Mistakes: `orient` must match reader expectations; Datetime formatting can differ from source; JSON is less compact and typed than Parquet\nRelated APIs: to_csv, to_excel, to_parquet"
+    },
+    {
+      "task": "Grouped Aggregation with Multiple Metrics",
+      "mental_trigger": "I need more than one summary metric per group.",
+      "syntax": "DataFrame.groupby(by).agg({\"col\": [\"mean\", \"max\"]})",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"team\": [\"A\", \"A\", \"B\"],\n    \"score\": [91, 84, 77]\n})\nresult = df.groupby(\"team\").agg(mean_score=(\"score\", \"mean\"), max_score=(\"score\", \"max\"))\nprint(result)",
+      "important_params": [
+        "named aggregation.",
+        "multiple functions.",
+        "as_index.",
+        "observed.",
+        "sort."
+      ],
+      "use_when": "1) Building reporting datasets. 2) Producing compact KPI tables. 3) Comparing multiple metrics at once. 4) Reducing repeated scans.",
+      "avoid_when": "1) A single summary metric is enough. 2) Downstream code cannot handle MultiIndex outputs. 3) Readability is more important than compactness.",
+      "gotchas": [
+        "Old-style aggregation can create awkward column indexes.",
+        "Named aggregation is usually clearer.",
+        "Function names become part of output labels."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.core.groupby.DataFrameGroupBy.agg.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Grouping & Aggregation\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Grouped Aggregation with Multiple Metrics' operation.\nPurpose: I need more than one summary metric per group.\nCommon Mistakes: Old-style aggregation can create awkward column indexes; Named aggregation is usually clearer; Function names become part of output labels\nRelated APIs: agg, filter, transform"
+    },
+    {
+      "task": "Efficient Numeric Operations",
+      "mental_trigger": "I need speed and scalability for column math.",
+      "syntax": "df[\"x\"] = df[\"a\"].to_numpy() + df[\"b\"].to_numpy()",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"a\": [1, 2, 3], \"b\": [10, 20, 30]})\ndf[\"sum\"] = df[\"a\"] + df[\"b\"]\nprint(df)",
+      "important_params": [
+        "vectorized ops.",
+        "to_numpy.",
+        "dtype.",
+        "alignment.",
+        "broadcasting."
+      ],
+      "use_when": "1) Performing repeated arithmetic on large tables. 2) Avoiding Python-level loops. 3) Keeping transformations simple and explicit. 4) Building feature columns.",
+      "avoid_when": "1) You need custom per-row Python logic. 2) Alignment across indexes is unclear. 3) You are converting to NumPy too early without need.",
+      "gotchas": [
+        "NumPy conversion drops index alignment.",
+        "Vectorized pandas ops often preserve labels safely.",
+        "Object dtype severely reduces performance."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_numpy.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: General\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Efficient Numeric Operations' operation.\nPurpose: I need speed and scalability for column math.\nCommon Mistakes: NumPy conversion drops index alignment; Vectorized pandas ops often preserve labels safely; Object dtype severely reduces performance\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Missing Data Interpolation",
+      "mental_trigger": "I need to estimate missing numeric values from neighbors.",
+      "syntax": "DataFrame.interpolate(method='linear', axis=0, limit_direction=None)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"value\": [1.0, None, 3.0, None, 5.0]})\nprint(df.interpolate())",
+      "important_params": [
+        "method.",
+        "axis.",
+        "limit_direction.",
+        "limit_area.",
+        "order."
+      ],
+      "use_when": "1) Filling gaps in ordered numeric data. 2) Smoothing sampled measurements. 3) Preparing time-like sequences. 4) Using a principled gap estimate.",
+      "avoid_when": "1) Missing values are categorical. 2) There is no ordering assumption. 3) You need exact factual values only.",
+      "gotchas": [
+        "Interpolation assumes structure in the ordering.",
+        "Not all dtypes support every method.",
+        "Overuse can invent misleading data."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.interpolate.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Missing Data Interpolation' operation.\nPurpose: I need to estimate missing numeric values from neighbors.\nCommon Mistakes: Interpolation assumes structure in the ordering; Not all dtypes support every method; Overuse can invent misleading data\nRelated APIs: dropna, fillna, isna"
+    },
+    {
+      "task": "Time Delta Arithmetic",
+      "mental_trigger": "I need durations between timestamps.",
+      "syntax": "df[\"delta\"] = df[\"end\"] - df[\"start\"]",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"start\": pd.to_datetime([\"2026-01-01\", \"2026-01-03\"]),\n    \"end\": pd.to_datetime([\"2026-01-02\", \"2026-01-06\"])\n})\ndf[\"delta\"] = df[\"end\"] - df[\"start\"]\nprint(df)",
+      "important_params": [
+        "timestamp columns.",
+        "timezone.",
+        "freq.",
+        "normalize.",
+        "unit."
+      ],
+      "use_when": "1) Measuring elapsed time. 2) Computing SLAs. 3) Building latency features. 4) Comparing event intervals.",
+      "avoid_when": "1) One side is not datetime-like. 2) Timezone semantics are inconsistent. 3) You need calendar-aware business logic instead of raw durations.",
+      "gotchas": [
+        "Results are timedeltas, not numbers.",
+        "Timezone mismatches can error.",
+        "Conversion to hours or days may be needed explicitly."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.to_datetime.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Time Series & Window Operations\nModule: `pandas`\nReturn Value: pandas.Series\nExpected Output: A modified or queried object containing the result of the 'Time Delta Arithmetic' operation.\nPurpose: I need durations between timestamps.\nCommon Mistakes: Results are timedeltas, not numbers; Timezone mismatches can error; Conversion to hours or days may be needed explicitly\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "MultiIndex Basics",
+      "mental_trigger": "I need hierarchical labels on rows or columns.",
+      "syntax": "DataFrame.set_index([\"a\", \"b\"])",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"team\": [\"A\", \"A\", \"B\"],\n    \"quarter\": [\"Q1\", \"Q2\", \"Q1\"],\n    \"score\": [91, 84, 77]\n})\nmi = df.set_index([\"team\", \"quarter\"])\nprint(mi)",
+      "important_params": [
+        "keys.",
+        "append.",
+        "drop.",
+        "verify_integrity.",
+        "names."
+      ],
+      "use_when": "1) Representing hierarchical dimensions. 2) Preparing advanced reshaping. 3) Storing grouped output cleanly. 4) Handling nested labels.",
+      "avoid_when": "1) Simpler flat columns are enough. 2) The hierarchy is unstable. 3) Downstream systems expect flat schemas.",
+      "gotchas": [
+        "MultiIndex adds complexity quickly.",
+        "Resetting often becomes necessary.",
+        "Label-based selection is more subtle."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.MultiIndex.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Index Operations\nModule: `pandas`\nReturn Value: pandas.Index\nExpected Output: A modified or queried object containing the result of the 'MultiIndex Basics' operation.\nPurpose: I need hierarchical labels on rows or columns.\nCommon Mistakes: MultiIndex adds complexity quickly; Resetting often becomes necessary; Label-based selection is more subtle\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Export Selected Columns",
+      "mental_trigger": "I need a clean subset for downstream use.",
+      "syntax": "df[cols].to_csv(...)",
+      "example": "import pandas as pd\nimport tempfile\nimport os\n\ndf = pd.DataFrame({\"name\": [\"Ava\"], \"score\": [^91], \"temp\": [^1]})\npath = tempfile.mktemp(suffix=\".csv\")\ndf[[\"name\", \"score\"]].to_csv(path, index=False)\nprint(pd.read_csv(path))\nos.remove(path)",
+      "important_params": [
+        "selected columns.",
+        "index.",
+        "encoding.",
+        "na_rep.",
+        "header."
+      ],
+      "use_when": "1) Exporting only approved fields. 2) Minimizing file size. 3) Publishing controlled extracts. 4) Avoiding accidental sensitive data.",
+      "avoid_when": "1) You need the full source schema. 2) The column set is not explicit. 3) Schema validation should happen earlier.",
+      "gotchas": [
+        "Selection order is preserved.",
+        "Missing columns raise errors.",
+        "Export does not validate business meaning."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_csv.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Selection & Filtering\nModule: `pandas`\nReturn Value: pandas.Index\nExpected Output: A modified or queried object containing the result of the 'Export Selected Columns' operation.\nPurpose: I need a clean subset for downstream use.\nCommon Mistakes: Selection order is preserved; Missing columns raise errors; Export does not validate business meaning\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Nullable Integer Dtype",
+      "mental_trigger": "I need integers that can still hold missing values.",
+      "syntax": "Series.astype(\"Int64\")",
+      "example": "import pandas as pd\n\ns = pd.Series([1, None, 3], dtype=\"Int64\")\nprint(s)\nprint(s.dtype)",
+      "important_params": [
+        "dtype.",
+        "missing values.",
+        "copy.",
+        "errors.",
+        "storage."
+      ],
+      "use_when": "1) Keeping integer semantics with nulls. 2) Avoiding float upcasting. 3) Modeling IDs or counts with missingness. 4) Standardizing schema cleanliness.",
+      "avoid_when": "1) You do not need null support. 2) A plain float is acceptable. 3) Downstream tools do not understand extension dtypes.",
+      "gotchas": [
+        "`Int64` is pandas nullable integer, not NumPy int64.",
+        "`pd.NA` behavior differs from `NaN`.",
+        "Arithmetic can propagate nullable results."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.IntegerArray.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.Series\nExpected Output: A modified or queried object containing the result of the 'Nullable Integer Dtype' operation.\nPurpose: I need integers that can still hold missing values.\nCommon Mistakes: `Int64` is pandas nullable integer, not NumPy int64; `pdNA` behavior differs from `NaN`; Arithmetic can propagate nullable results\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Detect Duplicate Rows",
+      "mental_trigger": "I need a boolean mask for repeated records before cleaning.",
+      "syntax": "DataFrame.duplicated(subset=None, keep='first')",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"brand\": [\"Yum Yum\", \"Yum Yum\", \"Indomie\"],\n    \"style\": [\"cup\", \"cup\", \"pack\"],\n    \"rating\": [4.0, 4.0, 3.5]\n})\nprint(df.duplicated())",
+      "important_params": [
+        "subset.",
+        "keep.",
+        "first.",
+        "last.",
+        "False."
+      ],
+      "use_when": "1) Auditing repeated rows. 2) Marking records for removal. 3) Detecting duplicate keys. 4) Pre-checking joins and imports.",
+      "avoid_when": "1) Duplicate meaning requires custom business logic. 2) You only need the deduplicated result. 3) Exact row equality is not the correct definition.",
+      "gotchas": [
+        "The first duplicate is usually marked False.",
+        "`keep=False` marks all duplicates True.",
+        "Null handling can still be non-obvious.",
+        "Subset changes the duplication definition."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.duplicated.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: General\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Detect Duplicate Rows' operation.\nPurpose: I need a boolean mask for repeated records before cleaning.\nCommon Mistakes: The first duplicate is usually marked False; `keep=False` marks all duplicates True; Null handling can still be non-obvious; Subset changes the duplication definition\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Select Duplicate Labels",
+      "mental_trigger": "I need to find repeated index labels or column labels.",
+      "syntax": "Index.duplicated(keep='first')",
+      "example": "import pandas as pd\n\nidx = pd.Index([\"a\", \"a\", \"b\", \"c\", \"c\"])\nprint(idx.duplicated())",
+      "important_params": [
+        "keep.",
+        "first.",
+        "last.",
+        "False.",
+        "index values."
+      ],
+      "use_when": "1) Auditing repeated index labels. 2) Detecting accidental duplicate column names. 3) Validating reshape or join assumptions. 4) Debugging label-based ambiguity.",
+      "avoid_when": "1) You are checking row equality instead of labels. 2) The table has no index relevance. 3) You need row-level deduplication.",
+      "gotchas": [
+        "Label duplication is different from row duplication.",
+        "Duplicate labels can break downstream assumptions.",
+        "Keep behavior matches other duplicated APIs."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.Index.duplicated.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Selection & Filtering\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Select Duplicate Labels' operation.\nPurpose: I need to find repeated index labels or column labels.\nCommon Mistakes: Label duplication is different from row duplication; Duplicate labels can break downstream assumptions; Keep behavior matches other duplicated APIs\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Find Non-Null Rows",
+      "mental_trigger": "I need only rows or values that are present.",
+      "syntax": "DataFrame.notna()",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\", None], \"score\": [91, None]})\nprint(df.notna())",
+      "important_params": [
+        "none."
+      ],
+      "use_when": "1) Building presence masks. 2) Filtering complete values. 3) Combining with null-handling logic. 4) Auditing sparse columns.",
+      "avoid_when": "1) You need a replacement strategy. 2) Missingness itself is the key signal. 3) The data uses custom sentinels instead of nulls.",
+      "gotchas": [
+        "It is the logical inverse of `isna`.",
+        "Boolean masks still need careful alignment.",
+        "Nullable dtypes can behave differently than plain NumPy values."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.notna.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Find Non-Null Rows' operation.\nPurpose: I need only rows or values that are present.\nCommon Mistakes: It is the logical inverse of `isna`; Boolean masks still need careful alignment; Nullable dtypes can behave differently than plain NumPy values\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Forward Fill Missing Data",
+      "mental_trigger": "I need to carry the last known value forward.",
+      "syntax": "DataFrame.ffill(axis=None, inplace=False, limit=None)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"value\": [1, None, None, 4]})\nprint(df.ffill())",
+      "important_params": [
+        "axis.",
+        "inplace.",
+        "limit.",
+        "downcast.",
+        "limit_area."
+      ],
+      "use_when": "1) Filling time-ordered records. 2) Propagating last observation. 3) Repairing short gaps in sequences. 4) Preparing stateful datasets.",
+      "avoid_when": "1) Missing values should remain missing. 2) The order is not meaningful. 3) Forward propagation would create misleading data.",
+      "gotchas": [
+        "Order matters a lot.",
+        "Long runs of missing values can persist with limit.",
+        "It is not suitable for arbitrary categorical imputation."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.ffill.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: DataFrame/Series with NaN values filled with the specified values or interpolation.\nPurpose: I need to carry the last known value forward.\nCommon Mistakes: Order matters a lot; Long runs of missing values can persist with limit; It is not suitable for arbitrary categorical imputation\nRelated APIs: dropna, fillna, interpolate, isna"
+    },
+    {
+      "task": "Backward Fill Missing Data",
+      "mental_trigger": "I need to carry the next known value backward.",
+      "syntax": "DataFrame.bfill(axis=None, inplace=False, limit=None)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"value\": [None, None, 3, 4]})\nprint(df.bfill())",
+      "important_params": [
+        "axis.",
+        "inplace.",
+        "limit.",
+        "downcast.",
+        "limit_area."
+      ],
+      "use_when": "1) Filling leading gaps. 2) Looking ahead to the next valid record. 3) Cleaning short time-series gaps. 4) Preparing datasets where future state is acceptable.",
+      "avoid_when": "1) Future values should not influence current records. 2) The order is not meaningful. 3) You need a safer business rule than look-ahead fill.",
+      "gotchas": [
+        "It uses following values, not previous ones.",
+        "The fill direction can be easy to confuse with `ffill`.",
+        "Overuse can leak future information in modeling."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.bfill.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: DataFrame/Series with NaN values filled with the specified values or interpolation.\nPurpose: I need to carry the next known value backward.\nCommon Mistakes: It uses following values, not previous ones; The fill direction can be easy to confuse with `ffill`; Overuse can leak future information in modeling\nRelated APIs: dropna, fillna, interpolate, isna"
+    },
+    {
+      "task": "Drop Index Duplicates",
+      "mental_trigger": "I need unique index labels.",
+      "syntax": "Index.drop_duplicates(keep='first')",
+      "example": "import pandas as pd\n\nidx = pd.Index([\"a\", \"a\", \"b\", \"c\", \"c\"])\nprint(idx.drop_duplicates())",
+      "important_params": [
+        "keep.",
+        "first.",
+        "last.",
+        "False."
+      ],
+      "use_when": "1) Cleaning repeated labels. 2) Preparing a stable index. 3) Auditing accidental reindexing. 4) Simplifying hierarchical structures.",
+      "avoid_when": "1) You need to preserve duplicate labels. 2) The problem is row-level duplicate records. 3) Index uniqueness is not needed.",
+      "gotchas": [
+        "This affects labels, not record values.",
+        "Duplicate labels can be legitimate in some workflows.",
+        "Keep strategy changes which label survives."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.Index.drop_duplicates.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.Index\nExpected Output: A modified or queried object containing the result of the 'Drop Index Duplicates' operation.\nPurpose: I need unique index labels.\nCommon Mistakes: This affects labels, not record values; Duplicate labels can be legitimate in some workflows; Keep strategy changes which label survives\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Set Column as Nullable Integer",
+      "mental_trigger": "I need integers with missing values preserved cleanly.",
+      "syntax": "Series.astype(\"Int64\")",
+      "example": "import pandas as pd\n\ns = pd.Series([1, None, 3], dtype=\"Int64\")\nprint(s)\nprint(s.dtype)",
+      "important_params": [
+        "dtype.",
+        "missing values.",
+        "copy.",
+        "errors.",
+        "nullable integer dtype."
+      ],
+      "use_when": "1) IDs or counts may be missing. 2) You want integer semantics without float upcasting. 3) Building clean schema for downstream systems. 4) Avoiding object dtype for sparse integers.",
+      "avoid_when": "1) Missing values are impossible. 2) Downstream tools cannot handle pandas extension dtypes. 3) Float representation is acceptable.",
+      "gotchas": [
+        "`Int64` is pandas nullable integer, not NumPy int64.",
+        "`pd.NA` behavior differs from `NaN`.",
+        "Arithmetic propagates nullable results."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.IntegerArray.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.Series\nExpected Output: A modified or queried object containing the result of the 'Set Column as Nullable Integer' operation.\nPurpose: I need integers with missing values preserved cleanly.\nCommon Mistakes: `Int64` is pandas nullable integer, not NumPy int64; `pdNA` behavior differs from `NaN`; Arithmetic propagates nullable results\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Convert to NumPy Array",
+      "mental_trigger": "I need raw array values for NumPy-compatible code.",
+      "syntax": "DataFrame.to_numpy(dtype=None, copy=False, na_value=<no_default>)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"A\": [1, 2], \"B\": [3, 4]})\nprint(df.to_numpy())",
+      "important_params": [
+        "dtype.",
+        "copy.",
+        "na_value.",
+        "ndarray conversion.",
+        "common dtype."
+      ],
+      "use_when": "1) Passing data to NumPy APIs. 2) Running numerical kernels. 3) Dropping labels intentionally. 4) Interfacing with libraries expecting arrays.",
+      "avoid_when": "1) Index/column labels matter. 2) Alignment must be preserved. 3) Mixed dtypes would become object arrays and hurt performance.",
+      "gotchas": [
+        "Labels are lost.",
+        "Mixed dtypes can force object output.",
+        "`copy=False` does not guarantee a view."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_numpy.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: General\nModule: `pandas`\nReturn Value: numpy.ndarray\nExpected Output: A modified or queried object containing the result of the 'Convert to NumPy Array' operation.\nPurpose: I need raw array values for NumPy-compatible code.\nCommon Mistakes: Labels are lost; Mixed dtypes can force object output; `copy=False` does not guarantee a view\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Transpose DataFrame",
+      "mental_trigger": "I need to flip rows and columns.",
+      "syntax": "DataFrame.transpose(*args, copy=<no_default>)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"col1\": [1, 2], \"col2\": [3, 4]})\nprint(df.transpose())",
+      "important_params": [
+        "args.",
+        "copy.",
+        "mixed dtype behavior.",
+        "extension types.",
+        "returned object."
+      ],
+      "use_when": "1) Inspecting a small wide table. 2) Re-orienting a matrix-like table. 3) Comparing fields across rows. 4) Swapping axis interpretation.",
+      "avoid_when": "1) The table is large. 2) Mixed dtypes matter. 3) Downstream code depends on the original orientation.",
+      "gotchas": [
+        "Mixed dtypes typically become object dtype.",
+        "A new object is returned.",
+        "The `copy` keyword is ignored in pandas 3.0 and later."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.transpose.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Reshaping & Pivoting\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Transpose DataFrame' operation.\nPurpose: I need to flip rows and columns.\nCommon Mistakes: Mixed dtypes typically become object dtype; A new object is returned; The `copy` keyword is ignored in pandas 30 and later\nRelated APIs: Series, read_csv"
+    },
+    {
+      "task": "DataFrame Property T",
+      "mental_trigger": "I need the shorthand transpose accessor.",
+      "syntax": "DataFrame.T",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"col1\": [1, 2], \"col2\": [3, 4]})\nprint(df.T)",
+      "important_params": [
+        "none."
+      ],
+      "use_when": "1) Quick transpose access. 2) Inspecting a small matrix. 3) Writing concise exploratory code.",
+      "avoid_when": "1) Readability benefits from the explicit method call. 2) You need to emphasize copy or method semantics. 3) Data is large and transposition is expensive.",
+      "gotchas": [
+        "It is the property form of transpose.",
+        "Behavior matches `transpose()`.",
+        "Mixed dtypes can coerce to object."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.T.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: General\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'DataFrame Property T' operation.\nPurpose: I need the shorthand transpose accessor.\nCommon Mistakes: It is the property form of transpose; Behavior matches `transpose()`; Mixed dtypes can coerce to object\nRelated APIs: Series, read_csv"
+    },
+    {
+      "task": "Select by Datetime Index",
+      "mental_trigger": "I need a time slice from a datetime-indexed table.",
+      "syntax": "df.loc[start:end]",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame(\n    {\"value\": [10, 20, 30]},\n    index=pd.to_datetime([\"2026-01-01\", \"2026-01-02\", \"2026-01-03\"])\n)\nprint(df.loc[\"2026-01-02\":\"2026-01-03\"])",
+      "important_params": [
+        "start.",
+        "end.",
+        "sorted index.",
+        "timezone.",
+        "label-based slicing."
+      ],
+      "use_when": "1) Slicing time-series data. 2) Getting reporting periods. 3) Filtering calendar windows. 4) Working with timestamp indexes.",
+      "avoid_when": "1) The index is not datetime-like. 2) The index is unsorted and semantics are unclear. 3) A column-based filter is simpler.",
+      "gotchas": [
+        "Label slicing is inclusive.",
+        "Sorting affects expectations.",
+        "Timezone-aware and naive timestamps should not be mixed casually."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.loc.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Selection & Filtering\nModule: `pandas`\nReturn Value: pandas.Index\nExpected Output: A modified or queried object containing the result of the 'Select by Datetime Index' operation.\nPurpose: I need a time slice from a datetime-indexed table.\nCommon Mistakes: Label slicing is inclusive; Sorting affects expectations; Timezone-aware and naive timestamps should not be mixed casually\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Set Ordered Categories",
+      "mental_trigger": "I need category order to control comparisons and sorting.",
+      "syntax": "Series.astype(CategoricalDtype(categories=[...], ordered=True))",
+      "example": "import pandas as pd\nfrom pandas.api.types import CategoricalDtype\n\ncat_type = CategoricalDtype(categories=[\"low\", \"medium\", \"high\"], ordered=True)\ns = pd.Series([\"high\", \"low\", \"medium\"], dtype=cat_type)\nprint(s.sort_values())",
+      "important_params": [
+        "categories.",
+        "ordered.",
+        "dtype.",
+        "copy.",
+        "category order."
+      ],
+      "use_when": "1) Priority or severity levels matter. 2) Sorting should follow business order. 3) Category comparison must be consistent. 4) Building categorical features with stable order.",
+      "avoid_when": "1) Order is not meaningful. 2) Labels change frequently. 3) Free-text fields should remain unconstrained.",
+      "gotchas": [
+        "Unseen values become missing on conversion.",
+        "Ordering changes comparison behavior.",
+        "Category definitions must stay stable across pipelines."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.CategoricalDtype.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: General\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Set Ordered Categories' operation.\nPurpose: I need category order to control comparisons and sorting.\nCommon Mistakes: Unseen values become missing on conversion; Ordering changes comparison behavior; Category definitions must stay stable across pipelines\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Drop Rows by Index",
+      "mental_trigger": "I need to remove known index labels.",
+      "syntax": "DataFrame.drop(index=labels, errors='raise')",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\", \"Ben\", \"Chen\"]}, index=[101, 102, 103])\nprint(df.drop(index=[102]))",
+      "important_params": [
+        "index.",
+        "labels.",
+        "errors.",
+        "inplace.",
+        "level."
+      ],
+      "use_when": "1) Removing specific bad records. 2) Dropping stale index keys. 3) Pruning validation rows. 4) Cleaning known labels.",
+      "avoid_when": "1) Condition-based filtering is needed. 2) You are removing by position instead of label. 3) The index is not meaningful.",
+      "gotchas": [
+        "Index labels are not positions.",
+        "Missing labels may raise unless configured otherwise.",
+        "Copy behavior still depends on context."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.drop.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.Index\nExpected Output: A modified or queried object containing the result of the 'Drop Rows by Index' operation.\nPurpose: I need to remove known index labels.\nCommon Mistakes: Index labels are not positions; Missing labels may raise unless configured otherwise; Copy behavior still depends on context\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Rename Index Labels",
+      "mental_trigger": "I need to rename row labels without changing values.",
+      "syntax": "DataFrame.rename(index=None, columns=None)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"score\": [91, 84]}, index=[\"r1\", \"r2\"])\nprint(df.rename(index={\"r1\": \"row1\", \"r2\": \"row2\"}))",
+      "important_params": [
+        "index.",
+        "columns.",
+        "inplace.",
+        "errors.",
+        "copy."
+      ],
+      "use_when": "1) Making row labels readable. 2) Standardizing imported indexes. 3) Aligning label conventions. 4) Renaming both axes consistently.",
+      "avoid_when": "1) You need to change the data, not labels. 2) The index has no semantic meaning. 3) Downstream systems rely on original labels.",
+      "gotchas": [
+        "Only labels change.",
+        "Duplicate labels can remain confusing.",
+        "Behavior with `inplace` should not be treated as a shortcut."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.rename.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.Index\nExpected Output: A DataFrame with columns renamed according to the input mapper.\nPurpose: I need to rename row labels without changing values.\nCommon Mistakes: Only labels change; Duplicate labels can remain confusing; Behavior with `inplace` should not be treated as a shortcut\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Duplicate Row Mask by Subset",
+      "mental_trigger": "I need duplicates defined by only a few columns.",
+      "syntax": "DataFrame.duplicated(subset=[...], keep='first')",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"brand\": [\"Yum Yum\", \"Yum Yum\", \"Indomie\", \"Indomie\"],\n    \"style\": [\"cup\", \"cup\", \"cup\", \"pack\"],\n    \"rating\": [4.0, 4.0, 3.5, 5.0]\n})\nprint(df.duplicated(subset=[\"brand\", \"style\"]))",
+      "important_params": [
+        "subset.",
+        "keep.",
+        "first.",
+        "last.",
+        "False."
+      ],
+      "use_when": "1) Duplicate meaning is key-based, not full-row. 2) De-duplicating by business key. 3) Auditing upstream ingestion. 4) Validating uniqueness assumptions.",
+      "avoid_when": "1) You need full-row duplicate detection. 2) The subset is not a valid business identity. 3) You need all duplicates removed immediately.",
+      "gotchas": [
+        "Subset choice changes the result dramatically.",
+        "`keep=False` can mark everything in a duplicate group.",
+        "Sorting may matter before deduplication."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.duplicated.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: General\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Duplicate Row Mask by Subset' operation.\nPurpose: I need duplicates defined by only a few columns.\nCommon Mistakes: Subset choice changes the result dramatically; `keep=False` can mark everything in a duplicate group; Sorting may matter before deduplication\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Remove Duplicate Rows by Key",
+      "mental_trigger": "I need the unique records for a business key.",
+      "syntax": "DataFrame.drop_duplicates(subset=[...], keep='first')",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"brand\": [\"Yum Yum\", \"Yum Yum\", \"Indomie\"],\n    \"style\": [\"cup\", \"cup\", \"pack\"],\n    \"rating\": [4.0, 4.0, 3.5]\n})\nprint(df.drop_duplicates(subset=[\"brand\", \"style\"]))",
+      "important_params": [
+        "subset.",
+        "keep.",
+        "first.",
+        "last.",
+        "ignore_index."
+      ],
+      "use_when": "1) Consolidating repeated ingests. 2) Keeping one record per key. 3) Cleaning duplicated fact tables. 4) Preparing reference tables.",
+      "avoid_when": "1) Duplicate resolution requires ranking or timestamps. 2) The key definition is unstable. 3) You need to inspect duplicates before removal.",
+      "gotchas": [
+        "Key order affects output only indirectly.",
+        "NaNs are treated consistently with pandas duplicate logic.",
+        "`keep='last'` can be more appropriate after sorting."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.drop_duplicates.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: General\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Remove Duplicate Rows by Key' operation.\nPurpose: I need the unique records for a business key.\nCommon Mistakes: Key order affects output only indirectly; NaNs are treated consistently with pandas duplicate logic; `keep='last'` can be more appropriate after sorting\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Remove Duplicate Index Labels",
+      "mental_trigger": "I need index labels to be unique.",
+      "syntax": "Index.drop_duplicates(keep='first')",
+      "example": "import pandas as pd\n\nidx = pd.Index([\"a\", \"a\", \"b\", \"c\", \"c\"])\nprint(idx.drop_duplicates())",
+      "important_params": [
+        "keep.",
+        "first.",
+        "last.",
+        "False.",
+        "index values."
+      ],
+      "use_when": "1) Cleaning repeated labels. 2) Simplifying repeated index structure. 3) Preparing unique lookup keys. 4) Auditing label quality.",
+      "avoid_when": "1) Duplicate labels are intentionally allowed. 2) Row values are the real problem. 3) You need to preserve repeated positions.",
+      "gotchas": [
+        "This is label-level, not row-level, cleaning.",
+        "Results depend on keep strategy.",
+        "Duplicate labels can be valid in some analyses."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.Index.drop_duplicates.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Index Operations\nModule: `pandas`\nReturn Value: pandas.Index\nExpected Output: A modified or queried object containing the result of the 'Remove Duplicate Index Labels' operation.\nPurpose: I need index labels to be unique.\nCommon Mistakes: This is label-level, not row-level, cleaning; Results depend on keep strategy; Duplicate labels can be valid in some analyses\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Check Non-Null Values",
+      "mental_trigger": "I need a presence mask for valid data.",
+      "syntax": "DataFrame.notna()",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"name\": [\"Ava\", None], \"score\": [91, None]})\nprint(df.notna())",
+      "important_params": [
+        "none."
+      ],
+      "use_when": "1) Selecting non-missing rows. 2) Validating completeness. 3) Combining with boolean logic. 4) Counting present observations.",
+      "avoid_when": "1) Missingness is the focus. 2) You want imputation instead of a mask. 3) The table uses domain-specific sentinels.",
+      "gotchas": [
+        "It is the inverse of `isna`.",
+        "Boolean alignment still matters.",
+        "Nullable types may produce different scalar behavior."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.notna.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Check Non-Null Values' operation.\nPurpose: I need a presence mask for valid data.\nCommon Mistakes: It is the inverse of `isna`; Boolean alignment still matters; Nullable types may produce different scalar behavior\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Forward Fill Values",
+      "mental_trigger": "I need the last valid observation carried forward.",
+      "syntax": "DataFrame.ffill(axis=None, inplace=False, limit=None)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"value\": [1, None, None, 4]})\nprint(df.ffill())",
+      "important_params": [
+        "axis.",
+        "inplace.",
+        "limit.",
+        "downcast.",
+        "limit_area."
+      ],
+      "use_when": "1) Filling time-ordered data. 2) Carrying state forward. 3) Repairing short gaps. 4) Preparing streaming-style records.",
+      "avoid_when": "1) Future values must not influence current records. 2) The order is meaningless. 3) Long gaps should remain visible.",
+      "gotchas": [
+        "Order is critical.",
+        "`limit` restricts propagation.",
+        "It may create misleading continuity if overused."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.ffill.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Forward Fill Values' operation.\nPurpose: I need the last valid observation carried forward.\nCommon Mistakes: Order is critical; `limit` restricts propagation; It may create misleading continuity if overused\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Backward Fill Values",
+      "mental_trigger": "I need the next valid observation carried backward.",
+      "syntax": "DataFrame.bfill(axis=None, inplace=False, limit=None)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"value\": [None, None, 3, 4]})\nprint(df.bfill())",
+      "important_params": [
+        "axis.",
+        "inplace.",
+        "limit.",
+        "downcast.",
+        "limit_area."
+      ],
+      "use_when": "1) Filling leading gaps. 2) Backfilling sparse sequences. 3) Repairing short missing stretches. 4) Using next-observation carryback.",
+      "avoid_when": "1) Future leakage is unacceptable. 2) The order is not meaningful. 3) You need conservative missing handling.",
+      "gotchas": [
+        "It uses subsequent values.",
+        "Easy to confuse with forward fill.",
+        "Can leak future information into earlier records."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.bfill.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Backward Fill Values' operation.\nPurpose: I need the next valid observation carried backward.\nCommon Mistakes: It uses subsequent values; Easy to confuse with forward fill; Can leak future information into earlier records\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Interpolate Missing Numbers",
+      "mental_trigger": "I need estimated values between known numeric points.",
+      "syntax": "DataFrame.interpolate(method='linear', axis=0, limit_direction=None)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"value\": [1.0, None, 3.0, None, 5.0]})\nprint(df.interpolate())",
+      "important_params": [
+        "method.",
+        "axis.",
+        "limit_direction.",
+        "limit_area.",
+        "order."
+      ],
+      "use_when": "1) Estimating numeric gaps. 2) Smoothing sampled sequences. 3) Filling ordered measurement data. 4) Preparing time-like data.",
+      "avoid_when": "1) The values are categorical. 2) There is no meaningful ordering. 3) Inventing values would be risky.",
+      "gotchas": [
+        "Assumes structure in the ordering.",
+        "Can produce misleading values.",
+        "Method support varies by dtype and shape."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.interpolate.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Interpolate Missing Numbers' operation.\nPurpose: I need estimated values between known numeric points.\nCommon Mistakes: Assumes structure in the ordering; Can produce misleading values; Method support varies by dtype and shape\nRelated APIs: dropna, fillna, isna"
+    },
+    {
+      "task": "Extract Array From Series",
+      "mental_trigger": "I need raw values from a Series for NumPy code.",
+      "syntax": "Series.to_numpy(dtype=None, copy=False, na_value=<no_default>)",
+      "example": "import pandas as pd\n\ns = pd.Series([1, 2, 3])\nprint(s.to_numpy())",
+      "important_params": [
+        "dtype.",
+        "copy.",
+        "na_value.",
+        "ndarray conversion.",
+        "labels lost."
+      ],
+      "use_when": "1) Calling NumPy or SciPy functions. 2) Using label-free numerical operations. 3) Passing arrays to ML code. 4) Optimizing simple numeric kernels.",
+      "avoid_when": "1) Index alignment matters. 2) Labels must be preserved. 3) Mixed dtypes would become object arrays.",
+      "gotchas": [
+        "Labels are dropped.",
+        "Mixed types can force object output.",
+        "`copy=False` does not guarantee zero-copy."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.Series.to_numpy.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: General\nModule: `pandas`\nReturn Value: numpy.ndarray\nExpected Output: A modified or queried object containing the result of the 'Extract Array From Series' operation.\nPurpose: I need raw values from a Series for NumPy code.\nCommon Mistakes: Labels are dropped; Mixed types can force object output; `copy=False` does not guarantee zero-copy\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Create Indicator Column",
+      "mental_trigger": "I need a boolean or flag column derived from logic.",
+      "syntax": "df[\"flag\"] = condition",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"score\": [91, 84, 77]})\ndf[\"pass\"] = df[\"score\"] >= 85\nprint(df)",
+      "important_params": [
+        "condition.",
+        "vectorization.",
+        "dtype.",
+        "alignment.",
+        "broadcasting."
+      ],
+      "use_when": "1) Adding rule-based features. 2) Building segmentation flags. 3) Preparing filters for later use. 4) Encoding threshold logic.",
+      "avoid_when": "1) The logic is row-wise Python. 2) The condition depends on side effects. 3) You need a temporary mask only.",
+      "gotchas": [
+        "Boolean columns can be nullable.",
+        "Alignment matters if condition comes from another object.",
+        "Chained assignment can still cause confusion."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: General\nModule: `pandas`\nReturn Value: pandas.Series\nExpected Output: A modified or queried object containing the result of the 'Create Indicator Column' operation.\nPurpose: I need a boolean or flag column derived from logic.\nCommon Mistakes: Boolean columns can be nullable; Alignment matters if condition comes from another object; Chained assignment can still cause confusion\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Apply Row Wise Logic",
+      "mental_trigger": "I need custom logic across each row and vectorization is not enough.",
+      "syntax": "DataFrame.apply(func, axis=1)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"a\": [1, 2], \"b\": [10, 20]})\nprint(df.apply(lambda r: r[\"a\"] + r[\"b\"], axis=1))",
+      "important_params": [
+        "func.",
+        "axis.",
+        "raw.",
+        "result_type.",
+        "by_row."
+      ],
+      "use_when": "1) The transformation truly depends on multiple columns. 2) A vectorized expression is impractical. 3) You need quick prototyping of row logic.",
+      "avoid_when": "1) A vectorized expression exists. 2) Performance matters significantly. 3) The logic can be expressed by column operations.",
+      "gotchas": [
+        "Row-wise apply is slow.",
+        "Dtype handling can be awkward.",
+        "Output shape may be surprising."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.apply.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Sorting, Mapping & Vectorization\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Apply Row Wise Logic' operation.\nPurpose: I need custom logic across each row and vectorization is not enough.\nCommon Mistakes: Row-wise apply is slow; Dtype handling can be awkward; Output shape may be surprising\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Iterate as Tuples",
+      "mental_trigger": "I need a row iterator and care about speed.",
+      "syntax": "DataFrame.itertuples(index=False)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"a\": [1, 2, 3], \"b\": [10, 20, 30]})\nfor row in df.itertuples(index=False):\n    print(row.a + row.b)",
+      "important_params": [
+        "index.",
+        "name.",
+        "columns.",
+        "tuples.",
+        "namedtuple behavior."
+      ],
+      "use_when": "1) Sequential processing is unavoidable. 2) You need better performance than `iterrows`. 3) You want row access with named fields.",
+      "avoid_when": "1) Vectorization is possible. 2) You need guaranteed pandas dtypes per row. 3) Row loops are being used for simple arithmetic.",
+      "gotchas": [
+        "Still slower than vectorized operations.",
+        "`iterrows()` is usually worse.",
+        "Named tuples are not full DataFrame rows."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.itertuples.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: General\nModule: `pandas`\nReturn Value: generator\nExpected Output: A modified or queried object containing the result of the 'Iterate as Tuples' operation.\nPurpose: I need a row iterator and care about speed.\nCommon Mistakes: Still slower than vectorized operations; `iterrows()` is usually worse; Named tuples are not full DataFrame rows\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Filter by Membership",
+      "mental_trigger": "I need rows where values belong to a set.",
+      "syntax": "Series.isin(values)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"team\": [\"A\", \"B\", \"A\", \"C\"]})\nprint(df[df[\"team\"].isin([\"A\", \"C\"])])",
+      "important_params": [
+        "values.",
+        "set-like input.",
+        "iterable.",
+        "membership.",
+        "boolean mask."
+      ],
+      "use_when": "1) Filtering allowed categories. 2) Matching a shortlist of keys. 3) Applying inclusion rules. 4) Building cohort subsets.",
+      "avoid_when": "1) Substring matching is intended. 2) Pattern matching is needed. 3) The value list is enormous and unmanaged.",
+      "gotchas": [
+        "It checks exact membership, not partial matches.",
+        "Missing values are not in the set.",
+        "Often faster and clearer than long OR chains."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.Series.isin.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Selection & Filtering\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A filtered sub-DataFrame containing only rows matching the criteria.\nPurpose: I need rows where values belong to a set.\nCommon Mistakes: It checks exact membership, not partial matches; Missing values are not in the set; Often faster and clearer than long OR chains\nRelated APIs: iloc, loc, query"
+    },
+    {
+      "task": "Replace by Mapping",
+      "mental_trigger": "I need a dictionary-driven one-to-one remap.",
+      "syntax": "Series.map(mapping)",
+      "example": "import pandas as pd\n\ns = pd.Series([\"A\", \"B\", \"A\"])\nprint(s.map({\"A\": \"Apple\", \"B\": \"Banana\"}))",
+      "important_params": [
+        "mapping.",
+        "function.",
+        "na_action.",
+        "dict lookup.",
+        "missing keys."
+      ],
+      "use_when": "1) Translating codes to labels. 2) Replacing values with a lookup table. 3) Building readable categories. 4) Performing compact remaps.",
+      "avoid_when": "1) Many-to-one logic is needed. 2) You need conditions rather than lookups. 3) Missing keys should stay unchanged without extra handling.",
+      "gotchas": [
+        "Missing mappings become NaN.",
+        "Function and dict behavior differ.",
+        "It is a Series operation, not a DataFrame-wide general rewrite."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.Series.map.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Data Cleaning & Transformation\nModule: `pandas`\nReturn Value: pandas.Series\nExpected Output: A modified or queried object containing the result of the 'Replace by Mapping' operation.\nPurpose: I need a dictionary-driven one-to-one remap.\nCommon Mistakes: Missing mappings become NaN; Function and dict behavior differ; It is a Series operation, not a DataFrame-wide general rewrite\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Create New Columns",
+      "mental_trigger": "I need a clean chained way to build derived fields.",
+      "syntax": "DataFrame.assign(new_col=lambda df: ...)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"score\": [91, 84, 77]})\nprint(df.assign(pass_fail=lambda x: x[\"score\"] >= 85))",
+      "important_params": [
+        "kwargs.",
+        "callable values.",
+        "return new frame.",
+        "chaining.",
+        "column creation order."
+      ],
+      "use_when": "1) Building transformation pipelines. 2) Creating multiple derived columns. 3) Avoiding temporary variables. 4) Keeping code readable.",
+      "avoid_when": "1) You need mutation for side effects. 2) The logic is too complex for chaining. 3) You are modifying a view with unclear ownership.",
+      "gotchas": [
+        "Returns a new DataFrame.",
+        "Later columns can depend on earlier ones.",
+        "Callable receives the whole frame."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.assign.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: General\nModule: `pandas`\nReturn Value: pandas.Index\nExpected Output: A modified or queried object containing the result of the 'Create New Columns' operation.\nPurpose: I need a clean chained way to build derived fields.\nCommon Mistakes: Returns a new DataFrame; Later columns can depend on earlier ones; Callable receives the whole frame\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Vectorized Column Math",
+      "mental_trigger": "I need column-wise arithmetic at scale.",
+      "syntax": "df[\"new\"] = df[\"a\"] + df[\"b\"]",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"a\": [1, 2, 3], \"b\": [10, 20, 30]})\ndf[\"total\"] = df[\"a\"] + df[\"b\"]\nprint(df)",
+      "important_params": [
+        "operands.",
+        "alignment.",
+        "broadcasting.",
+        "dtypes.",
+        "missing values."
+      ],
+      "use_when": "1) Computing totals or deltas. 2) Building feature columns. 3) Replacing loops with expressions. 4) Doing repeated arithmetic.",
+      "avoid_when": "1) Row-wise custom Python is necessary. 2) Alignment across indexes is uncertain. 3) Object dtype is dominating performance.",
+      "gotchas": [
+        "Index alignment affects the result.",
+        "Missing values propagate.",
+        "Mixed types can reduce speed and clarity."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Sorting, Mapping & Vectorization\nModule: `pandas`\nReturn Value: pandas.Series\nExpected Output: A modified or queried object containing the result of the 'Vectorized Column Math' operation.\nPurpose: I need column-wise arithmetic at scale.\nCommon Mistakes: Index alignment affects the result; Missing values propagate; Mixed types can reduce speed and clarity\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Group By Mean and Sum",
+      "mental_trigger": "I need a standard grouped reduction.",
+      "syntax": "DataFrame.groupby(by).agg({\"col\": [\"mean\", \"sum\"]})",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"team\": [\"A\", \"A\", \"B\"], \"score\": [91, 84, 77]})\nprint(df.groupby(\"team\").agg(mean_score=(\"score\", \"mean\"), total_score=(\"score\", \"sum\")))",
+      "important_params": [
+        "by.",
+        "agg.",
+        "as_index.",
+        "sort.",
+        "observed."
+      ],
+      "use_when": "1) Building summary tables. 2) Producing reporting metrics. 3) Comparing groups quickly. 4) Combining multiple reductions.",
+      "avoid_when": "1) You only need one statistic. 2) Downstream code cannot handle structured output well. 3) Grouping semantics are unclear.",
+      "gotchas": [
+        "Named aggregation is usually cleaner.",
+        "Multiple metrics may create hierarchical columns in older styles.",
+        "Categories can affect group presence."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.core.groupby.DataFrameGroupBy.agg.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: General\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Group By Mean and Sum' operation.\nPurpose: I need a standard grouped reduction.\nCommon Mistakes: Named aggregation is usually cleaner; Multiple metrics may create hierarchical columns in older styles; Categories can affect group presence\nRelated APIs: agg, filter, transform"
+    },
+    {
+      "task": "Convert To Categorical",
+      "mental_trigger": "I need to compress repeated labels and preserve discrete states.",
+      "syntax": "Series.astype(\"category\")",
+      "example": "import pandas as pd\n\ns = pd.Series([\"low\", \"medium\", \"low\", \"high\"])\nprint(s.astype(\"category\"))",
+      "important_params": [
+        "categories.",
+        "ordered.",
+        "copy.",
+        "dtype.",
+        "observed."
+      ],
+      "use_when": "1) Repeated string labels appear often. 2) Memory reduction matters. 3) Sorted or ordered categories are useful. 4) Grouping on discrete states.",
+      "avoid_when": "1) Almost every value is unique. 2) Ordering is unstable. 3) Free-form text should remain free-form.",
+      "gotchas": [
+        "Category order matters for comparisons.",
+        "Unseen categories may convert to missing.",
+        "Codes are not meaningful without the category mapping."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.Categorical.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Categorical Data\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A modified or queried object containing the result of the 'Convert To Categorical' operation.\nPurpose: I need to compress repeated labels and preserve discrete states.\nCommon Mistakes: Category order matters for comparisons; Unseen categories may convert to missing; Codes are not meaningful without the category mapping\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Convert Categorical to Codes",
+      "mental_trigger": "I need stable integer codes from categories.",
+      "syntax": "Series.cat.codes",
+      "example": "import pandas as pd\n\ns = pd.Series([\"low\", \"medium\", \"low\", \"high\"], dtype=\"category\")\nprint(s.cat.codes)",
+      "important_params": [
+        "categories.",
+        "ordered.",
+        "codes.",
+        "missing value code.",
+        "category order."
+      ],
+      "use_when": "1) Feeding integer-only systems. 2) Creating ordinal features. 3) Inspecting category internals. 4) Saving compact state.",
+      "avoid_when": "1) Human readability matters. 2) Category order is not stable. 3) Codes would be mistaken for meaning.",
+      "gotchas": [
+        "Missing values usually map to -1.",
+        "Codes depend on category order.",
+        "Reordering categories changes codes."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.Series.cat.codes.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Categorical Data\nModule: `pandas`\nReturn Value: pandas.DataFrame\nExpected Output: A Series of integer category codes.\nPurpose: I need stable integer codes from categories.\nCommon Mistakes: Missing values usually map to -1; Codes depend on category order; Reordering categories changes codes\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Convert Column To Datetime",
+      "mental_trigger": "I need to parse text dates into timestamp values.",
+      "syntax": "pd.to_datetime(arg, errors='raise', utc=False, format=None)",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\"date\": [\"2026-01-01\", \"2026-01-15\"]})\ndf[\"date\"] = pd.to_datetime(df[\"date\"])\nprint(df.dtypes)",
+      "important_params": [
+        "arg.",
+        "errors.",
+        "utc.",
+        "format.",
+        "cache."
+      ],
+      "use_when": "1) Preparing time-series data. 2) Parsing date strings. 3) Standardizing timestamps. 4) Enabling date arithmetic.",
+      "avoid_when": "1) Input is already a reliable datetime dtype. 2) Invalid dates should remain explicit raw text. 3) Mixed or ambiguous formats are uncontrolled.",
+      "gotchas": [
+        "Ambiguous strings can parse unexpectedly.",
+        "Timezone behavior matters.",
+        "Parsing rules can differ from naive string assumptions."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.to_datetime.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Time Series & Window Operations\nModule: `pandas`\nReturn Value: pandas.Series\nExpected Output: A Series cast to datetime64 type.\nPurpose: I need to parse text dates into timestamp values.\nCommon Mistakes: Ambiguous strings can parse unexpectedly; Timezone behavior matters; Parsing rules can differ from naive string assumptions\nRelated APIs: loc, iloc"
+    },
+    {
+      "task": "Time Delta Calculations",
+      "mental_trigger": "I need elapsed time between two timestamps.",
+      "syntax": "df[\"end\"] - df[\"start\"]",
+      "example": "import pandas as pd\n\ndf = pd.DataFrame({\n    \"start\": pd.to_datetime([\"2026-01-01\", \"2026-01-03\"]),\n    \"end\": pd.to_datetime([\"2026-01-02\", \"2026-01-06\"])\n})\ndf[\"delta\"] = df[\"end\"] - df[\"start\"]\nprint(df)",
+      "important_params": [
+        "start.",
+        "end.",
+        "timezone.",
+        "unit conversion.",
+        "timedelta output."
+      ],
+      "use_when": "1) Measuring latency or duration. 2) Computing SLAs. 3) Comparing intervals. 4) Building recency features.",
+      "avoid_when": "1) One side is not datetime-like. 2) Calendar-aware business rules are needed. 3) Timezones are inconsistent.",
+      "gotchas": [
+        "Output is a Timedelta, not a plain number.",
+        "Timezone mismatch can error.",
+        "Explicit unit conversion may be necessary."
+      ],
+      "official_docs": "https://pandas.pydata.org/docs/reference/api/pandas.to_datetime.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "decision_notes": "Category: Time Series & Window Operations\nModule: `pandas`\nReturn Value: pandas.Series\nExpected Output: A modified or queried object containing the result of the 'Time Delta Calculations' operation.\nPurpose: I need elapsed time between two timestamps.\nCommon Mistakes: Output is a Timedelta, not a plain number; Timezone mismatch can error; Explicit unit conversion may be necessary\nRelated APIs: loc, iloc"
     }
   ],
-  "alternatives": [
-    {
-      "id": "polars",
-      "type": "package"
-    },
-    {
-      "id": "dask",
-      "type": "package"
-    },
-    {
-      "id": "numpy",
-      "type": "package"
-    }
-  ]
+  "alternatives": [],
+  "package_specific_debugging": [],
+  "migration_notes": []
 }

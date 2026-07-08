@@ -1,0 +1,1113 @@
+{
+  "id": "plotly-go",
+  "title": "Plotly Graph Objects Cheatsheet",
+  "name": "Plotly Graph Objects Cheatsheet",
+  "slug": "plotly-graph-objects-cheatsheet",
+  "description": "High-density syntax recall for plotly.graph_objects (plotly.py 6.8.0), focused on figure-centric trace and layout composition, subplot grid orchestration, custom annotations, shapes, and interactive events.",
+  "package_reference": "plotly",
+  "verified_against": "6.8.0",
+  "created_at": "2026-07-06",
+  "updated_at": "2026-07-06",
+  "sources": [
+    "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html",
+    "https://plotly.com/python-api-reference/generated/plotly.subplots.make_subplots.html",
+    "https://plotly.github.io/plotly.py-docs/generated/plotly.graph_objects.Scattergl.html",
+    "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.update_layout.html"
+  ],
+  "tags": [
+    "plotly",
+    "plotly-go",
+    "plotly-graph-objects",
+    "visualization",
+    "plotting",
+    "python",
+    "interactive-plots",
+    "data-science"
+  ],
+  "aliases": [
+    "plotly-go-cheatsheet",
+    "plotly-graph-objects-cheatsheet",
+    "go-cheatsheet"
+  ],
+  "keywords": [
+    "plotly",
+    "plotly-go",
+    "plotly-graph-objects",
+    "go",
+    "figure",
+    "layout",
+    "trace",
+    "subplots",
+    "scatter",
+    "bar",
+    "heatmap",
+    "contour",
+    "surface",
+    "sankey",
+    "annotations"
+  ],
+  "search_tokens": [
+    "plotly-go-cheatsheet",
+    "plotly-graph-objects-cheatsheet",
+    "go-plots",
+    "go-layout",
+    "go-subplots",
+    "go-traces"
+  ],
+  "domain": "data-science",
+  "category": "visualization",
+  "difficulty": "advanced",
+  "engineering_area": "visualization",
+  "estimated_reading_time": 8,
+  "prerequisites": [
+    "plotly-express"
+  ],
+  "recommended_next": [],
+  "related_content": [
+    {
+      "id": "plotly-express",
+      "type": "cheatsheet",
+      "relationship_type": "references"
+    }
+  ],
+  "last_verified": "2026-07-06",
+  "compatible_versions": [
+    "6.8.0"
+  ],
+  "breaking_changes": [],
+  "entries": [
+    {
+      "title": "Import graph_objects",
+      "problem": "Start a graph_objects workflow.",
+      "trigger": "When you need manual figure composition instead of a high-level interface.",
+      "snippet": "import plotly.graph_objects as go\nfrom plotly.subplots import make_subplots\n\nfig = go.Figure()\nfig.show()",
+      "minimal_notes": "Use go for traces and Figure, and make_subplots for subplot grids. This is the standard import pair.",
+      "common_bug": "Forgetting make_subplots when targeting multiple panels.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create an empty figure",
+      "problem": "Initialize a blank figure for manual trace assembly.",
+      "trigger": "When building a plot step-by-step.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure()\nfig.show()",
+      "minimal_notes": "This is the most common base object in graph_objects. Add traces and layout afterward.",
+      "common_bug": "Assuming a blank figure has default axes, titles, or data.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a figure with initial data",
+      "problem": "Start a figure from one or more trace objects.",
+      "trigger": "When the chart has a known base trace set.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(data=[\n    go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode=\"lines+markers\", name=\"series\")\n])\nfig.show()",
+      "minimal_notes": "data accepts trace instances or trace dicts. This is the simplest object-oriented bootstrap.",
+      "common_bug": "Passing raw arrays to data instead of trace objects.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a figure with layout only",
+      "problem": "Define presentation settings before data arrives.",
+      "trigger": "When a template or dashboard shell is created first.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(layout=go.Layout(title=\"Empty shell\", template=\"plotly_white\"))\nfig.show()",
+      "minimal_notes": "layout can be provided up front. Add traces later.",
+      "common_bug": "Expecting layout-only figures to render meaningful content.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create an animated figure from frames",
+      "problem": "Build a figure with explicit animation frames.",
+      "trigger": "When animation structure must be controlled manually.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(\n    data=[go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode=\"markers\")],\n    frames=[\n        go.Frame(data=[go.Scatter(x=[1, 2, 3], y=[4, 5, 6])], name=\"f1\"),\n        go.Frame(data=[go.Scatter(x=[1, 2, 3], y=[4, 5, 6])], name=\"f2\"),\n    ],\n)\nfig.show()",
+      "minimal_notes": "frames holds frame definitions used by sliders and updatemenus. Keep frame data small.",
+      "common_bug": "Creating frames without controls to step through them.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Add a single trace",
+      "problem": "Attach one trace to an existing figure.",
+      "trigger": "When building a figure incrementally.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure()\nfig.add_trace(go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode=\"lines+markers\", name=\"line\"))\nfig.show()",
+      "minimal_notes": "add_trace is the standard single-trace method. It is row/col aware for subplot figures.",
+      "common_bug": "Adding a trace to the wrong subplot because row and col were omitted.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.add_traces.html"
+    },
+    {
+      "title": "Add multiple traces at once",
+      "problem": "Insert a batch of traces efficiently.",
+      "trigger": "When several series belong to the same figure update.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure()\nfig.add_traces([\n    go.Scatter(x=[1, 2, 3], y=[4, 5, 6], name=\"A\"),\n    go.Bar(x=[\"a\", \"b\", \"c\"], y=[4, 5, 6], name=\"B\"),\n])\nfig.show()",
+      "minimal_notes": "add_traces is useful for batch composition. It is cleaner than repeated add_trace calls.",
+      "common_bug": "Adding mismatched trace types without checking subplot compatibility.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.add_traces.html"
+    },
+    {
+      "title": "Update all traces",
+      "problem": "Apply a consistent patch to every trace.",
+      "trigger": "When standardizing appearance across a figure.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure()\nfig.add_traces([\n    go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode=\"markers\", name=\"A\"),\n    go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode=\"markers\", name=\"B\"),\n])\nfig.update_traces(marker=dict(size=12, opacity=0.8))\nfig.show()",
+      "minimal_notes": "update_traces broadcasts a patch across matching traces. Combine with selector for precision.",
+      "common_bug": "Changing every trace when only one series should be affected.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.update_layout.html"
+    },
+    {
+      "title": "Update selected traces",
+      "problem": "Modify only traces that match a filter.",
+      "trigger": "When traces differ by type, name, or index.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure([\n    go.Scatter(x=[1, 2, 3], y=[4, 5, 6], name=\"line\"),\n    go.Bar(x=[1, 2, 3], y=[4, 5, 6], name=\"bars\"),\n])\nfig.update_traces(selector=dict(type=\"scatter\"), line=dict(width=3))\nfig.show()",
+      "minimal_notes": "selector narrows the patch to trace subsets. This is safer than global updates.",
+      "common_bug": "Using a selector that matches no traces and silently changing nothing.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.update_layout.html"
+    },
+    {
+      "title": "Select traces for inspection",
+      "problem": "Pull out traces matching criteria.",
+      "trigger": "When code needs to inspect or modify only a subset.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure([\n    go.Scatter(x=[1, 2, 3], y=[4, 5, 6], name=\"A\"),\n    go.Scatter(x=[1, 2, 3], y=[4, 5, 6], name=\"B\"),\n])\nselected = fig.select_traces(selector=dict(type=\"scatter\"))\nprint(len(list(selected)))",
+      "minimal_notes": "select_traces is useful for programmatic figure logic. It pairs well with update_traces.",
+      "common_bug": "Assuming select_traces returns a single trace instead of an iterable.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Iterate over traces",
+      "problem": "Apply custom logic to every trace.",
+      "trigger": "When updates cannot be expressed as one patch.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure([\n    go.Scatter(x=[1, 2, 3], y=[4, 5, 6], name=\"A\"),\n    go.Scatter(x=[1, 2, 3], y=[4, 5, 6], name=\"B\"),\n])\nfig.for_each_trace(lambda t: t.update(visible=True))\nfig.show()",
+      "minimal_notes": "for_each_trace is the ergonomic loop helper. Use it for conditional styling.",
+      "common_bug": "Mutating traces while expecting return values from the callback.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a basic subplot grid",
+      "problem": "Place multiple charts into one figure.",
+      "trigger": "When comparing related views in a dashboard-like layout.",
+      "snippet": "import plotly.graph_objects as go\nfrom plotly.subplots import make_subplots\n\nfig = make_subplots(rows=2, cols=1)\nfig.add_trace(go.Scatter(x=[1, 2, 3], y=[4, 5, 6], name=\"top\"), row=1, col=1)\nfig.add_trace(go.Bar(x=[1, 2, 3], y=[4, 5, 6], name=\"bottom\"), row=2, col=1)\nfig.show()",
+      "minimal_notes": "make_subplots returns a Figure with prepared subplot axes. Add traces with row and col.",
+      "common_bug": "Adding traces to a subplot grid without specifying row and col.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.subplots.make_subplots.html"
+    },
+    {
+      "title": "Share x-axes across rows",
+      "problem": "Link x-axis zooming across stacked plots.",
+      "trigger": "When time alignment must stay synchronized.",
+      "snippet": "import plotly.graph_objects as go\nfrom plotly.subplots import make_subplots\n\nfig = make_subplots(rows=2, cols=1, shared_xaxes=True)\nfig.add_trace(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]), row=1, col=1)\nfig.add_trace(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]), row=2, col=1)\nfig.show()",
+      "minimal_notes": "shared_xaxes keeps the x domain aligned. Use it for time-series panels.",
+      "common_bug": "Using separate x-axes when synchronized zoom is expected.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.subplots.make_subplots.html"
+    },
+    {
+      "title": "Share y-axes across columns",
+      "problem": "Compare traces using the same y scale.",
+      "trigger": "When magnitudes must be visually comparable.",
+      "snippet": "import plotly.graph_objects as go\nfrom plotly.subplots import make_subplots\n\nfig = make_subplots(rows=1, cols=2, shared_yaxes=True)\nfig.add_trace(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]), row=1, col=1)\nfig.add_trace(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]), row=1, col=2)\nfig.show()",
+      "minimal_notes": "shared_yaxes is important for consistent comparisons. It prevents misleading scale differences.",
+      "common_bug": "Comparing panels with different y scaling unintentionally.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.subplots.make_subplots.html"
+    },
+    {
+      "title": "Add a secondary y-axis subplot",
+      "problem": "Overlay series with different units.",
+      "trigger": "When one subplot needs a right-side scale.",
+      "snippet": "import plotly.graph_objects as go\nfrom plotly.subplots import make_subplots\n\nfig = make_subplots(specs=[[{\"secondary_y\": True}]])\nfig.add_trace(go.Scatter(x=[1, 2, 3], y=[4, 5, 6], name=\"left\"), secondary_y=False)\nfig.add_trace(go.Bar(x=[1, 2, 3], y=[4, 5, 6], name=\"right\"), secondary_y=True)\nfig.show()",
+      "minimal_notes": "secondary_y is only valid in xy subplots. Use it for heterogeneous units.",
+      "common_bug": "Adding a secondary axis without configuring specs correctly.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.subplots.make_subplots.html"
+    },
+    {
+      "title": "Use mixed subplot types",
+      "problem": "Combine Cartesian, polar, 3D, and domain-based views.",
+      "trigger": "When one figure needs multiple visualization modalities.",
+      "snippet": "import plotly.graph_objects as go\nfrom plotly.subplots import make_subplots\n\nfig = make_subplots(\n    rows=2, cols=2,\n    specs=[[{\"type\": \"xy\"}, {\"type\": \"polar\"}],\n           [{\"type\": \"scene\"}, {\"type\": \"domain\"}]]\n)\nfig.add_trace(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]), row=1, col=1)\nfig.add_trace(go.Scatterpolar(r=[1, 2, 3, 4], theta=[0, 90, 180, 270]), row=1, col=2)\nfig.add_trace(go.Scatter3d(x=[1, 2, 3], y=[4, 5, 6], z=[7, 8, 9]), row=2, col=1)\nfig.add_trace(go.Pie(labels=[\"A\", \"B\"], values=[10, 20, 30]), row=2, col=2)\nfig.show()",
+      "minimal_notes": "specs controls subplot type per cell. Domain subplots are used for pie and similar traces.",
+      "common_bug": "Assigning a trace to the wrong subplot type.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.subplots.make_subplots.html"
+    },
+    {
+      "title": "Control subplot spacing",
+      "problem": "Tune whitespace between panels.",
+      "trigger": "When figure density needs adjustment.",
+      "snippet": "import plotly.graph_objects as go\nfrom plotly.subplots import make_subplots\n\nfig = make_subplots(rows=2, cols=2, horizontal_spacing=0.05, vertical_spacing=0.08)\nfig.add_trace(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]), row=1, col=1)\nfig.add_trace(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]), row=1, col=2)\nfig.add_trace(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]), row=2, col=1)\nfig.add_trace(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]), row=2, col=2)\nfig.show()",
+      "minimal_notes": "Use spacing controls before resorting to manual layout edits. Smaller gaps increase density.",
+      "common_bug": "Making panel gaps so small that labels overlap.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.subplots.make_subplots.html"
+    },
+    {
+      "title": "Add subplot titles",
+      "problem": "Label each panel clearly.",
+      "trigger": "When a multi-panel figure needs immediate readability.",
+      "snippet": "import plotly.graph_objects as go\nfrom plotly.subplots import make_subplots\n\nfig = make_subplots(rows=1, cols=2, subplot_titles=(\"Left panel\", \"Right panel\"))\nfig.add_trace(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]), row=1, col=1)\nfig.add_trace(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]), row=1, col=2)\nfig.show()",
+      "minimal_notes": "subplot_titles is the fastest panel labeling path. Use it for comparison layouts.",
+      "common_bug": "Repeating titles in both subplot_titles and layout title unnecessarily.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.subplots.make_subplots.html"
+    },
+    {
+      "title": "Create inset axes",
+      "problem": "Overlay a zoomed-in subplot on top of another plot.",
+      "trigger": "When detail needs to be highlighted without a second page.",
+      "snippet": "import plotly.graph_objects as go\nfrom plotly.subplots import make_subplots\n\nfig = make_subplots(insets=[{\"cell\": (1, 1), \"l\": 0.65, \"b\": 0.55, \"w\": 0.3, \"h\": 0.3}])\nfig.add_trace(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]), row=1, col=1)\nfig.add_trace(go.Scatter(x=[1, 2, 3], y=[2.1, 2.2, 2.4], xaxis=\"x2\", yaxis=\"y2\"))\nfig.show()",
+      "minimal_notes": "Insets are for compact overlays. Keep the inset content focused.",
+      "common_bug": "Using an inset for too much data and obscuring the base plot.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.subplots.make_subplots.html"
+    },
+    {
+      "title": "Update layout",
+      "problem": "Change figure-wide presentation properties.",
+      "trigger": "When titles, legends, and margins need final control.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]))\nfig.update_layout(\n    title=\"Production figure\",\n    template=\"plotly_white\",\n    width=900,\n    height=500,\n    margin=dict(l=40, r=20, t=60, b=40)\n)\nfig.show()",
+      "minimal_notes": "update_layout is the main figure styling entry. It supports recursive updates.",
+      "common_bug": "Overwriting layout settings accidentally when repeatedly calling update_layout.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.update_layout.html"
+    },
+    {
+      "title": "Configure title and subtitle",
+      "problem": "Add figure-level context.",
+      "trigger": "When the output needs a report-ready heading.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]))\nfig.update_layout(\n    title=dict(text=\"Main title\", x=0.5),\n    template=\"plotly_white\"\n)\nfig.show()",
+      "minimal_notes": "Title is usually configured in layout. Use x to center it when needed.",
+      "common_bug": "Using multiple competing title systems in one figure.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.update_layout.html"
+    },
+    {
+      "title": "Configure legend placement",
+      "problem": "Position and orient the legend cleanly.",
+      "trigger": "When default legend placement blocks data.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure([\n    go.Scatter(x=[1, 2, 3], y=[4, 5, 6], name=\"A\"),\n    go.Scatter(x=[1, 2, 3], y=[4, 5, 6], name=\"B\"),\n])\nfig.update_layout(\n    legend=dict(orientation=\"h\", yanchor=\"bottom\", y=1.02, xanchor=\"right\", x=1)\n)\nfig.show()",
+      "minimal_notes": "Legend can be moved out of the plotting area. Horizontal legends are common in reports.",
+      "common_bug": "Leaving the legend inside a crowded plot and covering data.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.update_layout.html"
+    },
+    {
+      "title": "Set fonts globally",
+      "problem": "Enforce typography across the figure.",
+      "trigger": "When charts need consistent publication styling.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]))\nfig.update_layout(font=dict(family=\"Arial\", size=14, color=\"black\"))\nfig.show()",
+      "minimal_notes": "font affects titles, axes, and legend text. Use one project-wide font choice.",
+      "common_bug": "Mixing incompatible fonts between exported images and browser rendering.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.update_layout.html"
+    },
+    {
+      "title": "Set templates",
+      "problem": "Apply a reusable figure theme.",
+      "trigger": "When multiple charts need the same style baseline.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]))\nfig.update_layout(template=\"plotly_white\")\nfig.show()",
+      "minimal_notes": "Templates reduce repeated layout code. They are preferred in production workflows.",
+      "common_bug": "Mixing template styling with many one-off overrides.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.update_layout.html"
+    },
+    {
+      "title": "Set figure size",
+      "problem": "Control width and height for notebooks or exports.",
+      "trigger": "When layout dimensions must be deterministic.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]))\nfig.update_layout(width=1000, height=600)\nfig.show()",
+      "minimal_notes": "Set size explicitly for consistent exports. Avoid relying on renderer defaults.",
+      "common_bug": "Ignoring the target aspect ratio until export time.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.update_layout.html"
+    },
+    {
+      "title": "Set margins and background",
+      "problem": "Adjust figure whitespace and canvas colors.",
+      "trigger": "When preparing figures for dashboards or slides.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]))\nfig.update_layout(\n    margin=dict(l=30, r=30, t=50, b=30),\n    paper_bgcolor=\"white\",\n    plot_bgcolor=\"#F8F8F8\"\n)\nfig.show()",
+      "minimal_notes": "paper_bgcolor affects the whole canvas; plot_bgcolor affects the plotting area. Use both deliberately.",
+      "common_bug": "Making the plot background and paper background clash visually.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.update_layout.html"
+    },
+    {
+      "title": "Set hover behavior globally",
+      "problem": "Control hover behavior across traces.",
+      "trigger": "When interactive readouts need consistency.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode=\"markers\"))\nfig.update_layout(hovermode=\"x unified\")\nfig.show()",
+      "minimal_notes": "hovermode changes how hover labels are grouped. Unified hover is common for time series.",
+      "common_bug": "Using the wrong hovermode for dense multi-trace figures.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.update_layout.html"
+    },
+    {
+      "title": "Set drag mode",
+      "problem": "Configure how users interact with the plot.",
+      "trigger": "When panning or zooming behavior matters.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode=\"markers\"))\nfig.update_layout(dragmode=\"zoom\")\nfig.show()",
+      "minimal_notes": "dragmode can be tuned for exploration workflows. Default behavior depends on the renderer.",
+      "common_bug": "Accidentally setting dragmode in a way that blocks expected zooming.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.update_layout.html"
+    },
+    {
+      "title": "Update x-axis range and type",
+      "problem": "Control x-axis scale and visible window.",
+      "trigger": "When the axis must be linear, logarithmic, date-based, or range-limited.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]))\nfig.update_xaxes(type=\"log\", range=[0, 100], title=\"Log x\")\nfig.show()",
+      "minimal_notes": "update_xaxes is the cleanest axis API. Use it instead of raw layout edits.",
+      "common_bug": "Using log axes with zero or negative values.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.update_layout.html"
+    },
+    {
+      "title": "Update y-axis range and autorange",
+      "problem": "Adjust y-axis view and auto scaling.",
+      "trigger": "When zoom behavior or plot extents need control.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]))\nfig.update_yaxes(range=[0, 100], autorange=False, title=\"Value\")\nfig.show()",
+      "minimal_notes": "autorange=False makes ranges deterministic. This is useful for dashboards.",
+      "common_bug": "Forgetting to disable autorange when a fixed range is intended.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.update_layout.html"
+    },
+    {
+      "title": "Configure ticks explicitly",
+      "problem": "Control axis tick values and labels.",
+      "trigger": "When categories or milestones must appear exactly.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]))\nfig.update_xaxes(tickmode=\"array\", tickvals=[1, 2, 3], ticktext=[\"one\", \"two\", \"three\"])\nfig.show()",
+      "minimal_notes": "tickmode='array' gives full control. Use it for custom labeling.",
+      "common_bug": "Setting ticktext without matching tickvals.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.update_layout.html"
+    },
+    {
+      "title": "Add grid and zero lines",
+      "problem": "Improve axis readability and reference context.",
+      "trigger": "When precise comparisons require visual guides.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[-1, 0, 1], y=[4, 5, 6]))\nfig.update_xaxes(showgrid=True, zeroline=True)\nfig.update_yaxes(showgrid=True, zeroline=True)\nfig.show()",
+      "minimal_notes": "Grid and zero lines help with interpretation. Keep them subtle in production output.",
+      "common_bug": "Overpowering the data with heavy grid styling.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.update_layout.html"
+    },
+    {
+      "title": "Lock axis scale and aspect",
+      "problem": "Preserve equal scaling between x and y.",
+      "trigger": "When geometry must be visually accurate.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode=\"markers\"))\nfig.update_yaxes(scaleanchor=\"x\", scaleratio=1)\nfig.show()",
+      "minimal_notes": "scaleanchor is essential for equal-aspect plots. Use it for spatial or metric comparisons.",
+      "common_bug": "Forgetting that equal-aspect scaling can distort layout expectations.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.update_layout.html"
+    },
+    {
+      "title": "Add an annotation",
+      "problem": "Label a specific point or region.",
+      "trigger": "When commentary must be embedded in the plot.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode=\"markers\"))\nfig.add_annotation(x=2, y=1, text=\"Peak\", showarrow=True, arrowhead=2)\nfig.show()",
+      "minimal_notes": "add_annotation is the direct way to place callouts. Use showarrow only when pointing matters.",
+      "common_bug": "Anchoring annotation coordinates to the wrong axis reference.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Add a horizontal line",
+      "problem": "Mark a threshold across the full plot width.",
+      "trigger": "When a target, baseline, or limit must be visible.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]))\nfig.add_hline(y=2, line_dash=\"dash\", line_color=\"red\")\nfig.show()",
+      "minimal_notes": "add_hline is the fastest threshold marker. It is layout-aware and subplot-friendly.",
+      "common_bug": "Using a regular shape line when hline is simpler and clearer.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Add a vertical line",
+      "problem": "Mark a key x position.",
+      "trigger": "When event times or cutoffs need emphasis.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]))\nfig.add_vline(x=2, line_dash=\"dash\", line_color=\"blue\")\nfig.show()",
+      "minimal_notes": "add_vline is ideal for event markers. Keep labels concise.",
+      "common_bug": "Drawing the line in the wrong axis space on subplot figures.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Add a horizontal rectangle",
+      "problem": "Highlight a y-range band.",
+      "trigger": "When tolerance or target bands matter.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]))\nfig.add_hrect(y0=1.2, y1=2.2, fillcolor=\"green\", opacity=0.2, line_width=0)\nfig.show()",
+      "minimal_notes": "hrect is useful for ranges and acceptable zones. Use low opacity.",
+      "common_bug": "Making the fill too opaque and hiding the traces.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Add a vertical rectangle",
+      "problem": "Highlight an x-range band.",
+      "trigger": "When a time window or region needs emphasis.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]))\nfig.add_vrect(x0=1.2, x1=2.2, fillcolor=\"orange\", opacity=0.2, line_width=0)\nfig.show()",
+      "minimal_notes": "vrect is the x-range companion to hrect. It is commonly used for windows and periods.",
+      "common_bug": "Using a shape instead of vrect when the intent is a range band.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Add an arbitrary shape",
+      "problem": "Draw custom geometry beyond lines and rectangles.",
+      "trigger": "When the figure needs a precise overlay.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]))\nfig.add_shape(type=\"circle\", x0=1.4, x1=2.0, y0=1.0, y1=2.0, line=dict(color=\"purple\"))\nfig.show()",
+      "minimal_notes": "add_shape covers custom overlays. Use coordinate references carefully.",
+      "common_bug": "Drawing shapes in paper coordinates when data coordinates were intended.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a scatter trace",
+      "problem": "Plot markers or lines on Cartesian axes.",
+      "trigger": "When most 2D plots begin as a scatter trace.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode=\"lines+markers\", name=\"series\"))\nfig.show()",
+      "minimal_notes": "Scatter is the foundation trace for many XY figures. Use mode to control mark style.",
+      "common_bug": "Forgetting mode and getting the default trace appearance.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a bar trace",
+      "problem": "Show categorical magnitudes.",
+      "trigger": "When values belong to named categories.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Bar(x=[\"A\", \"B\", \"C\"], y=[4, 5, 6], name=\"bars\"))\nfig.show()",
+      "minimal_notes": "Bar traces are the standard category comparison trace. Use orientation for horizontal bars.",
+      "common_bug": "Forgetting that stacked or grouped behavior depends on layout barmode.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a histogram trace",
+      "problem": "Bin raw numeric data directly in graph_objects.",
+      "trigger": "When the figure needs built-in frequency binning.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Histogram(x=[1, 2, 3], nbinsx=5))\nfig.show()",
+      "minimal_notes": "Histogram bins data in the trace itself. This is useful for quick distributions.",
+      "common_bug": "Comparing histograms without controlling bin settings.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a box trace",
+      "problem": "Show quartiles and outliers in one trace.",
+      "trigger": "When distribution shape is important.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Box(y=[4, 5, 6], name=\"box\"))\nfig.show()",
+      "minimal_notes": "Box traces are concise summary traces. They work well in grouped figures.",
+      "common_bug": "Interpreting a box trace with too few observations as robust.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a violin trace",
+      "problem": "Show distribution density with shape detail.",
+      "trigger": "When a box plot is too coarse.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Violin(y=[4, 5, 6], box_visible=True, meanline_visible=True, name=\"violin\"))\nfig.show()",
+      "minimal_notes": "Violin traces expose distribution shape. Adding box_visible is common for production use.",
+      "common_bug": "Drawing too many violins and crowding the axis.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a heatmap trace",
+      "problem": "Show matrix values in a 2D grid.",
+      "trigger": "When correlation or intensity matrices are needed.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Heatmap(z=[[1, 2], [3, 4]], colorscale=\"Viridis\"))\nfig.show()",
+      "minimal_notes": "Heatmaps are the main matrix trace. Control colorscale for readability.",
+      "common_bug": "Not labeling axes for matrix interpretation.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a contour trace",
+      "problem": "Draw contour lines for a scalar field.",
+      "trigger": "When isolines are more useful than filled cells.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Contour(z=[[1, 2, 3], [3, 4, 5], [2, 5, 6]], contours_coloring=\"lines\"))\nfig.show()",
+      "minimal_notes": "Contour is the line-based scalar field trace. Pair with heatmap only when needed.",
+      "common_bug": "Overcomplicating the contour settings for a simple overview.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a surface trace",
+      "problem": "Render a 3D surface from a matrix.",
+      "trigger": "When a continuous response surface needs 3D display.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Surface(z=[[1, 2, 3], [3, 4, 5], [2, 5, 6]]))\nfig.show()",
+      "minimal_notes": "Surface traces are intended for 3D scene figures. Keep meshes reasonably sized.",
+      "common_bug": "Using too many grid points and slowing rendering.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a mesh3d trace",
+      "problem": "Render a triangular 3D mesh.",
+      "trigger": "When the object is defined by vertices and faces.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Mesh3d(\n    x=[0, 1, 2, 0],\n    y=[0, 0, 1, 2],\n    z=[0, 2, 0, 1],\n    i=[0, 0, 0, 1],\n    j=[1, 2, 3, 2],\n    k=[2, 3, 1, 3],\n))\nfig.show()",
+      "minimal_notes": "Mesh3d is for volumetric surface meshes. Index arrays define faces.",
+      "common_bug": "Mismatching face indices and vertex counts.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a 3D scatter trace",
+      "problem": "Plot points in 3D space.",
+      "trigger": "When three coordinates are required.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter3d(x=[1, 2, 3], y=[4, 5, 6], z=[7, 8, 9], mode=\"markers\"))\nfig.show()",
+      "minimal_notes": "Scatter3d belongs to scene subplots. It is the default 3D point trace.",
+      "common_bug": "Adding a 3D trace to a 2D subplot.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a polar scatter trace",
+      "problem": "Plot radial and angular coordinates.",
+      "trigger": "When directional data must be shown in a circular frame.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatterpolar(r=[1, 2, 3, 4], theta=[0, 90, 180, 270], mode=\"lines+markers\"))\nfig.show()",
+      "minimal_notes": "Scatterpolar belongs in polar subplots. Keep angular units consistent.",
+      "common_bug": "Mixing degrees and radians without normalization.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.subplots.make_subplots.html"
+    },
+    {
+      "title": "Create a geographic scatter trace",
+      "problem": "Plot points on a geographic projection.",
+      "trigger": "When lat/lon data must be displayed on a world map.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scattergeo(lat=[23.81, 22.36], lon=[90.41, 91.80], mode=\"markers\"))\nfig.show()",
+      "minimal_notes": "Scattergeo is the stable geographic point trace. Use it for map-based point data.",
+      "common_bug": "Swapping latitude and longitude columns.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a choropleth trace",
+      "problem": "Shade regions by value.",
+      "trigger": "When region identifiers and values map to a geography.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Choropleth(\n    locations=[\"USA\", \"CAN\", \"MEX\"],\n    z=[7, 8, 9],\n    locationmode=\"ISO-3\",\n    colorscale=\"Viridis\"\n))\nfig.show()",
+      "minimal_notes": "Choropleth requires correct location codes and a color scale. Use z for the numeric field.",
+      "common_bug": "Using the wrong locationmode for your identifiers.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create an indicator trace",
+      "problem": "Show a KPI or single numeric status.",
+      "trigger": "When dashboard summaries need a compact metric tile.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Indicator(mode=\"number+delta\", value=82, delta={\"reference\": 75}, title={\"text\": \"Conversion\"}))\nfig.show()",
+      "minimal_notes": "Indicator traces are ideal for KPI display. Keep the number of indicators small.",
+      "common_bug": "Using an indicator when time-series context is still required.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a table trace",
+      "problem": "Display structured tabular output inside a figure.",
+      "trigger": "When a chart needs an embedded report table.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Table(\n    header=dict(values=[\"A\", \"B\"]),\n    cells=dict(values=[[1, 2, 3], [\"x\", \"y\", \"z\"]])\n))\nfig.show()",
+      "minimal_notes": "Table is a domain trace. It works well in dashboards and summaries.",
+      "common_bug": "Using Table for large datasets instead of a data grid.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a candlestick chart",
+      "problem": "Show OHLC price movements.",
+      "trigger": "When financial time-series data is open-high-low-close.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Candlestick(\n    x=[\"2026-01-01\", \"2026-01-02\", \"2026-01-03\"],\n    open=[100, 110, 105],\n    high=[120, 115, 110],\n    low=[90, 100, 95],\n    close=[110, 105, 108]\n))\nfig.show()",
+      "minimal_notes": "Candlestick is the standard OHLC trace. Use datetime axes when possible.",
+      "common_bug": "Misordering open, high, low, and close arrays.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a waterfall chart",
+      "problem": "Show cumulative increases and decreases.",
+      "trigger": "When a sequence of deltas leads to a total.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Waterfall(\n    x=[\"Revenue\", \"Costs\", \"Taxes\", \"Profit\"],\n    y=[100, -40, -10, 50]\n))\nfig.show()",
+      "minimal_notes": "Waterfall is the standard delta trace. Use it for financial or operational decomposition.",
+      "common_bug": "Mixing pre-aggregated totals and step changes incorrectly.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a funnel trace",
+      "problem": "Show a staged pipeline with decreasing values.",
+      "trigger": "When a process narrows through stages.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Funnel(y=[\"Visit\", \"Signup\", \"Trial\", \"Paid\"], x=[1, 2, 3]))\nfig.show()",
+      "minimal_notes": "Funnel traces are compact for progression analysis. Keep the stage order deliberate.",
+      "common_bug": "Reordering stages and changing the funnel meaning.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a pie trace",
+      "problem": "Show simple composition.",
+      "trigger": "When the number of categories is small.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Pie(labels=[\"A\", \"B\", \"C\"], values=[10, 20, 30]))\nfig.show()",
+      "minimal_notes": "Pie is for simple part-to-whole summaries. Use it sparingly.",
+      "common_bug": "Using pie charts for many categories.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a sunburst trace",
+      "problem": "Show hierarchy in a radial layout.",
+      "trigger": "When tree structure must be compactly displayed.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Sunburst(labels=[\"A\", \"B\", \"C\"], parents=[\"\", \"A\", \"A\"], values=[10, 20, 30]))\nfig.show()",
+      "minimal_notes": "Sunburst is a domain trace for hierarchy. Parent relationships must be correct.",
+      "common_bug": "Building inconsistent parent-child relationships.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a treemap trace",
+      "problem": "Show hierarchy as nested rectangles.",
+      "trigger": "When dense hierarchical structure needs a compact display.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Treemap(labels=[\"A\", \"B\", \"C\"], parents=[\"\", \"A\", \"A\"], values=[10, 20, 30]))\nfig.show()",
+      "minimal_notes": "Treemap is useful for compact hierarchical summaries. Keep labels short.",
+      "common_bug": "Overloading the treemap with too many sibling nodes.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create an icicle trace",
+      "problem": "Show hierarchy in a top-down layout.",
+      "trigger": "When hierarchical levels need visual separation.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Icicle(labels=[\"A\", \"B\", \"C\"], parents=[\"\", \"A\", \"A\"], values=[10, 20, 30]))\nfig.show()",
+      "minimal_notes": "Icicle is the rectangular hierarchy companion to sunburst. It works well for level inspection.",
+      "common_bug": "Expecting it to behave like a flat categorical bar chart.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a sankey diagram",
+      "problem": "Show weighted flow between nodes.",
+      "trigger": "When movement between stages or systems matters.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Sankey(\n    node=dict(label=[\"A\", \"B\", \"C\"]),\n    link=dict(source=[0, 1, 0], target=[2, 2, 1], value=[10, 20, 15])\n))\nfig.show()",
+      "minimal_notes": "Sankey is ideal for flow and allocation analysis. Keep node labels clear.",
+      "common_bug": "Mismatching source and target indices.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Style marker appearance",
+      "problem": "Control point size, color, and symbol.",
+      "trigger": "When trace styling must match a design system.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(\n    x=[1, 2, 3], y=[4, 5, 6],\n    mode=\"markers\",\n    marker=dict(size=12, color=\"royalblue\", symbol=\"circle\")\n))\nfig.show()",
+      "minimal_notes": "marker is the main point-style container. Keep palette choices consistent.",
+      "common_bug": "Setting incompatible symbol or size values for the intended trace.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Style line appearance",
+      "problem": "Control stroke width, dash, and color.",
+      "trigger": "When line encoding must be visually distinct.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(\n    x=[1, 2, 3], y=[4, 5, 6],\n    mode=\"lines\",\n    line=dict(width=3, dash=\"dash\", color=\"black\")\n))\nfig.show()",
+      "minimal_notes": "line styling belongs on line-capable traces. Use dash patterns sparingly.",
+      "common_bug": "Applying line styling to traces that do not draw lines.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Control fill and opacity",
+      "problem": "Shade the area under or between traces.",
+      "trigger": "When the chart needs stronger area emphasis.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(\n    x=[1, 2, 3], y=[4, 5, 6],\n    fill=\"tozeroy\",\n    opacity=0.5,\n    mode=\"lines\"\n))\nfig.show()",
+      "minimal_notes": "fill and opacity work well together. Keep opacity low enough to preserve context.",
+      "common_bug": "Making filled regions too opaque and hiding geometry.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Use hovertemplate",
+      "problem": "Define precise hover text.",
+      "trigger": "When default hover text is too verbose or incomplete.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(\n    x=[1, 2, 3],\n    y=[4, 5, 6],\n    customdata=[\"a\", \"b\", \"c\"],\n    hovertemplate=\"x=%{x}<br>y=%{y}<br>tag=%{customdata}<extra></extra>\"\n))\nfig.show()",
+      "minimal_notes": "hovertemplate overrides hoverinfo. Use <extra></extra> to hide the secondary box.",
+      "common_bug": "Leaving the default extra box visible when it is not wanted.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.add_traces.html"
+    },
+    {
+      "title": "Attach customdata",
+      "problem": "Carry extra per-point metadata for interaction or callbacks.",
+      "trigger": "When hover or click logic needs hidden fields.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(\n    x=[1, 2, 3],\n    y=[4, 5, 6],\n    customdata=[[\"u1\"], [\"u2\"], [\"u3\"]],\n    hovertemplate=\"id=%{customdata}<extra></extra>\"\n))\nfig.show()",
+      "minimal_notes": "customdata is the standard payload channel for interactivity. It pairs naturally with hovertemplate.",
+      "common_bug": "Assuming customdata is visible without referencing it in templates or callbacks.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.add_traces.html"
+    },
+    {
+      "title": "Control colorbars",
+      "problem": "Tune numeric color legends for continuous traces.",
+      "trigger": "When color mapping needs explicit labeling or placement.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(\n    x=[1, 2, 3], y=[4, 5, 6],\n    mode=\"markers\",\n    marker=dict(\n        size=12,\n        color=[1, 2, 3],\n        colorscale=\"Viridis\",\n        colorbar=dict(title=\"Value\")\n    )\n))\nfig.show()",
+      "minimal_notes": "colorbar belongs to continuous color encodings. Label it clearly.",
+      "common_bug": "Leaving an unlabeled colorbar in stakeholder-facing output.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Set legend grouping",
+      "problem": "Tie traces together for legend toggling.",
+      "trigger": "When multiple traces should hide and show as a unit.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure([\n    go.Scatter(x=[1, 2, 3], y=[4, 5, 6], name=\"A1\", legendgroup=\"A\"),\n    go.Scatter(x=[1, 2, 3], y=[4, 5, 6], name=\"A2\", legendgroup=\"A\")\n])\nfig.show()",
+      "minimal_notes": "legendgroup is useful for linked trace families. It improves legend hygiene.",
+      "common_bug": "Forgetting to give grouped traces the same legendgroup.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.add_traces.html"
+    },
+    {
+      "title": "Control visibility states",
+      "problem": "Hide a trace while keeping it in the legend.",
+      "trigger": "When a trace should be optional at load time.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure([\n    go.Scatter(x=[1, 2, 3], y=[4, 5, 6], name=\"visible\"),\n    go.Scatter(x=[1, 2, 3], y=[4, 5, 6], name=\"hidden\", visible=\"legendonly\"),\n])\nfig.show()",
+      "minimal_notes": "visible='legendonly' hides the trace but preserves legend access. This is common in dashboards.",
+      "common_bug": "Using invisible traces when the legend item should still be available.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Control click mode",
+      "problem": "Configure legend and point-click interactions.",
+      "trigger": "When the app depends on chart click behavior.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode=\"markers\"))\nfig.update_layout(clickmode=\"event+select\")\nfig.show()",
+      "minimal_notes": "clickmode affects selection and click events. Use it when building interactive workflows.",
+      "common_bug": "Assuming clicks and selections are enabled by default for every renderer.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.update_layout.html"
+    },
+    {
+      "title": "Enable selection-friendly traces",
+      "problem": "Prepare a scatter for point selection workflows.",
+      "trigger": "When downstream code needs selected points.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode=\"markers\"))\nfig.update_traces(selected=dict(marker=dict(opacity=1.0)), unselected=dict(marker=dict(opacity=0.2)))\nfig.update_layout(dragmode=\"lasso\")\nfig.show()",
+      "minimal_notes": "selected and unselected styles matter in analytical apps. Use lasso or box selection deliberately.",
+      "common_bug": "Styling selection but forgetting to enable a selection dragmode.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.update_layout.html"
+    },
+    {
+      "title": "Show a figure",
+      "problem": "Render the current figure interactively.",
+      "trigger": "When you need notebook or browser display.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]))\nfig.show()",
+      "minimal_notes": "show uses the configured renderer. It is the standard display method.",
+      "common_bug": "Expecting show to create a saved file automatically.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Write HTML output",
+      "problem": "Save an interactive standalone file.",
+      "trigger": "When the chart must be shared without Python.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]))\nfig.write_html(\"figure.html\", include_plotlyjs=\"cdn\")",
+      "minimal_notes": "HTML export is the safest share format. CDN mode reduces file size.",
+      "common_bug": "Using CDN output in offline environments.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Write a static image",
+      "problem": "Export a PNG or other static asset.",
+      "trigger": "When reports or slide decks need fixed images.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]))\nfig.write_image(\"figure.png\", scale=2)",
+      "minimal_notes": "Static image export requires a supported export backend. Use scale to increase resolution.",
+      "common_bug": "Attempting image export without the required renderer/backend installed.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Convert to HTML string",
+      "problem": "Embed a figure in a custom app or template.",
+      "trigger": "When the output needs to be injected into HTML.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]))\nhtml = fig.to_html(include_plotlyjs=\"cdn\", full_html=False)\nprint(html[:200])",
+      "minimal_notes": "to_html is useful for integration pipelines. It returns a string, not a file.",
+      "common_bug": "Treating to_html like a file-writing method.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Add animation sliders",
+      "problem": "Let users navigate between frames.",
+      "trigger": "When frame playback needs direct control.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(\n    data=[go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode=\"markers\")],\n    frames=[\n        go.Frame(data=[go.Scatter(x=[1, 2, 3], y=[4, 5, 6])], name=\"1\"),\n        go.Frame(data=[go.Scatter(x=[1, 2, 3], y=[4, 5, 6])], name=\"2\"),\n    ],\n    layout=go.Layout(\n        sliders=[{\n            \"steps\": [\n                {\"args\": [[\"1\"], {\"frame\": {\"duration\": 0}, \"mode\": \"immediate\"}], \"label\": \"1\", \"method\": \"animate\"},\n                {\"args\": [[\"2\"], {\"frame\": {\"duration\": 0}, \"mode\": \"immediate\"}], \"label\": \"2\", \"method\": \"animate\"},\n            ]\n        }]\n    )\n)\nfig.show()",
+      "minimal_notes": "sliders map frame names to actions. Keep step labels short.",
+      "common_bug": "Naming frames inconsistently with slider step targets.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Add play/pause buttons",
+      "problem": "Control animation playback.",
+      "trigger": "When users need to start or stop an animated figure.",
+      "snippet": "import plotly.graph_objects as go\n\nfig = go.Figure(\n    data=[go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode=\"markers\")],\n    frames=[go.Frame(data=[go.Scatter(x=[1, 2, 3], y=[4, 5, 6])], name=\"f1\")],\n    layout=go.Layout(\n        updatemenus=[{\n            \"buttons\": [\n                {\"label\": \"Play\", \"method\": \"animate\", \"args\": [None]},\n                {\"label\": \"Pause\", \"method\": \"animate\", \"args\": [[None], {\"frame\": {\"duration\": 0}, \"mode\": \"immediate\"}]},\n            ]\n        }]\n    )\n)\nfig.show()",
+      "minimal_notes": "updatemenus is the standard animation control surface. Keep button actions explicit.",
+      "common_bug": "Building controls without matching frame names or animation args.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Use Scattergl for large point sets",
+      "problem": "Improve performance for dense scatter plots.",
+      "trigger": "When SVG scatter becomes too slow.",
+      "snippet": "import plotly.graph_objects as go\nimport numpy as np\n\nn = 50000\nfig = go.Figure(go.Scattergl(x=np.random.randn(n), y=np.random.randn(n), mode=\"markers\"))\nfig.show()",
+      "minimal_notes": "Scattergl uses WebGL rendering. It is the standard large-scatter option.",
+      "common_bug": "Assuming Scattergl is always better than Scatter for every chart.",
+      "docs_url": "https://plotly.github.io/plotly.py-docs/generated/plotly.graph_objects.Scattergl.html"
+    },
+    {
+      "title": "Reduce plotting cost with simpler traces",
+      "problem": "Keep large figures responsive.",
+      "trigger": "When many traces or points slow down rendering.",
+      "snippet": "import plotly.graph_objects as go\nimport numpy as np\n\nx = np.arange(10000)\ny = np.sin(x / 100.0)\nfig = go.Figure(go.Scatter(x=x[::10], y=y[::10], mode=\"lines\"))\nfig.show()",
+      "minimal_notes": "Downsampling is often the fastest optimization. Simplify traces before adding more layout complexity.",
+      "common_bug": "Trying to render every raw point when a sampled view is enough.",
+      "docs_url": "https://plotly.github.io/plotly.py-docs/generated/plotly.graph_objects.Scattergl.html"
+    },
+    {
+      "title": "Preserve rendering strategy for large datasets",
+      "problem": "Choose a stable approach for high-volume figures.",
+      "trigger": "When interactive performance matters in production.",
+      "snippet": "import plotly.graph_objects as go\nimport numpy as np\n\nn = 100000\nfig = go.Figure(go.Scattergl(x=np.random.randn(n), y=np.random.randn(n), mode=\"markers\", marker=dict(opacity=0.4)))\nfig.update_layout(template=\"plotly_white\")\nfig.show()",
+      "minimal_notes": "WebGL is a rendering strategy, not a full data-management solution. Combine it with aggregation when needed.",
+      "common_bug": "Relying on WebGL while leaving data volume and hover payload unchanged.",
+      "docs_url": "https://plotly.github.io/plotly.py-docs/generated/plotly.graph_objects.Scattergl.html"
+    },
+    {
+      "title": "Create a distribution plot",
+      "problem": "Build a compact distribution figure from sample data.",
+      "trigger": "When a quick legacy helper is acceptable.",
+      "snippet": "import plotly.figure_factory as ff\n\nfig = ff.create_distplot([[1, 2, 1.5, 2.5, 3]], [\"sample\"])\nfig.show()",
+      "minimal_notes": "Figure factory helpers are compact utilities, not the main API. Use them only when they fit the task.",
+      "common_bug": "Treating figure_factory as the preferred long-term composition API.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create an annotated heatmap",
+      "problem": "Show a matrix with text labels.",
+      "trigger": "When cell values must be visible directly.",
+      "snippet": "import plotly.figure_factory as ff\n\nfig = ff.create_annotated_heatmap([[1, 2, 3], ], x=[\"A\", \"B\"], y=[\"R1\", \"R2\"])\nfig.show()",
+      "minimal_notes": "Annotated heatmaps are useful for small matrices. Keep text readable.",
+      "common_bug": "Using annotated heatmaps for large matrices and overwhelming the view.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a quiver plot",
+      "problem": "Visualize vector direction and magnitude.",
+      "trigger": "When flow fields or directional vectors matter.",
+      "snippet": "import plotly.figure_factory as ff\n\nfig = ff.create_quiver(x=[1, 2, 3], y=[4, 5, 6], u=[1, -1], v=[0.5, 0.8, 1.0])\nfig.show()",
+      "minimal_notes": "Quiver is a compact vector-field helper. It is useful for directional data.",
+      "common_bug": "Using quiver when a scatter or line trace is sufficient.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    },
+    {
+      "title": "Create a table with figure factory",
+      "problem": "Generate a quick table figure.",
+      "trigger": "When a simple table helper is enough.",
+      "snippet": "import plotly.figure_factory as ff\n\nfig = ff.create_table([[1, 2, 3], [\"a\", \"b\", \"c\"]])\nfig.show()",
+      "minimal_notes": "The helper is compact and fast for simple tables. Prefer go.Table for direct trace work.",
+      "common_bug": "Using figure_factory tables for highly customized reporting layouts.",
+      "docs_url": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html"
+    }
+  ],
+  "quick_references": [
+    {
+      "title": "Common Figure methods",
+      "headers": [
+        "Method",
+        "Use"
+      ],
+      "rows": [
+        [
+          "`add_trace()`",
+          "Add one trace."
+        ],
+        [
+          "`add_traces()`",
+          "Add many traces."
+        ],
+        [
+          "`update_traces()`",
+          "Patch trace properties."
+        ],
+        [
+          "`select_traces()`",
+          "Filter traces."
+        ],
+        [
+          "`for_each_trace()`",
+          "Iterate over traces."
+        ],
+        [
+          "`add_annotation()`",
+          "Add annotations."
+        ],
+        [
+          "`add_shape()`",
+          "Add shapes."
+        ],
+        [
+          "`add_hline()`",
+          "Add horizontal line."
+        ],
+        [
+          "`add_vline()`",
+          "Add vertical line."
+        ],
+        [
+          "`add_hrect()`",
+          "Add horizontal range band."
+        ],
+        [
+          "`add_vrect()`",
+          "Add vertical range band."
+        ],
+        [
+          "`update_layout()`",
+          "Update figure layout."
+        ],
+        [
+          "`update_xaxes()`",
+          "Update x-axis."
+        ],
+        [
+          "`update_yaxes()`",
+          "Update y-axis."
+        ],
+        [
+          "`show()`",
+          "Render interactively."
+        ],
+        [
+          "`write_html()`",
+          "Save HTML."
+        ],
+        [
+          "`write_image()`",
+          "Save static image."
+        ],
+        [
+          "`to_html()`",
+          "Return HTML string."
+        ]
+      ]
+    },
+    {
+      "title": "Common subplot options",
+      "headers": [
+        "Option",
+        "Meaning"
+      ],
+      "rows": [
+        [
+          "`rows`, `cols`",
+          "Grid size."
+        ],
+        [
+          "`shared_xaxes`",
+          "Share x-axis ranges."
+        ],
+        [
+          "`shared_yaxes`",
+          "Share y-axis ranges."
+        ],
+        [
+          "`specs`",
+          "Subplot type per cell."
+        ],
+        [
+          "`secondary_y`",
+          "Enable right-side y-axis in xy subplot."
+        ],
+        [
+          "`subplot_titles`",
+          "Per-panel titles."
+        ]
+      ]
+    },
+    {
+      "title": "Common layout fields",
+      "headers": [
+        "Field",
+        "Use"
+      ],
+      "rows": [
+        [
+          "`title`",
+          "Figure title."
+        ],
+        [
+          "`legend`",
+          "Legend placement and style."
+        ],
+        [
+          "`font`",
+          "Global font styling."
+        ],
+        [
+          "`template`",
+          "Theme template."
+        ],
+        [
+          "`width`, `height`",
+          "Figure size."
+        ],
+        [
+          "`margin`",
+          "Outside spacing."
+        ],
+        [
+          "`hovermode`",
+          "Hover grouping."
+        ],
+        [
+          "`dragmode`",
+          "Interaction mode."
+        ],
+        [
+          "`paper_bgcolor`",
+          "Canvas background."
+        ],
+        [
+          "`plot_bgcolor`",
+          "Plot area background."
+        ]
+      ]
+    },
+    {
+      "title": "Common trace styling fields",
+      "headers": [
+        "Field",
+        "Use"
+      ],
+      "rows": [
+        [
+          "`marker`",
+          "Point styling."
+        ],
+        [
+          "`line`",
+          "Line styling."
+        ],
+        [
+          "`fill`",
+          "Area fill."
+        ],
+        [
+          "`opacity`",
+          "Transparency."
+        ],
+        [
+          "`text`",
+          "On-chart text."
+        ],
+        [
+          "`hovertemplate`",
+          "Custom hover content."
+        ],
+        [
+          "`customdata`",
+          "Extra hidden payload."
+        ],
+        [
+          "`legendgroup`",
+          "Linked legend behavior."
+        ],
+        [
+          "`visible`",
+          "Trace visibility state."
+        ]
+      ]
+    }
+  ],
+  "common_errors": [
+    {
+      "error": "Mismatched coordinate dimensions on custom traces.",
+      "cause": "Passing arrays of differing lengths to x and y coordinates in Scatter or similar traces, leading to trace rendering failure.",
+      "solution": "Ensure that the lists or numpy arrays mapped to coordinates have identical dimensions."
+    },
+    {
+      "error": "Secondary y-axis does not display or align.",
+      "cause": "Failing to configure secondary_y=True inside the specs array of make_subplots, or adding traces without secondary_y.",
+      "solution": "Initialize subplots with secondary_y=True in the specs parameter, and set secondary_y=True/False when adding traces."
+    },
+    {
+      "error": "Layout configurations overwrite previously set properties.",
+      "cause": "Repeatedly calling update_layout with basic dictionary overrides instead of utilizing nested parameter paths.",
+      "solution": "Use dot-notation parameter names (e.g., legend_title_text='Group') or merge nested dictionary structures."
+    },
+    {
+      "error": "Trace modifications target the wrong subplots.",
+      "cause": "Failing to pass row and col values to add_trace or update_traces, resulting in global overlays or missing plots.",
+      "solution": "Always specify the precise row and col index when interacting with a subplot figure layout."
+    },
+    {
+      "error": "Sankey diagram fails to render.",
+      "cause": "Source and target indices refer to non-existent nodes, or node labels are improperly sized.",
+      "solution": "Map source and target vectors to valid 0-indexed integers representing the indices in the node label array."
+    }
+  ],
+  "performance_checklist": [
+    {
+      "area": "Dense point sets",
+      "recommendations": "Use Scattergl instead of Scatter for plots exceeding 5,000 markers to leverage GPU WebGL rendering speed."
+    },
+    {
+      "area": "Volumetric meshes",
+      "recommendations": "Limit grid coordinates and triangle counts in Mesh3d and Surface traces to keep browser interactions responsive."
+    },
+    {
+      "area": "Trace downsampling",
+      "recommendations": "Pre-aggregate or slice large time series data sets using slice step notation (e.g., x[::10]) before passing them to low-level traces."
+    },
+    {
+      "area": "WebGL recycling",
+      "recommendations": "Always reuse figure structures or clear plots explicitly when generating visualizations in server loops to manage WebGL context leaks."
+    }
+  ],
+  "production_checklist": [
+    "Verify all subplot cells map exactly to the configured specs grid layout.",
+    "Use layout.hovermode='x unified' for dense multi-line time series charts to ease comparisons.",
+    "Clean hover readouts completely using customdata and explicit hovertemplate rules.",
+    "Define explicit figure canvas height and width dimensions for predictable grid aspect ratios.",
+    "Check that contrast between paper_bgcolor and plot_bgcolor fits standard dark/light design systems.",
+    "Group multiple traces using legendgroup to allow users to toggle them as a single logical block."
+  ],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready"
+}

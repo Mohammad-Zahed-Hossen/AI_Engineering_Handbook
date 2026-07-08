@@ -1,0 +1,103 @@
+{
+  "id": "diffusion-model",
+  "title": "Diffusion Model",
+  "slug": "diffusion-model",
+  "description": "Generative model creating data by learning to reverse a progressive noise corruption process.",
+  "name": "Diffusion Model",
+  "category": "dl",
+  "subcategory": "diffusion",
+  "problem_types": [
+    "generation"
+  ],
+  "summary": "Diffusion Models generate data by first corrupting inputs with Gaussian noise over multiple forward steps, and then training a neural network (typically a U-Net) to predict and remove noise step-by-step to recover the clean signal.",
+  "use_when": "Generating state-of-the-art synthetic images, audio waveforms, or 3D assets.",
+  "avoid_when": "Ultra-low-latency real-time rendering is required, as the iterative reverse process is slow.",
+  "pros": [
+    "Outperforms GANs on image generation diversity and quality.",
+    "Extremely stable training objective with no adversarial collapse risk.",
+    "Can be conditioned on text embeddings for text-to-image synthesis."
+  ],
+  "cons": [
+    "Very slow generation speed due to evaluation over hundreds of denoising steps.",
+    "Extremely compute-intensive training requirements.",
+    "High memory footprint during training."
+  ],
+  "key_hyperparams": [
+    {
+      "name": "num_timesteps",
+      "default": 1000,
+      "note": "Number of noise corruption and reverse denoising steps to evaluate."
+    }
+  ],
+  "training_speed": "slow",
+  "inference_speed": "slow",
+  "memory_usage": "high",
+  "interpretability": "low",
+  "quick_start": "# Conceptual implementation of denoising step\n# import torch\n# model = UNet()  # Typically U-Net predicts noise epsilon\n# epsilon_theta = model(noisy_x, t)\n# denoised_x = update_step(noisy_x, epsilon_theta, t)",
+  "alternatives": [
+    {
+      "id": "gan",
+      "type": "model",
+      "relationship_type": "alternative_to"
+    }
+  ],
+  "related_workflows": [],
+  "sources": [
+    "https://arxiv.org/abs/2006.11239"
+  ],
+  "tags": [
+    "generative",
+    "diffusion",
+    "denoising",
+    "image-generation"
+  ],
+  "aliases": [
+    "ddpm",
+    "score-based-generative"
+  ],
+  "keywords": [
+    "diffusion",
+    "denoising",
+    "generative",
+    "unet"
+  ],
+  "search_tokens": [
+    "diffusion",
+    "diffusion-model",
+    "score-matching"
+  ],
+  "domain": "deep-learning",
+  "difficulty": "advanced",
+  "engineering_area": "modeling",
+  "estimated_reading_time": 20,
+  "prerequisites": [
+    "pytorch"
+  ],
+  "recommended_next": [
+    "gan"
+  ],
+  "related_content": [
+    {
+      "id": "pytorch",
+      "type": "package",
+      "relationship_type": "related_to"
+    },
+    {
+      "id": "training-loop",
+      "type": "pattern",
+      "relationship_type": "related_to"
+    }
+  ],
+  "created_at": "2026-07-08",
+  "updated_at": "2026-07-08",
+  "last_verified": "2026-07-08",
+  "review_frequency": "annually",
+  "verified_against": "1.0.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready"
+}

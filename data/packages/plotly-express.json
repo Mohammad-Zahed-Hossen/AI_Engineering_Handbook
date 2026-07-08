@@ -1,0 +1,1692 @@
+{
+  "id": "plotly-express",
+  "title": "Plotly Express",
+  "slug": "plotly-express",
+  "description": "Plotly Express is Plotly's high-level API for rapid figure generation. It provides a declarative, consistent interface for creating interactive charts and returns plotly.graph_objects.Figure objects.",
+  "name": "Plotly Express",
+  "version": "6.8.0",
+  "install": "pip install plotly",
+  "import_as": "import plotly.express as px",
+  "language": "python",
+  "summary": "Plotly Express is Plotly's high-level API for rapid figure generation. It provides a declarative, consistent interface for creating interactive charts and returns plotly.graph_objects.Figure objects. It is designed for rapid figure generation from tabular or array-like data with minimal code, while still producing full plotly.graph_objects.Figure objects for downstream customization.",
+  "created_at": "2026-07-05",
+  "updated_at": "2026-07-05",
+  "last_verified": "2026-07-05",
+  "review_frequency": "quarterly",
+  "verified_against": "6.8.0",
+  "compatible_versions": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "domain": "data_processing",
+  "category": "data",
+  "difficulty": "beginner",
+  "engineering_area": "data_engineering",
+  "estimated_reading_time": 60,
+  "prerequisites": [
+    "pandas"
+  ],
+  "recommended_next": [
+    "plotly.graph_objects",
+    "dash"
+  ],
+  "related_content": [],
+  "tags": [
+    "visualization",
+    "plotting",
+    "interactive",
+    "data-science",
+    "dashboard"
+  ],
+  "aliases": [
+    "px"
+  ],
+  "keywords": [
+    "plotly",
+    "express",
+    "px",
+    "interactive",
+    "visualization",
+    "figure",
+    "dash",
+    "declarative"
+  ],
+  "search_tokens": [
+    "plotly",
+    "express",
+    "px",
+    "scatter",
+    "line",
+    "bar",
+    "histogram",
+    "interactive",
+    "dashboard"
+  ],
+  "sources": [
+    "https://plotly.com/python/plotly-express/",
+    "https://plotly.com/python-api-reference/plotly.express.html",
+    "https://github.com/plotly/plotly.py"
+  ],
+  "github_repo": "https://github.com/plotly/plotly.py",
+  "tasks": [
+    {
+      "task": "Create Scatter Plot",
+      "mental_trigger": "I need the default interactive two-dimensional relationship chart.",
+      "syntax": "scatter(data_frame=None, x=None, y=None, color=None, symbol=None, size=None, hover_name=None, hover_data=None, custom_data=None, text=None, facet_row=None, facet_col=None, facet_col_wrap=None, error_x=None, error_x_minus=None, error_y=None, error_y_minus=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, color_continuous_midpoint=None, range_color=None, opacity=None, orientation=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "x",
+        "y",
+        "color",
+        "symbol",
+        "size"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\", color=\"species\")\nfig.show()",
+      "use_when": "You want points, optional grouping, hover labels, and common semantic encodings.",
+      "avoid_when": "You need a custom manual trace structure or a nonstandard interaction model.",
+      "decision_notes": "Category: Basic Charts\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive scatter plot with hover tooltips\nPerformance Notes: Large datasets may switch to WebGL automatically in some cases, so rendering behavior can differ from pure SVG charts.\nCommon Mistakes: Not setting proper data types for color encoding; overloading scatter plots with too many dimensions; forgetting to set hover_name for better tooltips.\nRelated APIs: line, scatter_3d, scatter_matrix, scatter_geo, scatter_map.",
+      "gotchas": [
+        "Large datasets may switch to WebGL automatically",
+        "rendering behavior can differ from pure SVG charts",
+        "color mapping depends on column data type",
+        "hover data requires explicit configuration for custom fields"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Axes-Level: Draw Scatter Plot",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Draw Scatter Plot",
+          "reason": "Lower-level scatter plotting with fine-grained control."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create Scatter Plot",
+          "reason": "Semantically grouped scatter plotting with statistical defaults."
+        }
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.scatter.html"
+    },
+    {
+      "task": "Create Line Plot",
+      "mental_trigger": "I need a connected series chart over an ordered axis.",
+      "syntax": "line(data_frame=None, x=None, y=None, color=None, line_group=None, line_dash=None, hover_name=None, hover_data=None, custom_data=None, text=None, facet_row=None, facet_col=None, facet_col_wrap=None, error_x=None, error_x_minus=None, error_y=None, error_y_minus=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, opacity=None, line_shape=None, render_mode=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "x",
+        "y",
+        "color",
+        "line_group",
+        "render_mode"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.gapminder().query(\"country == 'Canada'\")\nfig = px.line(df, x=\"year\", y=\"lifeExp\", title=\"Canada life expectancy\")\nfig.show()",
+      "use_when": "You are plotting trajectories, trends, or ordered observations.",
+      "avoid_when": "Your x-values are unordered categorical values that should not be connected.",
+      "decision_notes": "Category: Basic Charts\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive line chart with hover tooltips\nPerformance Notes: Line rendering is generally efficient; many points or many series increase draw time.\nCommon Mistakes: Connecting unordered categorical data; not setting line_group for multiple series; wrong data ordering causing jagged lines.\nRelated APIs: area, line_3d, line_geo, line_map.",
+      "gotchas": [
+        "If the ordering is wrong, the line will connect points in the wrong sequence",
+        "line_group is required for multiple series",
+        "render_mode affects WebGL vs SVG behavior"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Axes-Level: Draw Line Plot",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Draw Line Plot",
+          "reason": "Direct line plotting API with more manual styling control."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create Line Plot",
+          "reason": "Statistical line plotting with grouped summaries and confidence bands."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create Point Plot",
+          "reason": "Equivalent implementation in seaborn."
+        }
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.line.html"
+    },
+    {
+      "task": "Create Area Chart",
+      "mental_trigger": "I need stacked or filled line-like series.",
+      "syntax": "area(data_frame=None, x=None, y=None, color=None, line_group=None, hover_name=None, hover_data=None, custom_data=None, text=None, facet_row=None, facet_col=None, facet_col_wrap=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, opacity=None, orientation=None, line_shape=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "x",
+        "y",
+        "color",
+        "line_group"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.gapminder().query(\"continent in ['Europe', 'Asia']\")\nfig = px.area(df, x=\"year\", y=\"pop\", color=\"continent\")\nfig.show()",
+      "use_when": "You want cumulative emphasis or filled trend presentation.",
+      "avoid_when": "The filled area would mislead due to category overlap or negative values.",
+      "decision_notes": "Category: Basic Charts\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive filled area chart\nPerformance Notes: Similar to line plots with additional fill rendering.\nCommon Mistakes: Using area charts when overlap is misleading; not considering negative values; stacking when comparison is needed.\nRelated APIs: line, bar.",
+      "gotchas": [
+        "Area charts can be visually persuasive",
+        "make sure stacking is meaningful",
+        "overlap can hide data"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.area.html",
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Shade Area Between Curves",
+          "reason": "Static filled area representation."
+        }
+      ]
+    },
+    {
+      "task": "Create Bar Chart",
+      "mental_trigger": "I need a categorical comparison with rectangular marks.",
+      "syntax": "bar(data_frame=None, x=None, y=None, color=None, pattern_shape=None, pattern_shape_sequence=None, pattern_shape_map=None, facet_row=None, facet_col=None, facet_col_wrap=None, hover_name=None, hover_data=None, custom_data=None, text=None, error_x=None, error_x_minus=None, error_y=None, error_y_minus=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, orientation=None, barmode=None, barnorm=None, text_auto=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "x",
+        "y",
+        "color",
+        "barmode",
+        "facet_row"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.tips()\nfig = px.bar(df, x=\"day\", y=\"total_bill\", color=\"sex\", barmode=\"group\")\nfig.show()",
+      "use_when": "You are comparing aggregates across discrete groups.",
+      "avoid_when": "The x-axis is dense continuous data better suited to scatter or line.",
+      "decision_notes": "Category: Basic Charts\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive bar chart\nPerformance Notes: Bar rendering is efficient; many bars can crowd the axis.\nCommon Mistakes: Too many categories; wrong orientation; not setting barmode for grouped/stacked bars.\nRelated APIs: histogram, timeline.",
+      "gotchas": [
+        "Category order matters a lot in bar charts",
+        "should often be set explicitly",
+        "barmode controls grouping vs stacking"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Axes-Level: Draw Vertical Bar Chart",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Draw Vertical Bar Chart",
+          "reason": "Static bar chart implementation with manual customization."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create Bar Plot",
+          "reason": "Statistical bar plot showing aggregated estimates."
+        }
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.bar.html"
+    },
+    {
+      "task": "Create Histogram",
+      "mental_trigger": "I need a distribution summary with bins.",
+      "syntax": "histogram(data_frame=None, x=None, y=None, color=None, pattern_shape=None, pattern_shape_sequence=None, pattern_shape_map=None, facet_row=None, facet_col=None, facet_col_wrap=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, opacity=None, orientation=None, histfunc=None, cumulative=None, nbins=None, histnorm=None, text_auto=None, template=None, width=None, height=None, marginal=None)",
+      "important_params": [
+        "data_frame",
+        "x",
+        "y",
+        "nbins",
+        "color",
+        "marginal"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.tips()\nfig = px.histogram(df, x=\"total_bill\", color=\"sex\")\nfig.show()",
+      "use_when": "You want counts or aggregated values across numeric ranges.",
+      "avoid_when": "You need raw points rather than binned summaries.",
+      "decision_notes": "Category: Statistical Charts\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive histogram\nPerformance Notes: Binning is usually cheap; plotting many bins increases rendering cost.\nCommon Mistakes: Choosing too many or too few bins; comparing raw counts when densities are needed; using histograms for categorical data.\nRelated APIs: ecdf, density_heatmap, density_contour.",
+      "gotchas": [
+        "Binning changes the visual story",
+        "bin settings should be intentional",
+        "histnorm affects y-axis meaning"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Axes-Level: Draw Histogram",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Draw Histogram",
+          "reason": "Static histogram implementation with more manual control."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create Count Plot",
+          "reason": "Equivalent implementation in seaborn."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create Histogram",
+          "reason": "Statistical abstraction with stronger defaults for distributions."
+        }
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.histogram.html"
+    },
+    {
+      "task": "Create Box Plot",
+      "mental_trigger": "I need median, spread, and outlier structure across groups.",
+      "syntax": "box(data_frame=None, x=None, y=None, color=None, facet_row=None, facet_col=None, facet_col_wrap=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, orientation=None, notched=None, boxmode=None, points=None, boxmean=None)",
+      "important_params": [
+        "data_frame",
+        "x",
+        "y",
+        "color",
+        "points",
+        "notched"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.tips()\nfig = px.box(df, x=\"day\", y=\"total_bill\", color=\"smoker\")\nfig.show()",
+      "use_when": "You are comparing distributions across categories.",
+      "avoid_when": "You need to inspect every observation individually.",
+      "decision_notes": "Category: Statistical Charts\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive box plot\nPerformance Notes: Generally cheap; large numbers of groups increase clutter rather than compute cost.\nCommon Mistakes: Misreading whiskers; hiding fliers without reason; using box plots for very small samples; assuming mean is shown by default.\nRelated APIs: violin, strip, ecdf.",
+      "gotchas": [
+        "Box plots summarize",
+        "they can hide multimodality",
+        "points parameter controls outlier display"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Draw Box Plot",
+          "reason": "Static box plot with lower-level customization."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create Box Plot",
+          "reason": "High-level statistical box plot built on Matplotlib."
+        }
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.box.html"
+    },
+    {
+      "task": "Create Violin Plot",
+      "mental_trigger": "I need distribution shape, not just quartiles.",
+      "syntax": "violin(data_frame=None, x=None, y=None, color=None, facet_row=None, facet_col=None, facet_col_wrap=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, orientation=None, violinmode=None, box=None, points=None)",
+      "important_params": [
+        "data_frame",
+        "x",
+        "y",
+        "color",
+        "box",
+        "points"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.tips()\nfig = px.violin(df, y=\"tip\", x=\"smoker\", box=True, points=\"all\")\nfig.show()",
+      "use_when": "You want density-like distribution context by group.",
+      "avoid_when": "The sample size is too small to support a meaningful density shape.",
+      "decision_notes": "Category: Statistical Charts\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive violin plot\nPerformance Notes: Density estimation adds cost relative to box plots.\nCommon Mistakes: Overtrusting the shape with tiny samples; leaving out medians or quantiles; using too many violins; confusing density width with raw count.\nRelated APIs: box, strip, ecdf.",
+      "gotchas": [
+        "Density estimates can look more precise than they really are on small samples",
+        "box parameter adds internal box plot",
+        "points controls individual point display"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Draw Violin Plot",
+          "reason": "Static violin plot with manual control."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create Violin Plot",
+          "reason": "High-level statistical violin plot built on Matplotlib."
+        }
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.violin.html"
+    },
+    {
+      "task": "Create Strip Plot",
+      "mental_trigger": "I need to show individual points by category with jitter.",
+      "syntax": "strip(data_frame=None, x=None, y=None, color=None, facet_row=None, facet_col=None, facet_col_wrap=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, orientation=None, stripmode=None)",
+      "important_params": [
+        "data_frame",
+        "x",
+        "y",
+        "color",
+        "orientation"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.tips()\nfig = px.strip(df, x=\"total_bill\", y=\"time\", orientation=\"h\", color=\"smoker\")\nfig.show()",
+      "use_when": "You want to preserve raw observations in categorical comparisons.",
+      "avoid_when": "Overplotting would make the point cloud unreadable without jitter or aggregation.",
+      "decision_notes": "Category: Statistical Charts\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive strip plot\nPerformance Notes: Can become slow with very large point counts.\nCommon Mistakes: Not using orientation correctly; overplotting without transparency; confusing with box plots.\nRelated APIs: box, violin, swarm (in other libraries).",
+      "gotchas": [
+        "Strip plots can become cluttered with large sample sizes",
+        "jitter is automatic",
+        "orientation affects x/y interpretation"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.strip.html"
+    },
+    {
+      "task": "Create ECDF Plot",
+      "mental_trigger": "I need cumulative distribution comparison.",
+      "syntax": "ecdf(data_frame=None, x=None, y=None, color=None, facet_row=None, facet_col=None, facet_col_wrap=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, orientation=None, ecdfmode=None, ecdfnorm=None, markers=None, marginal=None)",
+      "important_params": [
+        "data_frame",
+        "x",
+        "color",
+        "orientation"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.tips()\nfig = px.ecdf(df, x=\"total_bill\", color=\"sex\")\nfig.show()",
+      "use_when": "You want percentile-style distribution comparison across groups.",
+      "avoid_when": "The audience expects bin-based histograms instead of cumulative lines.",
+      "decision_notes": "Category: Distribution\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive ECDF plot\nPerformance Notes: Extremely efficient; does not suffer from binning-related layout changes.\nCommon Mistakes: Assuming it computes a probability density function; misinterpreting the step levels; confusing with manual cumulative histogram calculations.\nRelated APIs: histogram, violin, box.",
+      "gotchas": [
+        "ECDFs are excellent for comparison but less familiar to some audiences",
+        "shows cumulative probability from 0 to 1",
+        "no binning required"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Draw Empirical Cumulative Distribution Function",
+          "reason": "Static ECDF step plot implementation."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create ECDF Plot",
+          "reason": "Statistical ECDF plot with confidence bands support."
+        }
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.ecdf.html"
+    },
+    {
+      "task": "Create Density Heatmap",
+      "mental_trigger": "I need a 2D bin-based density summary.",
+      "syntax": "density_heatmap(data_frame=None, x=None, y=None, z=None, facet_row=None, facet_col=None, facet_col_wrap=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, nbinsx=None, nbinsy=None, marginal_x=None, marginal_y=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "x",
+        "y",
+        "z",
+        "nbinsx",
+        "nbinsy"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.iris()\nfig = px.density_heatmap(df, x=\"sepal_width\", y=\"sepal_length\")\nfig.show()",
+      "use_when": "You want to visualize dense point clouds efficiently.",
+      "avoid_when": "A small number of points would be clearer as a scatter plot.",
+      "decision_notes": "Category: Distribution\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive 2D density heatmap\nPerformance Notes: Useful for large datasets because it bins before rendering.\nCommon Mistakes: Using too few or too many bins; reading counts as individual points; forgetting that binning changes meaning.\nRelated APIs: density_contour, scatter, histogram.",
+      "gotchas": [
+        "Binning hides individual observations",
+        "nbinsx and nbinsy control resolution",
+        "z parameter controls aggregation function"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Display Heatmap Or Image",
+          "reason": "Static gridded image display."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Draw 2D Histogram Heatmap",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Draw Hexagonal Binning Plot",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create Heatmap",
+          "reason": "Statistical annotated heatmap."
+        }
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.density_heatmap.html"
+    },
+    {
+      "task": "Create Density Contour Plot",
+      "mental_trigger": "I need contour lines over a dense 2D distribution.",
+      "syntax": "density_contour(data_frame=None, x=None, y=None, z=None, facet_row=None, facet_col=None, facet_col_wrap=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, nbinsx=None, nbinsy=None, marginal_x=None, marginal_y=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "x",
+        "y",
+        "z",
+        "histfunc"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.iris()\nfig = px.density_contour(df, x=\"sepal_width\", y=\"sepal_length\")\nfig.show()",
+      "use_when": "You want density structure without filling bins.",
+      "avoid_when": "The contour abstraction would hide too much detail.",
+      "decision_notes": "Category: Distribution\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive contour plot\nPerformance Notes: Contouring is heavier than image display for dense grids.\nCommon Mistakes: Choosing contours for noisy data; forgetting axis scaling; confusing contour lines with filled areas.\nRelated APIs: density_heatmap, imshow.",
+      "gotchas": [
+        "Contours can be misleading if binning is poorly chosen",
+        "level spacing matters",
+        "histfunc controls aggregation"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.density_contour.html",
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Axes-Level: Draw Contour Lines",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Axes-Level: Draw Filled Contour Regions",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Draw Contour Lines",
+          "reason": "Static contour line drawing."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Draw Filled Contour Regions",
+          "reason": "Static filled contour regions."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Draw Hexagonal Binning Plot",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create KDE Plot",
+          "reason": "Statistical 2D density estimate contour plot."
+        }
+      ]
+    },
+    {
+      "task": "Create 3D Scatter Plot",
+      "mental_trigger": "I need an interactive 3D scatter chart.",
+      "syntax": "scatter_3d(data_frame=None, x=None, y=None, z=None, color=None, symbol=None, size=None, hover_name=None, hover_data=None, custom_data=None, text=None, facet_row=None, facet_col=None, facet_col_wrap=None, error_x=None, error_x_minus=None, error_y=None, error_y_minus=None, error_z=None, error_z_minus=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, opacity=None, projection=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "x",
+        "y",
+        "z",
+        "color",
+        "size"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.election()\nfig = px.scatter_3d(df, x=\"Joly\", y=\"Coderre\", z=\"Bergeron\", color=\"winner\")\nfig.show()",
+      "use_when": "Three numeric dimensions are truly useful and interactive rotation helps interpretation.",
+      "avoid_when": "A 2D chart would communicate the same insight more clearly.",
+      "decision_notes": "Category: 3D\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive 3D scatter plot\nPerformance Notes: 3D rendering is more expensive than 2D; WebGL is used.\nCommon Mistakes: Using 3D when 2D suffices; overplotting in 3D space; poor camera angle.\nRelated APIs: scatter, line_3d.",
+      "gotchas": [
+        "3D charts can obscure points behind each other",
+        "interactive rotation is required for interpretation",
+        "WebGL rendering differs from SVG"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.scatter_3d.html"
+    },
+    {
+      "task": "Create 3D Line Plot",
+      "mental_trigger": "I need an ordered 3D path or trajectory.",
+      "syntax": "line_3d(data_frame=None, x=None, y=None, z=None, color=None, line_group=None, line_dash=None, hover_name=None, hover_data=None, custom_data=None, text=None, facet_row=None, facet_col=None, facet_col_wrap=None, error_x=None, error_x_minus=None, error_y=None, error_y_minus=None, error_z=None, error_z_minus=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, opacity=None, line_shape=None, render_mode=None, projection=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "x",
+        "y",
+        "z",
+        "color",
+        "line_group"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.election()\nfig = px.line_3d(df, x=\"Joly\", y=\"Coderre\", z=\"Bergeron\")\nfig.show()",
+      "use_when": "You are plotting sequential 3D movement or structure.",
+      "avoid_when": "The path order is ambiguous or visually noisy.",
+      "decision_notes": "Category: 3D\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive 3D line plot\nPerformance Notes: Similar to 3D scatter with line rendering overhead.\nCommon Mistakes: Wrong ordering; confusing with scatter; poor camera angle.\nRelated APIs: scatter_3d, line.",
+      "gotchas": [
+        "3D line paths can be hard to read without careful viewpoint control",
+        "line_group is required for multiple series",
+        "ordering is critical"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.line_3d.html"
+    },
+    {
+      "task": "Create Polar Scatter Plot",
+      "mental_trigger": "I need polar-coordinate scatter data.",
+      "syntax": "scatter_polar(data_frame=None, r=None, theta=None, color=None, symbol=None, size=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, opacity=None, direction=None, start_angle=None, line_close=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "r",
+        "theta",
+        "color",
+        "symbol"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.wind()\nfig = px.scatter_polar(df, r=\"frequency\", theta=\"direction\", color=\"strength\")\nfig.show()",
+      "use_when": "Your data naturally lives in radial coordinates.",
+      "avoid_when": "Cartesian coordinates would be more readable.",
+      "decision_notes": "Category: Polar\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive polar scatter plot\nPerformance Notes: Similar to 2D scatter with polar coordinate transformation.\nCommon Mistakes: Overusing polar charts; wrong direction; confusing r and theta.\nRelated APIs: line_polar, bar_polar.",
+      "gotchas": [
+        "Polar charts are easy to overuse",
+        "direction and start_angle affect orientation",
+        "r and theta interpretation matters"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.scatter_polar.html"
+    },
+    {
+      "task": "Create Ternary Scatter Plot",
+      "mental_trigger": "I need compositional three-part data in a ternary plot.",
+      "syntax": "scatter_ternary(data_frame=None, a=None, b=None, c=None, color=None, symbol=None, size=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, opacity=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "a",
+        "b",
+        "c",
+        "color",
+        "size"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.election()\nfig = px.scatter_ternary(df, a=\"Joly\", b=\"Coderre\", c=\"Bergeron\", color=\"winner\")\nfig.show()",
+      "use_when": "Three components sum to a meaningful whole.",
+      "avoid_when": "The data are not compositional.",
+      "decision_notes": "Category: Ternary\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive ternary scatter plot\nPerformance Notes: Similar to 2D scatter with ternary coordinate transformation.\nCommon Mistakes: Using non-compositional data; not understanding ternary geometry.\nRelated APIs: line_ternary.",
+      "gotchas": [
+        "Ternary plots require careful interpretation",
+        "a, b, c should sum to a constant",
+        "specialized use case"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.scatter_ternary.html"
+    },
+    {
+      "task": "Create Sunburst Chart",
+      "mental_trigger": "I need hierarchical part-of-whole structure.",
+      "syntax": "sunburst(data_frame=None, names=None, values=None, parents=None, path=None, ids=None, color=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, branchvalues=None, maxdepth=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "path",
+        "values",
+        "color",
+        "hover_data"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.gapminder().query(\"year == 2007\")\nfig = px.sunburst(df, path=[\"continent\", \"country\"], values=\"pop\")\nfig.show()",
+      "use_when": "You want nested hierarchy in a radial layout.",
+      "avoid_when": "The hierarchy is deep enough that a treemap or icicle would read better.",
+      "decision_notes": "Category: Hierarchical\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive sunburst chart\nPerformance Notes: Rendering cost grows with hierarchy depth and node count.\nCommon Mistakes: Too deep hierarchy; missing parent-child relationships; confusing path vs parents.\nRelated APIs: treemap, icicle.",
+      "gotchas": [
+        "Hierarchical charts depend heavily on clean parent-child data",
+        "path parameter is the preferred way to specify hierarchy",
+        "branchvalues controls how values are aggregated"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.sunburst.html"
+    },
+    {
+      "task": "Create Treemap",
+      "mental_trigger": "I need hierarchical nested rectangles.",
+      "syntax": "treemap(data_frame=None, names=None, values=None, parents=None, path=None, ids=None, color=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, branchvalues=None, maxdepth=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "path",
+        "values",
+        "color",
+        "hover_data"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.gapminder().query(\"year == 2007\")\nfig = px.treemap(df, path=[px.Constant(\"world\"), \"continent\", \"country\"], values=\"pop\")\nfig.show()",
+      "use_when": "Space efficiency matters and hierarchy should be visible at a glance.",
+      "avoid_when": "The hierarchy is too complex for nested rectangles to remain legible.",
+      "decision_notes": "Category: Hierarchical\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive treemap\nPerformance Notes: Rendering cost grows with node count.\nCommon Mistakes: Too many small rectangles; confusing hierarchy; poor color mapping.\nRelated APIs: sunburst, icicle.",
+      "gotchas": [
+        "Very small rectangles become difficult to read",
+        "px.Constant is useful for root nodes",
+        "branchvalues controls aggregation"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.treemap.html"
+    },
+    {
+      "task": "Create Icicle Chart",
+      "mental_trigger": "I need hierarchy laid out vertically or in stacked form.",
+      "syntax": "icicle(data_frame=None, names=None, values=None, parents=None, path=None, ids=None, color=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, branchvalues=None, maxdepth=None, orientation=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "path",
+        "values",
+        "color",
+        "hover_data"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.gapminder().query(\"year == 2007\")\nfig = px.icicle(df, path=[px.Constant(\"world\"), \"continent\", \"country\"], values=\"pop\")\nfig.show()",
+      "use_when": "You want an alternative to treemap for parent-child structure.",
+      "avoid_when": "Labels are too long or the nesting is too deep.",
+      "decision_notes": "Category: Hierarchical\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive icicle chart\nPerformance Notes: Similar to treemap with different layout.\nCommon Mistakes: Wrong orientation; too deep hierarchy; label overflow.\nRelated APIs: sunburst, treemap.",
+      "gotchas": [
+        "Label readability becomes the main constraint quickly",
+        "orientation affects layout direction",
+        "similar to treemap but with different visual structure"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.icicle.html"
+    },
+    {
+      "task": "Create Timeline Chart",
+      "mental_trigger": "I need a Gantt-style time interval chart.",
+      "syntax": "timeline(data_frame=None, x_start=None, x_end=None, y=None, color=None, facet_row=None, facet_col=None, facet_col_wrap=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, opacity=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "x_start",
+        "x_end",
+        "y",
+        "color"
+      ],
+      "example": "import plotly.express as px\nimport pandas as pd\ndf = pd.DataFrame([\n    dict(Task=\"Job A\", Start=\"2009-01-01\", Finish=\"2009-02-28\", Resource=\"Alex\"),\n    dict(Task=\"Job B\", Start=\"2009-03-05\", Finish=\"2009-04-15\", Resource=\"Alex\"),\n    dict(Task=\"Job C\", Start=\"2009-02-20\", Finish=\"2009-05-30\", Resource=\"Max\"),\n])\nfig = px.timeline(df, x_start=\"Start\", x_end=\"Finish\", y=\"Resource\", color=\"Resource\")\nfig.show()",
+      "use_when": "You are visualizing durations rather than points in time.",
+      "avoid_when": "You only need single timestamp events.",
+      "decision_notes": "Category: Categorical\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive Gantt-style timeline\nPerformance Notes: Efficient for moderate numbers of intervals.\nCommon Mistakes: Wrong datetime format; confusing x_start and x_end; poor y-axis ordering.\nRelated APIs: bar.",
+      "gotchas": [
+        "Datetime parsing must be correct for interval charts to render properly",
+        "x_start and x_end define intervals",
+        "y parameter groups intervals"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.timeline.html"
+    },
+    {
+      "task": "Create Scatter Matrix",
+      "mental_trigger": "I need a multivariate scatterplot matrix.",
+      "syntax": "scatter_matrix(data_frame=None, dimensions=None, color=None, symbol=None, size=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, opacity=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "dimensions",
+        "color",
+        "symbol",
+        "opacity"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.iris()\nfig = px.scatter_matrix(df, dimensions=[\"sepal_width\", \"sepal_length\", \"petal_width\", \"petal_length\"], color=\"species\")\nfig.show()",
+      "use_when": "You are checking pairwise relationships across several variables.",
+      "avoid_when": "The dimension count is too high to inspect visually.",
+      "decision_notes": "Category: Relationship\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive scatter matrix\nPerformance Notes: Rendering cost grows with dimension count squared.\nCommon Mistakes: Too many dimensions; overplotting; poor color mapping.\nRelated APIs: scatter, parallel_coordinates.",
+      "gotchas": [
+        "Scatter matrices can become visually overloaded fast",
+        "dimensions parameter controls which columns are included",
+        "rendering cost increases quadratically with dimensions"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.scatter_matrix.html",
+      "visualization_equivalents": [
+        {
+          "package": "seaborn",
+          "task": "Build Pairwise Plot Matrix",
+          "reason": "Static pairwise scatter plot matrix."
+        }
+      ]
+    },
+    {
+      "task": "Create Parallel Coordinates Plot",
+      "mental_trigger": "I need line-based multivariate comparison across numeric columns.",
+      "syntax": "parallel_coordinates(data_frame=None, dimensions=None, color=None, color_continuous_scale=None, range_color=None, labels=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "dimensions",
+        "color",
+        "labels",
+        "color_continuous_scale"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.iris()\nfig = px.parallel_coordinates(\n    df,\n    color=\"species_id\",\n    labels={\"species_id\": \"Species\"}\n)\nfig.show()",
+      "use_when": "You want to compare many measurements per observation.",
+      "avoid_when": "The audience needs simple categorical comparisons.",
+      "decision_notes": "Category: Relationship\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive parallel coordinates plot\nPerformance Notes: Line rendering cost grows with observation count.\nCommon Mistakes: Too many observations; poor scaling; confusing dimensions.\nRelated APIs: parallel_categories, scatter_matrix.",
+      "gotchas": [
+        "Numeric scaling and labeling strongly affect interpretability",
+        "dimensions parameter controls which columns are shown",
+        "color mapping is critical for group identification"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.parallel_coordinates.html"
+    },
+    {
+      "task": "Create Parallel Categories Plot",
+      "mental_trigger": "I need categorical multivariate flow analysis.",
+      "syntax": "parallel_categories(data_frame=None, dimensions=None, color=None, color_continuous_scale=None, range_color=None, labels=None, category_orders=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "dimensions",
+        "color",
+        "labels",
+        "category_orders"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.tips()\nfig = px.parallel_categories(df, dimensions=[\"sex\", \"smoker\", \"day\"], color=\"size\")\nfig.show()",
+      "use_when": "You are exploring categorical transitions across multiple dimensions.",
+      "avoid_when": "Numerical precision is the primary concern.",
+      "decision_notes": "Category: Relationship\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive parallel categories plot\nPerformance Notes: Rendering cost grows with category combinations.\nCommon Mistakes: Too many categories; poor ordering; confusing dimensions.\nRelated APIs: parallel_coordinates.",
+      "gotchas": [
+        "Category ordering shapes the narrative strongly",
+        "category_orders parameter is important for deterministic output",
+        "dimensions parameter controls which columns are shown"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.parallel_categories.html"
+    },
+    {
+      "task": "Create Geographic Scatter Plot",
+      "mental_trigger": "I need a geographic point plot on a globe/projection.",
+      "syntax": "scatter_geo(data_frame=None, lat=None, lon=None, locations=None, locationmode=None, color=None, symbol=None, size=None, hover_name=None, hover_data=None, custom_data=None, text=None, facet_row=None, facet_col=None, facet_col_wrap=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, opacity=None, projection=None, fitbounds=None, scope=None, title=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "locations",
+        "locationmode",
+        "color",
+        "size"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.gapminder()\nfig = px.scatter_geo(df, locations=\"iso_alpha\", color=\"continent\", hover_name=\"country\")\nfig.show()",
+      "use_when": "Your data are location-based and you want a projected map.",
+      "avoid_when": "You need tile-map behavior or a custom basemap.",
+      "decision_notes": "Category: Geographic\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive geographic scatter plot\nPerformance Notes: Rendering cost grows with point count and projection complexity.\nCommon Mistakes: Wrong locationmode; invalid location codes; poor projection choice.\nRelated APIs: line_geo, choropleth, scatter_map.",
+      "gotchas": [
+        "Geographic codes and projections must match the data",
+        "locationmode determines how locations are interpreted",
+        "projection affects map appearance"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.scatter_geo.html"
+    },
+    {
+      "task": "Create Geographic Line Plot",
+      "mental_trigger": "I need geographic paths or routes.",
+      "syntax": "line_geo(data_frame=None, lat=None, lon=None, locations=None, locationmode=None, color=None, line_group=None, line_dash=None, hover_name=None, hover_data=None, custom_data=None, text=None, facet_row=None, facet_col=None, facet_col_wrap=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, opacity=None, projection=None, fitbounds=None, scope=None, title=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "lat",
+        "lon",
+        "color",
+        "line_group"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.gapminder().query(\"country == 'Canada'\")\nfig = px.line_geo(df, lat=\"lat\", lon=\"lon\")\nfig.show()",
+      "use_when": "You are plotting connected locations.",
+      "avoid_when": "The path is better represented with an annotation or route layer outside Plotly Express.",
+      "decision_notes": "Category: Geographic\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive geographic line plot\nPerformance Notes: Similar to scatter_geo with line rendering.\nCommon Mistakes: Wrong ordering; missing line_group; poor projection.\nRelated APIs: scatter_geo, line_map.",
+      "gotchas": [
+        "Geographic line charts depend on proper ordering",
+        "line_group is required for multiple series",
+        "ordering is critical for path visualization"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.line_geo.html"
+    },
+    {
+      "task": "Create Choropleth Map",
+      "mental_trigger": "I need a region-filled map by data value.",
+      "syntax": "choropleth(data_frame=None, lat=None, lon=None, locations=None, locationmode=None, geojson=None, featureidkey=None, color=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, projection=None, fitbounds=None, scope=None, title=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "locations",
+        "color",
+        "locationmode",
+        "hover_name"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.gapminder().query(\"year == 2007\")\nfig = px.choropleth(df, locations=\"iso_alpha\", color=\"lifeExp\", hover_name=\"country\")\nfig.show()",
+      "use_when": "You want geographic aggregation by country or region.",
+      "avoid_when": "Point-level geography is the real need.",
+      "decision_notes": "Category: Geographic\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive choropleth map\nPerformance Notes: Rendering cost depends on feature count and GeoJSON complexity.\nCommon Mistakes: Wrong locationmode; invalid location codes; missing GeoJSON for custom regions.\nRelated APIs: scatter_geo, choropleth_map.",
+      "gotchas": [
+        "Choropleths are sensitive to geographic identifier correctness",
+        "locationmode determines how locations are interpreted",
+        "geojson is required for custom regions"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.choropleth.html"
+    },
+    {
+      "task": "Create Tile Map Scatter Plot",
+      "mental_trigger": "I need point markers on a tile map.",
+      "syntax": "scatter_map(data_frame=None, lat=None, lon=None, color=None, symbol=None, size=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, opacity=None, zoom=None, center=None, map_style=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "lat",
+        "lon",
+        "color",
+        "size",
+        "map_style"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.carshare()\nfig = px.scatter_map(df, lat=\"centroid_lat\", lon=\"centroid_lon\", color=\"peak_hour\", size=\"car_hours\")\nfig.show()",
+      "use_when": "You want interactive mapping with a modern Plotly map workflow.",
+      "avoid_when": "A projection-based geographic chart is a better fit.",
+      "decision_notes": "Category: Geographic\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive tile map scatter plot\nPerformance Notes: Tile-based rendering; requires internet for tiles unless configured otherwise.\nCommon Mistakes: Wrong zoom/center; poor map_style choice; confusing with scatter_geo.\nRelated APIs: scatter_geo, line_map.",
+      "gotchas": [
+        "Map styling and center/zoom settings matter for readability",
+        "map_style controls the tile provider",
+        "zoom and center control the initial view"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.scatter_map.html"
+    },
+    {
+      "task": "Create Tile Map Line Plot",
+      "mental_trigger": "I need connected paths on a tile map.",
+      "syntax": "line_map(data_frame=None, lat=None, lon=None, color=None, line_group=None, line_dash=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, opacity=None, zoom=None, center=None, map_style=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "lat",
+        "lon",
+        "color",
+        "line_group"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.carshare()\nfig = px.line_map(df, lat=\"centroid_lat\", lon=\"centroid_lon\")\nfig.show()",
+      "use_when": "Route-like geographic lines are the right representation.",
+      "avoid_when": "A simpler geo projection or point map is enough.",
+      "decision_notes": "Category: Geographic\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive tile map line plot\nPerformance Notes: Similar to scatter_map with line rendering.\nCommon Mistakes: Wrong ordering; missing line_group; poor zoom/center.\nRelated APIs: line_geo, scatter_map.",
+      "gotchas": [
+        "Line density can quickly make maps unreadable",
+        "line_group is required for multiple series",
+        "ordering is critical for path visualization"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.line_map.html"
+    },
+    {
+      "task": "Create Tile Map Choropleth",
+      "mental_trigger": "I need GeoJSON-based tile choropleth mapping.",
+      "syntax": "choropleth_map(data_frame=None, geojson=None, locations=None, featureidkey=None, color=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, opacity=None, zoom=None, center=None, map_style=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "geojson",
+        "locations",
+        "featureidkey",
+        "color"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.election()\ngeojson = px.data.election_geojson()\nfig = px.choropleth_map(\n    df,\n    geojson=geojson,\n    color=\"Bergeron\",\n    locations=\"district\",\n    featureidkey=\"properties.district\"\n)\nfig.show()",
+      "use_when": "Regions are defined by custom geometry or tile-map behavior is preferred.",
+      "avoid_when": "You only need a simple country-level choropleth.",
+      "decision_notes": "Category: Geographic\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive tile map choropleth\nPerformance Notes: Tile-based rendering with GeoJSON overlay.\nCommon Mistakes: Wrong featureidkey; GeoJSON mismatch; poor zoom/center.\nRelated APIs: choropleth, scatter_map.",
+      "gotchas": [
+        "GeoJSON feature matching must be exact",
+        "featureidkey determines how data matches GeoJSON features",
+        "geojson parameter is required"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.choropleth_map.html"
+    },
+    {
+      "task": "Create Density Map",
+      "mental_trigger": "I need a heat-style geographic density map.",
+      "syntax": "density_map(data_frame=None, lat=None, lon=None, z=None, radius=None, color=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, opacity=None, zoom=None, center=None, map_style=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "lat",
+        "lon",
+        "z",
+        "radius",
+        "map_style"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.carshare()\nfig = px.density_map(df, lat=\"centroid_lat\", lon=\"centroid_lon\", z=\"car_hours\")\nfig.show()",
+      "use_when": "You want geographic intensity visualization.",
+      "avoid_when": "Exact point positions matter more than density.",
+      "decision_notes": "Category: Geographic\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive density map\nPerformance Notes: Density calculation can be expensive for large datasets.\nCommon Mistakes: Wrong radius; poor z mapping; confusing with scatter_map.\nRelated APIs: scatter_map, density_heatmap.",
+      "gotchas": [
+        "Density maps can hide sparse structure in dense smoothing",
+        "radius controls the smoothing kernel",
+        "z parameter determines the value being aggregated"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.density_map.html"
+    },
+    {
+      "task": "Display Image Data",
+      "mental_trigger": "I need to display raster or matrix data as an image.",
+      "syntax": "imshow(img, x=None, y=None, origin=None, labels=None, color_continuous_scale=None, range_color=None, zmin=None, zmax=None, text_auto=None, facet_row=None, facet_col=None, facet_col_wrap=None, animation_frame=None, animation_group=None, template=None, width=None, height=None)",
+      "important_params": [
+        "img",
+        "x",
+        "y",
+        "labels",
+        "color_continuous_scale"
+      ],
+      "example": "import plotly.express as px\ndata = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]\nfig = px.imshow(data, labels=dict(x=\"Day\", y=\"Time\", color=\"Value\"))\nfig.show()",
+      "use_when": "The input is an array, matrix, or image-like object.",
+      "avoid_when": "The data should be interpreted as categorical marks instead of pixels or cells.",
+      "decision_notes": "Category: Images\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive image display\nPerformance Notes: Large arrays can be memory-heavy; interpolation choices affect render time.\nCommon Mistakes: Wrong origin; poor aspect ratio; confusing with heatmap.\nRelated APIs: density_heatmap.",
+      "gotchas": [
+        "Axis placement and scaling can require adjustment after creation",
+        "origin parameter controls array orientation",
+        "labels parameter controls axis labels"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.imshow.html",
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Axes-Level: Display Heatmap Or Image",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Display Heatmap Or Image",
+          "reason": "Static display of raw image or matrix arrays."
+        }
+      ]
+    },
+    {
+      "task": "Create Pie Chart",
+      "mental_trigger": "I need a simple part-to-whole chart.",
+      "syntax": "pie(data_frame=None, names=None, values=None, color=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, hole=None, title=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "values",
+        "names",
+        "color",
+        "hole"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.gapminder().query(\"year == 2007 and continent == 'Europe'\")\nfig = px.pie(df, values=\"pop\", names=\"country\")\nfig.show()",
+      "use_when": "The category count is small and the proportions are easy to compare.",
+      "avoid_when": "Many slices make the chart difficult to interpret.",
+      "decision_notes": "Category: Basic Charts\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive pie chart\nPerformance Notes: Rendering is usually cheap; readability degrades quickly as slice count rises.\nCommon Mistakes: Using too many slices; relying on pie for exact comparison; omitting labels.\nRelated APIs: bar, sunburst.",
+      "gotchas": [
+        "Pie charts are easy to overuse for comparisons that bars show better",
+        "hole parameter creates donut charts",
+        "names and values are required parameters"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.pie.html",
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Draw Pie Chart",
+          "reason": "Static pie chart implementation."
+        }
+      ]
+    },
+    {
+      "task": "Create Funnel Chart",
+      "mental_trigger": "I need a staged conversion or pipeline chart.",
+      "syntax": "funnel(data_frame=None, x=None, y=None, color=None, facet_row=None, facet_col=None, facet_col_wrap=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, orientation=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "x",
+        "y",
+        "color"
+      ],
+      "example": "import plotly.express as px\ndata = dict(number=[39, 27.4, 20.6, 11, 2], stage=[\"Visit\", \"Download\", \"Lead\", \"Quote\", \"Closed\"])\nfig = px.funnel(data, x=\"number\", y=\"stage\")\nfig.show()",
+      "use_when": "You want stepwise attrition or stage counts.",
+      "avoid_when": "The stages are not truly sequential or comparable.",
+      "decision_notes": "Category: Categorical\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive funnel chart\nPerformance Notes: Efficient for moderate stage counts.\nCommon Mistakes: Non-sequential stages; wrong orientation; confusing with bar charts.\nRelated APIs: funnel_area, bar.",
+      "gotchas": [
+        "Funnel charts are narrative charts, not analytical substitutes for bar charts",
+        "stages should be truly sequential",
+        "orientation affects layout direction"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.funnel.html"
+    },
+    {
+      "task": "Create Funnel Area Chart",
+      "mental_trigger": "I need a funnel-like part-to-whole view.",
+      "syntax": "funnel_area(data_frame=None, names=None, values=None, color=None, hover_name=None, hover_data=None, custom_data=None, text=None, animation_frame=None, animation_group=None, category_orders=None, labels=None, color_discrete_sequence=None, color_discrete_map=None, color_continuous_scale=None, color_continuous_midpoint=None, range_color=None, template=None, width=None, height=None)",
+      "important_params": [
+        "data_frame",
+        "names",
+        "values",
+        "color"
+      ],
+      "example": "import plotly.express as px\ndata = dict(number=[39, 27.4, 20.6, 11, 2], stage=[\"Visit\", \"Download\", \"Lead\", \"Quote\", \"Closed\"])\nfig = px.funnel_area(data, names=\"stage\", values=\"number\")\nfig.show()",
+      "use_when": "You want a compact funnel area visualization.",
+      "avoid_when": "Quantitative comparison accuracy is critical.",
+      "decision_notes": "Category: Categorical\nModule: plotly.express\nReturn Value: plotly.graph_objects.Figure\nExpected Output: Interactive funnel area chart\nPerformance Notes: Similar to funnel with different visual encoding.\nCommon Mistakes: Confusing with funnel; poor stage ordering; misleading visual area.\nRelated APIs: funnel, pie.",
+      "gotchas": [
+        "Shape-driven charts can be harder to compare precisely",
+        "names and values are required parameters",
+        "visual area may not match quantitative value exactly"
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.express.funnel_area.html"
+    },
+    {
+      "task": "Update Figure Layout",
+      "mental_trigger": "I need to change title, margins, legend, axes defaults, or overall figure styling.",
+      "syntax": "update_layout(dict_obj=None, overwrite=False, **kwargs)",
+      "important_params": [
+        "dict_obj",
+        "overwrite",
+        "title",
+        "template",
+        "margin"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\", color=\"species\")\nfig.update_layout(title=\"Iris scatter\", template=\"plotly_white\", legend_title_text=\"Species\")\nfig.show()",
+      "use_when": "After any figure creation, especially for publication styling, dashboards, and branded templates.",
+      "avoid_when": "You need to change individual trace styling only.",
+      "gotchas": [
+        "Layout changes apply to the whole figure, so be careful not to overwrite existing settings unintentionally."
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.update_layout.html",
+      "decision_notes": "Category: Figure customization\nModule: plotly.graph_objects.Figure\nReturn Value: The same figure object\nExpected Output: Updated figure layout\nRelationship with Plotly Express: Common post-processing step on px.* figures\nRelationship with graph_objects: Core figure-level mutation API\nRelationship with Matplotlib: Similar to adjusting fig.suptitle or rcParams, but declarative and interactive\nRelationship with Seaborn: Similar to calling set_theme plus figure-level tweaks after plotting\nPerformance Notes: Cheap; layout updates are usually lightweight\nCommon Mistakes: Accidentally replacing nested layout objects with incomplete dictionaries\nRelated APIs: update_traces, update_xaxes, update_yaxes, show",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Axes-Level: Set Title",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Set Figure Or Axes Title",
+          "reason": "Static title configuration."
+        },
+        {
+          "package": "seaborn",
+          "task": "Objects API: Configure Plot Labels",
+          "reason": "High-level label specifications."
+        },
+        {
+          "package": "seaborn",
+          "task": "Objects API: Configure Plot Layout",
+          "reason": "Equivalent implementation in seaborn."
+        }
+      ]
+    },
+    {
+      "task": "Update Trace Properties",
+      "mental_trigger": "I need to change styling or behavior for all traces of a type.",
+      "syntax": "update_traces(patch=None, selector=None, row=None, col=None, exclude_empty_subplots=False, **kwargs)",
+      "important_params": [
+        "patch",
+        "selector",
+        "row",
+        "col",
+        "overwrite"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\", color=\"species\")\nfig.update_traces(marker=dict(size=12, line=dict(width=1, color=\"black\")))\nfig.show()",
+      "use_when": "Adding consistent marker sizes, hover formatting, line width, or opacity across traces.",
+      "avoid_when": "Only one trace needs to change and a selector is unnecessary.",
+      "gotchas": [
+        "Selectors matter; without them, you may update more traces than intended."
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.update_traces.html",
+      "decision_notes": "Category: Figure customization\nModule: plotly.graph_objects.Figure\nReturn Value: The same figure object\nExpected Output: Trace properties changed across selected traces\nRelationship with Plotly Express: The normal way to refine px.* output without rebuilding the chart\nRelationship with graph_objects: Mutates traces produced either manually or by Express\nRelationship with Matplotlib: Similar in spirit to post-hoc artist edits, but at figure level\nRelationship with Seaborn: Comparable to customizing artists after a seaborn plot is drawn on Matplotlib axes\nPerformance Notes: Efficient for bulk styling; avoid repeated updates in loops when one call is enough\nCommon Mistakes: Forgetting that multiple trace types may exist in the same figure\nRelated APIs: update_layout, for_each_trace, select_traces, add_trace",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Update X-Axes",
+      "mental_trigger": "I need to control x-axis scale, ticks, grid, or formatting.",
+      "syntax": "update_xaxes(patch=None, selector=None, row=None, col=None, exclude_empty_subplots=False, **kwargs)",
+      "important_params": [
+        "patch",
+        "selector",
+        "row",
+        "col",
+        "title_text"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\", color=\"species\")\nfig.update_xaxes(title_text=\"Sepal width\", gridcolor=\"lightgray\")\nfig.show()",
+      "use_when": "Cleaning up axes after Express-generated charts or subplots.",
+      "avoid_when": "The chart has no meaningful x-axis customization.",
+      "gotchas": [
+        "Axis updates can apply to multiple subplots unless scoped carefully."
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.update_xaxes.html",
+      "decision_notes": "Category: Figure customization\nModule: plotly.graph_objects.Figure\nReturn Value: The same figure object\nExpected Output: Updated x-axis appearance/behavior\nRelationship with Plotly Express: Common after px.line, px.scatter, and faceted figures\nRelationship with graph_objects: Works on any figure with x-axes\nRelationship with Matplotlib: Similar to axis-level setters like set_xlim, set_xlabel, and tick formatting\nRelationship with Seaborn: Similar to adjusting axes after a seaborn plot\nPerformance Notes: Very cheap\nCommon Mistakes: Applying a date axis format to a categorical axis\nRelated APIs: update_yaxes, update_layout, add_hline, add_vline",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Axes-Level: Set X-Axis Label",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Configure Axis Visibility And Scaling",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Configure Grid Lines",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Set Horizontal Axis Limits",
+          "reason": "Static X-axis limit updates."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Set X-Axis Label",
+          "reason": "Static X-axis labeling."
+        },
+        {
+          "package": "seaborn",
+          "task": "Objects API: Configure Axis Limits",
+          "reason": "High-level axis limit specifications."
+        },
+        {
+          "package": "seaborn",
+          "task": "Objects API: Configure Plot Labels",
+          "reason": "High-level label specifications."
+        }
+      ]
+    },
+    {
+      "task": "Update Y-Axes",
+      "mental_trigger": "I need to format or constrain the y-axis.",
+      "syntax": "update_yaxes(patch=None, selector=None, row=None, col=None, exclude_empty_subplots=False, **kwargs)",
+      "important_params": [
+        "patch",
+        "selector",
+        "row",
+        "col",
+        "title_text"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.tips()\nfig = px.bar(df, x=\"day\", y=\"total_bill\", color=\"sex\", barmode=\"group\")\nfig.update_yaxes(title_text=\"Total bill\", rangemode=\"tozero\")\nfig.show()",
+      "use_when": "Formatting numeric axes, fixing ranges, or improving readability.",
+      "avoid_when": "The chart is already readable and no axis tweak is needed.",
+      "gotchas": [
+        "rangemode=\"tozero\" is useful for bars but not always for every chart type."
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.update_yaxes.html",
+      "decision_notes": "Category: Figure customization\nModule: plotly.graph_objects.Figure\nReturn Value: The same figure object\nExpected Output: Updated y-axis appearance/behavior\nRelationship with Plotly Express: Typical post-processing step for Express charts\nRelationship with graph_objects: Standard axis-level figure method\nRelationship with Matplotlib: Similar to set_ylim and set_ylabel\nRelationship with Seaborn: Similar to modifying axis properties on the underlying Matplotlib axes\nPerformance Notes: Very cheap\nCommon Mistakes: Forcing a zero baseline on charts where it distorts interpretation\nRelated APIs: update_xaxes, update_layout, add_hline, add_vrect",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Axes-Level: Set Y-Axis Label",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Configure Axis Visibility And Scaling",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Configure Grid Lines",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Set Vertical Axis Limits",
+          "reason": "Static Y-axis limit updates."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Set Y-Axis Label",
+          "reason": "Static Y-axis labeling."
+        },
+        {
+          "package": "seaborn",
+          "task": "Objects API: Configure Axis Limits",
+          "reason": "High-level axis limit specifications."
+        },
+        {
+          "package": "seaborn",
+          "task": "Objects API: Configure Plot Labels",
+          "reason": "High-level label specifications."
+        }
+      ]
+    },
+    {
+      "task": "Add Trace to Figure",
+      "mental_trigger": "I need to overlay a manual series on top of an Express-generated chart.",
+      "syntax": "add_trace(trace, row=None, col=None, secondary_y=None)",
+      "important_params": [
+        "trace",
+        "row",
+        "col",
+        "secondary_y"
+      ],
+      "example": "import plotly.express as px\nimport plotly.graph_objects as go\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\", color=\"species\")\nfig.add_trace(go.Scatter(x=[2, 4], y=[4, 8], mode=\"lines\", name=\"Reference\"))\nfig.show()",
+      "use_when": "Adding reference lines, benchmarks, model predictions, or special annotations as traces.",
+      "avoid_when": "The chart can be built entirely through Plotly Express alone.",
+      "gotchas": [
+        "Trace type and axis compatibility must match the existing figure layout."
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.add_trace.html",
+      "decision_notes": "Category: Figure customization\nModule: plotly.graph_objects.Figure\nReturn Value: The same figure object\nExpected Output: One more trace in the figure\nRelationship with Plotly Express: Common hybrid workflow after px.*\nRelationship with graph_objects: Primary manual composition method\nRelationship with Matplotlib: Similar to adding another artist or line to an axes\nRelationship with Seaborn: Similar to overlaying extra Matplotlib artists after a seaborn plot\nPerformance Notes: Fine for occasional overlays; many repeated additions are slower than constructing traces upfront\nCommon Mistakes: Forgetting to align x/y scales or subplot positions\nRelated APIs: add_traces, add_hline, add_vline, update_traces",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Add Horizontal Reference Line",
+      "mental_trigger": "I need a threshold or baseline across the plot.",
+      "syntax": "add_hline(y, row='all', col='all', exclude_empty_subplots=True, **kwargs)",
+      "important_params": [
+        "y",
+        "line_dash",
+        "line_color",
+        "annotation_text",
+        "annotation_position"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\")\nfig.add_hline(y=6, line_dash=\"dash\", line_color=\"red\")\nfig.show()",
+      "use_when": "Marking targets, averages, or cutoff values.",
+      "avoid_when": "The baseline should be encoded in the data instead of the chart chrome.",
+      "gotchas": [
+        "Works best when the y-axis is numeric and the line has a clear meaning."
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.add_hline.html",
+      "decision_notes": "Category: Figure customization\nModule: plotly.graph_objects.Figure\nReturn Value: The same figure object\nExpected Output: A reference line across the plot\nRelationship with Plotly Express: Commonly added after an Express chart\nRelationship with graph_objects: Convenience layer over shape/annotation configuration\nRelationship with Matplotlib: Similar to ax.axhline\nRelationship with Seaborn: Similar to adding a threshold line after a seaborn plot\nPerformance Notes: Cheap\nCommon Mistakes: Using it on a categorical axis without checking placement\nRelated APIs: add_vline, add_shape, add_annotation, update_layout",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Draw Horizontal Reference Line",
+          "reason": "Static horizontal reference line on axes."
+        }
+      ]
+    },
+    {
+      "task": "Add Vertical Reference Line",
+      "mental_trigger": "I need a timestamp, threshold, or divider on the x-axis.",
+      "syntax": "add_vline(x, row='all', col='all', exclude_empty_subplots=True, **kwargs)",
+      "important_params": [
+        "x",
+        "line_dash",
+        "line_color",
+        "annotation_text",
+        "annotation_position"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\")\nfig.add_vline(x=3, line_dash=\"dash\", line_color=\"green\")\nfig.show()",
+      "use_when": "Marking events, boundaries, or decision points.",
+      "avoid_when": "A vertical line would overload a dense categorical chart.",
+      "gotchas": [
+        "As with add_hline, axis type and domain matter."
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.add_vline.html",
+      "decision_notes": "Category: Figure customization\nModule: plotly.graph_objects.Figure\nReturn Value: The same figure object\nExpected Output: A vertical reference line\nRelationship with Plotly Express: Common overlay on Express charts\nRelationship with graph_objects: Convenience wrapper around shapes\nRelationship with Matplotlib: Similar to ax.axvline\nRelationship with Seaborn: Similar to adding an event marker line on a seaborn figure\nPerformance Notes: Cheap\nCommon Mistakes: Expecting it to behave like a data trace instead of a layout shape\nRelated APIs: add_hline, add_shape, add_annotation, update_layout",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Draw Vertical Reference Line",
+          "reason": "Static vertical reference line on axes."
+        }
+      ]
+    },
+    {
+      "task": "Add Horizontal Rectangular Band",
+      "mental_trigger": "I need to highlight a y-range, not just a single threshold.",
+      "syntax": "add_hrect(y0, y1, row='all', col='all', exclude_empty_subplots=True, **kwargs)",
+      "important_params": [
+        "y0",
+        "y1",
+        "fillcolor",
+        "line_width",
+        "annotation_text"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\")\nfig.add_hrect(y0=5.5, y1=6.5, fillcolor=\"rgba(255,0,0,0.1)\", line_width=0)\nfig.show()",
+      "use_when": "Showing acceptable bands, alert zones, or confidence regions.",
+      "avoid_when": "A line is enough and a band would distract.",
+      "gotchas": [
+        "Transparent fill colors are usually better than opaque ones."
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.add_hrect.html",
+      "decision_notes": "Category: Figure customization\nModule: plotly.graph_objects.Figure\nReturn Value: The same figure object\nExpected Output: Highlighted horizontal zone\nRelationship with Plotly Express: Often layered onto Express charts\nRelationship with graph_objects: Shape-based figure helper\nRelationship with Matplotlib: Similar to ax.axhspan\nRelationship with Seaborn: Similar to shading a reference band on a seaborn plot\nPerformance Notes: Cheap\nCommon Mistakes: Overusing colored bands until the chart becomes unreadable\nRelated APIs: add_vrect, add_hline, add_shape, update_layout",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Add Vertical Rectangular Band",
+      "mental_trigger": "I need to highlight an x-range such as a time window or interval.",
+      "syntax": "add_vrect(x0, x1, row='all', col='all', exclude_empty_subplots=True, **kwargs)",
+      "important_params": [
+        "x0",
+        "x1",
+        "fillcolor",
+        "line_width",
+        "annotation_text"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\")\nfig.add_vrect(x0=3, x1=3.5, fillcolor=\"rgba(0,0,255,0.1)\", line_width=0)\nfig.show()",
+      "use_when": "Marking ranges of interest, experiment windows, or policy periods.",
+      "avoid_when": "A line or annotation is sufficient.",
+      "gotchas": [
+        "Range rectangles are most useful when axis scale is meaningful and stable."
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.add_vrect.html",
+      "decision_notes": "Category: Figure customization\nModule: plotly.graph_objects.Figure\nReturn Value: The same figure object\nExpected Output: Highlighted vertical zone\nRelationship with Plotly Express: Common post-processing step\nRelationship with graph_objects: Shape helper for interval highlighting\nRelationship with Matplotlib: Similar to ax.axvspan\nRelationship with Seaborn: Similar to shading a time window after plotting\nPerformance Notes: Cheap\nCommon Mistakes: Using it as a substitute for data segmentation\nRelated APIs: add_hrect, add_vline, add_shape, update_layout",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Add Annotation Text",
+      "mental_trigger": "I need to label a point, zone, or callout.",
+      "syntax": "add_annotation(dict_obj=None, **kwargs)",
+      "important_params": [
+        "text",
+        "x",
+        "y",
+        "showarrow",
+        "arrowhead"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\")\nfig.add_annotation(x=3.2, y=6.5, text=\"Interesting callout\", showarrow=True)\nfig.show()",
+      "use_when": "Highlighting important observations, thresholds, or story points.",
+      "avoid_when": "Labels should be encoded directly in the data or legend.",
+      "gotchas": [
+        "Annotation coordinates must match the axis type and domain."
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.add_annotation.html",
+      "decision_notes": "Category: Figure customization\nModule: plotly.graph_objects.Figure\nReturn Value: The same figure object\nExpected Output: Text callout attached to a figure location\nRelationship with Plotly Express: Common after Express charts for story-telling or debugging\nRelationship with graph_objects: Native annotation API\nRelationship with Matplotlib: Similar to ax.annotate\nRelationship with Seaborn: Similar to calling annotate on the underlying axes\nPerformance Notes: Cheap, but many annotations can clutter the chart\nCommon Mistakes: Forgetting showarrow=True when expecting a pointer\nRelated APIs: add_hline, add_vline, add_shape, update_layout",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Add Annotated Callout With Arrow",
+          "reason": "Advanced callout annotations with arrows."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Add Text Annotation",
+          "reason": "Basic text label placement on axes."
+        }
+      ]
+    },
+    {
+      "task": "Add Custom Geometric Shape",
+      "mental_trigger": "I need a custom overlay that is not just a line or band.",
+      "syntax": "add_shape(dict_obj=None, row=None, col=None, **kwargs)",
+      "important_params": [
+        "type",
+        "x0",
+        "x1",
+        "y0",
+        "y1"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\")\nfig.add_shape(type=\"line\", x0=2, x1=4, y0=4, y1=8, line=dict(color=\"red\", dash=\"dash\"))\nfig.show()",
+      "use_when": "Drawing boundaries, boxes, arrows, or arbitrary overlays.",
+      "avoid_when": "A purpose-built helper like add_hline or add_vrect is enough.",
+      "gotchas": [
+        "Shapes live in layout space, not as data traces."
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.add_shape.html",
+      "decision_notes": "Category: Figure customization\nModule: plotly.graph_objects.Figure\nReturn Value: The same figure object\nExpected Output: Custom geometric overlay\nRelationship with Plotly Express: Frequently used to extend Express charts\nRelationship with graph_objects: Core layout-shape API\nRelationship with Matplotlib: Similar to adding patches or spans\nRelationship with Seaborn: Similar to overlaying shapes on axes\nPerformance Notes: Cheap\nCommon Mistakes: Using data coordinates incorrectly when the axis type is categorical or date-based\nRelated APIs: add_hline, add_vline, add_hrect, add_vrect",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Iterate Over Traces with Callback",
+      "mental_trigger": "I need conditional or repetitive changes across traces.",
+      "syntax": "for_each_trace(fn, selector=None, row=None, col=None)",
+      "important_params": [
+        "fn",
+        "selector",
+        "row",
+        "col"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\", color=\"species\")\nfig.for_each_trace(lambda t: t.update(marker=dict(size=10)))\nfig.show()",
+      "use_when": "Updating multiple traces with custom logic without manual loops.",
+      "avoid_when": "A single update_traces call can do the job.",
+      "gotchas": [
+        "The callback mutates traces in place, so side effects matter."
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.for_each_trace.html",
+      "decision_notes": "Category: Figure customization\nModule: plotly.graph_objects.Figure\nReturn Value: The same figure object\nExpected Output: Each selected trace updated by a callback\nRelationship with Plotly Express: Useful for polishing Express output\nRelationship with graph_objects: Iterative trace-level customization\nRelationship with Matplotlib: Similar to looping over artists and editing them\nRelationship with Seaborn: Similar to iterating through axes artists after plotting\nPerformance Notes: Fine for modest figures; avoid heavy Python work per trace\nCommon Mistakes: Writing callbacks that assume only one trace type exists\nRelated APIs: update_traces, select_traces, for_each_annotation",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Filter and Retrieve Traces",
+      "mental_trigger": "I need to inspect or filter traces programmatically.",
+      "syntax": "select_traces(selector=None, row=None, col=None)",
+      "important_params": [
+        "selector",
+        "row",
+        "col"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\", color=\"species\")\nselected = list(fig.select_traces())\nprint(len(selected))",
+      "use_when": "Debugging figures, testing trace counts, or targeting selected traces.",
+      "avoid_when": "You only need to style all traces in one shot.",
+      "gotchas": [
+        "The result is an iterator, so convert it to a list if you need to reuse it."
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.select_traces.html",
+      "decision_notes": "Category: Figure customization\nModule: plotly.graph_objects.Figure\nReturn Value: Iterator over matching traces\nExpected Output: Selected trace objects\nRelationship with Plotly Express: Helpful for inspecting Express-generated trace structure\nRelationship with graph_objects: Trace-query utility\nRelationship with Matplotlib: Similar to inspecting artists on an axes\nRelationship with Seaborn: Similar to checking artists or collections after plotting\nPerformance Notes: Cheap for moderate figures\nCommon Mistakes: Assuming it returns a list\nRelated APIs: for_each_trace, update_traces, add_trace",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Export Figure to Interactive HTML",
+      "mental_trigger": "I need a shareable interactive chart file.",
+      "syntax": "write_html(file, config=None, auto_play=True, include_plotlyjs=True, html_directory=None, full_html=True, animation_opts=None, default_width='100%', default_height='100%', validate=True, auto_open=False)",
+      "important_params": [
+        "file",
+        "include_plotlyjs",
+        "full_html",
+        "auto_open",
+        "config"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\", color=\"species\")\nfig.write_html(\"iris_scatter.html\")",
+      "use_when": "Delivering reports, archiving interactive visuals, or embedding offline dashboards.",
+      "avoid_when": "The output must be a static image only.",
+      "gotchas": [
+        "File size can grow if you embed Plotly.js repeatedly in many exports."
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.write_html.html",
+      "decision_notes": "Category: Figure export\nModule: plotly.graph_objects.Figure\nReturn Value: None\nExpected Output: HTML file on disk\nRelationship with Plotly Express: Typical export path for px.* figures\nRelationship with graph_objects: Native figure export method\nRelationship with Matplotlib: Similar to saving output, but preserves interactivity\nRelationship with Seaborn: Similar to exporting a seaborn figure, but richer and interactive\nPerformance Notes: Good for single figures; repeated bulk export should manage JS inclusion carefully\nCommon Mistakes: Expecting the HTML file to be small if self-contained\nRelated APIs: to_html, write_image, to_json, show",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Export Figure To File",
+          "reason": "Static export fallback in Matplotlib."
+        },
+        {
+          "package": "seaborn",
+          "task": "Objects API: Export Plot to File",
+          "reason": "Static export fallback for Seaborn Objects."
+        }
+      ]
+    },
+    {
+      "task": "Export Figure to Static Image",
+      "mental_trigger": "I need PNG, SVG, PDF, or another static export format.",
+      "syntax": "write_image(file, format=None, width=None, height=None, scale=None, validate=True, engine='auto')",
+      "important_params": [
+        "file",
+        "format",
+        "width",
+        "height",
+        "scale"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\", color=\"species\")\nfig.write_image(\"iris_scatter.png\")",
+      "use_when": "Reports, papers, slide decks, or print-oriented deliverables.",
+      "avoid_when": "You need full interactivity in the output.",
+      "gotchas": [
+        "Static image export depends on the image export stack being available."
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.write_image.html",
+      "decision_notes": "Category: Figure export\nModule: plotly.graph_objects.Figure\nReturn Value: None\nExpected Output: Raster or vector image file\nRelationship with Plotly Express: The standard static export path for px.* figures\nRelationship with graph_objects: Native figure export method\nRelationship with Matplotlib: Comparable to savefig, but from an interactive figure\nRelationship with Seaborn: Similar to exporting a seaborn chart for publication\nPerformance Notes: Export cost can be significant for very large or complex figures\nCommon Mistakes: Missing required export dependencies\nRelated APIs: write_html, to_html, show, to_json",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Export Figure To File",
+          "reason": "Standard Matplotlib static export method."
+        },
+        {
+          "package": "seaborn",
+          "task": "Objects API: Export Plot to File",
+          "reason": "Save Seaborn Objects plots to files."
+        }
+      ]
+    },
+    {
+      "task": "Convert Figure to HTML Markup",
+      "mental_trigger": "I need to embed a Plotly figure into an existing web page or document pipeline.",
+      "syntax": "to_html(config=None, auto_play=True, include_plotlyjs=True, html_directory=None, full_html=True, animation_opts=None, default_width='100%', default_height='100%', validate=True)",
+      "important_params": [
+        "full_html",
+        "include_plotlyjs",
+        "div_id",
+        "config"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\", color=\"species\")\nhtml = fig.to_html(full_html=False, include_plotlyjs=\"cdn\")\nprint(html[:120])",
+      "use_when": "Building custom HTML reports or server-rendered pages.",
+      "avoid_when": "A file export is simpler than string handling.",
+      "gotchas": [
+        "Large figures produce large HTML strings."
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.to_html.html",
+      "decision_notes": "Category: Figure export\nModule: plotly.graph_objects.Figure\nReturn Value: HTML string\nExpected Output: Serializable HTML markup for embedding\nRelationship with Plotly Express: Common for embedding px.* charts\nRelationship with graph_objects: Native serialization method\nRelationship with Matplotlib: Similar to saving a figure, but returns embeddable markup\nRelationship with Seaborn: Equivalent output goal, but with browser-native interactivity\nPerformance Notes: Good for single embeds; watch payload size\nCommon Mistakes: Forgetting that include_plotlyjs=\"cdn\" requires network access\nRelated APIs: write_html, to_json, show, write_image",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Serialize Figure to JSON",
+      "mental_trigger": "I need to store, transport, or inspect the figure structure programmatically.",
+      "syntax": "to_json(validate=True, pretty=False, remove_uids=True, engine='json')",
+      "important_params": [
+        "pretty",
+        "validate",
+        "remove_uids",
+        "engine"
+      ],
+      "example": "import plotly.express as px\ndf = px.data.iris()\nfig = px.scatter(df, x=\"sepal_width\", y=\"sepal_length\", color=\"species\")\njson_str = fig.to_json()\nprint(json_str[:120])",
+      "use_when": "Caching, testing, figure diffing, or API transport.",
+      "avoid_when": "You only need visual output.",
+      "gotchas": [
+        "JSON serialization is useful for state, not rendering."
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.to_json.html",
+      "decision_notes": "Category: Figure export\nModule: plotly.graph_objects.Figure\nReturn Value: JSON string\nExpected Output: Serialized figure specification\nRelationship with Plotly Express: Useful for storing or comparing Express-generated figures\nRelationship with graph_objects: Native serialization method\nRelationship with Matplotlib: Similar to saving a figure specification, not an image\nRelationship with Seaborn: No direct equivalent; typically used for interactivity/serialization instead of rendering\nPerformance Notes: Lightweight compared with image export\nCommon Mistakes: Treating JSON output as a rendered artifact\nRelated APIs: to_html, write_html, write_image, show",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Construct Manual Figure Container",
+      "mental_trigger": "I need to build a chart manually rather than through Plotly Express.",
+      "syntax": "Figure(data=None, layout=None, frames=None, skip_invalid=False, **kwargs)",
+      "important_params": [
+        "data",
+        "layout",
+        "frames",
+        "skip_invalid",
+        "validate"
+      ],
+      "example": "import plotly.graph_objects as go\nfig = go.Figure()\nfig.add_trace(go.Scatter(x=[1, 2, 3], y=[2, 1, 4], mode=\"lines+markers\"))\nfig.show()",
+      "use_when": "Starting a low-level graph_objects workflow or composing custom traces.",
+      "avoid_when": "A standard Express chart already solves the task cleanly.",
+      "gotchas": [
+        "Manual figures require more explicit setup than Express."
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html",
+      "decision_notes": "Category: Figure construction\nModule: plotly.graph_objects\nReturn Value: Figure\nExpected Output: Empty or prepopulated figure container\nRelationship with Plotly Express: Express returns this object\nRelationship with graph_objects: Core container type\nRelationship with Matplotlib: Similar to creating a Figure object before adding axes/artists\nRelationship with Seaborn: Less direct; Seaborn usually abstracts this away\nPerformance Notes: Minimal overhead\nCommon Mistakes: Starting with graph_objects when Express would have been simpler\nRelated APIs: add_trace, update_layout, add_traces, show",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Construct Manual Scatter/Line Trace",
+      "mental_trigger": "I need direct control over a scatter trace.",
+      "syntax": "Scatter(x=None, y=None, mode=None, name=None, marker=None, line=None, fill=None, **kwargs)",
+      "important_params": [
+        "x",
+        "y",
+        "mode",
+        "name",
+        "marker"
+      ],
+      "example": "import plotly.graph_objects as go\nfig = go.Figure(go.Scatter(x=[1, 2, 3], y=[2, 1, 4], mode=\"markers+lines\", name=\"Series\"))\nfig.show()",
+      "use_when": "Building custom overlays, composite charts, or traces not covered by Express.",
+      "avoid_when": "The chart maps cleanly to px.scatter and no low-level control is needed.",
+      "gotchas": [
+        "Unlike Express, you must specify trace behavior more explicitly."
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Scatter.html",
+      "decision_notes": "Category: Trace constructor\nModule: plotly.graph_objects\nReturn Value: Trace object\nExpected Output: Scatter trace to place inside a figure\nRelationship with Plotly Express: One of the primitive trace types Express often produces internally\nRelationship with graph_objects: Core trace primitive\nRelationship with Matplotlib: Similar to creating line/marker artists directly\nRelationship with Seaborn: Similar to lower-level plot construction after semantic mapping is resolved\nPerformance Notes: Efficient, but you are responsible for trace-level configuration\nCommon Mistakes: Forgetting mode when expecting markers or lines to appear\nRelated APIs: go.Figure, go.Bar, go.Histogram, Figure.add_trace",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Construct Subplots Layout",
+      "mental_trigger": "I need multiple coordinated charts in one figure.",
+      "syntax": "make_subplots(rows=1, cols=1, shared_xaxes=False, shared_yaxes=False, subplot_titles=None, **kwargs)",
+      "important_params": [
+        "rows",
+        "cols",
+        "shared_xaxes",
+        "shared_yaxes",
+        "subplot_titles"
+      ],
+      "example": "import plotly.graph_objects as go\nfrom plotly.subplots import make_subplots\nfig = make_subplots(rows=1, cols=2, subplot_titles=(\"Left\", \"Right\"))\nfig.add_trace(go.Scatter(x=[1, 2, 3], y=[1, 4, 2]), row=1, col=1)\nfig.add_trace(go.Bar(x=[\"A\", \"B\", \"C\"], y=[3, 1, 2]), row=1, col=2)\nfig.show()",
+      "use_when": "Dashboards, multi-panel reports, or hybrid layouts that Express faceting cannot express well.",
+      "avoid_when": "A single Plotly Express facet function already gives the layout you need.",
+      "gotchas": [
+        "Subplots require axis-aware trace placement and can be more manual than Express faceting."
+      ],
+      "official_docs": "https://plotly.com/python-api-reference/generated/plotly.subplots.make_subplots.html",
+      "decision_notes": "Category: Figure composition\nModule: plotly.subplots\nReturn Value: Figure with subplot grid\nExpected Output: Multi-panel figure\nRelationship with Plotly Express: Use when facetting is not enough or when combining heterogeneous traces\nRelationship with graph_objects: Core helper for manual multi-axes layout\nRelationship with Matplotlib: Similar to plt.subplots\nRelationship with Seaborn: Similar to building a custom FacetGrid-style layout, but more manual\nPerformance Notes: Good for moderate grids; large grids increase layout complexity\nCommon Mistakes: Adding traces to the wrong row/column\nRelated APIs: go.Figure, add_trace, update_xaxes, update_yaxes",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Create Subplots Grid",
+          "reason": "Programmatic layout creation for multiple subplot grids."
+        }
+      ]
+    }
+  ],
+  "package_specific_debugging": [
+    "Renderer not displaying: Check the active renderer and environment first. Plotly rendering is handled by `plotly.io`, so notebook, browser, and IDE behavior can differ.",
+    "Blank figures: Blank figures usually mean the figure was built but not rendered in the current backend, the data columns were misnamed, or the axis/encoding inputs produced empty traces. Verify the input columns and the display backend.",
+    "Missing legends: Legends may be absent when the color mapping is continuous or when Plotly collapses repeated discrete combinations. Check the semantic type of the mapped column and the trace grouping behavior.",
+    "Incorrect hover data: Hover behavior is driven by `hover_name`, `hover_data`, and label inference. If the tooltip looks wrong, inspect those mappings and the displayed column names.",
+    "Animation not working: Animations require appropriate `animation_frame` and `animation_group` data. If the animation does not play correctly, confirm that the frame column is discrete and that the grouping is stable across frames.",
+    "Facet issues: Facet problems usually come from category ordering, missing values, or too many panels. Review `facet_row`, `facet_col`, `facet_col_wrap`, and `category_orders`.",
+    "Color mapping problems: If colors are inconsistent, explicitly set `color_discrete_map` or `color_continuous_scale`. This is the preferred way to make figures deterministic.",
+    "Datetime parsing: Timeline and map/chart functions are sensitive to datetime parsing. Ensure date columns are real datetimes, not inconsistent strings.",
+    "Export failures: Image export depends on Plotly’s export stack and environment configuration. Use `plotly.io` for export and verify the required image export dependencies are installed.",
+    "WebGL limitations: WebGL improves performance for large scatter-like workloads, but browser support, GPU limits, and visual fidelity can vary. Switch back to SVG when point counts are moderate and crisp vector output is preferable.",
+    "Notebook compatibility: Notebook rendering depends on the active frontend and renderer configuration. If a figure looks correct in one notebook environment but not another, inspect `plotly.io` renderer settings."
+  ],
+  "migration_notes": [
+    "Use newer tile-map functions (scatter_map, line_map, choropleth_map, density_map) instead of the deprecated mapbox equivalents (*_mapbox)."
+  ],
+  "breaking_changes": [],
+  "alternatives": [
+    {
+      "id": "matplotlib",
+      "type": "package"
+    },
+    {
+      "id": "seaborn",
+      "type": "package"
+    }
+  ]
+}

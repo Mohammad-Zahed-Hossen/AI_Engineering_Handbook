@@ -1,0 +1,2079 @@
+{
+  "id": "seaborn",
+  "title": "Seaborn Package Reference",
+  "name": "seaborn",
+  "slug": "seaborn",
+  "description": "Seaborn is a Python visualization library based on Matplotlib that provides a high-level interface for drawing attractive and informative statistical graphics.",
+  "tags": [
+    "visualization",
+    "statistical",
+    "matplotlib",
+    "data-analysis",
+    "plotting",
+    "graphics",
+    "python",
+    "exploratory-data-analysis"
+  ],
+  "aliases": [],
+  "keywords": [
+    "seaborn",
+    "statistical visualization",
+    "data visualization",
+    "matplotlib",
+    "plotting",
+    "statistical graphics",
+    "relational plots",
+    "distribution plots",
+    "categorical plots",
+    "regression plots",
+    "matrix plots",
+    "faceted plots",
+    "objects interface",
+    "theme",
+    "palette"
+  ],
+  "search_tokens": [
+    "seaborn",
+    "python",
+    "visualization",
+    "statistical",
+    "matplotlib",
+    "plotting",
+    "graphics",
+    "scatter",
+    "line",
+    "bar",
+    "box",
+    "violin",
+    "histogram",
+    "heatmap",
+    "clustermap",
+    "pairplot",
+    "relplot",
+    "catplot",
+    "displot",
+    "theme",
+    "palette",
+    "objects api"
+  ],
+  "domain": "data-science",
+  "category": "visualization",
+  "difficulty": "intermediate",
+  "engineering_area": "data-engineering",
+  "estimated_reading_time": 60,
+  "prerequisites": [
+    "Python 3.8+",
+    "Matplotlib",
+    "NumPy",
+    "Pandas"
+  ],
+  "recommended_next": [
+    "matplotlib",
+    "pandas",
+    "numpy"
+  ],
+  "related_content": [
+    {
+      "id": "seaborn",
+      "type": "cheatsheet",
+      "relationship_type": "references"
+    }
+  ],
+  "created_at": "2026-07-05",
+  "updated_at": "2026-07-05",
+  "last_verified": "2026-07-05",
+  "review_frequency": "quarterly",
+  "verified_against": "0.13.2",
+  "compatible_versions": [
+    "0.13.2"
+  ],
+  "owner": "PyData",
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "sources": [
+    "https://seaborn.pydata.org/",
+    "https://github.com/seaborn/seaborn",
+    "https://pypi.org/project/seaborn/"
+  ],
+  "github_repo": "https://github.com/seaborn/seaborn",
+  "version": "0.13.2",
+  "install": "pip install seaborn",
+  "import_as": "import seaborn as sns",
+  "language": "python",
+  "summary": "Statistical data visualization library for Python built on Matplotlib, with high-level APIs for relational, distribution, categorical, regression, matrix, and faceted plots.",
+  "tasks": [
+    {
+      "task": "Create Scatter Plot",
+      "mental_trigger": "I need to compare two numeric variables and optionally group points by category.",
+      "syntax": "seaborn.scatterplot(data=None, *, x=None, y=None, hue=None, size=None, style=None, palette=None, sizes=None, markers=True, ax=None, **kwargs)",
+      "important_params": [
+        "x",
+        "y",
+        "hue",
+        "size",
+        "style."
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\nax = sns.scatterplot(\n    data=penguins,\n    x=\"bill_length_mm\",\n    y=\"bill_depth_mm\",\n    hue=\"species\",\n    style=\"species\",\n)\nplt.show()",
+      "use_when": "1) compare two numeric variables. 2) inspect clustering. 3) show subgroup separation. 4) highlight outliers. 5) visualize multivariate relationships.",
+      "avoid_when": "1) the dataset is extremely dense. 2) the message is primarily aggregate. 3) overplotting is severe. 4) categories are too many for color. 5) raw point identity is not relevant.",
+      "decision_notes": "Category: Relational Plots\nModule: `seaborn`\nReturn Value: Matplotlib Axes.\nExpected Output: A scatter plot with points colored and styled by species.\nPurpose: Draw a relational scatter plot with optional semantic grouping.\nCommon Mistakes: forgetting `dropna()` when missing values dominate; using too many hue levels; using size for precise quantitative reading; overplotting without transparency; assuming legends are automatically optimal.\nRelated APIs: relplot, lineplot",
+      "gotchas": [
+        "style and hue can become visually redundant",
+        "Matplotlib still owns ticks and export",
+        "category order affects legend order",
+        "dense data may require aggregation or transparency",
+        "default palette may not match project branding."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Axes-Level: Draw Scatter Plot",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Draw Scatter Plot",
+          "reason": "Lower-level scatter plotting with precise customization."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Create Scatter Plot",
+          "reason": "Interactive scatter plot with hover and zoom."
+        }
+      ]
+    },
+    {
+      "task": "Create Line Plot",
+      "mental_trigger": "I need to show how a value changes across an ordered dimension.",
+      "syntax": "seaborn.lineplot(data=None, *, x=None, y=None, hue=None, size=None, style=None, markers=False, dashes=True, estimator=\"mean\", errorbar=\"ci\", err_style=\"band\", ax=None, **kwargs)",
+      "important_params": [
+        "x",
+        "y",
+        "hue",
+        "estimator",
+        "errorbar."
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nfmri = sns.load_dataset(\"fmri\").dropna()\n\nax = sns.lineplot(\n    data=fmri,\n    x=\"timepoint\",\n    y=\"signal\",\n    hue=\"event\",\n)\nplt.show()",
+      "use_when": "1) time series summaries. 2) ordered measurements. 3) trend comparison. 4) aggregated repeated observations. 5) line-based categorical comparisons.",
+      "avoid_when": "1) x is unordered categories. 2) the raw path of each observation matters more than the summary. 3) line interpolation would mislead. 4) there are too many overlapping groups.",
+      "decision_notes": "Category: Relational Plots\nModule: `seaborn`\nReturn Value: Matplotlib Axes.\nExpected Output: A line chart that summarizes signal over time, grouped by event.\nPurpose: Draw a relational line plot with optional semantic grouping.\nCommon Mistakes: connecting unordered points; misunderstanding estimator behavior; hiding uncertainty when it matters; using lines for purely categorical values; mixing too many groups without faceting.\nRelated APIs: relplot, scatterplot",
+      "gotchas": [
+        "Seaborn may summarize repeated values",
+        "uncertainty display is part of the semantic message",
+        "order matters strongly",
+        "line encoding can imply continuity",
+        "defaults can differ from raw-data expectations."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Axes-Level: Draw Line Plot",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Draw Line Plot",
+          "reason": "Lower-level line plotting with precise customization."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Create Line Plot",
+          "reason": "Interactive line plot with hover and zoom."
+        }
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html"
+    },
+    {
+      "task": "Create Histogram",
+      "mental_trigger": "I need to inspect the shape, spread, and density of a numeric variable.",
+      "syntax": "seaborn.histplot(data=None, *, x=None, y=None, hue=None, bins=\"auto\", binwidth=None, stat=\"count\", common_bins=True, common_norm=True, multiple=\"layer\", element=\"bars\", ax=None, **kwargs)",
+      "important_params": [
+        "x",
+        "hue",
+        "bins",
+        "stat",
+        "multiple."
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\nax = sns.histplot(data=penguins, x=\"bill_length_mm\", hue=\"species\", bins=20)\nplt.show()",
+      "use_when": "1) single-variable distribution checks. 2) compare subset distributions. 3) inspect skew and multimodality. 4) identify outliers. 5) validate preprocessing.",
+      "avoid_when": "1) exact individual observations are the goal. 2) bin choice would materially change the conclusion and is not controlled. 3) the dataset is tiny and histogram bins mislead.",
+      "decision_notes": "Category: Distribution Plots\nModule: `seaborn`\nReturn Value: Matplotlib Axes.\nExpected Output: A histogram of bill length, optionally split by species.\nPurpose: Show a distribution with bins.\nCommon Mistakes: using unsuitable binning; comparing subsets with mismatched normalization; overplotting too many groups; misreading counts as density; forgetting to choose a meaningful stat.\nRelated APIs: displot, kdeplot, ecdfplot",
+      "gotchas": [
+        "binning is a modeling choice",
+        "different `stat` values change interpretation",
+        "`multiple` affects how groups overlap",
+        "hue normalization can alter visual emphasis",
+        "dense datasets can hide tails."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Axes-Level: Draw Histogram",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Draw Histogram",
+          "reason": "Lower-level histogram implementation with more manual control."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Create Histogram",
+          "reason": "Interactive histogram with hover support."
+        }
+      ]
+    },
+    {
+      "task": "Create KDE Plot",
+      "mental_trigger": "I need a smoothed view of distribution shape rather than raw bins.",
+      "syntax": "seaborn.kdeplot(data=None, *, x=None, y=None, hue=None, fill=False, common_norm=True, common_grid=True, ax=None, **kwargs)",
+      "important_params": [
+        "x",
+        "y",
+        "hue",
+        "fill",
+        "common_norm."
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\nax = sns.kdeplot(data=penguins, x=\"bill_length_mm\", hue=\"species\", fill=True)\nplt.show()",
+      "use_when": "1) compare distribution shapes. 2) emphasize modality. 3) build smoothed summaries. 4) present publication-oriented density comparisons. 5) compare groups on a common scale.",
+      "avoid_when": "1) the exact distribution mass matters. 2) the sample is very small. 3) smoothing could introduce misleading structure. 4) discrete data dominate the signal.",
+      "decision_notes": "Category: Distribution Plots\nModule: `seaborn`\nReturn Value: Matplotlib Axes.\nExpected Output: Smoothed density curves, optionally filled and grouped by species.\nPurpose: Show a smoothed estimate of a distribution.\nCommon Mistakes: treating KDE as raw counts; applying it to discrete variables without thought; hiding bandwidth sensitivity; comparing groups without checking common normalization; assuming the curve is always appropriate.\nRelated APIs: displot, histplot, ecdfplot",
+      "gotchas": [
+        "smoothing choice matters",
+        "KDE may oversimplify multimodal or discrete data",
+        "filled densities can obscure overlaps",
+        "normalization affects comparison",
+        "tails can appear extended beyond observed support."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Draw Empirical Cumulative Distribution Function",
+          "reason": "Static cumulative distribution alternative."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Draw Histogram",
+          "reason": "Static distribution alternative using bins."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Create Density Contour Plot",
+          "reason": "Interactive density contour alternative for 2D densities."
+        }
+      ]
+    },
+    {
+      "task": "Create ECDF Plot",
+      "mental_trigger": "I need a distribution comparison without binning or smoothing.",
+      "syntax": "seaborn.ecdfplot(data=None, *, x=None, y=None, hue=None, complementary=False, ax=None, **kwargs)",
+      "important_params": [
+        "x",
+        "hue",
+        "complementary."
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\nax = sns.ecdfplot(data=penguins, x=\"bill_length_mm\", hue=\"species\")\nplt.show()",
+      "use_when": "1) compare percentiles. 2) avoid binning artifacts. 3) inspect tail behavior. 4) show stochastic dominance. 5) validate distribution shifts.",
+      "avoid_when": "1) you need smoothed density. 2) the audience expects a histogram. 3) sample size is too tiny for a meaningful cumulative shape. 4) the plot becomes crowded with many groups.",
+      "decision_notes": "Category: Distribution Plots\nModule: `seaborn`\nReturn Value: Matplotlib Axes.\nExpected Output: Stepwise cumulative curves for each species.\nPurpose: Show cumulative distribution empirically.\nCommon Mistakes: interpreting ECDF as a density plot; forgetting that it is stepwise; overusing too many groups; missing the complement option for tail emphasis; not sorting or grouping cleanly beforehand.\nRelated APIs: displot, histplot, kdeplot",
+      "gotchas": [
+        "ECDF emphasizes ranks rather than density",
+        "each observation contributes a jump",
+        "group overlap can hide detail",
+        "tail comparisons are often easier than histogram comparisons",
+        "no smoothing means more literal data representation."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Draw Empirical Cumulative Distribution Function",
+          "reason": "Lower-level ECDF step plot implementation."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Create ECDF Plot",
+          "reason": "Interactive ECDF plot with hover details."
+        }
+      ]
+    },
+    {
+      "task": "Create Bar Plot",
+      "mental_trigger": "I need to compare aggregated values across categories.",
+      "syntax": "seaborn.barplot(data=None, *, x=None, y=None, hue=None, estimator=\"mean\", errorbar=\"ci\", n_boot=1000, ax=None, **kwargs)",
+      "important_params": [
+        "x",
+        "y",
+        "hue",
+        "estimator",
+        "errorbar."
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ntips = sns.load_dataset(\"tips\").dropna()\n\nax = sns.barplot(data=tips, x=\"day\", y=\"total_bill\", hue=\"sex\")\nplt.show()",
+      "use_when": "1) category summaries. 2) reporting means or other estimates. 3) comparison across groups. 4) uncertainty communication. 5) dashboard KPIs.",
+      "avoid_when": "1) the raw data distribution is the main point. 2) bar height could be confused with count. 3) the category has too many observations to summarize blindly. 4) the estimator is not the message. 5) the audience needs distribution shape.",
+      "decision_notes": "Category: Categorical Plots\nModule: `seaborn`\nReturn Value: Matplotlib Axes.\nExpected Output: Aggregated bars with uncertainty representation across days and sex.\nPurpose: Show category-level point estimates with uncertainty.\nCommon Mistakes: using bars for raw distributions; forgetting the estimator changes meaning; comparing groups without consistent error bars; interpreting visual height as count by default; ignoring that aggregation may hide skew.\nRelated APIs: catplot, boxplot, violinplot",
+      "gotchas": [
+        "bar plots are summaries, not distributions",
+        "uncertainty matters",
+        "grouping changes interpretation",
+        "categorical order affects reading",
+        "the chosen estimator can radically change conclusions."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Axes-Level: Draw Vertical Bar Chart",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Draw Vertical Bar Chart",
+          "reason": "Lower-level bar chart with manual coordinates."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Create Bar Chart",
+          "reason": "Interactive bar chart with custom hover tooltips."
+        }
+      ]
+    },
+    {
+      "task": "Create Box Plot",
+      "mental_trigger": "I need a compact distribution summary by category.",
+      "syntax": "seaborn.boxplot(data=None, *, x=None, y=None, hue=None, whis=1.5, ax=None, **kwargs)",
+      "important_params": [
+        "x",
+        "y",
+        "hue",
+        "whis."
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ntips = sns.load_dataset(\"tips\").dropna()\n\nax = sns.boxplot(data=tips, x=\"day\", y=\"total_bill\", hue=\"sex\")\nplt.show()",
+      "use_when": "1) compare medians and IQRs. 2) inspect outliers. 3) summarize many observations compactly. 4) show category spread in reports. 5) compare multiple groups.",
+      "avoid_when": "1) the audience needs raw points or sample shape. 2) the dataset is tiny. 3) category counts differ dramatically and should be visible. 4) you need richer distribution shape than quartiles.",
+      "decision_notes": "Category: Categorical Plots\nModule: `seaborn`\nReturn Value: Matplotlib Axes.\nExpected Output: Box-and-whisker summaries by category.\nPurpose: Summarize distribution with robust quartiles and outliers.\nCommon Mistakes: treating box plots as complete distributions; ignoring sample size; misreading outlier rules; mixing too many categories; assuming mean is shown.\nRelated APIs: catplot, barplot, violinplot",
+      "gotchas": [
+        "quartiles hide multimodality",
+        "outlier rules can be surprising",
+        "category order matters",
+        "box plots can be too sparse for detailed analysis",
+        "width does not encode sample size unless carefully configured."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Draw Box Plot",
+          "reason": "Lower-level box plot with manual formatting option."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Create Box Plot",
+          "reason": "Interactive box plot with hover summaries."
+        }
+      ]
+    },
+    {
+      "task": "Create Violin Plot",
+      "mental_trigger": "I need a category-wise distribution plot with more shape detail than a box plot.",
+      "syntax": "seaborn.violinplot(data=None, *, x=None, y=None, hue=None, inner=\"box\", ax=None, **kwargs)",
+      "important_params": [
+        "x",
+        "y",
+        "hue",
+        "inner."
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ntips = sns.load_dataset(\"tips\").dropna()\n\nax = sns.violinplot(data=tips, x=\"day\", y=\"total_bill\", hue=\"sex\", inner=\"quart\")\nplt.show()",
+      "use_when": "1) inspect shape, skew, and multimodality. 2) compare distributions across groups. 3) publication graphics. 4) summarizing many observations compactly. 5) combining density and summary information.",
+      "avoid_when": "1) distribution shape may be overinterpreted from smoothing. 2) sample size is very small. 3) interpretability matters more than aesthetics. 4) the audience needs raw observations.",
+      "decision_notes": "Category: Categorical Plots\nModule: `seaborn`\nReturn Value: Matplotlib Axes.\nExpected Output: Violin shapes showing distribution density by category.\nPurpose: Show distribution shape with density envelope.\nCommon Mistakes: reading violin width as count without checking normalization; over-trusting smoothed density; forgetting `inner` changes detail shown; mixing too many categories; using it where a box plot is simpler.\nRelated APIs: catplot, boxplot, barplot",
+      "gotchas": [
+        "density smoothing can mislead",
+        "violins may hide sample size differences",
+        "inner annotations affect readability",
+        "category ordering matters",
+        "narrow distributions can be visually compressed."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Draw Violin Plot",
+          "reason": "Lower-level violin plot customization."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Create Violin Plot",
+          "reason": "Interactive violin plot with custom hover info."
+        }
+      ]
+    },
+    {
+      "task": "Create Count Plot",
+      "mental_trigger": "I need frequency counts for a categorical variable.",
+      "syntax": "seaborn.countplot(data=None, *, x=None, y=None, hue=None, ax=None, **kwargs)",
+      "important_params": [
+        "x",
+        "y",
+        "hue."
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ntips = sns.load_dataset(\"tips\").dropna()\n\nax = sns.countplot(data=tips, x=\"day\", hue=\"sex\")\nplt.show()",
+      "use_when": "1) category frequency analysis. 2) dataset audit. 3) class balance checks. 4) quality control. 5) quick categorical summaries.",
+      "avoid_when": "1) normalized proportions are required and not displayed separately. 2) the variable is continuous. 3) you need distribution shape within categories. 4) there are too many levels to read clearly.",
+      "decision_notes": "Category: Categorical Plots\nModule: `seaborn`\nReturn Value: Matplotlib Axes.\nExpected Output: Bars showing counts per category.\nPurpose: Count observations in categories.\nCommon Mistakes: confusing count with proportion; overloading hue levels; using it for non-categorical data; misreading grouped bars; not sorting categories.\nRelated APIs: catplot, barplot",
+      "gotchas": [
+        "counts can be misleading when sample sizes differ across subsets",
+        "order matters",
+        "hue interactions change interpretation",
+        "missing values are often dropped",
+        "raw counts can hide imbalance."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Draw Vertical Bar Chart",
+          "reason": "Requires manually precomputing frequencies first."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Create Histogram",
+          "reason": "Plotly Express histogram defaults to counting categories."
+        }
+      ]
+    },
+    {
+      "task": "Create Point Plot",
+      "mental_trigger": "I need a compact estimate-and-interval chart across categories.",
+      "syntax": "seaborn.pointplot(data=None, *, x=None, y=None, hue=None, estimator=\"mean\", errorbar=\"ci\", ax=None, **kwargs)",
+      "important_params": [
+        "x",
+        "y",
+        "hue",
+        "estimator",
+        "errorbar."
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ntips = sns.load_dataset(\"tips\").dropna()\n\nax = sns.pointplot(data=tips, x=\"day\", y=\"total_bill\", hue=\"sex\")\nplt.show()",
+      "use_when": "1) compare category means or estimates. 2) show trends across ordered categories. 3) compact summary for many groups. 4) emphasize relative changes. 5) communicate uncertainty clearly.",
+      "avoid_when": "1) the raw distribution matters more than the estimate. 2) category ordering is ambiguous. 3) too many categories make lines confusing. 4) the audience could misread connected points as a continuous series.",
+      "decision_notes": "Category: Categorical Plots\nModule: `seaborn`\nReturn Value: Matplotlib Axes.\nExpected Output: Points connected by category, with uncertainty intervals.\nPurpose: Show point estimates with uncertainty and category comparisons.\nCommon Mistakes: assuming connected points imply continuity; comparing unordered categories; hiding uncertainty; overusing too many hues; treating the default estimator as universally appropriate.\nRelated APIs: catplot, barplot",
+      "gotchas": [
+        "intervals matter more than point markers",
+        "category order drives interpretation",
+        "line connections can imply ranking",
+        "estimator choice matters",
+        "crowded plots become unreadable quickly."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Create Line Plot",
+          "reason": "Plotly Express line plot with markers and error bars."
+        }
+      ]
+    },
+    {
+      "task": "Create Heatmap",
+      "mental_trigger": "I need a grid view of numeric relationships or a table-like matrix plot.",
+      "syntax": "seaborn.heatmap(data, *, annot=False, fmt=\".2g\", cmap=None, cbar=True, ax=None, **kwargs)",
+      "important_params": [
+        "data",
+        "annot",
+        "fmt",
+        "cmap",
+        "cbar."
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\npenguins = sns.load_dataset(\"penguins\").dropna()\ncorr = penguins.select_dtypes(\"number\").corr()\n\nax = sns.heatmap(corr, annot=True, cmap=\"vlag\")\nplt.show()",
+      "use_when": "1) correlation inspection. 2) dense table visualization. 3) missingness patterns. 4) matrix summaries. 5) feature relationship screening.",
+      "avoid_when": "1) exact numeric reading is the goal for many cells. 2) the matrix is too large. 3) color scales hide important meaning. 4) the audience needs interactivity.",
+      "decision_notes": "Category: Matrix Plots\nModule: `seaborn`\nReturn Value: Matplotlib Axes.\nExpected Output: A correlation matrix heatmap with numeric annotations.\nPurpose: Show rectangular numeric data as a color-encoded matrix.\nCommon Mistakes: using an unsuitable colormap; forgetting normalization semantics; annotating too many cells; reading color differences too literally; not ordering rows/columns when structure matters.\nRelated APIs: clustermap",
+      "gotchas": [
+        "color scale choice matters hugely",
+        "annotations can clutter large matrices",
+        "clustered or reordered matrices can tell a different story",
+        "symmetric matrices can still be read incorrectly",
+        "colorbars need careful labeling."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Display Heatmap Or Image",
+          "reason": "Lower-level image display of matrix values."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Create Density Heatmap",
+          "reason": "Interactive density heatmap."
+        }
+      ]
+    },
+    {
+      "task": "Create Clustermap",
+      "mental_trigger": "I need to see matrix structure and cluster similar rows or columns.",
+      "syntax": "seaborn.clustermap(data, *, metric=\"euclidean\", method=\"average\", cmap=None, figsize=None, **kwargs)",
+      "important_params": [
+        "data",
+        "metric",
+        "method",
+        "cmap",
+        "figsize."
+      ],
+      "example": "import seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\").dropna()\ncorr = penguins.select_dtypes(\"number\").corr()\n\ng = sns.clustermap(corr, cmap=\"vlag\")",
+      "use_when": "1) similarity analysis. 2) structure discovery. 3) grouped correlation patterns. 4) exploratory clustering. 5) matrix reordering.",
+      "avoid_when": "1) clustering is not the question. 2) the matrix is very large. 3) deterministic ordering is more important than derived ordering. 4) you need tight Matplotlib subplot control.",
+      "decision_notes": "Category: Matrix Plots\nModule: `seaborn`\nReturn Value: ClusterGrid.\nExpected Output: A clustered matrix visualization with dendrograms.\nPurpose: Draw a clustered heatmap with hierarchical clustering.\nCommon Mistakes: assuming clustering is always meaningful; ignoring scale normalization; using it on sparse or noisy matrices without caution; confusing dendrogram structure with ground truth; overloading large matrices.\nRelated APIs: heatmap",
+      "gotchas": [
+        "clustering changes the visual order",
+        "computed distances drive the result",
+        "output is a grid object, not a simple Axes",
+        "the matrix may need preprocessing",
+        "render cost increases quickly with size."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Build Relational Faceted Plot",
+      "mental_trigger": "I need the same relational plot split across subsets.",
+      "syntax": "seaborn.relplot(data=None, *, x=None, y=None, hue=None, row=None, col=None, kind=\"scatter\", facet_kws=None, **kwargs)",
+      "important_params": [
+        "x",
+        "y",
+        "hue",
+        "row",
+        "col."
+      ],
+      "example": "import seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\ng = sns.relplot(\n    data=penguins,\n    x=\"bill_length_mm\",\n    y=\"bill_depth_mm\",\n    hue=\"species\",\n    col=\"island\",\n    kind=\"scatter\",\n)",
+      "use_when": "1) compare subsets. 2) manage multiple categories. 3) standardize layout. 4) automate subplot creation. 5) build report-ready faceted graphics.",
+      "avoid_when": "1) you need fully manual subplot control. 2) the grid would be too large. 3) one panel is enough. 4) the faceting variable has too many levels.",
+      "decision_notes": "Category: Figure-level Plots\nModule: `seaborn`\nReturn Value: FacetGrid.\nExpected Output: A faceted relational grid, one panel per island.\nPurpose: Create faceted relational plots with automatic layout.\nCommon Mistakes: faceting too many levels; forgetting that layout is automatic; over-encoding hue and facets together; not checking shared scales; mixing incompatible plot kinds.\nRelated APIs: scatterplot, lineplot",
+      "gotchas": [
+        "grid ownership differs from axes-level plots",
+        "panel comparability depends on shared axes",
+        "automatic layout can surprise you",
+        "too many facets reduce readability",
+        "category ordering affects panel order."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Build Categorical Faceted Plot",
+      "mental_trigger": "I need a grouped categorical summary across subsets.",
+      "syntax": "seaborn.catplot(data=None, *, x=None, y=None, hue=None, row=None, col=None, kind=\"strip\", **kwargs)",
+      "important_params": [
+        "x",
+        "y",
+        "hue",
+        "row",
+        "col"
+      ],
+      "example": "import seaborn as sns\n\ntips = sns.load_dataset(\"tips\").dropna()\n\ng = sns.catplot(\n    data=tips,\n    x=\"day\",\n    y=\"total_bill\",\n    hue=\"sex\",\n    col=\"time\",\n    kind=\"box\",\n)",
+      "use_when": "1) compare category summaries across subsets. 2) automate repeated categorical charts. 3) create compact report graphics. 4) standardize stylistic layout. 5) reduce plotting boilerplate.",
+      "avoid_when": "1) you want a single non-faceted plot. 2) the categories are too crowded. 3) the faceting dimension is not analytically meaningful. 4) exact subplot ownership is required.",
+      "decision_notes": "Category: Figure-level Plots\nModule: `seaborn`\nReturn Value: FacetGrid.\nExpected Output: A faceted categorical grid.\nPurpose: Create faceted categorical plots with automatic layout.\nCommon Mistakes: over-faceting; mixing too many encodings; choosing an unsuitable `kind`; not accounting for panel scaling; forgetting the grid object must often be post-adjusted.\nRelated APIs: barplot, boxplot, violinplot",
+      "gotchas": [
+        "`kind` changes semantics",
+        "layout is managed for you",
+        "palette consistency across facets matters",
+        "category ordering should be explicit",
+        "axes-level post-processing still may be needed."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Build Distribution Faceted Plot",
+      "mental_trigger": "I need distribution comparison across subsets with one call.",
+      "syntax": "seaborn.displot(data=None, *, x=None, y=None, hue=None, row=None, col=None, kind=\"hist\", **kwargs)",
+      "important_params": [
+        "x",
+        "y",
+        "hue",
+        "row",
+        "col"
+      ],
+      "example": "import seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\ng = sns.displot(\n    data=penguins,\n    x=\"bill_length_mm\",\n    hue=\"species\",\n    col=\"island\",\n    kind=\"kde\",\n)",
+      "use_when": "1) compare distributions by subgroup. 2) create standardized exploratory panels. 3) report shape differences. 4) reduce repeated subplot code. 5) manage layout automatically.",
+      "avoid_when": "1) you need a single panel. 2) you need manual axes ownership. 3) the faceting dimension is too large. 4) the chart needs direct Matplotlib composition.",
+      "decision_notes": "Category: Figure-level Plots\nModule: `seaborn`\nReturn Value: FacetGrid.\nExpected Output: A faceted distribution grid.\nPurpose: Create faceted distribution plots with automatic layout.\nCommon Mistakes: using the wrong distribution kind; faceting on too many categories; ignoring common normalization; failing to think about binning or smoothing; assuming one size fits all.\nRelated APIs: histplot, kdeplot, ecdfplot",
+      "gotchas": [
+        "`kind` materially changes interpretation",
+        "distribution defaults can hide density details",
+        "grid layout is automatic",
+        "shared normalization matters",
+        "large grids become expensive."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Configure Theme",
+      "mental_trigger": "I need consistent styling across a plotting session or project.",
+      "syntax": "seaborn.set_theme(context=\"notebook\", style=\"darkgrid\", palette=\"deep\", font=\"sans-serif\", font_scale=1, color_codes=True, rc=None)",
+      "important_params": [
+        "context",
+        "style",
+        "palette",
+        "font",
+        "rc."
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nsns.set_theme(style=\"whitegrid\", palette=\"deep\")\n\ntips = sns.load_dataset(\"tips\").dropna()\nsns.boxplot(data=tips, x=\"day\", y=\"total_bill\")\nplt.show()",
+      "use_when": "1) notebook startup. 2) report generation. 3) style standardization. 4) cross-plot consistency. 5) brand alignment.",
+      "avoid_when": "1) you need isolated styling for one plot only. 2) other code depends on unchanged Matplotlib defaults. 3) you are inside shared global state you cannot reset.",
+      "decision_notes": "Category: Styling\nModule: `seaborn`\nReturn Value: None.\nExpected Output: A box plot rendered with project-wide theme settings.\nPurpose: Set global visual defaults.\nCommon Mistakes: changing global state mid-notebook; mixing several theme calls without a reset plan; assuming theme changes are local; forgetting downstream plots inherit the settings; not version-pinning styling behavior.\nRelated APIs: set_style, set_context, set_palette",
+      "gotchas": [
+        "theme calls affect Matplotlib globally",
+        "styling may persist across cells and functions",
+        "palette selection changes the default cycle",
+        "context changes element scaling",
+        "use explicit resets when needed."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Configure Palette",
+      "mental_trigger": "I need deterministic color control across plots.",
+      "syntax": "seaborn.set_palette(palette, n_colors=None, desat=None, color_codes=False) and seaborn.color_palette(palette=None, n_colors=None, desat=None)",
+      "important_params": [
+        "palette",
+        "n_colors",
+        "desat",
+        "color_codes."
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nsns.set_palette(\"colorblind\")\n\ntips = sns.load_dataset(\"tips\").dropna()\nsns.countplot(data=tips, x=\"day\", hue=\"sex\")\nplt.show()",
+      "use_when": "1) accessibility-oriented palettes. 2) brand palette alignment. 3) consistent categorical coloring. 4) publication figures. 5) repeated report templates.",
+      "avoid_when": "1) the palette choice conflicts with semantic meaning. 2) you are relying on default Matplotlib colors and expecting no changes. 3) you need a one-off local palette only.",
+      "decision_notes": "Category: Styling\nModule: `seaborn`\nReturn Value: `set_palette` returns None; `color_palette` returns a palette object or list of colors.\nExpected Output: A count plot using the chosen color cycle.\nPurpose: Set or retrieve palette colors for plots.\nCommon Mistakes: using too many categorical colors; not checking colorblind readability; confusing palette with colormap; changing global palette accidentally; assuming palette choice is cosmetic only.\nRelated APIs: color_palette, set_palette",
+      "gotchas": [
+        "palette changes can affect all subsequent plots",
+        "some palettes are better for categories than continuous values",
+        "color codes can alter shorthand interpretation",
+        "consistent palette usage matters in multi-figure reports."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Remove Spines",
+      "mental_trigger": "I need cleaner plot framing for publication or dashboards.",
+      "syntax": "seaborn.despine(fig=None, ax=None, top=True, right=True, left=False, bottom=False, offset=None, trim=False)",
+      "important_params": [
+        "fig",
+        "ax",
+        "top",
+        "right",
+        "trim."
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ntips = sns.load_dataset(\"tips\").dropna()\nax = sns.scatterplot(data=tips, x=\"total_bill\", y=\"tip\")\nsns.despine()\nplt.show()",
+      "use_when": "1) publication styling. 2) minimalist dashboards. 3) improving focus on marks. 4) reducing visual clutter. 5) aligning with Seaborn defaults.",
+      "avoid_when": "1) you need full axis framing. 2) you rely on Matplotlib default borders for reference. 3) the design system requires all spines. 4) axis boundaries are critical for interpretation.",
+      "decision_notes": "Category: Styling\nModule: `seaborn`\nReturn Value: None.\nExpected Output: A cleaner scatter plot with simplified spines.\nPurpose: Simplify plot appearance by removing top and right spines.\nCommon Mistakes: removing too many spines; applying it before final layout; assuming it affects only one axes when called globally; trimming inappropriately; forgetting it is a styling decision, not data logic.\nRelated APIs: despine",
+      "gotchas": [
+        "spine changes are visual only",
+        "figure-wide effects can surprise in multi-axes layouts",
+        "trimming may clip expectations",
+        "it should match the chart’s purpose",
+        "it does not replace good axis labeling."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Build Pairwise Plot Matrix",
+      "mental_trigger": "I need an overview of pairwise relationships across several numeric columns.",
+      "syntax": "seaborn.pairplot(data, *, hue=None, vars=None, kind=\"scatter\", diag_kind=\"auto\", corner=False, **kwargs)",
+      "important_params": [
+        "data",
+        "hue",
+        "vars",
+        "kind",
+        "diag_kind."
+      ],
+      "example": "import seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\ng = sns.pairplot(penguins, hue=\"species\")",
+      "use_when": "1) multivariate screening. 2) feature relationship exploration. 3) class separation analysis. 4) quick EDA. 5) model feature inspection.",
+      "avoid_when": "1) the dataset has many variables and the grid becomes too large. 2) memory use matters. 3) a focused subset would be clearer. 4) you need custom faceting logic.",
+      "decision_notes": "Category: Figure-level Plots\nModule: `seaborn`\nReturn Value: PairGrid.\nExpected Output: A matrix of pairwise plots and marginal distributions.\nPurpose: Compare multiple variable pairs in one grid.\nCommon Mistakes: using too many columns; forgetting to subset features; overplotting dense points; ignoring diagonal plot choice; assuming pairwise grids scale well.\nRelated APIs: pairplot",
+      "gotchas": [
+        "pair plots are expensive on wide data",
+        "hue can dominate visuals",
+        "diagonal summaries matter",
+        "large grids can be unreadable",
+        "the returned object often needs post-adjustment."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Create Scatter Matrix",
+          "reason": "Interactive pairwise scatter plot matrix."
+        }
+      ]
+    },
+    {
+      "task": "Objects API: Create Plot Specification",
+      "mental_trigger": "I need to build a reusable, composable plot specification instead of drawing a one-off Matplotlib figure.",
+      "syntax": "Plot(data=None, *, x=None, y=None, color=None, alpha=None, label=None, order=None, ...)",
+      "important_params": [
+        "data",
+        "x",
+        "y",
+        "color",
+        "label"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\n(\n    so.Plot(penguins, x=\"bill_length_mm\", y=\"bill_depth_mm\", color=\"species\")\n    .add(so.Dot(alpha=0.7))\n)",
+      "use_when": "1) You need a grammar-of-graphics style workflow. seaborn.pydata. 2) You want to compose multiple marks and stats from one plot specification. seaborn.pydata. 3) You want explicit control over data mappings before rendering. seaborn.pydata. 4) You want to standardize plotting patterns across a project. seaborn.pydata. 5) You want to adopt a more declarative plotting style for production code.",
+      "avoid_when": "1) You need the simplest possible one-line axes-level plot. seaborn.pydata. 2) You need legacy figure-level APIs already in place. 3) Your team depends heavily on older Seaborn idioms and has not standardized on the objects interface. 4) You need direct Matplotlib artist manipulation as the primary workflow. 5) You only need a quick exploratory chart with minimal structure.",
+      "decision_notes": "Category: Objects interface\nModule: `seaborn.objects`\nReturn Value: Plot\nExpected Output: A declarative scatter-style plot specification rendered with dot marks, colored by species.\nPurpose: Declaratively define a statistical graphic as a composition of data, semantic mappings, and attached marks/stats/moves/scales.\nCommon Mistakes: Treating `Plot` like an immediate Matplotlib draw call; Mixing too many semantics before verifying the base mapping; Assuming the objects API behaves identically to axes-level functions; Forgetting that composition happens through chained plot methods; Expecting the same return type as older Seaborn functions.\nRelated APIs: `add`, `pair`, `facet`, `layout`, `scale`, `label`, `limit`, `share`, `theme`, `save`, `show`",
+      "gotchas": [
+        "The objects API is compositional; the order of transformations matters.",
+        "It is a different mental model from axes-level plotting.",
+        "Marks and stats are attached explicitly rather than implied by a function name.",
+        "It is easy to overbuild simple charts when a simpler API would suffice.",
+        "Team consistency matters because the API is declarative and reusable."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API: Add Layer (Mark/Stat/Move)",
+      "mental_trigger": "I need to layer a visual mark, then optionally transform or reposition the data before rendering.",
+      "syntax": "Plot.add(mark, stat=None, move=None, orient=None, legend=True, label=None, **kwargs)",
+      "important_params": [
+        "mark",
+        "stat",
+        "move",
+        "orient",
+        "legend"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\ntips = sns.load_dataset(\"tips\").dropna()\n\n(\n    so.Plot(tips, x=\"total_bill\", y=\"tip\")\n    .add(so.Dots(), so.PolyFit())\n)",
+      "use_when": "1) You need to add one or more marks to the same plot. seaborn.pydata. 2) You want to combine raw data with aggregation or smoothing. seaborn.pydata. 3) You need to apply a move such as jitter or dodge in an explicit pipeline. seaborn.pydata. 4) You want multiple layers on a single chart. seaborn.pydata. 5) You want plot composition to remain readable and deterministic.",
+      "avoid_when": "1) You only need a one-off simple chart and do not need layering. 2) You are using a non-objects API workflow. 3) You expect automatic legacy function behavior without explicit composition. 4) You want to hide the data transformation stage. 5) You need immediate Matplotlib artist access before rendering.",
+      "decision_notes": "Category: Objects interface\nModule: `seaborn.objects`\nReturn Value: Plot\nExpected Output: A scatter-style plot with a fitted polynomial trend line over the same data.\nPurpose: Attach marks and optional statistical or positional transforms to a `Plot` specification.\nCommon Mistakes: Assuming `add` automatically chooses the right mark; Combining incompatible mark and stat types without checking output shape; Over-layering until the figure becomes unreadable; Forgetting that transform order affects the result; Passing transformations that do not match the intended orientation.\nRelated APIs: `Plot`, `pair`, `facet`, `scale`, `show`, `save`",
+      "gotchas": [
+        "Layering is explicit, so each step must make sense compositionally.",
+        "Some transforms are intended for grouped or aggregated data.",
+        "Resulting legend behavior may differ from older APIs.",
+        "The same visual can be built several ways, but not all are equally readable.",
+        "Explicit composition can expose data issues earlier than automatic plotting."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API: Repetition Pairwise Plot",
+      "mental_trigger": "I need to generate the same plotting logic across multiple variable pairs.",
+      "syntax": "Plot.pair(spec=None, orient=None, **kwargs)",
+      "important_params": [
+        "spec",
+        "orient",
+        "kwargs"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\n(\n    so.Plot(penguins, x=\"bill_length_mm\", y=\"bill_depth_mm\")\n    .pair(so.Dot())\n)",
+      "use_when": "1) You are building multi-variable comparisons. seaborn.pydata. 2) You want repeated structure with less duplication. seaborn.pydata. 3) You need pairwise plot generation in a declarative workflow. seaborn.pydata. 4) You want to explore combinations of variables systematically. seaborn.pydata. 5) You need consistent visual logic across repeated panels.",
+      "avoid_when": "1) You only need a single chart. 2) You need a legacy pairwise grid API. 3) Your chart logic is too small to benefit from repetition. 4) The repeated plot would become visually cluttered. 5) You do not need a declarative specification.",
+      "decision_notes": "Category: Objects interface\nModule: `seaborn.objects`\nReturn Value: Plot\nExpected Output: A repeated plotting specification suitable for pairwise comparison workflows.\nPurpose: Create paired or repeated plot specifications across variables or semantic combinations.\nCommon Mistakes: Using `pair` when `facet` is the correct tool; Confusing repeated plot specifications with pairwise grid objects; Overusing repetition on large datasets; Expecting a single-axes result; Ignoring readability when pairing too many variables.\nRelated APIs: `Plot`, `facet`, `add`, `show`, `save`",
+      "gotchas": [
+        "Pairwise repetition can multiply plot cost quickly.",
+        "The output structure is more abstract than figure-level grids.",
+        "It is easy to overfit the visual layout to the data shape.",
+        "Repeat logic should be intentional, not automatic by default.",
+        "The most readable pairwise plots are usually the simplest ones."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API: Split Plot across Facets",
+      "mental_trigger": "I need the same plot repeated across subsets of my data.",
+      "syntax": "Plot.facet(row=None, col=None, wrap=None, order=None, **kwargs)",
+      "important_params": [
+        "row",
+        "col",
+        "wrap",
+        "order",
+        "kwargs"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\n(\n    so.Plot(penguins, x=\"bill_length_mm\", y=\"bill_depth_mm\", color=\"species\")\n    .add(so.Dot())\n    .facet(col=\"island\")\n)",
+      "use_when": "1) You need conditioned comparisons across categories. seaborn.pydata. 2) You want to compare distributions across panels. seaborn.pydata. 3) You need a grid of consistent plots with shared semantics. seaborn.pydata. 4) You want to inspect subgroup differences without changing plot logic. seaborn.pydata. 5) You need a scalable comparison view for report figures.",
+      "avoid_when": "1) A single panel is enough. 2) The number of groups is too large to fit cleanly. 3) The subsets are too small to justify faceting. 4) You need a custom subplot architecture already built in Matplotlib. 5) Layout constraints are more important than semantic clarity.",
+      "decision_notes": "Category: Objects interface\nModule: `seaborn.objects`\nReturn Value: Plot\nExpected Output: A faceted panel layout showing the same relationship across islands.\nPurpose: Split a declarative plot across rows and columns for small-multiple comparisons.\nCommon Mistakes: Faceting on a variable with too many levels; Forgetting to control facet order; Using faceting when hue alone would suffice; Allowing panel comparisons to become visually inconsistent; Ignoring that each facet increases rendering cost.\nRelated APIs: `Plot`, `pair`, `add`, `share`, `layout`",
+      "gotchas": [
+        "Faceting changes figure size and layout pressure.",
+        "Small-multiple readability depends on consistent scales.",
+        "Too many panels can make labels unusable.",
+        "Faceting and hue together can overcomplicate the chart.",
+        "Panel order becomes part of the analytic message."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API: Configure Plot Layout",
+      "mental_trigger": "I need to adjust how the composed figure is arranged.",
+      "syntax": "Plot.layout(**kwargs)",
+      "important_params": [
+        "kwargs",
+        "tight",
+        "pad",
+        "width",
+        "height"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\n(\n    so.Plot(penguins, x=\"bill_length_mm\", y=\"bill_depth_mm\", color=\"species\")\n    .add(so.Dot())\n    .facet(col=\"island\")\n    .layout()\n)",
+      "use_when": "1) You need control over plot spacing or layout behavior. seaborn.pydata. 2) Facets require layout tuning. seaborn.pydata. 3) You are preparing a publication-style figure. seaborn.pydata. 4) You need to make multiple panels fit cleanly. seaborn.pydata. 5) You want layout behavior to be explicit in code.",
+      "avoid_when": "1) A default layout is already clear and readable. 2) You are not using the objects interface. 3) Matplotlib-level layout tools are already sufficient for your workflow. 4) You need no panel arrangement changes. 5) You want to avoid unnecessary configuration.",
+      "decision_notes": "Category: Objects interface\nModule: `seaborn.objects`\nReturn Value: Plot\nExpected Output: A faceted plot with layout handling applied by the objects interface.\nPurpose: Control plot layout behavior in the objects interface.\nCommon Mistakes: Assuming layout is purely cosmetic; Trying to fix structural clutter only with labels; Forgetting to adjust figure size alongside layout; Overcomplicating small plots with layout tuning; Assuming layout changes do not affect readability.\nRelated APIs: `Plot`, `facet`, `share`, `show`, `save`",
+      "gotchas": [
+        "Layout and facet count interact strongly.",
+        "A bad layout can ruin an otherwise correct plot.",
+        "Figure geometry may need multiple iterations.",
+        "The objects API can expose layout pressure quickly.",
+        "Production plots should validate panel spacing visually."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Set Figure Or Axes Title",
+          "reason": "Configure static figure titles."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Update Figure Layout",
+          "reason": "Interactive figure title and layout updates."
+        }
+      ]
+    },
+    {
+      "task": "Objects API: Configure Scale Behavior",
+      "mental_trigger": "I need to control how data values map to visual space.",
+      "syntax": "Plot.scale(**kwargs)",
+      "important_params": [
+        "kwargs",
+        "x",
+        "y",
+        "color",
+        "size"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\n(\n    so.Plot(penguins, x=\"bill_length_mm\", y=\"bill_depth_mm\", color=\"species\")\n    .add(so.Dot())\n    .scale(color=so.Nominal())\n)",
+      "use_when": "1) You need explicit scale control. seaborn.pydata. 2) Continuous and categorical semantics need different mappings. seaborn.pydata. 3) You want consistent visual encoding across plots. seaborn.pydata. 4) You are matching plot semantics to a publication style. seaborn.pydata. 5) You need to normalize or constrain visual mapping behavior.",
+      "avoid_when": "1) Default scales already communicate the data clearly. 2) You are not using the objects interface. 3) You need only Matplotlib axis scaling. 4) The plot is too simple to justify scale tuning. 5) Visual encoding is already standardized elsewhere.",
+      "decision_notes": "Category: Objects interface\nModule: `seaborn.objects`\nReturn Value: Plot\nExpected Output: A plot whose color mapping uses a nominal categorical scale.\nPurpose: Set or override scale behavior for one or more plot semantics.\nCommon Mistakes: Mixing nominal and continuous scales unintentionally; Assuming color and position scales behave the same way; Forgetting that scale choice changes interpretation; Using scale customization only after the chart looks wrong; Not standardizing scales across related charts.\nRelated APIs: `Plot`, `label`, `limit`, `share`, `theme`",
+      "gotchas": [
+        "Scale mapping is part of the chart’s meaning, not just formatting.",
+        "Nominal scales are categorical, not magnitude-aware.",
+        "Incorrect scale choice can distort comparisons.",
+        "Scale behavior should match the data type.",
+        "Consistent scales improve cross-figure comparability."
+      ],
+      "official_docs": "https://seaborn.pydata.org/generated/seaborn.objects.Nominal.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API: Configure Plot Labels",
+      "mental_trigger": "I need the plot to carry presentation labels without manual post-processing.",
+      "syntax": "Plot.label(**kwargs)",
+      "important_params": [
+        "kwargs",
+        "title",
+        "xlabel",
+        "ylabel",
+        "legend"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\n(\n    so.Plot(penguins, x=\"bill_length_mm\", y=\"bill_depth_mm\", color=\"species\")\n    .add(so.Dot())\n    .label(x=\"Bill length (mm)\", y=\"Bill depth (mm)\")\n)",
+      "use_when": "1) You want label definitions inside the plot spec. seaborn.pydata. 2) You need a reusable labeled plot object. seaborn.pydata. 3) You want to reduce post-render Matplotlib edits. seaborn.pydata. 4) You are generating report-ready output. seaborn.pydata. 5) You need consistency across generated plots.",
+      "avoid_when": "1) You will fully customize text using Matplotlib afterward. 2) The chart is only exploratory and temporary. 3) Labels are already centrally managed elsewhere. 4) You need no change from defaults. 5) The rendering target is not presentation-oriented.",
+      "decision_notes": "Category: Objects interface\nModule: `seaborn.objects`\nReturn Value: Plot\nExpected Output: A labeled scatter plot with custom axis text.\nPurpose: Set axis, legend, or figure labels in a declarative plot specification.\nCommon Mistakes: Overlapping chart labels and Matplotlib text edits; Forgetting to standardize label text in generated reports; Confusing semantic labels with data column names; Relying on defaults in production output; Using label changes to compensate for weak data design.\nRelated APIs: `Plot`, `layout`, `theme`, `show`, `save`",
+      "gotchas": [
+        "Declarative labels reduce the need for post-processing.",
+        "Labels should be chosen alongside figure purpose.",
+        "Consistent label text improves downstream reuse.",
+        "Some label behavior is tied to the chosen plot structure.",
+        "Presentation text still needs review for clarity."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Axes-Level: Set Title",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Axes-Level: Set X-Axis Label",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Axes-Level: Set Y-Axis Label",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Set Figure Or Axes Title",
+          "reason": "Standard manual title configuration."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Set X-Axis Label",
+          "reason": "Standard manual label setter for X-axis."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Set Y-Axis Label",
+          "reason": "Standard manual label setter for Y-axis."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Update Figure Layout",
+          "reason": "Interactive layout configuration including titles."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Update X-Axes",
+          "reason": "Equivalent implementation in plotly-express."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Update Y-Axes",
+          "reason": "Equivalent implementation in plotly-express."
+        }
+      ]
+    },
+    {
+      "task": "Objects API: Configure Axis Limits",
+      "mental_trigger": "I need to clip or standardize displayed ranges across comparable plots.",
+      "syntax": "Plot.limit(**kwargs)",
+      "important_params": [
+        "kwargs",
+        "x",
+        "y",
+        "tuple",
+        "None"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\n(\n    so.Plot(penguins, x=\"bill_length_mm\", y=\"bill_depth_mm\")\n    .add(so.Dot())\n    .limit(x=(30, 60))\n)",
+      "use_when": "1) You need consistent comparison ranges. seaborn.pydata. 2) Outliers should not dominate the visible scale. seaborn.pydata. 3) Multiple plots need aligned axes. seaborn.pydata. 4) The publication format requires fixed limits. seaborn.pydata. 5) You want to focus attention on a region of interest.",
+      "avoid_when": "1) The full range is analytically important. 2) You need raw extremes to remain visible. 3) The chart is exploratory and should remain unconstrained. 4) Limits would hide critical observations. 5) You are not working in the objects interface.",
+      "decision_notes": "Category: Objects interface\nModule: `seaborn.objects`\nReturn Value: Plot\nExpected Output: A scatter plot restricted to the specified x-axis range.\nPurpose: Constrain axis limits in a declarative plot specification.\nCommon Mistakes: Clipping away important data; Using limits to hide outliers without explanation; Comparing plots with inconsistent ranges; Assuming limits are only cosmetic; Forgetting that range changes alter interpretation.\nRelated APIs: `Plot`, `scale`, `share`, `facet`",
+      "gotchas": [
+        "Limits are part of the analytic narrative.",
+        "Range restriction can make plots look cleaner but less complete.",
+        "Axis alignment is important for comparison.",
+        "Hidden data may still matter statistically.",
+        "Explicit limits should be chosen deliberately."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Set Horizontal Axis Limits",
+          "reason": "Static X-axis limits configuration."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Set Vertical Axis Limits",
+          "reason": "Static Y-axis limits configuration."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Update X-Axes",
+          "reason": "Interactive range limits for X axis."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Update Y-Axes",
+          "reason": "Interactive range limits for Y axis."
+        }
+      ]
+    },
+    {
+      "task": "Objects API: Configure Shared Scales",
+      "mental_trigger": "I need consistent or independent scales across multiple panels.",
+      "syntax": "Plot.share(**kwargs)",
+      "important_params": [
+        "kwargs",
+        "x",
+        "y",
+        "legend",
+        "limits"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\n(\n    so.Plot(penguins, x=\"bill_length_mm\", y=\"bill_depth_mm\", color=\"species\")\n    .add(so.Dot())\n    .facet(col=\"island\")\n    .share(x=True, y=True)\n)",
+      "use_when": "1) Faceted plots must be directly comparable. seaborn.pydata. 2) Different subsets need independent ranges for readability. seaborn.pydata. 3) You want consistent axes for small multiples. seaborn.pydata. 4) You need to reduce visual distortion across panels. seaborn.pydata. 5) You are managing multi-panel statistical graphics.",
+      "avoid_when": "1) Panel sharing is not relevant. 2) You are not faceting. 3) The default sharing choice already fits the analysis. 4) Independent scaling would confuse cross-panel comparison. 5) You need a simple single-axis plot.",
+      "decision_notes": "Category: Objects interface\nModule: `seaborn.objects`\nReturn Value: Plot\nExpected Output: A faceted plot with shared axes for consistent comparison.\nPurpose: Control whether scales or axes are shared across facets.\nCommon Mistakes: Comparing panels with different axis scales unknowingly; Using independent scales when direct comparison is required; Ignoring the role of sharing in facet readability; Mixing panel-wise and global scaling intent; Assuming all facet defaults are ideal.\nRelated APIs: `Plot`, `facet`, `limit`, `layout`",
+      "gotchas": [
+        "Shared axes improve comparability but can compress smaller groups.",
+        "Independent axes can improve local readability but weaken comparison.",
+        "Sharing choices affect analytic interpretation.",
+        "Facet design and share policy should be planned together.",
+        "Consistency is often more important than local optimization."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API: Configure Plot Theme",
+      "mental_trigger": "I need plot styling to travel with the plot specification.",
+      "syntax": "Plot.theme(**kwargs)",
+      "important_params": [
+        "kwargs",
+        "context",
+        "style",
+        "palette",
+        "rc"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\n(\n    so.Plot(penguins, x=\"bill_length_mm\", y=\"bill_depth_mm\", color=\"species\")\n    .add(so.Dot())\n    .theme()\n)",
+      "use_when": "1) You want styling bound to a reusable plot object. seaborn.pydata. 2) You need consistent theme behavior in generated figures. seaborn.pydata. 3) You want to reduce reliance on global style state. seaborn.pydata. 4) You are producing report figures with a known style. seaborn.pydata. 5) You want declarative styling alongside declarative marks.",
+      "avoid_when": "1) Project styling is already handled globally. 2) You are not using the objects interface. 3) You need only a one-off rc tweak in Matplotlib. 4) Style settings are controlled by another layer. 5) Global state is intentional and sufficient.",
+      "decision_notes": "Category: Objects interface\nModule: `seaborn.objects`\nReturn Value: Plot\nExpected Output: A plot rendered with theme settings applied through the objects interface.\nPurpose: Apply theme-level styling inside the objects interface.\nCommon Mistakes: Assuming object-level theme calls are identical to global theme functions; Overriding project styling inconsistently; Mixing local and global style management without a policy; Forgetting that style affects production output; Treating theme settings as a minor cosmetic detail.\nRelated APIs: `Plot`, `label`, `layout`, `show`, `save`",
+      "gotchas": [
+        "Theme state can leak into adjacent figures if used carelessly.",
+        "Declarative themeing helps reproducibility.",
+        "Consistency matters more than ad hoc tweaks.",
+        "Theme choices should align with output medium.",
+        "Style management should be intentional in team code."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Apply Built-In Style Sheet",
+          "reason": "Configure global stylesheet styling fallback."
+        }
+      ]
+    },
+    {
+      "task": "Objects API: Export Plot to File",
+      "mental_trigger": "I need to write the final figure to disk from an objects-based plot.",
+      "syntax": "Plot.save(filename, **kwargs)",
+      "important_params": [
+        "filename",
+        "kwargs",
+        "dpi",
+        "format",
+        "bbox_inches"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\n(\n    so.Plot(penguins, x=\"bill_length_mm\", y=\"bill_depth_mm\", color=\"species\")\n    .add(so.Dot())\n    .save(\"penguins_objects_plot.png\")\n)",
+      "use_when": "1) You need reproducible figure output. seaborn.pydata. 2) You are generating publication or report assets. seaborn.pydata. 3) You need batch rendering in a pipeline. seaborn.pydata. 4) You want a direct save step from the plot object. seaborn.pydata. 5) You want to keep rendering close to the plot definition.",
+      "avoid_when": "1) You are still iterating interactively. 2) Another export path is already standardized in your project. 3) The chart is temporary and not meant for saving. 4) You need more manual Matplotlib figure control first. 5) File export format has not yet been decided.",
+      "decision_notes": "Category: Objects interface\nModule: `seaborn.objects`\nReturn Value: None\nExpected Output: An image file written to disk from the plot specification.\nPurpose: Export a declarative plot specification to a file.\nCommon Mistakes: Saving before validating the rendered appearance; Using the wrong file format for the target medium; Assuming figure size is automatically ideal; Forgetting to manage output paths in scripts; Treating save behavior as unrelated to layout.\nRelated APIs: `Plot`, `show`, `layout`, `theme`",
+      "gotchas": [
+        "Export quality depends on backend and figure settings.",
+        "Bounding box and size issues can clip labels.",
+        "File format should match the delivery target.",
+        "Saving is often the last step in the pipeline, not the first.",
+        "Reproducible exports require stable environment settings."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Export Figure To File",
+          "reason": "Traditional Matplotlib figure saving API."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Export Figure to Interactive HTML",
+          "reason": "Save interactive figures as standalone HTML pages."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Export Figure to Static Image",
+          "reason": "Export interactive figures to static formats (PNG/PDF)."
+        }
+      ]
+    },
+    {
+      "task": "Objects API: Display Plot Interactively",
+      "mental_trigger": "I need to display the composed plot now.",
+      "syntax": "Plot.show(**kwargs)",
+      "important_params": [
+        "kwargs",
+        "figsize",
+        "dpi",
+        "tight",
+        "backend"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\n(\n    so.Plot(penguins, x=\"bill_length_mm\", y=\"bill_depth_mm\", color=\"species\")\n    .add(so.Dot())\n    .show()\n)",
+      "use_when": "1) You are working interactively in a notebook or REPL. seaborn.pydata. 2) You want to inspect the composed result immediately. seaborn.pydata. 3) You are validating a plot before saving. seaborn.pydata. 4) You want the objects plot to behave like a display call. seaborn.pydata. 5) You need a quick render step in exploration.",
+      "avoid_when": "1) You are doing batch generation and want only file export. 2) Your pipeline centralizes rendering elsewhere. 3) You need custom Matplotlib control before display. 4) The chart is not yet finalized. 5) Interactive display is unavailable in the target environment.",
+      "decision_notes": "Category: Objects interface\nModule: `seaborn.objects`\nReturn Value: None\nExpected Output: An on-screen rendered plot.\nPurpose: Render the plot specification interactively.\nCommon Mistakes: Using show when export is the real goal; Assuming it returns a Matplotlib Axes; Forgetting that interactive backend behavior matters; Mixing show and save in the wrong order for your workflow; Expecting notebook display to match all saved exports perfectly.\nRelated APIs: `Plot`, `save`, `layout`, `theme`",
+      "gotchas": [
+        "Display behavior depends on backend environment.",
+        "Notebook and script behavior can differ.",
+        "Figure layout should still be validated after display.",
+        "`show` is not a substitute for save-quality checks.",
+        "Rendering issues may be backend-specific."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Display Interactive Figures",
+          "reason": "Toggle interactive GUI window for plots."
+        }
+      ]
+    },
+    {
+      "task": "Objects API Mark: Draw Points (Dot)",
+      "mental_trigger": "I need a point mark for individual observations.",
+      "syntax": "Dot()",
+      "important_params": [
+        "Dot",
+        "kwargs",
+        "alpha",
+        "color",
+        "pointsize"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\nso.Plot(penguins, x=\"bill_length_mm\", y=\"bill_depth_mm\").add(so.Dot())",
+      "use_when": "1) You need scatterplots in the objects interface. seaborn.pydata. 2) You need a compact representation of individual observations. seaborn.pydata. 3) You want an overplotting-aware dot mark. seaborn.pydata. 4) You are composing a layered exploratory plot. seaborn.pydata. 5) You need a baseline mark for relational plotting.",
+      "avoid_when": "1) A line or interval mark better matches the message. 2) You need bar geometry. 3) The point cloud is so dense that another summary is preferable. 4) The chart needs text annotations instead. 5) You are not using the objects API.",
+      "decision_notes": "Category: Objects interface mark\nModule: `seaborn.objects`\nReturn Value: Mark\nExpected Output: A point-based scatter visualization.\nPurpose: Draw point markers for scatter-style or dot-plot style graphics.\nCommon Mistakes: Using dot marks for highly overlapping dense data without adjustment; Assuming the objects API point mark behaves exactly like a legacy scatterplot; Ignoring size and transparency when needed; Mixing too many semantics for a simple point mark; Forgetting to choose an appropriate density strategy.\nRelated APIs: `Line`, `Bar`, `Text`, `Band`, `Range`, `Plot.add`",
+      "gotchas": [
+        "Point density can obscure structure.",
+        "Some scatter-like tasks may be better served by other marks.",
+        "The same dot mark can be used for several visual idioms.",
+        "Overplotting is a major consideration.",
+        "Objects API composition makes mark choice explicit."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API Mark: Draw Connected Lines (Line)",
+      "mental_trigger": "I need a line mark to show a path, trajectory, or ordered trend.",
+      "syntax": "Line()",
+      "important_params": [
+        "Line",
+        "kwargs",
+        "color",
+        "linewidth",
+        "alpha"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\nfmri = sns.load_dataset(\"fmri\").dropna()\n\nso.Plot(fmri, x=\"timepoint\", y=\"signal\").add(so.Line())",
+      "use_when": "1) You are plotting a time series or ordered measurement. seaborn.pydata. 2) You need trend visualization. seaborn.pydata. 3) You want a fitted or aggregated line in the objects workflow. seaborn.pydata. 4) You need a connected mark for curves. seaborn.pydata. 5) You are comparing trajectories across groups.",
+      "avoid_when": "1) The x-order has no meaning. 2) Points should remain disconnected. 3) The plot is purely categorical and unordered. 4) Another interval or area mark would be clearer. 5) The line would incorrectly imply continuity.",
+      "decision_notes": "Category: Objects interface mark\nModule: `seaborn.objects`\nReturn Value: Mark\nExpected Output: A line-based plot of signal across timepoint.\nPurpose: Draw connected line geometry for ordered values or trends.\nCommon Mistakes: Connecting unordered categories; Using lines when the data are not sequential; Forgetting that the line implies continuity; Overlapping multiple groups without faceting; Treating line marks as interchangeable with dot marks.\nRelated APIs: `Dot`, `Area`, `Band`, `Plot.add`",
+      "gotchas": [
+        "Ordering matters more for lines than most other marks.",
+        "Lines can be visually persuasive even when the data are sparse.",
+        "Trend lines and raw lines are not the same thing.",
+        "Grouping can alter the meaning of a line mark.",
+        "Line geometry can hide variability."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API Mark: Draw Bars (Bar)",
+      "mental_trigger": "I need bar-shaped output for counts, summaries, or histogram-like visuals.",
+      "syntax": "Bar()",
+      "important_params": [
+        "Bar",
+        "kwargs",
+        "color",
+        "alpha",
+        "width"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\ntips = sns.load_dataset(\"tips\").dropna()\n\nso.Plot(tips, x=\"day\").add(so.Bar(), so.Count())",
+      "use_when": "1) You need category summaries. seaborn.pydata. 2) You need histogram-style bars. seaborn.pydata. 3) You want explicit bar geometry in the objects API. seaborn.pydata. 4) You are rendering aggregated values as bars. seaborn.pydata. 5) You need a familiar bar-based encoding.",
+      "avoid_when": "1) Raw distribution shape is more important than summaries. 2) The data are better shown with points or lines. 3) Bar height could be misread as raw count when it is not. 4) A more detailed interval geometry is needed. 5) The plot is not meant for aggregation.",
+      "decision_notes": "Category: Objects interface mark\nModule: `seaborn.objects`\nReturn Value: Mark\nExpected Output: A bar-style frequency plot over the categorical variable `day`.\nPurpose: Draw bar geometry for aggregated or discrete-value graphics.\nCommon Mistakes: Using bars when the audience needs raw distributions; Forgetting that the stat often drives bar meaning; Comparing bars with incompatible normalization; Overcrowding categories; Treating bars as interchangeable with summaries in all cases.\nRelated APIs: `Count`, `Agg`, `Est`, `Hist`, `Plot.add`",
+      "gotchas": [
+        "Bar geometry is often paired with a stat in the objects API.",
+        "Bars can hide distribution detail.",
+        "Normalization choices affect interpretation.",
+        "Bar width and spacing influence readability.",
+        "Count and aggregation logic should be made explicit."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API Mark: Draw Filled Area (Area)",
+      "mental_trigger": "I need a filled region to emphasize magnitude or cumulative shape.",
+      "syntax": "Area()",
+      "important_params": [
+        "Area",
+        "kwargs",
+        "alpha",
+        "color",
+        "baseline"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\nfmri = sns.load_dataset(\"fmri\").dropna()\n\nso.Plot(fmri, x=\"timepoint\", y=\"signal\").add(so.Area(), so.Est())",
+      "use_when": "1) You need area charts in the objects workflow. seaborn.pydata. 2) You want filled trend visualization. seaborn.pydata. 3) You need cumulative or envelope-style geometry. seaborn.pydata. 4) You want an area mark for statistical displays. seaborn.pydata. 5) You need to emphasize magnitude with fill.",
+      "avoid_when": "1) Fill will hide important overlap or detail. 2) The chart needs only a simple line. 3) Another interval mark would be clearer. 4) The dataset is too sparse for an area to be meaningful. 5) You are not using the objects API.",
+      "decision_notes": "Category: Objects interface mark\nModule: `seaborn.objects`\nReturn Value: Mark\nExpected Output: A filled area encoding of estimated signal across time.\nPurpose: Draw filled area geometry under or between values.\nCommon Mistakes: Overusing fill and obscuring data; Treating area geometry like a line plot; Forgetting to check whether the baseline is meaningful; Comparing area charts with different scales casually; Using area when another mark would be less ambiguous.\nRelated APIs: `Band`, `Range`, `Line`, `Est`, `Plot.add`",
+      "gotchas": [
+        "Area plots strongly emphasize magnitude.",
+        "Fill can distort perception if overused.",
+        "Baselines matter for interpretation.",
+        "Area charts require careful scale choices.",
+        "The chart can become visually heavy quickly."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API Mark: Draw Text Labels (Text)",
+      "mental_trigger": "I need labels or annotations generated from data values.",
+      "syntax": "Text()",
+      "important_params": [
+        "Text",
+        "kwargs",
+        "size",
+        "color",
+        "ha"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\").dropna().head(10)\n\nso.Plot(penguins, x=\"bill_length_mm\", y=\"bill_depth_mm\", label=\"species\").add(so.Text())",
+      "use_when": "1) You need to label points or categories. seaborn.pydata. 2) You need callouts or annotations from data. seaborn.pydata. 3) You want a textual mark in a declarative plot. seaborn.pydata. 4) You need readable labels instead of shapes alone. seaborn.pydata. 5) You are building an annotated figure.",
+      "avoid_when": "1) Labels would clutter the chart. 2) The chart is already dense. 3) A visual mark carries the message better. 4) You need no text on the figure. 5) Annotation would reduce readability.",
+      "decision_notes": "Category: Objects interface mark\nModule: `seaborn.objects`\nReturn Value: Mark\nExpected Output: A text-annotated plot built from data values.\nPurpose: Place text labels as a data-driven visual mark.\nCommon Mistakes: Over-annotating dense plots; Using text when a legend is clearer; Allowing labels to overlap; Depending on text for every data point in a crowded view; Ignoring readability and font scaling.\nRelated APIs: `Dot`, `Plot.label`, `Plot.add`",
+      "gotchas": [
+        "Text adds rendering complexity fast.",
+        "Annotation strategy must match figure density.",
+        "Label placement is often the hardest part.",
+        "Text can obscure important marks underneath.",
+        "Use it sparingly for production graphics."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API Mark: Draw Line Segments (Dash)",
+      "mental_trigger": "I need short line segments instead of full connected lines.",
+      "syntax": "Dash()",
+      "important_params": [
+        "Dash",
+        "kwargs",
+        "linewidth",
+        "alpha",
+        "color"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\ntips = sns.load_dataset(\"tips\").dropna().head(20)\n\nso.Plot(tips, x=\"total_bill\", y=\"tip\").add(so.Dash())",
+      "use_when": "1) You need dash-based mark geometry. seaborn.pydata. 2) You want a compact line-segment representation. seaborn.pydata. 3) You need an oriented segment mark. seaborn.pydata. 4) You want a mark that emphasizes local values over global trends. seaborn.pydata. 5) You need another line-like glyph in the objects API.",
+      "avoid_when": "1) A full line is clearer. 2) The chart is already crowded. 3) Another interval or point mark is more appropriate. 4) You do not need segment-based encoding. 5) The legacy API already covers the use case well.",
+      "decision_notes": "Category: Objects interface mark\nModule: `seaborn.objects`\nReturn Value: Mark\nExpected Output: A plot using dash-style line segments.\nPurpose: Draw line-segment style marks for oriented comparisons.\nCommon Mistakes: Using dash marks where dot or line would be clearer; Expecting long continuous paths; Overcrowding the plot with too many segments; Missing the difference between local and global trends; Treating dash as a generic line replacement.\nRelated APIs: `Line`, `Range`, `Band`, `Plot.add`",
+      "gotchas": [
+        "Segment marks are more specialized than lines.",
+        "Readability drops quickly with too many segments.",
+        "Segment orientation matters.",
+        "The mark is useful only when the segment form adds meaning.",
+        "It is easy to pick the wrong glyph for the question."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API Mark: Draw Interval Bands (Band)",
+      "mental_trigger": "I need to show an uncertainty interval or a range around a trend.",
+      "syntax": "Band()",
+      "important_params": [
+        "Band",
+        "kwargs",
+        "alpha",
+        "color",
+        "edgecolor"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\nfmri = sns.load_dataset(\"fmri\").dropna()\n\nso.Plot(fmri, x=\"timepoint\", y=\"signal\").add(so.Band(), so.Est())",
+      "use_when": "1) You need confidence or uncertainty bands. seaborn.pydata. 2) You need interval visualization around an estimate. seaborn.pydata. 3) You want a filled region between bounds. seaborn.pydata. 4) You are drawing statistical envelopes. seaborn.pydata. 5) You need a production-ready interval glyph.",
+      "avoid_when": "1) Interval information is unnecessary. 2) A simple line is sufficient. 3) You need exact point values rather than ranges. 4) The plot is too dense for a band. 5) A different uncertainty encoding is clearer.",
+      "decision_notes": "Category: Objects interface mark\nModule: `seaborn.objects`\nReturn Value: Mark\nExpected Output: A trend line with an interval band around the estimate.\nPurpose: Draw an interval band between values.\nCommon Mistakes: Using bands without explaining what the interval means; Overlapping too many bands; Confusing band width with raw sample spread; Failing to match the band to the intended statistic; Allowing fill to obscure other marks.\nRelated APIs: `Range`, `Area`, `Est`, `Plot.add`",
+      "gotchas": [
+        "Bands are often the most readable uncertainty encoding.",
+        "They depend on the stat used to generate bounds.",
+        "Transparency is important for layering.",
+        "Bands can mislead if the interval semantics are unclear.",
+        "They are better than error bars in many dense plots."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API Mark: Draw Range Intervals (Range)",
+      "mental_trigger": "I need a compact visual for minimum-to-maximum or uncertainty bounds.",
+      "syntax": "Range()",
+      "important_params": [
+        "Range",
+        "kwargs",
+        "color",
+        "linewidth",
+        "alpha"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\nfmri = sns.load_dataset(\"fmri\").dropna()\n\nso.Plot(fmri, x=\"timepoint\", y=\"signal\").add(so.Range(), so.Est())",
+      "use_when": "1) You need range visualization. seaborn.pydata. 2) You need min-max or interval displays. seaborn.pydata. 3) You want a lighter-weight interval mark than a filled band. seaborn.pydata. 4) You need explicit lower/upper bounds. seaborn.pydata. 5) You need a statistical interval glyph in a layered chart.",
+      "avoid_when": "1) The filled band is clearer. 2) Exact values should be emphasized instead of ranges. 3) The chart is already crowded. 4) The interval semantics are not well-defined. 5) Another mark would communicate the data better.",
+      "decision_notes": "Category: Objects interface mark\nModule: `seaborn.objects`\nReturn Value: Mark\nExpected Output: A range-style interval visualization around a summary estimate.\nPurpose: Draw an interval range between values, typically as a line-like interval mark.\nCommon Mistakes: Treating interval ranges as raw data lines; Confusing range marks with confidence bands; Using them when a point estimate is the real message; Allowing intervals to hide plot structure; Failing to explain the interval semantics.\nRelated APIs: `Band`, `Est`, `Plot.add`",
+      "gotchas": [
+        "Range marks are compact but easy to misinterpret.",
+        "They often need a companion statistic.",
+        "Interval semantics must be explicit in production usage.",
+        "They are not a substitute for good labeling.",
+        "Their visual clarity depends on scale and density."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API Stat: Aggregate Data (Agg)",
+      "mental_trigger": "I need to summarize repeated values into a single statistic.",
+      "syntax": "Agg(func=\"mean\", **kwargs)",
+      "important_params": [
+        "func",
+        "kwargs",
+        "method",
+        "weights",
+        "skipna"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\ntips = sns.load_dataset(\"tips\").dropna()\n\nso.Plot(tips, x=\"day\", y=\"total_bill\").add(so.Bar(), so.Agg())",
+      "use_when": "1) You need group-wise summaries. seaborn.pydata. 2) You want mean, median, or another aggregation. seaborn.pydata. 3) You need bar, point, or line summaries. seaborn.pydata. 4) You want explicit control over the reduction step. seaborn.pydata. 5) You need to separate aggregation from geometry.",
+      "avoid_when": "1) Raw observations are the message. 2) Aggregation hides meaningful distribution shape. 3) The chart needs uncertainty rather than just a point estimate. 4) The dataset is already one value per group. 5) You do not want any summary reduction.",
+      "decision_notes": "Category: Objects interface stat\nModule: `seaborn.objects`\nReturn Value: Stat\nExpected Output: A bar plot using an aggregated statistic for each category.\nPurpose: Aggregate data along the value axis using a specified method.\nCommon Mistakes: Assuming aggregation preserves distribution shape; Picking an inappropriate summary statistic; Forgetting that missing values can affect the result; Using aggregation where raw points matter more; Not aligning the aggregator with the business question.\nRelated APIs: `Count`, `Est`, `Hist`, `Plot.add`, `Bar`",
+      "gotchas": [
+        "Aggregation is a semantic choice, not just a technical step.",
+        "Different functions can lead to very different conclusions.",
+        "Weighted and unweighted results are not interchangeable.",
+        "Group boundaries matter.",
+        "Aggregation plus faceting can hide small-sample issues."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API Stat: Count Observations (Count)",
+      "mental_trigger": "I need frequency counts as the statistic behind the plot.",
+      "syntax": "Count()",
+      "important_params": [
+        "Count",
+        "kwargs",
+        "normalize",
+        "weights",
+        "dropna"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\ntips = sns.load_dataset(\"tips\").dropna()\n\nso.Plot(tips, x=\"day\").add(so.Bar(), so.Count())",
+      "use_when": "1) You need category counts. seaborn.pydata. 2) You need histogram bin counts. seaborn.pydata. 3) You want count-based bar graphics. seaborn.pydata. 4) You need a frequency summary in the objects API. seaborn.pydata. 5) You want to compare observation volume across groups.",
+      "avoid_when": "1) You need proportions or normalized values instead. 2) The data should be summarized by mean or median. 3) Counts are likely to be misread as intensity. 4) Sample size differs in a way that confuses interpretation. 5) Raw observations are the main message.",
+      "decision_notes": "Category: Objects interface stat\nModule: `seaborn.objects`\nReturn Value: Stat\nExpected Output: A count plot showing category frequencies.\nPurpose: Count observations within groups.\nCommon Mistakes: Confusing counts with rates or proportions; Ignoring missing-value effects; Using counts when the message is about distribution shape; Overcomplicating simple frequency analysis; Misreading count bars as direct magnitude across incomparable groups.\nRelated APIs: `Bar`, `Hist`, `Agg`, `Plot.add`",
+      "gotchas": [
+        "Count stat is often the backbone of categorical frequency plots.",
+        "Normalization changes the message entirely.",
+        "Counts are sensitive to filtering decisions.",
+        "Grouping structure must be intentional.",
+        "Plot labels should say “count” when that is the statistic."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API Stat: Compute Histogram Binning (Hist)",
+      "mental_trigger": "I need histogram logic in the objects interface.",
+      "syntax": "Hist(bins=None, binwidth=None, stat=\"count\", **kwargs)",
+      "important_params": [
+        "bins",
+        "binwidth",
+        "stat",
+        "kwargs",
+        "cumulative"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\nso.Plot(penguins, x=\"bill_length_mm\").add(so.Bar(), so.Hist())",
+      "use_when": "1) You need binned distribution summaries. seaborn.pydata. 2) You want histogram behavior with object composition. seaborn.pydata. 3) You need normalized or cumulative binning. seaborn.pydata. 4) You want a histogram plus other marks in a declarative pipeline. seaborn.pydata. 5) You need explicit control over the histogram statistic.",
+      "avoid_when": "1) Raw values or exact points are the message. 2) The data are too sparse for meaningful binning. 3) KDE or ECDF would better answer the question. 4) Histogram bin choice would be misleading. 5) The user wants a simple count-only plot.",
+      "decision_notes": "Category: Objects interface stat\nModule: `seaborn.objects`\nReturn Value: Stat\nExpected Output: A histogram rendered using the objects API.\nPurpose: Bin observations, count them, and optionally normalize or cumulate them.\nCommon Mistakes: Treating bins as neutral rather than a modeling choice; Comparing histograms with inconsistent binning; Using the default statistic without checking whether it fits the question; Hiding tails with overly coarse bins; Expecting binning to be stable across all datasets.\nRelated APIs: `Count`, `KDE`, `Est`, `Bar`, `Plot.add`",
+      "gotchas": [
+        "Binning strategy can dominate the result.",
+        "Normalization and accumulation alter interpretation.",
+        "Histograms are sensitive to sample size and range.",
+        "Bin alignment matters in production charts.",
+        "The stat should match the narrative you want."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API Stat: Estimate Kernel Density (KDE)",
+      "mental_trigger": "I need a smoothed density estimate in the objects interface.",
+      "syntax": "KDE(bw_adjust=1, cut=3, clip=None, **kwargs)",
+      "important_params": [
+        "bw_adjust",
+        "cut",
+        "clip",
+        "kwargs",
+        "weights"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\").dropna()\n\nso.Plot(penguins, x=\"bill_length_mm\").add(so.Line(), so.KDE())",
+      "use_when": "1) You need a density curve from tabular data. seaborn.pydata. 2) You want a smoothed distribution view. seaborn.pydata. 3) You need a reusable density stat in a layered plot. seaborn.pydata. 4) You want density comparisons across groups. seaborn.pydata. 5) You need an objects-based equivalent of KDE plotting.",
+      "avoid_when": "1) The data are discrete and smoothing would mislead. 2) Exact counts matter more than shape. 3) The sample is too small for a stable density estimate. 4) You need a literal observation plot. 5) Another stat would better fit the question.",
+      "decision_notes": "Category: Objects interface stat\nModule: `seaborn.objects`\nReturn Value: Stat\nExpected Output: A smoothed kernel density curve for the selected numeric variable.\nPurpose: Compute a univariate kernel density estimate.\nCommon Mistakes: Over-trusting smoothing; Comparing KDEs with different bandwidth assumptions; Using KDE on discrete categories; Ignoring support boundaries; Reading the curve as exact empirical counts.\nRelated APIs: `Hist`, `Est`, `Line`, `Band`, `Plot.add`",
+      "gotchas": [
+        "KDE is sensitive to smoothing choices.",
+        "Tail behavior can be visually deceptive.",
+        "The curve is an estimate, not raw data.",
+        "Multiple groups can be hard to compare if overly smoothed.",
+        "Boundary clipping can materially change appearance."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API Stat: Estimate Central Tendency (Est)",
+      "mental_trigger": "I need an estimate plus uncertainty, not just the raw data.",
+      "syntax": "Est(func=\"mean\", errorbar=(\"ci\", 95), **kwargs)",
+      "important_params": [
+        "func",
+        "errorbar",
+        "kwargs",
+        "n_boot",
+        "seed"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\nfmri = sns.load_dataset(\"fmri\").dropna()\n\nso.Plot(fmri, x=\"timepoint\", y=\"signal\").add(so.Band(), so.Est())",
+      "use_when": "1) You need summarized trends with intervals. seaborn.pydata. 2) You want point estimates for category or time comparisons. seaborn.pydata. 3) You need uncertainty bands or error bars. seaborn.pydata. 4) You want a formal estimation step in the objects pipeline. seaborn.pydata. 5) You need production-ready summary graphics.",
+      "avoid_when": "1) Raw observations are more important than the summary. 2) Uncertainty would confuse the message. 3) There is only one observation per group. 4) The estimator is not the correct statistic. 5) A different stat better matches the use case.",
+      "decision_notes": "Category: Objects interface stat\nModule: `seaborn.objects`\nReturn Value: Stat\nExpected Output: A point estimate with an uncertainty interval across the x-axis.\nPurpose: Calculate a point estimate and error bar interval.\nCommon Mistakes: Confusing estimate and raw observation; Ignoring the meaning of the error interval; Using the wrong summary statistic; Forgetting that uncertainty depends on group structure; Treating interval defaults as universally appropriate.\nRelated APIs: `Agg`, `Count`, `Hist`, `KDE`, `PolyFit`, `Band`, `Range`",
+      "gotchas": [
+        "Error bars and confidence logic changed in newer Seaborn documentation.",
+        "Estimate choice changes the story.",
+        "Intervals should be labeled clearly.",
+        "The stat is a core part of the visual semantics.",
+        "Reproducibility may require fixed random state when bootstrapping."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API Stat: Fit Polynomial Regression (PolyFit)",
+      "mental_trigger": "I need a fitted trend line or curve in the objects interface.",
+      "syntax": "PolyFit(order=1, fullrange=False, n=100, **kwargs)",
+      "important_params": [
+        "order",
+        "fullrange",
+        "n",
+        "kwargs",
+        "weights"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\ntips = sns.load_dataset(\"tips\").dropna()\n\nso.Plot(tips, x=\"total_bill\", y=\"tip\").add(so.Line(), so.PolyFit())",
+      "use_when": "1) You want regression-style trend visualization. seaborn.pydata. 2) You need a polynomial fit line. seaborn.pydata. 3) You are exploring relationships between two continuous variables. seaborn.pydata. 4) You want a model-based line over scatter data. seaborn.pydata. 5) You need a smooth fitted curve rather than raw connections.",
+      "avoid_when": "1) A polynomial fit would be misleading. 2) The relationship is not well approximated by a polynomial. 3) Raw data are the main message. 4) The data are too sparse for a meaningful fit. 5) Another smoothing or regression method is more appropriate.",
+      "decision_notes": "Category: Objects interface stat\nModule: `seaborn.objects`\nReturn Value: Stat\nExpected Output: A fitted polynomial curve over a scatter relationship.\nPurpose: Fit a polynomial of the given order and resample onto a predicted curve.\nCommon Mistakes: Overfitting with too high an order; Assuming the fitted curve is causal; Using polynomial fit where a simpler model suffices; Forgetting to inspect residual behavior; Extending the fit beyond a sensible domain.\nRelated APIs: `Line`, `Est`, `Agg`, `Plot.add`",
+      "gotchas": [
+        "Polynomial fits can look convincing even when wrong.",
+        "Order choice is an engineering decision.",
+        "`fullrange` can create misleading extrapolation.",
+        "Model-based curves should be labeled carefully.",
+        "Fit stability depends on data scale and noise."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API Move: Dodge overlapping marks (Dodge)",
+      "mental_trigger": "I need to separate overlapping grouped marks.",
+      "syntax": "Dodge()",
+      "important_params": [
+        "Dodge",
+        "kwargs",
+        "gap",
+        "by",
+        "orient"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\ntips = sns.load_dataset(\"tips\").dropna()\n\nso.Plot(tips, x=\"day\", y=\"total_bill\", color=\"sex\").add(so.Bar(), so.Est(), so.Dodge())",
+      "use_when": "1) Multiple groups overlap in the same category. seaborn.pydata. 2) You need grouped bar or point separation. seaborn.pydata. 3) You want to reduce collision in categorical plots. seaborn.pydata. 4) You are building a grouped comparison chart. seaborn.pydata. 5) You need clearer side-by-side positioning.",
+      "avoid_when": "1) The marks do not overlap. 2) Separation would confuse the intended alignment. 3) You need the raw overlapping positions visible. 4) The chart is already crowded. 5) Another encoding would be better than displacement.",
+      "decision_notes": "Category: Objects interface move\nModule: `seaborn.objects`\nReturn Value: Move\nExpected Output: A grouped bar-style display with dodged positions.\nPurpose: Displace overlapping marks along the orientation axis to separate grouped values.\nCommon Mistakes: Dodging when stacking would communicate better; Over-separating groups and making comparisons harder; Assuming dodge fixes all overlap issues; Using it without checking legend clarity; Forgetting the orientation context.\nRelated APIs: `Stack`, `Shift`, `Jitter`, `Norm`, `Plot.add`",
+      "gotchas": [
+        "Dodge changes spatial interpretation.",
+        "Group separation can improve readability but weaken compactness.",
+        "It is easy to use too much spacing.",
+        "The move is tied to group semantics.",
+        "It should usually be used intentionally, not by default."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API Move: Stack overlapping marks (Stack)",
+      "mental_trigger": "I need stacked values instead of side-by-side groups.",
+      "syntax": "Stack()",
+      "important_params": [
+        "Stack",
+        "kwargs",
+        "by",
+        "orient",
+        "baseline"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\ntips = sns.load_dataset(\"tips\").dropna()\n\nso.Plot(tips, x=\"day\", color=\"sex\").add(so.Bar(), so.Count(), so.Stack())",
+      "use_when": "1) You want cumulative composition. seaborn.pydata. 2) You are building stacked bars or areas. seaborn.pydata. 3) Group totals matter as much as subgroup composition. seaborn.pydata. 4) You need additive visual encoding. seaborn.pydata. 5) You are representing part-to-whole structure.",
+      "avoid_when": "1) Side-by-side comparison is more important. 2) Stacking would hide individual group magnitude. 3) The chart would become hard to read. 4) Totals are not meaningful. 5) Another normalization approach would be clearer.",
+      "decision_notes": "Category: Objects interface move\nModule: `seaborn.objects`\nReturn Value: Move\nExpected Output: A stacked categorical count plot.\nPurpose: Stack overlapping marks along the value axis to build cumulative displays.\nCommon Mistakes: Stacking when subgroup comparison is the actual goal; Hiding totals and group sizes unintentionally; Overcomplicating a simple count chart; Assuming stacking is always more compact; Forgetting that stack order matters.\nRelated APIs: `Dodge`, `Shift`, `Jitter`, `Norm`, `Plot.add`",
+      "gotchas": [
+        "Stack changes the meaning of the baseline.",
+        "Group order influences interpretation.",
+        "Part-to-whole plots can be misleading if not labeled.",
+        "Stacked charts are often harder to compare precisely than dodged charts.",
+        "It is important to confirm whether totals or parts matter more."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API Move: Shift marks relative to spacing (Shift)",
+      "mental_trigger": "I need to offset marks in a controlled way.",
+      "syntax": "Shift()",
+      "important_params": [
+        "Shift",
+        "kwargs",
+        "x",
+        "y",
+        "amount"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\").dropna().head(20)\n\nso.Plot(penguins, x=\"bill_length_mm\", y=\"bill_depth_mm\").add(so.Dot(), so.Shift())",
+      "use_when": "1) You need a fixed positional offset. seaborn.pydata. 2) You want to reduce exact overlap. seaborn.pydata. 3) You need a simple spatial adjustment. seaborn.pydata. 4) You are composing marks that would otherwise coincide. seaborn.pydata. 5) You need a basic transform before rendering.",
+      "avoid_when": "1) Jitter would better solve overlap. 2) You need group-aware separation. 3) The offset would misrepresent the data. 4) The plot does not need displacement. 5) Another move is more semantically appropriate.",
+      "decision_notes": "Category: Objects interface move\nModule: `seaborn.objects`\nReturn Value: Move\nExpected Output: A shifted dot plot with displaced marks.\nPurpose: Shift marks by a constant amount to separate them visually.\nCommon Mistakes: Using shift when a semantic grouping move is needed; Changing the meaning of coordinates unintentionally; Overusing fixed offsets; Making comparisons harder by displacing too much; Confusing shift with jitter.\nRelated APIs: `Dodge`, `Jitter`, `Stack`, `Norm`, `Plot.add`",
+      "gotchas": [
+        "Small shifts can improve readability, large shifts can distort meaning.",
+        "Fixed displacement should be documented.",
+        "Shift is a positional operation, not a statistical one.",
+        "It can interact with axis scaling.",
+        "It is easy to create misleading separation."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API Move: Jitter mark positions (Jitter)",
+      "mental_trigger": "I need to reveal dense point overlap.",
+      "syntax": "Jitter()",
+      "important_params": [
+        "Jitter",
+        "kwargs",
+        "width",
+        "height",
+        "seed"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\ntips = sns.load_dataset(\"tips\").dropna()\n\nso.Plot(tips, x=\"day\", y=\"total_bill\").add(so.Dot(), so.Jitter())",
+      "use_when": "1) Many points occupy the same or nearby positions. seaborn.pydata. 2) You need categorical scatter separation. seaborn.pydata. 3) Overplotting hides density structure. seaborn.pydata. 4) You want a readable point cloud. seaborn.pydata. 5) You are plotting repeated observations.",
+      "avoid_when": "1) Exact coordinates are important. 2) Random displacement would confuse the chart. 3) Another summary chart would be better. 4) The data are already sparse. 5) Reproducibility of exact point positions is critical and unmanaged.",
+      "decision_notes": "Category: Objects interface move\nModule: `seaborn.objects`\nReturn Value: Move\nExpected Output: A jittered point display that reduces overlap.\nPurpose: Randomly displace marks to reduce overplotting.\nCommon Mistakes: Using jitter without explaining that positions are perturbed; Applying it to data where exact values matter; Forgetting reproducibility considerations; Over-jittering and creating false spread; Using jitter instead of a better summary view.\nRelated APIs: `Dodge`, `Shift`, `Stack`, `Norm`, `Plot.add`",
+      "gotchas": [
+        "Jitter introduces randomness by design.",
+        "Small changes can affect visual impression.",
+        "It should not be mistaken for data variation.",
+        "Repeated renders may differ if not controlled.",
+        "Jitter is primarily a readability aid."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Objects API Move: Normalize heights (Norm)",
+      "mental_trigger": "I need normalization after grouping.",
+      "syntax": "Norm()",
+      "important_params": [
+        "Norm",
+        "kwargs",
+        "method",
+        "by",
+        "clip"
+      ],
+      "example": "import seaborn.objects as so\nimport seaborn as sns\n\ntips = sns.load_dataset(\"tips\").dropna()\n\nso.Plot(tips, x=\"day\", color=\"sex\").add(so.Bar(), so.Count(), so.Stack(), so.Norm())",
+      "use_when": "1) You need normalized compositions. seaborn.pydata. 2) You want values scaled within grouped displays. seaborn.pydata. 3) You are preparing comparative stacked displays. seaborn.pydata. 4) You need value-axis normalization in an objects workflow. seaborn.pydata. 5) You want proportional rather than raw magnitude representation.",
+      "avoid_when": "1) Raw values are the message. 2) Normalization would obscure meaningful totals. 3) The audience needs counts or sums instead of proportions. 4) Group sizes are critical to interpretation. 5) Another stat already provides normalized output.",
+      "decision_notes": "Category: Objects interface move\nModule: `seaborn.objects`\nReturn Value: Move\nExpected Output: A normalized stacked categorical display.\nPurpose: Apply divisive scaling on the value axis after aggregating within groups.\nCommon Mistakes: Normalizing when absolute counts matter; Forgetting to label the normalization basis; Comparing normalized and unnormalized plots directly; Assuming normalization is always desirable; Confusing normalization with aggregation.\nRelated APIs: `Stack`, `Dodge`, `Shift`, `Jitter`, `Plot.add`",
+      "gotchas": [
+        "Normalization changes the business meaning of the plot.",
+        "It is useful for composition, not always for totals.",
+        "Readability depends on the chosen grouping.",
+        "Percent-style charts require careful labeling.",
+        "Normalized displays should not be overinterpreted as raw counts."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Style: Configure Global Theme",
+      "mental_trigger": "I need to configure the overall plot appearance for a session or project.",
+      "syntax": "seaborn.set_theme(context=\"notebook\", style=\"darkgrid\", palette=\"deep\", font=\"sans-serif\", font_scale=1, color_codes=False, rc=None)",
+      "important_params": [
+        "context",
+        "style",
+        "palette",
+        "font",
+        "rc"
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nsns.set_theme(style=\"whitegrid\", palette=\"deep\")\ntips = sns.load_dataset(\"tips\").dropna()\n\nsns.barplot(data=tips, x=\"day\", y=\"total_bill\")\nplt.show()",
+      "use_when": "1) You want consistent styling across a notebook or script. seaborn.pydata. 2) You need a default theme for a report or app. seaborn.pydata. 3) You want to set global context, style, and palette together. seaborn.pydata. 4) You need project-wide visualization consistency. seaborn.pydata. 5) You want to align many charts to one visual standard.",
+      "avoid_when": "1) You only need a one-off style change. 2) Global state would create conflicts in a shared process. 3) You need local styling isolated to one figure. 4) Another plotting library already controls rc settings. 5) You are in a long-lived notebook without style reset discipline.",
+      "decision_notes": "Category: Styling\nModule: `seaborn`\nReturn Value: None\nExpected Output: A bar plot using the configured global theme.\nPurpose: Set the global Seaborn/Matplotlib visual theme.\nCommon Mistakes: Changing global style inside a reusable library function; Forgetting that theme settings persist across plots; Mixing theme calls with ad hoc Matplotlib styling inconsistently; Using theme configuration after figures have already been created; Treating rc changes as purely local.\nRelated APIs: `set_style`, `set_context`, `set_palette`, `reset_defaults`, `reset_orig`, `set_color_codes`, `despine`",
+      "gotchas": [
+        "Theme state affects all later plots in the process.",
+        "Order of styling calls matters.",
+        "Project code should standardize theme setup.",
+        "Theme drift is a common source of inconsistent charts.",
+        "Matplotlib backend and style state still matter."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Apply Built-In Style Sheet",
+          "reason": "Apply pre-packaged global style sheets in Matplotlib."
+        }
+      ]
+    },
+    {
+      "task": "Style: Configure Global Background and Grid Style",
+      "mental_trigger": "I need to change the background/grid aesthetic without changing everything else.",
+      "syntax": "seaborn.set_style(style=None, rc=None)",
+      "important_params": [
+        "style",
+        "rc",
+        "None",
+        "darkgrid",
+        "whitegrid"
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nsns.set_style(\"whitegrid\")\ntips = sns.load_dataset(\"tips\").dropna()\nsns.boxplot(data=tips, x=\"day\", y=\"total_bill\")\nplt.show()",
+      "use_when": "1) You want a specific axes style preset. seaborn.pydata. 2) You need grid visibility changes. seaborn.pydata. 3) You want style control separate from context scaling. seaborn.pydata. 4) You are matching a house style. seaborn.pydata. 5) You want to modify visual emphasis for plots.",
+      "avoid_when": "1) Global theme setup would be cleaner. 2) You need to keep the default style. 3) You are not intentionally changing axes styling. 4) Another style manager already owns the session. 5) You only need a local axis edit.",
+      "decision_notes": "Category: Styling\nModule: `seaborn`\nReturn Value: None\nExpected Output: A box plot using the selected axes style.\nPurpose: Set the axes style parameters for Seaborn plots.\nCommon Mistakes: Using style changes to solve labeling problems; Forgetting style persists; Combining incompatible style changes; Applying style too late in the plotting workflow; Assuming style changes are figure-local.\nRelated APIs: `set_theme`, `axes_style`, `reset_defaults`, `reset_orig`, `despine`",
+      "gotchas": [
+        "Style affects axes appearance, not data semantics.",
+        "Grid-heavy styles are not always best for all plots.",
+        "Style choices can materially change readability.",
+        "Global persistence can surprise interactive users.",
+        "Theme and style should be coordinated."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Configure Grid Lines",
+          "reason": "Fine-grained grid configuration on static axes."
+        }
+      ]
+    },
+    {
+      "task": "Style: Retrieve or Set Local Style Parameters",
+      "mental_trigger": "I need temporary axes styling without permanently changing session state.",
+      "syntax": "seaborn.axes_style(style=None, rc=None)",
+      "important_params": [
+        "style",
+        "rc",
+        "None",
+        "white",
+        "dark"
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nwith sns.axes_style(\"whitegrid\"):\n    tips = sns.load_dataset(\"tips\").dropna()\n    sns.boxplot(data=tips, x=\"day\", y=\"total_bill\")\n    plt.show()",
+      "use_when": "1) You want a local style context. seaborn.pydata. 2) You need to inspect or temporarily alter axes style. seaborn.pydata. 3) You want scoped styling in a function or notebook cell. seaborn.pydata. 4) You want controlled styling overrides. seaborn.pydata. 5) You need to avoid global state leakage.",
+      "avoid_when": "1) You intend to set a project-wide theme. 2) A permanent theme function is more appropriate. 3) The plot is already styled elsewhere. 4) You do not need a scoped context. 5) Global style changes are intentional.",
+      "decision_notes": "Category: Styling\nModule: `seaborn`\nReturn Value: dict or context manager\nExpected Output: A box plot rendered inside a temporary style context.\nPurpose: Get or set a context manager for axes style parameters.\nCommon Mistakes: Using a context manager when a global theme is desired; Forgetting that the style is temporary; Nesting style contexts carelessly; Assuming it changes only the current axes permanently; Mixing context-managed style with global style updates.\nRelated APIs: `set_style`, `plotting_context`, `set_theme`, `reset_defaults`, `reset_orig`",
+      "gotchas": [
+        "Scoped style is safer in reusable code.",
+        "Context boundaries matter.",
+        "Style returned from a context may not match future plots.",
+        "This is valuable when writing utilities.",
+        "It helps prevent accidental state leakage."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Style: Retrieve or Set Local Scaling Parameters",
+      "mental_trigger": "I need a temporary scale adjustment for fonts, lines, and markers.",
+      "syntax": "seaborn.plotting_context(context=None, font_scale=1, rc=None)",
+      "important_params": [
+        "context",
+        "font_scale",
+        "rc",
+        "paper",
+        "talk"
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nwith sns.plotting_context(\"talk\"):\n    tips = sns.load_dataset(\"tips\").dropna()\n    sns.barplot(data=tips, x=\"day\", y=\"total_bill\")\n    plt.show()",
+      "use_when": "1) You need notebook, talk, or paper scaling. seaborn.pydata. 2) You want local plot-element scaling. seaborn.pydata. 3) You need consistent sizing for a specific output medium. seaborn.pydata. 4) You want to adapt typography and line weights together. seaborn.pydata. 5) You want to avoid manual rc tuning.",
+      "avoid_when": "1) Global theme context is enough. 2) The plot does not require size scaling. 3) You are not controlling output media. 4) Another style system already manages sizing. 5) You need only a single manual axis tweak.",
+      "decision_notes": "Category: Styling\nModule: `seaborn`\nReturn Value: dict or context manager\nExpected Output: A bar plot rendered at a presentation-oriented scale.\nPurpose: Get or set a context manager for plot scaling.\nCommon Mistakes: Using the wrong output context; Over-scaling text until layout breaks; Mixing context and style responsibilities; Forgetting that scale is separate from color theme; Applying plot scaling too late in the workflow.\nRelated APIs: `set_context`, `set_theme`, `axes_style`, `reset_defaults`, `reset_orig`",
+      "gotchas": [
+        "Context changes are especially important for export quality.",
+        "Font scaling affects spacing and layout.",
+        "Small changes can have big visual effects.",
+        "Output medium should drive the context choice.",
+        "Context and figure size should be tuned together."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Style: Configure Global Scaling Context",
+      "mental_trigger": "I need to globally resize chart elements for a target medium.",
+      "syntax": "seaborn.set_context(context=None, font_scale=1, rc=None)",
+      "important_params": [
+        "context",
+        "font_scale",
+        "rc",
+        "paper",
+        "talk"
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nsns.set_context(\"talk\")\ntips = sns.load_dataset(\"tips\").dropna()\nsns.boxplot(data=tips, x=\"day\", y=\"total_bill\")\nplt.show()",
+      "use_when": "1) You want persistent scaling for a notebook or script. seaborn.pydata. 2) You need consistent sizing for reports or slides. seaborn.pydata. 3) You are standardizing typography and line widths. seaborn.pydata. 4) You want to update all later plots in a session. seaborn.pydata. 5) You need project-wide visual scale consistency.",
+      "avoid_when": "1) You only need a temporary local scale. 2) Global state changes would be risky. 3) Another library owns the style context. 4) You are not intentionally changing sizing. 5) A single plot needs a one-off tweak only.",
+      "decision_notes": "Category: Styling\nModule: `seaborn`\nReturn Value: None\nExpected Output: A box plot drawn with the selected global context scale.\nPurpose: Set the global context scaling for plot elements.\nCommon Mistakes: Forgetting that scaling persists; Using a presentation scale in compact reports; Mixing local and global scaling haphazardly; Assuming context only changes fonts; Applying it after creating the figure.\nRelated APIs: `plotting_context`, `set_theme`, `set_style`, `reset_defaults`, `reset_orig`",
+      "gotchas": [
+        "Context changes can alter layout and spacing.",
+        "Sizing choices should match delivery medium.",
+        "Global context can leak across notebook cells.",
+        "Reproducibility is easier when context is explicit.",
+        "Plot density and text size must be balanced."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Style: Configure Global Color Palette",
+      "mental_trigger": "I need to standardize the color cycle across plots.",
+      "syntax": "seaborn.set_palette(palette, n_colors=None, desat=None, color_codes=False)",
+      "important_params": [
+        "palette",
+        "n_colors",
+        "desat",
+        "color_codes"
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nsns.set_palette(\"deep\")\ntips = sns.load_dataset(\"tips\").dropna()\nsns.countplot(data=tips, x=\"day\", hue=\"sex\")\nplt.show()",
+      "use_when": "1) You want a consistent palette across a notebook or project. seaborn.pydata. 2) You need category colors to match a team style. seaborn.pydata. 3) You want every subsequent plot to use a known palette. seaborn.pydata. 4) You need to unify color encoding across figures. seaborn.pydata. 5) You want global palette control with minimal code.",
+      "avoid_when": "1) You only need a palette for a single chart. 2) Global palette changes would confuse other code. 3) The plot is continuous and needs a colormap instead. 4) Color cycle consistency is already handled externally. 5) You are not prepared to manage state persistence.",
+      "decision_notes": "Category: Styling\nModule: `seaborn`\nReturn Value: None\nExpected Output: A grouped count plot using the configured color cycle.\nPurpose: Set the matplotlib color cycle from a Seaborn palette.\nCommon Mistakes: Setting the palette globally and forgetting about it; Using a categorical palette for continuous data; Not checking accessibility or contrast; Expecting the palette change to be local only; Overriding with incompatible Matplotlib settings afterward.\nRelated APIs: `color_palette`, `set_theme`, `set_color_codes`, `reset_defaults`, `reset_orig`",
+      "gotchas": [
+        "Palette changes persist in the current session.",
+        "Color meaning should be consistent across a report.",
+        "Categorical and continuous palettes solve different problems.",
+        "Palette selection affects readability and accessibility.",
+        "`color_codes` can alter shorthand interpretation."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Apply Viridis Colormap",
+          "reason": "Equivalent implementation in matplotlib."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Set Default Colormap",
+          "reason": "Configure default static colormap mappings."
+        }
+      ]
+    },
+    {
+      "task": "Style: Restore Global Defaults to Matplotlib settings",
+      "mental_trigger": "I need to clear Seaborn styling and return to defaults.",
+      "syntax": "seaborn.reset_defaults()",
+      "important_params": [
+        "No major user"
+      ],
+      "example": "import seaborn as sns\n\nsns.reset_defaults()",
+      "use_when": "1) You need to reset global styling between notebook runs. seaborn.pydata. 2) You want to clear accidental theme changes. seaborn.pydata. 3) You are debugging style state. seaborn.pydata. 4) You need a clean baseline for a new plotting session. seaborn.pydata. 5) You want to avoid style bleed between code paths.",
+      "avoid_when": "1) You intend to preserve custom project style. 2) You need only a local style change. 3) Another reset function is more appropriate. 4) You are mid-figure and rely on current styling. 5) You do not want to alter session state.",
+      "decision_notes": "Category: Styling\nModule: `seaborn`\nReturn Value: None\nExpected Output: Global plotting defaults restored.\nPurpose: Restore all rc parameters to default settings.\nCommon Mistakes: Using reset in the middle of a plotting workflow; Forgetting that it affects subsequent plots; Mixing resets with manual rc edits without a policy; Assuming it only affects Seaborn, not Matplotlib state; Not resetting after exploratory styling.\nRelated APIs: `reset_orig`, `set_theme`, `set_style`, `set_context`",
+      "gotchas": [
+        "Reset functions alter global process state.",
+        "They are especially relevant in notebooks and shared environments.",
+        "Style bugs often come from forgotten global state.",
+        "Resetting can unexpectedly change later plots.",
+        "It is useful as a debugging tool."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Style: Reset Style and Palettes to Original Matplotlib State",
+      "mental_trigger": "I need to revert styling without discarding the original custom Matplotlib settings.",
+      "syntax": "seaborn.reset_orig()",
+      "important_params": [
+        "No major user"
+      ],
+      "example": "import seaborn as sns\n\nsns.reset_orig()",
+      "use_when": "1) You want to undo Seaborn styling carefully. seaborn.pydata. 2) You need to preserve original rc customizations. seaborn.pydata. 3) You are working in a shared plotting environment. seaborn.pydata. 4) You need state cleanup after a theme experiment. seaborn.pydata. 5) You want a more conservative reset than defaults.",
+      "avoid_when": "1) You want a full clean default reset. 2) You do not want to preserve prior custom settings. 3) A local style context is enough. 4) The session state should remain unchanged. 5) The distinction from `reset_defaults` does not matter.",
+      "decision_notes": "Category: Styling\nModule: `seaborn`\nReturn Value: None\nExpected Output: rc parameters restored while respecting original customizations.\nPurpose: Restore all rc parameters to the original settings, respecting custom rc values.\nCommon Mistakes: Confusing `reset_orig` with `reset_defaults`; Assuming it removes all custom styling; Forgetting state changes persist; Using it when a scoped context would be better; Not documenting style reset behavior in shared notebooks.\nRelated APIs: `reset_defaults`, `set_theme`, `set_style`, `set_context`",
+      "gotchas": [
+        "The difference from `reset_defaults` matters in production code.",
+        "This is a state-management tool, not a visual tweak.",
+        "Useful when Matplotlib customizations must survive.",
+        "Reset choices can affect reproducibility.",
+        "State cleanup should be deliberate."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Style: Set Palette Color Mappings for Color Abbreviations",
+      "mental_trigger": "I need shorthand color codes to map to a Seaborn palette.",
+      "syntax": "seaborn.set_color_codes(palette=\"deep\")",
+      "important_params": [
+        "palette",
+        "palette=\"deep\"",
+        "color_codes",
+        "desat",
+        "n_colors"
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nsns.set_color_codes(\"deep\")\ntips = sns.load_dataset(\"tips\").dropna()\nsns.lineplot(data=tips, x=\"total_bill\", y=\"tip\", color=\"b\")\nplt.show()",
+      "use_when": "1) You use Matplotlib shorthand colors and want Seaborn palette mapping. seaborn.pydata. 2) You need consistent shorthand behavior. seaborn.pydata. 3) You are mixing Seaborn palettes with older Matplotlib-style code. seaborn.pydata. 4) You want palette-aware shorthand colors. seaborn.pydata. 5) You need to align shorthand colors with the current palette.",
+      "avoid_when": "1) You do not use shorthand color codes. 2) Global color-code remapping would be confusing. 3) The plot is fully explicit about colors. 4) Another color-management approach is sufficient. 5) You need a single local color override.",
+      "decision_notes": "Category: Styling\nModule: `seaborn`\nReturn Value: None\nExpected Output: A line plot using color shorthand remapped to the selected Seaborn palette.\nPurpose: Change how Matplotlib color shorthand codes are interpreted.\nCommon Mistakes: Assuming shorthand colors are unaffected by palette changes; Using it without a clear color policy; Forgetting that it changes global interpretation; Mixing explicit colors and shorthand without consistency; Applying it when shorthand codes are not used.\nRelated APIs: `set_palette`, `set_theme`, `color_palette`, `reset_defaults`, `reset_orig`",
+      "gotchas": [
+        "This is a global interpretation change.",
+        "It mainly matters in mixed Matplotlib/Seaborn codebases.",
+        "Color shorthand can become ambiguous across environments.",
+        "Palette selection affects shorthand output.",
+        "Keep this isolated in style setup code."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Style: Remove Top and Right Spines from Figure",
+      "mental_trigger": "I need to reduce visual clutter around the axes.",
+      "syntax": "seaborn.despine(fig=None, ax=None, top=True, right=True, left=False, bottom=False, offset=None, trim=False)",
+      "important_params": [
+        "fig",
+        "ax",
+        "top",
+        "right",
+        "trim"
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ntips = sns.load_dataset(\"tips\").dropna()\nsns.boxplot(data=tips, x=\"day\", y=\"total_bill\")\nsns.despine()\nplt.show()",
+      "use_when": "1) You want a cleaner plot frame. seaborn.pydata. 2) The top and right spines are unnecessary. seaborn.pydata. 3) You are preparing publication-style charts. seaborn.pydata. 4) You want consistency with Seaborn’s common visual style. seaborn.pydata. 5) You need to simplify the plot border.",
+      "avoid_when": "1) The spines help orient the reader. 2) The chart already relies on minimal axis framing. 3) Removing spines would reduce readability. 4) You need the full Matplotlib border behavior. 5) The plot uses custom axis framing.",
+      "decision_notes": "Category: Styling\nModule: `seaborn`\nReturn Value: None\nExpected Output: A cleaner plot with selected spines removed.\nPurpose: Remove chart spines for a cleaner presentation style.\nCommon Mistakes: Removing spines when they aid readability; Forgetting that despine alters existing axes; Applying it before the figure is fully drawn in complex workflows; Removing too much frame structure; Using it to compensate for poor layout.\nRelated APIs: `set_theme`, `set_style`, `set_context`, `color_palette`",
+      "gotchas": [
+        "Spine removal changes the visual balance of the chart.",
+        "Trim behavior can alter axis framing noticeably.",
+        "It is a post-processing styling step.",
+        "It can affect multiple axes if the figure is complex.",
+        "Use it deliberately rather than automatically."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Utility: Load Example Dataset",
+      "mental_trigger": "I need a built-in example dataset for reproducible examples or exploration.",
+      "syntax": "seaborn.load_dataset(name, cache=True, data_home=None, **kwargs)",
+      "important_params": [
+        "name",
+        "cache",
+        "data_home",
+        "kwargs",
+        "None"
+      ],
+      "example": "import seaborn as sns\n\ntips = sns.load_dataset(\"tips\")\ntips.head()",
+      "use_when": "1) You want a quick official example dataset. seaborn.pydata. 2) You need a reproducible teaching or demo dataset. seaborn.pydata. 3) You want to avoid setting up your own CSV for a small example. seaborn.pydata. 4) You are prototyping Seaborn usage. seaborn.pydata. 5) You need to validate plotting code with known tabular data.",
+      "avoid_when": "1) Offline operation is required. 2) You need a production dataset loader. 3) Network access is restricted. 4) The dataset should come from your own source of truth. 5) Example data should not be fetched externally.",
+      "decision_notes": "Category: Datasets\nModule: `seaborn`\nReturn Value: pandas.DataFrame\nExpected Output: A Pandas DataFrame containing the requested example dataset.\nPurpose: Load an example dataset from the online repository.\nCommon Mistakes: Using it in offline code paths; Assuming it is suitable for production data ingestion; Forgetting network and cache dependencies; Treating example data as representative of your domain; Not pinning version when reproducibility matters.\nRelated APIs: `get_dataset_names`",
+      "gotchas": [
+        "It requires online access according to the docs.",
+        "Cache behavior can affect repeatability.",
+        "Dataset availability may change over time.",
+        "It is ideal for examples, not business pipelines.",
+        "Example datasets are a convenience, not an API contract."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Utility: Retrieve Available Example Dataset Names",
+      "mental_trigger": "I need to discover which built-in example datasets are available.",
+      "syntax": "seaborn.get_dataset_names()",
+      "important_params": [
+        "No major user"
+      ],
+      "example": "import seaborn as sns\n\nsns.get_dataset_names()",
+      "use_when": "1) You want to inspect dataset names before loading. seaborn.pydata. 2) You are debugging example dataset access. seaborn.pydata. 3) You need to enumerate demo datasets for tooling. seaborn.pydata. 4) You want to build a quick dataset selector. seaborn.pydata. 5) You need to confirm what Seaborn ships or exposes.",
+      "avoid_when": "1) You already know the dataset name. 2) You are working offline and cannot rely on the dataset server. 3) You need actual data rather than names. 4) The dataset list is not relevant to the task. 5) Production data discovery should come from your own catalog.",
+      "decision_notes": "Category: Datasets\nModule: `seaborn`\nReturn Value: list of str\nExpected Output: A list of available example dataset names.\nPurpose: Report available example datasets.\nCommon Mistakes: Assuming the list is always available offline; Treating it as a stable production catalog; Confusing dataset names with loaded data; Using it in critical runtime paths; Assuming datasets are version-pinned forever.\nRelated APIs: `load_dataset`",
+      "gotchas": [
+        "The list depends on the example dataset repository.",
+        "It is mostly a discovery tool.",
+        "Availability may vary with network conditions.",
+        "It is useful for demos and tests.",
+        "It should not be a production dependency."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": []
+    },
+    {
+      "task": "Utility: Move or Recreate Plot Legend",
+      "mental_trigger": "I need to reposition an existing legend without rebuilding the plot.",
+      "syntax": "seaborn.move_legend(obj, loc, **kwargs)",
+      "important_params": [
+        "obj",
+        "loc",
+        "kwargs",
+        "bbox_to_anchor",
+        "title"
+      ],
+      "example": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ntips = sns.load_dataset(\"tips\").dropna()\nax = sns.scatterplot(data=tips, x=\"total_bill\", y=\"tip\", hue=\"sex\")\nsns.move_legend(ax, \"upper left\")\nplt.show()",
+      "use_when": "1) The default legend location overlaps data. seaborn.pydata. 2) You want to improve readability after plotting. seaborn.pydata. 3) A faceted or grouped plot needs legend relocation. seaborn.pydata. 4) You need to refactor legend placement late in the workflow. seaborn.pydata. 5) You want a convenience wrapper around legend recreation.",
+      "avoid_when": "1) The legend is already well placed. 2) You need full custom legend construction. 3) Another Matplotlib legend API is already used explicitly. 4) The plot has no legend. 5) Legend relocation would not improve readability.",
+      "decision_notes": "Category: Utility\nModule: `seaborn`\nReturn Value: None\nExpected Output: The legend is recreated at a new position on the plot.\nPurpose: Recreate a plot legend at a new location.\nCommon Mistakes: Calling it before the legend exists; Picking a new position that still overlaps the data; Forgetting that the plot object must be compatible; Using it to solve layout problems that need figure resizing; Assuming it edits the original legend in place.\nRelated APIs: `despine`, `set_theme`, `relplot`, `catplot`, `FacetGrid`",
+      "gotchas": [
+        "It recreates the legend rather than merely moving it.",
+        "Legend relocation can interact with layout and clipping.",
+        "Some plot types are harder to relayout cleanly.",
+        "It is especially helpful for faceted plots.",
+        "The target object must expose legend information appropriately."
+      ],
+      "official_docs": "https://seaborn.pydata.org/api.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "matplotlib",
+          "task": "Add Legend To Axes",
+          "reason": "Standard Matplotlib legend creation and custom positioning."
+        },
+        {
+          "package": "matplotlib",
+          "task": "Axes-Level: Add Legend",
+          "reason": "Standard Matplotlib legend creation and custom positioning."
+        }
+      ]
+    }
+  ],
+  "alternatives": [
+    {
+      "id": "matplotlib",
+      "type": "package"
+    }
+  ],
+  "package_specific_debugging": [
+    "Import or installation failure: inspect the traceback; verify which interpreter and package manager installed Seaborn. Install with python -m pip install seaborn; verify environment alignment.",
+    "Wrong interpreter sees no seaborn: compare python -m pip versus pip; inspect sys.executable. Reinstall using the active interpreter.",
+    "Blank plot in script: confirm the code executed and no backend error occurred. Call plt.show() or save the figure.",
+    "Global theme leaks across plots: review earlier calls to set_theme, set_palette, or related styling functions. Reset style or localize styling decisions.",
+    "Missing or misleading legend: inspect how hue/style/size are assigned and whether the plot is faceted. Adjust mappings, labels, or legend location.",
+    "Overplotting hides structure: check point count, transparency, and marker overlap. Use faceting, sampling, alpha, aggregation, or alternative plot types.",
+    "Wrong category order: inspect categorical dtype ordering and explicit order arguments. Set ordering explicitly in the data or plot call.",
+    "Aggregation hides raw data variation: check estimator and error bar settings. Switch to raw-data plots or adjust statistical options.",
+    "Uncertainty looks wrong: inspect estimator, error bar mode, and grouping. Choose explicit interval settings and verify the summary statistic.",
+    "Facet grid too crowded: count unique facet levels and inspect the grid dimensions. Reduce levels, enlarge the figure, or aggregate subsets.",
+    "Large pair plot runs slowly: check feature count and sample size. Reduce columns, sample data, or use a different summary plot.",
+    "Heatmap colors seem misleading: inspect the colormap choice and data range. Choose a colormap that matches the data semantics.",
+    "Clustermap order surprises you: confirm the dendrogram and clustering method. Use heatmap instead if fixed order is required.",
+    "Figure clipping on save: compare on-screen render with saved file. Adjust figure size or Matplotlib save options.",
+    "Empty plot from dropped missing values: check the shape after preprocessing and NaN filtering. Inspect missingness and choose a deliberate imputation or filtering strategy.",
+    "Hue mapping looks inconsistent across plots: compare ordering and palette setup across plots. Set a consistent palette and categorical order.",
+    "Too many legend entries: inspect the number of unique categories. Reduce categories, facet instead, or move detail to annotations.",
+    "Plot looks different in notebook vs script: compare Matplotlib backend and save/export paths. Standardize backend and export pipeline.",
+    "Line plot connects categories incorrectly: inspect the x variable's type and order. Use appropriate ordering or choose a categorical summary plot.",
+    "Error bar interpretation is unclear: review estimator and error bar settings. Label the chart or choose a more explicit summary.",
+    "Categorical bars are too similar: check category count and palette choice. Facet, reorder, or reduce categories.",
+    "Violin plot hides sample size: compare raw counts separately. Overlay counts or choose another plot.",
+    "Box plot hides multimodality: inspect a histogram, KDE, or ECDF. Switch to a distribution plot that shows shape.",
+    "Count plot misread as proportion: check whether normalization is needed. Use proportions or annotate counts clearly.",
+    "Heatmap annotations clutter the figure: inspect cell count and formatting. Disable annotations or reduce precision.",
+    "Facet scales make panels hard to compare: inspect facet scale settings. Standardize scales when comparison matters.",
+    "Objects API feels unfamiliar: check whether the task is simple enough to justify the interface. Use axes-level functions for simpler cases or standardize the objects API in the team.",
+    "Mixed pyplot and Seaborn state causes confusion: inspect where figures and axes are created and modified. Pick a figure ownership strategy and stick to it.",
+    "Theme does not reset as expected: inspect explicit rc changes and startup code. Restore defaults or isolate the plotting session.",
+    "Exported figure is blurry: check file format and save settings. Use vector output or higher DPI where appropriate."
+  ],
+  "migration_notes": [
+    "Seaborn 0.13 introduced major enhancements to categorical plots, support for alternate dataframe libraries, andImproved configuration for the objects interface.",
+    "The v0.12 release notes identify keyword-only arguments, more flexible error bars, and the introduction of the objects interface as major changes affecting usage style.",
+    "The API reference marks rugplot as deprecated in the distribution plots section.",
+    "Code written against older seaborn versions may need updates for keyword-only signatures, error bar semantics, and categorical plot behavior.",
+    "Pin to the selected version. Review the 0.12 and 0.13 release notes before upgrading code paths. Validate categorical plots, error bars, and any objects interface usage against the 0.13.2 docs. Re-run representative figures in notebooks and export pipelines."
+  ],
+  "breaking_changes": []
+}

@@ -30,7 +30,7 @@ interface SearchBoxProps {
 const RECENT_SEARCHES_KEY = 'aens-recent-searches';
 const MAX_RECENT = 5;
 
-const TYPE_ORDER: SearchResult['type'][] = ['package', 'model', 'function', 'cheatsheet', 'workflow', 'registry'];
+const TYPE_ORDER: SearchResult['type'][] = ['package', 'model', 'function', 'cheatsheet', 'workflow', 'registry', 'pattern', 'debug_guide', 'decision_guide', 'principle'];
 
 const TYPE_LABELS: Record<SearchResult['type'], string> = {
   package: 'Packages',
@@ -39,6 +39,10 @@ const TYPE_LABELS: Record<SearchResult['type'], string> = {
   cheatsheet: 'Cheatsheets',
   workflow: 'Workflows',
   registry: 'Registry',
+  pattern: 'Patterns',
+  debug_guide: 'Debug Guides',
+  decision_guide: 'Decision Guides',
+  principle: 'Principles',
 };
 
 function loadRecentSearches(): string[] {

@@ -14,7 +14,11 @@ import {
   getModelNavItems,
   getRegistryTasks,
   getWorkflowNavItems,
-  getCheatsheetNavItems
+  getCheatsheetNavItems,
+  getPatternNavItems,
+  getDebugGuideNavItems,
+  getDecisionGuideNavItems,
+  getPrincipleNavItems
 } from "@/lib/data";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
@@ -46,6 +50,10 @@ export default function RootLayout({
   const registryTasks = getRegistryTasks();
   const workflows = getWorkflowNavItems();
   const cheatsheets = getCheatsheetNavItems();
+  const patterns = getPatternNavItems();
+  const debugGuides = getDebugGuideNavItems();
+  const decisionGuides = getDecisionGuideNavItems();
+  const principles = getPrincipleNavItems();
   const searchIndex = buildSearchIndex();
 
   return (
@@ -60,7 +68,7 @@ export default function RootLayout({
         <ReadingProgress />
         <BackToTop />
         <div className="hidden md:block shrink-0 h-full sticky top-0">
-          <Sidebar 
+          <Sidebar
             packages={packages}
             mlModels={mlModels}
             dlModels={dlModels}
@@ -68,11 +76,15 @@ export default function RootLayout({
             registryTasks={registryTasks}
             workflows={workflows}
             cheatsheets={cheatsheets}
+            patterns={patterns}
+            debugGuides={debugGuides}
+            decisionGuides={decisionGuides}
+            principles={principles}
           />
         </div>
 
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-          <TopBar 
+          <TopBar
             packages={packages}
             mlModels={mlModels}
             dlModels={dlModels}
@@ -80,6 +92,10 @@ export default function RootLayout({
             registryTasks={registryTasks}
             workflows={workflows}
             cheatsheets={cheatsheets}
+            patterns={patterns}
+            debugGuides={debugGuides}
+            decisionGuides={decisionGuides}
+            principles={principles}
             searchIndex={searchIndex}
           />
           <main className="flex-1 overflow-y-auto bg-zinc-50 dark:bg-zinc-950 px-4 py-5 md:px-8 md:py-8">

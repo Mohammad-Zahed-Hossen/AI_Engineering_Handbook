@@ -1,0 +1,134 @@
+{
+  "id": "cuda-out-of-memory",
+  "title": "CUDA Out of Memory",
+  "slug": "cuda-out-of-memory",
+  "description": "Troubleshooting and resolving CUDA Out of Memory (OOM) errors in PyTorch.",
+  "name": "CUDA Out of Memory",
+  "category": "gpu",
+  "created_at": "2026-07-03",
+  "updated_at": "2026-07-03",
+  "sources": [
+    "https://pytorch.org/docs/stable/notes/faq.html#my-gpu-is-out-of-memory"
+  ],
+  "tags": [
+    "gpu",
+    "cuda",
+    "memory",
+    "debugging"
+  ],
+  "aliases": [
+    "cuda-oom"
+  ],
+  "keywords": [
+    "cuda",
+    "oom",
+    "pytorch",
+    "gpu-memory"
+  ],
+  "search_tokens": [
+    "cuda-oom",
+    "out-of-memory",
+    "gpu-oom"
+  ],
+  "domain": "deep-learning",
+  "difficulty": "advanced",
+  "engineering_area": "infrastructure",
+  "estimated_reading_time": 20,
+  "prerequisites": [
+    "pytorch"
+  ],
+  "recommended_next": [],
+  "related_content": [
+    {
+      "id": "pytorch",
+      "type": "package",
+      "relationship_type": "related_to"
+    },
+    {
+      "id": "build-rag-system",
+      "type": "workflow",
+      "relationship_type": "related_to"
+    },
+    {
+      "id": "training-loop",
+      "type": "pattern",
+      "relationship_type": "related_to"
+    }
+  ],
+  "last_verified": "2026-07-03",
+  "review_frequency": "quarterly",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "symptoms": [
+    {
+      "symptom": "RuntimeError: CUDA out of memory. Tried to allocate...",
+      "description": "The program halts during the forward or backward pass with a PyTorch traceback stating CUDA OOM, indicating that total active allocations exceeded hardware GPU RAM capacity."
+    }
+  ],
+  "root_causes": [
+    {
+      "cause": "Batch size too large",
+      "probability": "high",
+      "explanation": "Accumulating activation tensors for backpropagation exceeds the available memory capacity on the configured GPU hardware."
+    },
+    {
+      "cause": "Gradient leak / Reference accumulation",
+      "probability": "medium",
+      "explanation": "Storing training output tensors containing gradient tracking history in global variables or lists (e.g. logging history without calling loss.item()) prevents the garbage collector from freeing memory."
+    }
+  ],
+  "diagnosis": [
+    {
+      "test": "Check isolated memory footprint",
+      "expected_result": "Active memory allocation values dropping when garbage collection is called.",
+      "how_to_perform": "Use print(torch.cuda.memory_summary(device=None, abbreviated=False)) directly before and after garbage collection runs."
+    }
+  ],
+  "solutions": [
+    {
+      "solution": "Reduce training batch size",
+      "steps": [
+        "Locate dataloader batch_size initialization.",
+        "Halve the batch size value (e.g., from 64 to 32).",
+        "Enable gradient accumulation step adjustments to compensate for loss representation constraints."
+      ],
+      "verification": "Rerun training execution loop. Verify that epochs complete without traceback warnings."
+    }
+  ],
+  "prevention": [
+    {
+      "prevention": "Implement gradient checkpointing",
+      "practices": [
+        "Employ torch.utils.checkpoint during model configuration to discard intermediate activations and recalculate them during backward steps.",
+        "Regularly call torch.cuda.empty_cache() between validation cycles to flush fragmented blocks back to the GPU allocator."
+      ]
+    }
+  ],
+  "related_packages": [
+    {
+      "id": "pytorch",
+      "type": "package",
+      "relationship_type": "related_to"
+    }
+  ],
+  "related_workflows": [
+    {
+      "id": "build-rag-system",
+      "type": "workflow",
+      "relationship_type": "related_to"
+    }
+  ],
+  "related_patterns": [
+    {
+      "id": "training-loop",
+      "type": "pattern",
+      "relationship_type": "related_to"
+    }
+  ]
+}

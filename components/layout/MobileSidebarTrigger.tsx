@@ -60,6 +60,10 @@ interface MobileSidebarTriggerProps {
   registryTasks: string[];
   workflows: NavItem[];
   cheatsheets: NavItem[];
+  patterns: NavItem[];
+  debugGuides: NavItem[];
+  decisionGuides: NavItem[];
+  principles: NavItem[];
 }
 
 export default function MobileSidebarTrigger({
@@ -70,6 +74,10 @@ export default function MobileSidebarTrigger({
   registryTasks,
   workflows,
   cheatsheets,
+  patterns,
+  debugGuides,
+  decisionGuides,
+  principles,
 }: MobileSidebarTriggerProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -83,6 +91,10 @@ export default function MobileSidebarTrigger({
     if (pathname.startsWith('/registry/') && parts[1]) return parts[1];
     if (pathname.startsWith('/workflows/') && parts[1]) return parts[1];
     if (pathname.startsWith('/cheatsheets/') && parts[1]) return parts[1];
+    if (pathname.startsWith('/patterns/') && parts[1]) return parts[1];
+    if (pathname.startsWith('/debug-guides/') && parts[1]) return parts[1];
+    if (pathname.startsWith('/decision-guides/') && parts[1]) return parts[1];
+    if (pathname.startsWith('/principles/') && parts[1]) return parts[1];
     return null;
   };
 
@@ -94,6 +106,10 @@ export default function MobileSidebarTrigger({
     if (pathname.startsWith('/registry')) return 'registry';
     if (pathname.startsWith('/workflows')) return 'workflows';
     if (pathname.startsWith('/cheatsheets')) return 'cheatsheets';
+    if (pathname.startsWith('/patterns')) return 'patterns';
+    if (pathname.startsWith('/debug-guides')) return 'debug_guides';
+    if (pathname.startsWith('/decision-guides')) return 'decision_guides';
+    if (pathname.startsWith('/principles')) return 'principles';
     return '';
   };
 
@@ -174,6 +190,11 @@ export default function MobileSidebarTrigger({
           {/* Home Link */}
           <Link href="/" className={linkClass('/')} onClick={() => setOpen(false)}>
             Dashboard
+          </Link>
+
+          {/* Problem Index */}
+          <Link href="/problem-index" className={linkClass('/problem-index')} onClick={() => setOpen(false)}>
+            Problem Index
           </Link>
 
           {/* Python Packages */}
@@ -441,6 +462,150 @@ export default function MobileSidebarTrigger({
                       <li>
                         <Link
                           href="/cheatsheets"
+                          className="block py-1.5 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                          onClick={() => setOpen(false)}
+                        >
+                          See all {total} →
+                        </Link>
+                      </li>
+                    )}
+                  </>
+                );
+              })()}
+            </ul>
+          )}
+
+          {/* Patterns */}
+          {renderSectionHeader('Patterns', patterns.length, 'patterns', '/patterns')}
+          {expanded === 'patterns' && (
+            <ul className="space-y-0.5">
+              {(() => {
+                const { visible, truncated, total } = applyItemLimit(patterns, getActiveId(pathname), MAX_VISIBLE_ITEMS);
+                return (
+                  <>
+                    {visible.map((p) => (
+                      <li key={p.id}>
+                        <Link
+                          href={`/patterns/${p.id}`}
+                          className={linkClass(`/patterns/${p.id}`)}
+                          onClick={() => setOpen(false)}
+                        >
+                          {p.name}
+                        </Link>
+                      </li>
+                    ))}
+                    {truncated && (
+                      <li>
+                        <Link
+                          href="/patterns"
+                          className="block py-1.5 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                          onClick={() => setOpen(false)}
+                        >
+                          See all {total} →
+                        </Link>
+                      </li>
+                    )}
+                  </>
+                );
+              })()}
+            </ul>
+          )}
+
+          {/* Debug Guides */}
+          {renderSectionHeader('Debug Guides', debugGuides.length, 'debug_guides', '/debug-guides')}
+          {expanded === 'debug_guides' && (
+            <ul className="space-y-0.5">
+              {(() => {
+                const { visible, truncated, total } = applyItemLimit(debugGuides, getActiveId(pathname), MAX_VISIBLE_ITEMS);
+                return (
+                  <>
+                    {visible.map((dg) => (
+                      <li key={dg.id}>
+                        <Link
+                          href={`/debug-guides/${dg.id}`}
+                          className={linkClass(`/debug-guides/${dg.id}`)}
+                          onClick={() => setOpen(false)}
+                        >
+                          {dg.name}
+                        </Link>
+                      </li>
+                    ))}
+                    {truncated && (
+                      <li>
+                        <Link
+                          href="/debug-guides"
+                          className="block py-1.5 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                          onClick={() => setOpen(false)}
+                        >
+                          See all {total} →
+                        </Link>
+                      </li>
+                    )}
+                  </>
+                );
+              })()}
+            </ul>
+          )}
+
+          {/* Decision Guides */}
+          {renderSectionHeader('Decision Guides', decisionGuides.length, 'decision_guides', '/decision-guides')}
+          {expanded === 'decision_guides' && (
+            <ul className="space-y-0.5">
+              {(() => {
+                const { visible, truncated, total } = applyItemLimit(decisionGuides, getActiveId(pathname), MAX_VISIBLE_ITEMS);
+                return (
+                  <>
+                    {visible.map((dg) => (
+                      <li key={dg.id}>
+                        <Link
+                          href={`/decision-guides/${dg.id}`}
+                          className={linkClass(`/decision-guides/${dg.id}`)}
+                          onClick={() => setOpen(false)}
+                        >
+                          {dg.name}
+                        </Link>
+                      </li>
+                    ))}
+                    {truncated && (
+                      <li>
+                        <Link
+                          href="/decision-guides"
+                          className="block py-1.5 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                          onClick={() => setOpen(false)}
+                        >
+                          See all {total} →
+                        </Link>
+                      </li>
+                    )}
+                  </>
+                );
+              })()}
+            </ul>
+          )}
+
+          {/* Principles */}
+          {renderSectionHeader('Principles', principles.length, 'principles', '/principles')}
+          {expanded === 'principles' && (
+            <ul className="space-y-0.5">
+              {(() => {
+                const { visible, truncated, total } = applyItemLimit(principles, getActiveId(pathname), MAX_VISIBLE_ITEMS);
+                return (
+                  <>
+                    {visible.map((p) => (
+                      <li key={p.id}>
+                        <Link
+                          href={`/principles/${p.id}`}
+                          className={linkClass(`/principles/${p.id}`)}
+                          onClick={() => setOpen(false)}
+                        >
+                          {p.name}
+                        </Link>
+                      </li>
+                    ))}
+                    {truncated && (
+                      <li>
+                        <Link
+                          href="/principles"
                           className="block py-1.5 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
                           onClick={() => setOpen(false)}
                         >

@@ -8,6 +8,7 @@ import OfficialResources from '@/components/shared/OfficialResources';
 import RelatedContent from '@/components/shared/RelatedContent';
 import WorkflowStepList from '@/components/shared/WorkflowStepList';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
+import ExpandableText from '@/components/shared/ExpandableText';
 
 export async function generateStaticParams() {
   return getAllWorkflowIds().map((id) => ({ id }));
@@ -53,7 +54,9 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
           updatedAt={workflow.updated_at}
           category={workflow.category}
         />
-        <p className="content-prose text-sm text-muted-foreground">{workflow.overview}</p>
+        <ExpandableText cacheKey={`workflow-overview-${workflow.id}`} fadeClass="from-background to-transparent">
+          <p className="content-prose text-sm text-muted-foreground">{workflow.overview}</p>
+        </ExpandableText>
         {workflow.starter_stack.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-semibold text-muted-foreground">Starter Stack:</span>

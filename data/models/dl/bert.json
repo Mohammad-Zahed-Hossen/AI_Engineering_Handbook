@@ -1,0 +1,146 @@
+{
+  "id": "bert",
+  "title": "BERT",
+  "slug": "bert",
+  "description": "Bidirectional Encoder Representations from Transformers (BERT) model.",
+  "name": "BERT",
+  "category": "dl",
+  "subcategory": "transformer_encoder",
+  "problem_types": [
+    "classification",
+    "embedding"
+  ],
+  "summary": "BERT (Bidirectional Encoder Representations from Transformers) is a transformer-based encoder model designed to pre-train deep bidirectional representations from unlabeled text. Unlike traditional sequence models that read text left-to-right or right-to-left sequentially, BERT reads the entire sequence of words at once, allowing it to learn the context of a word based on all of its surroundings.",
+  "use_when": "Building NLP systems that require deep contextual understanding of words, such as sentiment analysis, named entity recognition, sentence similarity, and document embedding retrieval in RAG systems.",
+  "avoid_when": "Performing generative text tasks (e.g. story generation, chat dialogues, translation) where an autoregressive decoder model like GPT/Llama is more appropriate.",
+  "pros": [
+    "Bidirectional context learning enables superior understanding of sentence structure and word relationships compared to unidirectional architectures.",
+    "Highly customizable via fine-tuning on downstream tasks with minimal data and computation.",
+    "Robust and stable representations due to extensive pre-training on large-scale text corpora."
+  ],
+  "cons": [
+    "High computational footprint for training from scratch compared to traditional recurrent networks.",
+    "Inferior performance on generation-based tasks due to the absence of an autoregressive decoder.",
+    "Strict context window limit (typically 512 tokens), making it less suitable for very long document processing without splitting."
+  ],
+  "key_hyperparams": [
+    {
+      "name": "learning_rate",
+      "default": 5e-05,
+      "note": "Standard learning rate range during fine-tuning is between 2e-5 and 5e-5."
+    },
+    {
+      "name": "max_position_embeddings",
+      "default": 512,
+      "note": "Maximum sequence length that the model can process, governed by the positional embedding matrix size."
+    }
+  ],
+  "training_speed": "slow",
+  "inference_speed": "fast",
+  "memory_usage": "medium",
+  "interpretability": "low",
+  "quick_start": "from transformers import BertTokenizer, BertModel\nimport torch\n\ntokenizer = BertTokenizer.from_pretrained('bert-base-uncased')\nmodel = BertModel.from_pretrained('bert-base-uncased')\n\ninputs = tokenizer(\"Hello, BERT!\", return_tensors=\"pt\")\noutputs = model(**inputs)\nlast_hidden_states = outputs.last_hidden_state",
+  "alternatives": [
+    {
+      "id": "llama-3-3",
+      "type": "registry",
+      "relationship_type": "alternative_to"
+    },
+    {
+      "id": "transformer",
+      "type": "model",
+      "relationship_type": "alternative_to"
+    },
+    {
+      "id": "text-embedding-model",
+      "type": "model",
+      "relationship_type": "alternative_to"
+    }
+  ],
+  "related_workflows": [
+    "build-rag-system"
+  ],
+  "created_at": "2026-07-08",
+  "updated_at": "2026-07-08",
+  "sources": [
+    "https://arxiv.org/abs/1810.04805",
+    "https://huggingface.co/google-bert/bert-base-uncased"
+  ],
+  "tags": [
+    "transformer",
+    "encoder",
+    "bert",
+    "embeddings"
+  ],
+  "aliases": [
+    "bidirectional-encoder"
+  ],
+  "keywords": [
+    "bert",
+    "transformer",
+    "encoder",
+    "embeddings"
+  ],
+  "search_tokens": [
+    "bert",
+    "google-bert",
+    "transformer-encoder"
+  ],
+  "domain": "deep-learning",
+  "difficulty": "intermediate",
+  "engineering_area": "modeling",
+  "estimated_reading_time": 30,
+  "prerequisites": [
+    "pytorch"
+  ],
+  "recommended_next": [
+    "build-rag-system"
+  ],
+  "related_content": [
+    {
+      "id": "pytorch",
+      "type": "package",
+      "relationship_type": "related_to"
+    },
+    {
+      "id": "build-rag-system",
+      "type": "workflow",
+      "relationship_type": "related_to"
+    },
+    {
+      "id": "training-loop",
+      "type": "pattern",
+      "relationship_type": "related_to"
+    },
+    {
+      "id": "rag-vs-fine-tuning",
+      "type": "decision_guide",
+      "relationship_type": "related_to"
+    },
+    {
+      "id": "single-source-of-truth",
+      "type": "principle",
+      "relationship_type": "related_to"
+    }
+  ],
+  "last_verified": "2026-07-08",
+  "review_frequency": "annually",
+  "verified_against": "1.0.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "decision_notes": "Use BERT-base for local resource-constrained environments; scale up to RoBERTa or DeBERTa for competitive performance benchmarks on classification and extraction tasks.",
+  "competitors": [
+    {
+      "id": "llama-3-3",
+      "type": "registry",
+      "relationship_type": "alternative_to"
+    }
+  ],
+  "research_background": "Originally developed by Google AI Language in late 2018. Revolutionized natural language processing benchmarks by demonstrating state-of-the-art representations utilizing bidirectional masked transformers.",
+  "computational_requirements": "Requires standard modern GPU (e.g. RTX 3080/4090 or T4/V100 in cloud) for fine-tuning. Multi-GPU clusters required only for training from scratch."
+}

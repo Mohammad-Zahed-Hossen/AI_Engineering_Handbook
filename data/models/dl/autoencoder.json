@@ -1,0 +1,102 @@
+{
+  "id": "autoencoder",
+  "title": "Autoencoder",
+  "slug": "autoencoder",
+  "description": "Unsupervised neural network projecting inputs through a low-dimensional bottleneck layer.",
+  "name": "Autoencoder",
+  "category": "dl",
+  "subcategory": "dimensionality_reduction",
+  "problem_types": [
+    "embedding"
+  ],
+  "summary": "Autoencoders are feedforward neural networks trained to reconstruct their input. By introducing a lower-dimensional bottleneck layer (latent space), they force the model to learn compressed feature representations.",
+  "use_when": "Learning non-linear low-dimensional data representations, denoising features, or detecting anomalies.",
+  "avoid_when": "Strict linear interpretations of dimensions are required, or datasets are extremely small.",
+  "pros": [
+    "Can capture highly non-linear feature interactions.",
+    "Flexible structures support convolutional, recurrent, or dense designs.",
+    "Can reconstruct clean signals from noisy inputs."
+  ],
+  "cons": [
+    "Vulnerable to learning identity mappings if bottleneck size is not optimized.",
+    "Latent variables lack geometric interpretation compared to linear projections.",
+    "High computational training cost compared to linear statistical methods."
+  ],
+  "key_hyperparams": [
+    {
+      "name": "latent_dim",
+      "default": 32,
+      "note": "Dimensionality of the bottleneck representation. Balances compression and reconstruction error."
+    }
+  ],
+  "training_speed": "medium",
+  "inference_speed": "fast",
+  "memory_usage": "medium",
+  "interpretability": "low",
+  "quick_start": "import torch.nn as nn\nimport torch\n\nclass AutoEncoder(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.enc = nn.Linear(64, 16)\n        self.dec = nn.Linear(16, 64)\n    def forward(self, x):\n        return self.dec(self.enc(x))\n\nmodel = AutoEncoder()\nx = torch.rand((1, 64))\nout = model(x)",
+  "alternatives": [
+    {
+      "id": "pca",
+      "type": "model",
+      "relationship_type": "alternative_to"
+    },
+    {
+      "id": "umap",
+      "type": "model",
+      "relationship_type": "alternative_to"
+    }
+  ],
+  "related_workflows": [],
+  "sources": [
+    "https://en.wikipedia.org/wiki/Autoencoder"
+  ],
+  "tags": [
+    "dimensionality-reduction",
+    "unsupervised",
+    "compression",
+    "bottleneck"
+  ],
+  "aliases": [
+    "denoising-autoencoder"
+  ],
+  "keywords": [
+    "autoencoder",
+    "compression",
+    "bottleneck",
+    "reconstruction"
+  ],
+  "search_tokens": [
+    "autoencoder",
+    "denoising-autoencoder",
+    "neural-compression"
+  ],
+  "domain": "deep-learning",
+  "difficulty": "intermediate",
+  "engineering_area": "modeling",
+  "estimated_reading_time": 12,
+  "prerequisites": [
+    "pytorch"
+  ],
+  "recommended_next": [
+    "pca"
+  ],
+  "related_content": [
+    {
+      "id": "pytorch",
+      "type": "package",
+      "relationship_type": "related_to"
+    }
+  ],
+  "created_at": "2026-07-08",
+  "updated_at": "2026-07-08",
+  "last_verified": "2026-07-08",
+  "review_frequency": "annually",
+  "verified_against": "1.0.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready"
+}

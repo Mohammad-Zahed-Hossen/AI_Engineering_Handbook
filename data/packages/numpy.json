@@ -1,133 +1,2045 @@
 {
-  "created_at": "2026-06-24",
-  "updated_at": "2026-06-26",
-  "sources": [
-    "https://numpy.org"
-  ],
-  "github_repo": "https://github.com/numpy/numpy",
   "id": "numpy",
+  "title": "NumPy",
+  "slug": "numpy",
+  "description": "Core Python package for n-dimensional arrays and numerical computing.",
   "name": "NumPy",
-  "version": "2.0.0",
+  "version": "2.5",
   "install": "pip install numpy",
   "import_as": "import numpy as np",
-  "summary": "N-dimensional array operations, linear algebra, and vectorized math for Python. Foundation of the scientific Python stack.",
+  "language": "python",
+  "summary": "NumPy is the standard Python library for fast n-dimensional arrays, vectorized computation, broadcasting, linear algebra, random sampling, and file-based array I/O. It is the default array layer for data science, machine learning, scientific computing, and numerical programming.",
+  "created_at": "2026-07-05",
+  "updated_at": "2026-07-05",
+  "last_verified": "2026-07-05",
+  "review_frequency": "quarterly",
+  "verified_against": "2.5",
+  "compatible_versions": [],
+  "owner": "NumPy Developers",
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "domain": "data_processing",
+  "category": "data",
+  "difficulty": "beginner",
+  "engineering_area": "data_engineering",
+  "estimated_reading_time": 60,
+  "prerequisites": [],
+  "recommended_next": [],
+  "related_content": [
+    {
+      "id": "numpy",
+      "type": "cheatsheet",
+      "relationship_type": "references"
+    }
+  ],
+  "tags": [],
+  "aliases": [],
+  "keywords": [],
+  "search_tokens": [],
+  "sources": [
+    "https://numpy.org/doc/stable/reference/",
+    "https://numpy.org/doc/",
+    "https://github.com/numpy/numpy/releases"
+  ],
+  "github_repo": "https://github.com/numpy/numpy",
   "tasks": [
     {
-      "task": "Create arrays from data or shape",
-      "mental_trigger": "I need a typed numeric container from a list, shape, or range",
-      "syntax": "np.array(object, dtype=None)\nnp.zeros(shape)\nnp.ones(shape)\nnp.arange(start, stop, step)\nnp.linspace(start, stop, num)",
+      "task": "Create Array",
+      "mental_trigger": "I have Python data and need a NumPy array.",
+      "syntax": "np.array(object, dtype=None, copy=True, order='K', subok=False, ndmin=0, ndmax=0, like=None)",
       "important_params": [
-        "object — list/tuple/nested list to convert",
-        "shape — tuple like (3, 4) for multi-dimensional",
-        "dtype — e.g. np.float32 to control memory and precision",
-        "num — number of points for linspace"
+        "object",
+        "dtype",
+        "copy",
+        "order",
+        "ndmin"
       ],
-      "example": "a = np.array([[1, 2], [3, 4]], dtype=np.float32)\nz = np.zeros((3, 4))\nr = np.arange(0, 10, 2)  # [0, 2, 4, 6, 8]",
-      "use_when": "Converting Python lists to vectorized numeric arrays. Pre-allocating fixed-shape buffers for model outputs or feature matrices.",
-      "avoid_when": "Data is on GPU — use cupy or torch.tensor instead. Data exceeds RAM — use dask.array or memory-mapped arrays.",
-      "decision_notes": "np.zeros is safer than np.empty for pre-allocation; empty leaves garbage values that can silently corrupt downstream computations.",
+      "example": "import numpy as np\n\nx = np.array([1, 2, 3], dtype=np.float32)\nprint(x, x.dtype)",
+      "use_when": "1) Converting lists, tuples, or nested sequences into arrays. 2) You need to control element type up front. 3) You want a new standalone array object.",
+      "avoid_when": "You already have an array and only want a view or dtype-safe conversion; use np.asarray.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Create Array' operation.\nPurpose: I have Python data and need a NumPy array.\nCommon Mistakes: Default copying behavior creates a new array; Mixed Python types may upcast the result; Nested sequences may produce higher dimensions than expected; dtype=object changes downstream behavior significantly; ndmin prepends dimensions on the left\nRelated APIs: asarray, copy",
       "gotchas": [
-        "Arrays have a fixed dtype; mixing int and float during creation silently upcasts to float64, doubling memory for large arrays.",
-        "np.empty() allocates without zeroing — never assume its values are zero."
+        "Default copying behavior creates a new array.",
+        "Mixed Python types may upcast the result.",
+        "Nested sequences may produce higher dimensions than expected.",
+        "dtype=object changes downstream behavior significantly.",
+        "ndmin prepends dimensions on the left."
       ],
       "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.array.html",
-      "related_workflows": ["rag"],
-      "related_cheatsheets": ["numpy-cheatsheet"]
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
     },
     {
-      "task": "Reshape, transpose, and manipulate array dimensions",
-      "mental_trigger": "I need to change the shape of an array for matrix ops, batching, or model input formatting",
-      "syntax": "arr.reshape(newshape)\nnp.transpose(a, axes)\nnp.expand_dims(a, axis)\nnp.squeeze(a, axis)\nnp.ravel(a)",
+      "task": "Coerce to Array",
+      "mental_trigger": "I want NumPy semantics but may already have an array-like input.",
+      "syntax": "np.asarray(a, dtype=None, order=None, *, device=None, copy=None, like=None)",
       "important_params": [
-        "newshape — target shape tuple; use -1 to infer one dimension",
-        "axes — permutation order for transpose e.g. (1, 0, 2)",
-        "axis — position to insert or remove dimension"
+        "a",
+        "dtype",
+        "copy",
+        "order",
+        "like"
       ],
-      "example": "x = np.zeros((100, 28, 28))\nx_flat = x.reshape(100, -1)          # (100, 784)\nx_t = np.transpose(x, (0, 2, 1))     # (100, 28, 28) swapped\nx_ch = np.expand_dims(x, axis=1)     # (100, 1, 28, 28) for CNN input",
-      "use_when": "Preparing tensors for neural network layers (batch, channels, height, width). Flattening for fully connected layers. Aligning dimensions for broadcasting.",
-      "avoid_when": "You need a guaranteed copy — reshape returns a view when possible; use .copy() if the original must remain unmodified.",
-      "decision_notes": "reshape(-1) is the canonical flatten for feed-forward input. expand_dims + squeeze are the standard dimension insertion/removal idiom used in PyTorch interop code.",
+      "example": "import numpy as np\n\na = np.asarray([1, 2, 3], dtype=np.int64)\nprint(a, a.dtype)",
+      "use_when": "1) You want an ndarray but do not need a guaranteed copy. 2) You are normalizing inputs in library code. 3) You want to preserve existing array data when possible.",
+      "avoid_when": "You need an independent buffer; use np.array.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Coerce to Array' operation.\nPurpose: I want NumPy semantics but may already have an array-like input.\nCommon Mistakes: May return the original array object; Copy behavior depends on the input and requested dtype/order; Subclass behavior differs from nparray; Mutating the result may mutate the input if no copy occurred; copy=None allows NumPy to decide\nRelated APIs: array, copy",
       "gotchas": [
-        "reshape returns a view when possible; modifying it modifies the original array silently.",
-        "Broadcasting silently expands shape-(3,) + shape-(3,1) into (3,3) — always check result shapes with arr.shape."
+        "May return the original array object.",
+        "Copy behavior depends on the input and requested dtype/order.",
+        "Subclass behavior differs from np.array.",
+        "Mutating the result may mutate the input if no copy occurred.",
+        "copy=None allows NumPy to decide."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.asarray.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Create Empty Array",
+      "mental_trigger": "I will overwrite every value immediately.",
+      "syntax": "np.empty(shape, dtype=float, order='C', *, device=None, like=None)",
+      "important_params": [
+        "shape",
+        "dtype",
+        "order",
+        "like",
+        "device"
+      ],
+      "example": "import numpy as np\n\nx = np.empty((2, 3), dtype=np.float64)\nx.fill(0.0)\nprint(x)",
+      "use_when": "1) You need allocation speed and will write all elements. 2) You are building an output array in a loop. 3) You want to avoid zero-initialization overhead.",
+      "avoid_when": "You need safe default values; use zeros or full.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: An uninitialized ndarray of specified shape containing arbitrary garbage values.\nPurpose: I will overwrite every value immediately.\nCommon Mistakes: Contents are arbitrary until you assign them; Reading before writing produces garbage values; Shape mistakes can be hard to detect; Faster allocation does not mean faster overall code; Use only when immediate overwrite is guaranteed\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Contents are arbitrary until you assign them.",
+        "Reading before writing produces garbage values.",
+        "Shape mistakes can be hard to detect.",
+        "Faster allocation does not mean faster overall code.",
+        "Use only when immediate overwrite is guaranteed."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.empty.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Create Zeros",
+      "mental_trigger": "I need a clean numeric buffer with default zeros.",
+      "syntax": "np.zeros(shape, dtype=float, order='C', *, like=None)",
+      "important_params": [
+        "shape",
+        "dtype",
+        "order",
+        "like"
+      ],
+      "example": "import numpy as np\n\nx = np.zeros((2, 3), dtype=np.float32)\nprint(x)",
+      "use_when": "1) Initializing masks, counters, or feature matrices. 2) Building arrays that will be incrementally updated. 3) You need deterministic default values.",
+      "avoid_when": "Zero is not a meaningful default and performance matters; consider empty.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: An ndarray of specified shape filled with float or integer zeros.\nPurpose: I need a clean numeric buffer with default zeros.\nCommon Mistakes: Default dtype is floating point; Large arrays cost time to initialize; Use dtype carefully for integer counters; Shape is interpreted as dimensions, not total elements; like can redirect creation to array-API-compatible objects\nRelated APIs: empty, full, ones",
+      "gotchas": [
+        "Default dtype is floating point.",
+        "Large arrays cost time to initialize.",
+        "Use dtype carefully for integer counters.",
+        "Shape is interpreted as dimensions, not total elements.",
+        "like can redirect creation to array-API-compatible objects."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.zeros.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Create Ones",
+      "mental_trigger": "I need every element set to one.",
+      "syntax": "np.ones(shape, dtype=None, order='C', *, like=None)",
+      "important_params": [
+        "shape",
+        "dtype",
+        "order",
+        "like"
+      ],
+      "example": "import numpy as np\n\nx = np.ones((2, 3), dtype=np.int64)\nprint(x)",
+      "use_when": "1) Building indicator arrays. 2) Creating baseline multiplicative factors. 3) Initializing default weights or masks.",
+      "avoid_when": "You need arbitrary non-one fill values; use full.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: An ndarray of specified shape filled with float or integer ones.\nPurpose: I need every element set to one.\nCommon Mistakes: Default dtype may not be what you want; Integer and float behavior differ downstream; Large allocations still incur initialization cost; Often used as a building block, not an end state; ones_like is better when matching an existing array shape\nRelated APIs: empty, full, zeros",
+      "gotchas": [
+        "Default dtype may not be what you want.",
+        "Integer and float behavior differ downstream.",
+        "Large allocations still incur initialization cost.",
+        "Often used as a building block, not an end state.",
+        "ones_like is better when matching an existing array shape."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.ones.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Fill Array With Value",
+      "mental_trigger": "I need every element set to the same specific value.",
+      "syntax": "np.full(shape, fill_value, dtype=None, order='C', *, like=None)",
+      "important_params": [
+        "shape",
+        "fill_value",
+        "dtype",
+        "order",
+        "like"
+      ],
+      "example": "import numpy as np\n\nx = np.full((2, 3), 7, dtype=np.int32)\nprint(x)",
+      "use_when": "1) Creating sentinel-filled buffers. 2) Setting a default class index or padding value. 3) Repeating a scalar across a tensor shape.",
+      "avoid_when": "You need values derived from an existing array; use full_like.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Fill Array With Value' operation.\nPurpose: I need every element set to the same specific value.\nCommon Mistakes: dtype controls how fill_value is cast; Scalar fill values broadcast to the full shape; String/object fills can behave differently than numeric fills; Useful for padding, but padding semantics are your responsibility; Avoid implicit dtype surprises with integers and floats\nRelated APIs: array, asarray",
+      "gotchas": [
+        "dtype controls how fill_value is cast.",
+        "Scalar fill values broadcast to the full shape.",
+        "String/object fills can behave differently than numeric fills.",
+        "Useful for padding, but padding semantics are your responsibility.",
+        "Avoid implicit dtype surprises with integers and floats."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.full.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Create Range",
+      "mental_trigger": "I need evenly spaced integers with a fixed step.",
+      "syntax": "np.arange([start,] stop[, step,], dtype=None, *, like=None)",
+      "important_params": [
+        "start",
+        "stop",
+        "step",
+        "dtype",
+        "like"
+      ],
+      "example": "import numpy as np\n\nx = np.arange(0, 10, 2)\nprint(x)",
+      "use_when": "1) Generating index vectors. 2) Creating simple discrete ranges. 3) Building test data quickly.",
+      "avoid_when": "You need a guaranteed number of samples; use linspace.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A 1D ndarray containing evenly spaced integer or float values within a range.\nPurpose: I need evenly spaced integers with a fixed step.\nCommon Mistakes: The stop value is excluded; Floating-point steps can accumulate error; Integer dtype may overflow for large ranges; Shape depends on step size, not count; arange is not ideal for exact endpoint control\nRelated APIs: linspace, logspace",
+      "gotchas": [
+        "The stop value is excluded.",
+        "Floating-point steps can accumulate error.",
+        "Integer dtype may overflow for large ranges.",
+        "Shape depends on step size, not count.",
+        "arange is not ideal for exact endpoint control."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.arange.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Create Linspace",
+      "mental_trigger": "I need a precise number of values between two endpoints.",
+      "syntax": "np.linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None, axis=0)",
+      "important_params": [
+        "start",
+        "stop",
+        "num",
+        "endpoint",
+        "dtype"
+      ],
+      "example": "import numpy as np\n\nx = np.linspace(0.0, 1.0, 5)\nprint(x)",
+      "use_when": "1) Sampling continuous intervals. 2) Building plotting axes or evaluation grids. 3) Generating evenly spaced test inputs.",
+      "avoid_when": "You need integer stepping semantics; use arange.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A 1D ndarray containing specified number of linear spaced values.\nPurpose: I need a precise number of values between two endpoints.\nCommon Mistakes: num controls count, not spacing; endpoint=True includes the stop value; Floating-point results are approximate; Can return the step size with retstep=True; Do not use it when exact discrete increments matter\nRelated APIs: arange, logspace",
+      "gotchas": [
+        "num controls count, not spacing.",
+        "endpoint=True includes the stop value.",
+        "Floating-point results are approximate.",
+        "Can return the step size with retstep=True.",
+        "Do not use it when exact discrete increments matter."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.linspace.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Create Logspace",
+      "mental_trigger": "I need values spaced evenly on a logarithmic scale.",
+      "syntax": "np.logspace(start, stop, num=50, endpoint=True, base=10.0, dtype=None, axis=0)",
+      "important_params": [
+        "start",
+        "stop",
+        "num",
+        "base",
+        "endpoint"
+      ],
+      "example": "import numpy as np\n\nx = np.logspace(0, 3, 4)\nprint(x)",
+      "use_when": "1) Sweeping learning rates or regularization values. 2) Sampling across orders of magnitude. 3) Creating exponential-axis test data.",
+      "avoid_when": "You need linear spacing; use linspace.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Create Logspace' operation.\nPurpose: I need values spaced evenly on a logarithmic scale.\nCommon Mistakes: Values are powers of base; Outputs are always positive for positive bases; Great for search grids, not for exact arithmetic intervals; start and stop are exponents, not final values; Small changes in exponents can produce large numeric differences\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Values are powers of base.",
+        "Outputs are always positive for positive bases.",
+        "Great for search grids, not for exact arithmetic intervals.",
+        "start and stop are exponents, not final values.",
+        "Small changes in exponents can produce large numeric differences."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.logspace.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Create Identity",
+      "mental_trigger": "I need diagonal ones with zeros elsewhere.",
+      "syntax": "np.eye(N, M=None, k=0, dtype=float, order='C', *, device=None, like=None)",
+      "important_params": [
+        "N",
+        "M",
+        "k",
+        "dtype",
+        "like"
+      ],
+      "example": "import numpy as np\n\nx = np.eye(3, dtype=np.float32)\nprint(x)",
+      "use_when": "1) Constructing identity matrices for linear algebra. 2) Creating diagonal masks. 3) Building simple matrix benchmarks.",
+      "avoid_when": "You need a diagonal from custom values; use diag.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Create Identity' operation.\nPurpose: I need diagonal ones with zeros elsewhere.\nCommon Mistakes: M makes non-square matrices; k shifts the diagonal; Identity matrices are dense, not sparse; Often used in solving or regularization contexts; Prefer sparse alternatives for large systems\nRelated APIs: array, asarray",
+      "gotchas": [
+        "M makes non-square matrices.",
+        "k shifts the diagonal.",
+        "Identity matrices are dense, not sparse.",
+        "Often used in solving or regularization contexts.",
+        "Prefer sparse alternatives for large systems."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.eye.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Create Identity Matrix",
+      "mental_trigger": "I only need a square identity matrix.",
+      "syntax": "np.identity(n, dtype=None, *, like=None)",
+      "important_params": [
+        "n",
+        "dtype",
+        "like"
+      ],
+      "example": "import numpy as np\n\nx = np.identity(3, dtype=np.float64)\nprint(x)",
+      "use_when": "1) You want a square identity matrix. 2) You do not need off-diagonal control. 3) You want concise linear algebra setup.",
+      "avoid_when": "You need shifted or rectangular diagonals; use eye.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Create Identity Matrix' operation.\nPurpose: I only need a square identity matrix.\nCommon Mistakes: Always square; Less flexible than eye; Dense allocation still applies; Mainly a convenience function; Often interchangeable with eye(n)\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Always square.",
+        "Less flexible than eye.",
+        "Dense allocation still applies.",
+        "Mainly a convenience function.",
+        "Often interchangeable with eye(n)."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.identity.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Work With Diagonal",
+      "mental_trigger": "I need to move between vector diagonals and matrices.",
+      "syntax": "np.diag(v, k=0)",
+      "important_params": [
+        "v",
+        "k"
+      ],
+      "example": "import numpy as np\n\nx = np.diag([1, 2, 3])\nprint(x)",
+      "use_when": "1) Building a matrix from diagonal values. 2) Reading a diagonal from a 2D array. 3) Shifting diagonals with offsets.",
+      "avoid_when": "You only need a scalar band operation on large matrices; consider specialized routines.",
+      "decision_notes": "Category: General\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Work With Diagonal' operation.\nPurpose: I need to move between vector diagonals and matrices.\nCommon Mistakes: 1D input creates a matrix; 2D input extracts a diagonal vector; The k offset shifts the diagonal; Result depends on input dimensionality; It is easy to reverse the intended direction\nRelated APIs: array, asarray",
+      "gotchas": [
+        "1D input creates a matrix.",
+        "2D input extracts a diagonal vector.",
+        "The k offset shifts the diagonal.",
+        "Result depends on input dimensionality.",
+        "It is easy to reverse the intended direction."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.diag.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Read Shape",
+      "mental_trigger": "I need to know the size of each axis.",
+      "syntax": "a.shape",
+      "important_params": [],
+      "example": "import numpy as np\n\na = np.zeros((2, 3, 4))\nprint(a.shape)",
+      "use_when": "1) Validating tensor dimensions. 2) Writing conditional logic around axis sizes. 3) Debugging shape mismatches.",
+      "avoid_when": "You need total element count; use size.",
+      "decision_notes": "Category: Array Inspection\nModule: `numpy`\nReturn Value: tuple\nExpected Output: A tuple representing the shape dimensions (e.g., (100, 3)).\nPurpose: I need to know the size of each axis.\nCommon Mistakes: Shape is a tuple of axis lengths; Shape changes after reshaping or slicing; Zero-length axes are valid; Always check shape before broadcasting assumptions; Many downstream bugs are shape bugs\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Shape is a tuple of axis lengths.",
+        "Shape changes after reshaping or slicing.",
+        "Zero-length axes are valid.",
+        "Always check shape before broadcasting assumptions.",
+        "Many downstream bugs are shape bugs."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.ndarray.shape.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Read Number of Dimensions",
+      "mental_trigger": "I need to know whether an input is scalar, vector, matrix, or higher rank.",
+      "syntax": "a.ndim",
+      "important_params": [],
+      "example": "import numpy as np\n\na = np.array([[1, 2], [3, 4]])\nprint(a.ndim)",
+      "use_when": "1) Branching on scalar versus vector versus matrix input. 2) Guarding APIs that expect fixed rank. 3) Diagnosing accidental extra axes.",
+      "avoid_when": "You need the actual axis lengths; use shape.",
+      "decision_notes": "Category: General\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Read Number of Dimensions' operation.\nPurpose: I need to know whether an input is scalar, vector, matrix, or higher rank.\nCommon Mistakes: Scalars have ndim == 0; One-dimensional arrays are not row or column vectors; Extra singleton axes increase ndim; Do not infer layout from rank alone; Combine with shape for full context\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Scalars have ndim == 0.",
+        "One-dimensional arrays are not row or column vectors.",
+        "Extra singleton axes increase ndim.",
+        "Do not infer layout from rank alone.",
+        "Combine with shape for full context."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.ndarray.ndim.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Read Size",
+      "mental_trigger": "I need the total number of values, not the shape.",
+      "syntax": "a.size",
+      "important_params": [],
+      "example": "import numpy as np\n\na = np.array([[1, 2], [3, 4]])\nprint(a.size)",
+      "use_when": "1) Checking whether an array is empty. 2) Computing batch lengths. 3) Comparing total data volume across shapes.",
+      "avoid_when": "You need per-axis dimensions; use shape.",
+      "decision_notes": "Category: Array Inspection\nModule: `numpy`\nReturn Value: int\nExpected Output: A NumPy ndarray containing the result of the 'Read Size' operation.\nPurpose: I need the total number of values, not the shape.\nCommon Mistakes: Size is the product of dimensions; Zero-length axes make size zero; Size differs from memory footprint; Object arrays can be expensive despite small size; Empty arrays still have a valid size attribute\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Size is the product of dimensions.",
+        "Zero-length axes make size zero.",
+        "Size differs from memory footprint.",
+        "Object arrays can be expensive despite small size.",
+        "Empty arrays still have a valid size attribute."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.ndarray.size.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Read Data Type",
+      "mental_trigger": "I need to know the numeric type of array elements.",
+      "syntax": "a.dtype",
+      "important_params": [],
+      "example": "import numpy as np\n\na = np.array([1, 2, 3], dtype=np.int32)\nprint(a.dtype)",
+      "use_when": "1) Debugging precision or casting issues. 2) Enforcing compatibility with downstream code. 3) Validating integer versus floating behavior.",
+      "avoid_when": "You only need container type; use type(a).",
+      "decision_notes": "Category: General\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Read Data Type' operation.\nPurpose: I need to know the numeric type of array elements.\nCommon Mistakes: Dtype controls arithmetic behavior; Mixing dtypes can trigger upcasting; Integer overflow is dtype-dependent; Boolean, float, and object dtypes behave very differently; Many silent bugs are dtype bugs\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Dtype controls arithmetic behavior.",
+        "Mixing dtypes can trigger upcasting.",
+        "Integer overflow is dtype-dependent.",
+        "Boolean, float, and object dtypes behave very differently.",
+        "Many silent bugs are dtype bugs."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.ndarray.dtype.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Read Item Size",
+      "mental_trigger": "I need the storage cost of one array element.",
+      "syntax": "a.itemsize",
+      "important_params": [],
+      "example": "import numpy as np\n\na = np.array([1, 2, 3], dtype=np.int64)\nprint(a.itemsize)",
+      "use_when": "1) Estimating memory use. 2) Comparing dtype storage costs. 3) Debugging binary I/O layouts.",
+      "avoid_when": "You need total memory footprint; use nbytes.",
+      "decision_notes": "Category: Array Inspection\nModule: `numpy`\nReturn Value: int\nExpected Output: A NumPy ndarray containing the result of the 'Read Item Size' operation.\nPurpose: I need the storage cost of one array element.\nCommon Mistakes: Depends entirely on dtype; Object dtype stores pointers, not object payloads; itemsize is per element, not per array; Useful for memory-sensitive systems; Do not confuse bytes per item with bytes per array\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Depends entirely on dtype.",
+        "Object dtype stores pointers, not object payloads.",
+        "itemsize is per element, not per array.",
+        "Useful for memory-sensitive systems.",
+        "Do not confuse bytes per item with bytes per array."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.ndarray.itemsize.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Read Nbytes",
+      "mental_trigger": "I need the array payload size in bytes.",
+      "syntax": "a.nbytes",
+      "important_params": [],
+      "example": "import numpy as np\n\na = np.zeros((100, 100), dtype=np.float32)\nprint(a.nbytes)",
+      "use_when": "1) Budgeting memory in data pipelines. 2) Monitoring large tensor allocations. 3) Comparing dtype and shape choices.",
+      "avoid_when": "You need process memory, not just array storage.",
+      "decision_notes": "Category: General\nModule: `numpy`\nReturn Value: int\nExpected Output: A NumPy ndarray containing the result of the 'Read Nbytes' operation.\nPurpose: I need the array payload size in bytes.\nCommon Mistakes: Excludes Python object overhead; Object arrays underreport true memory cost; Views may share memory but still report their own payload; Very large arrays can exhaust RAM quickly; Memory planning matters in production pipelines\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Excludes Python object overhead.",
+        "Object arrays underreport true memory cost.",
+        "Views may share memory but still report their own payload.",
+        "Very large arrays can exhaust RAM quickly.",
+        "Memory planning matters in production pipelines."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.ndarray.nbytes.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Reshape Array",
+      "mental_trigger": "I need the same data in a different shape.",
+      "syntax": "np.reshape(a, newshape, order='C')",
+      "important_params": [
+        "a",
+        "newshape",
+        "order",
+        "copy"
+      ],
+      "example": "import numpy as np\n\na = np.arange(6)\nb = np.reshape(a, (2, 3))\nprint(b)",
+      "use_when": "1) Converting flat data into batched form. 2) Preparing arrays for matrix operations. 3) Reinterpreting dimensions after loading data.",
+      "avoid_when": "You need a guaranteed copy or flattening semantics; use copy-style explicit conversion or ravel/flatten as appropriate.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: tuple\nExpected Output: A NumPy ndarray containing the result of the 'Reshape Array' operation.\nPurpose: I need the same data in a different shape.\nCommon Mistakes: The result may be a view; Shape must preserve the element count; order affects element interpretation; Not all reshape requests are possible without copying; Do not rely on memory order implicitly\nRelated APIs: flatten, ravel, squeeze",
+      "gotchas": [
+        "The result may be a view.",
+        "Shape must preserve the element count.",
+        "order affects element interpretation.",
+        "Not all reshape requests are possible without copying.",
+        "Do not rely on memory order implicitly."
       ],
       "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.reshape.html",
       "related_workflows": [],
-      "related_cheatsheets": ["numpy-cheatsheet"]
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
     },
     {
-      "task": "Index, slice, and filter array elements",
-      "mental_trigger": "I need to select or extract a subset of array values based on position, condition, or index list",
-      "syntax": "arr[start:stop:step]\narr[boolean_mask]\nnp.where(condition, x, y)\narr[index_array]",
+      "task": "Flatten Array",
+      "mental_trigger": "I need a 1D copy of the data.",
+      "syntax": "a.flatten(order='C')",
       "important_params": [
-        "boolean_mask — array of True/False same shape as arr",
-        "condition — expression evaluated element-wise",
-        "x, y — values to return where condition is True or False"
+        "order"
       ],
-      "example": "positive = arr[arr > 0]                        # boolean mask\nclipped  = np.where(arr > 0, arr, 0)           # replace negatives with 0\nselected = arr[[0, 3, 5]]                      # fancy index — returns copy",
-      "use_when": "Filtering samples by label, masking padded positions in NLP sequences, selecting top-k indices from model output.",
-      "avoid_when": "You need to assign values back via fancy indexing — arr[[0,1]] = 5 may silently fail on chained operations; use np.put or direct slice assignment.",
-      "decision_notes": "Boolean indexing for filtering, np.where for conditional replacement, fancy integer indexing for reordering. These are the three non-overlapping cases.",
+      "example": "import numpy as np\n\na = np.array([[1, 2], [3, 4]])\nb = a.flatten()\nprint(b)",
+      "use_when": "1) You need an independent flattened array. 2) You are serializing or logging data safely. 3) You want to mutate the flat result without touching the original.",
+      "avoid_when": "You want a view when possible; use ravel.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Flatten Array' operation.\nPurpose: I need a 1D copy of the data.\nCommon Mistakes: Always returns a copy; Memory cost can be significant for large arrays; Order matters; Copy semantics make it safer but slower; Overuse can create unnecessary allocations\nRelated APIs: array, asarray",
       "gotchas": [
-        "Boolean indexing on a 2D array always returns a 1D flat result regardless of input shape — use np.where with fill values to preserve shape.",
-        "Fancy indexing returns a copy, not a view — assignment through it does not modify the original array."
+        "Always returns a copy.",
+        "Memory cost can be significant for large arrays.",
+        "Order matters.",
+        "Copy semantics make it safer but slower.",
+        "Overuse can create unnecessary allocations."
       ],
-      "official_docs": "https://numpy.org/doc/stable/reference/arrays.indexing.html",
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.ndarray.flatten.html",
       "related_workflows": [],
-      "related_cheatsheets": ["numpy-cheatsheet"]
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
     },
     {
-      "task": "Compute statistics and reductions along axes",
-      "mental_trigger": "I need per-row, per-column, or global aggregation: sum, mean, std, max, argmax",
-      "syntax": "np.sum(a, axis)\nnp.mean(a, axis)\nnp.std(a, axis)\nnp.argmax(a, axis)\nnp.linalg.norm(x, ord)",
+      "task": "Ravel Array",
+      "mental_trigger": "I need a flattened representation for computation.",
+      "syntax": "np.ravel(a, order='C')",
       "important_params": [
-        "axis — 0 for column-wise, 1 for row-wise, None for global",
-        "keepdims — True to preserve shape for broadcasting back",
-        "ord — norm order: 1 (L1), 2 (L2), np.inf (max)"
+        "a",
+        "order"
       ],
-      "example": "scores = np.array([[0.1, 0.9], [0.7, 0.3]])\npreds  = np.argmax(scores, axis=1)    # [1, 0]\nnorms  = np.linalg.norm(scores, ord=2, axis=1, keepdims=True)",
-      "use_when": "Computing per-batch loss statistics, normalizing embedding vectors, finding predicted class indices from logit arrays.",
-      "avoid_when": "Aggregating over very large arrays on CPU — prefer CuPy or PyTorch tensor ops which fuse reduction kernels on GPU.",
-      "decision_notes": "keepdims=True is essential when you need to broadcast the result back against the original array (e.g. normalizing rows). Forgetting it produces a shape mismatch that is hard to debug.",
+      "example": "import numpy as np\n\na = np.array([[1, 2], [3, 4]])\nb = np.ravel(a)\nprint(b)",
+      "use_when": "1) You want a fast 1D representation. 2) You can tolerate a view or copy depending on layout. 3) You are feeding data into vectorized routines.",
+      "avoid_when": "You need guaranteed independence from the source; use flatten.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Ravel Array' operation.\nPurpose: I need a flattened representation for computation.\nCommon Mistakes: May return a view or a copy; Memory order affects the result; Mutating a view mutates the original; Useful for fast linear access patterns; Check contiguity assumptions carefully\nRelated APIs: flatten, reshape, squeeze",
       "gotchas": [
-        "np.mean on integer dtype arrays silently truncates fractional parts in NumPy < 2.0; cast to float first.",
-        "np.argmax returns the first index when multiple elements share the maximum — can bias sampling or evaluation metrics."
+        "May return a view or a copy.",
+        "Memory order affects the result.",
+        "Mutating a view mutates the original.",
+        "Useful for fast linear access patterns.",
+        "Check contiguity assumptions carefully."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.ravel.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Squeeze Array",
+      "mental_trigger": "My array has extra size-1 dimensions I want removed.",
+      "syntax": "np.squeeze(a, axis=None)",
+      "important_params": [
+        "a",
+        "axis"
+      ],
+      "example": "import numpy as np\n\na = np.zeros((1, 3, 1))\nb = np.squeeze(a)\nprint(b.shape)",
+      "use_when": "1) Cleaning model outputs with singleton axes. 2) Normalizing array rank. 3) Removing accidental broadcast dimensions.",
+      "avoid_when": "You need to preserve axis positions; keep the dimensions.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Squeeze Array' operation.\nPurpose: My array has extra size-1 dimensions I want removed.\nCommon Mistakes: Only size-1 axes can be removed; axis can restrict which axes are removed; Over-squeezing can break later broadcasting; Rank changes can surprise downstream code; Singleton axes are sometimes semantically meaningful\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Only size-1 axes can be removed.",
+        "axis can restrict which axes are removed.",
+        "Over-squeezing can break later broadcasting.",
+        "Rank changes can surprise downstream code.",
+        "Singleton axes are sometimes semantically meaningful."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.squeeze.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Expand Dimensions",
+      "mental_trigger": "I need to insert a length-1 dimension.",
+      "syntax": "np.expand_dims(a, axis)",
+      "important_params": [
+        "a",
+        "axis"
+      ],
+      "example": "import numpy as np\n\na = np.array([1, 2, 3])\nb = np.expand_dims(a, axis=0)\nprint(b.shape)",
+      "use_when": "1) Preparing batch dimensions. 2) Aligning shapes for broadcasting. 3) Standardizing vector inputs.",
+      "avoid_when": "You want repeated data rather than a size-1 axis; use broadcasting or tiling patterns.",
+      "decision_notes": "Category: General\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Expand Dimensions' operation.\nPurpose: I need to insert a length-1 dimension.\nCommon Mistakes: The new axis has length one; Axis positions matter for later operations; Can be negative-indexed; Easier than reshaping for simple axis insertion; Often used before stacking or model input formatting\nRelated APIs: array, asarray",
+      "gotchas": [
+        "The new axis has length one.",
+        "Axis positions matter for later operations.",
+        "Can be negative-indexed.",
+        "Easier than reshaping for simple axis insertion.",
+        "Often used before stacking or model input formatting."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.expand_dims.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Transpose Array",
+      "mental_trigger": "I need to reorder axes, often for matrix operations.",
+      "syntax": "np.transpose(a, axes=None)",
+      "important_params": [
+        "a",
+        "axes"
+      ],
+      "example": "import numpy as np\n\na = np.array([[1, 2], [3, 4]])\nb = np.transpose(a)\nprint(b)",
+      "use_when": "1) Switching between row-major and column-major style access. 2) Reordering tensor axes. 3) Preparing matrices for multiplication.",
+      "avoid_when": "You only need a 2D matrix transpose shorthand; a.T is simpler.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Transpose Array' operation.\nPurpose: I need to reorder axes, often for matrix operations.\nCommon Mistakes: For 2D arrays, it swaps rows and columns; For higher dimensions, it reorders axes; Often returns a view; axes must specify a valid permutation; Do not assume contiguous memory after transpose\nRelated APIs: array, asarray",
+      "gotchas": [
+        "For 2D arrays, it swaps rows and columns.",
+        "For higher dimensions, it reorders axes.",
+        "Often returns a view.",
+        "axes must specify a valid permutation.",
+        "Do not assume contiguous memory after transpose."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.transpose.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Swap Axes",
+      "mental_trigger": "I only need to exchange two axes.",
+      "syntax": "np.swapaxes(a, axis1, axis2)",
+      "important_params": [
+        "a",
+        "axis1",
+        "axis2"
+      ],
+      "example": "import numpy as np\n\na = np.zeros((2, 3, 4))\nb = np.swapaxes(a, 0, 2)\nprint(b.shape)",
+      "use_when": "1) You need a targeted axis swap. 2) You are adjusting tensor layout. 3) You want a simpler alternative to full permutation.",
+      "avoid_when": "You need a more general axis permutation; use transpose or moveaxis.",
+      "decision_notes": "Category: General\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Swap Axes' operation.\nPurpose: I only need to exchange two axes.\nCommon Mistakes: Only swaps two axes; Output is often a view; Axis confusion is common in 3D+ arrays; Check resulting shape carefully; Helpful for converting channel order layouts\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Only swaps two axes.",
+        "Output is often a view.",
+        "Axis confusion is common in 3D+ arrays.",
+        "Check resulting shape carefully.",
+        "Helpful for converting channel order layouts."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.swapaxes.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Move Axis",
+      "mental_trigger": "I need to move one or more axes without manually building a permutation.",
+      "syntax": "np.moveaxis(a, source, destination)",
+      "important_params": [
+        "a",
+        "source",
+        "destination"
+      ],
+      "example": "import numpy as np\n\na = np.zeros((2, 3, 4))\nb = np.moveaxis(a, 0, -1)\nprint(b.shape)",
+      "use_when": "1) Converting between channel-first and channel-last layouts. 2) Moving batch or feature axes. 3) Simplifying axis reordering code.",
+      "avoid_when": "You want to reverse every axis; use transpose.",
+      "decision_notes": "Category: Shape Manipulation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Move Axis' operation.\nPurpose: I need to move one or more axes without manually building a permutation.\nCommon Mistakes: Source and destination can be sequences; Easier to read than raw axis permutations; Does not copy data in the common case; Shape changes can be non-obvious; Common in deep learning data pipelines\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Source and destination can be sequences.",
+        "Easier to read than raw axis permutations.",
+        "Does not copy data in the common case.",
+        "Shape changes can be non-obvious.",
+        "Common in deep learning data pipelines."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.moveaxis.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Concatenate Arrays",
+      "mental_trigger": "I need to combine arrays end-to-end.",
+      "syntax": "np.concatenate(arrays, axis=0, out=None, dtype=None, casting=None)",
+      "important_params": [
+        "arrays",
+        "axis",
+        "out",
+        "dtype",
+        "casting"
+      ],
+      "example": "import numpy as np\n\na = np.array([1, 2])\nb = np.array([3, 4])\nc = np.concatenate([a, b])\nprint(c)",
+      "use_when": "1) Appending batches with matching shapes. 2) Merging feature blocks. 3) Joining arrays along an existing axis.",
+      "avoid_when": "You need to add a new axis before joining; use stack.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Concatenate Arrays' operation.\nPurpose: I need to combine arrays end-to-end.\nCommon Mistakes: All arrays must match except along axis; Default axis is 0; Concatenation allocates new memory; Shape mismatches are a common failure mode; stack is different because it creates a new axis\nRelated APIs: array, asarray, copy",
+      "gotchas": [
+        "All arrays must match except along axis.",
+        "Default axis is 0.",
+        "Concatenation allocates new memory.",
+        "Shape mismatches are a common failure mode.",
+        "stack is different because it creates a new axis."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.concatenate.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Stack Arrays",
+      "mental_trigger": "I need to combine same-shaped arrays into a higher-rank array.",
+      "syntax": "np.stack(arrays, axis=0, out=None, *, dtype=None, casting='same_kind')",
+      "important_params": [
+        "arrays",
+        "axis",
+        "dtype",
+        "casting"
+      ],
+      "example": "import numpy as np\n\na = np.array([1, 2])\nb = np.array([3, 4])\nc = np.stack([a, b], axis=0)\nprint(c)",
+      "use_when": "1) Creating a batch dimension from multiple samples. 2) Combining same-shaped tensors. 3) Building structured mini-batches.",
+      "avoid_when": "You need axis-preserving joining; use concatenate.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Stack Arrays' operation.\nPurpose: I need to combine same-shaped arrays into a higher-rank array.\nCommon Mistakes: All inputs must share the same shape; A new axis is created; axis controls where the new dimension appears; Different from concatenation even when outputs look similar; Useful for batching, not for appending\nRelated APIs: array, asarray, copy",
+      "gotchas": [
+        "All inputs must share the same shape.",
+        "A new axis is created.",
+        "axis controls where the new dimension appears.",
+        "Different from concatenation even when outputs look similar.",
+        "Useful for batching, not for appending."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.stack.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Vertical Stack",
+      "mental_trigger": "I want row-wise concatenation with a simple API.",
+      "syntax": "np.vstack(tup, *, dtype=None, casting='same_kind')",
+      "important_params": [
+        "tup",
+        "dtype",
+        "casting"
+      ],
+      "example": "import numpy as np\n\na = np.array([1, 2])\nb = np.array([3, 4])\nc = np.vstack([a, b])\nprint(c)",
+      "use_when": "1) Building row batches. 2) Combining 1D inputs as rows. 3) Readable matrix assembly.",
+      "avoid_when": "You need full axis control; use concatenate.",
+      "decision_notes": "Category: Array Joining & Splitting\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Vertical Stack' operation.\nPurpose: I want row-wise concatenation with a simple API.\nCommon Mistakes: 1D arrays are treated as row vectors; Equivalent to concatenation along axis 0 in many cases; Can change dimensionality implicitly; Readability is the main benefit; Be explicit when shape matters\nRelated APIs: concatenate, hstack, stack",
+      "gotchas": [
+        "1D arrays are treated as row vectors.",
+        "Equivalent to concatenation along axis 0 in many cases.",
+        "Can change dimensionality implicitly.",
+        "Readability is the main benefit.",
+        "Be explicit when shape matters."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.vstack.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Horizontal Stack",
+      "mental_trigger": "I want column-wise joining with concise syntax.",
+      "syntax": "np.hstack(tup, *, dtype=None, casting='same_kind')",
+      "important_params": [
+        "tup",
+        "dtype",
+        "casting"
+      ],
+      "example": "import numpy as np\n\na = np.array([1, 2])\nb = np.array([3, 4])\nc = np.hstack([a, b])\nprint(c)",
+      "use_when": "1) Combining 1D vectors end-to-end. 2) Building wider 2D feature tables. 3) Writing concise joining code.",
+      "avoid_when": "You need axis-agnostic behavior; use concatenate.",
+      "decision_notes": "Category: Array Joining & Splitting\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Horizontal Stack' operation.\nPurpose: I want column-wise joining with concise syntax.\nCommon Mistakes: Behavior differs for 1D and 2D inputs; Can be confusing when arrays already have multiple axes; Often used in feature engineering; Readability can hide axis mistakes; Check output rank after stacking\nRelated APIs: concatenate, stack, vstack",
+      "gotchas": [
+        "Behavior differs for 1D and 2D inputs.",
+        "Can be confusing when arrays already have multiple axes.",
+        "Often used in feature engineering.",
+        "Readability can hide axis mistakes.",
+        "Check output rank after stacking."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.hstack.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Depth Stack",
+      "mental_trigger": "I need to stack along a new third axis.",
+      "syntax": "np.dstack(tup)",
+      "important_params": [
+        "tup"
+      ],
+      "example": "import numpy as np\n\na = np.array([1, 2, 3])\nb = np.array([4, 5, 6])\nc = np.dstack([a, b])\nprint(c.shape)",
+      "use_when": "1) Creating channel-like depth dimensions. 2) Combining compatible arrays into 3D form. 3) Working with legacy NumPy stacking conventions.",
+      "avoid_when": "You want explicit axis control; use stack.",
+      "decision_notes": "Category: Array Joining & Splitting\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Depth Stack' operation.\nPurpose: I need to stack along a new third axis.\nCommon Mistakes: The output shape can be unintuitive; 1D inputs are promoted before stacking; Mostly a convenience function; Easy to misuse if axis semantics matter; Prefer stack for clarity in new code\nRelated APIs: concatenate, hstack, stack, vstack",
+      "gotchas": [
+        "The output shape can be unintuitive.",
+        "1D inputs are promoted before stacking.",
+        "Mostly a convenience function.",
+        "Easy to misuse if axis semantics matter.",
+        "Prefer stack for clarity in new code."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.dstack.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Split Array",
+      "mental_trigger": "I need equal-sized pieces from one array.",
+      "syntax": "np.split(ary, indices_or_sections, axis=0)",
+      "important_params": [
+        "ary",
+        "indices_or_sections",
+        "axis"
+      ],
+      "example": "import numpy as np\n\na = np.arange(6)\nparts = np.split(a, 3)\nprint(parts)",
+      "use_when": "1) Breaking batches into equal pieces. 2) Partitioning data for processing stages. 3) Splitting arrays at known boundaries.",
+      "avoid_when": "The array may not divide evenly; use array_split.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Split Array' operation.\nPurpose: I need equal-sized pieces from one array.\nCommon Mistakes: Sections must divide evenly; Returns views when possible; Shape errors are common if divisibility is wrong; Indices can specify exact split points; Useful in batch-oriented pipelines\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Sections must divide evenly.",
+        "Returns views when possible.",
+        "Shape errors are common if divisibility is wrong.",
+        "Indices can specify exact split points.",
+        "Useful in batch-oriented pipelines."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.split.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Array Split",
+      "mental_trigger": "My array may not divide evenly.",
+      "syntax": "np.array_split(ary, indices_or_sections, axis=0)",
+      "important_params": [
+        "ary",
+        "indices_or_sections",
+        "axis"
+      ],
+      "example": "import numpy as np\n\na = np.arange(7)\nparts = np.array_split(a, 3)\nprint([p.tolist() for p in parts])",
+      "use_when": "1) Partitioning data with uneven sizes. 2) Creating flexible folds. 3) Avoiding hard divisibility constraints.",
+      "avoid_when": "You require exactly equal chunks; use split.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Array Split' operation.\nPurpose: My array may not divide evenly.\nCommon Mistakes: Chunk sizes may differ by one; Useful for cross-validation style splits; Returned pieces can differ in length; Pay attention to order and boundaries; Great for uneven batch partitioning\nRelated APIs: array, asarray, copy",
+      "gotchas": [
+        "Chunk sizes may differ by one.",
+        "Useful for cross-validation style splits.",
+        "Returned pieces can differ in length.",
+        "Pay attention to order and boundaries.",
+        "Great for uneven batch partitioning."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.array_split.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Boolean Indexing",
+      "mental_trigger": "I need only elements matching a mask.",
+      "syntax": "a[mask]",
+      "important_params": [
+        "a",
+        "mask"
+      ],
+      "example": "import numpy as np\n\na = np.array([1, 2, 3, 4])\nmask = a % 2 == 0\nprint(a[mask])",
+      "use_when": "1) Filtering rows or elements. 2) Extracting anomalies or positives. 3) Applying condition-based selection.",
+      "avoid_when": "You need positional selection regardless of value; use take or integer indexing.",
+      "decision_notes": "Category: General\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Boolean Indexing' operation.\nPurpose: I need only elements matching a mask.\nCommon Mistakes: Mask shape must align; Result is flattened across selected elements; Chained boolean logic requires parentheses; Very common source of shape bugs; Masked selection copies data\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Mask shape must align.",
+        "Result is flattened across selected elements.",
+        "Chained boolean logic requires parentheses.",
+        "Very common source of shape bugs.",
+        "Masked selection copies data."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.ndarray.__getitem__.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Fancy Indexing",
+      "mental_trigger": "I need non-contiguous positions from an array.",
+      "syntax": "a[index]",
+      "important_params": [
+        "a",
+        "index"
+      ],
+      "example": "import numpy as np\n\na = np.array([10, 20, 30, 40])\nidx = [3, 1]\nprint(a[idx])",
+      "use_when": "1) Reordering or subsetting by explicit indices. 2) Gathering specific rows or samples. 3) Implementing lookup tables.",
+      "avoid_when": "You are selecting by condition; use boolean masks.",
+      "decision_notes": "Category: General\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Fancy Indexing' operation.\nPurpose: I need non-contiguous positions from an array.\nCommon Mistakes: Returns a copy, not a view; Index arrays can change result shape; Repeated indices are allowed; Great for gather operations; Easy to confuse with slicing\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Returns a copy, not a view.",
+        "Index arrays can change result shape.",
+        "Repeated indices are allowed.",
+        "Great for gather operations.",
+        "Easy to confuse with slicing."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.ndarray.__getitem__.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Use Where",
+      "mental_trigger": "I need an elementwise if-else.",
+      "syntax": "np.where(condition, x, y)",
+      "important_params": [
+        "condition",
+        "x",
+        "y"
+      ],
+      "example": "import numpy as np\n\na = np.array([1, 2, 3, 4])\nb = np.where(a % 2 == 0, a, -a)\nprint(b)",
+      "use_when": "1) Replacing values based on a condition. 2) Building piecewise array transforms. 3) Selecting between two computed branches.",
+      "avoid_when": "You need indices of true elements only; use nonzero.",
+      "decision_notes": "Category: Selection & Masking\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Use Where' operation.\nPurpose: I need an elementwise if-else.\nCommon Mistakes: All branches are typically evaluated before selection; Broadcasting applies to condition, x, and y; Scalar branches are often enough; Very common in feature engineering; Readability drops with deeply nested conditions\nRelated APIs: array, asarray",
+      "gotchas": [
+        "All branches are typically evaluated before selection.",
+        "Broadcasting applies to condition, x, and y.",
+        "Scalar branches are often enough.",
+        "Very common in feature engineering.",
+        "Readability drops with deeply nested conditions."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.where.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Find Nonzero",
+      "mental_trigger": "I need positions of selected elements.",
+      "syntax": "np.nonzero(a)",
+      "important_params": [
+        "a"
+      ],
+      "example": "import numpy as np\n\na = np.array([0, 1, 0, 2])\nprint(np.nonzero(a))",
+      "use_when": "1) Locating active mask positions. 2) Finding sparse-like coordinates. 3) Extracting index tuples from conditions.",
+      "avoid_when": "You just need a boolean mask; keep the mask itself.",
+      "decision_notes": "Category: Selection & Masking\nModule: `numpy`\nReturn Value: tuple of numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Find Nonzero' operation.\nPurpose: I need positions of selected elements.\nCommon Mistakes: Returns index arrays, one per axis; For 1D arrays, result is a tuple; Often paired with where(condition); Results are ordered by scan order; Useful for sparse-like workflows\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Returns index arrays, one per axis.",
+        "For 1D arrays, result is a tuple.",
+        "Often paired with where(condition).",
+        "Results are ordered by scan order.",
+        "Useful for sparse-like workflows."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.nonzero.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Take Elements",
+      "mental_trigger": "I have index positions and want those values along an axis.",
+      "syntax": "np.take(a, indices, axis=None, out=None, mode='raise')",
+      "important_params": [
+        "a",
+        "indices",
+        "axis",
+        "mode"
+      ],
+      "example": "import numpy as np\n\na = np.array([10, 20, 30, 40])\nprint(np.take(a, [3, 1]))",
+      "use_when": "1) Implementing gather-like selection. 2) Selecting along a known axis. 3) Needing index-based access with explicit mode handling.",
+      "avoid_when": "A plain indexing expression is simpler and sufficient.",
+      "decision_notes": "Category: Selection & Masking\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Take Elements' operation.\nPurpose: I have index positions and want those values along an axis.\nCommon Mistakes: axis=None flattens first; mode controls out-of-bounds behavior; Often clearer than advanced indexing in axis-specific code; Result shape depends on indices; Easy to misuse if axis is omitted\nRelated APIs: array, asarray",
+      "gotchas": [
+        "axis=None flattens first.",
+        "mode controls out-of-bounds behavior.",
+        "Often clearer than advanced indexing in axis-specific code.",
+        "Result shape depends on indices.",
+        "Easy to misuse if axis is omitted."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.take.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Put Elements",
+      "mental_trigger": "I need to assign values at specified positions.",
+      "syntax": "np.put(a, ind, v, mode='raise')",
+      "important_params": [
+        "a",
+        "ind",
+        "v",
+        "mode"
+      ],
+      "example": "import numpy as np\n\na = np.zeros(5, dtype=int)\nnp.put(a, [1, 3], [7, 9])\nprint(a)",
+      "use_when": "1) Scattering values into a flat array. 2) Updating positions in-place. 3) Building output buffers from indices.",
+      "avoid_when": "You need structured axis-aware assignment; use direct indexing.",
+      "decision_notes": "Category: Selection & Masking\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Put Elements' operation.\nPurpose: I need to assign values at specified positions.\nCommon Mistakes: Works on the flattened version by default; Mutates the input array in place; mode affects out-of-bounds handling; Less commonly used than indexing assignment; Can be surprising if you expect axis-aware scatter\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Works on the flattened version by default.",
+        "Mutates the input array in place.",
+        "mode affects out-of-bounds handling.",
+        "Less commonly used than indexing assignment.",
+        "Can be surprising if you expect axis-aware scatter."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.put.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Clip Values",
+      "mental_trigger": "I need to clamp values to minimum and maximum limits.",
+      "syntax": "np.clip(a, a_min, a_max, out=None, *, min=None, max=None)",
+      "important_params": [
+        "a",
+        "a_min",
+        "a_max",
+        "out",
+        "min"
+      ],
+      "example": "import numpy as np\n\na = np.array([-2, 0, 5, 12])\nprint(np.clip(a, 0, 10))",
+      "use_when": "1) Limiting numeric ranges. 2) Preventing overflow-like extremes. 3) Bounding model inputs or outputs.",
+      "avoid_when": "You need thresholding into categories; use where or boolean logic.",
+      "decision_notes": "Category: Selection & Masking\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Clip Values' operation.\nPurpose: I need to clamp values to minimum and maximum limits.\nCommon Mistakes: Works elementwise; a_min and a_max define closed bounds; Can be done in place with out; Often used in preprocessing; Watch dtype interactions when clipping integers and floats\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Works elementwise.",
+        "a_min and a_max define closed bounds.",
+        "Can be done in place with out.",
+        "Often used in preprocessing.",
+        "Watch dtype interactions when clipping integers and floats."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.clip.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Sum Array",
+      "mental_trigger": "I need an aggregate total over one or more axes.",
+      "syntax": "np.sum(a, axis=None, dtype=None, out=None, keepdims=False, initial=0)",
+      "important_params": [
+        "a",
+        "axis",
+        "dtype",
+        "keepdims",
+        "initial"
+      ],
+      "example": "import numpy as np\n\na = np.array([[1, 2], [3, 4]])\nprint(np.sum(a))",
+      "use_when": "1) Computing totals and reductions. 2) Aggregating features over axes. 3) Summarizing batch values.",
+      "avoid_when": "You need average or spread; use mean or std.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Sum Array' operation.\nPurpose: I need an aggregate total over one or more axes.\nCommon Mistakes: Axis selection changes the meaning dramatically; keepdims=True preserves reduced axes; Dtype affects overflow and precision; Empty reductions need careful handling; Reduction bugs are often axis bugs\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Axis selection changes the meaning dramatically.",
+        "keepdims=True preserves reduced axes.",
+        "Dtype affects overflow and precision.",
+        "Empty reductions need careful handling.",
+        "Reduction bugs are often axis bugs."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.sum.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Mean",
+      "mental_trigger": "I need the arithmetic average.",
+      "syntax": "np.mean(a, axis=None, dtype=None, out=None, keepdims=False)",
+      "important_params": [
+        "a",
+        "axis",
+        "dtype",
+        "keepdims",
+        "out"
+      ],
+      "example": "import numpy as np\n\na = np.array([[1, 2], [3, 4]])\nprint(np.mean(a, axis=0))",
+      "use_when": "1) Normalizing data. 2) Summarizing batch statistics. 3) Computing feature averages.",
+      "avoid_when": "You need robustness to outliers; use median.",
+      "decision_notes": "Category: Statistics & Aggregation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Mean' operation.\nPurpose: I need the arithmetic average.\nCommon Mistakes: Sensitive to outliers; Integer inputs often produce float outputs; Axis choice matters; keepdims helps broadcasting later; Mean is not always the right central tendency\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Sensitive to outliers.",
+        "Integer inputs often produce float outputs.",
+        "Axis choice matters.",
+        "keepdims helps broadcasting later.",
+        "Mean is not always the right central tendency."
       ],
       "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.mean.html",
       "related_workflows": [],
-      "related_cheatsheets": ["numpy-cheatsheet"]
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
     },
     {
-      "task": "Perform linear algebra operations on matrices",
-      "mental_trigger": "I need matrix multiply, inverse, eigenvalues, SVD, or solving linear systems",
-      "syntax": "A @ B\nnp.linalg.solve(A, b)\nnp.linalg.svd(A, full_matrices=False)\nnp.linalg.eigh(A)\nnp.linalg.norm(x)",
+      "task": "Median",
+      "mental_trigger": "I need a center value that resists outliers.",
+      "syntax": "np.median(a, axis=None, out=None, overwrite_input=False, keepdims=False)",
       "important_params": [
-        "full_matrices — False for economy SVD; saves O(m*n) memory for wide/tall matrices",
-        "A, b — coefficient matrix and right-hand side for solve",
-        "axes — for batched matmul via np.tensordot or np.einsum"
+        "a",
+        "axis",
+        "overwrite_input",
+        "keepdims"
       ],
-      "example": "# Solve Ax = b without computing inverse\nA = np.array([[3, 1], [1, 2]], dtype=float)\nb = np.array([9, 8], dtype=float)\nx = np.linalg.solve(A, b)   # [2. 3.]\n\n# Economy SVD for PCA\nU, s, Vh = np.linalg.svd(X, full_matrices=False)",
-      "use_when": "Implementing PCA, computing cosine similarity via norm, solving least-squares regression, computing attention score normalization.",
-      "avoid_when": "Computing matrix inverse explicitly to solve Ax=b — use np.linalg.solve which is O(n^3) cheaper and numerically more stable.",
-      "decision_notes": "Never use linalg.inv to solve linear systems. Always use linalg.solve. For symmetric positive definite matrices, eigh is faster and guaranteed real output vs eig.",
+      "example": "import numpy as np\n\na = np.array([1, 100, 2, 3])\nprint(np.median(a))",
+      "use_when": "1) Summarizing skewed data. 2) Robust feature statistics. 3) Outlier-resistant aggregation.",
+      "avoid_when": "You need differentiable smooth averages; use mean.",
+      "decision_notes": "Category: Statistics & Aggregation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Median' operation.\nPurpose: I need a center value that resists outliers.\nCommon Mistakes: More robust than mean; Sorting-like cost can be higher than mean; overwrite_input=True can mutate input; Even-sized arrays average the middle pair; Axis handling mirrors other reducers\nRelated APIs: array, asarray",
       "gotchas": [
-        "np.linalg.inv on near-singular matrices with condition number > 1e12 produces numerically garbage results with no error; check np.linalg.cond first.",
-        "np.linalg.eig returns complex eigenvalues for real but non-symmetric matrices; use np.linalg.eigh for symmetric/Hermitian matrices to guarantee real output."
+        "More robust than mean.",
+        "Sorting-like cost can be higher than mean.",
+        "overwrite_input=True can mutate input.",
+        "Even-sized arrays average the middle pair.",
+        "Axis handling mirrors other reducers."
       ],
-      "official_docs": "https://numpy.org/doc/stable/reference/routines.linalg.html",
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.median.html",
       "related_workflows": [],
-      "related_cheatsheets": ["numpy-cheatsheet"],
-      "aliases": ["matrix inverse", "inverse matrix", "solve Ax=b", "solve linear system", "eigenvalues", "SVD", "singular value decomposition", "least squares", "matrix multiply", "dot product"]
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Standard Deviation",
+      "mental_trigger": "I need dispersion around the mean.",
+      "syntax": "np.std(a, axis=None, dtype=None, out=None, ddof=0, keepdims=False)",
+      "important_params": [
+        "a",
+        "axis",
+        "ddof",
+        "keepdims",
+        "dtype"
+      ],
+      "example": "import numpy as np\n\na = np.array([1, 2, 3, 4])\nprint(np.std(a))",
+      "use_when": "1) Measuring variability. 2) Standardizing features. 3) Monitoring distribution shifts.",
+      "avoid_when": "You need variance directly for algebraic reasons; use var.",
+      "decision_notes": "Category: General\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Standard Deviation' operation.\nPurpose: I need dispersion around the mean.\nCommon Mistakes: ddof changes the denominator; Sensitive to outliers; Result precision depends on dtype; keepdims simplifies broadcasting; Variance and standard deviation are easy to confuse\nRelated APIs: array, asarray",
+      "gotchas": [
+        "ddof changes the denominator.",
+        "Sensitive to outliers.",
+        "Result precision depends on dtype.",
+        "keepdims simplifies broadcasting.",
+        "Variance and standard deviation are easy to confuse."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.std.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Variance",
+      "mental_trigger": "I need dispersion in squared units.",
+      "syntax": "np.var(a, axis=None, dtype=None, out=None, ddof=0, keepdims=False)",
+      "important_params": [
+        "a",
+        "axis",
+        "ddof",
+        "keepdims",
+        "dtype"
+      ],
+      "example": "import numpy as np\n\na = np.array([1, 2, 3, 4])\nprint(np.var(a))",
+      "use_when": "1) Computing statistical spread. 2) Building normalization pipelines. 3) Comparing variability across features.",
+      "avoid_when": "You want interpretable units; use std.",
+      "decision_notes": "Category: Statistics & Aggregation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Variance' operation.\nPurpose: I need dispersion in squared units.\nCommon Mistakes: In squared units, not original units; ddof affects sample vs population formulas; Can be numerically sensitive for large values; Commonly paired with mean; Usually not the final metric engineers report\nRelated APIs: array, asarray",
+      "gotchas": [
+        "In squared units, not original units.",
+        "ddof affects sample vs population formulas.",
+        "Can be numerically sensitive for large values.",
+        "Commonly paired with mean.",
+        "Usually not the final metric engineers report."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.var.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Minimum",
+      "mental_trigger": "I need the lowest value in an array.",
+      "syntax": "np.min(a, axis=None, out=None, keepdims=False, initial=<no value>, where=True)",
+      "important_params": [
+        "a",
+        "axis",
+        "keepdims",
+        "initial",
+        "where"
+      ],
+      "example": "import numpy as np\n\na = np.array([3, 1, 4])\nprint(np.min(a))",
+      "use_when": "1) Bounding lower ranges. 2) Checking data quality. 3) Computing extremal statistics.",
+      "avoid_when": "You need the position of the minimum; use argmin.",
+      "decision_notes": "Category: Statistics & Aggregation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Minimum' operation.\nPurpose: I need the lowest value in an array.\nCommon Mistakes: NaNs can affect results unless handled separately; Axis selection changes interpretation; keepdims helps with broadcasting; initial is useful for empty-like reductions; Minimum and argmin answer different questions\nRelated APIs: array, asarray",
+      "gotchas": [
+        "NaNs can affect results unless handled separately.",
+        "Axis selection changes interpretation.",
+        "keepdims helps with broadcasting.",
+        "initial is useful for empty-like reductions.",
+        "Minimum and argmin answer different questions."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.min.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Maximum",
+      "mental_trigger": "I need the highest value in an array.",
+      "syntax": "np.max(a, axis=None, out=None, keepdims=False, initial=<no value>, where=True)",
+      "important_params": [
+        "a",
+        "axis",
+        "keepdims",
+        "initial",
+        "where"
+      ],
+      "example": "import numpy as np\n\na = np.array([3, 1, 4])\nprint(np.max(a))",
+      "use_when": "1) Computing upper bounds. 2) Measuring peak values. 3) Validating output ranges.",
+      "avoid_when": "You need the index of the maximum; use argmax.",
+      "decision_notes": "Category: Statistics & Aggregation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Maximum' operation.\nPurpose: I need the highest value in an array.\nCommon Mistakes: NaNs can propagate or interfere; Axis semantics matter; keepdims preserves dimension structure; Useful in normalization and clipping logic; Distinguish value extraction from index extraction\nRelated APIs: array, asarray",
+      "gotchas": [
+        "NaNs can propagate or interfere.",
+        "Axis semantics matter.",
+        "keepdims preserves dimension structure.",
+        "Useful in normalization and clipping logic.",
+        "Distinguish value extraction from index extraction."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.max.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Argmin",
+      "mental_trigger": "I need the position of the minimum value.",
+      "syntax": "np.argmin(a, axis=None, out=None, *, keepdims=<no value>)",
+      "important_params": [
+        "a",
+        "axis",
+        "keepdims",
+        "out"
+      ],
+      "example": "import numpy as np\n\na = np.array([3, 1, 4])\nprint(np.argmin(a))",
+      "use_when": "1) Selecting the lowest-scoring item. 2) Routing to best candidate indices. 3) Finding earliest minimum along an axis.",
+      "avoid_when": "You need the actual minimum value; use min.",
+      "decision_notes": "Category: Statistics & Aggregation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Argmin' operation.\nPurpose: I need the position of the minimum value.\nCommon Mistakes: Returns an index, not a value; Ties resolve to the first occurrence; Axis choice changes index interpretation; Flattening behavior can surprise you; Useful in selection and ranking pipelines\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Returns an index, not a value.",
+        "Ties resolve to the first occurrence.",
+        "Axis choice changes index interpretation.",
+        "Flattening behavior can surprise you.",
+        "Useful in selection and ranking pipelines."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.argmin.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Argmax",
+      "mental_trigger": "I need the position of the maximum value.",
+      "syntax": "np.argmax(a, axis=None, out=None, *, keepdims=<no value>)",
+      "important_params": [
+        "a",
+        "axis",
+        "keepdims",
+        "out"
+      ],
+      "example": "import numpy as np\n\na = np.array([3, 1, 4])\nprint(np.argmax(a))",
+      "use_when": "1) Choosing the top-scoring prediction. 2) Selecting best candidates. 3) Finding maximum positions per axis.",
+      "avoid_when": "You need the maximum value itself; use max.",
+      "decision_notes": "Category: Statistics & Aggregation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Argmax' operation.\nPurpose: I need the position of the maximum value.\nCommon Mistakes: Returns the first maximum on ties; Axis selection changes the output shape; Common in classification and retrieval logic; Flattening can hide axis mistakes; Values and indices are different outputs\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Returns the first maximum on ties.",
+        "Axis selection changes the output shape.",
+        "Common in classification and retrieval logic.",
+        "Flattening can hide axis mistakes.",
+        "Values and indices are different outputs."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.argmax.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Percentile",
+      "mental_trigger": "I need a value at a specific rank percentile.",
+      "syntax": "np.percentile(a, q, axis=None, out=None, overwrite_input=False, method='linear', keepdims=False)",
+      "important_params": [
+        "a",
+        "q",
+        "axis",
+        "method",
+        "keepdims"
+      ],
+      "example": "import numpy as np\n\na = np.array([1, 2, 3, 4, 100])\nprint(np.percentile(a, 90))",
+      "use_when": "1) Computing thresholds and cutoffs. 2) Describing tail behavior. 3) Robust summary statistics.",
+      "avoid_when": "You need median specifically; use median.",
+      "decision_notes": "Category: Statistics & Aggregation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Percentile' operation.\nPurpose: I need a value at a specific rank percentile.\nCommon Mistakes: Different methods can change results; Percentile is interpolation-based for many inputs; Highly sensitive to parameter choice at small sample sizes; Useful for clipping and QA thresholds; Percentiles are not counts\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Different methods can change results.",
+        "Percentile is interpolation-based for many inputs.",
+        "Highly sensitive to parameter choice at small sample sizes.",
+        "Useful for clipping and QA thresholds.",
+        "Percentiles are not counts."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.percentile.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Quantile",
+      "mental_trigger": "I prefer normalized percentile values between 0 and 1.",
+      "syntax": "np.quantile(a, q, axis=None, out=None, overwrite_input=False, method='linear', keepdims=False)",
+      "important_params": [
+        "a",
+        "q",
+        "axis",
+        "method",
+        "keepdims"
+      ],
+      "example": "import numpy as np\n\na = np.array([1, 2, 3, 4, 100])\nprint(np.quantile(a, 0.9))",
+      "use_when": "1) Statistical thresholding. 2) Building robust feature rules. 3) Expressing rank-based cutoffs in normalized form.",
+      "avoid_when": "You think in percentages rather than proportions; use percentile.",
+      "decision_notes": "Category: Statistics & Aggregation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Quantile' operation.\nPurpose: I prefer normalized percentile values between 0 and 1.\nCommon Mistakes: q is between 0 and 1; Interpolation method matters; Common in outlier handling; Often easier to compose programmatically than percentile; Easy to confuse with percentile units\nRelated APIs: array, asarray",
+      "gotchas": [
+        "q is between 0 and 1.",
+        "Interpolation method matters.",
+        "Common in outlier handling.",
+        "Often easier to compose programmatically than percentile.",
+        "Easy to confuse with percentile units."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.quantile.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Matrix Multiply",
+      "mental_trigger": "I need linear algebra multiplication semantics.",
+      "syntax": "np.matmul(x1, x2, /)",
+      "important_params": [
+        "x1",
+        "x2"
+      ],
+      "example": "import numpy as np\n\na = np.array([[1, 2], [3, 4]])\nb = np.array([[^5], [^6]])\nprint(np.matmul(a, b))",
+      "use_when": "1) Matrix multiplication in ML and scientific computing. 2) Batched linear algebra. 3) Applying linear transforms.",
+      "avoid_when": "You want elementwise multiplication; use *.",
+      "decision_notes": "Category: Linear Algebra\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Matrix Multiply' operation.\nPurpose: I need linear algebra multiplication semantics.\nCommon Mistakes: Not the same as elementwise multiply; Batch dimensions are supported; 1D input behaves differently from 2D input; Shape compatibility is strict; The @ operator uses the same semantics\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Not the same as elementwise multiply.",
+        "Batch dimensions are supported.",
+        "1D input behaves differently from 2D input.",
+        "Shape compatibility is strict.",
+        "The @ operator uses the same semantics."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.matmul.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Matrix Inverse",
+      "mental_trigger": "I need the inverse of a small, well-conditioned square matrix.",
+      "syntax": "np.linalg.inv(a)",
+      "important_params": [
+        "a"
+      ],
+      "example": "import numpy as np\n\na = np.array([[1.0, 2.0], [3.0, 4.0]])\nprint(np.linalg.inv(a))",
+      "use_when": "1) Solving linear algebra problems explicitly requiring inversion. 2) Testing matrix conditioning. 3) Working with small dense square systems.",
+      "avoid_when": "You can solve a linear system directly; use solve.",
+      "decision_notes": "Category: Linear Algebra\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Matrix Inverse' operation.\nPurpose: I need the inverse of a small, well-conditioned square matrix.\nCommon Mistakes: Requires a square, invertible matrix; Numerically less stable than solving directly; Singular matrices fail; Inverse is often unnecessary in production code; Use with caution on ill-conditioned inputs\nRelated APIs: dot, matmul, solve",
+      "gotchas": [
+        "Requires a square, invertible matrix.",
+        "Numerically less stable than solving directly.",
+        "Singular matrices fail.",
+        "Inverse is often unnecessary in production code.",
+        "Use with caution on ill-conditioned inputs."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.inv.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Determinant",
+      "mental_trigger": "I need the determinant of a square matrix.",
+      "syntax": "np.linalg.det(a)",
+      "important_params": [
+        "a"
+      ],
+      "example": "import numpy as np\n\na = np.array([[1.0, 2.0], [3.0, 4.0]])\nprint(np.linalg.det(a))",
+      "use_when": "1) Checking invertibility heuristics. 2) Measuring signed volume scaling. 3) Working with characteristic matrix properties.",
+      "avoid_when": "You need a solve step or inverse directly; use those instead.",
+      "decision_notes": "Category: Statistics & Aggregation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Determinant' operation.\nPurpose: I need the determinant of a square matrix.\nCommon Mistakes: Determinant near zero suggests singularity; Can be numerically unstable for large matrices; Not a general-purpose quality metric; Only defined for square matrices; Small floating errors can change sign near zero\nRelated APIs: dot, matmul, solve",
+      "gotchas": [
+        "Determinant near zero suggests singularity.",
+        "Can be numerically unstable for large matrices.",
+        "Not a general-purpose quality metric.",
+        "Only defined for square matrices.",
+        "Small floating errors can change sign near zero."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.det.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Solve Linear System",
+      "mental_trigger": "I have coefficients and a right-hand side vector.",
+      "syntax": "np.linalg.solve(a, b)",
+      "important_params": [
+        "a",
+        "b"
+      ],
+      "example": "import numpy as np\n\na = np.array([[3.0, 1.0], [1.0, 2.0]])\nb = np.array([9.0, 8.0])\nprint(np.linalg.solve(a, b))",
+      "use_when": "1) Solving dense linear systems. 2) Replacing explicit inversion. 3) Computing exact coefficients in small systems.",
+      "avoid_when": "You only need a least-squares fit or an over/under-determined system; use lstsq.",
+      "decision_notes": "Category: Linear Algebra\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Solve Linear System' operation.\nPurpose: I have coefficients and a right-hand side vector.\nCommon Mistakes: a must be square and non-singular; More stable than inv(a) @ b; Shape of b affects output shape; Batched systems are supported in modern NumPy; A common source of errors is mismatched dimensions\nRelated APIs: dot, matmul, solve",
+      "gotchas": [
+        "a must be square and non-singular.",
+        "More stable than inv(a) @ b.",
+        "Shape of b affects output shape.",
+        "Batched systems are supported in modern NumPy.",
+        "A common source of errors is mismatched dimensions."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.solve.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Norm",
+      "mental_trigger": "I need a length or size measure for an array.",
+      "syntax": "np.linalg.norm(x, ord=None, axis=None, keepdims=False)",
+      "important_params": [
+        "x",
+        "ord",
+        "axis",
+        "keepdims"
+      ],
+      "example": "import numpy as np\n\nx = np.array([3.0, 4.0])\nprint(np.linalg.norm(x))",
+      "use_when": "1) Measuring vector magnitude. 2) Regularizing model parameters. 3) Comparing matrix scale.",
+      "avoid_when": "You need a specific elementwise aggregate; use sum or max.",
+      "decision_notes": "Category: Linear Algebra\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Norm' operation.\nPurpose: I need a length or size measure for an array.\nCommon Mistakes: Different ord values change the meaning; Vector and matrix norms behave differently; axis can target specific dimensions; Default is usually the Euclidean norm; Norm choice should match the math, not habit\nRelated APIs: dot, matmul, solve",
+      "gotchas": [
+        "Different ord values change the meaning.",
+        "Vector and matrix norms behave differently.",
+        "axis can target specific dimensions.",
+        "Default is usually the Euclidean norm.",
+        "Norm choice should match the math, not habit."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.norm.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Eigenvalues",
+      "mental_trigger": "I need spectral information from a dense square matrix.",
+      "syntax": "np.linalg.eigvals(a)",
+      "important_params": [
+        "a"
+      ],
+      "example": "import numpy as np\n\na = np.array([[1.0, 2.0], [2.0, 1.0]])\nprint(np.linalg.eigvals(a))",
+      "use_when": "1) Analyzing matrix spectrum. 2) Studying stability properties. 3) Working with low-dimensional dense matrices.",
+      "avoid_when": "You need full eigenvectors too; use eig.",
+      "decision_notes": "Category: Linear Algebra\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Eigenvalues' operation.\nPurpose: I need spectral information from a dense square matrix.\nCommon Mistakes: Only for square matrices; Results may be complex even for real matrices; Numerical ordering is not guaranteed; Eigenvalues can be sensitive to perturbations; Often not needed in everyday production code\nRelated APIs: dot, matmul, solve",
+      "gotchas": [
+        "Only for square matrices.",
+        "Results may be complex even for real matrices.",
+        "Numerical ordering is not guaranteed.",
+        "Eigenvalues can be sensitive to perturbations.",
+        "Often not needed in everyday production code."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.eigvals.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Use Default RNG",
+      "mental_trigger": "I need random numbers with explicit control over state.",
+      "syntax": "np.random.default_rng(seed=None)",
+      "important_params": [
+        "seed"
+      ],
+      "example": "import numpy as np\n\nrng = np.random.default_rng(42)\nprint(rng.integers(0, 10, size=5))",
+      "use_when": "1) Building reproducible experiments. 2) Sampling in modern NumPy code. 3) Isolating random state from global RNG.",
+      "avoid_when": "You are using legacy code that depends on global random state; migrate carefully.",
+      "decision_notes": "Category: Random Sampling\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Use Default RNG' operation.\nPurpose: I need random numbers with explicit control over state.\nCommon Mistakes: Prefer this over the legacy global generator; Seeding controls reproducibility; Use one generator per experiment or pipeline stage; Random streams differ from older APIs; Do not mix old and new random APIs casually\nRelated APIs: choice, default_rng, integers, normal",
+      "gotchas": [
+        "Prefer this over the legacy global generator.",
+        "Seeding controls reproducibility.",
+        "Use one generator per experiment or pipeline stage.",
+        "Random streams differ from older APIs.",
+        "Do not mix old and new random APIs casually."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/random/generator.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Random Integers",
+      "mental_trigger": "I need uniformly sampled integers.",
+      "syntax": "rng.integers(low, high=None, size=None, dtype=np.int64, endpoint=False)",
+      "important_params": [
+        "low",
+        "high",
+        "size",
+        "dtype",
+        "endpoint"
+      ],
+      "example": "import numpy as np\n\nrng = np.random.default_rng(42)\nprint(rng.integers(0, 10, size=5))",
+      "use_when": "1) Sampling indices. 2) Building synthetic categorical data. 3) Creating randomized test inputs.",
+      "avoid_when": "You need floating-point randomness; use random or distribution methods.",
+      "decision_notes": "Category: Random Sampling\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: An ndarray of random samples drawn from the specified distribution.\nPurpose: I need uniformly sampled integers.\nCommon Mistakes: high is exclusive by default; Works with vectorized sizes; Endpoint behavior changes the interval; Integer dtype matters for platform compatibility; Great for indices, not for continuous values\nRelated APIs: array, asarray",
+      "gotchas": [
+        "high is exclusive by default.",
+        "Works with vectorized sizes.",
+        "Endpoint behavior changes the interval.",
+        "Integer dtype matters for platform compatibility.",
+        "Great for indices, not for continuous values."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/random/generated/numpy.random.Generator.integers.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Random Choice",
+      "mental_trigger": "I need random selection from a discrete set.",
+      "syntax": "rng.choice(a, size=None, replace=True, p=None, axis=0, shuffle=True)",
+      "important_params": [
+        "a",
+        "size",
+        "replace",
+        "p",
+        "axis"
+      ],
+      "example": "import numpy as np\n\nrng = np.random.default_rng(42)\nprint(rng.choice([10, 20, 30], size=5, replace=True))",
+      "use_when": "1) Sampling labels or items. 2) Bootstrapping data. 3) Building randomized baselines.",
+      "avoid_when": "You need a permutation of all elements; use permutation.",
+      "decision_notes": "Category: Random Sampling\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: An ndarray of random samples drawn from the specified distribution.\nPurpose: I need random selection from a discrete set.\nCommon Mistakes: replace=False limits repeated items; Probabilities in p must sum correctly; Sampling from arrays can be axis-aware; Very common in data resampling workflows; Choice semantics depend on replacement and axis\nRelated APIs: array, asarray",
+      "gotchas": [
+        "replace=False limits repeated items.",
+        "Probabilities in p must sum correctly.",
+        "Sampling from arrays can be axis-aware.",
+        "Very common in data resampling workflows.",
+        "Choice semantics depend on replacement and axis."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/random/generated/numpy.random.Generator.choice.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Random Permutation",
+      "mental_trigger": "I need a random ordering of all items.",
+      "syntax": "rng.permutation(x)",
+      "important_params": [
+        "x"
+      ],
+      "example": "import numpy as np\n\nrng = np.random.default_rng(42)\nprint(rng.permutation(5))",
+      "use_when": "1) Shuffling indices for train-test splits. 2) Randomizing data order. 3) Creating permutations without replacement.",
+      "avoid_when": "You only need an in-place shuffle of an existing array; use shuffle.",
+      "decision_notes": "Category: Random Sampling\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: An ndarray of random samples drawn from the specified distribution.\nPurpose: I need a random ordering of all items.\nCommon Mistakes: Returns a permuted copy; Works on integers or arrays; Does not preserve order; Useful for shuffling labels and indices together; Distinguish from sampling with replacement\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Returns a permuted copy.",
+        "Works on integers or arrays.",
+        "Does not preserve order.",
+        "Useful for shuffling labels and indices together.",
+        "Distinguish from sampling with replacement."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/random/generated/numpy.random.Generator.permutation.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Shuffle In Place",
+      "mental_trigger": "I need to reorder an array without allocating a new one.",
+      "syntax": "rng.shuffle(x)",
+      "important_params": [
+        "x"
+      ],
+      "example": "import numpy as np\n\nrng = np.random.default_rng(42)\na = np.array([1, 2, 3, 4])\nrng.shuffle(a)\nprint(a)",
+      "use_when": "1) Shuffling training data in place. 2) Reducing allocation overhead. 3) Randomizing order before batching.",
+      "avoid_when": "You need the original ordering preserved; use permutation.",
+      "decision_notes": "Category: Random Sampling\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Shuffle In Place' operation.\nPurpose: I need to reorder an array without allocating a new one.\nCommon Mistakes: Mutates the array; Output depends on RNG state; Not appropriate when original data must stay unchanged; Faster than creating a separate permuted copy; Easy to accidentally reuse the shuffled source later\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Mutates the array.",
+        "Output depends on RNG state.",
+        "Not appropriate when original data must stay unchanged.",
+        "Faster than creating a separate permuted copy.",
+        "Easy to accidentally reuse the shuffled source later."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/random/generated/numpy.random.Generator.shuffle.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Sample Normal",
+      "mental_trigger": "I need normally distributed random values.",
+      "syntax": "rng.normal(loc=0.0, scale=1.0, size=None)",
+      "important_params": [
+        "loc",
+        "scale",
+        "size"
+      ],
+      "example": "import numpy as np\n\nrng = np.random.default_rng(42)\nprint(rng.normal(0.0, 1.0, size=5))",
+      "use_when": "1) Creating noise. 2) Simulating measurements. 3) Initializing stochastic experiments.",
+      "avoid_when": "You need bounded values or uniform noise; use uniform.",
+      "decision_notes": "Category: Linear Algebra\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Sample Normal' operation.\nPurpose: I need normally distributed random values.\nCommon Mistakes: scale is standard deviation; Results are unbounded; Shape and dtype should be chosen carefully; Common in Monte Carlo and ML workflows; Random draws vary run to run unless seeded\nRelated APIs: array, asarray",
+      "gotchas": [
+        "scale is standard deviation.",
+        "Results are unbounded.",
+        "Shape and dtype should be chosen carefully.",
+        "Common in Monte Carlo and ML workflows.",
+        "Random draws vary run to run unless seeded."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/random/generated/numpy.random.Generator.normal.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Sample Uniform",
+      "mental_trigger": "I need values spread evenly across a range.",
+      "syntax": "rng.uniform(low=0.0, high=1.0, size=None)",
+      "important_params": [
+        "low",
+        "high",
+        "size"
+      ],
+      "example": "import numpy as np\n\nrng = np.random.default_rng(42)\nprint(rng.uniform(0.0, 1.0, size=5))",
+      "use_when": "1) Initializing random baselines. 2) Simulating bounded continuous values. 3) Drawing random inputs for testing.",
+      "avoid_when": "You need integer values; use integers.",
+      "decision_notes": "Category: Random Sampling\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Sample Uniform' operation.\nPurpose: I need values spread evenly across a range.\nCommon Mistakes: Output is half-open on the upper end in practical terms; Suitable for bounded continuous ranges; Common in synthetic data generation; low can exceed high only if you intend reversed intervals carefully; Uniform is not the same as normal noise\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Output is half-open on the upper end in practical terms.",
+        "Suitable for bounded continuous ranges.",
+        "Common in synthetic data generation.",
+        "low can exceed high only if you intend reversed intervals carefully.",
+        "Uniform is not the same as normal noise."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/random/generated/numpy.random.Generator.uniform.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Sort Array",
+      "mental_trigger": "I need values sorted along an axis.",
+      "syntax": "np.sort(a, axis=-1, kind=None, order=None, *, stable=None)",
+      "important_params": [
+        "a",
+        "axis",
+        "kind",
+        "order",
+        "stable"
+      ],
+      "example": "import numpy as np\n\na = np.array([3, 1, 2])\nprint(np.sort(a))",
+      "use_when": "1) Ranking values. 2) Preparing median or percentile-like operations manually. 3) Ordering elements along an axis.",
+      "avoid_when": "You only need the sort permutation; use argsort.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Sort Array' operation.\nPurpose: I need values sorted along an axis.\nCommon Mistakes: Returns a sorted copy; Axis selection matters; Stable ordering can matter for ties; Sorting object arrays can be slower; Do not confuse sorting values with indices\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Returns a sorted copy.",
+        "Axis selection matters.",
+        "Stable ordering can matter for ties.",
+        "Sorting object arrays can be slower.",
+        "Do not confuse sorting values with indices."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.sort.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Argsort",
+      "mental_trigger": "I need indices that would sort the array.",
+      "syntax": "np.argsort(a, axis=-1, kind=None, order=None, *, stable=None)",
+      "important_params": [
+        "a",
+        "axis",
+        "kind",
+        "order",
+        "stable"
+      ],
+      "example": "import numpy as np\n\na = np.array([3, 1, 2])\nprint(np.argsort(a))",
+      "use_when": "1) Ranking examples or predictions. 2) Reordering aligned arrays. 3) Building custom top-k logic.",
+      "avoid_when": "You only need sorted values; use sort.",
+      "decision_notes": "Category: Sorting & Searching\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Argsort' operation.\nPurpose: I need indices that would sort the array.\nCommon Mistakes: Returns index positions, not sorted data; Useful for consistent reordering of multiple arrays; Stable ordering can matter for ties; Often paired with take; Axis semantics matter in higher dimensions\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Returns index positions, not sorted data.",
+        "Useful for consistent reordering of multiple arrays.",
+        "Stable ordering can matter for ties.",
+        "Often paired with take.",
+        "Axis semantics matter in higher dimensions."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.argsort.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Unique Values",
+      "mental_trigger": "I need the distinct items in an array.",
+      "syntax": "np.unique(ar, return_index=False, return_inverse=False, return_counts=False, axis=None, equal_nan=True, sorted=True)",
+      "important_params": [
+        "ar",
+        "return_counts",
+        "return_inverse",
+        "axis",
+        "equal_nan"
+      ],
+      "example": "import numpy as np\n\na = np.array([1, 2, 2, 3, 1])\nprint(np.unique(a))",
+      "use_when": "1) Deduplicating labels or categories. 2) Counting value frequencies. 3) Building compact encodings.",
+      "avoid_when": "You need first-seen order preserved; handle ordering separately.",
+      "decision_notes": "Category: Sorting & Searching\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Unique Values' operation.\nPurpose: I need the distinct items in an array.\nCommon Mistakes: Output is typically sorted; Can also return counts and inverse mappings; NaN handling has dedicated behavior; Often useful in preprocessing and analysis; Do not assume input order is preserved\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Output is typically sorted.",
+        "Can also return counts and inverse mappings.",
+        "NaN handling has dedicated behavior.",
+        "Often useful in preprocessing and analysis.",
+        "Do not assume input order is preserved."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.unique.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "All",
+      "mental_trigger": "I need a universal truth check over an array.",
+      "syntax": "np.all(a, axis=None, out=None, keepdims=False, *, where=True)",
+      "important_params": [
+        "a",
+        "axis",
+        "keepdims",
+        "where"
+      ],
+      "example": "import numpy as np\n\na = np.array([1, 2, 3])\nprint(np.all(a > 0))",
+      "use_when": "1) Validating that a condition holds everywhere. 2) Checking data quality constraints. 3) Confirming masks are fully satisfied.",
+      "avoid_when": "You need to know whether any element satisfies the condition; use any.",
+      "decision_notes": "Category: Logic & Math\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'All' operation.\nPurpose: I need a universal truth check over an array.\nCommon Mistakes: Reduces boolean arrays to one truth value or axis result; Empty inputs can produce unintuitive truth values; keepdims supports later broadcasting; Strongly tied to condition validation logic; Easy to mix up with Python all\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Reduces boolean arrays to one truth value or axis result.",
+        "Empty inputs can produce unintuitive truth values.",
+        "keepdims supports later broadcasting.",
+        "Strongly tied to condition validation logic.",
+        "Easy to mix up with Python all."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.all.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Any",
+      "mental_trigger": "I need to know whether at least one element passes a test.",
+      "syntax": "np.any(a, axis=None, out=None, keepdims=False, *, where=True)",
+      "important_params": [
+        "a",
+        "axis",
+        "keepdims",
+        "where"
+      ],
+      "example": "import numpy as np\n\na = np.array([1, 2, 3])\nprint(np.any(a > 2))",
+      "use_when": "1) Detecting anomalies or sentinel values. 2) Triggering conditional branches. 3) Checking for at least one valid entry.",
+      "avoid_when": "You need every value to satisfy a condition; use all.",
+      "decision_notes": "Category: Logic & Math\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Any' operation.\nPurpose: I need to know whether at least one element passes a test.\nCommon Mistakes: Reduces to a truth value or axis result; keepdims helps preserve shape; Often used with masks and missing-data logic; Empty-input semantics are easy to overlook; Very common in validation code\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Reduces to a truth value or axis result.",
+        "keepdims helps preserve shape.",
+        "Often used with masks and missing-data logic.",
+        "Empty-input semantics are easy to overlook.",
+        "Very common in validation code."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.any.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Logical And",
+      "mental_trigger": "I need both conditions to be true.",
+      "syntax": "np.logical_and(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K', dtype=None, subok=True)",
+      "important_params": [
+        "x1",
+        "x2",
+        "out",
+        "where"
+      ],
+      "example": "import numpy as np\n\na = np.array([True, False, True])\nb = np.array([True, True, False])\nprint(np.logical_and(a, b))",
+      "use_when": "1) Combining boolean filters. 2) Building compound validation rules. 3) Masking values with multiple conditions.",
+      "avoid_when": "A single chained comparison is enough and readable.",
+      "decision_notes": "Category: Logic & Math\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Logical And' operation.\nPurpose: I need both conditions to be true.\nCommon Mistakes: Parentheses are still needed with comparison expressions; Broadcasts like other ufuncs; Works on non-boolean inputs via truthiness rules; The & operator is common but more syntax-sensitive; Common source of precedence mistakes\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Parentheses are still needed with comparison expressions.",
+        "Broadcasts like other ufuncs.",
+        "Works on non-boolean inputs via truthiness rules.",
+        "The & operator is common but more syntax-sensitive.",
+        "Common source of precedence mistakes."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.logical_and.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Logical Or",
+      "mental_trigger": "I need at least one of two conditions to be true.",
+      "syntax": "np.logical_or(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K', dtype=None, subok=True)",
+      "important_params": [
+        "x1",
+        "x2",
+        "out",
+        "where"
+      ],
+      "example": "import numpy as np\n\na = np.array([True, False, True])\nb = np.array([False, False, True])\nprint(np.logical_or(a, b))",
+      "use_when": "1) Merging inclusion rules. 2) Flagging any of multiple conditions. 3) Building fallback masks.",
+      "avoid_when": "You need all conditions to hold; use logical_and.",
+      "decision_notes": "Category: Logic & Math\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Logical Or' operation.\nPurpose: I need at least one of two conditions to be true.\nCommon Mistakes: Broadcasts across shapes; Works naturally with boolean arrays; Operator precedence can be tricky with |; Can be combined with masks for data cleaning; Easy to accidentally broaden selection too much\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Broadcasts across shapes.",
+        "Works naturally with boolean arrays.",
+        "Operator precedence can be tricky with |.",
+        "Can be combined with masks for data cleaning.",
+        "Easy to accidentally broaden selection too much."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.logical_or.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Is NaN",
+      "mental_trigger": "I need to identify NaN entries.",
+      "syntax": "np.isnan(x, /, out=None, *, where=True, casting='same_kind', order='K', dtype=None, subok=True)",
+      "important_params": [
+        "x",
+        "out",
+        "where"
+      ],
+      "example": "import numpy as np\n\na = np.array([1.0, np.nan, 3.0])\nprint(np.isnan(a))",
+      "use_when": "1) Validating numerical data. 2) Finding missing float entries. 3) Building missing-value masks.",
+      "avoid_when": "You want to detect infinities too; use isfinite.",
+      "decision_notes": "Category: General\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Is NaN' operation.\nPurpose: I need to identify NaN entries.\nCommon Mistakes: NaN is only relevant for floating types and complex components; NaN does not compare equal to itself; Common in scientific data pipelines; Combine with masking or imputation logic; Missing-value handling often starts here\nRelated APIs: array, asarray",
+      "gotchas": [
+        "NaN is only relevant for floating types and complex components.",
+        "NaN does not compare equal to itself.",
+        "Common in scientific data pipelines.",
+        "Combine with masking or imputation logic.",
+        "Missing-value handling often starts here."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.isnan.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Is Finite",
+      "mental_trigger": "I need to ensure values are neither NaN nor infinite.",
+      "syntax": "np.isfinite(x, /, out=None, *, where=True, casting='same_kind', order='K', dtype=None, subok=True)",
+      "important_params": [
+        "x",
+        "out",
+        "where"
+      ],
+      "example": "import numpy as np\n\na = np.array([1.0, np.nan, np.inf, 3.0])\nprint(np.isfinite(a))",
+      "use_when": "1) Sanitizing numeric data. 2) Validating model inputs. 3) Rejecting invalid arithmetic results.",
+      "avoid_when": "You only care about NaN specifically; use isnan.",
+      "decision_notes": "Category: General\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Is Finite' operation.\nPurpose: I need to ensure values are neither NaN nor infinite.\nCommon Mistakes: Captures both NaN and infinities; Useful after divisions or exponentials; Works elementwise; Often used before saving or feeding models; A core data-quality check in production\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Captures both NaN and infinities.",
+        "Useful after divisions or exponentials.",
+        "Works elementwise.",
+        "Often used before saving or feeding models.",
+        "A core data-quality check in production."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.isfinite.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Save Array",
+      "mental_trigger": "I need to write one array to a file for later loading.",
+      "syntax": "np.save(file, arr, allow_pickle=True, fix_imports=<no value>)",
+      "important_params": [
+        "file",
+        "arr",
+        "allow_pickle"
+      ],
+      "example": "import numpy as np\n\na = np.array([1, 2, 3])\nnp.save(\"array.npy\", a)\nb = np.load(\"array.npy\")\nprint(b)",
+      "use_when": "1) Persisting a single ndarray. 2) Caching intermediate numeric results. 3) Sharing arrays between Python runs.",
+      "avoid_when": "You need multiple named arrays in one file; use savez.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: None\nExpected Output: A binary .npy or .npz file containing the serialized array state written to disk.\nPurpose: I need to write one array to a file for later loading.\nCommon Mistakes: Produces NumPy\u2019s binary npy format; allow_pickle has security implications; Best for NumPy arrays, not arbitrary objects; Load requires compatible dtype handling; Keep versioned file formats in mind for long-term storage\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Produces NumPy\u2019s binary .npy format.",
+        "allow_pickle has security implications.",
+        "Best for NumPy arrays, not arbitrary objects.",
+        "Load requires compatible dtype handling.",
+        "Keep versioned file formats in mind for long-term storage."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.save.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Load Array",
+      "mental_trigger": "I need to restore an array saved in `.npy` format.",
+      "syntax": "np.load(file, mmap_mode=None, allow_pickle=False, fix_imports=True, encoding='ASCII', *, max_header_size=10000)",
+      "important_params": [
+        "file",
+        "mmap_mode",
+        "allow_pickle",
+        "encoding",
+        "max_header_size"
+      ],
+      "example": "import numpy as np\n\na = np.array([1, 2, 3])\nnp.save(\"array.npy\", a)\nb = np.load(\"array.npy\")\nprint(b)",
+      "use_when": "1) Reloading cached arrays. 2) Reading .npy and .npz files. 3) Memory-mapping large arrays on disk.",
+      "avoid_when": "The data is plain text; use a text parser instead.",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: An ndarray loaded back from binary storage on disk.\nPurpose: I need to restore an array saved in `.npy` format.\nCommon Mistakes: Pickle loading is disabled by default for safety; Can load both npy and npz formats; mmap_mode is useful for large datasets; Header limits matter for security and compatibility; Validate file trust before enabling pickle\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Pickle loading is disabled by default for safety.",
+        "Can load both .npy and .npz formats.",
+        "mmap_mode is useful for large datasets.",
+        "Header limits matter for security and compatibility.",
+        "Validate file trust before enabling pickle."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.load.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Savez",
+      "mental_trigger": "I need one file with multiple arrays.",
+      "syntax": "np.savez(file, *args, **kwds)",
+      "important_params": [
+        "file",
+        "args",
+        "kwds"
+      ],
+      "example": "import numpy as np\n\nx = np.array([1, 2, 3])\ny = np.array([4, 5, 6])\nnp.savez(\"bundle.npz\", x=x, y=y)\ndata = np.load(\"bundle.npz\")\nprint(data[\"x\"], data[\"y\"])",
+      "use_when": "1) Packaging related arrays together. 2) Saving datasets with multiple fields. 3) Creating compact experiment artifacts.",
+      "avoid_when": "You only need one array; use save.",
+      "decision_notes": "Category: File I/O\nModule: `numpy`\nReturn Value: None\nExpected Output: A binary .npy or .npz file containing the serialized array state written to disk.\nPurpose: I need one file with multiple arrays.\nCommon Mistakes: Produces a zipped archive; Named arrays are accessed by key; File size and compression tradeoffs depend on format details; Loaded archives act like dict-like objects; Useful for dataset snapshots and experiment outputs\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Produces a zipped archive.",
+        "Named arrays are accessed by key.",
+        "File size and compression tradeoffs depend on format details.",
+        "Loaded archives act like dict-like objects.",
+        "Useful for dataset snapshots and experiment outputs."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.savez.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Savez Compressed",
+      "mental_trigger": "I want multiple arrays saved more compactly.",
+      "syntax": "np.savez_compressed(file, *args, **kwds)",
+      "important_params": [
+        "file",
+        "args",
+        "kwds"
+      ],
+      "example": "import numpy as np\n\nx = np.arange(10)\nnp.savez_compressed(\"bundle_compressed.npz\", x=x)\ndata = np.load(\"bundle_compressed.npz\")\nprint(data[\"x\"])",
+      "use_when": "1) Reducing artifact size. 2) Archiving experiment outputs. 3) Storing large but compressible arrays.",
+      "avoid_when": "You need maximum write throughput and can afford larger files; use savez.",
+      "decision_notes": "Category: File I/O\nModule: `numpy`\nReturn Value: None\nExpected Output: A binary .npy or .npz file containing the serialized array state written to disk.\nPurpose: I want multiple arrays saved more compactly.\nCommon Mistakes: Compression costs CPU time; Best for sparse-like or repetitive data; Still loads through NumPy\u2019s archive reader; Not ideal for performance-critical logging; Compression tradeoff depends on data entropy\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Compression costs CPU time.",
+        "Best for sparse-like or repetitive data.",
+        "Still loads through NumPy\u2019s archive reader.",
+        "Not ideal for performance-critical logging.",
+        "Compression tradeoff depends on data entropy."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.savez_compressed.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Equality Check",
+      "mental_trigger": "I need to compare values elementwise.",
+      "syntax": "a == b",
+      "important_params": [
+        "a",
+        "b"
+      ],
+      "example": "import numpy as np\n\na = np.array([1, 2, 3])\nb = np.array([1, 0, 3])\nprint(a == b)",
+      "use_when": "1) Building masks for matching labels. 2) Validating array contents. 3) Creating exact-match filters.",
+      "avoid_when": "You need approximate floating comparison; use isclose.",
+      "decision_notes": "Category: General\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Equality Check' operation.\nPurpose: I need to compare values elementwise.\nCommon Mistakes: Works elementwise with broadcasting; Float equality can be fragile; Produces a boolean array; Common prerequisite for masking; == on NaN is always false\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Works elementwise with broadcasting.",
+        "Float equality can be fragile.",
+        "Produces a boolean array.",
+        "Common prerequisite for masking.",
+        "== on NaN is always false."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.equal.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
+    },
+    {
+      "task": "Is Close",
+      "mental_trigger": "I need to compare floats robustly.",
+      "syntax": "np.isclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False)",
+      "important_params": [
+        "a",
+        "b",
+        "rtol",
+        "atol",
+        "equal_nan"
+      ],
+      "example": "import numpy as np\n\na = np.array([1.0, 2.0])\nb = np.array([1.0 + 1e-9, 2.0])\nprint(np.isclose(a, b))",
+      "use_when": "1) Testing numeric outputs. 2) Comparing floating-point computations. 3) Tolerating roundoff error.",
+      "avoid_when": "You need exact matching for integers or identifiers; use equality.",
+      "decision_notes": "Category: Logic & Math\nModule: `numpy`\nReturn Value: numpy.ndarray\nExpected Output: A NumPy ndarray containing the result of the 'Is Close' operation.\nPurpose: I need to compare floats robustly.\nCommon Mistakes: Relative and absolute tolerances both matter; Symmetry is limited by formula details; Default tolerances may be too loose or too strict; Highly useful in test assertions; NaN handling is configurable\nRelated APIs: array, asarray",
+      "gotchas": [
+        "Relative and absolute tolerances both matter.",
+        "Symmetry is limited by formula details.",
+        "Default tolerances may be too loose or too strict.",
+        "Highly useful in test assertions.",
+        "NaN handling is configurable."
+      ],
+      "official_docs": "https://numpy.org/doc/stable/reference/generated/numpy.isclose.html",
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": []
     }
   ],
-  "alternatives": [
-    {
-      "id": "cupy",
-      "type": "package"
-    },
-    {
-      "id": "jax",
-      "type": "package"
-    }
-  ]
+  "alternatives": [],
+  "package_specific_debugging": [
+    "This resource intentionally focuses on the NumPy 80/20 API surface used in real engineering work, not the full library.",
+    "The selected tasks emphasize array creation, inspection, reshaping, joining, indexing, reduction, linear algebra, random sampling, sorting, boolean logic, and file I/O because these are the most reusable NumPy workflows for engineering teams.",
+    "The package-level version is set to the current stable manual release visible in the official NumPy reference."
+  ],
+  "migration_notes": [],
+  "breaking_changes": []
 }

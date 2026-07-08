@@ -1,0 +1,326 @@
+{
+  "id": "build-rag-system",
+  "title": "Build RAG System",
+  "name": "Build RAG System",
+  "slug": "build-rag-system",
+  "description": "Complete workflow to build a production-quality Retrieval-Augmented Generation (RAG) system.",
+  "type": "pipeline",
+  "category": "llm",
+  "overview": "Retrieval-Augmented Generation (RAG) enhances LLM responses by fetching relevant context from external document repositories. This workflow guides you through building a production RAG pipeline from document ingestion (including late chunking) to vector indexing, hybrid retrieval, cross-encoder reranking, and response generation.",
+  "starter_stack": [
+    "pytorch",
+    "transformers",
+    "faiss-cpu",
+    "sentence-transformers",
+    "langchain",
+    "safetensors",
+    "chonkie"
+  ],
+  "created_at": "2026-07-03",
+  "updated_at": "2026-07-03",
+  "last_verified": "2026-07-03",
+  "review_frequency": "quarterly",
+  "verified_against": "2.12",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "sources": [
+    "https://arxiv.org/abs/2005.11401",
+    "https://jina.ai/news/late-chunking-in-long-context-embedding-models/",
+    "https://github.com/jina-ai/late-chunking",
+    "https://pub.towardsai.net/easy-late-chunking-with-chonkie-7f05e5916997"
+  ],
+  "tags": [
+    "llm",
+    "rag",
+    "search",
+    "embeddings",
+    "late-chunking",
+    "reranking"
+  ],
+  "aliases": [
+    "rag-workflow",
+    "retrieval-augmented-generation-workflow"
+  ],
+  "keywords": [
+    "rag",
+    "vector-database",
+    "embeddings",
+    "late-chunking",
+    "hybrid-search",
+    "cross-encoder",
+    "reranking",
+    "ragas"
+  ],
+  "search_tokens": [
+    "rag",
+    "retrieval-augmented-generation",
+    "late-chunking",
+    "hybrid-search",
+    "cross-encoder-reranking",
+    "vector-search"
+  ],
+  "domain": "llm",
+  "difficulty": "advanced",
+  "engineering_area": "orchestration",
+  "estimated_reading_time": 60,
+  "prerequisites": [
+    "pytorch",
+    "bert"
+  ],
+  "recommended_next": [
+    "rag-vs-fine-tuning"
+  ],
+  "related_content": [
+    {
+      "id": "pytorch",
+      "type": "package",
+      "relationship_type": "uses"
+    },
+    {
+      "id": "training-loop",
+      "type": "pattern",
+      "relationship_type": "uses"
+    },
+    {
+      "id": "bert",
+      "type": "model",
+      "relationship_type": "uses"
+    },
+    {
+      "id": "cuda-out-of-memory",
+      "type": "debug_guide",
+      "relationship_type": "debugged_by"
+    },
+    {
+      "id": "rag-vs-fine-tuning",
+      "type": "decision_guide",
+      "relationship_type": "related_to"
+    },
+    {
+      "id": "single-source-of-truth",
+      "type": "principle",
+      "relationship_type": "related_to"
+    }
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "name": "Document Parsing and Metadata Extraction",
+      "what": "Extract raw text and structural metadata from diverse source formats (Markdown, PDF, HTML) using dedicated parsing libraries.",
+      "tools": [
+        "PyPDFLoader",
+        "BeautifulSoup",
+        "LangChain"
+      ],
+      "decision": "Use specialized document parsers to extract structural metadata (headers, table formats, timestamps, versions) alongside raw text, enabling filterable indexing and clean chunk boundaries.",
+      "uses": {
+        "packages": [
+          "pandas"
+        ],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Loss of structural metadata (e.g. converting structured tables into unstructured inline text strings).",
+        "Character encoding errors or truncation on non-ASCII characters."
+      ]
+    },
+    {
+      "step": 2,
+      "name": "Document Segmentation and Chunking Strategy",
+      "what": "Segment parsed text into retrieval units using a semantic or recursive character splitting strategy with defined token overlaps.",
+      "tools": [
+        "RecursiveCharacterTextSplitter",
+        "Chonkie"
+      ],
+      "decision": "Prefer Recursive Character Splitting (400-512 tokens with 10-20% overlap) as the standard default to keep paragraphs intact, or use Parent-Document chunking to decouple retrieval units from generation contexts.",
+      "uses": {
+        "packages": [],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Shredding semantic context by splitting documents mid-sentence or mid-argument due to rigid fixed-character chunking.",
+        "Lost-context problem in long-form files, where trailing chunks containing referential terms (like 'it' or 'the city') lose connection to their parent subjects."
+      ]
+    },
+    {
+      "step": 3,
+      "name": "Global Contextualized Embeddings via Late Chunking",
+      "what": "Pass complete long-context documents through a transformer model to generate unpooled token-level embeddings before splitting and pooling them.",
+      "tools": [
+        "sentence-transformers",
+        "Chonkie",
+        "pytorch"
+      ],
+      "decision": "For long, cross-referencing documents (e.g., legal contracts or technical manuals), apply Late Chunking. Run global bidirectional self-attention across the whole text, then chunk the output sequence and mean pool to retain contextual awareness across chunk boundaries.",
+      "uses": {
+        "packages": [
+          "pytorch"
+        ],
+        "models": [
+          "bert"
+        ],
+        "cheatsheets": [
+          "pytorch"
+        ]
+      },
+      "failure_points": [
+        "High computational overhead when computing global attention on exceptionally long documents.",
+        "Embedding models lacking large context windows (e.g. 512-token limit models) will silently truncate inputs, defeating Late Chunking benefits."
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Vector Store Indexing and Hybrid Setup",
+      "what": "Build a vector index for dense semantic search and combine it with a sparse BM25 index for keyword search.",
+      "tools": [
+        "FAISS",
+        "Qdrant",
+        "Milvus",
+        "Pinecone"
+      ],
+      "decision": "Implement hybrid search. Query the dense vector database (using HNSW index layout for sub-linear query latency) and the BM25 sparse index concurrently, then combine candidate sets using Reciprocal Rank Fusion (RRF).",
+      "uses": {
+        "packages": [],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "High indexing latency caused by single-document sequential embedding ingestion instead of batched parallel embedding generation.",
+        "Memory footprint explosion in flat FAISS indexes (migrate to quantized or HNSW indices to maintain performance at scale).",
+        "Missing exact-match terms or product IDs when relying exclusively on dense vector similarity."
+      ]
+    },
+    {
+      "step": 5,
+      "name": "Candidate Reranking with Cross-Encoders",
+      "what": "Evaluate retrieved candidate chunks against the input query using a cross-encoder model to reorder chunks by semantic relevance.",
+      "tools": [
+        "sentence-transformers",
+        "transformers"
+      ],
+      "decision": "Use a cross-encoder model (e.g. BAAI/bge-reranker-v2) to calculate explicit query-chunk similarity using cross-attention, selecting the top-N (typically 3-5) most relevant context blocks.",
+      "uses": {
+        "packages": [
+          "pytorch"
+        ],
+        "models": [
+          "bert"
+        ],
+        "cheatsheets": [
+          "pytorch"
+        ]
+      },
+      "failure_points": [
+        "Severe latency overhead: cross-encoders are computationally expensive and cannot be pre-computed.",
+        "Token truncation: chunks exceeding the reranker's input limit (e.g., 512 tokens) are truncated, losing downstream context."
+      ]
+    },
+    {
+      "step": 6,
+      "name": "Context Injection and Response Generation",
+      "what": "Inject retrieved context chunks into a structured prompt template and send it to the generator LLM.",
+      "tools": [
+        "transformers",
+        "vLLM"
+      ],
+      "decision": "Configure a structured prompt layout enforcing strict grounding (e.g., instructing the model to respond with 'I don't have enough information' if the answer is not present in the provided context).",
+      "uses": {
+        "packages": [
+          "pytorch"
+        ],
+        "models": [],
+        "cheatsheets": [
+          "pytorch"
+        ]
+      },
+      "failure_points": [
+        "Model hallucination: the generator extrapolates beyond the provided context blocks when prompt constraints are too weak.",
+        "Context window overflow or prompt truncation when passing too many retrieval chunks (top-K is set too high)."
+      ]
+    },
+    {
+      "step": 7,
+      "name": "System Evaluation and Quality Checks",
+      "what": "Deploy automated evaluation frameworks to measure retrieval quality and generation faithfulness.",
+      "tools": [
+        "Ragas",
+        "TruLens"
+      ],
+      "decision": "Construct a golden test set of query-context-response triplets and run evaluations using LLM-assisted metrics to verify context relevance, faithfulness, and answer correctness before deployment.",
+      "uses": {
+        "packages": [],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Silent quality regression: making pipeline adjustments (changing embedding models or split sizes) without validation metrics, causing generation drift."
+      ]
+    }
+  ],
+  "common_failure_points": [
+    "Context window overflow on the generator model due to excessively large top-K vector chunk returns.",
+    "Hallucination due to irrelevant or out-of-date document chunks being retrieved and injected into prompt context.",
+    "The lost-context problem: splitting cross-referencing text blocks before embedding causes dense search vectors to lose context of surrounding nouns.",
+    "Cross-encoder reranker latency: passing too many retrieval candidates (e.g., K > 20) to the reranker, violating the sub-second latency budget.",
+    "Distributed deadlocks or OOMs during batch document ingestion on GPU."
+  ],
+  "evaluation_checks": [
+    "Context Precision: fraction of retrieved context chunks that are relevant to answering the query.",
+    "Context Recall: fraction of ground-truth information successfully retrieved by the index.",
+    "Faithfulness: whether the generated answer is strictly grounded in and supported by the retrieved context chunks.",
+    "Answer Relevance: whether the generated response directly addresses the user's input query.",
+    "Confidence Threshold: similarity score of the top retrieved candidate must exceed 0.7; otherwise, return a fallback response."
+  ],
+  "next_links": [
+    "rag-vs-fine-tuning"
+  ],
+  "worked_examples": [
+    {
+      "name": "Hybrid Search RAG with RRF",
+      "description": "Combining BM25 keyword matching with dense BERT vector embeddings using Reciprocal Rank Fusion (RRF).",
+      "implementation_notes": "Scale weights at 0.7 dense / 0.3 sparse for optimal search alignment."
+    },
+    {
+      "name": "Late Chunking Implementation",
+      "description": "Applying unpooled token-level embeddings across an 8192-token context window using a model like Jina AI v3, then pooling across boundaries to preserve cross-paragraph referential context.",
+      "implementation_notes": "Ensure the underlying model supports unpooled token-level embeddings extraction before the projection layer."
+    }
+  ],
+  "production_notes": "Establish a strict sub-second latency budget: 50-100ms for embedding generation, 80-200ms for vector search, 100-300ms for reranking, and 500ms-2s for generation. Run embedding generation in parallel batches of 100 documents. Utilize incremental indexing via tools like LangChain SQLRecordManager to insert documents without rebuilding the entire index. Implement namespace isolation for multi-tenant deployments.",
+  "scaling_notes": "For large-scale vector search (>100k vectors), migrate from flat indexes to distributed sharded databases (e.g., Qdrant, Milvus, Pinecone) utilizing HNSW indexing layouts. Optimize generator latency by utilizing serving engines like vLLM with speculative decoding, dynamic batching, and model quantization (INT8/INT4).",
+  "related_patterns": [
+    {
+      "id": "training-loop",
+      "type": "pattern",
+      "relationship_type": "uses"
+    }
+  ],
+  "related_models": [
+    {
+      "id": "bert",
+      "type": "model",
+      "relationship_type": "uses"
+    }
+  ],
+  "related_packages": [
+    {
+      "id": "pytorch",
+      "type": "package",
+      "relationship_type": "uses"
+    }
+  ],
+  "related_debug_guides": [
+    {
+      "id": "cuda-out-of-memory",
+      "type": "debug_guide",
+      "relationship_type": "debugged_by"
+    }
+  ]
+}

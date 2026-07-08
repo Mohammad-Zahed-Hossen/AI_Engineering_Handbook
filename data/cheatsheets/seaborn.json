@@ -1,0 +1,1480 @@
+{
+  "id": "seaborn",
+  "title": "Seaborn Cheatsheet",
+  "name": "Seaborn Cheatsheet",
+  "slug": "seaborn-cheatsheet",
+  "description": "High-density syntax recall for Seaborn 0.13.2 focused on common engineering workflows, modern APIs, and copy-paste-ready plotting patterns.",
+  "package_reference": "seaborn",
+  "verified_against": "0.13.2",
+  "created_at": "2026-07-06",
+  "updated_at": "2026-07-06",
+  "sources": [
+    "https://seaborn.pydata.org/api.html",
+    "https://seaborn.pydata.org/examples/index.html",
+    "https://seaborn.pydata.org/installing.html"
+  ],
+  "tags": [
+    "seaborn",
+    "visualization",
+    "plotting",
+    "data-analysis",
+    "python",
+    "exploratory-data-analysis"
+  ],
+  "aliases": [
+    "seaborn-cheatsheet",
+    "sns-cheatsheet"
+  ],
+  "keywords": [
+    "seaborn",
+    "sns",
+    "scatterplot",
+    "lineplot",
+    "histplot",
+    "kdeplot",
+    "barplot",
+    "boxplot",
+    "heatmap",
+    "jointplot",
+    "pairplot",
+    "facetgrid",
+    "relplot",
+    "displot",
+    "catplot"
+  ],
+  "search_tokens": [
+    "seaborn-cheatsheet",
+    "seaborn-plots",
+    "seaborn-examples",
+    "sns-theme",
+    "sns-palette"
+  ],
+  "domain": "data-science",
+  "category": "visualization",
+  "difficulty": "intermediate",
+  "engineering_area": "visualization",
+  "estimated_reading_time": 5,
+  "prerequisites": [
+    "matplotlib",
+    "pandas"
+  ],
+  "recommended_next": [],
+  "related_content": [
+    {
+      "id": "seaborn",
+      "type": "package",
+      "relationship_type": "references"
+    }
+  ],
+  "last_verified": "2026-07-06",
+  "compatible_versions": [
+    "0.13.0",
+    "0.13.1",
+    "0.13.2"
+  ],
+  "breaking_changes": [],
+  "entries": [
+    {
+      "problem": "Install Seaborn for production plotting.",
+      "trigger": "You need a stable, documented Seaborn install.",
+      "snippet": "# pip install seaborn\n# conda install seaborn -c conda-forge\nimport seaborn as sns\nimport matplotlib.pyplot as plt\nimport pandas as pd",
+      "minimal_notes": "Use the pinned stable release line for consistency. Seaborn 0.13.2 is the documented stable version used here.",
+      "common_bug": "Mixing seaborn versions across notebooks and deployment.",
+      "docs_url": "https://seaborn.pydata.org/installing.html"
+    },
+    {
+      "problem": "Start a plotting session with a consistent theme.",
+      "trigger": "You want all plots to share the same visual style.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nsns.set_theme(style=\"whitegrid\", context=\"notebook\", palette=\"deep\")",
+      "minimal_notes": "Set the theme once near the top of the script or notebook. This helps keep dashboards and reports visually consistent.",
+      "common_bug": "Forgetting that theme settings affect global Matplotlib state.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.set_theme"
+    },
+    {
+      "problem": "Load example data quickly.",
+      "trigger": "You need a built-in dataset for a prototype or demo.",
+      "snippet": "import seaborn as sns\n\ndf = sns.load_dataset(\"penguins\")\nprint(df.head())",
+      "minimal_notes": "Built-in datasets are useful for examples, but they are not a production data source.",
+      "common_bug": "Using example datasets in a runtime path that must work offline.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.load_dataset"
+    },
+    {
+      "problem": "Switch between common themes.",
+      "trigger": "You want a clean default style or presentation style.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nsns.set_theme(style=\"whitegrid\")\nsns.set_theme(style=\"darkgrid\")\nsns.set_theme(style=\"white\")\nsns.set_theme(style=\"dark\")\nsns.set_theme(style=\"ticks\")",
+      "minimal_notes": "Choose the theme that matches the amount of grid guidance you want. `whitegrid` is often the default for analytical charts.",
+      "common_bug": "Using `darkgrid` when the plot is already dense and busy.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.set_style"
+    },
+    {
+      "problem": "Adjust scaling for talk, paper, or notebook output.",
+      "trigger": "Figure elements need to be larger or smaller without manual resizing everywhere.",
+      "snippet": "import seaborn as sns\n\nsns.set_context(\"paper\")\nsns.set_context(\"notebook\")\nsns.set_context(\"talk\")\nsns.set_context(\"poster\")",
+      "minimal_notes": "Use context to scale text and line widths as a group. It is faster than tuning each element individually.",
+      "common_bug": "Enlarging the figure but forgetting to scale label sizes.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.set_context"
+    },
+    {
+      "problem": "Apply a palette for categorical plots.",
+      "trigger": "You want readable, consistent series colors.",
+      "snippet": "import seaborn as sns\n\nsns.set_palette(\"deep\")\nsns.set_palette(\"muted\")\nsns.set_palette(\"pastel\")\nsns.set_palette(\"bright\")\nsns.set_palette(\"dark\")\nsns.set_palette(\"colorblind\")",
+      "minimal_notes": "Use `colorblind` when accessibility matters. Use categorical palettes for discrete groups.",
+      "common_bug": "Using a continuous palette for discrete categories.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.set_palette"
+    },
+    {
+      "problem": "Build a palette for continuous data.",
+      "trigger": "You need a gradient for counts, densities, or heatmaps.",
+      "snippet": "import seaborn as sns\n\npalettes = [\"viridis\", \"magma\", \"rocket\", \"flare\", \"crest\"]\ncmap = sns.color_palette(\"viridis\", as_cmap=True)",
+      "minimal_notes": "Sequential colormaps are usually better for ordered numeric values. Use a perceptually uniform palette when possible.",
+      "common_bug": "Picking a rainbow-like gradient for ordered data.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.color_palette"
+    },
+    {
+      "problem": "Create a basic scatter plot from a DataFrame.",
+      "trigger": "You want to inspect a numeric relationship quickly.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"penguins\").dropna()\nsns.scatterplot(data=df, x=\"bill_length_mm\", y=\"bill_depth_mm\")\nplt.show()",
+      "minimal_notes": "Use this when raw point positions matter. For dense data, add transparency or sample first.",
+      "common_bug": "Forgetting to drop NaNs in the columns used for axes.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.scatterplot"
+    },
+    {
+      "problem": "Encode groups with color.",
+      "trigger": "You want subgroup comparison in one figure.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"penguins\").dropna()\nsns.scatterplot(data=df, x=\"bill_length_mm\", y=\"bill_depth_mm\", hue=\"species\")\nplt.show()",
+      "minimal_notes": "`hue` is the fastest way to compare classes on the same axes. Keep the legend readable.",
+      "common_bug": "Mapping the wrong column to `hue` and losing the intended grouping.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.scatterplot"
+    },
+    {
+      "problem": "Encode magnitude and subgroup together.",
+      "trigger": "You need one plot with color, size, and marker variation.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"penguins\").dropna()\nsns.scatterplot(\n    data=df,\n    x=\"bill_length_mm\",\n    y=\"bill_depth_mm\",\n    hue=\"species\",\n    size=\"body_mass_g\",\n    style=\"island\",\n    alpha=0.8\n)\nplt.show()",
+      "minimal_notes": "Use `size` and `style` only when they add real signal. Too many semantics can make the plot hard to read.",
+      "common_bug": "Overloading one plot with too many visual encodings.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.scatterplot"
+    },
+    {
+      "problem": "Plot connected trends across ordered values.",
+      "trigger": "You need a line chart for time or ordered x values.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"flights\")\nsns.lineplot(data=df, x=\"year\", y=\"passengers\")\nplt.show()",
+      "minimal_notes": "Seaborn aggregates repeated x values by default in many line workflows. Use it for trend detection, not raw point auditing.",
+      "common_bug": "Expecting a line plot to show every individual observation exactly.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.lineplot"
+    },
+    {
+      "problem": "Compare multiple time series on one axis.",
+      "trigger": "You need one line per group.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"fmri\").dropna()\nsns.lineplot(data=df, x=\"timepoint\", y=\"signal\", hue=\"region\", style=\"event\")\nplt.show()",
+      "minimal_notes": "Combine `hue` and `style` for readable multi-series trends. Keep the number of groups modest.",
+      "common_bug": "Too many lines with similar colors and no clear ordering.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.lineplot"
+    },
+    {
+      "problem": "Create a histogram.",
+      "trigger": "You need to inspect the shape of one numeric column.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"penguins\").dropna()\nsns.histplot(data=df, x=\"bill_length_mm\", bins=20)\nplt.show()",
+      "minimal_notes": "Histogram bin choice matters. Tune `bins` or `binwidth` when the default hides structure.",
+      "common_bug": "Using too few bins and flattening the distribution.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.histplot"
+    },
+    {
+      "problem": "Add a KDE curve to a histogram.",
+      "trigger": "You want a smooth density view with the counts.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"penguins\").dropna()\nsns.histplot(data=df, x=\"bill_length_mm\", bins=20, kde=True)\nplt.show()",
+      "minimal_notes": "This is useful for quick shape checks. Make sure the density overlay does not hide extremes.",
+      "common_bug": "Reading the KDE as if it were raw counts.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.histplot"
+    },
+    {
+      "problem": "Compare distributions with KDE.",
+      "trigger": "You need smooth density comparison across groups.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"penguins\").dropna()\nsns.kdeplot(data=df, x=\"bill_length_mm\", hue=\"species\", fill=True, common_norm=False, alpha=0.3)\nplt.show()",
+      "minimal_notes": "`common_norm=False` keeps group shapes easier to compare. Filled KDEs work best with a small number of groups.",
+      "common_bug": "Forgetting that normalization can hide group scale differences.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.kdeplot"
+    },
+    {
+      "problem": "Inspect cumulative distribution quickly.",
+      "trigger": "You want percentile-style comparison instead of bins.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"penguins\").dropna()\nsns.ecdfplot(data=df, x=\"bill_length_mm\", hue=\"species\")\nplt.show()",
+      "minimal_notes": "ECDFs are good when exact ordering matters. They avoid bin-selection issues entirely.",
+      "common_bug": "Using ECDF when the audience expects counts per bin.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.ecdfplot"
+    },
+    {
+      "problem": "Add a rug for small-sample inspection.",
+      "trigger": "You want to show the exact observation locations.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"penguins\").dropna()\nsns.histplot(data=df, x=\"bill_length_mm\", bins=20)\nsns.rugplot(data=df, x=\"bill_length_mm\", color=\"black\", alpha=0.2)\nplt.show()",
+      "minimal_notes": "Rug marks help when sample size is small or exact values matter. Avoid them on very dense data.",
+      "common_bug": "Cluttering the axis with rugs on large datasets.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.rugplot"
+    },
+    {
+      "problem": "Compare category averages.",
+      "trigger": "You need a simple aggregated comparison by category.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"tips\").dropna()\nsns.barplot(data=df, x=\"day\", y=\"total_bill\", hue=\"sex\", errorbar=\"ci\")\nplt.show()",
+      "minimal_notes": "`barplot` is for summaries, not raw values. Choose the estimator and error bars intentionally.",
+      "common_bug": "Treating the bar height as a single raw observation.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.barplot"
+    },
+    {
+      "problem": "Count observations per category.",
+      "trigger": "You want category frequency instead of a numeric summary.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"tips\").dropna()\nsns.countplot(data=df, x=\"day\", hue=\"sex\")\nplt.show()",
+      "minimal_notes": "`countplot` is the fastest way to inspect class balance. It is especially useful before modeling.",
+      "common_bug": "Using a count plot when the x axis is already continuous.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.countplot"
+    },
+    {
+      "problem": "Show category distributions with a box plot.",
+      "trigger": "You need median, quartiles, and outlier visibility.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"tips\").dropna()\nsns.boxplot(data=df, x=\"day\", y=\"total_bill\", hue=\"sex\")\nplt.show()",
+      "minimal_notes": "Box plots are compact and good for side-by-side comparison. They work well when you need robust summary structure.",
+      "common_bug": "Expecting a box plot to reveal multimodality clearly.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.boxplot"
+    },
+    {
+      "problem": "Show category distributions with a violin plot.",
+      "trigger": "You want shape information in addition to quartiles.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"tips\").dropna()\nsns.violinplot(data=df, x=\"day\", y=\"total_bill\", hue=\"sex\", cut=0)\nplt.show()",
+      "minimal_notes": "Use `cut=0` to avoid extending beyond the observed range. Violin plots are useful when distribution shape matters.",
+      "common_bug": "Interpreting smoothed tails as observed data.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.violinplot"
+    },
+    {
+      "problem": "Show distribution details for larger datasets.",
+      "trigger": "You need finer quantiles than a box plot provides.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"tips\").dropna()\nsns.boxenplot(data=df, x=\"day\", y=\"total_bill\", hue=\"sex\")\nplt.show()",
+      "minimal_notes": "Boxen plots are helpful when sample size is large. They expose more distribution detail than a standard box plot.",
+      "common_bug": "Using boxen plots on tiny samples where the extra detail is unstable.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.boxenplot"
+    },
+    {
+      "problem": "Compare raw observations within categories.",
+      "trigger": "You need to inspect spread and overlap directly.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"tips\").dropna()\nsns.stripplot(data=df, x=\"day\", y=\"total_bill\", hue=\"sex\", dodge=True, alpha=0.5)\nplt.show()",
+      "minimal_notes": "`stripplot` is good for seeing actual points. Jitter or dodge helps reduce overlap.",
+      "common_bug": "Overplotting hides repeated values and dense regions.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.stripplot"
+    },
+    {
+      "problem": "Show non-overlapping raw observations.",
+      "trigger": "You want point visibility without overlap.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"tips\").dropna()\nsns.swarmplot(data=df, x=\"day\", y=\"total_bill\", hue=\"sex\", dodge=True, size=3)\nplt.show()",
+      "minimal_notes": "Use swarm plots when category sizes are small to moderate. They become slow on large datasets.",
+      "common_bug": "Using swarm plots on large datasets and getting heavy overlap or slow rendering.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.swarmplot"
+    },
+    {
+      "problem": "Show group means and uncertainty.",
+      "trigger": "You want a point estimate by category.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"tips\").dropna()\nsns.pointplot(data=df, x=\"day\", y=\"total_bill\", hue=\"sex\", errorbar=\"ci\")\nplt.show()",
+      "minimal_notes": "Point plots are compact for trend-like category comparisons. They are useful in dashboards with limited space.",
+      "common_bug": "Reading line connections as a real continuous trend when categories are unordered.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.pointplot"
+    },
+    {
+      "problem": "Create a correlation heatmap.",
+      "trigger": "You need a fast view of feature relationships.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"penguins\").dropna()\nnum = df.select_dtypes(\"number\")\ncorr = num.corr(numeric_only=True)\nsns.heatmap(corr, cmap=\"vlag\", center=0)\nplt.show()",
+      "minimal_notes": "Correlation heatmaps are a standard EDA starting point. Use a diverging palette centered at zero.",
+      "common_bug": "Forgetting to filter to numeric columns before calling `corr()`.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.heatmap"
+    },
+    {
+      "problem": "Add annotations to a heatmap.",
+      "trigger": "You want exact values visible in a small matrix.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"penguins\").dropna()\ncorr = df.select_dtypes(\"number\").corr(numeric_only=True)\nsns.heatmap(corr, cmap=\"vlag\", center=0, annot=True, fmt=\".2f\")\nplt.show()",
+      "minimal_notes": "Use annotations only for small matrices. Dense labels quickly become unreadable.",
+      "common_bug": "Annotating a large matrix and creating label clutter.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.heatmap"
+    },
+    {
+      "problem": "Cluster rows and columns by similarity.",
+      "trigger": "You want structure in a matrix, not just raw values.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"penguins\").dropna()\ndata = df.select_dtypes(\"number\").corr(numeric_only=True)\nsns.clustermap(data, cmap=\"vlag\", center=0, figsize=(6, 6))\nplt.show()",
+      "minimal_notes": "`clustermap` is useful for discovering groups of related variables. It creates its own figure-level layout.",
+      "common_bug": "Passing non-numeric data into clustering workflows.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.clustermap"
+    },
+    {
+      "problem": "Fit a simple regression line.",
+      "trigger": "You need a quick linear relationship view.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"tips\").dropna()\nsns.regplot(data=df, x=\"total_bill\", y=\"tip\")\nplt.show()",
+      "minimal_notes": "`regplot` is the quickest regression check for two numeric variables. It is useful before deeper modeling.",
+      "common_bug": "Using it on highly nonlinear data and overtrusting the line.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.regplot"
+    },
+    {
+      "problem": "Inspect regression residuals.",
+      "trigger": "You want to check model fit errors visually.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"tips\").dropna()\nsns.residplot(data=df, x=\"total_bill\", y=\"tip\")\nplt.show()",
+      "minimal_notes": "Residual plots help identify nonlinearity and heteroscedasticity. Use them as a model diagnostic, not a final chart.",
+      "common_bug": "Interpreting a residual plot without checking model assumptions.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.residplot"
+    },
+    {
+      "problem": "Combine scatter, regression, and marginals.",
+      "trigger": "You need bivariate structure with univariate context.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"tips\").dropna()\nsns.jointplot(data=df, x=\"total_bill\", y=\"tip\", kind=\"reg\")\nplt.show()",
+      "minimal_notes": "`jointplot` is ideal for compact exploratory analysis. It is the fastest way to inspect the relationship plus marginals together.",
+      "common_bug": "Using a joint plot for very large data without sampling or aggregation.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.jointplot"
+    },
+    {
+      "problem": "Inspect pairwise feature relationships.",
+      "trigger": "You need a matrix of pair plots for a numeric dataset.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"penguins\").dropna()\nsns.pairplot(df, hue=\"species\", corner=True)\nplt.show()",
+      "minimal_notes": "`pairplot` is a fast EDA tool for numeric columns. `corner=True` reduces redundant upper-triangle plots.",
+      "common_bug": "Running pair plots on too many columns and creating an unreadable grid.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.pairplot"
+    },
+    {
+      "problem": "Build a customized pair grid.",
+      "trigger": "You need more control than `pairplot` gives.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"penguins\").dropna()\ng = sns.PairGrid(df, vars=[\"bill_length_mm\", \"bill_depth_mm\", \"flipper_length_mm\"], hue=\"species\")\ng.map_diag(sns.histplot)\ng.map_offdiag(sns.scatterplot, alpha=0.7)\ng.add_legend()\nplt.show()",
+      "minimal_notes": "Use `PairGrid` when each panel needs different plotting logic. It is more flexible than `pairplot`.",
+      "common_bug": "Forgetting to call `add_legend()` after mapping hue.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.PairGrid"
+    },
+    {
+      "problem": "Build a bivariate plot with marginals.",
+      "trigger": "You want one focused pair relationship with side distributions.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"tips\").dropna()\ng = sns.JointGrid(data=df, x=\"total_bill\", y=\"tip\")\ng.plot_joint(sns.scatterplot)\ng.plot_marginals(sns.histplot, kde=True)\nplt.show()",
+      "minimal_notes": "`JointGrid` gives direct control over the center and marginal axes. Use it when `jointplot` is too rigid.",
+      "common_bug": "Misplacing plot types on the wrong axes in a custom grid.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.JointGrid"
+    },
+    {
+      "problem": "Split a scatter plot into facets.",
+      "trigger": "You want the same chart repeated by category.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"penguins\").dropna()\nsns.relplot(data=df, x=\"bill_length_mm\", y=\"bill_depth_mm\", hue=\"species\", col=\"sex\")\nplt.show()",
+      "minimal_notes": "`relplot` is the figure-level wrapper for relational plots. Use it when faceting is part of the task.",
+      "common_bug": "Using axes-level scatter when you really need automatic faceting.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.relplot"
+    },
+    {
+      "problem": "Split distributions by category.",
+      "trigger": "You need faceted histograms or KDE views.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"penguins\").dropna()\nsns.displot(data=df, x=\"bill_length_mm\", hue=\"species\", col=\"sex\", kind=\"hist\", bins=20)\nplt.show()",
+      "minimal_notes": "`displot` is the figure-level entry point for distribution workflows. It is the easiest way to facet distributions.",
+      "common_bug": "Expecting `displot` to behave like a single Axes plot.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.displot"
+    },
+    {
+      "problem": "Compare categorical summaries across facets.",
+      "trigger": "You need a faceted categorical comparison.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"tips\").dropna()\nsns.catplot(data=df, x=\"day\", y=\"total_bill\", hue=\"sex\", col=\"smoker\", kind=\"box\")\nplt.show()",
+      "minimal_notes": "`catplot` is the figure-level wrapper for categorical plots. Use it for repeated panels across subsets.",
+      "common_bug": "Building many manual subplots when `catplot` would be simpler.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.catplot"
+    },
+    {
+      "problem": "Add regression to faceted data.",
+      "trigger": "You want one regression panel per subset.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"tips\").dropna()\nsns.lmplot(data=df, x=\"total_bill\", y=\"tip\", hue=\"sex\", col=\"smoker\")\nplt.show()",
+      "minimal_notes": "`lmplot` is the figure-level regression wrapper. It is convenient when subgroup splits matter.",
+      "common_bug": "Using `regplot` when you need multi-panel regression by group.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.lmplot"
+    },
+    {
+      "problem": "Build a faceted custom grid.",
+      "trigger": "You need row and column conditioning with custom mapping.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"penguins\").dropna()\ng = sns.FacetGrid(df, row=\"sex\", col=\"species\", margin_titles=True)\ng.map_dataframe(sns.scatterplot, x=\"bill_length_mm\", y=\"bill_depth_mm\")\ng.add_legend()\nplt.show()",
+      "minimal_notes": "`FacetGrid` is the base layout tool for conditional plotting. Use it when you need full control over mapping.",
+      "common_bug": "Forgetting that `map_dataframe` expects column names from the provided DataFrame.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.FacetGrid"
+    },
+    {
+      "problem": "Remove extra chart spines.",
+      "trigger": "You want a cleaner publication-style plot.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"tips\").dropna()\nax = sns.scatterplot(data=df, x=\"total_bill\", y=\"tip\")\nsns.despine()\nplt.show()",
+      "minimal_notes": "`despine()` is a quick cleanup step after plotting. It works well for many analytical charts.",
+      "common_bug": "Calling `despine()` before the axes exist.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.despine"
+    },
+    {
+      "problem": "Move a legend to a better position.",
+      "trigger": "The legend overlaps data or gets clipped.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"penguins\").dropna()\nax = sns.scatterplot(data=df, x=\"bill_length_mm\", y=\"bill_depth_mm\", hue=\"species\")\nsns.move_legend(ax, \"upper left\", bbox_to_anchor=(1, 1))\nplt.show()",
+      "minimal_notes": "Use `move_legend()` when the default legend placement is poor. This is common in faceted and dense plots.",
+      "common_bug": "Leaving the legend inside the plotting area and obscuring data.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.move_legend"
+    },
+    {
+      "problem": "Set titles, labels, ticks, and limits.",
+      "trigger": "You need final presentation polish.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"tips\").dropna()\nax = sns.scatterplot(data=df, x=\"total_bill\", y=\"tip\")\nax.set_title(\"Tip vs Total Bill\")\nax.set_xlabel(\"Total Bill\")\nax.set_ylabel(\"Tip\")\nax.set_xlim(0, 60)\nax.tick_params(axis=\"x\", rotation=45)\nplt.show()",
+      "minimal_notes": "Use Matplotlib methods on the returned Axes for final polish. This is the standard integration pattern with Seaborn.",
+      "common_bug": "Forgetting to rotate dense tick labels.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html"
+    },
+    {
+      "problem": "Add a simple annotation.",
+      "trigger": "You need to label an important point or region.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"tips\").dropna()\nax = sns.scatterplot(data=df, x=\"total_bill\", y=\"tip\")\nax.annotate(\"high bill\", xy=(50, 10), xytext=(35, 12), arrowprops=dict(arrowstyle=\"->\"))\nplt.show()",
+      "minimal_notes": "Use annotations sparingly and only for important callouts. They are best for emphasis, not decoration.",
+      "common_bug": "Placing annotations so they overlap with the data.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.annotate.html"
+    },
+    {
+      "problem": "Plot directly from Pandas.",
+      "trigger": "Your data already lives in a DataFrame.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\nimport pandas as pd\n\ndf = pd.DataFrame({\"x\": [1, 2, 3, 4], \"y\": [1.1, 1.9, 3.2, 3.8], \"group\": [\"A\", \"A\", \"B\", \"B\"]})\nsns.scatterplot(data=df, x=\"x\", y=\"y\", hue=\"group\")\nplt.show()",
+      "minimal_notes": "Seaborn is optimized for tidy tabular data. This is the most common production workflow.",
+      "common_bug": "Passing wide data when the function expects long-form columns.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.scatterplot"
+    },
+    {
+      "problem": "Plot from NumPy arrays.",
+      "trigger": "You have numeric arrays rather than a DataFrame.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\nimport numpy as np\n\nx = np.arange(1, 11)\ny = np.array([1.2, 1.8, 2.4, 3.1, 3.6, 4.0, 4.8, 5.3, 5.9, 6.2])\nsns.lineplot(x=x, y=y)\nplt.show()",
+      "minimal_notes": "NumPy arrays are fine for quick numeric plots. Add a DataFrame when you need semantic mappings.",
+      "common_bug": "Forgetting that some workflows are easier with named columns.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.lineplot"
+    },
+    {
+      "problem": "Use an existing Matplotlib Axes.",
+      "trigger": "You want Seaborn inside a multi-panel Matplotlib figure.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"tips\").dropna()\nfig, ax = plt.subplots(figsize=(6, 4))\nsns.scatterplot(data=df, x=\"total_bill\", y=\"tip\", hue=\"sex\", ax=ax)\nax.set_title(\"Embedded Seaborn Plot\")\nplt.show()",
+      "minimal_notes": "Passing `ax=` is the standard way to embed Seaborn in custom Matplotlib layouts. It keeps figure orchestration under your control.",
+      "common_bug": "Assuming Seaborn will create the axes you want when you already own the figure layout.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.scatterplot"
+    },
+    {
+      "problem": "Save a publication-quality figure.",
+      "trigger": "You need a PNG or PDF artifact.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"tips\").dropna()\nax = sns.scatterplot(data=df, x=\"total_bill\", y=\"tip\")\nplt.tight_layout()\nplt.savefig(\"figure.png\", dpi=300, bbox_inches=\"tight\")\nplt.savefig(\"figure.pdf\", bbox_inches=\"tight\")\nplt.show()",
+      "minimal_notes": "Use PNG for raster output and PDF/SVG for vector graphics. `bbox_inches=\"tight\"` helps prevent clipping.",
+      "common_bug": "Exporting before tightening layout or moving the legend.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.savefig.html"
+    },
+    {
+      "problem": "Export with transparency.",
+      "trigger": "You need the plot on a colored background or slide deck.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"tips\").dropna()\nsns.scatterplot(data=df, x=\"total_bill\", y=\"tip\")\nplt.savefig(\"transparent.png\", dpi=300, transparent=True, bbox_inches=\"tight\")\nplt.show()",
+      "minimal_notes": "Transparency is useful for slides and compositing. Verify contrast against the target background.",
+      "common_bug": "Using transparency with low-contrast labels that become unreadable.",
+      "docs_url": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.savefig.html"
+    },
+    {
+      "problem": "Plot a very large dataset efficiently.",
+      "trigger": "You have millions of rows or heavy overplotting.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"diamonds\").dropna()\nsample = df.sample(n=min(5000, len(df)), random_state=42)\nsns.scatterplot(data=sample, x=\"carat\", y=\"price\", alpha=0.3, linewidth=0)\nplt.show()",
+      "minimal_notes": "Sample first when the raw point cloud is too dense. For heavy scatter plots, reduce point size and use transparency.",
+      "common_bug": "Plotting every row and turning the chart into a dark blob.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.scatterplot"
+    },
+    {
+      "problem": "Reduce rendering cost for dense layers.",
+      "trigger": "You need many points but still want a usable plot.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = sns.load_dataset(\"diamonds\").dropna()\nsample = df.sample(n=8000, random_state=42)\nax = sns.scatterplot(data=sample, x=\"carat\", y=\"price\", alpha=0.25, s=10, linewidth=0)\nplt.savefig(\"dense_plot.pdf\", bbox_inches=\"tight\")\nplt.show()",
+      "minimal_notes": "Prefer aggregation, sampling, or summary views over raw overplotting. Use vector output carefully for dense point clouds.",
+      "common_bug": "Repeatedly redrawing the same figure in loops without reuse or caching.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.scatterplot"
+    },
+    {
+      "problem": "Read or temporarily apply style settings.",
+      "trigger": "You need to inspect or scope plot style changes without permanently changing the global theme state.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nwith sns.axes_style(\"whitegrid\"):\n    ax = sns.scatterplot(data=sns.load_dataset(\"tips\").dropna(), x=\"total_bill\", y=\"tip\")\n    plt.show()",
+      "minimal_notes": "axes_style() is useful when you want a local style scope. It avoids permanently changing the global theme state.",
+      "common_bug": "Forgetting that theme changes can leak across plots in the same session.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.axes_style"
+    },
+    {
+      "problem": "Read or temporarily apply context scaling.",
+      "trigger": "You need a scoped change to font and line sizing.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nwith sns.plotting_context(\"talk\"):\n    ax = sns.lineplot(data=sns.load_dataset(\"flights\"), x=\"year\", y=\"passengers\")\n    plt.show()",
+      "minimal_notes": "Use context scaling for figures intended for slides or print. This is cleaner than manual global resizing.",
+      "common_bug": "Applying large fonts without resizing the figure.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.plotting_context"
+    },
+    {
+      "problem": "Reset theme state after experimentation.",
+      "trigger": "You need to return to default visual settings.",
+      "snippet": "import seaborn as sns\n\nsns.reset_defaults()\nsns.reset_orig()",
+      "minimal_notes": "reset_defaults() returns seaborn defaults; reset_orig() restores original Matplotlib settings. Use one intentionally.",
+      "common_bug": "Forgetting to reset after exploratory theme changes.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.reset_defaults"
+    },
+    {
+      "problem": "Remap Matplotlib color codes.",
+      "trigger": "You want Seaborn's shorthand colors in Matplotlib plots.",
+      "snippet": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nsns.set_theme()\nsns.set_color_codes(\"deep\")\nplt.plot([1, 2, 3], [1, 4, 9], color=\"b\")\nplt.show()",
+      "minimal_notes": "This helps align Matplotlib shorthand colors with a Seaborn palette. It is useful when mixing both libraries.",
+      "common_bug": "Assuming Matplotlib shorthand colors always match your active palette.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.set_color_codes"
+    },
+    {
+      "problem": "Build a custom palette from named colors.",
+      "trigger": "You need exact control over a categorical palette.",
+      "snippet": "import seaborn as sns\n\npalette = sns.color_palette([\"#4C72B0\", \"#55A868\", \"#C44E52\", \"#8172B2\"])\nprint(palette)",
+      "minimal_notes": "Use explicit hex values when brand colors matter. This is common in production dashboards.",
+      "common_bug": "Using too many colors with weak contrast.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.color_palette"
+    },
+    {
+      "problem": "Make a diverging palette for centered data.",
+      "trigger": "You need a palette around a midpoint like zero.",
+      "snippet": "import seaborn as sns\n\npalette = sns.diverging_palette(220, 20, as_cmap=True)\nprint(palette)",
+      "minimal_notes": "Diverging palettes work well for deltas and centered matrices. They are a strong fit for heatmaps and residual views.",
+      "common_bug": "Using a sequential palette for data that has positive and negative values.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.diverging_palette"
+    },
+    {
+      "problem": "Generate a sequential palette.",
+      "trigger": "You need ordered shading for numeric intensity.",
+      "snippet": "import seaborn as sns\n\npalette = sns.light_palette(\"seagreen\", as_cmap=True)\nprint(palette)",
+      "minimal_notes": "Sequential palettes are better when magnitude changes in one direction. Use them for counts, density, and rank-like values.",
+      "common_bug": "Using dark text over a too-dark sequential palette.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.light_palette"
+    },
+    {
+      "problem": "Adjust saturation of a color.",
+      "trigger": "You want a toned-down or stronger version of one color.",
+      "snippet": "import seaborn as sns\n\nprint(sns.desaturate(\"steelblue\", 0.5))\nprint(sns.saturate(\"steelblue\"))",
+      "minimal_notes": "These helpers are useful for making emphasis colors and muted companions. They keep palette harmony better than arbitrary color picks.",
+      "common_bug": "Tweaking saturation without checking contrast.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.desaturate"
+    },
+    {
+      "problem": "Fine-tune a color in HLS space.",
+      "trigger": "You need a precise lighten/darken adjustment.",
+      "snippet": "import seaborn as sns\n\nprint(sns.set_hls_values(\"teal\", l=0.7, s=0.8))",
+      "minimal_notes": "This is useful when a palette needs a controlled highlight color. It is more predictable than trial-and-error edits.",
+      "common_bug": "Changing lightness too far and losing readability.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.set_hls_values"
+    },
+    {
+      "problem": "Build a declarative scatter plot.",
+      "trigger": "You want the modern composable plotting API.",
+      "snippet": "import seaborn.objects as so\nimport seaborn as sns\n\ndf = sns.load_dataset(\"penguins\").dropna()\n(\n    so.Plot(df, x=\"bill_length_mm\", y=\"bill_depth_mm\", color=\"species\")\n    .add(so.Dot(), so.Jitter(0.2))\n)",
+      "minimal_notes": "The objects interface is good for reusable plot specifications. It is the modern declarative layer in Seaborn 0.13.2.",
+      "common_bug": "Forgetting that the objects interface is separate from axes-level functions.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.Plot"
+    },
+    {
+      "problem": "Build a histogram with the objects API.",
+      "trigger": "You need explicit control over a binned distribution.",
+      "snippet": "import seaborn.objects as so\nimport seaborn as sns\n\ndf = sns.load_dataset(\"penguins\").dropna()\n(\n    so.Plot(df, x=\"bill_length_mm\")\n    .add(so.Bar(), so.Hist())\n)",
+      "minimal_notes": "Hist is the declarative histogram stat in the objects API. It is useful when combining bins with other marks.",
+      "common_bug": "Mixing up so.Bar() and so.Hist() responsibilities.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.Hist"
+    },
+    {
+      "problem": "Build a smooth density estimate.",
+      "trigger": "You want a declarative KDE workflow.",
+      "snippet": "import seaborn.objects as so\nimport seaborn as sns\n\ndf = sns.load_dataset(\"penguins\").dropna()\n(\n    so.Plot(df, x=\"bill_length_mm\")\n    .add(so.Line(), so.KDE())\n)",
+      "minimal_notes": "KDE gives an explicit density transform in the objects interface. It is useful when you want the same composition model across plot types.",
+      "common_bug": "Using a density estimate where the sample size is too small for a stable curve.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.KDE"
+    },
+    {
+      "problem": "Build a declarative categorical summary.",
+      "trigger": "You want bars with an explicit estimator workflow.",
+      "snippet": "import seaborn.objects as so\nimport seaborn as sns\n\ndf = sns.load_dataset(\"tips\").dropna()\n(\n    so.Plot(df, x=\"day\", y=\"total_bill\", color=\"sex\")\n    .add(so.Bar(), so.Est(errorbar=\"ci\"))\n)",
+      "minimal_notes": "Est is the declarative estimator/error-bar stat. It is the objects API equivalent of summary-style categorical plots.",
+      "common_bug": "Forgetting that summary bars show estimates, not raw observations.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.Est"
+    },
+    {
+      "problem": "Build a declarative regression-like fit.",
+      "trigger": "You need a fitted trend in the objects API.",
+      "snippet": "import seaborn.objects as so\nimport seaborn as sns\n\ndf = sns.load_dataset(\"tips\").dropna()\n(\n    so.Plot(df, x=\"total_bill\", y=\"tip\")\n    .add(so.Dot(alpha=0.4))\n    .add(so.Line(color=\"crimson\"), so.PolyFit(order=1))\n)",
+      "minimal_notes": "PolyFit is useful for explicit polynomial fitting in the declarative pipeline. It gives a modern alternative to ad hoc trend fitting.",
+      "common_bug": "Fitting a high-order polynomial and overinterpreting the curve.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.PolyFit"
+    },
+    {
+      "problem": "Handle dense scatter with positional nudging.",
+      "trigger": "You need to reduce overlap in crowded point plots.",
+      "snippet": "import seaborn.objects as so\nimport seaborn as sns\n\ndf = sns.load_dataset(\"tips\").dropna()\n(\n    so.Plot(df, x=\"day\", y=\"total_bill\", color=\"sex\")\n    .add(so.Dot(), so.Dodge())\n)",
+      "minimal_notes": "Dodge helps separate overlapping groups along the categorical axis. It is useful for comparative plots with repeated categories.",
+      "common_bug": "Using dodge when the categories already have no overlap.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.Dodge"
+    },
+    {
+      "problem": "List available built-in datasets.",
+      "trigger": "You need to know what demo data can be loaded.",
+      "snippet": "import seaborn as sns\n\nprint(sns.get_dataset_names())",
+      "minimal_notes": "This is useful for examples and validation scripts. Treat it as discovery data, not a production catalog.",
+      "common_bug": "Assuming the dataset list is offline-stable or exhaustive for your use case.",
+      "docs_url": "https://seaborn.pydata.org/api.html#seaborn.get_dataset_names"
+    }
+  ],
+  "quick_references": [
+    {
+      "title": "Plot selection guide",
+      "headers": [
+        "Goal",
+        "Recommended plot"
+      ],
+      "rows": [
+        [
+          "Relationship between two numeric variables",
+          "scatterplot"
+        ],
+        [
+          "Ordered trend or time series",
+          "lineplot"
+        ],
+        [
+          "One numeric distribution",
+          "histplot, kdeplot, ecdfplot"
+        ],
+        [
+          "Compare category summaries",
+          "barplot, pointplot"
+        ],
+        [
+          "Compare category distributions",
+          "boxplot, violinplot, boxenplot"
+        ],
+        [
+          "Category counts",
+          "countplot"
+        ],
+        [
+          "Feature correlation",
+          "heatmap"
+        ],
+        [
+          "Hierarchical matrix structure",
+          "clustermap"
+        ],
+        [
+          "Pairwise feature scan",
+          "pairplot, PairGrid"
+        ],
+        [
+          "Bivariate view with marginals",
+          "jointplot, JointGrid"
+        ],
+        [
+          "Faceted comparison",
+          "relplot, displot, catplot, lmplot, FacetGrid"
+        ]
+      ]
+    },
+    {
+      "title": "Distribution plots",
+      "headers": [
+        "Plot",
+        "Best for"
+      ],
+      "rows": [
+        [
+          "histplot",
+          "Counts and bins"
+        ],
+        [
+          "kdeplot",
+          "Smooth density shape"
+        ],
+        [
+          "ecdfplot",
+          "Percentile-style comparison"
+        ],
+        [
+          "rugplot",
+          "Exact observation locations"
+        ]
+      ]
+    },
+    {
+      "title": "Categorical plots",
+      "headers": [
+        "Plot",
+        "Best for"
+      ],
+      "rows": [
+        [
+          "barplot",
+          "Aggregated category comparison"
+        ],
+        [
+          "countplot",
+          "Category frequency"
+        ],
+        [
+          "boxplot",
+          "Median, quartiles, outliers"
+        ],
+        [
+          "violinplot",
+          "Shape plus summary"
+        ],
+        [
+          "boxenplot",
+          "Large-sample distribution detail"
+        ],
+        [
+          "stripplot",
+          "Raw points with jitter"
+        ],
+        [
+          "swarmplot",
+          "Non-overlapping raw points"
+        ],
+        [
+          "pointplot",
+          "Compact summary with uncertainty"
+        ]
+      ]
+    },
+    {
+      "title": "Relational plots",
+      "headers": [
+        "Plot",
+        "Best for"
+      ],
+      "rows": [
+        [
+          "scatterplot",
+          "Two numeric variables with optional semantics"
+        ],
+        [
+          "lineplot",
+          "Ordered or time-based trends"
+        ]
+      ]
+    },
+    {
+      "title": "Figure-level vs axes-level APIs",
+      "headers": [
+        "Figure-level",
+        "Axes-level"
+      ],
+      "rows": [
+        [
+          "relplot",
+          "scatterplot, lineplot"
+        ],
+        [
+          "displot",
+          "histplot, kdeplot, ecdfplot, rugplot"
+        ],
+        [
+          "catplot",
+          "barplot, countplot, boxplot, violinplot, boxenplot, stripplot, swarmplot, pointplot"
+        ],
+        [
+          "lmplot",
+          "regplot, residplot"
+        ]
+      ]
+    },
+    {
+      "title": "Color palettes",
+      "headers": [
+        "Palette",
+        "Best for"
+      ],
+      "rows": [
+        [
+          "deep",
+          "General categorical use"
+        ],
+        [
+          "muted",
+          "Softer categorical palettes"
+        ],
+        [
+          "pastel",
+          "Light categorical plots"
+        ],
+        [
+          "bright",
+          "High-contrast categorical plots"
+        ],
+        [
+          "dark",
+          "Darker categorical sets"
+        ],
+        [
+          "colorblind",
+          "Accessibility"
+        ],
+        [
+          "viridis",
+          "Sequential numeric data"
+        ],
+        [
+          "magma",
+          "Sequential numeric data"
+        ],
+        [
+          "rocket",
+          "Sequential numeric data"
+        ],
+        [
+          "flare",
+          "Sequential numeric data"
+        ],
+        [
+          "crest",
+          "Sequential numeric data"
+        ]
+      ]
+    },
+    {
+      "title": "Themes",
+      "headers": [
+        "Theme",
+        "Best for"
+      ],
+      "rows": [
+        [
+          "whitegrid",
+          "Analytical charts with readable structure"
+        ],
+        [
+          "darkgrid",
+          "Dense exploratory charts"
+        ],
+        [
+          "white",
+          "Clean publication look"
+        ],
+        [
+          "dark",
+          "Dark-background figures"
+        ],
+        [
+          "ticks",
+          "Minimal framing with visible ticks"
+        ]
+      ]
+    },
+    {
+      "title": "Frequently used parameters",
+      "headers": [
+        "Parameter",
+        "Use"
+      ],
+      "rows": [
+        [
+          "data",
+          "Source DataFrame or table"
+        ],
+        [
+          "x, y",
+          "Axis variables"
+        ],
+        [
+          "hue",
+          "Group encoding by color"
+        ],
+        [
+          "style",
+          "Group encoding by marker or line style"
+        ],
+        [
+          "size",
+          "Group or magnitude encoding by size"
+        ],
+        [
+          "palette",
+          "Color palette selection"
+        ],
+        [
+          "estimator",
+          "Summary function for aggregated plots"
+        ],
+        [
+          "errorbar",
+          "Uncertainty interval style"
+        ],
+        [
+          "bins",
+          "Histogram bin count or strategy"
+        ],
+        [
+          "kde",
+          "Overlay KDE on histogram"
+        ],
+        [
+          "fill",
+          "Filled area for KDE or similar plots"
+        ],
+        [
+          "alpha",
+          "Transparency"
+        ],
+        [
+          "linewidth",
+          "Line or marker edge width"
+        ],
+        [
+          "marker",
+          "Marker style"
+        ],
+        [
+          "ax",
+          "Target Matplotlib Axes"
+        ]
+      ]
+    },
+    {
+      "title": "Common API mapping",
+      "headers": [
+        "Task",
+        "API"
+      ],
+      "rows": [
+        [
+          "Basic relational plot",
+          "scatterplot, lineplot"
+        ],
+        [
+          "Faceted relational plot",
+          "relplot"
+        ],
+        [
+          "Histogram",
+          "histplot"
+        ],
+        [
+          "Density plot",
+          "kdeplot"
+        ],
+        [
+          "CDF plot",
+          "ecdfplot"
+        ],
+        [
+          "Category summary",
+          "barplot, pointplot"
+        ],
+        [
+          "Category frequency",
+          "countplot"
+        ],
+        [
+          "Category distribution",
+          "boxplot, violinplot, boxenplot"
+        ],
+        [
+          "Raw categorical points",
+          "stripplot, swarmplot"
+        ],
+        [
+          "Correlation matrix",
+          "heatmap"
+        ],
+        [
+          "Clustered matrix",
+          "clustermap"
+        ],
+        [
+          "Regression check",
+          "regplot"
+        ],
+        [
+          "Residual check",
+          "residplot"
+        ],
+        [
+          "Pairwise scan",
+          "pairplot, PairGrid"
+        ],
+        [
+          "Bivariate + marginals",
+          "jointplot, JointGrid"
+        ],
+        [
+          "Faceted categorical plot",
+          "catplot"
+        ],
+        [
+          "Faceted distribution plot",
+          "displot"
+        ],
+        [
+          "Faceted regression plot",
+          "lmplot"
+        ],
+        [
+          "Scoped style changes",
+          "axes_style, plotting_context"
+        ],
+        [
+          "Reset visual defaults",
+          "reset_defaults, reset_orig"
+        ],
+        [
+          "Global color shorthand remapping",
+          "set_color_codes"
+        ],
+        [
+          "Explicit palette building",
+          "color_palette, husl_palette, hls_palette, cubehelix_palette"
+        ],
+        [
+          "Sequential palette generation",
+          "light_palette, dark_palette"
+        ],
+        [
+          "Diverging palette generation",
+          "diverging_palette"
+        ],
+        [
+          "Palette interpolation",
+          "blend_palette"
+        ],
+        [
+          "Accessible palette selection",
+          "color_palette(\"colorblind\")"
+        ],
+        [
+          "Color adjustment",
+          "saturate, desaturate, set_hls_values"
+        ],
+        [
+          "Legend repositioning",
+          "move_legend"
+        ],
+        [
+          "Example dataset discovery",
+          "get_dataset_names"
+        ],
+        [
+          "Example dataset loading",
+          "load_dataset"
+        ]
+      ]
+    },
+    {
+      "title": "Color utilities",
+      "headers": [
+        "Utility",
+        "Best for"
+      ],
+      "rows": [
+        [
+          "set_palette",
+          "Global categorical palette"
+        ],
+        [
+          "set_color_codes",
+          "Matplotlib color shorthand remapping"
+        ],
+        [
+          "color_palette",
+          "Palette list or colormap"
+        ],
+        [
+          "husl_palette",
+          "Evenly spaced categorical hues"
+        ],
+        [
+          "hls_palette",
+          "Evenly spaced hues in HLS space"
+        ],
+        [
+          "cubehelix_palette",
+          "Sequential palette with luminance control"
+        ],
+        [
+          "dark_palette",
+          "Sequential palette from dark to a color"
+        ],
+        [
+          "light_palette",
+          "Sequential palette from light to a color"
+        ],
+        [
+          "diverging_palette",
+          "Two-sided diverging palette"
+        ],
+        [
+          "blend_palette",
+          "Custom palette interpolation"
+        ],
+        [
+          "xkcd_palette",
+          "Named xkcd colors"
+        ],
+        [
+          "crayon_palette",
+          "Named crayon colors"
+        ],
+        [
+          "mpl_palette",
+          "Matplotlib registry palettes"
+        ]
+      ]
+    },
+    {
+      "title": "Theme utilities",
+      "headers": [
+        "Theme utility",
+        "Best for"
+      ],
+      "rows": [
+        [
+          "set_theme",
+          "One-call style setup"
+        ],
+        [
+          "set_style",
+          "Axes/grid style only"
+        ],
+        [
+          "set_context",
+          "Scale text and elements"
+        ],
+        [
+          "axes_style",
+          "Read or temporarily set style"
+        ],
+        [
+          "plotting_context",
+          "Read or temporarily set context"
+        ],
+        [
+          "reset_defaults",
+          "Restore seaborn defaults"
+        ],
+        [
+          "reset_orig",
+          "Restore original Matplotlib rcParams"
+        ],
+        [
+          "despine",
+          "Remove top/right spines"
+        ],
+        [
+          "move_legend",
+          "Reposition legend"
+        ]
+      ]
+    },
+    {
+      "title": "Utility functions",
+      "headers": [
+        "Utility",
+        "Best for"
+      ],
+      "rows": [
+        [
+          "load_dataset",
+          "Example data loading"
+        ],
+        [
+          "get_dataset_names",
+          "List available example datasets"
+        ],
+        [
+          "set_hls_values",
+          "Fine color adjustment"
+        ],
+        [
+          "saturate",
+          "Increase saturation of a color"
+        ],
+        [
+          "desaturate",
+          "Reduce saturation of a color"
+        ]
+      ]
+    },
+    {
+      "title": "Built-in datasets (sns.load_dataset)",
+      "headers": [
+        "Dataset",
+        "Info (Category / Shape)",
+        "Primary Variables",
+        "Typical Use Cases"
+      ],
+      "rows": [
+        [
+          "tips",
+          "Categorical / Tabular (244 × 7)",
+          "total_bill, tip, sex, smoker, day, time, size",
+          "Categorical plots, bar/box plots, regression, distribution checks"
+        ],
+        [
+          "penguins",
+          "Multivariate / Classification (344 × 7)",
+          "species, island, bill_length_mm, bill_depth_mm, flipper_length_mm, body_mass_g, sex",
+          "Scatter plots, pair plots, clustering, feature relationships, classification"
+        ],
+        [
+          "iris",
+          "Classification / Multivariate (150 × 5)",
+          "sepal_length, sepal_width, petal_length, petal_width, species",
+          "Pair plots, classification demos, correlation analysis, feature separation"
+        ],
+        [
+          "diamonds",
+          "Large Tabular / Regression (53940 × 10)",
+          "carat, cut, color, clarity, price, x, y, z",
+          "Large-scale scatter plots, sampling tests, regression, performance testing"
+        ],
+        [
+          "titanic",
+          "Classification / Tabular (891 × 15)",
+          "survived, pclass, sex, age, sibsp, parch, fare, embarked",
+          "Categorical comparison, missing-data exploration, survival/feature analysis"
+        ],
+        [
+          "mpg",
+          "Regression / Tabular (398 × 9)",
+          "mpg, cylinders, displacement, horsepower, weight, acceleration, model_year, origin",
+          "Regression, relationship plots, feature correlation, distribution comparison"
+        ],
+        [
+          "flights",
+          "Time Series / Tabular (144 × 3)",
+          "year, month, passengers",
+          "Time series plots, heatmaps, seasonal trend visualization"
+        ],
+        [
+          "exercise",
+          "Categorical / Longitudinal (90 × 6)",
+          "id, diet, pulse, time, kind, kind2",
+          "Repeated-measures plots, categorical comparisons, faceting, line plots"
+        ],
+        [
+          "planets",
+          "Time Series / Multivariate (1035 × 6)",
+          "method, number, orbital_period, mass, distance, year",
+          "Time trends, method comparison, distribution plots, feature exploration"
+        ],
+        [
+          "fmri",
+          "Time Series / Experimental (1064 × 5)",
+          "timepoint, signal, event, region, subject",
+          "Multi-line plots, faceting, repeated-measures analysis, regression trends"
+        ],
+        [
+          "dots",
+          "Experimental / Categorical (848 × 5)",
+          "align, choice, time, coherence, firing_rate",
+          "Line plots, categorical comparison, stimulus-response analysis"
+        ],
+        [
+          "attention",
+          "Experimental / Repeated Measures (180 × 5)",
+          "subject, attention, solutions, score, group",
+          "Repeated-measures comparison, categorical plots, faceting"
+        ],
+        [
+          "healthexp",
+          "Time Series / Comparative (273 × 4)",
+          "country, year, spending_usd, life_expectancy",
+          "Trend comparison, line plots, country comparisons, time series analysis"
+        ],
+        [
+          "car_crashes",
+          "Multivariate / Correlation (51 × 8)",
+          "total, speeding, alcohol, not_distracted, no_previous, ins_premium, ins_losses, abbrev",
+          "Correlation heatmaps, scatter plots, feature analysis"
+        ],
+        [
+          "taxis",
+          "Tabular / Regression (6433 × 14)",
+          "pickup, dropoff, fare, tip, distance, passenger_count, payment, color",
+          "Large-data scatter plots, regression, performance testing, feature analysis"
+        ],
+        [
+          "brain_networks",
+          "Multivariate / Matrix (904 × 62)",
+          "network metadata, node features, connectivity values",
+          "Heatmaps, correlation analysis, high-dimensional matrix inspection"
+        ],
+        [
+          "anagrams",
+          "Experimental / Repeated Measures (252 × 5)",
+          "subidr, attnr, num1, num2, num3",
+          "Repeated-measures plots, categorical comparison, small-sample experiments"
+        ],
+        [
+          "anscombe",
+          "Statistical / Benchmark (44 × 3)",
+          "dataset, x, y",
+          "Regression examples, statistical visualization, identical-summary comparison"
+        ],
+        [
+          "seaice",
+          "Time Series / Environmental (163 × 9)",
+          "time, extent, year, month, day, latitude, longitude",
+          "Seasonal time series, environmental analysis, line plots, faceting"
+        ],
+        [
+          "dowjones",
+          "Time Series / Financial (105 × 2)",
+          "date, value",
+          "Financial time series, line plots, trend inspection"
+        ],
+        [
+          "geyser",
+          "Statistical / Bivariate (272 × 2)",
+          "duration, waiting",
+          "Scatter plots, joint plots, clustering demos, distribution analysis"
+        ],
+        [
+          "glue",
+          "Multivariate / Benchmark (13 × 6)",
+          "model, score, task, metric, value, baseline",
+          "Benchmark comparison, bar plots, model evaluation examples"
+        ]
+      ]
+    },
+    {
+      "title": "Dataset selection guide",
+      "headers": [
+        "Goal",
+        "Recommended Dataset(s)"
+      ],
+      "rows": [
+        [
+          "Learn categorical plots",
+          "tips, titanic"
+        ],
+        [
+          "Practice pair plots",
+          "iris, penguins"
+        ],
+        [
+          "Run regression examples",
+          "mpg, tips, geyser"
+        ],
+        [
+          "Compare distributions",
+          "penguins, diamonds, iris"
+        ],
+        [
+          "Build correlation heatmaps",
+          "car_crashes, brain_networks"
+        ],
+        [
+          "Plot time series",
+          "flights, healthexp, seaice, dowjones, fmri"
+        ],
+        [
+          "Test large-data performance",
+          "diamonds, taxis"
+        ],
+        [
+          "Show repeated-measures analysis",
+          "fmri, attention, exercise, anagrams"
+        ],
+        [
+          "Practice faceting",
+          "penguins, fmri, tips, exercise"
+        ],
+        [
+          "Create benchmark/statistical examples",
+          "anscombe, glue"
+        ],
+        [
+          "Explore environmental data",
+          "seaice, healthexp"
+        ],
+        [
+          "Inspect matrix-style structure",
+          "brain_networks, car_crashes"
+        ]
+      ]
+    }
+  ],
+  "common_errors": [
+    {
+      "error": "Missing or empty plot.",
+      "cause": "NaNs or wrong column names in data, x, or y.",
+      "solution": "Validate column names and drop missing values for the plotted fields."
+    },
+    {
+      "error": "Legend obscures data.",
+      "cause": "Default legend placement collides with plotted points.",
+      "solution": "Use move_legend() or Matplotlib legend placement."
+    },
+    {
+      "error": "Overlapping labels.",
+      "cause": "Too many tick labels or dense categories.",
+      "solution": "Rotate ticks, reduce categories, or widen the figure."
+    },
+    {
+      "error": "Wrong grouping colors.",
+      "cause": "hue points to the wrong column or to a numeric field unintentionally.",
+      "solution": "Check variable type and intended semantics before plotting."
+    },
+    {
+      "error": "Unreadable dense scatter.",
+      "cause": "Too many rows or too much overplotting.",
+      "solution": "Sample data, reduce marker size, or use alpha and aggregation."
+    },
+    {
+      "error": "Clipped annotations or legends.",
+      "cause": "Layout was not tightened before export.",
+      "solution": "Use tight_layout() and bbox_inches=\"tight\"."
+    },
+    {
+      "error": "Plot state changes leak into later figures.",
+      "cause": "Theme settings were applied globally in a shared session.",
+      "solution": "Use context managers or reset seaborn state before the next plot."
+    },
+    {
+      "error": "Figures look unreadable in dashboards.",
+      "cause": "Default size and context do not match the output medium.",
+      "solution": "Set context, figsize, and export DPI together."
+    },
+    {
+      "error": "Density or regression looks unstable.",
+      "cause": "Too few points or poor bin/fitting settings.",
+      "solution": "Sample, simplify, or choose a summary view aligned to the data size."
+    }
+  ],
+  "performance_checklist": [
+    {
+      "area": "",
+      "recommendations": "Plot millions of rows with sampling or aggregation first."
+    },
+    {
+      "area": "",
+      "recommendations": "Prefer summary plots over raw point clouds when the dataset is dense."
+    },
+    {
+      "area": "",
+      "recommendations": "Use alpha, small markers, and linewidth=0 for scatter-heavy charts."
+    },
+    {
+      "area": "",
+      "recommendations": "Reuse figures and axes instead of redrawing in loops."
+    },
+    {
+      "area": "",
+      "recommendations": "Avoid large pairwise grids unless they answer a real question."
+    },
+    {
+      "area": "",
+      "recommendations": "Use rasterization or vector export intentionally based on output density."
+    },
+    {
+      "area": "",
+      "recommendations": "Reduce repeated rendering and unnecessary faceting."
+    },
+    {
+      "area": "",
+      "recommendations": "Keep memory use low by selecting only the columns needed for the plot."
+    }
+  ],
+  "production_checklist": [
+    "Labels are readable and specific.",
+    "Palette is accessible and colorblind-safe where needed.",
+    "Figure size matches the output medium.",
+    "Legend placement does not clip or cover data.",
+    "Title and axis labels are present.",
+    "Export DPI is appropriate for the target medium.",
+    "Theme is consistent across charts.",
+    "Results are reproducible with fixed sampling or ordering where needed."
+  ],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready"
+}

@@ -1,0 +1,2275 @@
+{
+  "id": "matplotlib",
+  "title": "Matplotlib",
+  "slug": "matplotlib",
+  "description": "Matplotlib is the foundational Python plotting library for producing static, animated, and interactive figures, using a low-level figure/axes/artist hierarchy.",
+  "name": "Matplotlib",
+  "version": "3.10.3",
+  "install": "pip install matplotlib",
+  "import_as": "import matplotlib.pyplot as plt",
+  "language": "python",
+  "summary": "Matplotlib is the foundational Python plotting library for producing static, animated, and interactive figures. Its design is centered on a low-level figure/axes/artist hierarchy, which gives engineers fine-grained control over every visual element. It is best understood as a low-level, highly configurable rendering system rather than a declarative charting layer, commonly used when publication-quality output and exact canvas control are required.",
+  "created_at": "2026-07-05",
+  "updated_at": "2026-07-05",
+  "last_verified": "2026-07-05",
+  "review_frequency": "quarterly",
+  "verified_against": "3.10.3",
+  "compatible_versions": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "domain": "data_processing",
+  "category": "data",
+  "difficulty": "beginner",
+  "engineering_area": "data_engineering",
+  "estimated_reading_time": 45,
+  "prerequisites": [
+    "numpy"
+  ],
+  "recommended_next": [
+    "pandas",
+    "scikit-learn"
+  ],
+  "related_content": [],
+  "tags": [
+    "visualization",
+    "plotting",
+    "data-science"
+  ],
+  "aliases": [
+    "pyplot"
+  ],
+  "keywords": [
+    "matplotlib",
+    "pyplot",
+    "figure",
+    "axes",
+    "plotting"
+  ],
+  "search_tokens": [
+    "matplotlib",
+    "pyplot",
+    "figure",
+    "axes",
+    "plot",
+    "subplots",
+    "constrained_layout"
+  ],
+  "sources": [
+    "https://matplotlib.org/stable/index.html",
+    "https://github.com/matplotlib/matplotlib"
+  ],
+  "github_repo": "https://github.com/matplotlib/matplotlib",
+  "tasks": [
+    {
+      "task": "Automatically Adjust Subplot Margins",
+      "mental_trigger": "I need to reduce label overlap.",
+      "syntax": "tight_layout(pad=1.08, h_pad=None, w_pad=None, rect=None)",
+      "important_params": [
+        "pad",
+        "h_pad",
+        "w_pad",
+        "rect."
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, axs = plt.subplots(2, 1)\naxs[^0].set_title(\"Top\")\naxs[^1].set_xlabel(\"X\")\nfig.tight_layout()\nfig.savefig(\"tight_layout_example.png\")",
+      "use_when": "1) Exported reports. 2) Subplots with titles and labels. 3) Notebook figures that overlap. 4) Quick spacing correction. 5) Legacy layout cleanup.",
+      "avoid_when": "1) You already use a more explicit layout system. 2) Complex nested layouts need careful control. 3) You need deterministic manual spacing. 4) Tight layout interferes with design. 5) The figure uses many decorative artists.",
+      "decision_notes": "Category: Layout\nModule: `pyplot`\nReturn Value: `None`.\nExpected Output: A less crowded two-panel figure.\nPerformance Notes: Layout solving adds cost; generally small but noticeable for many axes.\nCommon Mistakes: Calling it too early; assuming it solves every overlap; using it with incompatible complex layouts; forgetting to call before saving; mixing it with other layout engines without understanding interactions.\nRelated APIs: `constrained_layout`, `subplots_adjust`, `savefig`.",
+      "gotchas": [
+        "It may adjust text positions",
+        "some artists are not considered",
+        "results can change after adding labels later",
+        "it can conflict with manual spacing",
+        "figure size affects the final result."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.tight_layout.html"
+    },
+    {
+      "task": "Clear Current Axes",
+      "mental_trigger": "I need to reuse one subplot.",
+      "syntax": "cla()",
+      "important_params": [
+        "None."
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.plot([1, 2], [1, 4])\nax.cla()\nax.plot([1, 2], [4, 1])\nfig.savefig(\"cla_example.png\")",
+      "use_when": "1) Updating a single axis. 2) Interactive plotting. 3) Repainting charts. 4) Animation-like manual updates. 5) Stateful exploration.",
+      "avoid_when": "1) You need a new axes object. 2) The figure has multiple important axes. 3) You want clear code structure. 4) You are already using a fresh `subplots` call. 5) You may accidentally erase annotations or legends.",
+      "decision_notes": "Category: Resource management\nModule: `pyplot`\nReturn Value: `None`.\nExpected Output: The axis is cleared and redrawn.\nPerformance Notes: Efficient for axis reuse but can complicate state management.\nCommon Mistakes: Clearing the wrong axis; forgetting that limits and labels reset; retaining stale references; using it in place of new axes when clarity matters; losing legends unexpectedly.\nRelated APIs: `clf`, `close`, `Axes.clear`.",
+      "gotchas": [
+        "Current axes context matters",
+        "clearing removes artists and axis settings",
+        "references to old artists become invalid for display purposes",
+        "reusable dashboards may prefer explicit redraw logic",
+        "stateful behavior can be surprising."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.cla.html"
+    },
+    {
+      "task": "Clear Current Figure",
+      "mental_trigger": "I need to reuse a figure canvas.",
+      "syntax": "clf()",
+      "important_params": [
+        "None."
+      ],
+      "example": "import matplotlib.pyplot as plt\nplt.figure()\nplt.plot([1, 2], [1, 4])\nplt.clf()\nplt.plot([1, 2], [4, 1])\nplt.savefig(\"clf_example.png\")",
+      "use_when": "1) Reusing a single figure object. 2) Batch updates. 3) Interactive experiments. 4) Resetting plotting state. 5) Cleanup without closing the window.",
+      "avoid_when": "1) You want a fresh object. 2) You are working with multiple figures. 3) You need explicit control over axes lifecycle. 4) You might accidentally erase needed content. 5) Library code should avoid global state.",
+      "decision_notes": "Category: Resource management\nModule: `pyplot`\nReturn Value: `None`.\nExpected Output: A cleared and redrawn figure.\nPerformance Notes: Useful when reusing the same canvas, though object recreation may still be clearer.\nCommon Mistakes: Clearing too early; confusing clear with close; using it when new figures are better; losing axes references; relying on hidden state after clearing.\nRelated APIs: `close`, `figure`, `cla`.",
+      "gotchas": [
+        "It clears the current figure only",
+        "axes references become stale",
+        "it may not reset backend windows",
+        "stateful code becomes fragile",
+        "explicit OO patterns are safer."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.clf.html"
+    },
+    {
+      "task": "Close Figure To Release Memory",
+      "mental_trigger": "I need to clean up figures in a batch process.",
+      "syntax": "close(fig=None)",
+      "important_params": [
+        "fig."
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.plot([1, 2], [1, 4])\nfig.savefig(\"close_example.png\")\nplt.close(fig)",
+      "use_when": "1) Loop-based figure generation. 2) Memory-sensitive scripts. 3) Server-side rendering. 4) Notebook cleanup. 5) Long-running jobs.",
+      "avoid_when": "1) The figure is still needed. 2) You are unsure which figure is active. 3) You depend on later inspection. 4) The script is short and single-use. 5) You are closing figures unintentionally.",
+      "decision_notes": "Category: Resource management\nModule: `pyplot`\nReturn Value: `None`.\nExpected Output: Figure saved, then released from memory.\nPerformance Notes: Important for preventing memory growth in batch rendering.\nCommon Mistakes: Forgetting to close in loops; closing the wrong figure; closing before save; assuming garbage collection is enough; leaving interactive figures open.\nRelated APIs: `figure`, `savefig`, `clf`.",
+      "gotchas": [
+        "fig=None closes the current figure",
+        "closing does not delete saved files",
+        "open figures accumulate memory",
+        "active figure tracking can surprise users",
+        "batch jobs should be explicit."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.close.html"
+    },
+    {
+      "task": "Create Figure Canvas",
+      "mental_trigger": "I need a top-level canvas.",
+      "syntax": "figure(num=None, figsize=None, dpi=None, *, facecolor=None, edgecolor=None, frameon=True, FigureClass=<class 'matplotlib.figure.Figure'>, clear=False, **kwargs)",
+      "important_params": [
+        "num",
+        "figsize",
+        "dpi",
+        "facecolor",
+        "edgecolor",
+        "frameon",
+        "clear"
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig = plt.figure(figsize=(4, 3), dpi=150)\nax = fig.add_subplot(111)\nax.plot([0, 1], [0, 1])\nfig.savefig(\"figure_example.png\")",
+      "use_when": "1) Start a new plot window. 2) Set figure size. 3) Reuse a figure by number. 4) Control figure-level styling. 5) Build multi-axes layouts manually.",
+      "avoid_when": "1) You already have a figure from `subplots`. 2) You want purely object-oriented plotting. 3) You are inside reusable library code with explicit figure injection. 4) You need direct subplot creation only. 5) You want minimal global state.",
+      "decision_notes": "Category: Figure creation\nModule: `pyplot`\nReturn Value: `Figure`.\nExpected Output: A 1:1 line figure saved to disk.\nPerformance Notes: `dpi` strongly affects render cost and file size.\nCommon Mistakes: Creating multiple unintended figures; forgetting to attach axes; using `figure` when `subplots` is simpler; not closing figures in batch jobs; confusing figure size with axis size.\nRelated APIs: `subplots`, `savefig`, `clf`.",
+      "gotchas": [
+        "num can reuse an existing figure",
+        "clear=True removes prior contents",
+        "dpi affects on-screen and saved output",
+        "figure face color can affect export appearance",
+        "backends may interpret sizing differently."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html"
+    },
+    {
+      "task": "Create Subplots Grid",
+      "mental_trigger": "I need to create a figure with one or more panels quickly.",
+      "syntax": "subplots(nrows=1, ncols=1, *, sharex=False, sharey=False, squeeze=True, width_ratios=None, height_ratios=None, subplot_kw=None, gridspec_kw=None, **fig_kw)",
+      "important_params": [
+        "nrows",
+        "ncols",
+        "sharex",
+        "sharey",
+        "squeeze",
+        "subplot_kw",
+        "gridspec_kw"
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots(figsize=(4, 3))\nax.plot([1, 2, 3], [1, 4, 9])\nfig.tight_layout()\nfig.savefig(\"subplots_example.png\")",
+      "use_when": "1) Standard report figures. 2) Multi-panel comparisons. 3) Notebook exploration. 4) Side-by-side model diagnostics. 5) Shared-axis layouts.",
+      "avoid_when": "1) You need fine control over a pre-existing figure. 2) You are writing library code that should avoid stateful globals. 3) You only need a single axis and already have a figure. 4) You need a custom nested layout. 5) You are constructing figures from reusable components.",
+      "decision_notes": "Category: Figure creation\nModule: `pyplot`\nReturn Value: `(Figure, Axes or ndarray of Axes)`.\nExpected Output: A single line chart saved to file.\nPerformance Notes: Efficient for common layouts; layout cost grows with more axes.\nCommon Mistakes: Forgetting that a single axis may be returned as a scalar; mixing stateful and OO APIs; misusing shared axes; calling `plt.show()` before saving; relying on implicit current figure.\nRelated APIs: `figure`, `subplot_mosaic`, `add_subplot`.",
+      "gotchas": [
+        "squeeze=False changes return shape",
+        "sharing axes affects tick labels",
+        "fig_kw passes through to figure",
+        "layout settings may interact with tight_layout",
+        "object unpacking differs between 1x1 and multi-axis grids."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Construct Subplots Layout",
+          "reason": "Programmatic layout creation for multiple subplot grids."
+        }
+      ]
+    },
+    {
+      "task": "Create Subplots Via Mosaic Layout",
+      "mental_trigger": "I need a readable named layout.",
+      "syntax": "subplot_mosaic(mosaic, *, sharex=False, sharey=False, width_ratios=None, height_ratios=None, empty_sentinel='.', subplot_kw=None, gridspec_kw=None, per_subplot_kw=None, figsize=None, layout=None, **fig_kw)",
+      "important_params": [
+        "mosaic",
+        "sharex",
+        "sharey",
+        "width_ratios",
+        "height_ratios",
+        "subplot_kw",
+        "gridspec_kw"
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, axd = plt.subplot_mosaic([[\"a\", \"b\"], [\"c\", \"b\"]], figsize=(5, 4))\naxd[\"a\"].plot([1, 2, 3], [1, 2, 3])\naxd[\"b\"].bar([1, 2, 3], [3, 2, 1])\naxd[\"c\"].scatter([1, 2, 3], [2, 2, 4])\nfig.tight_layout()\nfig.savefig(\"subplot_mosaic_example.png\")",
+      "use_when": "1) Complex dashboard figures. 2) Named subplot composition. 3) Reusable analysis layouts. 4) Layouts where panel identity matters. 5) Non-rectangular placement logic.",
+      "avoid_when": "1) One-panel charts. 2) Very simple grids. 3) You want minimal syntax overhead. 4) You do not need named axes. 5) You are targeting older code conventions without need.",
+      "decision_notes": "Category: Figure creation\nModule: `pyplot`\nReturn Value: `(Figure, dict of Axes)`.\nExpected Output: A labeled multi-panel figure.\nPerformance Notes: Layout complexity is dominated by the number of axes, not the mosaic syntax.\nCommon Mistakes: Reusing labels unintentionally; forgetting that labels map to shared axes; using invalid mosaic shapes; overcomplicating simple figures; assuming a list return instead of a dict.\nRelated APIs: `subplots`, `GridSpec`, `figure`.",
+      "gotchas": [
+        "Mosaic labels define axis identity",
+        "repeated labels merge panels",
+        "empty cells require empty_sentinel",
+        "layout shape is inferred from the input",
+        "returned object is keyed by labels."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplot_mosaic.html"
+    },
+    {
+      "task": "Export Figure To File",
+      "mental_trigger": "I need export output.",
+      "syntax": "savefig(fname, *, transparent=None, dpi='figure', format=None, metadata=None, bbox_inches=None, pad_inches=0.1, facecolor='auto', edgecolor='auto', backend=None, **kwargs)",
+      "important_params": [
+        "fname",
+        "transparent",
+        "dpi",
+        "format",
+        "metadata"
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 2])\nfig.savefig(\"savefig_example.png\", dpi=150, bbox_inches=\"tight\")",
+      "use_when": "1) Reports. 2) Publication figures. 3) Batch generation. 4) Dashboards with file artifacts. 5) Archival outputs.",
+      "avoid_when": "1) You have not finalized the figure. 2) The current figure may not be the intended one. 3) You need a specific figure object and can call `fig.savefig` directly. 4) You are relying on display-only checks. 5) You need reproducible file settings but have not specified them.",
+      "decision_notes": "Category: Saving figures\nModule: `pyplot`\nReturn Value: `None`.\nExpected Output: An image file saved to disk.\nPerformance Notes: Export cost depends on figure complexity, dpi, and output format.\nCommon Mistakes: Saving the wrong figure; forgetting `bbox_inches=\"tight\"` when labels clip; using low dpi for print; not specifying format when filename is ambiguous; exporting before layout is finalized.\nRelated APIs: `Figure.savefig`, `tight_layout`, `subplots_adjust`.",
+      "gotchas": [
+        "Vector and raster outputs behave differently",
+        "transparency can vary by backend",
+        "metadata support depends on format",
+        "dpi='figure' uses figure settings",
+        "save-time layout can differ from display-time layout."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.savefig.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Export Figure to Interactive HTML",
+          "reason": "Save interactive figures as standalone HTML pages."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Export Figure to Static Image",
+          "reason": "Export interactive figures to static formats (PNG/PDF)."
+        },
+        {
+          "package": "seaborn",
+          "task": "Objects API: Export Plot to File",
+          "reason": "Save Seaborn Objects plots to files."
+        }
+      ]
+    },
+    {
+      "task": "Get Current Axes Instance",
+      "mental_trigger": "I need the active subplot object.",
+      "syntax": "gca()",
+      "important_params": [
+        "None."
+      ],
+      "example": "",
+      "use_when": "1) Incremental plotting in notebooks. 2) Legacy pyplot workflows. 3) Quick inspection. 4) Post-creation tweaking. 5) Interactive commands.",
+      "avoid_when": "1) You already have an explicit axes variable. 2) Reusable library code should avoid stateful lookup. 3) Multiple figures are open and current axes is ambiguous. 4) You want deterministic control. 5) You are building maintainable production plotting code.",
+      "decision_notes": "Category: Axes management\nModule: `pyplot`\nReturn Value: `Axes`.\nExpected Output: The current axes are retrieved and modified.\nPerformance Notes: Negligible.\nCommon Mistakes: Depending on current state in complex scripts; retrieving the wrong axes; mixing with explicit object references; using it across figure changes; assuming it creates a new axes every time.\nRelated APIs: `gcf`, `subplots`, `sca`.",
+      "gotchas": [
+        "The \"current\" axes depends on state",
+        "gca may create axes in some contexts",
+        "it is convenient but fragile in large codebases",
+        "backend behavior can affect active state",
+        "explicit references are safer."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.gca.html"
+    },
+    {
+      "task": "Get Current Figure Instance",
+      "mental_trigger": "I need the active figure object.",
+      "syntax": "gcf()",
+      "important_params": [
+        "None."
+      ],
+      "example": "",
+      "use_when": "1) Interactive inspection. 2) Notebook debugging. 3) Saving the current state. 4) Legacy pyplot workflows. 5) Figure-level tweaks after plotting.",
+      "avoid_when": "1) You already have the figure handle. 2) There are multiple figures and current state is ambiguous. 3) Reusable code should not depend on global state. 4) You need deterministic figure selection. 5) You are managing figure lifecycles explicitly.",
+      "decision_notes": "Category: Figure management\nModule: `pyplot`\nReturn Value: `Figure`.\nExpected Output: The current figure is returned and saved.\nPerformance Notes: Negligible.\nCommon Mistakes: Saving the wrong figure; relying on current state after other plotting code ran; mixing explicit and implicit objects; using it in reusable APIs; assuming it creates a figure unconditionally.\nRelated APIs: `gca`, `figure`, `savefig`.",
+      "gotchas": [
+        "Current figure can change unexpectedly",
+        "figure state is backend-sensitive",
+        "explicit handles are safer in production",
+        "notebook execution order matters",
+        "object references are preferable."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.gcf.html"
+    },
+    {
+      "task": "Manually Adjust Subplot Margins",
+      "mental_trigger": "I need explicit control over margins and gaps.",
+      "syntax": "subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=None)",
+      "important_params": [
+        "left",
+        "bottom",
+        "right",
+        "top",
+        "wspace"
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, axs = plt.subplots(2, 2)\nfig.subplots_adjust(wspace=0.4, hspace=0.4)\nfig.savefig(\"subplots_adjust_example.png\")",
+      "use_when": "1) Fine-tuning dense reports. 2) Legacy scripts. 3) Manual spacing workflows. 4) Keeping control over label room. 5) Figure templates.",
+      "avoid_when": "1) Automatic layout is sufficient. 2) You want minimal maintenance burden. 3) The figure structure changes frequently. 4) You need a fully declarative layout system. 5) You are already using another layout manager.",
+      "decision_notes": "Category: Layout\nModule: `pyplot`\nReturn Value: `None`.\nExpected Output: A grid with larger gaps.\nPerformance Notes: Negligible.\nCommon Mistakes: Overcompressing the layout; conflicting with automatic layout engines; using it blindly; not accounting for label lengths; hardcoding spacing across varying figure sizes.\nRelated APIs: `tight_layout`, `constrained_layout`, `figure.subplotpars`.",
+      "gotchas": [
+        "Margins are figure-relative",
+        "it affects all subplots",
+        "it is easy to overfit one output size",
+        "layout changes can alter export appearance",
+        "best used sparingly in production templates."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots_adjust.html"
+    },
+    {
+      "task": "Set Current Axes Instance",
+      "mental_trigger": "I need to direct subsequent pyplot calls to a specific subplot.",
+      "syntax": "sca(ax)",
+      "important_params": [
+        "ax."
+      ],
+      "example": "",
+      "use_when": "1) Legacy stateful scripts. 2) Quick interactive switching. 3) Incremental subplot editing. 4) Notebook exploration. 5) Compatibility with older code.",
+      "avoid_when": "1) You can call methods on axes explicitly. 2) The codebase aims for clarity. 3) Multiple state changes would become hard to track. 4) You need maintainable library code. 5) You are using nested layout systems.",
+      "decision_notes": "Category: Axes management\nModule: `pyplot`\nReturn Value: `None`.\nExpected Output: The second subplot becomes active and receives the plot.\nPerformance Notes: Negligible.\nCommon Mistakes: Drawing on the wrong axes; assuming method calls are isolated after `sca`; mixing with explicit object code; forgetting current state changes; using it when direct method calls are simpler.\nRelated APIs: `gca`, `gcf`, `plot`.",
+      "gotchas": [
+        "It changes pyplot's active target",
+        "subsequent functions can target the selected axes",
+        "it is easy to misuse in multi-panel figures",
+        "explicit axes method calls are safer",
+        "current state is global per figure context."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.sca.html"
+    },
+    {
+      "task": "Set Figure Or Axes Title",
+      "mental_trigger": "I need a chart headline.",
+      "syntax": "title(label, fontdict=None, loc=None, pad=None, *, y=None, **kwargs)",
+      "important_params": [
+        "label",
+        "fontdict",
+        "loc",
+        "pad",
+        "y."
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.plot([1, 2], [1, 4])\nax.set_title(\"Example Title\")\nfig.savefig(\"title_example.png\")",
+      "use_when": "1) Report figures. 2) Notebook exploration. 3) Panel labeling. 4) Exported charts. 5) Presentation visuals.",
+      "avoid_when": "1) The title is too long. 2) The title duplicates the file name or surrounding context. 3) The figure already uses a figure-level title. 4) The panel needs a subtitle instead. 5) You need structured annotation inside the plot area.",
+      "decision_notes": "Category: Text\nModule: `pyplot`\nReturn Value: `Text`.\nExpected Output: A chart with a title.\nPerformance Notes: Negligible cost.\nCommon Mistakes: Overlong titles; duplicating axis labels; placing titles too close to the plot; mixing figure and axes titles unintentionally; using inconsistent capitalization.\nRelated APIs: `suptitle`, `xlabel`, `ylabel`, `text`.",
+      "gotchas": [
+        "Title position interacts with layout",
+        "long titles may be clipped",
+        "loc changes alignment",
+        "pad affects spacing",
+        "figure-level and axes-level titles are different."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.title.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Update Figure Layout",
+          "reason": "Interactive figure title and layout updates."
+        },
+        {
+          "package": "seaborn",
+          "task": "Objects API: Configure Plot Labels",
+          "reason": "High-level labelling for titles, axis, and legends."
+        },
+        {
+          "package": "seaborn",
+          "task": "Objects API: Configure Plot Layout",
+          "reason": "Equivalent implementation in seaborn."
+        }
+      ]
+    },
+    {
+      "task": "Set Figure-Level Super Title",
+      "mental_trigger": "I need one title for the whole figure.",
+      "syntax": "suptitle(t, **kwargs)",
+      "important_params": [
+        "t",
+        "**kwargs."
+      ],
+      "example": "",
+      "use_when": "1) Multi-panel figures. 2) Report pages. 3) Experiment comparison layouts. 4) Notebook dashboards. 5) Figures with multiple subplot titles.",
+      "avoid_when": "1) A single axes title is sufficient. 2) The figure is too crowded. 3) You need a caption outside the plot area. 4) The title repeats subplot titles unnecessarily. 5) Layout is already tight.",
+      "decision_notes": "Category: Text / layout\nModule: `pyplot`\nReturn Value: `Text`.\nExpected Output: A figure with a top-level title.\nPerformance Notes: Negligible.\nCommon Mistakes: Clipping the title with poor layout; duplicating subplot titles; using too much text; forgetting to reserve space; mixing with manual margins.\nRelated APIs: `title`, `tight_layout`, `constrained_layout`.",
+      "gotchas": [
+        "suptitle is figure-level, not axes-level",
+        "it can interact with layout engines",
+        "vertical placement may need adjustment",
+        "long titles can overlap with subplots",
+        "text properties are configurable."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.suptitle.html"
+    },
+    {
+      "task": "Share Axes Limits Across Subplots",
+      "mental_trigger": "I need matched scales for fair comparison.",
+      "syntax": "Included in subplots",
+      "important_params": [
+        "sharex",
+        "sharey."
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, axs = plt.subplots(2, 1, sharex=True)\naxs[^0].plot([1, 2, 3], [1, 2, 3])\naxs[^1].plot([1, 2, 3], [3, 2, 1])\nfig.savefig(\"sharexy_example.png\")",
+      "use_when": "1) Small multiples. 2) Faceted comparisons. 3) Time-series panels. 4) Comparative diagnostics. 5) Consistent zoom across panels.",
+      "avoid_when": "1) Panels need independent scale interpretation. 2) Shared ticks create clutter. 3) Different units are plotted together. 4) You need per-panel labels everywhere. 5) Alignment matters less than flexibility.",
+      "decision_notes": "Category: Axis sharing\nModule: `axes`\nReturn Value: Same as `subplots`.\nExpected Output: Two aligned panels with a shared x-axis.\nPerformance Notes: Efficient; improves comparison readability.\nCommon Mistakes: Sharing axes across incompatible scales; hiding labels unintentionally; assuming sharing copies data limits instead of linking them; combining with manual limit changes without care; overcrowding tick labels.\nRelated APIs: `subplots`, `twinx`, `twiny`, `set_xlim`.",
+      "gotchas": [
+        "Shared axes propagate limit changes",
+        "only outer labels may be shown",
+        "zooming one panel can affect others",
+        "sharing is a layout and interaction decision, not just a formatting one",
+        "mixed units are a poor fit."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html"
+    },
+    {
+      "task": "Add Colorbar To Plot",
+      "mental_trigger": "I need to explain color encoding.",
+      "syntax": "colorbar(mappable=None, cax=None, ax=None, **kwargs)",
+      "important_params": [
+        "mappable",
+        "cax",
+        "ax",
+        "**kwargs."
+      ],
+      "example": "import matplotlib.pyplot as plt\nimport numpy as np\nfig, ax = plt.subplots()\nim = ax.imshow(np.array([[1, 2], [3, 4]]), cmap=\"viridis\")\nfig.colorbar(im, ax=ax)\nfig.savefig(\"colorbar_example.png\")",
+      "use_when": "1) Heatmaps. 2) Scatter plots with numeric color. 3) Image plots. 4) Contour plots. 5) Any continuous color mapping.",
+      "avoid_when": "1) Color is categorical and a legend is clearer. 2) No mappable exists. 3) The color meaning is already obvious and redundant. 4) The figure is too cramped. 5) You need a discrete key instead.",
+      "decision_notes": "Category: Color mapping\nModule: `pyplot`\nReturn Value: `Colorbar`.\nExpected Output: A heatmap with a matching colorbar.\nPerformance Notes: Minimal overhead relative to the underlying plot.\nCommon Mistakes: Adding a colorbar to categorical colors; attaching it to the wrong axis; omitting it for continuous encodings; mis-scaling data; crowding the layout.\nRelated APIs: `imshow`, `scatter`, `contourf`, `Normalize`.",
+      "gotchas": [
+        "The colorbar must match a mappable",
+        "colorbar layout can affect figure size",
+        "shared colorbars need careful axis association",
+        "normalization controls the legend scale",
+        "multiple plots may need one shared scale."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.colorbar.html"
+    },
+    {
+      "task": "Draw Box Plot",
+      "mental_trigger": "I need a compact distribution comparison.",
+      "syntax": "boxplot(x, notch=None, sym=None, vert=None, whis=None, positions=None, widths=None, patch_artist=None, bootstrap=None, usermedians=None, conf_intervals=None, meanline=None, showmeans=None, showcaps=None, showbox=None, showfliers=None, boxprops=None, tick_labels=None, flierprops=None, medianprops=None, meanprops=None, capprops=None, whiskerprops=None, manage_ticks=True, autorange=False, zorder=None, capwidths=None, *, data=None)",
+      "important_params": [
+        "x",
+        "whis",
+        "positions",
+        "widths",
+        "showfliers",
+        "patch_artist",
+        "manage_ticks"
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.boxplot([[1, 2, 3, 4], [2, 3, 5, 8]])\nfig.savefig(\"boxplot_example.png\")",
+      "use_when": "1) Comparing groups. 2) Outlier inspection. 3) Distribution shape summary. 4) Publication-style statistical plots. 5) Many group comparisons with limited space.",
+      "avoid_when": "1) Sample size is tiny and misleading. 2) Exact distribution detail is required. 3) The audience needs raw data points only. 4) The distribution is highly multimodal and box summary hides structure. 5) You want a histogram-like shape.",
+      "decision_notes": "Category: Box plots\nModule: `pyplot`\nReturn Value: Dictionary of artists.\nExpected Output: A two-box comparison plot.\nPerformance Notes: Generally cheap; large numbers of groups increase clutter rather than compute cost.\nCommon Mistakes: Misreading whiskers; hiding fliers without reason; using box plots for very small samples; assuming mean is shown by default; overloading the figure with categories.\nRelated APIs: `violinplot`, `hist`, `stripplot` in other libraries, `errorbar`.",
+      "gotchas": [
+        "Whisker rules matter",
+        "median is not mean",
+        "showfliers affects visible outliers",
+        "tick labels may need manual management",
+        "orientation controls readability."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "seaborn",
+          "task": "Create Box Plot",
+          "reason": "Statistical box-and-whisker plot grouped by category."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Create Box Plot",
+          "reason": "Interactive box plot with hover statistics."
+        }
+      ],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.boxplot.html"
+    },
+    {
+      "task": "Draw Error Bars",
+      "mental_trigger": "I need uncertainty or variability on a chart.",
+      "syntax": "errorbar(x, y, yerr=None, xerr=None, fmt='', ecolor=None, elinewidth=None, capsize=None, barsabove=False, lolims=False, uplims=False, xlolims=False, xuplims=False, errorevery=1, capthick=None, *, data=None, **kwargs)",
+      "important_params": [
+        "x",
+        "y",
+        "yerr",
+        "xerr",
+        "fmt"
+      ],
+      "example": "",
+      "use_when": "1) Experimental measurements. 2) Model metric uncertainty. 3) Repeated trial summaries. 4) Scientific reporting. 5) Approximate confidence displays.",
+      "avoid_when": "1) The uncertainty is not meaningful. 2) Error bars would overwhelm the figure. 3) You need full distribution detail instead. 4) Sample size is too small to summarize well. 5) A band or violin plot would communicate better.",
+      "decision_notes": "Category: Line plots / uncertainty\nModule: `pyplot`\nReturn Value: `ErrorbarContainer`.\nExpected Output: Points with vertical error bars.\nPerformance Notes: Fine for small datasets; many bars can create clutter and render cost.\nCommon Mistakes: Using error bars without statistical meaning; misinterpreting standard deviation as confidence interval; overcrowding the chart; forgetting units; passing mismatched error array shapes.\nRelated APIs: `fill_between`, `plot`, `bar`.",
+      "gotchas": [
+        "yerr and xerr accept scalar or shaped inputs",
+        "caps are optional",
+        "asymmetric errors are supported",
+        "the fmt string controls point style",
+        "too many bars reduce readability."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.errorbar.html"
+    },
+    {
+      "task": "Draw Histogram",
+      "mental_trigger": "I need a distribution summary.",
+      "syntax": "hist(x, bins=None, range=None, density=False, weights=None, cumulative=False, bottom=None, histtype='bar', align='mid', orientation='vertical', rwidth=None, log=False, color=None, label=None, stacked=False, *, data=None, **kwargs)",
+      "important_params": [
+        "x",
+        "bins",
+        "range",
+        "density",
+        "weights",
+        "histtype",
+        "orientation"
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.hist([1, 1, 2, 2, 2, 3, 4], bins=4)\nfig.savefig(\"hist_example.png\")",
+      "use_when": "1) Value distribution inspection. 2) Data quality checks. 3) Skewness checks. 4) Comparing distributions. 5) Quick density approximation.",
+      "avoid_when": "1) You need exact sample-level detail. 2) You need categorical counts. 3) You have extremely many bins without reason. 4) You need a cumulative line instead. 5) You need precise quantile visualization.",
+      "decision_notes": "Category: Histograms\nModule: `pyplot`\nReturn Value: `(n, bins, patches)`.\nExpected Output: A histogram bar chart.\nPerformance Notes: Binning is usually cheap; plotting many bins or many series increases rendering cost.\nCommon Mistakes: Choosing too many bins; comparing raw counts when densities are needed; using histograms for categorical data; ignoring bin alignment; stacking dissimilar distributions without care.\nRelated APIs: `ax.hist`, `bar`, `stairs`, `ecdf`.",
+      "gotchas": [
+        "Histogram output includes counts and bin edges",
+        "density=True changes the y-axis meaning",
+        "bin choice strongly affects interpretation",
+        "stacked=True changes visual semantics",
+        "bins can be explicit arrays."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Create Histogram",
+          "reason": "Interactive equivalent."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create Histogram",
+          "reason": "Statistical abstraction built on Matplotlib."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create KDE Plot",
+          "reason": "Equivalent implementation in seaborn."
+        }
+      ],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.hist.html"
+    },
+    {
+      "task": "Draw Empirical Cumulative Distribution Function",
+      "mental_trigger": "I need to plot a cumulative distribution without binning.",
+      "syntax": "ecdf(x, *, weights=None, compressibility=100, orientation='vertical', compress=True, **kwargs)",
+      "important_params": [
+        "x",
+        "weights",
+        "compressibility",
+        "orientation"
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.ecdf([1, 2, 2, 3, 4, 5])\nfig.savefig(\"ecdf_example.png\")",
+      "use_when": "1) Plotting empirical cumulative distribution functions. 2) Comparing distribution shapes directly. 3) Visualizing exact values without choosing bin sizes. 4) Plotting percentiles and CDF profiles.",
+      "avoid_when": "1) Showing raw density or probability density functions. 2) Very small datasets where step plots are noisy. 3) Showing categorical counts. 4) Summary statistics are sufficient.",
+      "decision_notes": "Category: Basic Plotting\nModule: `pyplot` or `axes`\nReturn Value: `Line2D` artist.\nExpected Output: A step line showing cumulative probability from 0 to 1.\nPerformance Notes: Extremely efficient; does not suffer from binning-related layout changes.\nCommon Mistakes: Assuming it computes a probability density function; misinterpreting the step levels; confusing with manual cumulative histogram calculations.\nRelated APIs: `hist`, `step`, `stairs`.",
+      "gotchas": [
+        "ecdf plots steps from 0 to 1",
+        "it was introduced in Matplotlib 3.8",
+        "sorting of inputs is handled internally",
+        "compressibility controls approximate representation accuracy for large datasets."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Create ECDF Plot",
+          "reason": "Interactive ECDF plot with hover percentiles."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create ECDF Plot",
+          "reason": "Statistical ECDF plot showing step function representation."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create KDE Plot",
+          "reason": "Equivalent implementation in seaborn."
+        }
+      ],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.ecdf.html"
+    },
+    {
+      "task": "Draw Line Plot",
+      "mental_trigger": "I need a line chart.",
+      "syntax": "plot(*args, scalex=True, scaley=True, data=None, **kwargs)",
+      "important_params": [
+        "*args",
+        "scalex",
+        "scaley",
+        "data",
+        "**kwargs."
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 9], marker=\"o\")\nfig.savefig(\"plot_example.png\")",
+      "use_when": "1) Trend visualization. 2) Time series lines. 3) Continuous function plots. 4) Baseline comparison plots. 5) Lightweight multi-series charts.",
+      "avoid_when": "1) You need discrete bars. 2) You need point-only charts without connecting lines. 3) You need dense unaggregated scatter for huge datasets. 4) You need filled distributions. 5) You need geometry-based rendering.",
+      "decision_notes": "Category: Line plots\nModule: `pyplot`\nReturn Value: List of `Line2D`.\nExpected Output: A simple line chart with markers.\nPerformance Notes: Line rendering is usually lightweight; many points or many series increase draw time.\nCommon Mistakes: Swapping x and y; forgetting markers for sparse series; overplotting too many lines; assuming `plot` sorts data; using it for categorical bars.\nRelated APIs: `Axes.plot`, `scatter`, `step`, `fill_between`.",
+      "gotchas": [
+        "Multiple argument patterns are accepted",
+        "style kwargs affect the returned line artists",
+        "line plotting does not aggregate data",
+        "empty inputs still create artists",
+        "lines are clipped by axes limits."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "seaborn",
+          "task": "Create Line Plot",
+          "reason": "Statistical line plotting with grouped summaries and confidence bands."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Create Line Plot",
+          "reason": "Interactive equivalent with hover labels and zooming."
+        }
+      ],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html"
+    },
+    {
+      "task": "Draw Pie Chart",
+      "mental_trigger": "I need a part-to-whole view and the number of slices is small.",
+      "syntax": "pie(x, explode=None, labels=None, colors=None, autopct=None, pctdistance=0.6, shadow=False, labeldistance=1.1, startangle=0, radius=1, counterclock=True, wedgeprops=None, textprops=None, center=(0, 0), frame=False, rotatelabels=False, *, normalize=True, hatch=None, data=None)",
+      "important_params": [
+        "x",
+        "labels",
+        "colors",
+        "autopct",
+        "startangle",
+        "counterclock",
+        "normalize"
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.pie([30, 20, 50], labels=[\"A\", \"B\", \"C\"])\nfig.savefig(\"pie_example.png\")",
+      "use_when": "1) Very small category counts. 2) Simple composition visuals. 3) When proportions are the main message. 4) When labels are short. 5) When exact comparison is not the main task.",
+      "avoid_when": "1) Many slices. 2) Close-value comparisons. 3) Precise ranking is needed. 4) Long labels are expected. 5) The viewer needs accurate angle comparison.",
+      "decision_notes": "Category: Pie charts\nModule: `pyplot`\nReturn Value: `(patches, texts, autotexts)`.\nExpected Output: A basic pie chart.\nPerformance Notes: Rendering is usually cheap; readability degrades quickly as slice count rises.\nCommon Mistakes: Using too many slices; relying on pie for exact comparison; omitting labels; using inconsistent normalization; cluttering with effects.\nRelated APIs: `bar`, `ax.pie`, `wedgeprops`, `legend`.",
+      "gotchas": [
+        "Slice order affects reading",
+        "labels and percentages can overlap",
+        "normalize changes interpretation",
+        "startangle can improve readability",
+        "pies are often less informative than bars."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.pie.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Create Pie Chart",
+          "reason": "Interactive pie/donut chart with hover support."
+        }
+      ]
+    },
+    {
+      "task": "Draw Scatter Plot",
+      "mental_trigger": "I need a scatter plot.",
+      "syntax": "scatter(x, y, s=None, c=None, marker=None, cmap=None, norm=None, vmin=None, vmax=None, alpha=None, linewidths=None, *, edgecolors=None, plotnonfinite=False, data=None, **kwargs)",
+      "important_params": [
+        "x",
+        "y",
+        "s",
+        "c",
+        "marker",
+        "cmap",
+        "norm"
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.scatter([1, 2, 3], [3, 1, 4], s=[20, 40, 60], c=[0.2, 0.5, 0.9], cmap=\"viridis\")\nfig.savefig(\"scatter_example.png\")",
+      "use_when": "1) Correlation inspection. 2) Cluster visualization. 3) Outlier spotting. 4) Size/color encoded points. 5) Feature relationship analysis.",
+      "avoid_when": "1) You need connected trends. 2) You have extremely large raw point clouds without downsampling. 3) You need bars or histograms. 4) You want categorical group summaries. 5) You need exact line paths.",
+      "decision_notes": "Category: Scatter plots\nModule: `pyplot`\nReturn Value: `PathCollection`.\nExpected Output: A colored scatter plot.\nPerformance Notes: Large point counts can be expensive; use rasterization or aggregation when appropriate.\nCommon Mistakes: Confusing `s` with radius instead of area; passing color arrays with incompatible shapes; overusing edge colors on tiny markers; plotting point clouds without alpha; forgetting colormap normalization.\nRelated APIs: `plot`, `hexbin`, `hist2d`, `PathCollection`.",
+      "gotchas": [
+        "s is marker area",
+        "c can mean a sequence of values or colors depending on shape/type",
+        "marker edge rendering can change appearance",
+        "plotnonfinite controls non-finite handling",
+        "legend behavior differs from line plots."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "seaborn",
+          "task": "Create Scatter Plot",
+          "reason": "Semantically grouped scatter plotting with statistical defaults."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Create Scatter Plot",
+          "reason": "Interactive equivalent with hover and zoom."
+        }
+      ],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.scatter.html"
+    },
+    {
+      "task": "Draw Step Plot",
+      "mental_trigger": "I need a piecewise constant series.",
+      "syntax": "step(x, y, *args, where='pre', data=None, **kwargs)",
+      "important_params": [
+        "x",
+        "y",
+        "where."
+      ],
+      "example": "",
+      "use_when": "1) Event count timelines. 2) Cumulative process states. 3) Discrete state changes. 4) Histogram-like traces. 5) Threshold-based processes.",
+      "avoid_when": "1) You need smooth interpolation. 2) The data are continuous. 3) Ordinary line plots are clearer. 4) You need filled regions instead. 5) The step semantics are not meaningful.",
+      "decision_notes": "Category: Line plots\nModule: `pyplot`\nReturn Value: List of `Line2D`.\nExpected Output: A stepwise line chart.\nPerformance Notes: Similar to line plots.\nCommon Mistakes: Using the wrong `where` setting; applying it to smooth signals; forgetting that step shape changes interpretation; mismatching x/y lengths; using it when `plot` is clearer.\nRelated APIs: `plot`, `stairs`, `fill_between`.",
+      "gotchas": [
+        "where affects visual semantics",
+        "steps are better for discrete transitions",
+        "can be combined with markers",
+        "axis limits may emphasize plateaus",
+        "it is not interpolation."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.step.html"
+    },
+    {
+      "task": "Draw Step-Like Stairs",
+      "mental_trigger": "I already have binned data and need to render it.",
+      "syntax": "stairs(values, edges=None, *, orientation='vertical', baseline=0, fill=False, data=None, **kwargs)",
+      "important_params": [
+        "values",
+        "edges",
+        "orientation",
+        "baseline",
+        "fill."
+      ],
+      "example": "",
+      "use_when": "1) Prebinned histograms. 2) Density plots from prior computation. 3) Lightweight rendering of discrete intervals. 4) Reproducible statistical visuals. 5) Cases where bin edges matter explicitly.",
+      "avoid_when": "1) You need automatic bin computation. 2) Raw sample data should be summarized inside Matplotlib. 3) You want a smooth line. 4) The audience expects bars rather than bins. 5) You need point-level detail.",
+      "decision_notes": "Category: Histograms / step fills\nModule: `pyplot`\nReturn Value: `StepPatch`.\nExpected Output: A staircase-style plot.\nPerformance Notes: Efficient for precomputed binned data.\nCommon Mistakes: Providing mismatched values and edges; using it when raw histograms are needed; confusing it with `step`; ignoring bin edge semantics; overfilling dense plots.\nRelated APIs: `hist`, `step`, `bar`.",
+      "gotchas": [
+        "Edges define the bin boundaries",
+        "it is useful for histogram-like rendering without recomputing bins",
+        "baseline affects the visual fill area",
+        "orientation matters",
+        "precomputed data improves reproducibility."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.stairs.html"
+    },
+    {
+      "task": "Draw Vertical Bar Chart",
+      "mental_trigger": "I need a categorical comparison chart.",
+      "syntax": "bar(x, height, width=0.8, bottom=None, *, align='center', data=None, **kwargs)",
+      "important_params": [
+        "x",
+        "height",
+        "width",
+        "bottom",
+        "align."
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.bar([\"A\", \"B\", \"C\"], [3, 5, 2])\nfig.savefig(\"bar_example.png\")",
+      "use_when": "1) Category comparison. 2) Aggregated metric display. 3) Counts by group. 4) Discrete ranking visuals. 5) Simple part-to-whole comparisons.",
+      "avoid_when": "1) Categories are too many to read. 2) The data are continuous rather than discrete. 3) You need precise distribution shape. 4) You need stacked time series without careful design. 5) You want a scatter or line view.",
+      "decision_notes": "Category: Bar charts\nModule: `pyplot`\nReturn Value: `BarContainer`.\nExpected Output: A vertical bar chart.\nPerformance Notes: Small to medium bar counts are cheap; many bars can crowd the axis and slow rendering.\nCommon Mistakes: Using bars for continuous trends; too many categories; mismatched x labels; unordered categories; excessive decoration.\nRelated APIs: `barh`, `hist`, `stackplot`, `bar_label`.",
+      "gotchas": [
+        "height is not automatically aggregated",
+        "bar width is in x-axis units",
+        "label spacing matters",
+        "bars can be stacked or aligned differently",
+        "color cycles apply per bar group."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Create Bar Chart",
+          "reason": "Interactive bar chart with hover tooltips."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create Bar Plot",
+          "reason": "High-level statistical bar plot with aggregated estimates."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create Count Plot",
+          "reason": "Equivalent implementation in seaborn."
+        }
+      ],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.bar.html"
+    },
+    {
+      "task": "Draw Violin Plot",
+      "mental_trigger": "I need to compare distributions with shape detail.",
+      "syntax": "violinplot(dataset, positions=None, vert=True, widths=0.5, showmeans=False, showextrema=True, showmedians=False, quantiles=None, points=100, bw_method=None, *, data=None)",
+      "important_params": [
+        "dataset",
+        "positions",
+        "vert",
+        "widths",
+        "showmeans",
+        "showextrema",
+        "showmedians"
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.violinplot([[1, 2, 2, 3, 4], [2, 3, 4, 5, 7]])\nfig.savefig(\"violin_example.png\")",
+      "use_when": "1) Group distribution comparison. 2) Seeing multimodality. 3) Comparing spread plus density. 4) Statistical reports. 5) When box plots are too coarse.",
+      "avoid_when": "1) Very small samples. 2) The audience is unfamiliar with density plots. 3) You need direct data points. 4) Many groups would overcrowd the chart. 5) Exact numerical comparison matters more than shape.",
+      "decision_notes": "Category: Violin plots\nModule: `pyplot`\nReturn Value: Dictionary of artists.\nExpected Output: A two-violin distribution comparison.\nPerformance Notes: Density estimation adds cost relative to box plots.\nCommon Mistakes: Overtrusting the shape with tiny samples; leaving out medians or quantiles; using too many violins; confusing density width with raw count; comparing unlike sample sizes without context.\nRelated APIs: `boxplot`, `hist`, `density`, `fill_between`.",
+      "gotchas": [
+        "Kernel smoothing affects appearance",
+        "widths are visual, not counts",
+        "vert controls orientation",
+        "extrema markers can be enabled or disabled",
+        "violin shape is a summary, not raw data."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "seaborn",
+          "task": "Create Violin Plot",
+          "reason": "Statistical violin plot showing kernel density estimate."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Create Violin Plot",
+          "reason": "Interactive violin plot with hover support."
+        }
+      ],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.violinplot.html"
+    },
+    {
+      "task": "Shade Area Between Curves",
+      "mental_trigger": "I need an interval band or shaded region.",
+      "syntax": "fill_between(x, y1, y2=0, where=None, interpolate=False, step=None, *, data=None, **kwargs)",
+      "important_params": [
+        "x",
+        "y1",
+        "y2",
+        "where",
+        "interpolate"
+      ],
+      "example": "",
+      "use_when": "1) Confidence intervals. 2) Threshold highlighting. 3) Area-under-curve shading. 4) Ranged time series. 5) Overlap comparisons.",
+      "avoid_when": "1) You need discrete bars. 2) The filled region would obscure too much data. 3) A line-only plot is clearer. 4) The baseline is not meaningful. 5) You need exact area values rather than visual emphasis.",
+      "decision_notes": "Category: Line plots / filled regions\nModule: `pyplot`\nReturn Value: `PolyCollection`.\nExpected Output: A line with a shaded band.\nPerformance Notes: Efficient for moderate spans; dense data with many fills can slow rendering.\nCommon Mistakes: Filling the wrong baseline; using opaque fills that obscure data; mismatching x ordering; forgetting transparency; overusing shaded areas.\nRelated APIs: `errorbar`, `fill_betweenx`, `stackplot`.",
+      "gotchas": [
+        "where selectively fills regions",
+        "interpolation changes boundaries",
+        "step semantics matter",
+        "color and alpha strongly affect readability",
+        "the filled artist is a collection."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.fill_between.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Create Area Chart",
+          "reason": "Interactive stacked or overlay area chart."
+        }
+      ]
+    },
+    {
+      "task": "Display Gridded Quad Mesh",
+      "mental_trigger": "I need a grid heatmap with cell geometry.",
+      "syntax": "pcolormesh(*args, alpha=None, norm=None, cmap=None, vmin=None, vmax=None, shading=None, antialiased=False, data=None, **kwargs)",
+      "important_params": [
+        "alpha",
+        "norm",
+        "cmap",
+        "vmin",
+        "vmax"
+      ],
+      "example": "import matplotlib.pyplot as plt\nimport numpy as np\nfig, ax = plt.subplots()\nax.pcolormesh(np.array([[1, 2], [3, 4]]), cmap=\"viridis\", shading=\"auto\")\nfig.savefig(\"pcolormesh_example.png\")",
+      "use_when": "1) Gridded scalar fields. 2) Uneven cell boundaries. 3) Heatmaps with custom geometry. 4) Scientific contour-style backgrounds. 5) Large structured grids.",
+      "avoid_when": "1) You want simple matrix display without geometry. 2) You need a basic table-like heatmap. 3) Your data are not grid-based. 4) You need point markers. 5) You want an annotation-heavy confusion matrix with cell text.",
+      "decision_notes": "Category: Images / grids\nModule: `pyplot`\nReturn Value: `QuadMesh`.\nExpected Output: A colored grid mesh.\nPerformance Notes: Often better than many separate patches for large grids.\nCommon Mistakes: Using incompatible array shapes; misunderstanding shading; confusing mesh boundaries; omitting color scaling control; choosing the wrong API for matrix-like data.\nRelated APIs: `imshow`, `contourf`, `colorbar`.",
+      "gotchas": [
+        "shading changes cell interpretation",
+        "coordinate arrays affect geometry",
+        "QuadMesh differs from image semantics",
+        "grid edges may matter",
+        "color normalization can dominate interpretation."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.pcolormesh.html"
+    },
+    {
+      "task": "Display Heatmap Or Image",
+      "mental_trigger": "I need to show matrix-like data or pixel data.",
+      "syntax": "imshow(X, cmap=None, norm=None, *, aspect=None, interpolation=None, alpha=None, vmin=None, vmax=None, origin=None, extent=None, interpolation_stage=None, filternorm=True, filterrad=4.0, resample=None, url=None, data=None, **kwargs)",
+      "important_params": [
+        "X",
+        "cmap",
+        "norm",
+        "aspect",
+        "interpolation",
+        "origin",
+        "extent"
+      ],
+      "example": "import matplotlib.pyplot as plt\nimport numpy as np\nfig, ax = plt.subplots()\nax.imshow(np.array([[1, 2], [3, 4]]), cmap=\"viridis\")\nfig.savefig(\"imshow_example.png\")",
+      "use_when": "1) Heatmaps. 2) Image arrays. 3) Attention maps. 4) Correlation matrices. 5) Dense grid data.",
+      "avoid_when": "1) The matrix is sparse and labels matter more than pixels. 2) You need exact cell boundaries with annotations. 3) You want categorical rectangles with custom axes. 4) You need a line or scatter view. 5) The array size is too large for readable display.",
+      "decision_notes": "Category: Images / heatmaps\nModule: `pyplot`\nReturn Value: `AxesImage`.\nExpected Output: A 2x2 heatmap image.\nPerformance Notes: Large arrays can be memory-heavy; interpolation choices affect render time and output appearance.\nCommon Mistakes: Forgetting axis labels for matrix data; using the wrong origin; misreading aspect ratio; applying smoothing unintentionally; confusing image display with aggregation.\nRelated APIs: `matshow`, `pcolormesh`, `colorbar`, `hexbin`.",
+      "gotchas": [
+        "origin changes orientation",
+        "aspect can distort cells",
+        "interpolation affects appearance",
+        "color scaling may need explicit vmin/vmax",
+        "axis coordinates may not match array indices."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Create Density Heatmap",
+          "reason": "Interactive density heatmap with zoom and hover."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Display Image Data",
+          "reason": "Interactive image display with zoom and hover."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create Heatmap",
+          "reason": "High-level annotated heatmap."
+        }
+      ],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.imshow.html"
+    },
+    {
+      "task": "Display Matrix Heatmap",
+      "mental_trigger": "I need a quick matrix visualization.",
+      "syntax": "matshow(Z, fignum=None, **kwargs)",
+      "important_params": [
+        "Z",
+        "fignum",
+        "**kwargs."
+      ],
+      "example": "import matplotlib.pyplot as plt\nimport numpy as np\nfig = plt.figure()\nplt.matshow(np.array([[1, 0], [0, 1]]), fignum=fig.number)\nfig.savefig(\"matshow_example.png\")",
+      "use_when": "1) Correlation matrices. 2) Confusion matrices. 3) Small numeric grids. 4) Quick inspection of 2D arrays. 5) Debugging matrix structure.",
+      "avoid_when": "1) You need customized image behavior. 2) You need complex subplot integration. 3) You need dense production heatmaps with tailored axes. 4) You need non-matrix image semantics. 5) You want full control over `imshow` settings.",
+      "decision_notes": "Category: Images / matrices\nModule: `pyplot`\nReturn Value: `AxesImage`.\nExpected Output: A simple matrix plot.\nPerformance Notes: Thin convenience wrapper; behavior follows the underlying image machinery.\nCommon Mistakes: Treating it as a general-purpose heatmap API; losing subplot control; forgetting it creates/uses a figure context; relying on defaults when labels matter; misreading orientation.\nRelated APIs: `imshow`, `pcolormesh`, `colorbar`.",
+      "gotchas": [
+        "matshow is convenience-oriented",
+        "matrix aspect defaults differ from some image use cases",
+        "figure activation behavior can surprise users",
+        "it is less flexible than imshow",
+        "axis ticks may need explicit formatting."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.matshow.html"
+    },
+    {
+      "task": "Draw 2D Histogram Heatmap",
+      "mental_trigger": "I need a binned 2D density view.",
+      "syntax": "hist2d(x, y, bins=10, range=None, density=False, weights=None, cmin=None, cmax=None, *, data=None, **kwargs)",
+      "important_params": [
+        "x",
+        "y",
+        "bins",
+        "range",
+        "density"
+      ],
+      "example": "",
+      "use_when": "1) Large scatter clouds. 2) Density approximation. 3) Correlation structure exploration. 4) Overplotting reduction. 5) Heatmap-like point density summaries.",
+      "avoid_when": "1) You need exact point positions. 2) The dataset is small enough for scatter. 3) Bin choice would dominate interpretation. 4) You need labeled categorical grids. 5) The data are irregular and binning is misleading.",
+      "decision_notes": "Category: 2D histograms\nModule: `pyplot`\nReturn Value: `(H, xedges, yedges, image)`.\nExpected Output: A 2D density grid.\nPerformance Notes: Useful for large datasets because it bins before rendering.\nCommon Mistakes: Using too few or too many bins; reading counts as individual points; forgetting that binning changes meaning; failing to compare binning choices; using it for sparse datasets.\nRelated APIs: `hexbin`, `imshow`, `pcolormesh`.",
+      "gotchas": [
+        "Bin edges define meaning",
+        "density=True changes scaling",
+        "values depend on binning strategy",
+        "colorbar is often needed",
+        "masked bins can disappear with cmin/cmax."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.hist2d.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Create Density Heatmap",
+          "reason": "Interactive 2D binned heatmap representation."
+        }
+      ]
+    },
+    {
+      "task": "Draw Contour Lines",
+      "mental_trigger": "I need level curves.",
+      "syntax": "contour(*args, **kwargs)",
+      "important_params": [
+        "*args",
+        "levels",
+        "colors",
+        "cmap",
+        "norm"
+      ],
+      "example": "import matplotlib.pyplot as plt\nimport numpy as np\nx = np.linspace(-2, 2, 20)\ny = np.linspace(-2, 2, 20)\nX, Y = np.meshgrid(x, y)\nZ = X**2 + Y**2\nfig, ax = plt.subplots()\nax.contour(X, Y, Z, levels=5)\nfig.savefig(\"contour_example.png\")",
+      "use_when": "1) Scientific scalar fields. 2) Surface level visualization. 3) Field analysis. 4) Overlaying isolines on images. 5) Comparing thresholds.",
+      "avoid_when": "1) You need filled regions only. 2) The field is too noisy for contours. 3) You need exact raw values. 4) A simple heatmap is enough. 5) The grid is too sparse for meaningful levels.",
+      "decision_notes": "Category: Contours\nModule: `pyplot`\nReturn Value: `ContourSet`.\nExpected Output: Several contour lines.\nPerformance Notes: Dense grids and many levels increase cost; contouring is heavier than image display.\nCommon Mistakes: Passing unsorted or malformed grids; using too many levels; choosing contours for noisy data; forgetting axis scaling; confusing contour lines with filled areas.\nRelated APIs: `contourf`, `clabel`, `imshow`.",
+      "gotchas": [
+        "Level choice strongly affects readability",
+        "contours depend on interpolation across the grid",
+        "labels may be needed for interpretation",
+        "axes aspect can matter",
+        "ContourSet contains multiple artists."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.contour.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Create Density Contour Plot",
+          "reason": "Interactive 2D contour lines plot."
+        }
+      ]
+    },
+    {
+      "task": "Draw Filled Contour Regions",
+      "mental_trigger": "I need area-filled level visualization.",
+      "syntax": "contourf(*args, **kwargs)",
+      "important_params": [
+        "*args",
+        "levels",
+        "cmap",
+        "colors",
+        "alpha"
+      ],
+      "example": "import matplotlib.pyplot as plt\nimport numpy as np\nx = np.linspace(-2, 2, 20)\ny = np.linspace(-2, 2, 20)\nX, Y = np.meshgrid(x, y)\nZ = np.sin(X**2 + Y**2)\nfig, ax = plt.subplots()\nax.contourf(X, Y, Z, levels=10, cmap=\"viridis\")\nfig.savefig(\"contourf_example.png\")",
+      "use_when": "1) Scalar field shading. 2) Smooth heat-style contours. 3) Region-based level plots. 4) Scientific visualizations. 5) Background fields for overlays.",
+      "avoid_when": "1) You need exact line levels only. 2) The field is too sparse. 3) The viewer needs matrix cell boundaries. 4) You want a simple heatmap. 5) The color bands would obscure structure.",
+      "decision_notes": "Category: Filled contours\nModule: `pyplot`\nReturn Value: `QuadContourSet`.\nExpected Output: A filled contour plot.\nPerformance Notes: Heavier than `imshow` for dense grids; many levels increase rendering cost.\nCommon Mistakes: Choosing too many bands; using low-contrast colormaps; forgetting a colorbar; masking structure with opacity; using it where matrix display is better.\nRelated APIs: `contour`, `imshow`, `colorbar`.",
+      "gotchas": [
+        "Filled contours interpolate between level boundaries",
+        "level spacing matters",
+        "extend controls out-of-range treatment",
+        "colorbar semantics depend on levels",
+        "contour fill can hide detail."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.contourf.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Create Density Contour Plot",
+          "reason": "Interactive 2D filled contour regions."
+        }
+      ]
+    },
+    {
+      "task": "Draw Hexagonal Binning Plot",
+      "mental_trigger": "I need density for very dense scatter data.",
+      "syntax": "hexbin(x, y, C=None, gridsize=100, bins=None, xscale='linear', yscale='linear', extent=None, cmap=None, norm=None, vmin=None, vmax=None, alpha=None, linewidths=None, *, data=None, reduce_C_function=<function mean>, mincnt=None, marginals=False, **kwargs)",
+      "important_params": [
+        "x",
+        "y",
+        "C",
+        "gridsize",
+        "bins"
+      ],
+      "example": "",
+      "use_when": "1) Large point clouds. 2) Overplotting mitigation. 3) Spatial density visualization. 4) Aggregated 2D summaries. 5) Large-scale exploratory analysis.",
+      "avoid_when": "1) You need exact coordinates. 2) Point count is small. 3) Rectangular bins are preferred for a matrix. 4) The user expects ordinary scatter markers. 5) You need fine categorical labels.",
+      "decision_notes": "Category: 2D density plots\nModule: `pyplot`\nReturn Value: `PolyCollection`.\nExpected Output: A hexagonal density plot.\nPerformance Notes: Often better than scatter for large dense point sets.\nCommon Mistakes: Choosing a poor grid size; misreading aggregated values; omitting a colorbar; using it on sparse data; comparing hexbin outputs with different binning settings.\nRelated APIs: `hist2d`, `scatter`, `imshow`.",
+      "gotchas": [
+        "Binning choices strongly affect appearance",
+        "C enables aggregation beyond counts",
+        "reduce_C_function controls aggregation",
+        "marginals adds marginal histograms",
+        "hexbin is ideal for dense clouds."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.hexbin.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Create Density Contour Plot",
+          "reason": "Interactive 2D density contour lines."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Create Density Heatmap",
+          "reason": "Interactive 2D binned heatmap representation."
+        }
+      ]
+    },
+    {
+      "task": "Add Legend To Axes",
+      "mental_trigger": "I need to identify plotted series.",
+      "syntax": "legend(*args, **kwargs)",
+      "important_params": [
+        "*args",
+        "loc",
+        "bbox_to_anchor",
+        "ncol",
+        "frameon"
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 2, 3], label=\"trend\")\nax.legend()\nfig.savefig(\"legend_example.png\")",
+      "use_when": "1) Multi-series charts. 2) Categorical color encodings. 3) Publication figures. 4) Interactive exploratory plots. 5) Annotated comparisons.",
+      "avoid_when": "1) Labels are already directly on marks. 2) The figure becomes cluttered. 3) Series are too numerous to distinguish. 4) A colorbar is more appropriate. 5) The legend would obscure data.",
+      "decision_notes": "Category: Legends\nModule: `pyplot`\nReturn Value: `Legend`.\nExpected Output: A line plot with a legend.\nPerformance Notes: Usually cheap, but large legends can slow layout and increase visual clutter.\nCommon Mistakes: Forgetting labels; using a legend where direct labels are better; placing it over data; overstuffing it with many entries; mismatching handles and labels.\nRelated APIs: `Axes.legend`, `colorbar`, `annotate`.",
+      "gotchas": [
+        "Legend order follows artists or explicit handles",
+        "location affects layout",
+        "some artists need proxy handles",
+        "legends can be outside axes",
+        "styling may differ by backend."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html",
+      "visualization_equivalents": [
+        {
+          "package": "seaborn",
+          "task": "Utility: Move or Recreate Plot Legend",
+          "reason": "Adjust or rebuild the plot legend in Seaborn."
+        }
+      ]
+    },
+    {
+      "task": "Configure Axis Visibility And Scaling",
+      "mental_trigger": "I need compact control over axis framing.",
+      "syntax": "axis(arg=None, /, *, emit=True, strict=False, xmin=None, xmax=None, ymin=None, ymax=None)",
+      "important_params": [
+        "arg",
+        "emit",
+        "strict",
+        "xmin",
+        "xmax"
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 2])\nax.axis(\"tight\")\nfig.savefig(\"axis_example.png\")",
+      "use_when": "1) Quick equal/aspect adjustments. 2) Turning axes on or off. 3) Setting bounds in one call. 4) Simple plot framing. 5) Utility scripts.",
+      "avoid_when": "1) You need clear, explicit OO code. 2) You want precise per-axis control. 3) You are building a reusable library API. 4) You need complex aspect/layout logic. 5) You need readability over brevity.",
+      "decision_notes": "Category: Axis management\nModule: `pyplot`\nReturn Value: Current axis limits or status.\nExpected Output: A plot with automatically tightened framing.\nPerformance Notes: Negligible.\nCommon Mistakes: Using it when `set_xlim`/`set_ylim` is clearer; accidentally turning axes off; overusing string modes; confusing aspect with limits; relying on implicit side effects.\nRelated APIs: `set_xlim`, `set_ylim`, `set_aspect`.",
+      "gotchas": [
+        "String modes change multiple settings",
+        "axis status can hide frame elements",
+        "strict affects validation",
+        "it is easier to misuse than dedicated methods",
+        "behavior may vary by context."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.axis.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Update X-Axes",
+          "reason": "Toggle axis visibility or set log scale on X axis."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Update Y-Axes",
+          "reason": "Toggle axis visibility or set log scale on Y axis."
+        }
+      ]
+    },
+    {
+      "task": "Configure Grid Lines",
+      "mental_trigger": "I need reference lines for reading values.",
+      "syntax": "grid(visible=None, which='major', axis='both', **kwargs)",
+      "important_params": [
+        "visible",
+        "which",
+        "axis."
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 2])\nax.grid(True)\nfig.savefig(\"grid_example.png\")",
+      "use_when": "1) Quantitative comparison. 2) Dense axis reading. 3) Reporting figures. 4) Time series plots. 5) Scientific charts.",
+      "avoid_when": "1) Grid lines distract from marks. 2) The chart is already busy. 3) The figure is decorative. 4) You need minimal visual noise. 5) Grid lines compete with annotations.",
+      "decision_notes": "Category: Grid\nModule: `pyplot`\nReturn Value: `None`.\nExpected Output: A line plot with grid lines.\nPerformance Notes: Negligible.\nCommon Mistakes: Overusing major and minor grids together; making the grid too prominent; enabling grids on every plot without need; confusing axis and figure grid; relying on grids instead of labels.\nRelated APIs: `tick_params`, `minorticks_on`, `rcParams`.",
+      "gotchas": [
+        "Grid styling can differ by axis and backend",
+        "minor grid lines require minor ticks",
+        "grid visibility may be overridden by style sheets",
+        "axis can limit which direction is affected",
+        "grid can affect perceived density."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.grid.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Update X-Axes",
+          "reason": "Toggle gridlines on the interactive X axis."
+        },
+        {
+          "package": "plotly-express",
+          "task": "Update Y-Axes",
+          "reason": "Toggle gridlines on the interactive Y axis."
+        },
+        {
+          "package": "seaborn",
+          "task": "Style: Configure Global Background and Grid Style",
+          "reason": "Global styling of grids and backgrounds."
+        }
+      ]
+    },
+    {
+      "task": "Draw Horizontal Reference Line",
+      "mental_trigger": "I need a horizontal marker.",
+      "syntax": "axhline(y=0, xmin=0, xmax=1, **kwargs)",
+      "important_params": [
+        "y",
+        "xmin",
+        "xmax",
+        "**kwargs."
+      ],
+      "example": "",
+      "use_when": "1) Zero baselines. 2) Threshold lines. 3) Target values. 4) Mean or reference levels. 5) Control chart markers.",
+      "avoid_when": "1) The line should be limited to a data segment. 2) You need another chart type. 3) The figure is already crowded. 4) There is no analytical reason for the line. 5) You need vertical orientation.",
+      "decision_notes": "Category: Spans\nModule: `pyplot`\nReturn Value: `Line2D`.\nExpected Output: A horizontal reference line.\nPerformance Notes: Very cheap.\nCommon Mistakes: Confusing axes fractions with data coordinates; adding too many reference lines; using it as data; poor contrast against the plot; assuming it updates with scale changes.\nRelated APIs: `axvline`, `axhspan`, `hlines`.",
+      "gotchas": [
+        "xmin and xmax are axes fractions",
+        "it spans the axes area, not data extent",
+        "style and z-order matter",
+        "it is ideal for thresholds",
+        "can be combined with annotations."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.axhline.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Add Horizontal Reference Line",
+          "reason": "Interactive horizontal line guide."
+        }
+      ]
+    },
+    {
+      "task": "Draw Vertical Reference Line",
+      "mental_trigger": "I need a vertical marker.",
+      "syntax": "axvline(x=0, ymin=0, ymax=1, **kwargs)",
+      "important_params": [
+        "x",
+        "ymin",
+        "ymax",
+        "**kwargs."
+      ],
+      "example": "",
+      "use_when": "1) Threshold markers. 2) Event markers. 3) Decision boundaries. 4) Reference annotations. 5) Trend alignment cues.",
+      "avoid_when": "1) You need a finite segment in data coordinates. 2) A text annotation is enough. 3) The chart is already too cluttered. 4) The reference line has no analytical meaning. 5) You need a horizontal marker instead.",
+      "decision_notes": "Category: Spans\nModule: `pyplot`\nReturn Value: `Line2D`.\nExpected Output: A vertical reference line.\nPerformance Notes: Very cheap.\nCommon Mistakes: Using it for data series; placing too many markers; confusing axes-relative ymin/ymax with data limits; forgetting color contrast; overusing decoration.\nRelated APIs: `axhline`, `axvspan`, `vlines`.",
+      "gotchas": [
+        "ymin and ymax are axes fractions, not data values",
+        "line spans the visible axes region",
+        "style kwargs affect the line artist",
+        "use sparingly for clarity",
+        "can be layered with other artists."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.axvline.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Add Vertical Reference Line",
+          "reason": "Interactive vertical line guide."
+        }
+      ]
+    },
+    {
+      "task": "Set Horizontal Axis Limits",
+      "mental_trigger": "I need to frame the horizontal range explicitly.",
+      "syntax": "xlim(left=None, right=None, *, emit=True, auto=False, xmin=None, xmax=None)",
+      "important_params": [
+        "left",
+        "right",
+        "emit",
+        "auto",
+        "xmin"
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 2])\nax.set_xlim(1, 3)\nfig.savefig(\"xlim_example.png\")",
+      "use_when": "1) Zooming into a region. 2) Standardizing comparisons. 3) Excluding outliers visually. 4) Aligning subplot ranges. 5) Fixing axis bounds for exports.",
+      "avoid_when": "1) Autoscaling is sufficient. 2) You might hide important data unintentionally. 3) You need data-driven bounds with uncertainty. 4) Axis clipping would mislead. 5) You are not sure of the intended viewing window.",
+      "decision_notes": "Category: Axis limits\nModule: `pyplot`\nReturn Value: Current `(left, right)` or `None`.\nExpected Output: A plot with a constrained x-range.\nPerformance Notes: Negligible.\nCommon Mistakes: Hiding data; setting inverted limits accidentally; using limits instead of data filtering; inconsistent limits across comparisons; forgetting that the visible window affects perception.\nRelated APIs: `ylim`, `axis`, `autoscale`.",
+      "gotchas": [
+        "Limits can invert axes when reversed",
+        "autoscale behavior can override manual assumptions",
+        "hidden data still exist",
+        "axis limits affect tick generation",
+        "shared axes propagate changes."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.xlim.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Update X-Axes",
+          "reason": "Interactive range limits for X axis."
+        },
+        {
+          "package": "seaborn",
+          "task": "Objects API: Configure Axis Limits",
+          "reason": "Set limits for coordinate scales."
+        }
+      ]
+    },
+    {
+      "task": "Set Vertical Axis Limits",
+      "mental_trigger": "I need to frame the vertical range explicitly.",
+      "syntax": "ylim(bottom=None, top=None, *, emit=True, auto=False, ymin=None, ymax=None)",
+      "important_params": [
+        "bottom",
+        "top",
+        "emit",
+        "auto",
+        "ymin"
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 2])\nax.set_ylim(0, 5)\nfig.savefig(\"ylim_example.png\")",
+      "use_when": "1) Zooming into value ranges. 2) Standardizing comparisons. 3) Fixing plot height scale. 4) Sharing ranges across subplots. 5) Export consistency.",
+      "avoid_when": "1) Autoscaling is enough. 2) You may clip outliers accidentally. 3) You need honest full-range displays. 4) Limits would distort the visual message. 5) You are not sure what should be visible.",
+      "decision_notes": "Category: Axis limits\nModule: `pyplot`\nReturn Value: Current `(bottom, top)` or `None`.\nExpected Output: A plot with a constrained y-range.\nPerformance Notes: Negligible.\nCommon Mistakes: Hiding important values; using tight limits that mislead; inconsistent scaling between panels; reversing axis direction unintentionally; expecting autoscale after manual limits without resetting.\nRelated APIs: `xlim`, `axis`, `autoscale`.",
+      "gotchas": [
+        "Reversed limits are allowed",
+        "shared axes affect all linked plots",
+        "clipping is visual, not data removal",
+        "tick density changes with bounds",
+        "manual bounds can be overridden by later plotting calls."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.ylim.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Update Y-Axes",
+          "reason": "Interactive range limits for Y axis."
+        },
+        {
+          "package": "seaborn",
+          "task": "Objects API: Configure Axis Limits",
+          "reason": "Set limits for coordinate scales."
+        }
+      ]
+    },
+    {
+      "task": "Set X-Axis Label",
+      "mental_trigger": "I need to name the horizontal axis.",
+      "syntax": "xlabel(xlabel, fontdict=None, labelpad=None, *, loc=None, **kwargs)",
+      "important_params": [
+        "xlabel",
+        "fontdict",
+        "labelpad",
+        "loc."
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.plot([1, 2], [1, 4])\nax.set_xlabel(\"Time\")\nfig.savefig(\"xlabel_example.png\")",
+      "use_when": "1) Every non-trivial chart. 2) Units labeling. 3) Time axis descriptions. 4) Feature names. 5) Publication figures.",
+      "avoid_when": "1) The axis is intentionally unlabeled for a composite figure. 2) The label would duplicate surrounding annotation. 3) The plot is a pure diagram. 4) The axis is shared and already labeled elsewhere. 5) The label would crowd the figure.",
+      "decision_notes": "Category: Text\nModule: `pyplot`\nReturn Value: `Text`.\nExpected Output: A chart with an x-axis label.\nPerformance Notes: Negligible cost.\nCommon Mistakes: Missing units; inconsistent label naming; putting labels on shared axes redundantly; mismatched language/style; using overly long labels.\nRelated APIs: `ylabel`, `set_xlabel`, `xlabel`.",
+      "gotchas": [
+        "labelpad changes spacing",
+        "label placement can be controlled",
+        "shared axes often need one visible label only",
+        "formatting can differ by backend",
+        "long labels can trigger layout adjustments."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.xlabel.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Update X-Axes",
+          "reason": "Interactive axis titles configuration."
+        },
+        {
+          "package": "seaborn",
+          "task": "Objects API: Configure Plot Labels",
+          "reason": "High-level labelling for axis and legends."
+        }
+      ]
+    },
+    {
+      "task": "Set X-Axis Tick Locations And Labels",
+      "mental_trigger": "I need custom x-axis tick labels.",
+      "syntax": "xticks(ticks=None, labels=None, *, minor=False, **kwargs)",
+      "important_params": [
+        "ticks",
+        "labels",
+        "minor."
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 2])\nax.set_xticks([1, 2, 3], [\"one\", \"two\", \"three\"])\nfig.savefig(\"xticks_example.png\")",
+      "use_when": "1) Categorical labels. 2) Date formatting overrides. 3) Sparse tick display. 4) Rotated labels. 5) Manual axis clarity.",
+      "avoid_when": "1) Auto ticks are good enough. 2) The tick count is very large. 3) You are formatting date axes better via locators/formatters. 4) Labeling every point would clutter the plot. 5) You need reusable axis logic.",
+      "decision_notes": "Category: Tick management\nModule: `pyplot`\nReturn Value: Tick positions or labels when used as a getter; otherwise `None`.\nExpected Output: A plot with custom x tick labels.\nPerformance Notes: Many custom ticks increase layout work.\nCommon Mistakes: Overcrowding ticks; using raw `xticks` instead of axis methods in OO code; mislabeling positions; rotating labels inconsistently; using it for large numeric axes.\nRelated APIs: `yticks`, `ticker`, `tick_params`.",
+      "gotchas": [
+        "Tick positions and labels must match",
+        "manual ticks override auto behavior",
+        "minor ticks are separate",
+        "large label sets can clip",
+        "date axes are often better handled via dedicated locators."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.xticks.html"
+    },
+    {
+      "task": "Set Y-Axis Label",
+      "mental_trigger": "I need to name the vertical axis.",
+      "syntax": "ylabel(ylabel, fontdict=None, labelpad=None, *, loc=None, **kwargs)",
+      "important_params": [
+        "ylabel",
+        "fontdict",
+        "labelpad",
+        "loc."
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.plot([1, 2], [1, 4])\nax.set_ylabel(\"Value\")\nfig.savefig(\"ylabel_example.png\")",
+      "use_when": "1) Every non-trivial chart. 2) Units labeling. 3) Outcome metrics. 4) Time-varying response variables. 5) Publication figures.",
+      "avoid_when": "1) The label is redundant. 2) The figure is a diagram with no axis semantics. 3) Shared subplots already communicate it. 4) The chart is too narrow for a rotated label. 5) A figure caption is enough.",
+      "decision_notes": "Category: Text\nModule: `pyplot`\nReturn Value: `Text`.\nExpected Output: A chart with a y-axis label.\nPerformance Notes: Negligible cost.\nCommon Mistakes: Wrong units; duplicating labels across shared axes; using vertical space poorly; inconsistent label capitalization; omitting labels in final exports.\nRelated APIs: `xlabel`, `set_ylabel`, `ylabel`.",
+      "gotchas": [
+        "Label rotation and spacing matter",
+        "shared-axis figures may need selective labeling",
+        "long labels can conflict with layout",
+        "loc changes placement",
+        "label pad can affect exported geometry."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.ylabel.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Update Y-Axes",
+          "reason": "Interactive axis titles configuration."
+        },
+        {
+          "package": "seaborn",
+          "task": "Objects API: Configure Plot Labels",
+          "reason": "High-level labelling for axis and legends."
+        }
+      ]
+    },
+    {
+      "task": "Set Y-Axis Tick Locations And Labels",
+      "mental_trigger": "I need custom y-axis tick labels.",
+      "syntax": "yticks(ticks=None, labels=None, *, minor=False, **kwargs)",
+      "important_params": [
+        "ticks",
+        "labels",
+        "minor."
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 2])\nax.set_yticks([1, 2, 4], [\"low\", \"mid\", \"high\"])\nfig.savefig(\"yticks_example.png\")",
+      "use_when": "1) Manual scale annotation. 2) Categorical y-axis labels. 3) Sparse tick display. 4) Horizontal bar charts. 5) Readability tuning.",
+      "avoid_when": "1) Default ticks already communicate the scale well. 2) The plot is dense. 3) You need formatters for reusable logic. 4) You want automatic tick placement. 5) Label spacing is already tight.",
+      "decision_notes": "Category: Tick management\nModule: `pyplot`\nReturn Value: Tick positions or labels when used as a getter; otherwise `None`.\nExpected Output: A plot with custom y tick labels.\nPerformance Notes: Many labeled ticks can slow layout and reduce legibility.\nCommon Mistakes: Misaligned ticks and labels; using too many custom labels; rotating labels badly; overriding useful autoscaling; forgetting minor-vs-major distinction.\nRelated APIs: `xticks`, `tick_params`, `ticker`.",
+      "gotchas": [
+        "Label positions must match tick values",
+        "formatter-based approaches are often cleaner for reusable code",
+        "axes limits can hide ticks",
+        "manual ticks can conflict with autoscaling",
+        "dense labels can overlap."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.yticks.html"
+    },
+    {
+      "task": "Add Text Annotation",
+      "mental_trigger": "I need to label a specific point or region.",
+      "syntax": "text(x, y, s, fontdict=None, **kwargs)",
+      "important_params": [
+        "x",
+        "y",
+        "s",
+        "fontdict."
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 2])\nax.text(2, 4, \"peak\")\nfig.savefig(\"text_example.png\")",
+      "use_when": "1) Point labels. 2) Inline notes. 3) Metric callouts. 4) Figure annotations. 5) Contextual labels in charts.",
+      "avoid_when": "1) The plot would become cluttered. 2) You need arrows or callout geometry. 3) You need axis labels instead. 4) You need many repeated labels. 5) The annotation belongs in the caption.",
+      "decision_notes": "Category: Text / annotation\nModule: `pyplot`\nReturn Value: `Text`.\nExpected Output: A chart with an inline text label.\nPerformance Notes: Many text objects can slow rendering and make the figure unreadable.\nCommon Mistakes: Using the wrong coordinate system; overcrowding the plot; making text too small; forgetting contrast; placing text outside view limits.\nRelated APIs: `annotate`, `title`, `xlabel`, `ylabel`.",
+      "gotchas": [
+        "Coordinates are data-based by default",
+        "text can be clipped",
+        "transforms may be needed for axes-relative placement",
+        "rotation and alignment matter",
+        "text can influence layout."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.text.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Add Annotation Text",
+          "reason": "Interactive layout annotation."
+        }
+      ]
+    },
+    {
+      "task": "Axes-Level: Add Legend",
+      "mental_trigger": "I need series labels on one subplot.",
+      "syntax": "legend(*args, **kwargs)",
+      "important_params": [
+        "Same practical legend parameters as pyplot."
+      ],
+      "example": "",
+      "use_when": "1) Multi-panel layouts. 2) Explicit axis control. 3) Reusable plot functions. 4) Publication figures. 5) Subplot-specific labeling.",
+      "avoid_when": "1) The figure-level legend is better. 2) Labels already appear directly on the marks. 3) The legend would block data. 4) Too many series exist. 5) A colorbar is the better semantic key.",
+      "decision_notes": "Category: Legends\nModule: `axes`\nReturn Value: `Legend`.\nExpected Output: Legend attached to the given axes.\nPerformance Notes: Same as pyplot legend.\nCommon Mistakes: Same as pyplot legend, plus placing it on the wrong axes.\nRelated APIs: `legend`, `figure.legend`, `colorbar`.",
+      "gotchas": [
+        "Same as pyplot legend."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.legend.html",
+      "visualization_equivalents": [
+        {
+          "package": "seaborn",
+          "task": "Utility: Move or Recreate Plot Legend",
+          "reason": "Adjust or rebuild the plot legend in Seaborn."
+        }
+      ]
+    },
+    {
+      "task": "Axes-Level: Display Heatmap Or Image",
+      "mental_trigger": "I need matrix/image rendering in OO style.",
+      "syntax": "Same practical image signature as pyplot image display",
+      "important_params": [
+        "Same as imshow."
+      ],
+      "example": "",
+      "use_when": "1) Subplots. 2) Multi-panel heatmaps. 3) Explicit axis control. 4) Model diagnostics. 5) Production report figures.",
+      "avoid_when": "1) You are not targeting a specific axes. 2) Simple convenience plotting is enough. 3) The array is not image-like. 4) The plot needs cell labels more than color gradients. 5) You need a different grid representation.",
+      "decision_notes": "Category: Images\nModule: `axes`\nReturn Value: `AxesImage`.\nExpected Output: Image/heatmap on the target axes.\nPerformance Notes: Same as pyplot imshow.\nCommon Mistakes: Same as pyplot imshow, plus using the wrong axes.\nRelated APIs: `pcolormesh`, `colorbar`, `matshow`.",
+      "gotchas": [
+        "Same as pyplot imshow."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.imshow.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Display Image Data",
+          "reason": "Interactive image display with zoom and hover."
+        }
+      ]
+    },
+    {
+      "task": "Axes-Level: Draw Contour Lines",
+      "mental_trigger": "I need contours in a subplot.",
+      "syntax": "Same practical contour signature as pyplot contour",
+      "important_params": [
+        "Same as contour."
+      ],
+      "example": "",
+      "use_when": "1) Multi-panel scientific figures. 2) Explicit axis control. 3) Composite visualizations. 4) Publication outputs. 5) Field comparison plots.",
+      "avoid_when": "1) No axes reference exists. 2) A simple heatmap is enough. 3) The grid is too sparse. 4) The chart needs cell boundaries more than isolines. 5) You want convenience over control.",
+      "decision_notes": "Category: Contours\nModule: `axes`\nReturn Value: `ContourSet`.\nExpected Output: Contour lines on a chosen axes.\nPerformance Notes: Same as pyplot contour.\nCommon Mistakes: Same as pyplot contour, plus targeting the wrong axes.\nRelated APIs: `contourf`, `clabel`, `imshow`.",
+      "gotchas": [
+        "Same as pyplot contour."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.contour.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Create Density Contour Plot",
+          "reason": "Interactive 2D contour lines plot."
+        }
+      ]
+    },
+    {
+      "task": "Axes-Level: Draw Filled Contour Regions",
+      "mental_trigger": "I need filled level regions in a subplot.",
+      "syntax": "Same practical filled contour signature as pyplot contourf",
+      "important_params": [
+        "Same as contourf."
+      ],
+      "example": "",
+      "use_when": "1) Composite figures. 2) Scientific panels. 3) Explicit axis control. 4) Background fields. 5) Publication plots.",
+      "avoid_when": "1) No axes reference exists. 2) Color bands would obscure the story. 3) The field is too sparse. 4) A heatmap is clearer. 5) You need simple points or lines.",
+      "decision_notes": "Category: Filled contours\nModule: `axes`\nReturn Value: `QuadContourSet`.\nExpected Output: Filled contour regions on the target axes.\nPerformance Notes: Same as pyplot contourf.\nCommon Mistakes: Same as pyplot contourf.\nRelated APIs: `contour`, `imshow`, `colorbar`.",
+      "gotchas": [
+        "Same as pyplot contourf."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.contourf.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Create Density Contour Plot",
+          "reason": "Interactive 2D filled contour regions."
+        }
+      ]
+    },
+    {
+      "task": "Axes-Level: Draw Histogram",
+      "mental_trigger": "I need a histogram in OO style.",
+      "syntax": "Same practical histogram signature as pyplot histogram",
+      "important_params": [
+        "Same as hist."
+      ],
+      "example": "",
+      "use_when": "1) Subplots. 2) Reusable plotting functions. 3) Object-oriented workflows. 4) Comparative panels. 5) Batch reporting.",
+      "avoid_when": "1) No axes reference exists. 2) A count plot or summary plot is better. 3) The data are categorical. 4) You need too many bins. 5) You want exact data points.",
+      "decision_notes": "Category: Histograms\nModule: `axes`\nReturn Value: `(n, bins, patches)`.\nExpected Output: Histogram on the specified axes.\nPerformance Notes: Same as pyplot hist.\nCommon Mistakes: Same as pyplot hist, plus wrong target axis.\nRelated APIs: `hist`, `stairs`, `bar`.",
+      "gotchas": [
+        "Same as pyplot hist."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.hist.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Create Histogram",
+          "reason": "Interactive equivalent."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create Histogram",
+          "reason": "Statistical abstraction built on Matplotlib."
+        }
+      ]
+    },
+    {
+      "task": "Axes-Level: Draw Line Plot",
+      "mental_trigger": "I need the object-oriented line API.",
+      "syntax": "plot(*args, scalex=True, scaley=True, data=None, **kwargs)",
+      "important_params": [
+        "Same as plot."
+      ],
+      "example": "",
+      "use_when": "1) Production code. 2) Multi-axis figures. 3) Library code. 4) Reusable components. 5) Explicit subplot targeting.",
+      "avoid_when": "1) Simple one-off notebook sketches where `pyplot` is enough. 2) You do not have an axes reference. 3) You are mixing global and local styles carelessly. 4) You need only one quick plot. 5) You want stateful convenience over clarity.",
+      "decision_notes": "Category: Line plots\nModule: `axes`\nReturn Value: List of `Line2D`.\nExpected Output: Line chart on the given axes.\nPerformance Notes: Equivalent to pyplot version; OO code scales better in maintainability.\nCommon Mistakes: Using the wrong axes; forgetting the returned line list; mixing current axes with explicit axes; calling on stale axes; assuming `pyplot` and `Axes` methods are different rendering engines.\nRelated APIs: `plot`, `Axes.scatter`, `Axes.fill_between`.",
+      "gotchas": [
+        "The method and pyplot wrapper are functionally similar",
+        "return value is a list even for one line",
+        "styling works through kwargs",
+        "the current axes can diverge from your intended axes",
+        "explicit axes references reduce ambiguity."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.plot.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Create Line Plot",
+          "reason": "Interactive equivalent with hover labels and zooming."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create Line Plot",
+          "reason": "Statistical line plotting with grouped summaries and confidence bands."
+        }
+      ]
+    },
+    {
+      "task": "Axes-Level: Draw Scatter Plot",
+      "mental_trigger": "I need explicit axes targeting for a scatter plot.",
+      "syntax": "scatter(x, y, s=None, c=None, marker=None, cmap=None, norm=None, vmin=None, vmax=None, alpha=None, linewidths=None, *, edgecolors=None, plotnonfinite=False, data=None, **kwargs)",
+      "important_params": [
+        "Same as scatter."
+      ],
+      "example": "",
+      "use_when": "1) OO plotting. 2) Faceted dashboards. 3) Custom subplot arrangements. 4) Reusable rendering code. 5) Multiple axes in one figure.",
+      "avoid_when": "1) You are doing quick one-off plotting with no axis reference. 2) You want lines instead of points. 3) Point clouds are too large and unprocessed. 4) You need a histogram or heatmap. 5) The plot semantics are not point-based.",
+      "decision_notes": "Category: Scatter plots\nModule: `axes`\nReturn Value: `PathCollection`.\nExpected Output: A scatter plot on the chosen axis.\nPerformance Notes: Same as pyplot scatter.\nCommon Mistakes: Using the wrong axes in multi-panel layouts; passing incompatible color arrays; overplotting; ignoring marker area semantics; forgetting to add a colorbar when using numeric colors.\nRelated APIs: `scatter`, `plot`, `hexbin`.",
+      "gotchas": [
+        "The OO API does not change the underlying scatter semantics",
+        "return object supports later updates",
+        "axis-specific colorbars require explicit attachment",
+        "layout and transform context matters",
+        "large collections can be rasterized if needed."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.scatter.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Create Scatter Plot",
+          "reason": "Interactive equivalent with hover and zoom."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create Scatter Plot",
+          "reason": "Semantically grouped scatter plotting with statistical defaults."
+        }
+      ]
+    },
+    {
+      "task": "Axes-Level: Draw Vertical Bar Chart",
+      "mental_trigger": "I need OO bar plotting.",
+      "syntax": "bar(x, height, width=0.8, bottom=None, *, align='center', data=None, **kwargs)",
+      "important_params": [
+        "Same as bar."
+      ],
+      "example": "",
+      "use_when": "1) Reusable chart components. 2) Multi-panel figures. 3) Explicit axis targeting. 4) Production plotting. 5) Report generation.",
+      "avoid_when": "1) No axes reference is available. 2) The figure is simple enough for pyplot. 3) Continuous data are being shown. 4) The plot would contain too many categories. 5) A line chart is more appropriate.",
+      "decision_notes": "Category: Bar charts\nModule: `axes`\nReturn Value: `BarContainer`.\nExpected Output: A bar chart on a chosen axes.\nPerformance Notes: Same as pyplot bar.\nCommon Mistakes: Wrong axis target; too many categories; using raw values instead of summaries; poor label ordering; unnecessary styling complexity.\nRelated APIs: `barh`, `bar_label`, `hist`.",
+      "gotchas": [
+        "Container return can be used for labels",
+        "alignment matters",
+        "width units are data-axis units",
+        "bar plots in shared axes need careful spacing",
+        "stacked and grouped designs require explicit planning."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.bar.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Create Bar Chart",
+          "reason": "Interactive bar chart with hover tooltips."
+        },
+        {
+          "package": "seaborn",
+          "task": "Create Bar Plot",
+          "reason": "High-level statistical bar plot with aggregated estimates."
+        }
+      ]
+    },
+    {
+      "task": "Axes-Level: Set Title",
+      "mental_trigger": "I need a subplot title.",
+      "syntax": "set_title(label, fontdict=None, loc=None, pad=None, *, y=None, **kwargs)",
+      "important_params": [
+        "Same as title."
+      ],
+      "example": "",
+      "use_when": "1) Multi-panel comparisons. 2) Per-axis labeling. 3) Report figures. 4) Sectioned layouts. 5) Clear panel differentiation.",
+      "avoid_when": "1) A figure-level title is sufficient. 2) The title duplicates context. 3) You need concise labeling only. 4) The layout is too dense. 5) You are relying on captions instead.",
+      "decision_notes": "Category: Text\nModule: `axes`\nReturn Value: `Text`.\nExpected Output: A titled subplot.\nPerformance Notes: Negligible.\nCommon Mistakes: Duplicated subplot titles; long titles in tight grids; inconsistent capitalization; using figure title and axes title redundantly; layout clipping.\nRelated APIs: `set_xlabel`, `set_ylabel`, `suptitle`.",
+      "gotchas": [
+        "Same as title, plus subplot-specific spacing."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_title.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Update Figure Layout",
+          "reason": "Interactive figure title and layout updates."
+        },
+        {
+          "package": "seaborn",
+          "task": "Objects API: Configure Plot Labels",
+          "reason": "High-level labelling for titles, axis, and legends."
+        }
+      ]
+    },
+    {
+      "task": "Axes-Level: Set X-Axis Label",
+      "mental_trigger": "I need subplot-level x-axis text.",
+      "syntax": "set_xlabel(xlabel, fontdict=None, labelpad=None, *, loc=None, **kwargs)",
+      "important_params": [
+        "Same as xlabel."
+      ],
+      "example": "",
+      "use_when": "1) OO plotting. 2) Shared subplot grids. 3) Explicit axis control. 4) Production figures. 5) Custom panel layouts.",
+      "avoid_when": "1) No axes reference exists. 2) The label belongs at figure level. 3) The subplot grid is too crowded. 4) The label is redundant. 5) A caption is sufficient.",
+      "decision_notes": "Category: Text\nModule: `axes`\nReturn Value: `Text`.\nExpected Output: A labeled subplot x-axis.\nPerformance Notes: Negligible.\nCommon Mistakes: Same as `xlabel`.\nRelated APIs: `xlabel`, `set_ylabel`, `set_title`.",
+      "gotchas": [
+        "Same as xlabel."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_xlabel.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Update X-Axes",
+          "reason": "Interactive axis titles configuration."
+        },
+        {
+          "package": "seaborn",
+          "task": "Objects API: Configure Plot Labels",
+          "reason": "High-level labelling for axis and legends."
+        }
+      ]
+    },
+    {
+      "task": "Axes-Level: Set Y-Axis Label",
+      "mental_trigger": "I need subplot-level vertical axis text.",
+      "syntax": "set_ylabel(ylabel, fontdict=None, labelpad=None, *, loc=None, **kwargs)",
+      "important_params": [
+        "Same as ylabel."
+      ],
+      "example": "",
+      "use_when": "1) OO plotting. 2) Shared subplot grids. 3) Explicit axis control. 4) Production figures. 5) Custom layouts.",
+      "avoid_when": "1) The label should live elsewhere. 2) The panel is too small. 3) The label is redundant. 4) You are using figure-level annotation. 5) The chart already communicates the meaning elsewhere.",
+      "decision_notes": "Category: Text\nModule: `axes`",
+      "gotchas": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Update Y-Axes",
+          "reason": "Interactive axis titles configuration."
+        },
+        {
+          "package": "seaborn",
+          "task": "Objects API: Configure Plot Labels",
+          "reason": "High-level labelling for axis and legends."
+        }
+      ]
+    },
+    {
+      "task": "Apply Built-In Style Sheet",
+      "mental_trigger": "I need a consistent visual theme.",
+      "syntax": "use(style)",
+      "important_params": [
+        "style."
+      ],
+      "example": "import matplotlib.pyplot as plt\nplt.style.use(\"default\")\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 2])\nfig.savefig(\"style_use_example.png\")",
+      "use_when": "1) Team standards. 2) Brand-aligned figures. 3) Notebook theming. 4) Reproducible styling. 5) Batch report generation.",
+      "avoid_when": "1) You only need local temporary styling. 2) You want a very small targeted override. 3) Global state should remain untouched. 4) Multiple unrelated visual themes share a process. 5) You are composing figures from independent libraries.",
+      "decision_notes": "Category: Styles / themes\nModule: `style`\nReturn Value: `None`.\nExpected Output: A chart rendered under the selected style.\nPerformance Notes: Negligible at runtime; important for consistency rather than speed.\nCommon Mistakes: Applying styles too late; mixing many style overrides; depending on environment defaults; assuming style sheets are portable across versions; not locking theme settings for reports.\nRelated APIs: `rcParams`, `style.context`, `savefig`.",
+      "gotchas": [
+        "Styles change rcParams",
+        "they affect subsequent figures",
+        "context managers may be safer for local overrides",
+        "some styles are version-sensitive",
+        "global styling can leak across plots."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/style_api.html",
+      "visualization_equivalents": [
+        {
+          "package": "seaborn",
+          "task": "Objects API: Configure Plot Theme",
+          "reason": "Equivalent implementation in seaborn."
+        },
+        {
+          "package": "seaborn",
+          "task": "Style: Configure Global Theme",
+          "reason": "Apply pre-packaged global themes in Seaborn."
+        }
+      ]
+    },
+    {
+      "task": "Apply Temporary RC Parameter Context",
+      "mental_trigger": "I need scoped style changes.",
+      "syntax": "rc_context(rc=None, fname=None)",
+      "important_params": [
+        "rc",
+        "fname."
+      ],
+      "example": "import matplotlib.pyplot as plt\nwith plt.rc_context({\"figure.dpi\": 100}):\n    fig, ax = plt.subplots()\n    ax.plot([1, 2, 3], [1, 4, 2])\n    fig.savefig(\"rc_context_example.png\")",
+      "use_when": "1) Local styling in reusable code. 2) Temporary export overrides. 3) Notebook experiments. 4) Tests that should not leak config. 5) Controlled theming blocks.",
+      "avoid_when": "1) You need permanent settings. 2) You are already using style sheets globally. 3) The override should persist across many cells. 4) You want the simplest possible code and no style isolation is needed. 5) You need direct artist-level formatting.",
+      "decision_notes": "Category: Styles / configuration\nModule: `matplotlib`\nReturn Value: Context manager.\nExpected Output: A figure rendered with temporary settings.\nPerformance Notes: Negligible.\nCommon Mistakes: Assuming it mutates global state permanently; nesting contexts carelessly; forgetting which settings were temporary; mixing with direct `rcParams` edits; using it for artist-specific styling.\nRelated APIs: `rcParams`, `style.context`, `style.use`.",
+      "gotchas": [
+        "Configuration reverts after the context",
+        "it is ideal for tests and local overrides",
+        "file-based rc loading is supported",
+        "global changes made inside still affect the active process if not scoped carefully",
+        "context choice matters in notebooks."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/matplotlib_configuration_api.html\\#matplotlib.rc_context"
+    },
+    {
+      "task": "Apply Temporary Style Sheet Context",
+      "mental_trigger": "I need scoped theme changes without global side effects.",
+      "syntax": "context(style, after_reset=False)",
+      "important_params": [
+        "style",
+        "after_reset."
+      ],
+      "example": "",
+      "use_when": "1) Temporary notebook styling. 2) Test isolation. 3) Generating multiple figures with different themes. 4) Experimental styling. 5) Reusable plotting functions.",
+      "avoid_when": "1) Permanent project defaults should be changed centrally. 2) You only need a single artist override. 3) Global style changes are already controlled elsewhere. 4) The style is simple and fixed. 5) Nested contexts would be confusing.",
+      "decision_notes": "Category: Styles / themes\nModule: `style`\nReturn Value: Context manager.\nExpected Output: A figure rendered under a temporary style.\nPerformance Notes: Minimal overhead.\nCommon Mistakes: Expecting style changes to persist; using it to hide global style problems; combining too many styles in a nested way; forgetting to save inside the context if needed; assuming all styles are compatible.\nRelated APIs: `style.use`, `rc_context`, `rc`.",
+      "gotchas": [
+        "Context exit restores prior style state",
+        "after_reset changes behavior",
+        "useful for scoped reproducibility",
+        "style files can be layered",
+        "backend output can still vary slightly."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.style.context.html"
+    },
+    {
+      "task": "Apply Viridis Colormap",
+      "mental_trigger": "I need a safe default perceptual colormap quickly.",
+      "syntax": "viridis()",
+      "important_params": [
+        "None."
+      ],
+      "example": "",
+      "use_when": "1) Standardized heatmaps. 2) Notebook exploration. 3) Quick defaults. 4) Continuous scalar plots. 5) Accessible palette baselines.",
+      "avoid_when": "1) You need a different semantic colormap. 2) The data are categorical. 3) The project style already defines color usage. 4) You need explicit code clarity over convenience. 5) You are not working with scalar-mapped visuals.",
+      "decision_notes": "Category: Color maps\nModule: `pyplot`\nReturn Value: `None`.\nExpected Output: Image plots use the viridis colormap.\nPerformance Notes: Negligible.\nCommon Mistakes: Treating it as a plot function; using it for categories; assuming it permanently modifies all plot types; applying it after plotting; depending on it for explicit reproducibility without version pinning.\nRelated APIs: `set_cmap`, `get_cmap`, `imshow`.",
+      "gotchas": [
+        "It is a convenience shortcut",
+        "it changes the current image colormap context",
+        "explicit cmap arguments still win",
+        "style or rc settings may override later",
+        "it is most relevant for image-like artists."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.viridis.html",
+      "visualization_equivalents": [
+        {
+          "package": "seaborn",
+          "task": "Style: Configure Global Color Palette",
+          "reason": "Configure global default palettes."
+        }
+      ]
+    },
+    {
+      "task": "Configure Group Defaults via rc",
+      "mental_trigger": "I need to change plotting defaults.",
+      "syntax": "rc(group, **kwargs)",
+      "important_params": [
+        "group",
+        "**kwargs."
+      ],
+      "example": "",
+      "use_when": "1) Theme customization. 2) Team-wide styling. 3) Temporary default changes. 4) Publication settings. 5) Notebook-wide formatting.",
+      "avoid_when": "1) You only need one-off styling on a single artist. 2) You want per-project style sheets instead. 3) You need minimal side effects. 4) The code should remain local and explicit. 5) You are changing many defaults in a brittle way.",
+      "decision_notes": "Category: Styles / configuration\nModule: `pyplot`\nReturn Value: `None`.\nExpected Output: A plot using updated default line width.\nPerformance Notes: Negligible.\nCommon Mistakes: Changing global state unintentionally; forgetting to reset defaults; mixing `rc` and direct style settings incoherently; applying project styling too late; not documenting theme changes.\nRelated APIs: `rcParams`, `style.use`, `rc_context`.",
+      "gotchas": [
+        "rc settings affect later plots",
+        "group names must match configuration groups",
+        "the change is session-global",
+        "styles can override rc defaults",
+        "rc_context is safer for temporary changes."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.rc.html"
+    },
+    {
+      "task": "Configure Session Defaults",
+      "mental_trigger": "I need project-wide plotting defaults.",
+      "syntax": "Mapping-like configuration object",
+      "important_params": [],
+      "example": "import matplotlib.pyplot as plt\nplt.rcParams[\"figure.dpi\"] = 120\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 2])\nfig.savefig(\"rcparams_example.png\")",
+      "use_when": "1) Reproducible themes. 2) Notebook session configuration. 3) Publication defaults. 4) Global font and size tuning. 5) Consistent export settings.",
+      "avoid_when": "1) You only need one-off changes. 2) Local styling should be isolated. 3) You are writing reusable library code that should avoid side effects. 4) You are unsure of downstream impact. 5) A context manager would be safer.",
+      "decision_notes": "Category: Styles / configuration\nModule: `matplotlib`\nReturn Value: Mutable configuration mapping.\nExpected Output: A plot rendered using the modified default.\nPerformance Notes: No direct render cost; affects future figures globally.\nCommon Mistakes: Mutating global defaults in shared notebooks; not resetting after experiments; changing style late; using it for local plot-specific settings; assuming configuration is isolated.\nRelated APIs: `style.use`, `style.context`, `rc_context`.",
+      "gotchas": [
+        "Changes persist within the process",
+        "some keys affect layout unexpectedly",
+        "library code should minimize global mutation",
+        "environment defaults may differ",
+        "style sheets may override previous settings."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/tutorials/introductory/customizing.html"
+    },
+    {
+      "task": "Retrieve Colormap by Name",
+      "mental_trigger": "I need a named colormap for encoding values.",
+      "syntax": "get_cmap(name=None, lut=None)",
+      "important_params": [
+        "name",
+        "lut."
+      ],
+      "example": "",
+      "use_when": "1) Heatmaps. 2) Continuous color encoding. 3) Palette inspection. 4) Custom color mapping. 5) Reusable visualization code.",
+      "avoid_when": "1) You need categorical colors instead. 2) A specific style already controls color mapping. 3) The chosen map is semantically inappropriate. 4) You want to hardcode ad hoc colors. 5) The application needs accessibility review before selection.",
+      "decision_notes": "Category: Color maps\nModule: `pyplot`\nReturn Value: `Colormap`.\nExpected Output: An image rendered with the selected colormap.\nPerformance Notes: Negligible.\nCommon Mistakes: Using a visually misleading colormap; failing to match map to data semantics; confusing continuous and discrete usage; assuming colormap selection alone makes a plot readable; not considering accessibility.\nRelated APIs: `cm`, `imshow`, `scatter`.",
+      "gotchas": [
+        "Named colormaps are versioned with Matplotlib",
+        "lut discretizes lookup behavior",
+        "returned maps can be used across plot types",
+        "the same map may look different with different normalization",
+        "perceptual uniformity matters."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.get_cmap.html"
+    },
+    {
+      "task": "Set Default Colormap",
+      "mental_trigger": "I need to change the default color mapping.",
+      "syntax": "set_cmap(cmap)",
+      "important_params": [
+        "cmap."
+      ],
+      "example": "",
+      "use_when": "1) Notebook exploration. 2) Global heatmap style adjustments. 3) Rapid theme trials. 4) Consistent image defaults. 5) Session-wide palette changes.",
+      "avoid_when": "1) You only need one plot changed. 2) You are trying to control categorical colors. 3) Reproducibility requires explicit per-plot settings. 4) You need local style isolation. 5) You want minimal global state mutation.",
+      "decision_notes": "Category: Color maps\nModule: `pyplot`\nReturn Value: `None`.\nExpected Output: Subsequent image-like plots use the selected colormap.\nPerformance Notes: Negligible.\nCommon Mistakes: Forgetting it changes session state; expecting it to affect already-rendered artists; using it for non-image plots; relying on global defaults in production; mixing with explicit cmap arguments.\nRelated APIs: `get_cmap`, `rc`, `style.use`.",
+      "gotchas": [
+        "It affects subsequent plots, not past ones",
+        "explicit colormap kwargs override it",
+        "it is session-wide within pyplot",
+        "style sheets may reset it",
+        "image plots are the main target."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.set_cmap.html",
+      "visualization_equivalents": [
+        {
+          "package": "seaborn",
+          "task": "Style: Configure Global Color Palette",
+          "reason": "Configure global default palettes."
+        }
+      ]
+    },
+    {
+      "task": "Add Annotated Callout With Arrow",
+      "mental_trigger": "I need a callout tied to a target point.",
+      "syntax": "annotate(text, xy, xytext=None, xycoords='data', textcoords=None, arrowprops=None, annotation_clip=None, **kwargs)",
+      "important_params": [
+        "text",
+        "xy",
+        "xytext",
+        "xycoords",
+        "textcoords"
+      ],
+      "example": "import matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.plot([1, 2, 3], [1, 4, 2])\nax.annotate(\"max\", xy=(2, 4), xytext=(2.2, 4.2), arrowprops=dict(arrowstyle=\"->\"))\nfig.savefig(\"annotate_example.png\")",
+      "use_when": "1) Highlight outliers. 2) Explain peaks. 3) Mark events. 4) Add directional context. 5) Create labeled callouts.",
+      "avoid_when": "1) Simple text is enough. 2) Many arrows would clutter the chart. 3) The note belongs outside the plot. 4) You need a legend instead. 5) The target is ambiguous.",
+      "decision_notes": "Category: Annotation\nModule: `pyplot`\nReturn Value: `Annotation`.\nExpected Output: A labeled point with an arrow.\nPerformance Notes: A few annotations are inexpensive; many arrows and texts add clutter and draw cost.\nCommon Mistakes: Wrong coordinate system; arrow overlaps; label placement too close to marks; unreadable text; excessive annotations.\nRelated APIs: `text`, `arrow`, `axes.annotate`.",
+      "gotchas": [
+        "xycoords and textcoords can differ",
+        "arrows require careful offset tuning",
+        "annotations can be clipped by bounds",
+        "placement may need transforms",
+        "annotation_clip changes visibility rules."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.annotate.html",
+      "visualization_equivalents": [
+        {
+          "package": "plotly-express",
+          "task": "Add Annotation Text",
+          "reason": "Interactive annotation support with layout positions."
+        }
+      ]
+    },
+    {
+      "task": "Disable Interactive Mode",
+      "mental_trigger": "I need deterministic non-interactive rendering.",
+      "syntax": "ioff()",
+      "important_params": [
+        "None."
+      ],
+      "example": "",
+      "use_when": "1) Batch exports. 2) Scripted notebooks. 3) Reproducible pipelines. 4) Suppressing live UI updates. 5) Headless plotting.",
+      "avoid_when": "1) You need live feedback. 2) You are actively exploring plots in a GUI. 3) The session expects automatic redraws. 4) You rely on interactive widgets. 5) You are debugging visually.",
+      "decision_notes": "Category: Interactive utilities\nModule: `pyplot`\nReturn Value: `None`.\nExpected Output: Interactive updates are disabled.\nPerformance Notes: Helps avoid UI work in batch settings.\nCommon Mistakes: Forgetting to re-enable interactivity later; expecting visible updates; using it in notebook contexts that rely on interactive redraws; confusing it with backend selection; assuming it affects saved output directly.\nRelated APIs: `ion`, `show`, `pause`.",
+      "gotchas": [
+        "Mode affects plotting behavior, not data",
+        "it is backend-sensitive",
+        "scripts may still need show",
+        "notebooks can handle display separately",
+        "toggle state can persist in session."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.ioff.html"
+    },
+    {
+      "task": "Display Interactive Figures",
+      "mental_trigger": "I need to render plots to an interactive frontend.",
+      "syntax": "show(*, block=None)",
+      "important_params": [
+        "block."
+      ],
+      "example": "import matplotlib.pyplot as plt\nplt.plot([1, 2, 3], [1, 4, 2])\nplt.show()",
+      "use_when": "1) Local scripts with a GUI backend. 2) Interactive notebooks when needed. 3) Desktop exploration. 4) Manual visual checks. 5) Demo sessions.",
+      "avoid_when": "1) Headless batch jobs. 2) You only need to save files. 3) Library code should not force display. 4) Notebook environments already auto-display. 5) You need deterministic noninteractive export.",
+      "decision_notes": "Category: Display / interactive utilities\nModule: `pyplot`\nReturn Value: `None`.\nExpected Output: The figure appears in the active UI or notebook output.\nPerformance Notes: Display latency depends on backend and environment.\nCommon Mistakes: Calling it in headless environments; using it instead of `savefig`; expecting it to return image data; forcing blocking behavior in scripts; relying on it in automated pipelines.\nRelated APIs: `savefig`, `pause`, backend selection.",
+      "gotchas": [
+        "Behavior depends on backend",
+        "notebook auto-display can make it redundant",
+        "blocking semantics vary",
+        "it does not replace saving",
+        "interactive backends may differ in closing behavior."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.show.html",
+      "visualization_equivalents": [
+        {
+          "package": "seaborn",
+          "task": "Objects API: Display Plot Interactively",
+          "reason": "Show interactive plot windows."
+        }
+      ]
+    },
+    {
+      "task": "Enable Interactive Mode",
+      "mental_trigger": "I need plots to update live.",
+      "syntax": "ion()",
+      "important_params": [
+        "None."
+      ],
+      "example": "",
+      "use_when": "1) Interactive debugging. 2) REPL sessions. 3) Notebook-like live exploration. 4) GUI-driven workflows. 5) Rapid chart iteration.",
+      "avoid_when": "1) Batch scripts. 2) Headless export jobs. 3) Reproducible rendering pipelines that should remain deterministic. 4) You need blocking display behavior. 5) You want no GUI side effects.",
+      "decision_notes": "Category: Interactive utilities\nModule: `pyplot`\nReturn Value: `None`.\nExpected Output: Interactive updates are enabled.\nPerformance Notes: Can increase UI overhead in live sessions.\nCommon Mistakes: Leaving interactive mode on in scripts; expecting it to save figures; mixing it with batch jobs; forgetting that backend behavior changes; assuming it affects plot semantics.\nRelated APIs: `ioff`, `show`, `pause`.",
+      "gotchas": [
+        "Interactivity depends on backend",
+        "updates may appear automatically",
+        "not all environments support live UI",
+        "disabling may be needed after debugging",
+        "display timing differs by frontend."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.ion.html"
+    },
+    {
+      "task": "Pause for Interactive GUI Refresh",
+      "mental_trigger": "I need the interface to refresh during a loop.",
+      "syntax": "pause(interval)",
+      "important_params": [
+        "interval."
+      ],
+      "example": "",
+      "use_when": "1) Live demos. 2) Animation-like updates. 3) Debugging interactive loops. 4) Monitoring progressive changes. 5) Manual event processing.",
+      "avoid_when": "1) Batch exports. 2) Non-interactive environments. 3) Deterministic test code. 4) Faster explicit redraw logic exists. 5) You do not need UI updates.",
+      "decision_notes": "Category: Interactive utilities\nModule: `pyplot`\nReturn Value: `None`.\nExpected Output: The GUI event loop processes briefly.\nPerformance Notes: Introduces intentional waiting and UI overhead.\nCommon Mistakes: Using it in non-GUI environments; making loops unnecessarily slow; relying on it for production timing; using it instead of proper animation tools; forgetting that backend support varies.\nRelated APIs: `ion`, `show`, `draw`.",
+      "gotchas": [
+        "It is primarily for interactive backends",
+        "event loop behavior depends on frontend",
+        "it can block briefly",
+        "it is not a replacement for animation classes",
+        "useful mainly for debugging and demos."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.pause.html"
+    },
+    {
+      "task": "Redraw Current Figure",
+      "mental_trigger": "I need to refresh the canvas now.",
+      "syntax": "draw()",
+      "important_params": [
+        "None."
+      ],
+      "example": "",
+      "use_when": "1) Interactive updates. 2) GUI event handling. 3) Manual refresh after artist changes. 4) Callback-driven plotting. 5) Debugging live plots.",
+      "avoid_when": "1) Saving a static figure is enough. 2) You are in a headless batch job. 3) Automatic redraw already occurs. 4) You are trying to change data rather than appearance. 5) You want animation frame control instead.",
+      "decision_notes": "Category: Output\nModule: `pyplot`\nReturn Value: `None`.\nExpected Output: The current canvas redraws.\nPerformance Notes: Can be expensive if called repeatedly in tight loops.\nCommon Mistakes: Calling it too often; expecting it to save output; using it without a visible backend; confusing it with `show`; drawing before updating artists.\nRelated APIs: `show`, `pause`, `draw_idle`.",
+      "gotchas": [
+        "It redraws the current figure, not necessarily all figures",
+        "backend support matters",
+        "state changes must happen before draw",
+        "it does not block like show",
+        "interactive mode can affect perceived timing."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.draw.html"
+    },
+    {
+      "task": "Request Idle Redraw",
+      "mental_trigger": "I need efficient refresh behavior in an interactive backend.",
+      "syntax": "draw_idle()",
+      "important_params": [
+        "None."
+      ],
+      "example": "",
+      "use_when": "1) Callback-based updates. 2) GUI tools. 3) Slider-driven visuals. 4) Efficient repeated changes. 5) Non-blocking refresh scheduling.",
+      "avoid_when": "1) You need immediate redraw completion. 2) Batch scripts. 3) Non-interactive backends. 4) You are not using event-driven updates. 5) A direct `draw` is sufficient.",
+      "decision_notes": "Category: Output\nModule: `pyplot`\nReturn Value: `None`.\nExpected Output: A redraw is queued for the active GUI loop.\nPerformance Notes: Better than repeated immediate redraws in event-driven UIs.\nCommon Mistakes: Expecting immediate visual completion; using it in headless code; calling it without an interactive loop; replacing explicit redraw logic blindly; ignoring backend behavior.\nRelated APIs: `draw`, `pause`, `ion`.",
+      "gotchas": [
+        "Idle redraws depend on the event loop",
+        "multiple calls may coalesce",
+        "backend support matters",
+        "it is designed for efficiency, not determinism",
+        "use with widgets and callbacks."
+      ],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "official_docs": "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.draw_idle.html"
+    }
+  ],
+  "package_specific_debugging": [
+    "Warning: 'UserWarning: Starting a Matplotlib GUI outside the main thread' occurs when using interactive backends in non-main threads. Switch backend to Agg: `import matplotlib; matplotlib.use('Agg')` before importing pyplot.",
+    "Memory leak in loops: Call `plt.close(fig)` or `fig.clear()` after `savefig()` inside loops to free memory.",
+    "Overlapping labels or text: Use `fig.tight_layout()` or `constrained_layout=True` to automatically calculate margins."
+  ],
+  "migration_notes": [
+    "Matplotlib 3.8+ deprecated several older colormaps and styling conventions.",
+    "Use `seaborn-v0_8` instead of deprecated `seaborn` styles in style sheets."
+  ],
+  "breaking_changes": [
+    "Starting with version 3.0+, several pyplot stateful functions return different types or are discouraged in class-based architectures."
+  ],
+  "alternatives": []
+}
