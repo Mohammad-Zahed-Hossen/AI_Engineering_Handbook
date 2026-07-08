@@ -218,15 +218,16 @@ export function ModelListFilter({ models, category, categoriesMeta = {} }: Model
                             <h3 className="text-sm font-semibold text-primary">{m.name}</h3>
                             <span className={cn(
                               "shrink-0 text-[9px] font-mono px-1.5 py-0.5 rounded border capitalize",
-                              m.inference_speed === 'fast' && 'text-emerald-600 border-emerald-200 bg-emerald-50 dark:text-emerald-400 dark:border-emerald-500/30 dark:bg-emerald-500/10',
-                              m.inference_speed === 'medium' && 'text-amber-600 border-amber-200 bg-amber-50 dark:text-amber-400 dark:border-amber-500/30 dark:bg-amber-500/10',
-                              m.inference_speed === 'slow' && 'text-rose-600 border-rose-200 bg-rose-50 dark:text-rose-400 dark:border-rose-500/30 dark:bg-rose-500/10',
+                              m.difficulty === 'beginner' && 'text-emerald-600 border-emerald-200 bg-emerald-50 dark:text-emerald-400 dark:border-emerald-500/30 dark:bg-emerald-500/10',
+                              m.difficulty === 'intermediate' && 'text-amber-600 border-amber-200 bg-amber-50 dark:text-amber-400 dark:border-amber-500/30 dark:bg-amber-500/10',
+                              m.difficulty === 'advanced' && 'text-rose-600 border-rose-200 bg-rose-50 dark:text-rose-400 dark:border-rose-500/30 dark:bg-rose-500/10',
+                              m.difficulty === 'expert' && 'text-purple-600 border-purple-200 bg-purple-50 dark:text-purple-400 dark:border-purple-500/30 dark:bg-purple-500/10',
                             )}>
-                              {m.inference_speed}
+                              {m.difficulty}
                             </span>
                           </div>
                           <p className="text-xs text-muted-foreground leading-relaxed mb-3 line-clamp-2">
-                            {m.summary}
+                            {m.decisionsummary.summary}
                           </p>
                           <div className="flex flex-wrap items-center gap-2">
                             {m.problem_types.map((pt) => (
@@ -237,13 +238,8 @@ export function ModelListFilter({ models, category, categoriesMeta = {} }: Model
                                 {pt}
                               </span>
                             ))}
-                            <span className={cn(
-                              "text-[9px] font-mono capitalize ml-auto",
-                              m.memory_usage === 'low' && 'text-emerald-500',
-                              m.memory_usage === 'medium' && 'text-amber-500',
-                              m.memory_usage === 'high' && 'text-rose-500',
-                            )}>
-                              Mem: {m.memory_usage}
+                            <span className="text-[9px] font-mono capitalize ml-auto text-muted-foreground">
+                              Maturity: {m.engineeringmaturity}
                             </span>
                           </div>
                         </Link>
@@ -258,8 +254,8 @@ export function ModelListFilter({ models, category, categoriesMeta = {} }: Model
                             <th className="px-4 py-2.5 w-1/4">Model Name</th>
                             <th className="px-4 py-2.5 w-2/5">Summary</th>
                             <th className="px-4 py-2.5">Problem Types</th>
-                            <th className="px-4 py-2.5 text-center">Inference</th>
-                            <th className="px-4 py-2.5 text-center">Memory</th>
+                            <th className="px-4 py-2.5 text-center">Difficulty</th>
+                            <th className="px-4 py-2.5 text-center">Maturity</th>
                             <th className="px-4 py-2.5 text-right pr-6">Action</th>
                           </tr>
                         </thead>
@@ -275,7 +271,7 @@ export function ModelListFilter({ models, category, categoriesMeta = {} }: Model
                                 </Link>
                               </td>
                               <td className="px-4 py-3 align-middle text-muted-foreground leading-relaxed">
-                                {m.summary}
+                                {m.decisionsummary.summary}
                               </td>
                               <td className="px-4 py-3 align-middle">
                                 <div className="flex flex-wrap gap-1">
@@ -291,21 +287,16 @@ export function ModelListFilter({ models, category, categoriesMeta = {} }: Model
                               </td>
                               <td className="px-4 py-3 align-middle text-center capitalize font-mono">
                                 <span className={cn(
-                                  m.inference_speed === 'fast' && 'text-emerald-500',
-                                  m.inference_speed === 'medium' && 'text-amber-500',
-                                  m.inference_speed === 'slow' && 'text-rose-500'
+                                  m.difficulty === 'beginner' && 'text-emerald-500',
+                                  m.difficulty === 'intermediate' && 'text-amber-500',
+                                  m.difficulty === 'advanced' && 'text-rose-500',
+                                  m.difficulty === 'expert' && 'text-purple-500'
                                 )}>
-                                  {m.inference_speed}
+                                  {m.difficulty}
                                 </span>
                               </td>
-                              <td className="px-4 py-3 align-middle text-center capitalize font-mono">
-                                <span className={cn(
-                                  m.memory_usage === 'low' && 'text-emerald-500',
-                                  m.memory_usage === 'medium' && 'text-amber-500',
-                                  m.memory_usage === 'high' && 'text-rose-500'
-                                )}>
-                                  {m.memory_usage}
-                                </span>
+                              <td className="px-4 py-3 align-middle text-center capitalize font-mono text-muted-foreground">
+                                {m.engineeringmaturity}
                               </td>
                               <td className="px-4 py-3 align-middle text-right pr-6">
                                 <Link

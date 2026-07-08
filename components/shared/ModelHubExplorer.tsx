@@ -100,7 +100,7 @@ export default function ModelHubExplorer({ initialModels, categoriesMeta }: Mode
     const matchesSearch =
       searchQuery === '' ||
       m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.decisionsummary.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.subcategory.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.problem_types.some((pt) => pt.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -238,19 +238,21 @@ export default function ModelHubExplorer({ initialModels, categoriesMeta }: Mode
                                   <span
                                     className={cn(
                                       "shrink-0 text-[8px] font-mono px-1 py-0.2 rounded border capitalize",
-                                      m.inference_speed === 'fast' &&
+                                      m.difficulty === 'beginner' &&
                                         'text-emerald-600 border-emerald-200 bg-emerald-50 dark:text-emerald-400 dark:border-emerald-500/30 dark:bg-emerald-500/10',
-                                      m.inference_speed === 'medium' &&
+                                      m.difficulty === 'intermediate' &&
                                         'text-amber-600 border-amber-200 bg-amber-50 dark:text-amber-400 dark:border-amber-500/30 dark:bg-amber-500/10',
-                                      m.inference_speed === 'slow' &&
-                                        'text-rose-600 border-rose-200 bg-rose-50 dark:text-rose-400 dark:border-rose-500/30 dark:bg-rose-500/10'
+                                      m.difficulty === 'advanced' &&
+                                        'text-rose-600 border-rose-200 bg-rose-50 dark:text-rose-400 dark:border-rose-500/30 dark:bg-rose-500/10',
+                                      m.difficulty === 'expert' &&
+                                        'text-purple-600 border-purple-200 bg-purple-50 dark:text-purple-400 dark:border-purple-500/30 dark:bg-purple-500/10'
                                     )}
                                   >
-                                    {m.inference_speed}
+                                    {m.difficulty}
                                   </span>
                                 </div>
                                 <p className="text-[10px] text-muted-foreground leading-relaxed mb-3 line-clamp-2">
-                                  {m.summary}
+                                  {m.decisionsummary.summary}
                                 </p>
                                 <div className="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-border/40">
                                   {m.problem_types.slice(0, 2).map((pt) => (
@@ -261,15 +263,8 @@ export default function ModelHubExplorer({ initialModels, categoriesMeta }: Mode
                                       {pt}
                                     </span>
                                   ))}
-                                  <span
-                                    className={cn(
-                                      "text-[8px] font-mono capitalize ml-auto",
-                                      m.interpretability === 'high' && 'text-emerald-500',
-                                      m.interpretability === 'medium' && 'text-amber-500',
-                                      m.interpretability === 'low' && 'text-rose-500'
-                                    )}
-                                  >
-                                    Int: {m.interpretability}
+                                  <span className="text-[8px] font-mono capitalize ml-auto text-muted-foreground">
+                                    Maturity: {m.engineeringmaturity}
                                   </span>
                                 </div>
                               </Link>

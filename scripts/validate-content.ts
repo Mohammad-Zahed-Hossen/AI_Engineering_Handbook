@@ -181,16 +181,19 @@ for (const file of files) {
 
     // ── STEP 5: Placeholder Detection ───────────────────────
     if (type === 'model') {
-      const model = obj as {
-        summary?: string;
-        quick_start?: string;
-        pros?: string[];
-        cons?: string[];
+      const model = obj as Record<string, unknown> & {
+        decisionsummary?: {
+          summary?: string;
+          strengths?: string[];
+          limitations?: string[];
+        };
       };
-      checkPlaceholder(normalizedPath, 'summary', model.summary);
-      checkPlaceholder(normalizedPath, 'quick_start', model.quick_start);
-      (model.pros ?? []).forEach((pro, idx) => checkPlaceholder(normalizedPath, `pros[${idx}]`, pro));
-      (model.cons ?? []).forEach((con, idx) => checkPlaceholder(normalizedPath, `cons[${idx}]`, con));
+      const summary = model.decisionsummary?.summary;
+      const strengths = model.decisionsummary?.strengths ?? [];
+      const limitations = model.decisionsummary?.limitations ?? [];
+      checkPlaceholder(normalizedPath, 'decisionsummary.summary', summary);
+      strengths.forEach((str: string, idx: number) => checkPlaceholder(normalizedPath, `decisionsummary.strengths[${idx}]`, str));
+      limitations.forEach((lim: string, idx: number) => checkPlaceholder(normalizedPath, `decisionsummary.limitations[${idx}]`, lim));
     } else if (type === 'package') {
       const pkg = obj as { summary?: string; id?: string; tasks?: Array<{ visualization_equivalents?: VisualizationEquivalent[] }> };
       checkPlaceholder(normalizedPath, 'summary', pkg.summary);
@@ -225,28 +228,36 @@ for (const file of files) {
 
     // ── STEP 6: Minimum Content Quality ─────────────────────
     if (type === 'model') {
-      const model = obj as {
-        pros?: string[];
-        cons?: string[];
-        key_hyperparams?: unknown[];
-        problem_types?: string[];
-        subcategory?: string;
+      const model = obj as Record<string, unknown> & {
+        decisionsummary?: {
+          strengths?: string[];
+          limitations?: string[];
+        };
+        hyperparameters?: unknown[];
+        problemtypes?: string[];
+        category?: string;
       };
-      if (!Array.isArray(model.pros) || model.pros.length < 3) {
-        reportError(`Model '${normalizedPath}' has fewer than 3 pros (${model.pros?.length ?? 0})`);
+      const strengths = model.decisionsummary?.strengths;
+      const limitations = model.decisionsummary?.limitations;
+      const hyperparameters = model.hyperparameters;
+      const problemtypes = model.problemtypes;
+      const category = model.category;
+
+      if (!Array.isArray(strengths) || strengths.length < 3) {
+        reportError(`Model '${normalizedPath}' has fewer than 3 strengths (${strengths?.length ?? 0})`);
       }
-      if (!Array.isArray(model.cons) || model.cons.length < 3) {
-        reportError(`Model '${normalizedPath}' has fewer than 3 cons (${model.cons?.length ?? 0})`);
+      if (!Array.isArray(limitations) || limitations.length < 3) {
+        reportError(`Model '${normalizedPath}' has fewer than 3 limitations (${limitations?.length ?? 0})`);
       }
       const isDetectionOnly =
-        Array.isArray(model.problem_types) &&
-        model.problem_types.length === 1 &&
-        model.problem_types[0] === 'detection';
-      if (!isDetectionOnly && (!Array.isArray(model.key_hyperparams) || model.key_hyperparams.length < 1)) {
-        reportError(`Model '${normalizedPath}' has fewer than 1 key_hyperparams (${model.key_hyperparams?.length ?? 0})`);
+        Array.isArray(problemtypes) &&
+        problemtypes.length === 1 &&
+        problemtypes[0] === 'detection';
+      if (!isDetectionOnly && (!Array.isArray(hyperparameters) || hyperparameters.length < 1)) {
+        reportError(`Model '${normalizedPath}' has fewer than 1 hyperparameters (${hyperparameters?.length ?? 0})`);
       }
-      if (!model.subcategory) {
-        reportError(`Model '${normalizedPath}' is missing required 'subcategory' field`);
+      if (!category) {
+        reportError(`Model '${normalizedPath}' is missing required 'category' field`);
       }
     } else if (type === 'package') {
       const pkg = obj as { tasks?: unknown[] };
@@ -317,7 +328,7 @@ for (const file of files) {
     }
 
     // ── STEP 8: Collect Relationships ──────────────────────
-    const alternatives = obj.alternatives as Array<{ id?: string; type?: string; relationship_type?: string }> | undefined;
+    const alternatives = type !== 'model' ? (obj.alternatives as Array<{ id?: string; type?: string; relationship_type?: string }> | undefined) : undefined;
     if (Array.isArray(alternatives)) {
       for (const alt of alternatives) {
         if (typeof alt === 'string') {
@@ -335,9 +346,21 @@ for (const file of files) {
       }
     }
 
-    const relatedContent = obj.related_content as Array<{ id?: string; type?: string; relationship_type?: string }> | undefined;
-    if (Array.isArray(relatedContent)) {
-      for (const ref of relatedContent) {
+    interface ValidationRef {
+      id?: string;
+      type?: string;
+      relationship_type?: string;
+      relationship?: string;
+    }
+    let relatedContentList: ValidationRef[] = [];
+    if (type === 'model') {
+      relatedContentList = (obj as { relatedcontent?: ValidationRef[] }).relatedcontent || [];
+    } else {
+      relatedContentList = (obj as { related_content?: ValidationRef[] }).related_content || [];
+    }
+
+    if (Array.isArray(relatedContentList)) {
+      for (const ref of relatedContentList) {
         if (typeof ref === 'string') {
           reportError(`Legacy string reference in '${normalizedPath}': '${ref}'. Use { id, type } object.`);
           continue;
@@ -349,7 +372,14 @@ for (const file of files) {
         if (!VALID_REF_TYPES.has(ref.type)) {
           reportError(`Invalid reference type '${ref.type}' in '${normalizedPath}'.`);
         }
-        refsToCheck.push({ sourceFile: normalizedPath, ref: { id: ref.id, type: ref.type, relationship_type: ref.relationship_type } });
+        refsToCheck.push({
+          sourceFile: normalizedPath,
+          ref: {
+            id: ref.id,
+            type: ref.type,
+            relationship_type: ref.relationship || ref.relationship_type
+          }
+        });
       }
     }
   }

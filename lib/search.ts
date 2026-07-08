@@ -98,12 +98,20 @@ export const buildSearchIndex = cache(function buildSearchIndex(): SearchResult[
     });
 
     getAllModels(cat).forEach(m => {
-      const keywords = extractKeywordsFromProse(m.use_when || '' + ' ' + m.pros?.join(' ') || '' + ' ' + m.cons?.join(' ') || '');
+      const prose = [
+        m.decisionsummary.summary,
+        ...m.decisionsummary.bestusecases,
+        ...m.decisionsummary.avoidwhen,
+        ...m.decisionsummary.strengths,
+        ...m.decisionsummary.limitations,
+      ].join(' ');
+      const keywords = extractKeywordsFromProse(prose);
+
       results.push({
         type: 'model',
         id: m.id,
         name: m.name || m.title,
-        summary: m.summary,
+        summary: m.decisionsummary.summary,
         href: `/models/${cat}/${m.id}`,
         updated_at: m.updated_at,
         category: cat,

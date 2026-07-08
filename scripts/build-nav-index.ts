@@ -41,7 +41,7 @@ function buildNavIndex(
         id: data.id,
         name: data.name,
         type,
-        updated_at: data.updated_at ?? '',
+        updated_at: data.updated_at ?? data.updatedat ?? '',
       };
       if (options.versionField && data.version) entry.version = data.version;
       if (options.category) entry.category = options.category;

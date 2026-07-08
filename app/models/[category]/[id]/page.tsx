@@ -5,7 +5,6 @@ import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import OfficialResources from '@/components/shared/OfficialResources';
 import RelatedContent from '@/components/shared/RelatedContent';
-import AlternativesList from '@/components/shared/AlternativesList';
 import ModelCollapsibleSections from '@/components/shared/ModelCollapsibleSections';
 import { validateModelCategory } from '@/lib/route-params';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
@@ -45,11 +44,13 @@ export default async function ModelDetailPage({ params }: PageProps) {
   const toc = [
     { id: 'summary', label: 'Summary' },
     { id: 'decision-guide', label: 'Decision Guide' },
-    { id: 'pros-cons', label: 'Pros & Cons' },
-    { id: 'performance', label: 'Performance' },
-    { id: 'hyperparams', label: 'Hyperparameters' },
-    { id: 'quick-start', label: 'Quick Start' },
+    { id: 'pros-cons', label: 'Strengths & Limitations' },
+    { id: 'core-understanding', label: 'Core Theory' },
+    { id: 'engineering-considerations', label: 'Engineering' },
+    { id: 'hyperparameters', label: 'Hyperparameters' },
+    { id: 'comparisons', label: 'Tradeoffs' },
   ];
+  
   const relatedContent = getRelatedContent('model', model.id, validCategory);
 
   return (
@@ -62,62 +63,58 @@ export default async function ModelDetailPage({ params }: PageProps) {
       toc={toc}
     >
       <ReadingSessionTracker href={`/models/${validCategory}/${model.id}`} name={model.name} type="model" category={validCategory} />
+      
       <header id="summary" className="space-y-3 border-b border-border pb-4 scroll-mt-24">
         <h1>{model.name}</h1>
         <MetadataBadges
           type="model"
           updatedAt={model.updated_at}
-          category={model.category}
+          category={model.domain}
           problemTypes={model.problem_types}
         />
+        <div className="rounded-lg bg-muted/30 p-3.5 border border-border/80">
+          <span className="text-[10px] font-bold uppercase text-muted-foreground block mb-1">Architecture Overview</span>
+          <p className="text-xs text-foreground leading-relaxed leading-relaxed font-sans">{model.description}</p>
+        </div>
         <ExpandableText cacheKey={`model-summary-${model.id}`} fadeClass="from-background to-transparent">
-          <p className="content-prose text-sm text-muted-foreground">{model.summary}</p>
+          <p className="content-prose text-sm text-muted-foreground leading-relaxed">{model.decisionsummary.summary}</p>
         </ExpandableText>
       </header>
 
-      <OfficialResources sources={model.sources} githubRepo={model.github_repo} />
+      <OfficialResources sources={model.sources} githubRepo={model.githubrepo} />
 
       <section id="decision-guide" className="grid grid-cols-1 md:grid-cols-2 gap-4 scroll-mt-24">
-        <div className="rounded-lg border border-border bg-card p-4 border-l-2 border-l-emerald-500">
-          <h2 className="text-emerald-700 dark:text-emerald-400">Use When</h2>
-          <ExpandableText cacheKey={`model-use-${model.id}`}>
-            <p className="mt-2 text-sm text-muted-foreground">{model.use_when}</p>
-          </ExpandableText>
+        <div className="rounded-lg border border-border bg-card p-4 border-l-2 border-l-emerald-500 space-y-2">
+          <h2 className="text-emerald-700 dark:text-emerald-400 font-sans text-sm font-bold">Use When (Best Use Cases)</h2>
+          <ul className="list-disc pl-4 space-y-1 text-xs text-muted-foreground leading-relaxed">
+            {model.decisionsummary.bestusecases.map((use, idx) => (
+              <li key={idx}>{use}</li>
+            ))}
+          </ul>
         </div>
-        <div className="rounded-lg border border-border bg-card p-4 border-l-2 border-l-amber-500">
-          <h2 className="text-rose-700 dark:text-rose-400">Avoid When</h2>
-          <ExpandableText cacheKey={`model-avoid-${model.id}`}>
-            <p className="mt-2 text-sm text-muted-foreground">{model.avoid_when}</p>
-          </ExpandableText>
+        <div className="rounded-lg border border-border bg-card p-4 border-l-2 border-l-amber-500 space-y-2">
+          <h2 className="text-amber-700 dark:text-amber-400 font-sans text-sm font-bold">Avoid When</h2>
+          <ul className="list-disc pl-4 space-y-1 text-xs text-muted-foreground leading-relaxed">
+            {model.decisionsummary.avoidwhen.map((avoid, idx) => (
+              <li key={idx}>{avoid}</li>
+            ))}
+          </ul>
         </div>
       </section>
 
-      {model.decision_notes && (
-        <div className="rounded-lg border border-border bg-card p-4 space-y-1.5">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">
-            Decision Notes
-          </span>
-          <ExpandableText cacheKey={`model-decision-${model.id}`}>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {model.decision_notes}
-            </p>
-          </ExpandableText>
-        </div>
-      )}
-
       <section id="pros-cons" className="grid grid-cols-1 md:grid-cols-2 gap-4 scroll-mt-24">
-        <div className="rounded-lg border border-border bg-card p-4">
-          <h2>Pros</h2>
-          <ul className="mt-2 list-disc pl-4 space-y-1 text-sm text-muted-foreground">
-            {model.pros.map((pro, idx) => (
+        <div className="rounded-lg border border-border bg-card p-4 border-l-2 border-l-teal-500 space-y-2">
+          <h2 className="text-teal-700 dark:text-teal-400 font-sans text-sm font-bold">Strengths (Pros)</h2>
+          <ul className="list-disc pl-4 space-y-1 text-xs text-muted-foreground leading-relaxed">
+            {model.decisionsummary.strengths.map((pro, idx) => (
               <li key={idx}>{pro}</li>
             ))}
           </ul>
         </div>
-        <div className="rounded-lg border border-border bg-card p-4">
-          <h2>Cons</h2>
-          <ul className="mt-2 list-disc pl-4 space-y-1 text-sm text-muted-foreground">
-            {model.cons.map((con, idx) => (
+        <div className="rounded-lg border border-border bg-card p-4 border-l-2 border-l-rose-500 space-y-2">
+          <h2 className="text-rose-700 dark:text-rose-400 font-sans text-sm font-bold">Limitations (Cons)</h2>
+          <ul className="list-disc pl-4 space-y-1 text-xs text-muted-foreground leading-relaxed">
+            {model.decisionsummary.limitations.map((con, idx) => (
               <li key={idx}>{con}</li>
             ))}
           </ul>
@@ -126,15 +123,7 @@ export default async function ModelDetailPage({ params }: PageProps) {
 
       <ModelCollapsibleSections model={model} />
 
-      {model.competitors && model.competitors.length > 0 && (
-        <AlternativesList
-          alternatives={model.competitors}
-          title="Compared To"
-        />
-      )}
-
       <RelatedContent items={relatedContent} />
     </ContentPageLayout>
   );
 }
-

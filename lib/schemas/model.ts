@@ -1,34 +1,9 @@
 import { z } from 'zod';
-import { BaseMetaSchema, ContentRefSchema } from './base';
 
 export const ModelCategorySchema = z.enum(['ml', 'dl', 'llm']);
 export type ModelCategory = z.infer<typeof ModelCategorySchema>;
 
-export const ProblemTypeSchema = z.enum([
-  'classification',
-  'regression',
-  'clustering',
-  'generation',
-  'embedding',
-  'detection',
-  'segmentation',
-]);
-export type ProblemType = z.infer<typeof ProblemTypeSchema>;
-
-export const SpeedRatingSchema = z.enum(['fast', 'medium', 'slow']);
-export type SpeedRating = z.infer<typeof SpeedRatingSchema>;
-
-export const SizeRatingSchema = z.enum(['low', 'medium', 'high']);
-export type SizeRating = z.infer<typeof SizeRatingSchema>;
-
-export const InterpretabilityRatingSchema = z.enum(['high', 'medium', 'low']);
-export type InterpretabilityRating = z.infer<typeof InterpretabilityRatingSchema>;
-
-export const HyperParameterSchema = z.object({
-  name: z.string(),
-  default: z.union([z.string(), z.number(), z.null()]),
-  note: z.string(),
-});
+export const ProblemTypeSchema = z.string(); // Freeform problem types in the new schema
 
 export const ModelSubcategorySchema = z.enum([
   // Classical ML
@@ -63,35 +38,133 @@ export const ModelSubcategorySchema = z.enum([
 ]);
 export type ModelSubcategory = z.infer<typeof ModelSubcategorySchema>;
 
-export const ModelSchema = BaseMetaSchema.extend({
-  // Model-specific fields
-  category: ModelCategorySchema,
-  subcategory: ModelSubcategorySchema,
-  problem_types: z.array(ProblemTypeSchema),
-  summary: z.string(),
-  use_when: z.string(),
-  avoid_when: z.string(),
-  pros: z.array(z.string()),
-  cons: z.array(z.string()),
-  key_hyperparams: z.array(HyperParameterSchema),
-  training_speed: SpeedRatingSchema,
-  inference_speed: SpeedRatingSchema,
-  memory_usage: SizeRatingSchema,
-  interpretability: InterpretabilityRatingSchema,
-  quick_start: z.string(),
-  alternatives: z.array(ContentRefSchema),
-  related_workflows: z.array(z.string()),
-  decision_notes: z.string().optional(),
-  competitors: z.array(ContentRefSchema).optional(),
-  
-  // Cost and Latency (structured metadata)
-  cost_notes: z.string().optional(), // Cost per token, compute requirements, pricing model
-  latency_notes: z.string().optional(), // Latency per request, throughput characteristics
-  
-  // Observability (structured metadata)
-  observability_notes: z.string().optional(), // Metrics, logging, tracing conventions
-  
-  // Research background
-  research_background: z.string().optional(),
-  computational_requirements: z.string().optional(),
+export const HyperParameterSchema = z.object({
+  name: z.string(),
+  purpose: z.string(),
+  increaseeffect: z.string(),
+  decreaseeffect: z.string(),
+  tradeoffs: z.string(),
+  tuningpriority: z.string(),
+  interactions: z.array(z.string()),
+  commonmistakes: z.array(z.string()),
 });
+
+export const ModelSchema = z.object({
+  // Identity & Discovery
+  id: z.string(),
+  title: z.string(),
+  name: z.string(),
+  slug: z.string(),
+  description: z.string(),
+  tags: z.array(z.string()).default([]),
+  aliases: z.array(z.string()).default([]),
+  keywords: z.array(z.string()).default([]),
+  searchtokens: z.array(z.string()).default([]),
+  
+  // Maintenance
+  createdat: z.string(),
+  updatedat: z.string(),
+  lastverified: z.string(),
+  reviewfrequency: z.string(),
+  verifiedagainst: z.string(),
+  
+  // Governance
+  lifecycle: z.string(),
+  stability: z.string(),
+  confidence: z.string(),
+  engineeringmaturity: z.string(),
+  
+  // Classification
+  domain: ModelCategorySchema,
+  category: z.string(), // E.g., "ensemble learning"
+  difficulty: z.string(),
+  engineeringarea: z.string(),
+  estimatedreadingtime: z.number(),
+  prerequisites: z.array(z.string()).default([]),
+  recommendednext: z.array(z.string()).default([]),
+  
+  // Relationships
+  relatedcontent: z.array(z.object({
+    type: z.string(),
+    id: z.string(),
+    relationship: z.string()
+  })).default([]),
+  owner: z.string().optional(),
+  sources: z.array(z.object({
+    title: z.string(),
+    url: z.string()
+  })).min(1),
+  githubrepo: z.string().url().optional(),
+  problemtypes: z.array(z.string()),
+  
+  // Structured blocks
+  decisionsummary: z.object({
+    summary: z.string(),
+    bestusecases: z.array(z.string()),
+    avoidwhen: z.array(z.string()),
+    strengths: z.array(z.string()),
+    limitations: z.array(z.string()),
+    interpretability: z.string(),
+    trainingcharacteristics: z.string(),
+    inferencecharacteristics: z.string(),
+    computationalcharacteristics: z.string(),
+  }),
+  coreunderstanding: z.object({
+    intuition: z.string(),
+    learningmechanism: z.string(),
+    assumptions: z.array(z.string()),
+    mathematicalintuition: z.string(),
+    complexity: z.string(),
+    memorycomplexity: z.string(),
+    robustness: z.string(),
+    scalability: z.string(),
+    overfittingtendency: z.string(),
+    biasvariance: z.string(),
+  }),
+  hyperparameters: z.array(HyperParameterSchema),
+  engineeringconsiderations: z.object({
+    datasetsuitability: z.array(z.string()),
+    scalability: z.array(z.string()),
+    parallelization: z.string(),
+    computationalcost: z.string(),
+    memorybehavior: z.string(),
+    inferencecharacteristics: z.string(),
+    robustness: z.array(z.string()),
+    sensitivitytooutliers: z.string(),
+    featureengineeringdependency: z.string(),
+    featurescalingrequirement: z.string(),
+    classimbalancebehavior: z.string(),
+    commonlimitations: z.array(z.string()),
+    pipelineposition: z.string(),
+  }),
+  comparisons: z.array(z.object({
+    model: z.string(),
+    choose_this_when: z.string(),
+    prefer_other_when: z.string(),
+    tradeoffs: z.string(),
+  })),
+  relatedknowledge: z.object({
+    relatedmodels: z.array(z.string()),
+    alternative_models: z.array(z.string()),
+    related_principles: z.array(z.string()),
+    related_workflows: z.array(z.string()),
+    related_patterns: z.array(z.string()),
+    related_packages: z.array(z.string()),
+    related_guides: z.array(z.string()),
+    related_registry: z.array(z.string()),
+  }),
+}).transform(val => {
+  // Map fields to match standard naming used in application logic
+  const subcategoryKey = val.category.replace(/\s+/g, '_') as ModelSubcategory;
+  return {
+    ...val,
+    category: val.domain, // maps to 'ml' | 'dl' | 'llm' for page routes
+    subcategory: subcategoryKey, // maps to underscore-separated subcategory (e.g. 'ensemble_learning')
+    updated_at: val.updatedat, // standard navigation compat
+    created_at: val.createdat, // standard navigation compat
+    problem_types: val.problemtypes, // standard navigation compat
+  };
+});
+
+export type Model = z.output<typeof ModelSchema>;
+

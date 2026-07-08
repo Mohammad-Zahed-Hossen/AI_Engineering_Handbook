@@ -141,12 +141,11 @@ export default function ModelCategoryComparison({
             <table className="min-w-full divide-y divide-border text-left">
               <thead className="bg-muted/40 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider select-none">
                 <tr>
-                  <th className="px-4 py-3 w-1/5">Model</th>
-                  <th className="px-4 py-3 w-2/5">Typical Use Case</th>
-                  <th className="px-4 py-3 text-center">Interpretability</th>
-                  <th className="px-4 py-3 text-center">Training Speed</th>
-                  <th className="px-4 py-3 text-center">Memory Usage</th>
-                  <th className="px-4 py-3 text-center">Inference Speed</th>
+                  <th className="px-4 py-3 w-1/6">Model</th>
+                  <th className="px-4 py-3 w-2/6">Typical Use Case</th>
+                  <th className="px-4 py-3 text-center">Difficulty</th>
+                  <th className="px-4 py-3 text-center">Maturity</th>
+                  <th className="px-4 py-3 w-2/6">Interpretability</th>
                   <th className="px-4 py-3 text-right pr-6">Action</th>
                 </tr>
               </thead>
@@ -159,43 +158,23 @@ export default function ModelCategoryComparison({
                       </Link>
                     </td>
                     <td className="px-4 py-3 align-middle text-muted-foreground leading-relaxed">
-                      {m.use_when}
+                      {m.decisionsummary.bestusecases[0] || m.description}
                     </td>
                     <td className="px-4 py-3 align-middle text-center capitalize font-mono">
                       <span className={cn(
-                        m.interpretability === 'high' && 'text-emerald-500',
-                        m.interpretability === 'medium' && 'text-amber-500',
-                        m.interpretability === 'low' && 'text-rose-500'
+                        m.difficulty === 'beginner' && 'text-emerald-500',
+                        m.difficulty === 'intermediate' && 'text-amber-500',
+                        m.difficulty === 'advanced' && 'text-rose-500',
+                        m.difficulty === 'expert' && 'text-purple-500'
                       )}>
-                        {m.interpretability}
+                        {m.difficulty}
                       </span>
                     </td>
-                    <td className="px-4 py-3 align-middle text-center capitalize font-mono">
-                      <span className={cn(
-                        m.training_speed === 'fast' && 'text-emerald-500',
-                        m.training_speed === 'medium' && 'text-amber-500',
-                        m.training_speed === 'slow' && 'text-rose-500'
-                      )}>
-                        {m.training_speed}
-                      </span>
+                    <td className="px-4 py-3 align-middle text-center capitalize font-mono text-muted-foreground">
+                      {m.engineeringmaturity}
                     </td>
-                    <td className="px-4 py-3 align-middle text-center capitalize font-mono">
-                      <span className={cn(
-                        m.memory_usage === 'low' && 'text-emerald-500',
-                        m.memory_usage === 'medium' && 'text-amber-500',
-                        m.memory_usage === 'high' && 'text-rose-500'
-                      )}>
-                        {m.memory_usage}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 align-middle text-center capitalize font-mono">
-                      <span className={cn(
-                        m.inference_speed === 'fast' && 'text-emerald-500',
-                        m.inference_speed === 'medium' && 'text-amber-500',
-                        m.inference_speed === 'slow' && 'text-rose-500'
-                      )}>
-                        {m.inference_speed}
-                      </span>
+                    <td className="px-4 py-3 align-middle text-muted-foreground leading-relaxed">
+                      {m.decisionsummary.interpretability}
                     </td>
                     <td className="px-4 py-3 align-middle text-right pr-6">
                       <Link

@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 interface OfficialResourcesProps {
-  sources: string[];
+  sources: Array<string | { title: string; url: string }>;
   githubRepo?: string;
 }
 
@@ -285,9 +285,10 @@ interface ResourceCategoryProps {
   title: string;
   urls: string[];
   category: string;
+  sources: Array<string | { title: string; url: string }>;
 }
 
-function ResourceCategory({ icon, iconBg, title, urls, category }: ResourceCategoryProps) {
+function ResourceCategory({ icon, iconBg, title, urls, category, sources }: ResourceCategoryProps) {
   const [expanded, setExpanded] = useState(false);
   const showMore = urls.length > 3;
   const visibleUrls = expanded ? urls : urls.slice(0, 3);
@@ -298,11 +299,13 @@ function ResourceCategory({ icon, iconBg, title, urls, category }: ResourceCateg
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 font-sans">
           {title}
         </h3>
         <ul className="space-y-1.5">
           {visibleUrls.map(url => {
+            const matchObj = sources.find(s => typeof s === 'string' ? s === url : s.url === url);
+            const customTitle = matchObj && typeof matchObj !== 'string' ? matchObj.title : undefined;
             const info = parseResourceUrl(url, category);
             return (
               <li key={url}>
@@ -310,13 +313,13 @@ function ResourceCategory({ icon, iconBg, title, urls, category }: ResourceCateg
                   href={url} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="group block"
+                  className="group block font-sans"
                 >
                   <div className="flex items-center gap-2 text-xs text-foreground hover:text-primary transition-colors">
-                    <span className="truncate font-medium">{info.title}</span>
+                    <span className="truncate font-medium">{customTitle || info.title}</span>
                     <ExternalLink className="w-3 h-3 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                  {info.subtitle && (
+                  {info.subtitle && !customTitle && (
                     <div className="text-[10px] text-muted-foreground mt-0.5">
                       {info.subtitle}
                     </div>
@@ -329,7 +332,7 @@ function ResourceCategory({ icon, iconBg, title, urls, category }: ResourceCateg
         {showMore && (
           <button
             onClick={() => setExpanded(!expanded)}
-            className="mt-2 text-[10px] font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
+            className="mt-2 text-[10px] font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1 font-sans cursor-pointer"
           >
             {expanded ? (
               <>
@@ -350,7 +353,8 @@ function ResourceCategory({ icon, iconBg, title, urls, category }: ResourceCateg
 }
 
 export default function OfficialResources({ sources, githubRepo }: OfficialResourcesProps) {
-  const categorized = categorizeSources(sources);
+  const sourceUrls = sources.map(s => typeof s === 'string' ? s : s.url);
+  const categorized = categorizeSources(sourceUrls);
   const hasContent =
     categorized.documentation.length > 0 ||
     categorized.papers.length > 0 ||
@@ -363,7 +367,7 @@ export default function OfficialResources({ sources, githubRepo }: OfficialResou
   return (
     <section className="rounded-xl border border-border bg-card/50 backdrop-blur-sm overflow-hidden">
       <div className="px-4 py-3 border-b border-border bg-muted/30">
-        <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+        <h2 className="text-sm font-semibold text-foreground flex items-center gap-2 font-sans">
           <BookOpen className="w-4 h-4 text-primary" />
           Official Resources
         </h2>
@@ -378,7 +382,7 @@ export default function OfficialResources({ sources, githubRepo }: OfficialResou
               <div className="shrink-0 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Link2 className="w-4 h-4" />
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 font-sans">
                 <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
                   Source Code
                 </h3>
@@ -411,6 +415,7 @@ export default function OfficialResources({ sources, githubRepo }: OfficialResou
             title="Documentation"
             urls={categorized.documentation}
             category="documentation"
+            sources={sources}
           />
         )}
 
@@ -422,6 +427,7 @@ export default function OfficialResources({ sources, githubRepo }: OfficialResou
             title="Model Cards"
             urls={categorized.modelCards}
             category="modelCards"
+            sources={sources}
           />
         )}
 
@@ -433,6 +439,7 @@ export default function OfficialResources({ sources, githubRepo }: OfficialResou
             title="Research Papers"
             urls={categorized.papers}
             category="papers"
+            sources={sources}
           />
         )}
 
@@ -444,6 +451,7 @@ export default function OfficialResources({ sources, githubRepo }: OfficialResou
             title="External References"
             urls={categorized.external}
             category="external"
+            sources={sources}
           />
         )}
       </div>

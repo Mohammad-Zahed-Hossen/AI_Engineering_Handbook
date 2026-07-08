@@ -3,6 +3,7 @@ import path from 'path';
 import { cache } from 'react';
 import { Package } from '@/types/package';
 import { Model, ModelCategory, ModelSubcategory } from '@/types/model';
+import { ModelSchema } from '@/lib/schemas/model';
 import { RegistryModel } from '@/types/registry';
 import { REGISTRY_TASK_FILES, REGISTRY_FILE_TO_TASK } from './config/registry';
 import type { RegistryTask } from './config/registry';
@@ -12,7 +13,7 @@ import { Pattern } from '@/types/pattern';
 import { DebugGuide } from '@/types/debug-guide';
 import { DecisionGuide } from '@/types/decision-guide';
 import { Principle } from '@/types/principle';
-import { ContentRef } from '@/lib/schemas/base';
+import { ContentRef, RelationshipType } from '@/lib/schemas/base';
 
 // Core data directory in the project workspace
 const dataDir = path.join(process.cwd(), 'data');
@@ -109,7 +110,8 @@ export const getModel = cache(function getModel(category: ModelCategory, id: str
   if (!fs.existsSync(filePath)) {
     throw new Error(`Model not found: ${category}/${id}`);
   }
-  return readJSON<Model>(filePath);
+  const raw = readJSON<unknown>(filePath);
+  return ModelSchema.parse(raw);
 });
 
 /**
@@ -725,8 +727,14 @@ export const getRelatedContent = cache(function getRelatedContent(
       )
       .map(candidate => ({ type: 'model', id: candidate.id } satisfies ContentRef));
 
+    const relatedRefs = (model.relatedcontent || []).map(ref => ({
+      id: ref.id,
+      type: ref.type as ContentRef['type'],
+      relationship_type: ref.relationship as RelationshipType,
+    }));
+
     return uniqueExistingRefs([
-      ...model.alternatives,
+      ...relatedRefs,
       ...sameCategory,
       ...sameProblemType,
     ], current).slice(0, 6);
