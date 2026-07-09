@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Model } from '@/types/model';
 import { cn } from '@/lib/utils';
+import { Prose, ProseInline } from './Prose';
 
 interface ModelCollapsibleSectionsProps {
   model: Model;
@@ -106,7 +107,7 @@ const libraryParamsMap: Record<string, string> = {
 };
 
 export default function ModelCollapsibleSections({ model }: ModelCollapsibleSectionsProps) {
-  const [coreOpen, setCoreOpen] = useState(true);
+  const [coreOpen, setCoreOpen] = useState(false);
   const [engOpen, setEngOpen] = useState(false);
   const [hyperOpen, setHyperOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
@@ -114,6 +115,7 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
   const [openHp, setOpenHp] = useState<Record<string, boolean>>({});
 
   // Compute teasers
+  const coreTeaser = `${model.coreunderstanding.complexity} · ${model.coreunderstanding.robustness}`;
   const engTeaser = `${model.engineeringconsiderations.commonlimitations.length} limitation${model.engineeringconsiderations.commonlimitations.length === 1 ? '' : 's'} noted`;
   const highPriorityCount = model.hyperparameters.filter(hp => hp.tuningpriority.toLowerCase() === 'high').length;
   const hyperTeaser = `${model.hyperparameters.length} parameter${model.hyperparameters.length === 1 ? '' : 's'} · ${highPriorityCount} high priority`;
@@ -151,6 +153,7 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
         icon={<BookOpen className="w-4 h-4" />}
         open={coreOpen}
         onToggle={() => setCoreOpen(v => !v)}
+        teaser={coreTeaser}
       >
         <div className="space-y-5 text-xs font-sans">
           {/* Visual Specs Grid */}
@@ -167,7 +170,7 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
                 <span className="mt-0.5 shrink-0">{icon}</span>
                 <div className="space-y-0.5 text-left">
                   <span className="text-[9px] uppercase tracking-wider text-muted-foreground block font-bold">{label}</span>
-                  <span className="text-xs font-semibold text-foreground leading-snug">{value}</span>
+                  <ProseInline content={value} className="text-xs font-semibold text-foreground leading-snug" />
                 </div>
               </div>
             ))}
@@ -176,18 +179,18 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
           <div className="space-y-3.5 leading-relaxed text-muted-foreground pt-1">
             <div>
               <h4 className="font-semibold text-foreground text-xs mb-1">Intuition</h4>
-              <p>{model.coreunderstanding.intuition}</p>
+              <Prose content={model.coreunderstanding.intuition} className="text-xs text-muted-foreground" />
             </div>
             <div>
               <h4 className="font-semibold text-foreground text-xs mb-1">Learning Mechanism</h4>
-              <p>{model.coreunderstanding.learningmechanism}</p>
+              <Prose content={model.coreunderstanding.learningmechanism} className="text-xs text-muted-foreground" />
             </div>
             {model.coreunderstanding.assumptions.length > 0 && (
               <div>
                 <h4 className="font-semibold text-foreground text-xs mb-1">Assumptions Made</h4>
                 <ul className="list-disc pl-4 space-y-1 mt-1 text-muted-foreground">
                   {model.coreunderstanding.assumptions.map((ass, idx) => (
-                    <li key={idx}>{ass}</li>
+                    <li key={idx}><ProseInline content={ass} /></li>
                   ))}
                 </ul>
               </div>
@@ -198,9 +201,7 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
                 <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                 Mathematical Intuition & Formulation
               </h4>
-              <p className="font-mono text-[11px] leading-relaxed text-muted-foreground m-0 pt-1.5 whitespace-pre-line">
-                {model.coreunderstanding.mathematicalintuition}
-              </p>
+              <Prose content={model.coreunderstanding.mathematicalintuition} className="font-mono text-[11px] leading-relaxed text-muted-foreground m-0 pt-1.5" />
             </div>
           </div>
         </div>
@@ -228,17 +229,17 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
                     <h4 className="font-semibold text-foreground mb-0.5">Dataset Suitability</h4>
                     <ul className="list-disc pl-4 space-y-1">
                       {model.engineeringconsiderations.datasetsuitability.map((item, idx) => (
-                        <li key={idx}>{item}</li>
+                        <li key={idx}><ProseInline content={item} /></li>
                       ))}
                     </ul>
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground mb-0.5">Feature Scaling</h4>
-                    <p>{model.engineeringconsiderations.featurescalingrequirement}</p>
+                    <Prose content={model.engineeringconsiderations.featurescalingrequirement} className="text-xs text-muted-foreground" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground mb-0.5">Feature Engineering</h4>
-                    <p>{model.engineeringconsiderations.featureengineeringdependency}</p>
+                    <Prose content={model.engineeringconsiderations.featureengineeringdependency} className="text-xs text-muted-foreground" />
                   </div>
                 </div>
               </div>
@@ -253,15 +254,15 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
                 <div className="space-y-3 text-xs leading-relaxed text-muted-foreground">
                   <div>
                     <h4 className="font-semibold text-foreground mb-0.5">Parallelization</h4>
-                    <p>{model.engineeringconsiderations.parallelization}</p>
+                    <Prose content={model.engineeringconsiderations.parallelization} className="text-xs text-muted-foreground" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground mb-0.5">Sensitivity to Outliers</h4>
-                    <p>{model.engineeringconsiderations.sensitivitytooutliers}</p>
+                    <Prose content={model.engineeringconsiderations.sensitivitytooutliers} className="text-xs text-muted-foreground" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground mb-0.5">Computational Complexity</h4>
-                    <p>{model.engineeringconsiderations.computationalcost}</p>
+                    <Prose content={model.engineeringconsiderations.computationalcost} className="text-xs text-muted-foreground" />
                   </div>
                 </div>
               </div>
@@ -276,13 +277,13 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
                 <div className="space-y-3 text-xs leading-relaxed text-muted-foreground">
                   <div>
                     <h4 className="font-semibold text-foreground mb-0.5">Class Imbalance Behavior</h4>
-                    <p>{model.engineeringconsiderations.classimbalancebehavior}</p>
+                    <Prose content={model.engineeringconsiderations.classimbalancebehavior} className="text-xs text-muted-foreground" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground mb-0.5">Robustness</h4>
                     <ul className="list-disc pl-4 space-y-1">
                       {model.engineeringconsiderations.robustness.map((item, idx) => (
-                        <li key={idx}>{item}</li>
+                        <li key={idx}><ProseInline content={item} /></li>
                       ))}
                     </ul>
                   </div>
@@ -305,7 +306,7 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
             ].map(([label, val]) => (
               <div key={label} className="p-3 rounded-lg border border-border/80 bg-muted/10">
                 <span className="text-[10px] font-bold text-foreground uppercase tracking-wider block mb-1">{label}</span>
-                <p className="text-xs text-muted-foreground leading-relaxed m-0">{val}</p>
+                <Prose content={val} className="text-xs text-muted-foreground leading-relaxed m-0" />
               </div>
             ))}
           </div>
@@ -317,7 +318,7 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
                 <h4 className="font-bold text-rose-700 dark:text-rose-400 text-xs m-0">Common Limitations & Engineering Gotchas</h4>
                 <ul className="list-disc pl-4 space-y-1 text-xs text-muted-foreground mt-1.5">
                   {model.engineeringconsiderations.commonlimitations.map((lim, idx) => (
-                    <li key={idx}>{lim}</li>
+                    <li key={idx}><ProseInline content={lim} /></li>
                   ))}
                 </ul>
               </div>
@@ -391,7 +392,7 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
                   <div className="space-y-3.5">
                     <div>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-foreground block mb-0.5">Purpose & Description</span>
-                      <p className="text-muted-foreground">{hp.purpose}</p>
+                      <Prose content={hp.purpose} className="text-muted-foreground" />
                     </div>
 
                     <div className="space-y-3">
@@ -399,7 +400,7 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
                         <span className="text-[10px] font-bold uppercase tracking-wider text-foreground block mb-1">
                           Tuning Tradeoffs
                         </span>
-                        <p className="text-muted-foreground leading-relaxed">{hp.tradeoffs}</p>
+                        <Prose content={hp.tradeoffs} className="text-muted-foreground leading-relaxed" />
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
@@ -408,7 +409,7 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
                           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
                             <span className="text-[10px] font-sans">▲</span> Effect of Increasing
                           </span>
-                          <p className="text-muted-foreground leading-relaxed m-0">{hp.increaseeffect}</p>
+                          <Prose content={hp.increaseeffect} className="text-muted-foreground leading-relaxed m-0" />
                         </div>
 
                         {/* Effect of Decreasing */}
@@ -416,7 +417,7 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
                           <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-400 flex items-center gap-1">
                             <span className="text-[10px] font-sans">▼</span> Effect of Decreasing
                           </span>
-                          <p className="text-muted-foreground leading-relaxed m-0">{hp.decreaseeffect}</p>
+                          <Prose content={hp.decreaseeffect} className="text-muted-foreground leading-relaxed m-0" />
                         </div>
                       </div>
                     </div>
@@ -428,7 +429,7 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
                             <span className="text-[9px] font-bold uppercase tracking-wider text-foreground block">Key Interactions</span>
                             <ul className="list-disc pl-4 space-y-0.5 text-muted-foreground">
                               {hp.interactions.map((inter, idx) => (
-                                <li key={idx}>{inter}</li>
+                                <li key={idx}><ProseInline content={inter} /></li>
                               ))}
                             </ul>
                           </div>
@@ -439,7 +440,7 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
                             <span className="text-[9px] font-bold uppercase tracking-wider text-rose-500 block">Common Pitfalls & Mistakes</span>
                             <ul className="list-disc pl-4 space-y-0.5 text-muted-foreground">
                               {hp.commonmistakes.map((mistake, idx) => (
-                                <li key={idx}>{mistake}</li>
+                                <li key={idx}><ProseInline content={mistake} /></li>
                               ))}
                             </ul>
                           </div>
@@ -476,21 +477,21 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
                     <span className="text-[9px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
                       Choose {model.name} When
                     </span>
-                    <p className="text-[11px] text-muted-foreground m-0">{comp.choose_this_when}</p>
+                    <Prose content={comp.choose_this_when} className="text-[11px] text-muted-foreground m-0" />
                   </div>
 
                   <div className="p-3 rounded-lg border border-amber-500/10 bg-amber-500/5 dark:bg-amber-950/5 space-y-1">
                     <span className="text-[9px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider block">
                       Prefer {comp.model} When
                     </span>
-                    <p className="text-[11px] text-muted-foreground m-0">{comp.prefer_other_when}</p>
+                    <Prose content={comp.prefer_other_when} className="text-[11px] text-muted-foreground m-0" />
                   </div>
 
                   <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-1">
                     <span className="text-[9px] font-bold text-foreground uppercase tracking-wider block">
                       Key Tradeoffs
                     </span>
-                    <p className="text-[11px] text-muted-foreground m-0">{comp.tradeoffs}</p>
+                    <Prose content={comp.tradeoffs} className="text-[11px] text-muted-foreground m-0" />
                   </div>
                 </div>
               </div>

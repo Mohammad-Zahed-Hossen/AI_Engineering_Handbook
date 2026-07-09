@@ -11,6 +11,7 @@ import { validateModelCategory } from '@/lib/route-params';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 import { CodeBlock } from '@/components/shared/CodeBlock';
 import LearningResources from '@/components/shared/LearningResources';
+import { Prose } from '@/components/shared/Prose';
 import { Terminal, AlertCircle, Check, AlertTriangle, ArrowUpCircle, ArrowDownCircle, CheckCircle2 } from 'lucide-react';
 
 export async function generateStaticParams() {
@@ -74,6 +75,7 @@ export default async function ModelDetailPage({ params }: PageProps) {
         <MetadataBadges
           type="model"
           updatedAt={model.updated_at}
+          lastVerified={model.lastverified}
           problemTypes={model.problem_types}
         />
         <ModelDecisionStrip
@@ -85,11 +87,9 @@ export default async function ModelDetailPage({ params }: PageProps) {
         />
         <div className="rounded-lg bg-muted/30 p-3.5 border border-border/80">
           <span className="text-[10px] font-bold uppercase text-muted-foreground block mb-1">Architecture Overview</span>
-          <p className="text-xs text-foreground leading-relaxed leading-relaxed font-sans">{model.description}</p>
+          <Prose content={model.description} className="text-xs text-foreground leading-relaxed font-sans" />
         </div>
-        <p className="content-prose text-base md:text-lg font-medium text-foreground leading-relaxed">
-          {model.decisionsummary.summary}
-        </p>
+        <Prose content={model.decisionsummary.summary} className="content-prose text-base md:text-lg font-medium text-foreground leading-relaxed" />
       </header>
 
       <section id="decision-guide" className="scroll-mt-24 space-y-6">
@@ -209,20 +209,18 @@ export default async function ModelDetailPage({ params }: PageProps) {
             </div>
           </div>
           
-          <p className="text-xs text-muted-foreground font-sans leading-relaxed">
-            {model.quickstart.explanation}
-          </p>
+          <Prose content={model.quickstart.explanation} className="text-xs text-muted-foreground font-sans leading-relaxed" />
 
           <CodeBlock code={model.quickstart.code} language={model.quickstart.language} />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-sans">
             <div className="rounded-lg bg-muted/20 border border-border/80 p-3">
               <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">Expected Inputs</span>
-              <p className="text-xs text-foreground leading-relaxed m-0">{model.quickstart.inputs}</p>
+              <Prose content={model.quickstart.inputs} className="text-xs text-foreground leading-relaxed m-0" />
             </div>
             <div className="rounded-lg bg-muted/20 border border-border/80 p-3">
               <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">Expected Outputs</span>
-              <p className="text-xs text-foreground leading-relaxed m-0">{model.quickstart.outputs}</p>
+              <Prose content={model.quickstart.outputs} className="text-xs text-foreground leading-relaxed m-0" />
             </div>
           </div>
 
@@ -231,7 +229,7 @@ export default async function ModelDetailPage({ params }: PageProps) {
               <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
               <div className="space-y-1 font-sans">
                 <span className="text-[9px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 block">Implementation Notes</span>
-                <p className="text-xs text-muted-foreground leading-relaxed m-0">{model.quickstart.notes}</p>
+                <Prose content={model.quickstart.notes} className="text-xs text-muted-foreground leading-relaxed m-0" />
               </div>
             </div>
           )}

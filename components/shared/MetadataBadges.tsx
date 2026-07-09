@@ -1,9 +1,12 @@
 import ContentTypeBadge from './ContentTypeBadge';
 import { cn } from '@/lib/utils';
+import { formatRelativeTime } from '@/lib/format-date';
+import { CheckCircle2 } from 'lucide-react';
 
 interface MetadataBadgesProps {
   type: 'model' | 'package' | 'workflow' | 'cheatsheet';
   updatedAt: string;
+  lastVerified?: string;
   problemTypes?: string[];
   category?: string;
   version?: string;
@@ -15,6 +18,7 @@ const MAX_VISIBLE_PROBLEM_TYPES = 3;
 export default function MetadataBadges({
   type,
   updatedAt,
+  lastVerified,
   problemTypes,
   category,
   version,
@@ -39,8 +43,20 @@ export default function MetadataBadges({
         </span>
       )}
       {updatedAt && (
-        <span className="rounded border border-border bg-muted px-2 py-0.5 text-[10px] font-mono text-muted-foreground">
-          Updated {updatedAt}
+        <span 
+          className="rounded border border-border bg-muted px-2 py-0.5 text-[10px] font-mono text-muted-foreground"
+          title={`Updated: ${updatedAt}`}
+        >
+          Updated {formatRelativeTime(updatedAt)}
+        </span>
+      )}
+      {lastVerified && (
+        <span 
+          className="rounded border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-mono text-emerald-700 dark:text-emerald-400 flex items-center gap-1"
+          title={`Verified: ${lastVerified}`}
+        >
+          <CheckCircle2 className="w-3 h-3" />
+          Verified {formatRelativeTime(lastVerified)}
         </span>
       )}
       {visibleProblemTypes.map(pt => (

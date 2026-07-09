@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Check, Copy, Terminal } from 'lucide-react';
+import { Check, Copy, Terminal, ChevronDown } from 'lucide-react';
+import { codeToHtml } from 'shiki';
 
 interface CodeBlockProps {
   code: string;
@@ -13,6 +14,26 @@ interface CodeBlockProps {
 
 export function CodeBlock({ code, language = 'python', filename, showLineNumbers = false }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
+  const [highlightedCode, setHighlightedCode] = useState<string | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const MAX_COLLAPSED_LINES = 20;
+
+  const lines = code.split('\n');
+  const shouldCollapse = lines.length > MAX_COLLAPSED_LINES;
+  const displayLines = shouldCollapse && !isExpanded ? lines.slice(0, MAX_COLLAPSED_LINES) : lines;
+  const displayCode = displayLines.join('\n');
+
+  useEffect(() => {
+    codeToHtml(displayCode, {
+      lang: language,
+      theme: 'github-dark'
+    }).then(html => {
+      setHighlightedCode(html);
+    }).catch(err => {
+      console.error('Shiki highlighting error:', err);
+      setHighlightedCode(`<pre><code>${escapeHtml(displayCode)}</code></pre>`);
+    });
+  }, [displayCode, language]);
 
   const handleCopy = async () => {
     try {
@@ -24,9 +45,17 @@ export function CodeBlock({ code, language = 'python', filename, showLineNumbers
     }
   };
 
-  const lines = code.split('\n');
   const lineCount = lines.length;
   const lineNumberWidth = lineCount >= 100 ? 3 : lineCount >= 10 ? 2 : 1;
+
+  const escapeHtml = (text: string) => {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  };
 
   const languageLabel = language === 'bash' || language === 'sh' ? 'BASH' : language?.toUpperCase() || 'CODE';
 
@@ -65,44 +94,48 @@ export function CodeBlock({ code, language = 'python', filename, showLineNumbers
       </div>
 
       {/* Code body */}
-      <pre className={cn(
-        "overflow-x-auto text-[11px] text-zinc-200 leading-relaxed scrollbar-thin",
-        showLineNumbers ? "pl-2 pr-4 py-3" : "p-4"
+      <div className={cn(
+        "relative",
+        shouldCollapse && !isExpanded && "max-h-[300px] overflow-hidden"
       )}>
-        <code className={language ? `language-${language}` : ''}>
-          {showLineNumbers ? (
-            <table className="border-collapse">
-              <tbody>
-                {lines.map((line, i) => (
-                  <tr key={i}>
-                    <td className="text-right pr-3 select-none text-zinc-600 text-[10px]" style={{ minWidth: `${lineNumberWidth + 1}ch` }}>
-                      {i + 1}
-                    </td>
-                    <td className="whitespace-pre">
-                      {line || ' '}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            code
+        <div 
+          className={cn(
+            "overflow-x-auto text-[11px] leading-relaxed scrollbar-thin",
+            showLineNumbers ? "pl-2 pr-4 py-3" : "p-4"
           )}
-        </code>
-      </pre>
+          dangerouslySetInnerHTML={{ __html: highlightedCode || `<pre><code>${escapeHtml(displayCode)}</code></pre>` }}
+        />
+        {shouldCollapse && !isExpanded && (
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-zinc-950 to-transparent pointer-events-none" />
+        )}
+      </div>
 
-      {/* Overflow fade on mobile */}
-      <div
-        className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-zinc-950 to-transparent md:hidden z-10"
-        aria-hidden="true"
-      />
+      {/* Expand button for collapsed code */}
+      {shouldCollapse && (
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full py-2 text-[10px] font-sans font-semibold uppercase tracking-wider text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer select-none border-t border-zinc-800 bg-zinc-900/50"
+        >
+          {isExpanded ? (
+            <>
+              <ChevronDown className="w-3 h-3 inline mr-1 rotate-180" />
+              Show Less
+            </>
+          ) : (
+            <>
+              <ChevronDown className="w-3 h-3 inline mr-1" />
+              Show {lines.length - MAX_COLLAPSED_LINES} More Lines
+            </>
+          )}
+        </button>
+      )}
 
       {/* Mobile copy button at bottom */}
       <button
         onClick={handleCopy}
         className={cn(
           "md:hidden w-full border-t border-zinc-800 py-2 text-[10px] flex items-center justify-center gap-1.5",
-          "font-sans font-semibold uppercase tracking-wider transition-none",
+          "font-sans font-semibold uppercase tracking-wider transition-colors",
           "select-none cursor-pointer",
           copied
             ? "text-emerald-400 bg-emerald-500/10"
