@@ -1,0 +1,416 @@
+{
+  "id": "logistic-regression",
+  "title": "Logistic Regression",
+  "name": "Logistic Regression",
+  "slug": "logistic-regression",
+  "description": "Logistic Regression is a fast, interpretable, probabilistic baseline for classification that is often the best first production choice for tabular problems with roughly linear signal, calibrated probabilities, and strong operational constraints.",
+  "tags": [
+    "ml",
+    "classification",
+    "classical-ml",
+    "linear-models"
+  ],
+  "aliases": [
+    "OLS classification",
+    "Logit classification"
+  ],
+  "keywords": [
+    "logistic regression",
+    "classification",
+    "sigmoid",
+    "log loss",
+    "lbfgs",
+    "regularization"
+  ],
+  "searchtokens": [
+    "logistic regression",
+    "logit regression",
+    "sklearn logistic",
+    "binary classification",
+    "probability calibration"
+  ],
+  "createdat": "2026-07-10T01:46:00+06:00",
+  "updatedat": "2026-07-10T01:46:00+06:00",
+  "lastverified": "2026-07-10T01:46:00+06:00",
+  "reviewfrequency": "annual",
+  "verifiedagainst": "canonical model knowledge as of 2026-07-09",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "verified",
+  "engineeringmaturity": "production",
+  "domain": "ml",
+  "category": "classification",
+  "difficulty": "beginner",
+  "engineeringarea": "supervised learning",
+  "estimatedreadingtime": 10,
+  "prerequisites": [
+    "Supervised learning basics",
+    "Linear algebra basics",
+    "Probability basics"
+  ],
+  "recommendednext": [
+    "Linear SVM",
+    "Decision Tree",
+    "Random Forest"
+  ],
+  "relatedcontent": [
+    {
+      "type": "model",
+      "id": "linear-regression",
+      "relationship": "closely-related"
+    },
+    {
+      "type": "model",
+      "id": "ridge-regression",
+      "relationship": "alternative"
+    },
+    {
+      "type": "model",
+      "id": "lasso-regression",
+      "relationship": "alternative"
+    },
+    {
+      "type": "model",
+      "id": "elastic-net",
+      "relationship": "alternative"
+    },
+    {
+      "type": "model",
+      "id": "svm",
+      "relationship": "closely-related"
+    },
+    {
+      "type": "package",
+      "id": "scikit-learn",
+      "relationship": "implemented-by"
+    }
+  ],
+  "owner": "AENS Knowledge Architecture",
+  "sources": [
+    {
+      "title": "LogisticRegression — scikit-learn documentation",
+      "url": "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html"
+    },
+    {
+      "title": "CS229 Lecture Notes",
+      "url": "https://cs229.stanford.edu/main_notes.pdf"
+    }
+  ],
+  "githubrepo": "https://github.com/scikit-learn/scikit-learn",
+  "problemtypes": [
+    "Supervised classification problems with linear or linearized response structure"
+  ],
+  "decisionsummary": {
+    "summary": "Logistic Regression is a fast, interpretable, probabilistic baseline for classification that is often the best first production choice for tabular problems with roughly linear signal, calibrated probabilities, and strong operational constraints.",
+    "bestusecases": [
+      "Credit scoring and risk modeling where probability estimates and auditability matter.",
+      "Spam, churn, CTR, or propensity baselines where latency and interpretability matter.",
+      "Medical screening or fraud triage where threshold tuning and calibration are important.",
+      "Sparse, high-dimensional linear problems such as text classification and bag-of-words baselines."
+    ],
+    "avoidwhen": [
+      "The decision boundary is strongly non-linear and interactions dominate the signal.",
+      "Feature engineering is limited and the data are messy, heterogeneous tabular features.",
+      "The problem has severe label noise or extreme separation without strong regularization.",
+      "You need the highest possible accuracy on complex tabular data and can afford tree ensembles or boosting."
+    ],
+    "strengths": [
+      "Produces calibrated probabilities more naturally than margin-only classifiers because it is trained with a likelihood-based objective.",
+      "Has a convex objective in the standard regularized form, which makes training predictable and easier to debug than non-convex models.",
+      "Works well as a strong baseline for linear or near-linear tabular and sparse feature problems.",
+      "Coefficients are interpretable as log-odds effects, which supports explainability and governance."
+    ],
+    "limitations": [
+      "Cannot represent non-linear boundaries unless you manually add interactions, polynomial terms, or transformed features.",
+      "Is sensitive to feature scaling, especially for solver stability and convergence.",
+      "Can become unstable under multicollinearity, separation, or extreme class imbalance without careful regularization and preprocessing.",
+      "Raw coefficient magnitudes are not reliable feature importance scores when features differ in scale or correlation structure."
+    ],
+    "interpretability": "A coefficient $w_j$ changes the log-odds by $w_j$ for a one-unit increase in feature $x_j$, holding other features fixed, and $e^{w_j}$ is the corresponding odds ratio. Standardized coefficients are easier to compare across features, but interpretability still weakens when predictors are strongly correlated or heavily regularized.",
+    "trainingcharacteristics": "Training is solver-dependent: `lbfgs` and `newton-cg` are strong general-purpose options, `sag` and `saga` scale well on large datasets, and `liblinear` is often useful for smaller or binary-only cases. Convergence is usually good when features are scaled and regularization is sensible, but poor scaling, high collinearity, or too-low `max_iter` can trigger non-convergence.",
+    "inferencecharacteristics": "Inference is lightweight and usually low-latency because prediction is a single linear score plus sigmoid or softmax evaluation. CPU footprints are typically small, throughput is high, and the model is friendly to batch and online serving.",
+    "computationalcharacteristics": "Training is typically $O(Tnd)$ or $O(Tnkd)$ for multinomial settings depending on solver and implementation details, while inference is $O(d)$ for binary and $O(kd)$ for multiclass problems, with memory roughly $O(d)$ or $O(kd)$ for the learned weights plus preprocessing state."
+  },
+  "coreunderstanding": {
+    "intuition": "Logistic Regression learns a linear decision boundary in feature space, but converts the linear score into a probability using the sigmoid function. The model predicts class membership by learning weights that separate examples with a hyperplane, so the classifier is linear even though its outputs are probabilistic. Engineers usually choose it when they want a simple model whose scores can be thresholded, calibrated, and explained.",
+    "learningmechanism": "Logistic Regression learns a linear decision boundary in feature space, but converts the linear score into a probability using the sigmoid function. The model predicts class membership by learning weights that separate examples with a hyperplane, so the classifier is linear even though its outputs are probabilistic. Engineers usually choose it when they want a simple model whose scores can be thresholded, calibrated, and explained.",
+    "assumptions": [
+      "Linearity in the log-odds: If the true relationship is highly non-linear, performance will usually plateau unless feature engineering adds structure.",
+      "Independent observations: Violations such as grouped, temporal, or repeated-measures data can produce overconfident estimates and misleading validation.",
+      "Limited multicollinearity: Strongly correlated features make coefficients unstable and weaken interpretability.",
+      "Correct feature representation: If key interactions or transformations are missing, the model underfits even when the classifier is well tuned.",
+      "Stable label process: Label noise and drift reduce calibration and degrade the maximum-likelihood fit."
+    ],
+    "mathematicalintuition": "For binary classification, the model is\\n\\n$$\\np(y=1\\mid x)=\\sigma(w^\\top x+b)=\\frac{1}{1+e^{-(w^\\top x+b)}}\\n$$\\n\\nand the logit transformation is\\n\\n$$\\n\\log\\frac{p}{1-p}=w^\\top x+b\\n$$\\n\\nTraining maximizes the Bernoulli likelihood, equivalently minimizing log loss / binary cross-entropy. With regularization, the objective becomes a penalized negative log-likelihood, which controls variance and improves generalization.",
+    "complexity": "Let $n$ be samples, $p$ be features after preprocessing, and $k$ be classes. Training is typically $O(Tnp)$ for binary and commonly scales toward $O(Tnkp)$ in multiclass settings, where $T$ is the number of optimizer iterations. Inference is $O(p)$ per sample for binary and $O(kp)$ for multiclass, with memory roughly $O(p)$ or $O(kp)$ for weights plus preprocessing artifacts.",
+    "memorycomplexity": "Memory is roughly $O(p)$ or $O(kp)$ for weights plus preprocessing artifacts.",
+    "robustness": "Logistic Regression is moderately robust when regularization and preprocessing are correct, but it is not inherently robust to outliers, leakage, or bad feature scaling.",
+    "scalability": "It scales well on sparse and large datasets when using `sag` or `saga`, but scalability drops when the feature space is poorly scaled, dense, or dominated by expensive feature engineering.",
+    "overfittingtendency": "Overfitting is usually manageable because regularization is built in by default, but it can still happen in high-dimensional or separable problems if regularization is too weak.",
+    "biasvariance": "Logistic Regression is typically a lower-variance, higher-bias model than tree ensembles, which makes it a good baseline and a strong choice when the linear approximation is good enough."
+  },
+  "hyperparameters": [
+    {
+      "name": "penalty",
+      "purpose": "Controls the regularization form used to constrain coefficient growth and shape sparsity.",
+      "increaseeffect": "Not applicable as a numeric increase; moving toward stronger penalization reduces variance, can increase bias, may improve generalization, and can reduce effective model capacity.",
+      "decreaseeffect": "Moving toward weaker penalization increases variance, may improve fit on training data, and can increase instability under separation or multicollinearity.",
+      "tradeoffs": "L1 can create sparse models; L2 is usually more stable; Elastic Net balances sparsity and stability.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Must be chosen with solver compatibility in mind; not all solvers support all penalties."
+      ],
+      "commonmistakes": [
+        "Choosing a penalty unsupported by the solver, or using no regularization on small, noisy, or highly correlated data."
+      ]
+    },
+    {
+      "name": "C",
+      "purpose": "Inverse regularization strength; smaller values mean stronger regularization.",
+      "increaseeffect": "Weaker regularization, lower bias, higher variance, potentially more unstable coefficients, and slightly easier optimization in some cases if the model is too constrained.",
+      "decreaseeffect": "Stronger regularization, higher bias, lower variance, more shrinkage, and often improved stability and calibration.",
+      "tradeoffs": "High `C` can fit training data better but risks overfitting; low `C` can underfit but often generalizes better under noisy or high-dimensional conditions.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts strongly with `penalty`, feature scaling, and class imbalance."
+      ],
+      "commonmistakes": [
+        "Searching `C` without scaling features first, or tuning `C` after leakage has already inflated validation performance."
+      ]
+    },
+    {
+      "name": "solver",
+      "purpose": "Chooses the optimization algorithm used to fit the model.",
+      "increaseeffect": "Not a numeric parameter; choosing more scalable solvers like `sag` or `saga` can improve large-scale training speed, while second-order solvers can improve convergence quality on moderate problems.",
+      "decreaseeffect": "Not meaningful as a scalar change; moving to simpler solvers like `liblinear` can help small binary problems but may limit multiclass support or scalability.",
+      "tradeoffs": "Solver choice controls convergence speed, sparse support, L1 support, memory usage, and multiclass behavior.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Must match data size, sparsity, penalty, and multiclass needs."
+      ],
+      "commonmistakes": [
+        "Picking a solver that cannot handle the intended penalty or ignoring scaling requirements for `sag`/`saga`."
+      ]
+    },
+    {
+      "name": "max_iter",
+      "purpose": "Caps the number of optimization iterations to prevent endless or excessively slow fitting.",
+      "increaseeffect": "More chance of convergence, higher training time, slightly higher CPU cost, and reduced risk of premature stopping.",
+      "decreaseeffect": "Faster runs but higher risk of non-convergence, unstable coefficients, and degraded model quality.",
+      "tradeoffs": "Higher `max_iter` improves reliability when scaling or regularization are imperfect, but can hide real convergence issues if used as the only fix.",
+      "tuningpriority": "Medium-High",
+      "interactions": [
+        "Often paired with scaling and solver changes."
+      ],
+      "commonmistakes": [
+        "Using `max_iter` as a substitute for proper preprocessing, or ignoring `ConvergenceWarning`."
+      ]
+    },
+    {
+      "name": "class_weight",
+      "purpose": "Reweights classes in the loss function to address imbalance.",
+      "increaseeffect": "For the minority class, effective penalty on errors increases, improving recall but potentially lowering precision and raising variance.",
+      "decreaseeffect": "Reduces minority emphasis, often improving precision on the majority class but worsening recall on rare positives.",
+      "tradeoffs": "Useful when false negatives are costly or class distribution is skewed, but it can distort probability calibration if overused.",
+      "tuningpriority": "High for imbalanced data",
+      "interactions": [
+        "Interacts with thresholding, resampling, and calibration."
+      ],
+      "commonmistakes": [
+        "Applying `balanced` blindly without checking whether threshold movement or calibration would solve the problem more cleanly."
+      ]
+    },
+    {
+      "name": "multi_class",
+      "purpose": "Chooses the multiclass strategy, such as one-vs-rest or multinomial behavior depending on solver support.",
+      "increaseeffect": "Not a numeric increase; moving toward multinomial modeling can improve probability consistency across classes, but may increase computational cost.",
+      "decreaseeffect": "One-vs-rest can be simpler and sometimes faster, but can yield less coherent class probabilities.",
+      "tradeoffs": "Multinomial often improves quality for true multiclass problems; OvR can be simpler and easier to deploy in certain binary-heavy workflows.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Depends on solver compatibility and the number of classes."
+      ],
+      "commonmistakes": [
+        "Leaving the strategy implicit without checking how the chosen solver handles multiclass training."
+      ]
+    },
+    {
+      "name": "l1_ratio",
+      "purpose": "Controls the mix of L1 and L2 regularization under Elastic Net.",
+      "increaseeffect": "More L1-like behavior, more sparsity, potentially higher bias and lower variance, and often more feature selection.",
+      "decreaseeffect": "More L2-like behavior, smoother shrinkage, less sparsity, and usually more stable coefficients.",
+      "tradeoffs": "Useful when many features are redundant but pure L1 is too aggressive or unstable.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Only relevant with Elastic Net and `saga`."
+      ],
+      "commonmistakes": [
+        "Tuning it without first verifying that Elastic Net is the right regularization family."
+      ]
+    },
+    {
+      "name": "tol",
+      "purpose": "Sets the convergence tolerance for the optimizer.",
+      "increaseeffect": "Looser stopping criterion, faster training, but more risk of stopping early before a good optimum.",
+      "decreaseeffect": "Stricter convergence, longer training, and usually more reliable optimization at the cost of time.",
+      "tradeoffs": "A small tolerance improves fit quality when training is stable; a large tolerance can be useful for quick prototyping.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Most useful after scaling and solver selection are correct."
+      ],
+      "commonmistakes": [
+        "Reducing `tol` to compensate for poor scaling or a bad solver choice."
+      ]
+    }
+  ],
+  "engineeringconsiderations": {
+    "datasetsuitability": [
+      "Logistic Regression works best when the sample-to-feature ratio is reasonable, or when regularization is strong enough to control variance in high-dimensional settings.",
+      "Sparse features are a strong fit, especially for text or one-hot encoded data.",
+      "Dense features with wildly different scales require careful preprocessing, or optimization can become slow and unstable."
+    ],
+    "scalability": [
+      "sag and saga are the most natural choices for large-scale workloads, while liblinear is often fine for smaller binary tasks.",
+      "n_jobs support is limited by solver and API behavior, so real parallelism is often more about data pipeline throughput, sparse matrix efficiency, and batch serving design than about a simple fit-time knob."
+    ],
+    "parallelization": "n_jobs support is limited by solver and API behavior, so real parallelism is often more about data pipeline throughput, sparse matrix efficiency, and batch serving design than about a simple fit-time knob.",
+    "computationalcost": "Training is CPU-friendly and usually light on memory unless the feature space is huge or the solver forms intermediate structures. Inference is cheap, making it suitable for real-time systems and low-cost batch scoring. GPU usage is generally unnecessary for standard Logistic Regression.",
+    "memorybehavior": "Training is CPU-friendly and usually light on memory unless the feature space is huge or the solver forms intermediate structures. Memory use during inference is low, storing only weights and preprocessing pipeline artifacts.",
+    "inferencecharacteristics": "Inference is lightweight and usually low-latency because prediction is a single linear score plus sigmoid or softmax evaluation. CPU footprints are typically small, throughput is high, and the model is friendly to batch and online serving.",
+    "robustness": [
+      "Logistic Regression is moderately robust when regularization and preprocessing are correct, but it is not inherently robust to outliers, leakage, or bad feature scaling."
+    ],
+    "sensitivitytooutliers": "Extreme values can distort the linear score and lead to unstable coefficients because the model is optimized on the full likelihood over all samples. Outliers matter more when feature scaling is poor or when a few samples have high leverage. Robust preprocessing, clipping, winsorization, or better feature design can reduce this risk.",
+    "featureengineeringdependency": "Standard scaling, one-hot encoding for categorical variables, and interaction or polynomial features are the main way to let the model express non-linear relationships. Without good feature engineering, Logistic Regression often underfits problems that tree models can solve automatically.",
+    "featurescalingrequirement": "Scaling is mandatory in practice whenever numeric features have different units or magnitudes and when using solvers sensitive to optimization geometry, especially sag and saga.",
+    "classimbalancebehavior": "Imbalance should be handled with class_weight, resampling, threshold tuning, and calibration, ideally inside a leakage-safe pipeline. Threshold selection is often more important than the raw 0.5 cutoff because the optimal decision point depends on business cost and prevalence.",
+    "commonlimitations": [
+      "Logistic Regression extrapolates linearly in log-odds space, so it can behave badly outside the training distribution or when key interactions are missing.",
+      "Multicollinearity makes coefficients unstable, label noise lowers the ceiling, and a poor pipeline can cause leakage that makes validation meaningless."
+    ],
+    "pipelineposition": "Typically used as a fast baseline, fallback candidate, or simple production model placed inside a Pipeline after feature scale standardization, imputation, and encoding."
+  },
+  "comparisons": [
+    {
+      "model": "Linear SVM",
+      "choose_this_when": "You need calibrated probabilities, simple deployment, and an interpretable linear baseline.",
+      "prefer_other_when": "You care more about margin-based classification than probability quality.",
+      "tradeoffs": "Logistic Regression is probabilistic; Linear SVM often focuses more on margin separation and may need calibration afterward."
+    },
+    {
+      "model": "Decision Tree",
+      "choose_this_when": "You want a stable, linear, easy-to-calibrate model with compact inference.",
+      "prefer_other_when": "You need automatic non-linear splits and rule-like behavior without manual feature engineering.",
+      "tradeoffs": "Logistic Regression is smoother and more stable; trees are more expressive but often less calibrated."
+    },
+    {
+      "model": "Random Forest",
+      "choose_this_when": "You need a transparent baseline, lower latency, and better probability control.",
+      "prefer_other_when": "Non-linear interactions dominate and you can afford more memory and compute.",
+      "tradeoffs": "Logistic Regression is simpler and faster; Random Forest usually wins on complex tabular structure."
+    },
+    {
+      "model": "Gradient Boosting",
+      "choose_this_when": "You want interpretability, calibration, and a strong baseline before adding model complexity.",
+      "prefer_other_when": "You need higher predictive power on difficult tabular problems.",
+      "tradeoffs": "Logistic Regression is cheaper and easier to operationalize; boosting usually captures richer interactions."
+    },
+    {
+      "model": "XGBoost",
+      "choose_this_when": "You need a model that is easier to explain, easier to calibrate, and cheaper to serve.",
+      "prefer_other_when": "You need top-tier tabular performance and can manage tuning complexity.",
+      "tradeoffs": "Logistic Regression trades raw accuracy for simplicity, while XGBoost trades simplicity for performance."
+    },
+    {
+      "model": "Naive Bayes",
+      "choose_this_when": "You have engineered numeric/categorical features and want a stronger discriminative baseline.",
+      "prefer_other_when": "You have very sparse text features and conditional-independence assumptions are acceptable.",
+      "tradeoffs": "Logistic Regression is discriminative and often stronger on mixed feature spaces; Naive Bayes can be faster and surprisingly effective on text."
+    }
+  ],
+  "relatedknowledge": {
+    "relatedmodels": [
+      "Generalized linear models",
+      "linear classifiers",
+      "multinomial logistic regression",
+      "penalized logistic regression",
+      "one-vs-rest classifiers"
+    ],
+    "alternative_models": [
+      "Linear SVM",
+      "Decision Tree",
+      "Random Forest",
+      "Gradient Boosting",
+      "XGBoost",
+      "Naive Bayes"
+    ],
+    "related_principles": [
+      "Bias-Variance Trade-off",
+      "Convex Optimization",
+      "Regularization",
+      "Maximum Likelihood Estimation",
+      "Calibration"
+    ],
+    "related_workflows": [
+      "Train-Test Split",
+      "Feature Scaling",
+      "Cross-Validation",
+      "Grid Search",
+      "Classification Pipeline",
+      "Imbalanced Classification Evaluation"
+    ],
+    "related_patterns": [
+      "Pipeline",
+      "Feature Scaling",
+      "Class Balancing",
+      "Threshold Optimization"
+    ],
+    "related_packages": [
+      "scikit-learn",
+      "statsmodels"
+    ],
+    "related_guides": [
+      "Data Leakage Debug Guide",
+      "Convergence Issues Debug Guide",
+      "Classification Baseline Selection"
+    ],
+    "related_registry": [
+      "Linear Models"
+    ]
+  },
+  "quickstart": {
+    "language": "python",
+    "implementation_package": "scikit-learn",
+    "code": "import numpy as np\nimport pandas as pd\n\nfrom sklearn.datasets import make_classification\nfrom sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score\nfrom sklearn.compose import ColumnTransformer\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.impute import SimpleImputer\nfrom sklearn.preprocessing import StandardScaler, OneHotEncoder\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.metrics import roc_auc_score, classification_report, confusion_matrix\n\nX_num, y = make_classification(\n    n_samples=3000,\n    n_features=6,\n    n_informative=4,\n    n_redundant=1,\n    weights=[0.78, 0.22],\n    random_state=42,\n)\n\ndf = pd.DataFrame(X_num, columns=[f\"num_{i}\" for i in range(6)])\ndf[\"cat_0\"] = pd.qcut(df[\"num_0\"], q=4, labels=[\"q1\", \"q2\", \"q3\", \"q4\"]).astype(str)\ndf[\"cat_1\"] = pd.qcut(df[\"num_1\"], q=3, labels=[\"low\", \"mid\", \"high\"]).astype(str)\ndf.loc[df.sample(frac=0.05, random_state=42).index, \"num_2\"] = np.nan\n\nX = df\ny = pd.Series(y, name=\"target\")\n\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, stratify=y, random_state=42\n)\n\nnumeric_features = [c for c in X.columns if c.startswith(\"num_\")]\ncategorical_features = [c for c in X.columns if c.startswith(\"cat_\")]\n\nnumeric_transformer = Pipeline(\n    steps=[\n        (\"imputer\", SimpleImputer(strategy=\"median\")),\n        (\"scaler\", StandardScaler()),\n    ]\n)\n\ncategorical_transformer = Pipeline(\n    steps=[\n        (\"imputer\", SimpleImputer(strategy=\"most_frequent\")),\n        (\"onehot\", OneHotEncoder(handle_unknown=\"ignore\")),\n    ]\n)\n\npreprocessor = ColumnTransformer(\n    transformers=[\n        (\"num\", numeric_transformer, numeric_features),\n        (\"cat\", categorical_transformer, categorical_features),\n    ]\n)\n\npipe = Pipeline(\n    steps=[\n        (\"preprocessor\", preprocessor),\n        (\"model\", LogisticRegression(max_iter=1000, solver=\"lbfgs\")),\n    ]\n)\n\nparam_grid = {\n    \"model__C\": [0.1, 1.0, 10.0],\n    \"model__class_weight\": [None, \"balanced\"],\n    \"model__solver\": [\"lbfgs\", \"newton-cg\"],\n}\n\ngrid = GridSearchCV(pipe, param_grid=param_grid, cv=5, scoring=\"roc_auc\", n_jobs=-1)\ngrid.fit(X_train, y_train)\n\nbest_model = grid.best_estimator_\ncv_auc = cross_val_score(best_model, X_train, y_train, cv=5, scoring=\"roc_auc\").mean()\n\nproba = best_model.predict_proba(X_test)[:, 1]\npred = best_model.predict(X_test)\n\nprint(\"Best params:\", grid.best_params_)\nprint(\"CV ROC-AUC:\", cv_auc)\nprint(\"Test ROC-AUC:\", roc_auc_score(y_test, proba))\nprint(\"Confusion matrix:\\n\", confusion_matrix(y_test, pred))\nprint(classification_report(y_test, pred))",
+    "explanation": "This pipeline demonstrates leakage-safe preprocessing, model fitting, cross-validation, hyperparameter search, probability prediction, ROC-AUC evaluation, and classification reporting in a production-shaped workflow.",
+    "inputs": "A tabular feature matrix `X` with numeric and categorical columns, plus a binary target vector `y` of shape $(n,)$.",
+    "outputs": "Binary predictions from `predict`, probability scores from `predict_proba`, and evaluation metrics including ROC-AUC, confusion matrix, and classification report.",
+    "notes": "Numeric scaling is included because Logistic Regression is sensitive to feature scale and because `sag`/`saga` in particular rely on well-conditioned optimization. The pipeline keeps imputation, scaling, and encoding inside the train-only fit path to prevent leakage."
+  },
+  "learning_resources": [
+    {
+      "title": "CS229 Supplemental Notes",
+      "url": "https://cs229.stanford.edu/extra-notes/loss-functions.pdf",
+      "type": "guide",
+      "why_to_read": "Useful for understanding loss functions and why log loss is the right objective.",
+      "expected_outcome": "Connect logistic loss to classification training behavior.",
+      "reading_time": 25
+    },
+    {
+      "title": "ISLR Classification Chapter",
+      "url": "https://www.statlearning.com/",
+      "type": "guide",
+      "why_to_read": "Standard practical reference for classification and model selection.",
+      "expected_outcome": "Learn when logistic regression is appropriate relative to other classifiers.",
+      "reading_time": 35
+    },
+    {
+      "title": "Google ML Crash Course: Logistic Regression",
+      "url": "https://developers.google.com/machine-learning/crash-course/logistic-regression",
+      "type": "guide",
+      "why_to_read": "Concise engineering-friendly explanation of sigmoid and log loss.",
+      "expected_outcome": "Reinforce the practical probability-based view of the model.",
+      "reading_time": 15
+    }
+  ]
+}

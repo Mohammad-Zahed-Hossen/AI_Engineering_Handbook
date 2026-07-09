@@ -1,8 +1,8 @@
 # Machine Learning Integration Architecture Audit
 
-**Date:** July 6, 2026  
+**Date:** July 9, 2026  
 **Repository:** ai-engineering-handbook  
-**Version:** 1.0  
+**Version:** 1.1  
 **Auditor:** System Architecture Analysis  
 **Scope:** Complete AENS architecture evaluation for Machine Learning domain integration
 
@@ -1336,4 +1336,15 @@ Problem Index (Discovery)
 
 ---
 
+## UX Refactoring and Presentation Polish (v1.1 Update)
+
+A dedicated UX refactoring audit was performed on July 9, 2026, using the Random Forest model page as the target template. This polish ensures that the visual hierarchy of the Model resource matches its structural ownership rules:
+- **Badge Decoupling**: Separation of the multi-sentence `interpretability` field from short classification badges. This avoids visual noise in the header while keeping key metrics cleanly categorized.
+- **Visual Spec Sheet**: Core understanding parameters (complexity, overfitting, assumptions) are rendered in a visual 3-column specifications grid to elevate readability and give the page a professional product feel.
+- **Trade-off Scannability**: Use When, Avoid When, Strengths, and Limitations are grouped in a unified 2x2 grid, making direct advantages and boundaries scannable in one glance.
+- **Interactive Hyperparameter Tuning**: Parameter behaviors are mapped to their specific API parameters (e.g. `n_estimators` tag for number of trees) and increase/decrease effects are shown side-by-side in custom-tinted columns, matching the developer-centric focus of AENS.
+
+---
+
 **End of Audit Report**
+

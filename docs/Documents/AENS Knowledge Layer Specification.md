@@ -3,9 +3,9 @@
 
 # AENS Knowledge Layer Specification
 
-## Version 1.0 (Freeze Candidate)
+## Version 1.2 (Post-Refactor Release)
 
-> **Status:** Draft v1.0
+> **Status:** Released v1.2
 >
 > **Owner:** AENS
 >
@@ -780,15 +780,54 @@ They answer:
 * Alternatives
 * Computational requirements
 * Research background
+* Quick Start production-ready implementation snippet (canonical code example)
+* Curated external learning resources (educational references)
 
 ---
 
 ## Model Never Owns
 
-* Package implementation
-* Installation
-* Framework APIs
-* Production workflows
+* Exhaustive package implementation or framework API documentation (beyond a single Quick Start snippet)
+* Installation instructions
+* Full production workflows
+
+---
+
+## Visual Presentation Standards
+
+Model pages must conform to a premium developer experience visual layout:
+
+1. **Header & Decision Strip**:
+   - Model summary is displayed directly as prominent introduction prose without text clamping or collapse expanders.
+   - The decision strip features four status badges: Difficulty, Stability, Confidence, and Maturity, decorated with Lucide icons (`Gauge`, `Activity`, `CheckCircle2`, `Shield`).
+   - Badges are colored semantically (e.g. emerald/cyan for stable/easy, amber/rose for intermediate/complex).
+   - Detailed `interpretability` explanations are extracted from status badges and rendered as a separate full-width explainability callout with an `Eye` icon below the strip.
+
+2. **Unified Decision & Tradeoffs Board**:
+   - "Use When", "Avoid When", "Strengths", and "Limitations" are unified into a cohesive 2x2 grid.
+   - Specific icons and tints are applied to each quadrant (green checkmark for Use When, amber alert for Avoid When, blue chevron for Strengths, rose shield-alert for Limitations).
+   - Parent elements must retain original IDs (`decision-guide` and `pros-cons`) to support sticky TOC scroll triggers.
+
+3. **Core Understanding Spec-Sheet**:
+   - Complexities, scalability, and structural assumptions are displayed as a structured 3-column specs sheet.
+   - Uses distinct icons (`Clock` for time complexity, `Database` for memory, `TrendingUp` for scalability, `Activity` for training, etc.).
+   - Formulas and formulations are styled in a clean, code-like monospace callout block.
+
+4. **Grouped Engineering Considerations**:
+   - Dense bullet lists are grouped into three distinct, structured sub-sections:
+     - **Data & Preprocessing** (Feature scaling, class imbalance, datasets)
+     - **Runtime & Scalability** (Parallelization, latency, training cost)
+     - **Pipeline Fit & Robustness** (Outlier behavior, pipeline position)
+   - "Common Limitations" is highlighted in a rose warning banner.
+
+5. **Comparative Hyperparameter Guide**:
+   - Features global **Expand All** and **Collapse All** button controls next to priority selectors.
+   - Shows both the human-readable concept and the exact library API parameter key (e.g., `n_estimators`, `max_depth`) in monospace tags.
+   - Side-by-side comparative layout (columns) for "Effect of Increasing" and "Effect of Decreasing" parameter behaviors, with custom green/red tinted panels.
+
+6. **Alternative Comparison Cards**:
+   - Model comparisons are styled as side-by-side cards with prominent "VS" badges.
+   - Options specify explicit "Choose [Model] When", "Prefer [Alternative] When", and "Tradeoffs" segments.
 
 ---
 
@@ -857,6 +896,7 @@ Alternatives
 Trade-offs
 
 Benchmark summary
+
 
 ---
 

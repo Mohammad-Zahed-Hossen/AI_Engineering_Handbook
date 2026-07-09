@@ -1,0 +1,401 @@
+{
+  "id": "svm",
+  "title": "Support Vector Machine (SVM)",
+  "name": "Support Vector Machine (SVM)",
+  "slug": "svm",
+  "description": "Support Vector Machine is a strong margin-based classifier for medium-sized, well-scaled problems where a carefully chosen linear or kernel boundary is worth the extra optimization and tuning cost.",
+  "tags": [
+    "ml",
+    "classification",
+    "classical-ml",
+    "kernel-methods",
+    "margin-based"
+  ],
+  "aliases": [
+    "Support Vector Classifier",
+    "SVC"
+  ],
+  "keywords": [
+    "support vector machine",
+    "svm",
+    "svc",
+    "kernel",
+    "margin maximization",
+    "rbf kernel"
+  ],
+  "searchtokens": [
+    "svm",
+    "svc",
+    "support vector classifier",
+    "sklearn svm",
+    "kernel svm",
+    "maximum margin classifier"
+  ],
+  "createdat": "2026-07-10T02:16:00+06:00",
+  "updatedat": "2026-07-10T02:16:00+06:00",
+  "lastverified": "2026-07-10T02:16:00+06:00",
+  "reviewfrequency": "annual",
+  "verifiedagainst": "canonical model knowledge as of 2026-07-09",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "verified",
+  "engineeringmaturity": "production",
+  "domain": "ml",
+  "category": "classification",
+  "difficulty": "intermediate",
+  "engineeringarea": "supervised learning",
+  "estimatedreadingtime": 12,
+  "prerequisites": [
+    "Supervised learning basics",
+    "Linear algebra basics",
+    "Convex optimization basics"
+  ],
+  "recommendednext": [
+    "Kernel Methods",
+    "Random Forest",
+    "Gradient Boosting"
+  ],
+  "relatedcontent": [
+    {
+      "type": "model",
+      "id": "logistic-regression",
+      "relationship": "closely-related"
+    },
+    {
+      "type": "package",
+      "id": "scikit-learn",
+      "relationship": "implemented-by"
+    }
+  ],
+  "owner": "AENS Knowledge Architecture",
+  "sources": [
+    {
+      "title": "Support Vector Machines — scikit-learn User Guide",
+      "url": "https://scikit-learn.org/stable/modules/svm.html"
+    },
+    {
+      "title": "SVC — scikit-learn API Reference",
+      "url": "https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html"
+    }
+  ],
+  "githubrepo": "https://github.com/scikit-learn/scikit-learn",
+  "problemtypes": [
+    "Supervised classification problems with medium-sized datasets and structured features"
+  ],
+  "decisionsummary": {
+    "summary": "Support Vector Machine is a strong margin-based classifier for medium-sized, well-scaled problems where a carefully chosen linear or kernel boundary is worth the extra optimization and tuning cost.",
+    "bestusecases": [
+      "Medium-sized classification tasks with clear separation after scaling, especially when a max-margin boundary is useful.",
+      "High-dimensional sparse or text-like problems where a linear SVM often performs well with a compact decision function.",
+      "Non-linear classification on structured tabular or feature-engineered data when an RBF or polynomial kernel is justified.",
+      "Regulated or research-heavy settings where margin control and a well-defined optimization objective are valuable."
+    ],
+    "avoidwhen": [
+      "Training data is very large, because SVC fit time scales at least quadratically with sample count.",
+      "You need fast probability outputs at scale, since probability estimation adds extra overhead.",
+      "Feature preprocessing is weak or scaling is inconsistent, which often hurts SVM performance materially.",
+      "You need an extremely simple tuning path for production, because kernel and hyperparameter sensitivity can be high."
+    ],
+    "strengths": [
+      "Excellent margin control through the soft-margin objective, which can improve generalization when classes are separable with noise.",
+      "Kernel methods let the model express non-linear decision boundaries without explicitly building polynomial feature spaces.",
+      "The final decision function depends only on support vectors, so the learned boundary can stay compact relative to the full training set.",
+      "Linear SVMs are often strong baselines on high-dimensional data because the maximum-margin formulation is robust and well understood."
+    ],
+    "limitations": [
+      "Training cost grows quickly with dataset size, and SVC is not a good fit for very large-scale production training.",
+      "Interpretability drops sharply for kernel SVMs because the decision boundary is implicit in transformed feature space.",
+      "Model quality is highly sensitive to scaling, kernel choice, and C/gamma settings.",
+      "Multiclass and probability workflows are more operationally complex than with simpler linear probabilistic baselines."
+    ],
+    "interpretability": "Linear SVMs can be interpreted by inspecting feature weights and the geometry of the separating hyperplane, with support vectors defining the boundary margin. Kernel SVMs are much harder to explain directly because the separation happens in an implicit transformed space, so interpretation usually relies on proxies such as support-vector inspection, sensitivity analysis, or post-hoc explanation methods.",
+    "trainingcharacteristics": "SVC solves a convex margin-optimization problem through libsvm-based training, which is reliable but computationally expensive as sample size grows. Kernel computation can dominate cost, and convergence depends strongly on scaling, kernel choice, and regularization strength.",
+    "inferencecharacteristics": "Inference latency depends heavily on the number of support vectors, because each prediction evaluates the learned decision function against those vectors. Linear SVMs are usually cheap to serve, while kernel SVMs can become slower and more memory-heavy as support vectors accumulate.",
+    "computationalcharacteristics": "Training is commonly around $O(n^2)$ to $O(n^3)$ in practice for kernel SVMs, with memory often scaling poorly because the kernel matrix and support vectors can be large. Inference is roughly $O(s \\cdot p)$ for a kernel model with $s$ support vectors and $p$ features, while linear models are closer to $O(p)$ per sample."
+  },
+  "coreunderstanding": {
+    "intuition": "SVM searches for the separating hyperplane that maximizes the margin between classes, which makes the decision boundary more stable than one that merely fits the training labels. Only the most informative boundary points, the support vectors, directly determine the learned classifier. When data are not linearly separable, kernels map inputs into a higher-dimensional space where a linear separator may exist.",
+    "learningmechanism": "SVM searches for the separating hyperplane that maximizes the margin between classes, which makes the decision boundary more stable than one that merely fits the training labels. Only the most informative boundary points, the support vectors, directly determine the learned classifier. When data are not linearly separable, kernels map inputs into a higher-dimensional space where a linear separator may exist.",
+    "assumptions": [
+      "Features are scaled consistently: Distance-based geometry changes drastically when feature magnitudes differ; poor scaling makes optimization and kernel behavior unreliable.",
+      "Kernel choice matches structure: RBF, polynomial, or linear kernels work only when their inductive bias matches the data geometry.",
+      "Classes are separable with tolerable overlap: Severe overlap forces many margin violations and can reduce the practical benefit of SVM.",
+      "Support vectors are representative: If noisy points dominate the margin, the learned boundary becomes brittle and may generalize poorly.",
+      "Decision boundary complexity is bounded by tuning: Excessively flexible settings can overfit, especially with RBF kernels and large gamma values."
+    ],
+    "mathematicalintuition": "For a linear soft-margin SVM, the primal objective is commonly written as\\n\\n$$\\n\\min_{w,b,\\xi} \\frac{1}{2}\\lVert w\\rVert^2 + C\\sum_{i=1}^{n}\\xi_i\\n$$\\n\\nsubject to\\n\\n$$\\ny_i(w^\\top x_i + b) \\ge 1 - \\xi_i,\\quad \\xi_i \\ge 0\\n$$\\n\\nThe hinge loss form is\\n\\n$$\\n\\sum_{i=1}^{n} \\max(0, 1 - y_i f(x_i))\\n$$\\n\\nwhere $f(x)=w^\\top x+b$ for the linear case. In the dual form, kernels replace the inner product with $K(x_i,x_j)$, enabling non-linear boundaries without explicitly constructing transformed features.",
+    "complexity": "Let $n$ be samples, $p$ be features, $s$ be support vectors, and $k$ be classes. Training kernel SVMs is typically between $O(n^2)$ and $O(n^3)$ in practice, while linear SVMs scale better but still depend on optimization details. Inference is about $O(s p)$ per sample for kernel models and often $O(p)$ for linear ones; memory is dominated by support vectors and any kernel-related state.",
+    "memorycomplexity": "Memory is dominated by support vectors and any kernel-related state.",
+    "robustness": "SVMs are often robust to moderate noise because soft margins allow violations, but they can still be sensitive to outliers that become support vectors.",
+    "scalability": "SVMs scale poorly compared with linear models and tree ensembles on very large datasets, especially for non-linear kernels.",
+    "overfittingtendency": "Overfitting risk rises when `C` is too large or `gamma` is too high, because the boundary can become overly complex.",
+    "biasvariance": "Linear SVMs usually have lower variance and higher bias than flexible kernels, while RBF and polynomial kernels reduce bias but can sharply increase variance if tuned aggressively."
+  },
+  "hyperparameters": [
+    {
+      "name": "C",
+      "purpose": "Controls the penalty for margin violations and therefore the strength of regularization.",
+      "increaseeffect": "Lower bias, higher variance, tighter fit to training data, potentially more support vectors, and often higher computational cost.",
+      "decreaseeffect": "Higher bias, lower variance, wider margins, fewer effective boundary adjustments, and usually more regularized solutions.",
+      "tradeoffs": "Large `C` can improve training accuracy but can overfit noisy or overlapping classes; small `C` can improve stability but underfit complex boundaries.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Strongly interacts with `gamma` and kernel choice, especially for RBF kernels."
+      ],
+      "commonmistakes": [
+        "Using a large `C` to \"fix\" underfitting caused by poor feature scaling or a bad kernel."
+      ]
+    },
+    {
+      "name": "kernel",
+      "purpose": "Selects the transformation used to model linear or non-linear boundaries.",
+      "increaseeffect": "Not numeric; moving from linear to non-linear kernels increases representational power, variance, training cost, and memory usage.",
+      "decreaseeffect": "Moving toward linear kernels reduces complexity, lowers cost, and improves scalability, but may underfit non-linear data.",
+      "tradeoffs": "Linear kernels are faster and simpler; RBF and polynomial kernels can capture more structure at a much higher tuning and runtime cost.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Must be chosen before fine-tuning `gamma`, `degree`, and `coef0`."
+      ],
+      "commonmistakes": [
+        "Using a non-linear kernel by default on large data without checking whether a linear boundary already works."
+      ]
+    },
+    {
+      "name": "gamma",
+      "purpose": "Controls how far the influence of a single training example reaches in RBF, polynomial, and sigmoid kernels.",
+      "increaseeffect": "More local influence, lower bias, higher variance, more complex boundaries, and potentially more support vectors.",
+      "decreaseeffect": "Smoother boundary, higher bias, lower variance, often faster and more stable optimization.",
+      "tradeoffs": "High `gamma` can fit fine structure but is easy to overfit; low `gamma` can underfit if the boundary needs local flexibility.",
+      "tuningpriority": "High for non-linear kernels",
+      "interactions": [
+        "Interacts strongly with `C`, and the pair is usually tuned jointly."
+      ],
+      "commonmistakes": [
+        "Tuning `gamma` without scaling features first or without constraining `C`."
+      ]
+    },
+    {
+      "name": "degree",
+      "purpose": "Sets the polynomial degree for the polynomial kernel.",
+      "increaseeffect": "Higher bias reduction, higher variance, more complex decision boundary, slower training, and potentially more memory use.",
+      "decreaseeffect": "Simpler boundary, lower variance, less compute, and a greater chance of underfitting.",
+      "tradeoffs": "Higher-degree polynomials can model complex feature interactions but become difficult to tune and may overfit quickly.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Only relevant for polynomial kernels and should be tuned after kernel choice."
+      ],
+      "commonmistakes": [
+        "Using a high degree as a generic substitute for feature engineering."
+      ]
+    },
+    {
+      "name": "coef0",
+      "purpose": "Controls the independent term in polynomial and sigmoid kernels, affecting how much low-order versus high-order structure contributes.",
+      "increaseeffect": "Can make the model more sensitive to lower-order relationships, sometimes improving fit and reducing effective variance.",
+      "decreaseeffect": "Can emphasize higher-order interactions, which may increase flexibility and overfitting risk.",
+      "tradeoffs": "Useful as a fine-tuning knob for polynomial kernels, but rarely the first lever to pull.",
+      "tuningpriority": "Low-Medium",
+      "interactions": [
+        "Works only with polynomial and sigmoid kernels."
+      ],
+      "commonmistakes": [
+        "Spending too much tuning effort here before `C`, `gamma`, and kernel choice are stable."
+      ]
+    },
+    {
+      "name": "shrinking",
+      "purpose": "Enables or disables the shrinking heuristic used to speed optimization.",
+      "increaseeffect": "Since it is boolean, enabling shrinking usually improves training speed and lowers temporary memory pressure, with minimal effect on bias or variance.",
+      "decreaseeffect": "Disabling shrinking can make optimization more conservative and sometimes slower, but occasionally helpful in edge cases.",
+      "tradeoffs": "Usually a performance knob rather than an accuracy knob.",
+      "tuningpriority": "Low",
+      "interactions": [
+        "Most users should leave it enabled unless debugging convergence behavior."
+      ],
+      "commonmistakes": [
+        "Treating it as a model-quality parameter when it is primarily an optimization heuristic."
+      ]
+    },
+    {
+      "name": "tol",
+      "purpose": "Sets the convergence tolerance for the optimization solver.",
+      "increaseeffect": "Faster stopping, lower training time, potentially less accurate optimization and less stable margins.",
+      "decreaseeffect": "Stricter convergence, longer training, more reliable optimization, and potentially better fit.",
+      "tradeoffs": "A tighter tolerance can help marginally but may not be worth the training cost if the data or kernel choice is the real issue.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Most useful after scaling and kernel settings are correct."
+      ],
+      "commonmistakes": [
+        "Lowering tolerance instead of fixing feature scaling or reducing kernel complexity."
+      ]
+    },
+    {
+      "name": "class_weight",
+      "purpose": "Reweights classes to handle imbalance or to emphasize minority-class recall.",
+      "increaseeffect": "Increases the effective penalty on minority-class errors, usually improving recall but often reducing precision and sometimes increasing variance.",
+      "decreaseeffect": "Reduces minority emphasis, often improving majority-class precision but worsening recall for rare classes.",
+      "tradeoffs": "Helpful for skewed datasets, but can shift decision boundaries and affect calibration.",
+      "tuningpriority": "High for imbalanced data",
+      "interactions": [
+        "Interacts with thresholding, calibration, and `C`."
+      ],
+      "commonmistakes": [
+        "Applying class weights blindly when threshold tuning or resampling would be more appropriate."
+      ]
+    }
+  ],
+  "engineeringconsiderations": {
+    "datasetsuitability": [
+      "SVM is best for small-to-medium datasets, especially when feature dimensionality is moderate to high and the representation is well engineered.",
+      "Sparse linear problems can work very well, but kernel SVMs become expensive quickly as sample size increases.",
+      "Kernel selection should match the geometry of the data rather than being treated as a default."
+    ],
+    "scalability": [
+      "SVC is not designed for very large training jobs, and the core fit path is constrained by the libsvm implementation.",
+      "Parallelism is limited compared with modern ensemble libraries, so hardware bottlenecks are usually CPU time and memory rather than GPU compute.",
+      "If scale is a concern, linear models or approximate kernel methods are often better operational choices."
+    ],
+    "parallelization": "Parallelism is limited compared with modern ensemble libraries, so hardware bottlenecks are usually CPU time and memory rather than GPU compute. If scale is a concern, linear models or approximate kernel methods are often better operational choices.",
+    "computationalcost": "Kernel SVMs can require large memory for intermediate optimization structures and for retained support vectors. CPU usage is usually the norm; GPU acceleration is not standard in scikit-learn SVC. At inference time, the number of support vectors is the main driver of latency.",
+    "memorybehavior": "Kernel SVMs can require large memory for intermediate optimization structures and for retained support vectors. At inference time, the model must store the support vectors in memory to evaluate the decision function.",
+    "inferencecharacteristics": "Inference latency depends heavily on the number of support vectors, because each prediction evaluates the learned decision function against those vectors. Linear SVMs are usually cheap to serve, while kernel SVMs can become slower and more memory-heavy as support vectors accumulate.",
+    "robustness": [
+      "Soft margins help SVM tolerate some noise, but mislabeled or extreme outliers can still become support vectors and pull the boundary in the wrong direction.",
+      "Overlapping classes often increase the number of margin violations and can reduce the clean separation benefit of the model."
+    ],
+    "sensitivitytooutliers": "Mislabeled or extreme outliers can become support vectors and pull the boundary in the wrong direction. Overlapping classes often increase the number of margin violations and can reduce the clean separation benefit of the model.",
+    "featureengineeringdependency": "Standard standardization default must be used for training and inference. Kernel performance also depends on whether the chosen representation exposes the right structure to the kernel.",
+    "featurescalingrequirement": "Feature scaling is effectively mandatory because SVM relies on distances, dot products, and kernel geometry. Standardization is usually the safest default, and the same fitted scaler must be used for training and inference.",
+    "classimbalancebehavior": "Class imbalance can shift the margin toward the majority class unless `class_weight` or resampling is used. Probability calibration is often needed when downstream decisions depend on well-formed scores.",
+    "commonlimitations": [
+      "Kernel selection is non-trivial, probability estimation adds overhead, and multiclass behavior is more complex than binary classification.",
+      "Parameter sensitivity is high, so blind grid search on a huge space is costly.",
+      "Because inference cost depends on support vectors, compactness is not guaranteed when the data are noisy or the kernel is too flexible."
+    ],
+    "pipelineposition": "Typically placed inside a Pipeline after feature scale standardization, imputation, and encoding to prevent leakage."
+  },
+  "comparisons": [
+    {
+      "model": "Logistic Regression",
+      "choose_this_when": "You need a margin-based classifier that can still model non-linear structure through kernels.",
+      "prefer_other_when": "You want calibrated probabilities, simpler tuning, or better operational transparency.",
+      "tradeoffs": "SVM can achieve better boundaries with kernels; Logistic Regression is simpler, faster, and easier to calibrate."
+    },
+    {
+      "model": "Decision Tree",
+      "choose_this_when": "You want stronger geometric separation and can invest in scaling and tuning.",
+      "prefer_other_when": "You need human-readable rules or easy handling of mixed feature types.",
+      "tradeoffs": "SVM often generalizes better on engineered numeric features; trees are easier to explain and preprocess less."
+    },
+    {
+      "model": "Random Forest",
+      "choose_this_when": "You want a compact margin-based model with strong performance on well-scaled features.",
+      "prefer_other_when": "You need built-in non-linear interactions and stronger robustness to raw tabular heterogeneity.",
+      "tradeoffs": "SVM is usually lighter at small scale; Random Forest is easier to tune and often more forgiving."
+    },
+    {
+      "model": "Gradient Boosting",
+      "choose_this_when": "You want a theoretically clean margin classifier and can accept higher tuning effort.",
+      "prefer_other_when": "You need top-tier performance on tabular data and can afford more complex training.",
+      "tradeoffs": "SVM is simpler conceptually; boosting often wins on difficult tabular tasks."
+    },
+    {
+      "model": "XGBoost",
+      "choose_this_when": "You need a strong classifier on a medium-sized dataset where kernels or margins matter.",
+      "prefer_other_when": "You need large-scale tabular performance, categorical handling workflows, and richer boosting behavior.",
+      "tradeoffs": "SVM can be elegant and compact; XGBoost typically scales better and is often more accurate on complex tables."
+    },
+    {
+      "model": "Naive Bayes",
+      "choose_this_when": "You have feature-scaled numeric data or engineered vectors where a margin boundary is useful.",
+      "prefer_other_when": "You need a very fast baseline for sparse text with strong conditional-independence structure.",
+      "tradeoffs": "SVM is usually more accurate on many discriminative tasks; Naive Bayes is simpler and cheaper."
+    }
+  ],
+  "relatedknowledge": {
+    "relatedmodels": [
+      "Linear SVM",
+      "Nu-SVM",
+      "One-Class SVM",
+      "Support Vector Regression",
+      "kernelized classifiers"
+    ],
+    "alternative_models": [
+      "Logistic Regression",
+      "Decision Tree",
+      "Random Forest",
+      "Gradient Boosting",
+      "XGBoost",
+      "Naive Bayes"
+    ],
+    "related_principles": [
+      "Maximum Margin Principle",
+      "Kernel Trick",
+      "Structural Risk Minimization",
+      "Convex Optimization",
+      "Regularization"
+    ],
+    "related_workflows": [
+      "Feature Scaling",
+      "Hyperparameter Tuning",
+      "Model Evaluation",
+      "Classification Workflow",
+      "Imbalanced Classification Workflow"
+    ],
+    "related_patterns": [
+      "Pipeline",
+      "Cross Validation",
+      "Hyperparameter Optimization",
+      "Feature Scaling"
+    ],
+    "related_packages": [
+      "scikit-learn",
+      "LIBSVM",
+      "ThunderSVM",
+      "cuML"
+    ],
+    "related_guides": [
+      "Data Leakage Debug Guide",
+      "Convergence Issues Debug Guide"
+    ],
+    "related_registry": [
+      "Linear Models"
+    ]
+  },
+  "quickstart": {
+    "language": "python",
+    "implementation_package": "scikit-learn",
+    "code": "import numpy as np\nimport pandas as pd\n\nfrom sklearn.datasets import make_classification\nfrom sklearn.model_selection import train_test_split, GridSearchCV\nfrom sklearn.compose import ColumnTransformer\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.impute import SimpleImputer\nfrom sklearn.preprocessing import StandardScaler, OneHotEncoder\nfrom sklearn.svm import SVC\nfrom sklearn.metrics import roc_auc_score, classification_report\n\nX_num, y = make_classification(\n    n_samples=2500,\n    n_features=8,\n    n_informative=5,\n    n_redundant=1,\n    weights=[0.7, 0.3],\n    random_state=42,\n)\n\ndf = pd.DataFrame(X_num, columns=[f\"num_{i}\" for i in range(8)])\ndf[\"cat_0\"] = pd.qcut(df[\"num_0\"], q=4, labels=[\"q1\", \"q2\", \"q3\", \"q4\"]).astype(str)\ndf[\"cat_1\"] = pd.qcut(df[\"num_1\"], q=3, labels=[\"low\", \"mid\", \"high\"]).astype(str)\ndf.loc[df.sample(frac=0.04, random_state=42).index, \"num_3\"] = np.nan\n\nX = df\ny = pd.Series(y, name=\"target\")\n\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, stratify=y, random_state=42\n)\n\nnumeric_features = [c for c in X.columns if c.startswith(\"num_\")]\ncategorical_features = [c for c in X.columns if c.startswith(\"cat_\")]\n\nnumeric_transformer = Pipeline(\n    steps=[\n        (\"imputer\", SimpleImputer(strategy=\"median\")),\n        (\"scaler\", StandardScaler()),\n    ]\n)\n\ncategorical_transformer = Pipeline(\n    steps=[\n        (\"imputer\", SimpleImputer(strategy=\"most_frequent\")),\n        (\"onehot\", OneHotEncoder(handle_unknown=\"ignore\")),\n    ]\n)\n\npreprocessor = ColumnTransformer(\n    transformers=[\n        (\"num\", numeric_transformer, numeric_features),\n        (\"cat\", categorical_transformer, categorical_features),\n    ]\n)\n\npipe = Pipeline(\n    steps=[\n        (\"preprocessor\", preprocessor),\n        (\"model\", SVC(probability=True)),\n    ]\n)\n\nparam_grid = {\n    \"model__kernel\": [\"linear\", \"rbf\"],\n    \"model__C\": [0.5, 1.0, 5.0],\n    \"model__gamma\": [\"scale\", 0.1, 0.01],\n    \"model__class_weight\": [None, \"balanced\"],\n}\n\ngrid = GridSearchCV(pipe, param_grid=param_grid, cv=5, scoring=\"roc_auc\", n_jobs=-1)\ngrid.fit(X_train, y_train)\n\nbest_model = grid.best_estimator_\nproba = best_model.predict_proba(X_test)[:, 1]\npred = best_model.predict(X_test)\n\nprint(\"Best params:\", grid.best_params_)\nprint(\"Test ROC-AUC:\", roc_auc_score(y_test, proba))\nprint(classification_report(y_test, pred))",
+    "explanation": "This pipeline demonstrates leakage-safe preprocessing, kernel selection, probability-enabled classification, cross-validated hyperparameter search, and evaluation with ROC-AUC and classification reporting.",
+    "inputs": "A tabular feature matrix `X` with numeric and categorical columns, plus a binary target vector `y` of shape $(n,)$.",
+    "outputs": "Class labels from `predict`, class probabilities from `predict_proba`, and evaluation metrics including ROC-AUC and `classification_report`.",
+    "notes": "Scaling is mandatory because SVMs are highly sensitive to feature magnitude and geometry. `probability=True` adds overhead because probability estimates are learned on top of the classifier, so use it only when downstream consumers need calibrated probabilities."
+  },
+  "learning_resources": [
+    {
+      "title": "Stanford CS229 Kernel Methods Notes",
+      "url": "https://cs229.stanford.edu/notes2021fall/cs229-notes3.pdf",
+      "type": "guide",
+      "why_to_read": "Strong mathematical treatment of kernels and dual optimization.",
+      "expected_outcome": "Build a rigorous understanding of kernel SVMs.",
+      "reading_time": 40
+    },
+    {
+      "title": "Stanford Engineering Everywhere: Support Vector Machines",
+      "url": "https://see.stanford.edu/materials/aimlcs229/cs229-notes3.pdf",
+      "type": "guide",
+      "why_to_read": "Accessible SVM lecture notes with margin and kernel intuition.",
+      "expected_outcome": "Understand maximum-margin classification and support vectors.",
+      "reading_time": 35
+    },
+    {
+      "title": "Using Support Vector Machines Effectively",
+      "url": "https://neerajkumar.org/writings/svm/",
+      "type": "article",
+      "why_to_read": "Practical advice on scaling, `C`/`gamma`, and probability calibration.",
+      "expected_outcome": "Gain production-oriented tuning intuition.",
+      "reading_time": 30
+    }
+  ]
+}

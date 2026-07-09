@@ -1,0 +1,336 @@
+{
+  "id": "linear-regression",
+  "title": "Linear Regression",
+  "name": "Linear Regression",
+  "slug": "linear-regression",
+  "description": "A fundamental regression model that models the relationship between continuous variables using a linear equation solved via Ordinary Least Squares.",
+  "tags": [
+    "ml",
+    "regression",
+    "classical-ml",
+    "linear-models"
+  ],
+  "aliases": [
+    "OLS",
+    "Ordinary Least Squares",
+    "Multiple Linear Regression"
+  ],
+  "keywords": [
+    "linear regression",
+    "ordinary least squares",
+    "ols",
+    "normal equation",
+    "residual sum of squares",
+    "rss",
+    "multicollinearity"
+  ],
+  "searchtokens": [
+    "linear regression",
+    "ordinary least squares",
+    "ols regression",
+    "normal equation",
+    "rss minimization",
+    "multiple linear regression",
+    "coefficient estimation"
+  ],
+  "createdat": "2026-07-09T22:36:00+06:00",
+  "updatedat": "2026-07-09T22:36:00+06:00",
+  "lastverified": "2026-07-09T22:36:00+06:00",
+  "reviewfrequency": "annual",
+  "verifiedagainst": "canonical model knowledge as of 2026-07-09",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "verified",
+  "engineeringmaturity": "production",
+  "domain": "ml",
+  "category": "regression",
+  "difficulty": "beginner",
+  "engineeringarea": "supervised learning",
+  "estimatedreadingtime": 8,
+  "prerequisites": [
+    "Supervised learning basics",
+    "Linear algebra basics",
+    "Bias-variance trade-off"
+  ],
+  "recommendednext": [
+    "Ridge Regression",
+    "Lasso Regression",
+    "Elastic Net",
+    "Logistic Regression"
+  ],
+  "relatedcontent": [
+    {
+      "type": "model",
+      "id": "ridge-regression",
+      "relationship": "alternative"
+    },
+    {
+      "type": "model",
+      "id": "lasso-regression",
+      "relationship": "alternative"
+    },
+    {
+      "type": "model",
+      "id": "elastic-net",
+      "relationship": "alternative"
+    },
+    {
+      "type": "model",
+      "id": "logistic-regression",
+      "relationship": "closely-related"
+    },
+    {
+      "type": "principle",
+      "id": "bias-variance-tradeoff",
+      "relationship": "explains"
+    },
+    {
+      "type": "pattern",
+      "id": "feature-scaling",
+      "relationship": "uses"
+    },
+    {
+      "type": "pattern",
+      "id": "pipeline",
+      "relationship": "commonly-used-in"
+    },
+    {
+      "type": "package",
+      "id": "scikit-learn",
+      "relationship": "implemented-by"
+    }
+  ],
+  "owner": "AENS Knowledge Architecture",
+  "sources": [
+    {
+      "title": "scikit-learn LinearRegression API documentation",
+      "url": "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html"
+    },
+    {
+      "title": "scikit-learn Linear Models User Guide",
+      "url": "https://scikit-learn.org/stable/modules/linear_model.html"
+    },
+    {
+      "title": "Ordinary Least Squares and Ridge Regression Example",
+      "url": "https://scikit-learn.org/stable/auto_examples/linear_model/plot_ols_ridge.html"
+    }
+  ],
+  "githubrepo": "https://github.com/scikit-learn/scikit-learn",
+  "problemtypes": [
+    "Supervised regression problems with linear or linearized response structure"
+  ],
+  "decisionsummary": {
+    "summary": "Ordinary Least Squares Linear Regression is the default production baseline for continuous targets when the signal is close to linear, the design matrix is well-conditioned, and coefficient transparency matters more than nonlinear flexibility.",
+    "bestusecases": [
+      "Baselines for tabular regression tasks.",
+      "Forecasting under stable trends.",
+      "Systems that require strict coefficient transparency."
+    ],
+    "avoidwhen": [
+      "Relationships are strongly nonlinear.",
+      "Feature count exceeds sample size (p > n).",
+      "Multicollinearity is severe enough to make coefficients unstable."
+    ],
+    "strengths": [
+      "Instant inference latency.",
+      "Closed-form or direct least-squares solution.",
+      "Zero regularization tuning by default.",
+      "Directly interpretable coefficients."
+    ],
+    "limitations": [
+      "Highly sensitive to outliers.",
+      "Poor at nonlinear boundaries without manual feature transforms.",
+      "Unstable under collinearity or rank deficiency."
+    ],
+    "interpretability": "Each coefficient beta_j estimates the expected unit change in the target variable per unit change in feature x_j, holding other features fixed.",
+    "trainingcharacteristics": "Direct projection / least-squares solve via SVD, not iterative SGD-style optimization.",
+    "inferencecharacteristics": "Ultra-low latency; prediction is essentially a dot product of weights and features plus intercept: O(p) complexity per sample.",
+    "computationalcharacteristics": "Dense OLS in scikit-learn uses singular value decomposition (SVD) and is documented at roughly O(n * p^2) complexity when n >= p. This is highly efficient for moderate feature counts, but scales poorly to very wide datasets where regularized or iterative methods become cheaper."
+  },
+  "coreunderstanding": {
+    "intuition": "OLS finds the point in feature space whose linear combination is closest to the target vector in squared Euclidean distance. The residual is the orthogonal component left after projection, which is why a correct model has residuals that contain only unexplained noise rather than structural signal aligned with the columns of X.",
+    "learningmechanism": "OLS minimizes Residual Sum of Squares, so the fitted model is the projection of y onto the column space of X under a squared-error loss. In scikit-learn, LinearRegression stores the fitted weights in coef_ and intercept_, and the dense solver is based on singular value decomposition rather than a naive matrix inverse.",
+    "assumptions": [
+      "Linearity: the relationship between features and target is linear.",
+      "Homoscedasticity: constant variance of residuals across all levels of features.",
+      "Independence of errors: residuals are uncorrelated (especially important in time series).",
+      "Normality of error terms (mainly needed for statistical inference and confidence intervals).",
+      "No perfect or near-perfect multicollinearity in the design matrix."
+    ],
+    "mathematicalintuition": "The normal equation is theta = (X^T X)^(-1) X^T y. The projection (hat) matrix H = X(X^T X)^(-1) X^T maps observed targets to fitted targets. When multicollinearity is present, X^T X becomes near-singular, inflating coefficient variance and making estimation highly sensitive to tiny perturbations in input data.",
+    "complexity": "Typical training complexity is O(n * p^2) for SVD-based solvers where n is sample size and p is feature size. When p > n, the design matrix is underdetermined and has infinite solutions, necessitating regularization.",
+    "memorycomplexity": "Memory complexity is O(p) to store the fitted coefficients and intercept. Memory usage during fitting is dominated by the dense design matrix X.",
+    "robustness": "Low robustness to outliers due to the squared loss function penalizing large errors quadratically. Extremely sensitive to collinear features, which flip weight signs arbitrarily.",
+    "scalability": "Scales linearly with sample size n, but quadratically with feature count p. Highly unsuited for extremely high-dimensional sparse data compared to sparse linear solvers.",
+    "overfittingtendency": "Low overfitting tendency on large datasets with n >> p. High overfitting tendency and model instability when feature count approaches sample size (p ~ n).",
+    "biasvariance": "Has zero bias for true linear relationships (under Gauss-Markov theorem conditions), but high variance when features are collinear or the system is ill-conditioned."
+  },
+  "hyperparameters": [
+    {
+      "name": "fit_intercept",
+      "purpose": "Controls whether the model learns a bias (intercept) term.",
+      "increaseeffect": "Setting to True fits a bias term, allowing the regression hyperplane to shift away from the origin, aligning predictions with uncentered data offsets.",
+      "decreaseeffect": "Setting to False forces the regression line to pass through the origin (0, 0), which is only appropriate for pre-centered data.",
+      "tradeoffs": "Improves fitting flexibility at the cost of absorbing systematic offsets that might be better handled by proper feature design.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with centering patterns and any upstream scaler that modifies feature means."
+      ],
+      "commonmistakes": [
+        "Disabling the intercept (setting to False) when features and target are not centered, leading to severe prediction bias."
+      ]
+    },
+    {
+      "name": "positive",
+      "purpose": "Forces all regression coefficients to be non-negative.",
+      "increaseeffect": "Enforcing positive weights guarantees monotone additive relations (e.g. positive contribution constraints).",
+      "decreaseeffect": "Allows negative weights, expanding the hypothesis space to include inverse correlations.",
+      "tradeoffs": "Ensures domain plausibility and monotonic constraints but significantly reduces solution space and can increase bias.",
+      "tuningpriority": "Low",
+      "interactions": [
+        "Only supported for dense arrays in scikit-learn; restricts coefficient values to positive space."
+      ],
+      "commonmistakes": [
+        "Using positive=True as a generic regularization substitute without domain justification."
+      ]
+    },
+    {
+      "name": "copy_X",
+      "purpose": "Controls whether the solver may overwrite the input data array X.",
+      "increaseeffect": "Setting to True copies X before fitting, keeping input arrays immutable and protecting preprocessing steps from side effects.",
+      "decreaseeffect": "Setting to False allows in-place operations, saving memory at the cost of potential data corruption in shared memory pipelines.",
+      "tradeoffs": "Data safety and pipeline isolation versus memory footprint during training.",
+      "tuningpriority": "Low",
+      "interactions": [
+        "Directly impacts memory usage in large-scale dense matrix training."
+      ],
+      "commonmistakes": [
+        "Setting to False in shared-memory multi-model pipelines, leading to corrupted input matrices in downstream models."
+      ]
+    }
+  ],
+  "engineeringconsiderations": {
+    "datasetsuitability": [
+      "Best on datasets where the feature matrix is reasonably dense in information.",
+      "Highly unsuited when feature count exceeds samples (p > n) or when multicollinearity is severe."
+    ],
+    "scalability": [
+      "Inference is highly scalable and low footprint, storing only coefficients.",
+      "Training scaling is limited by SVD solver computation on large feature dimensions."
+    ],
+    "parallelization": "Parallelization is limited and not a core scaling lever. scikit-learn supports multi-target regression parallelization across targets using n_jobs.",
+    "computationalcost": "Training cost is roughly O(n * p^2) for SVD-based dense solvers. Inference cost is O(p) per sample.",
+    "memorybehavior": "Memory use is low because the model stores only coefficients, intercept, and some diagnostic attributes like rank_ and singular_.",
+    "inferencecharacteristics": "Ultra-low latency; prediction is essentially a dot product of weights and features plus intercept: O(p) complexity per sample.",
+    "robustness": [
+      "Low robustness to outliers due to the squared loss function penalizing large errors quadratically.",
+      "Extremely sensitive to collinear features, which flip weight signs arbitrarily."
+    ],
+    "sensitivitytooutliers": "Highly sensitive; outliers can pull the regression hyperplane toward themselves, distorting overall coefficient estimation and predictions.",
+    "featureengineeringdependency": "High dependency on feature transforms (log, box-cox) and expansion (polynomial features, interaction terms) to capture non-linear relationships.",
+    "featurescalingrequirement": "Not required for OLS optimization, but important for coefficient comparability, consistent preprocessing, and any pipeline that may later switch to regularized or gradient-based methods.",
+    "classimbalancebehavior": "Heavy-tailed targets and extreme regression outliers bias the fit due to squared loss residuals minimization.",
+    "commonlimitations": [
+      "Extrapolation risk: extends a hyperplane beyond training regions, potentially returning physically impossible values.",
+      "Multicollinearity inflates coefficient variance, making attribution unstable.",
+      "Outliers have disproportionate leverage over the fitted line."
+    ],
+    "pipelineposition": "Simple baseline model placed inside a Pipeline after feature cleaning, scaling, and encoding, before deploying more complex regularized or tree-based regressors."
+  },
+  "comparisons": [
+    {
+      "model": "Ridge Regression",
+      "choose_this_when": "OLS coefficients are unstable because of correlated predictors or weak identifiability.",
+      "prefer_other_when": "You want an unbiased baseline with no shrinkage and the feature matrix is already well behaved.",
+      "tradeoffs": "Ridge buys stability by shrinking coefficients toward zero (L2 penalty) at the cost of introducing a small bias."
+    },
+    {
+      "model": "Lasso Regression",
+      "choose_this_when": "Feature sparsity is a requirement and you want automatic feature selection.",
+      "prefer_other_when": "You do not want coefficients zeroed out and you care more about preserving all predictors than about automatic sparsity.",
+      "tradeoffs": "Lasso zero out coefficients (L1 penalty) to perform feature selection, but is unstable when features are highly correlated."
+    },
+    {
+      "model": "Elastic Net",
+      "choose_this_when": "Correlated groups of features should be retained together while still shrinking coefficients.",
+      "prefer_other_when": "Regularization is unnecessary and you want the simplest possible linear fit.",
+      "tradeoffs": "Elastic Net balances L1 and L2 regularization, providing more stability than pure Lasso on correlated predictors at the cost of tuning two hyperparameters."
+    },
+    {
+      "model": "Random Forest Regressor",
+      "choose_this_when": "Relationships are strongly non-linear, feature interactions dominate, and manual feature engineering is too costly.",
+      "prefer_other_when": "Latency, memory, and strict coefficient interpretability matter more than non-linear modeling power.",
+      "tradeoffs": "Random Forest handles non-linearities and interactions natively, but at the cost of higher memory footprint, larger model size, and lost coefficient attribution."
+    }
+  ],
+  "relatedknowledge": {
+    "relatedmodels": [
+      "Ridge Regression",
+      "Lasso Regression",
+      "Elastic Net",
+      "Logistic Regression"
+    ],
+    "alternative_models": [
+      "Random Forest Regressor",
+      "Decision Tree Regressor"
+    ],
+    "related_principles": [
+      "Bias-Variance Trade-Off",
+      "Gauss-Markov Theorem",
+      "Collinearity"
+    ],
+    "related_workflows": [
+      "Regression Pipeline"
+    ],
+    "related_patterns": [
+      "Feature Scaling",
+      "Cross-Validation",
+      "Pipeline Pattern"
+    ],
+    "related_packages": [
+      "scikit-learn",
+      "statsmodels"
+    ],
+    "related_guides": [
+      "Regression Baseline Selection"
+    ],
+    "related_registry": [
+      "Linear Models"
+    ]
+  },
+  "quickstart": {
+    "language": "python",
+    "implementation_package": "scikit-learn",
+    "code": "import numpy as np\nfrom sklearn.datasets import load_diabetes\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.linear_model import LinearRegression\nfrom sklearn.metrics import mean_squared_error, r2_score\n\n# Load standard diabetes regression dataset\nX, y = load_diabetes(return_X_y=True)\n\n# Perform train/test split to prevent leakage\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\n# Instantiate a pipeline securing scale standardization before regression fitting\nmodel = Pipeline([\n    (\"scaler\", StandardScaler()),\n    (\"regressor\", LinearRegression())\n])\n\n# Fit the regression model and predict continuous values\nmodel.fit(X_train, y_train)\ny_pred = model.predict(X_test)\n\n# Calculate metrics for prediction quality and baseline evaluation\nmse = mean_squared_error(y_test, y_pred)\nr2 = r2_score(y_test, y_pred)",
+    "explanation": "Trains an Ordinary Least Squares (OLS) Linear Regression model on continuous regression targets. Preprocessing standard scaling and estimator fitting are packaged in a scikit-learn Pipeline to guarantee clean deployment and prevent data leakage.",
+    "inputs": "2D numeric feature matrix `X` of shape `(n_samples, n_features)` and numeric target vector `y` of shape `(n_samples,)`.",
+    "outputs": "Continuous target predictions vector of shape `(n_samples,)` and model evaluation scores (MSE, R2).",
+    "notes": "Feature scaling is included to ensure clean coefficient diagnostics and to make transitioning to regularized variants (e.g. Ridge) straightforward."
+  },
+  "learning_resources": [
+    {
+      "title": "StatQuest: Linear Regression",
+      "url": "https://statquest.org/",
+      "type": "video",
+      "why_to_read": "Provides step-by-step visual explanations of OLS calculation, R-squared construction, and model diagnostic plots.",
+      "expected_outcome": "Solid visual intuition on projection and coefficient optimization.",
+      "reading_time": 15
+    },
+    {
+      "title": "Machine Learning Mastery: Linear Regression Guide",
+      "url": "https://machinelearningmastery.com/linear-regression-for-machine-learning/",
+      "type": "article",
+      "why_to_read": "Covers practical configuration steps, solver behaviors, data preparation tips, and standard performance metrics.",
+      "expected_outcome": "Guidelines on preparing tabular data and setting expectations for simple linear baselines.",
+      "reading_time": 12
+    },
+    {
+      "title": "The Elements of Statistical Learning (Linear Methods Chapter)",
+      "url": "https://hastie.su.domains/ElemStatLearn/contents.pdf",
+      "type": "guide",
+      "why_to_read": "The definitive statistical reference for linear methods, Ordinary Least Squares derivations, and the mathematical properties of projection matrices.",
+      "expected_outcome": "Rigorous understanding of linear estimation properties, bias-variance tradeoffs, and the transition from OLS to shrinkage methods.",
+      "reading_time": 40
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Content Quality Standard
 
-**Version:** 1.0  
+**Version:** 1.2  
 **Status:** ACTIVE  
 **Purpose:** Defines the quality bar for all AENS resources
 
@@ -57,20 +57,31 @@ This document defines what makes a resource "gold standard" in AENS. Every resou
 ## Model
 
 **Required Sections:**
-- `title` - Model name
-- `summary` - 1-2 sentence description
-- `problem_types` - Array of problem types this model solves
-- `use_when` - When to use this model
-- `avoid_when` - When to avoid this model
-- `pros` - Advantages (minimum 3)
-- `cons` - Disadvantages (minimum 3)
-- `key_hyperparams` - Key hyperparameters (minimum 1, unless detection-only model)
+- `id`, `title`, `name`, `slug`, `description`
+- `decisionsummary` (containing `summary`, `bestusecases`, `avoidwhen`, `strengths` (minimum 3), `limitations` (minimum 3), `interpretability`, `trainingcharacteristics`, `inferencecharacteristics`, `computationalcharacteristics`)
+- `coreunderstanding` (containing `intuition`, `learningmechanism`, `assumptions`, `mathematicalintuition`, `complexity`, `memorycomplexity`, `robustness`, `scalability`, `overfittingtendency`, `biasvariance`)
+- `hyperparameters` (containing a list of hyperparameter objects, minimum 1 unless detection-only model, each with `name`, `purpose`, `increaseeffect`, `decreaseeffect`, `tradeoffs`, `tuningpriority`, `interactions`, `commonmistakes`)
+- `engineeringconsiderations`
+- `comparisons`
+- `relatedknowledge`
+
+**Optional Sections:**
+- `quickstart` (copy-paste block containing `language`, `implementation_package`, `code`, `explanation`, `inputs`, `outputs`, `notes`)
+- `learning_resources` (curated educational links with `title`, `url`, `type`, `why_to_read`, `expected_outcome`, `reading_time`)
 
 **Quality Standard:**
-- Pros and cons must be specific and actionable
-- Use_when/avoid_when must be concrete, not generic
-- Problem types must match the actual capabilities
-- Hyperparameters must be the most influential ones
+- `strengths` and `limitations` must be specific, actionable, and have at least 3 items each.
+- `bestusecases` and `avoidwhen` must be concrete, not generic.
+- `quickstart` code snippets must be production-ready, runnable with minimal modification, and use scikit-learn (or canonical library) best practices.
+- Curated `learning_resources` must have a clear educational purpose, constrained types, and no duplicates across `sources`.
+- Hyperparameters must be the most influential ones for the model.
+- **Visual Presentation & UX Standards:**
+  - **Decision Strip**: Must render Difficulty, Stability, Confidence, and Maturity as semantic, icon-enriched badges (using Lucide icons `Gauge`, `Activity`, `CheckCircle2`, `Shield`). The detailed `interpretability` profile must be decoupled from the inline badge strip and rendered in a dedicated callout box with an `Eye` icon below it.
+  - **Decision Board & Tradeoffs**: Must present Use When, Avoid When, Strengths, and Limitations as a unified 2x2 grid block with clear indicators. Original IDs (`decision-guide` and `pros-cons`) must be kept on the container/parent nodes to support anchor navigation from the Table of Contents.
+  - **Core Understanding Specs Sheet**: Must display metrics as a 3-column specs-sheet grid using custom icons (`Clock`, `Database`, `TrendingUp`, etc.) and a mathematical monospace callout.
+  - **Hyperparameter Details**: Must provide global Expand/Collapse All triggers, side-by-side comparative increase/decrease columns (emerald/rose-tinted), and exact library API parameter key mappings as mono tags.
+  - **Engineering Considerations**: Must be structured into distinct categorized panels (*Data & Preprocessing*, *Runtime & Scalability*, and *Pipeline Fit & Robustness*).
+  - **Model Comparisons**: Must be styled as direct comparison cards with VS headers and clear prefer/choose guidelines.
 
 ---
 
@@ -456,3 +467,5 @@ This standard is a living document. As we create more resources, we may refine t
 | Date | Version | Change | Author |
 |------|---------|--------|--------|
 | July 4, 2026 | 1.0 | Initial content quality standard | Architecture Lead |
+| July 9, 2026 | 1.2 | Model page UX presentation quality standards update | AI Assistant |
+

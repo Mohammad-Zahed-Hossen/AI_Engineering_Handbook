@@ -122,15 +122,23 @@
   "sources": [
     {
       "title": "Scikit-learn RandomForestClassifier documentation",
-      "url": "https://scikit-learn.org/stable/modules/ensemble.html\\#random-forests"
+      "url": "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html"
     },
     {
       "title": "Scikit-learn RandomForestRegressor documentation",
-      "url": "https://scikit-learn.org/stable/modules/ensemble.html\\#forest"
+      "url": "https://scikit-learn.org/stable/modules/ensemble.html#forest"
     },
     {
       "title": "Random Forests paper",
-      "url": "https://www.stat.berkeley.edu/~breiman/randomforest2001.pdf"
+      "url": "https://link.springer.com/article/10.1023/A:1010933404324"
+    },
+    {
+      "title": "Feature Importance Example",
+      "url": "https://scikit-learn.org/stable/auto_examples/ensemble/plot_forest_importances.html"
+    },
+    {
+      "title": "Ensemble Examples",
+      "url": "https://scikit-learn.org/stable/auto_examples/ensemble/index.html"
     }
   ],
   "githubrepo": "https://github.com/scikit-learn/scikit-learn",
@@ -141,193 +149,192 @@
     "Nonlinear interaction modeling"
   ],
   "decisionsummary": {
-    "summary": "Random Forest is a strong default for tabular supervised learning when you want robust performance with minimal feature engineering and moderate interpretability.",
+    "summary": "Random Forest is a robust, high‑signal ensemble of decision trees that serves as a production-ready, low‑maintenance baseline for tabular classification and regression where interpretability, simple preprocessing, and robustness to noise matter.",
     "bestusecases": [
-      "Structured/tabular datasets with nonlinear relationships.",
-      "Problems with mixed numeric and categorical features after encoding.",
-      "Settings where a single decision tree overfits badly.",
-      "Baseline models before moving to boosting or neural methods."
+      "Heterogeneous tabular data with mixed feature types.",
+      "Moderate dataset sizes (tens of thousands to low millions of rows).",
+      "Problems needing fast development and stable defaults.",
+      "Tasks where feature importance and partial interpretability are helpful."
     ],
     "avoidwhen": [
-      "You need the absolute best accuracy on structured data, where gradient boosting often wins.",
-      "The feature space is extremely high-dimensional and sparse, especially text-like inputs.",
-      "You need highly calibrated probabilities without post-processing.",
-      "You need a very small, easily serializable model for ultra-low-latency constraints."
+      "You need precise extrapolation.",
+      "Working with extremely high‑dimensional sparse text data.",
+      "Very tight single‑prediction latency or memory limits.",
+      "Require online/streaming updates.",
+      "Maximum possible predictive performance is required and you can invest in careful boosting and feature engineering."
     ],
     "strengths": [
-      "Handles nonlinear feature interactions well.",
-      "Reduces variance relative to a single decision tree.",
-      "Usually works reasonably well with limited tuning.",
-      "Naturally supports parallel tree training."
+      "Strong default performance on tabular data.",
+      "Minimal preprocessing (no scaling required).",
+      "Robustness to noisy features and moderate outliers.",
+      "Built‑in nonlinear interactions.",
+      "Embarrassingly parallel training/inference across trees."
     ],
     "limitations": [
-      "Less interpretable than a single decision tree.",
-      "Can be memory-heavy with many deep trees.",
-      "Does not extrapolate well outside the observed target range.",
-      "Often weaker than boosting on hardest tabular tasks."
+      "Large model size and memory use.",
+      "Inference latency grows with forest size.",
+      "Poor extrapolation in regression.",
+      "Weaker performance than tuned boosting on many structured problems.",
+      "Impurity‑based feature importance can be misleading."
     ],
-    "interpretability": "Moderate. Global feature importance is available, but individual predictions are harder to explain than with a single tree.",
-    "trainingcharacteristics": "Trains many bootstrap-sampled trees independently, which makes it easy to parallelize but more expensive than one tree.",
-    "inferencecharacteristics": "Prediction cost grows with the number and depth of trees; latency is usually acceptable for offline or moderate-throughput serving.",
-    "computationalcharacteristics": "Roughly scales with number of trees, tree depth, and number of considered split features; memory use can become substantial."
+    "interpretability": "Per‑tree decisions are interpretable but the ensemble is less so; global feature importances are useful heuristics but can be biased and should be validated with permutation methods.",
+    "trainingcharacteristics": "Embarrassingly parallel over trees; each tree is grown on a bootstrap sample and a random subset of features; training time scales roughly linearly with n_estimators and sample count and superlinearly with tree depth/complexity.",
+    "inferencecharacteristics": "Deterministic per seed, latency proportional to number of trees and depth; batch prediction can be parallelized across trees or records.",
+    "computationalcharacteristics": "Training cost is linear in n_estimators and roughly linear–logarithmic in sample count per split; high max_depth and low min_samples_leaf increase node counts and cost. Inference cost is O(T·depth) per example. GPU: typical Random Forests are CPU‑oriented; GPU implementations exist but are not universally superior."
   },
   "coreunderstanding": {
-    "intuition": "A Random Forest trains many decision trees on different bootstrap samples and averages their predictions, while also randomizing feature selection at splits to decorrelate the trees.",
-    "learningmechanism": "Each tree sees a resampled dataset and only a subset of features at each split. The ensemble reduces variance because individual tree errors do not fully align.",
+    "intuition": "Random Forest builds many decision trees on independent bootstrap samples (bagging) and randomly samples features for each split; predictions are averaged (regression) or majority‑voted (classification). This combination reduces variance by decorrelating weak learners while keeping bias close to that of individual trees.",
+    "learningmechanism": "Why decorrelation reduces variance: correlated trees make similar errors; random feature selection plus bootstrap sampling forces diverse decision boundaries so averaging cancels independent errors, reducing ensemble variance roughly by factor ρ/T where ρ is average pairwise tree correlation and T is number of trees.",
     "assumptions": [
-      "The signal is learnable through axis-aligned splits.",
-      "Averaging many noisy but useful trees will generalize better than one overfit tree.",
-      "Bootstrapping and feature subsampling provide sufficient tree diversity."
+      "Training and test come from similar distribution (no heavy extrapolation).",
+      "Informative splits exist along individual features or small feature subsets.",
+      "The signal is representable as partitioning the feature space."
     ],
-    "mathematicalintuition": "The model trades a small increase in bias for a large reduction in variance. The ensemble behaves like an average over many weakly correlated estimators.",
-    "complexity": "Training is approximately $O(T \\cdot n \\log n)$ for many practical settings, where $T$ is the number of trees and $n$ the sample size, though split search details matter.",
-    "memorycomplexity": "Memory is roughly proportional to the total number of tree nodes across the forest.",
-    "robustness": "Generally robust to noise and modest feature scaling issues, but can still overfit with very deep trees and noisy labels.",
-    "scalability": "Scales well across trees because training is embarrassingly parallel, but large forests can become expensive in memory and inference time.",
-    "overfittingtendency": "Lower than a single tree, but not zero; deeply grown trees and too few trees can still overfit.",
-    "biasvariance": "Typically lowers variance substantially while keeping bias moderate."
+    "mathematicalintuition": "Single deep trees overfit by fitting idiosyncratic noise; in a forest, overfit components differ across bootstrap samples and get averaged out—bias changes little because trees remain flexible, but variance drops substantially when trees are uncorrelated.",
+    "complexity": "Typical training complexity is O(T · S · d · log n) where T = n_estimators, S = average samples per tree (≈n with bootstrap), d = cost per split (depends on features considered), and n = dataset size.",
+    "memorycomplexity": "Memory complexity is O(T · average_tree_size) where average_tree_size grows with depth and lower min_samples_leaf; serialized size can be multiple times the dataset if trees are deep.",
+    "robustness": "Strong robustness to irrelevant/noisy features and moderate label noise; overfitting reduced via averaging but can still occur with extremely deep trees and small bootstrap diversity—effective regularization is through max_features, min_samples_leaf, and n_estimators tuning.",
+    "scalability": "Scales well with features when max_features is small, but extremely high feature counts raise candidate split cost; use feature selection or dimensionality reduction in such regimes.",
+    "overfittingtendency": "Lower than a single tree, but not zero; deeply grown trees and too few trees (bootstrap diversity low) can still overfit without proper regularization.",
+    "biasvariance": "Trades a slight increase in bias (since individual trees learn on limited data/features) for a large reduction in variance by averaging decorrelated predictions across trees."
   },
   "hyperparameters": [
     {
       "name": "number of trees",
       "purpose": "Controls ensemble size and variance reduction.",
-      "increaseeffect": "Usually improves stability and reduces variance, but increases training time, model size, and inference latency.",
-      "decreaseeffect": "Faster and smaller, but less stable and more sensitive to sampling noise.",
-      "tradeoffs": "The main cost-quality knob; diminishing returns appear after a point.",
-      "tuningpriority": "High.",
+      "increaseeffect": "Reduces variance and stabilizes predictions but with diminishing returns and linear cost in training/inference time and memory.",
+      "decreaseeffect": "Speeds iteration but increases variance and sensitivity to seed.",
+      "tradeoffs": "Diminishing returns in validation performance versus linear increases in training/inference time and memory.",
+      "tuningpriority": "High",
       "interactions": [
-        "More trees can partially offset instability from deep trees.",
-        "More trees do not fix systematic bias from weak feature representation."
+        "Deeper trees benefit less once max_features is small because splits are already restrictive.",
+        "Using too few trees for production makes results unstable."
       ],
       "commonmistakes": [
-        "Using too few trees and concluding the model is unstable.",
-        "Oversizing the forest when latency or memory is constrained."
+        "Using too few trees for production (unstable results) or too many for tight-latency systems without measuring marginal benefit."
       ]
     },
     {
       "name": "max depth",
-      "purpose": "Limits tree complexity.",
-      "increaseeffect": "Captures more interactions but increases overfitting risk and memory usage.",
-      "decreaseeffect": "Improves regularization and interpretability but may underfit.",
-      "tradeoffs": "One of the strongest controls on bias versus variance.",
-      "tuningpriority": "High.",
+      "purpose": "Caps tree growth and per‑tree complexity.",
+      "increaseeffect": "Allows finer partitions (lower bias, higher variance, larger trees).",
+      "decreaseeffect": "Regularizes (higher bias, lower variance, smaller model).",
+      "tradeoffs": "Higher capacity and ability to learn complex feature interactions versus higher memory/latency and risk of memorizing noise.",
+      "tuningpriority": "High",
       "interactions": [
-        "Deep trees benefit more from more trees.",
-        "Depth interacts strongly with minimum samples constraints."
+        "Deeper trees benefit less once max_features is small because splits are already restrictive.",
+        "Interacts strongly with minimum samples constraints."
       ],
       "commonmistakes": [
-        "Leaving trees unconstrained on small noisy datasets.",
-        "Using shallow trees when the target depends on higher-order interactions."
+        "Leaving depth unconstrained with very noisy labels and expecting averaging to fully prevent overfitting."
       ]
     },
     {
       "name": "max features",
-      "purpose": "Controls how many candidate features each split can consider.",
-      "increaseeffect": "Each tree becomes stronger but more correlated with other trees, which can reduce ensemble diversity.",
-      "decreaseeffect": "Increases randomness and decorrelation, often improving variance reduction but possibly raising bias.",
-      "tradeoffs": "Central to the ensemble effect; too high reduces the value of bagging.",
-      "tuningpriority": "High.",
+      "purpose": "Number of features considered at each split.",
+      "increaseeffect": "Makes trees stronger/more accurate but more correlated (reducing variance-reduction gains of bagging).",
+      "decreaseeffect": "Increases tree diversity/decorrelation and reduces overfitting risk (reduces variance at slight bias cost).",
+      "tradeoffs": "Individual tree strength (with higher max_features) versus ensemble diversity and variance reduction (with lower max_features).",
+      "tuningpriority": "High",
       "interactions": [
-        "Works jointly with number of trees to determine ensemble diversity.",
-        "Often less critical than depth, but very influential on accuracy."
+        "Smaller max_features makes candidate split selection faster, reducing training cost."
       ],
       "commonmistakes": [
-        "Setting it too high and making trees too similar.",
-        "Setting it too low on small feature sets and underfitting."
+        "Leaving it at full feature set in high‑dim correlated feature spaces, which yields correlated trees and limited ensemble gains."
       ]
     },
     {
       "name": "min samples leaf",
-      "purpose": "Prevents leaves from becoming too small.",
-      "increaseeffect": "Smooths predictions and reduces overfitting.",
-      "decreaseeffect": "Allows more detailed fits, but can increase variance.",
-      "tradeoffs": "Useful regularizer for noisy data and regression tasks.",
-      "tuningpriority": "Medium.",
+      "purpose": "Controls minimum samples required to be at a leaf node.",
+      "increaseeffect": "Smooths predictions and regularizes trees (fewer tiny leaves, smaller model size).",
+      "decreaseeffect": "Allows more granular trees (lower bias, higher variance).",
+      "tradeoffs": "Regularization and generalization on noisy data versus losing capacity to fit fine-grained patterns.",
+      "tuningpriority": "Medium",
       "interactions": [
-        "Pairs well with max depth as a shape regularizer."
+        "Interacts with max_depth and min_samples_split to determine leaf counts and overall tree size."
       ],
       "commonmistakes": [
-        "Ignoring it when trees overfit noisy targets."
+        "Ignoring it when trees overfit noisy targets, or setting it too high on class-imbalanced datasets where minority class leaves are pruned."
       ]
     },
     {
       "name": "min samples split",
-      "purpose": "Controls the minimum data required to split a node.",
-      "increaseeffect": "Makes trees more conservative and regularized.",
-      "decreaseeffect": "Makes trees more flexible but potentially noisier.",
-      "tradeoffs": "Helps constrain tree growth early.",
-      "tuningpriority": "Medium.",
+      "purpose": "Controls minimum samples required to split an internal node.",
+      "increaseeffect": "Regularizes trees by stopping splits early.",
+      "decreaseeffect": "Allows more granular splits and deeper trees.",
+      "tradeoffs": "Early-stage tree regularization versus training flexibility and depth.",
+      "tuningpriority": "Medium",
       "interactions": [
-        "Often redundant with min samples leaf if both are heavily constrained."
+        "Is often redundant if min_samples_leaf is already heavily constrained."
       ],
       "commonmistakes": [
-        "Tuning this in isolation without considering leaf size and depth."
+        "Tuning this in isolation without considering min_samples_leaf and tree depth."
       ]
     },
     {
       "name": "bootstrap",
-      "purpose": "Enables resampling of training examples for each tree.",
-      "increaseeffect": "More precisely, enabling it increases tree diversity and reduces correlation.",
-      "decreaseeffect": "Using the full dataset for every tree can reduce diversity.",
-      "tradeoffs": "Core bagging mechanism; usually should remain enabled for standard Random Forest behavior.",
-      "tuningpriority": "Medium.",
+      "purpose": "Enables resampling of training examples (with replacement) for each tree.",
+      "increaseeffect": "Increases tree diversity and reduces correlation.",
+      "decreaseeffect": "Uses the full dataset for every tree, reducing variance reduction via sampling but can speed up training on very small datasets.",
+      "tradeoffs": "Standard bagging diversity and variance reduction versus using full dataset representing actual sample distribution.",
+      "tuningpriority": "Low",
       "interactions": [
-        "Its effect is amplified when paired with feature subsampling."
+        "Its effect is amplified when paired with random feature subsampling (max_features)."
       ],
       "commonmistakes": [
-        "Confusing Random Forest with other tree ensembles that do not bootstrap in the same way."
+        "Disabling bootstrap without understanding that it reduces sampling variance and tree independence."
       ]
     }
   ],
   "engineeringconsiderations": {
     "datasetsuitability": [
-      "Best suited to structured data with meaningful feature interactions.",
-      "Works well when the dataset is moderately sized and not extremely sparse.",
-      "Usually a strong baseline for classification and regression on tabular features."
+      "Excels on medium‑sized tabular data with mixed numeric/categorical features.",
+      "Struggles on extremely sparse, high‑dimensional text where linear models or embedding + deep models often win.",
+      "Struggles on tiny datasets where bootstrap sampling reduces effective training data and increases instability."
     ],
     "scalability": [
-      "Parallelizes well across trees.",
-      "Training can be heavy for very large forests or very large datasets.",
-      "Inference scales linearly with tree count."
+      "Training and prediction parallelize effectively across trees (data parallel over trees) and can use thread/process pools.",
+      "Memory increases linearly with number of trees and average tree size."
     ],
-    "parallelization": "Trees are independent during training, which makes forest fitting naturally parallelizable.",
-    "computationalcost": "Higher than a single tree and often higher than a shallow linear model, but usually manageable on standard CPU infrastructure.",
-    "memorybehavior": "Each tree stores split nodes, so deep forests can consume substantial memory.",
-    "inferencecharacteristics": "Inference is deterministic given a fixed model and is usually low to moderate latency unless the forest is large.",
+    "parallelization": "Horizontal parallelization over trees is trivial and highly efficient; prediction can be parallelized across trees or records.",
+    "computationalcost": "Training cost is roughly O(T · n · m' · log n) where T is trees, n is samples, and m' is candidate features per split. Inference cost is O(T · depth) per example.",
+    "memorybehavior": "Memory is dominated by storing all trees and node thresholds, scaling linearly with the number of trees and average tree size (depth and low min_samples_leaf).",
+    "inferencecharacteristics": "Deterministic given a fixed random state, with latency proportional to number of trees and depth; batch prediction can be parallelized.",
     "robustness": [
-      "Robust to monotonic feature scaling requirements because trees are scale-insensitive.",
-      "Fairly robust to outliers compared with linear models, though noisy labels still hurt.",
-      "Handles mixed feature relevance reasonably well."
+      "Robust to noisy features and moderate outliers.",
+      "Robust to monotonic feature scaling because split decisions are threshold-based.",
+      "Extreme label noise can still degrade splits."
     ],
-    "sensitivitytooutliers": "Typically less sensitive than distance-based methods, but individual extreme labels can still affect deep trees.",
-    "featureengineeringdependency": "Low to moderate. Feature engineering can help, but the model often works well with minimal transformation beyond encoding categorical variables.",
-    "featurescalingrequirement": "No standardization is usually required.",
-    "classimbalancebehavior": "Can struggle with severe imbalance unless the training objective or sampling strategy is adjusted elsewhere in the pipeline.",
+    "sensitivitytooutliers": "Generally low sensitivity to feature outliers due to rank-based splitting, but extreme label noise or highly influential target outliers can degrade tree splits.",
+    "featureengineeringdependency": "Low to moderate — handles heterogeneous features and nonlinear interactions, but engineered features (ratios, aggregates) often still improve performance because trees find simple splits, not algebraic transforms.",
+    "featurescalingrequirement": "Not required because split decisions are threshold-based; scaling features does not change tree behavior.",
+    "classimbalancebehavior": "Without mitigation (like class_weight, stratified sampling, or resampling), impurity measures and majority voting bias leaf predictions against the minority class.",
     "commonlimitations": [
-      "Poor extrapolation outside the training target range.",
-      "Large memory footprint compared with simpler models.",
-      "Less elegant explanation than a single tree."
+      "Large model size and memory use.",
+      "Poor extrapolation in regression.",
+      "Weaker performance than tuned boosting on many structured problems.",
+      "Inference latency scales with forest size."
     ],
-    "pipelineposition": "Often used as a strong baseline after basic preprocessing and before moving to more aggressively tuned boosting methods."
+    "pipelineposition": "Baseline model after minimal cleaning and basic feature creation; useful for model selection, feature importance, and as a fallback."
   },
   "comparisons": [
     {
       "model": "Decision Tree",
-      "choose_this_when": "You want stronger generalization and less variance than a single tree.",
-      "prefer_other_when": "You need a maximally interpretable model or a very small model.",
-      "tradeoffs": "Random Forest sacrifices simplicity for much better stability."
+      "choose_this_when": "Interpretability and minimal model size are critical.",
+      "prefer_other_when": "Better generalization and reduced variance are desired, and modest extra CPU/memory cost is acceptable.",
+      "tradeoffs": "Random Forest trades single-tree interpretability and small size for significantly lower variance and better generalization."
     },
     {
       "model": "Extra Trees",
-      "choose_this_when": "You want a similar tree ensemble but with more randomness and often faster training.",
-      "prefer_other_when": "You want the classic bootstrap-based bagging behavior of Random Forest.",
-      "tradeoffs": "Extra Trees can be more randomized; Random Forest is often a bit more conservative."
+      "choose_this_when": "You want faster training times by avoiding expensive best-split calculations, or want to increase ensemble diversity.",
+      "prefer_other_when": "You want classic bootstrap-based bagging with threshold search optimization.",
+      "tradeoffs": "Extra Trees choose split thresholds randomly, which reduces variance further but can increase bias slightly compared to Random Forest."
     },
     {
       "model": "Gradient Boosting",
-      "choose_this_when": "You want a robust general-purpose tree ensemble with decent tuning simplicity.",
-      "prefer_other_when": "You need the best structured-data accuracy and are willing to tune more carefully.",
-      "tradeoffs": "Random Forest is usually easier and more parallelizable; boosting often reaches higher accuracy."
+      "choose_this_when": "You want maximum possible predictive accuracy on structured data and can invest in careful tuning.",
+      "prefer_other_when": "You need quick, stable baselines, robust default performance without heavy tuning, and parallel training.",
+      "tradeoffs": "Gradient Boosting corrects errors sequentially to reduce bias, achieving higher peak performance but at the cost of sequential training, higher tuning complexity, and lower robustness to defaults."
     }
   ],
   "relatedknowledge": {
@@ -366,5 +373,48 @@
     "related_registry": [
       "Tree-based ML models"
     ]
-  }
+  },
+  "quickstart": {
+    "language": "python",
+    "implementation_package": "scikit-learn",
+    "code": "import numpy as np\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.model_selection import train_test_split\n\n# Generate synthetic tabular classification data\nnp.random.seed(42)\nX = np.random.randn(1000, 10)\ny = np.random.randint(0, 2, size=1000)\n\n# Split into train/test sets\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\n# Instantiate with production-ready regularization and parallelization\nmodel = RandomForestClassifier(\n    n_estimators=100,\n    max_depth=10,\n    min_samples_leaf=4,\n    random_state=42,\n    n_jobs=-1\n)\n\n# Fit the model and predict\nmodel.fit(X_train, y_train)\npredictions = model.predict(X_test)\nprobabilities = model.predict_proba(X_test)[:, 1]",
+    "explanation": "Trains a Random Forest classifier on tabular data using scikit-learn. It configures parallel estimator training and applies leaf-node regularization to optimize latency and prevent overfitting.",
+    "inputs": "Numeric feature matrix `X` of shape `(n_samples, n_features)` and target array `y` of shape `(n_samples,)` representing binary or multi-class labels.",
+    "outputs": "Predicted class labels of shape `(n_samples,)` and class probabilities of shape `(n_samples, n_classes)`.",
+    "notes": "For regression tasks, use `RandomForestRegressor`. Categorical features must be pre-encoded (e.g., via One-Hot Encoding or Target Encoding) as scikit-learn's Random Forest does not natively handle non-numeric categorical data."
+  },
+  "learning_resources": [
+    {
+      "title": "Educational Visuals (StatQuest)",
+      "url": "https://statquest.org/",
+      "type": "video",
+      "why_to_read": "Provides extremely clear, step-by-step visual intuition on how decision trees are constructed, bagged, and evaluated using out-of-bag error.",
+      "expected_outcome": "Solid conceptual understanding of bootstrap aggregation (bagging) and random feature selection mechanics.",
+      "reading_time": 15
+    },
+    {
+      "title": "Understanding Random Forests and Bagging",
+      "url": "https://sebastianraschka.com/faq/docs/bagging-boosting-rf.html",
+      "type": "article",
+      "why_to_read": "An in-depth explanation of ensemble variance reduction, mathematically and conceptually comparing bagging to boosting.",
+      "expected_outcome": "Deep math-backed intuition on how decorrelated trees reduce ensemble variance while maintaining stable bias.",
+      "reading_time": 12
+    },
+    {
+      "title": "Developer-oriented Overview (GeeksforGeeks)",
+      "url": "https://www.geeksforgeeks.org/random-forest-algorithm-in-machine-learning/",
+      "type": "article",
+      "why_to_read": "A highly structured overview outlining the algorithm's pseudocode, key steps, and practical engineering trade-offs.",
+      "expected_outcome": "Quick refresher on the algorithmic sequence, feature selection metrics, and core advantages/limitations.",
+      "reading_time": 10
+    },
+    {
+      "title": "Practical Random Forest Guide (Machine Learning Mastery)",
+      "url": "https://machinelearningmastery.com/random-forest-ensemble-in-python/",
+      "type": "tutorial",
+      "why_to_read": "A highly practical tutorial covering library configurations, tree sizing, and performance evaluation metrics.",
+      "expected_outcome": "How to deploy, configure, and evaluate standard random forest classification and regression models in Python.",
+      "reading_time": 20
+    }
+  ]
 }

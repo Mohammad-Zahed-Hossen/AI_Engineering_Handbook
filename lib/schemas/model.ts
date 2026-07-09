@@ -153,6 +153,47 @@ export const ModelSchema = z.object({
     related_guides: z.array(z.string()),
     related_registry: z.array(z.string()),
   }),
+  quickstart: z.object({
+    language: z.string(),
+    implementation_package: z.string(),
+    code: z.string().min(1),
+    explanation: z.string(),
+    inputs: z.string(),
+    outputs: z.string(),
+    notes: z.string().optional(),
+  }).optional(),
+  learning_resources: z.array(z.object({
+    title: z.string(),
+    url: z.string().url(),
+    type: z.enum(['article', 'video', 'course', 'guide', 'documentation', 'tutorial']),
+    why_to_read: z.string(),
+    expected_outcome: z.string(),
+    reading_time: z.number().optional(),
+  })).optional(),
+}).superRefine((val, ctx) => {
+  const urls = new Set<string>();
+  val.sources.forEach((s, idx) => {
+    if (urls.has(s.url)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Duplicate resource URL: ${s.url}`,
+        path: ['sources', idx, 'url'],
+      });
+    }
+    urls.add(s.url);
+  });
+  if (val.learning_resources) {
+    val.learning_resources.forEach((lr, idx) => {
+      if (urls.has(lr.url)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Duplicate resource URL (already exists in sources or learning resources): ${lr.url}`,
+          path: ['learning_resources', idx, 'url'],
+        });
+      }
+      urls.add(lr.url);
+    });
+  }
 }).transform(val => {
   // Map fields to match standard naming used in application logic
   const subcategoryKey = val.category.replace(/\s+/g, '_') as ModelSubcategory;

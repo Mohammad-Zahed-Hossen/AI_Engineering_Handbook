@@ -1,8 +1,8 @@
 # AENS Current State Audit & Architecture Report
 
-**Generated:** July 2, 2026  
+**Generated:** July 9, 2026  
 **Repository:** ai-engineering-handbook  
-**Version:** 0.1.0  
+**Version:** 0.2.0  
 **Audit Scope:** Complete repository inspection (excluding docs/ and data/ content)  
 **Refactor Status:** AENS Knowledge Layer v1.0 Implementation Complete
 
@@ -400,7 +400,7 @@ data/
 - **Models** - Model library with ML/DL/LLM categories
   - Status: Complete
   - Files: `app/models/[category]/page.tsx`, `app/models/[category]/[id]/page.tsx`
-  - Features: Category listing, problem type filtering, decision guides, pros/cons, hyperparameters
+  - Features: Category listing, problem type filtering, premium decision strip (difficulty, stability, confidence, maturity pills) with separate interpretability callout, unified 2x2 Decision Board & Tradeoffs grid, spec-sheet grid for core metrics, side-by-side comparative hyperparameter tuning with Expand/Collapse All and API mapping, alternative comparison matrix cards.
 
 - **Registry** - Task-based model registry
   - Status: Complete
@@ -568,10 +568,17 @@ data/
    - Relationships: `alternatives` (ContentRef array), `related_content` (ContentRef array), task-level `related_workflows` (string IDs array), task-level `related_cheatsheets` (string IDs array).
 
 2. **Model** - Machine Learning, Deep Learning, or LLM specifications
-   - Structure: Inherits `BaseMetaSchema`.
-   - Specific fields: `category` (ml | dl | llm), `problem_types` array, `summary`, `use_when`, `avoid_when`, `pros` (min 3), `cons` (min 3), `key_hyperparams` array, `training_speed`, `inference_speed`, `memory_usage`, `interpretability`, `quick_start` snippet, `alternatives` (ContentRef array), `related_workflows` (string array), `decision_notes`, `competitors` (ContentRef array), `research_background`, `computational_requirements`.
-   - Hyperparameters contain: `name`, `default` (string | number | null), `note`.
-   - Relationships: `alternatives` (ContentRef array), `competitors` (ContentRef array), `related_workflows` (string IDs array), `related_content` (ContentRef array).
+   - Structure: Inherits `BaseMetaSchema` (Zod `ModelSchema`).
+   - Specific fields:
+     - `decisionsummary`: `summary`, `bestusecases` array, `avoidwhen` array, `strengths` (min 3), `limitations` (min 3), `interpretability`, `trainingcharacteristics`, `inferencecharacteristics`, `computationalcharacteristics`.
+     - `coreunderstanding`: `intuition`, `learningmechanism`, `assumptions` array, `mathematicalintuition`, `complexity`, `memorycomplexity`, `robustness`, `scalability`, `overfittingtendency`, `biasvariance`.
+     - `hyperparameters`: array of objects (`name`, `purpose`, `increaseeffect`, `decreaseeffect`, `tradeoffs`, `tuningpriority`, `interactions` array, `commonmistakes` array).
+     - `engineeringconsiderations`: `datasetsuitability` array, `scalability` array, `parallelization`, `computationalcost`, `memorybehavior`, `inferencecharacteristics`, `robustness` array, `sensitivitytooutliers`, `featureengineeringdependency`, `featurescalingrequirement`, `classimbalancebehavior`, `commonlimitations` array, `pipelineposition`.
+     - `comparisons`: array of direct alternative comparisons (`model`, `choose_this_when`, `prefer_other_when`, `tradeoffs`).
+     - `relatedknowledge`: related models, alternatives, principles, workflows, patterns, packages, guides, registry references.
+     - `quickstart` (optional): `language`, `implementation_package`, `code` (production-ready code snippet), `explanation`, `inputs` expected shape/type, `outputs` expected shape/type, `notes` (optional).
+     - `learning_resources` (optional): array of curated educational resources (`title`, `url`, `type` [article|video|course|guide|documentation|tutorial], `why_to_read`, `expected_outcome`, `reading_time` optional).
+   - Relationships: Bidirectional constraints enforced in validation; mapped in `relatedcontent` and `relatedknowledge`.
 
 3. **Workflow** - Production deployment workflows
    - Structure: Inherits `BaseMetaSchema`.
@@ -768,7 +775,7 @@ Dashboard
 
 **Entity-Specific Metadata:**
 - **Packages:** version, language, tasks, alternatives (legacy fields maintained for compatibility)
-- **Models:** category, problem_types, performance ratings, pros, cons, key_hyperparams
+- **Models:** category, problem_types, difficulty, engineering_maturity, decisionsummary, coreunderstanding, hyperparameters, engineeringconsiderations, comparisons, relatedknowledge, quickstart, learning_resources
 - **Workflows:** type, category, starter_stack, steps, next_links
 - **Cheatsheets:** entries array
 - **Patterns:** context, examples, anti_patterns
@@ -1623,7 +1630,7 @@ Principles (expandable)
 2. **Model** - Represents an ML/DL/LLM model architecture
    - Abstraction level: High (model architecture)
    - Granularity: Model → Hyperparameters
-   - Metadata: Category, problem types, performance ratings
+   - Metadata: Category, problem types, difficulty, engineering maturity
 
 3. **Workflow** - Represents a production pipeline
    - Abstraction level: High (end-to-end pipeline)
@@ -1709,7 +1716,7 @@ Principles (expandable)
 
 **Entity-Specific Metadata:**
 - **Packages:** version, language
-- **Models:** category, problem_types, performance ratings
+- **Models:** category, problem_types, difficulty, engineering maturity
 - **Workflows:** type, category, starter_stack
 - **Cheatsheets:** None
 - **Registry:** task, size_mb
@@ -1737,7 +1744,7 @@ Principles (expandable)
 **Relationship Validation:**
 - Referential integrity checked in validation script
 - STRICT_REFERENCE_MODE for strict checking
-- Bidirectional requirement in config (not enforced)
+- Bidirectional requirement in config (enforced in validation script)
 
 ### Current Limitations
 
@@ -1749,8 +1756,6 @@ Principles (expandable)
 
 **Metadata Limitations:**
 - No author/contributor fields
-- No tags or labels
-- No difficulty ratings
 - No popularity metrics
 - No usage statistics
 
@@ -1764,7 +1769,7 @@ Principles (expandable)
 - No many-to-many relationships
 - No relationship attributes
 - No relationship history
-- No relationship validation (bidirectional not enforced)
+- Bidirectional relationships must have matching reciprocal definitions (enforced)
 
 ---
 

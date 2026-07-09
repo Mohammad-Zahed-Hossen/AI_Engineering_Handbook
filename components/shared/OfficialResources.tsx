@@ -15,6 +15,10 @@ import {
 interface OfficialResourcesProps {
   sources: Array<string | { title: string; url: string }>;
   githubRepo?: string;
+  /** When a dedicated Learning Resources section already exists for this content,
+   *  suppress the generic "Further Reading" fallback bucket here so the same kind
+   *  of link doesn't appear twice on the page with two different levels of context. */
+  hasLearningResources?: boolean;
 }
 
 interface ResourceInfo {
@@ -352,14 +356,20 @@ function ResourceCategory({ icon, iconBg, title, urls, category, sources }: Reso
   );
 }
 
-export default function OfficialResources({ sources, githubRepo }: OfficialResourcesProps) {
+export default function OfficialResources({ sources, githubRepo, hasLearningResources = false }: OfficialResourcesProps) {
   const sourceUrls = sources.map(s => typeof s === 'string' ? s : s.url);
   const categorized = categorizeSources(sourceUrls);
+  // If a dedicated Learning Resources section is already rendering curated educational
+  // content elsewhere on the page, don't also surface the generic "external" bucket here —
+  // that would show the same kind of link twice, once with rich context (why to read,
+  // expected outcome) and once without. Fall back to showing it only for models that
+  // haven't been migrated to `learning_resources` yet, so nothing is silently lost.
+  const showExternal = categorized.external.length > 0 && !hasLearningResources;
   const hasContent =
     categorized.documentation.length > 0 ||
     categorized.papers.length > 0 ||
     categorized.modelCards.length > 0 ||
-    categorized.external.length > 0 ||
+    showExternal ||
     !!githubRepo;
 
   if (!hasContent) return null;
@@ -443,12 +453,12 @@ export default function OfficialResources({ sources, githubRepo }: OfficialResou
           />
         )}
 
-        {/* External References */}
-        {categorized.external.length > 0 && (
+        {/* Further Reading (fallback only — suppressed when Learning Resources exists) */}
+        {showExternal && (
           <ResourceCategory
-            icon={<Globe className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
-            iconBg="bg-emerald-500/10"
-            title="External References"
+            icon={<Globe className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}
+            iconBg="bg-indigo-500/10"
+            title="Further Reading"
             urls={categorized.external}
             category="external"
             sources={sources}

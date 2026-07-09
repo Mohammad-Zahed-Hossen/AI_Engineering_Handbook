@@ -1,7 +1,7 @@
 # Architecture Freeze
 
-**Date:** July 4, 2026  
-**Version:** 1.0  
+**Date:** July 9, 2026  
+**Version:** 1.2  
 **Status:** FROZEN
 
 ---
@@ -90,7 +90,7 @@ This document captures the architectural decisions made for AENS (AI Engineering
 **Base Schema:** BaseMetaSchema (shared across all content types)  
 **Validation:** Required before commit (npm run validate)
 
-**Schema Evolution:** migrate-to-v2.ts script exists for schema migrations. Schema versioning defined in aens.config.json.
+**Schema Evolution:** migrate-to-v2.ts script was executed for AENS v2 model schema migration. The Model schema was subsequently extended to support optional `quickstart` code blocks and `learning_resources` curated references. Schema versioning is defined in aens.config.json. In version 1.2, the visual presentation layer of the Model detail pages was refactored for premium UX (incorporating a semantic decision strip, separated explainability block, unified 2x2 tradeoffs grid, 3-column complexity specs sheet, side-by-side comparative hyperparameters layout, and VS alternatives cards).
 
 ---
 
@@ -109,6 +109,8 @@ This document captures the architectural decisions made for AENS (AI Engineering
 - Reference integrity (broken links)
 - **Bidirectional relationship integrity (ERROR)**
 - docs_url uniqueness
+- Duplicate URL checks (across sources and learning resources)
+- Legacy ratings checks (replaces speed/memory rating enums with difficulty and maturity)
 
 ---
 
@@ -245,3 +247,6 @@ This document captures the architectural decisions made for AENS (AI Engineering
 | Date | Version | Change | Author |
 |------|---------|--------|--------|
 | July 4, 2026 | 1.0 | Initial architecture freeze | Architecture Lead |
+| July 9, 2026 | 1.1 | Model Schema Evolution (Quick Start & Curated Resources) | AI Assistant |
+| July 9, 2026 | 1.2 | Model detail page visual refactor & UX specs update | AI Assistant |
+

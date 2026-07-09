@@ -694,11 +694,12 @@ For each task in the package:
 **Gold Standard Model:**
 - Comprehensive problem type coverage
 - Quantitative performance characteristics
-- Detailed comparison with alternatives
-- Training and inference requirements
-- Scalability analysis
-- Industry adoption data
-- Real-world use cases
+- Detailed comparison with alternatives with explicit VS headers and choose/prefer trade-offs
+- Detailed hyperparameter guidance mapped to exact library parameters (mono tags) with Expand/Collapse All triggers and side-by-side comparative increase/decrease columns
+- Premium model detail page structure (difficulty, stability, confidence, maturity badges, with interpretability in its own callout)
+- Unified 2x2 grid Decision Board & Tradeoffs grid with TOC link retention (anchor IDs intact)
+- Core understanding metrics rendered in a visual 3-column specs-sheet grid with Lucide icons and mathematical callouts
+- Grouped engineering considerations (Preprocessing, Runtime, and Pipeline Fit)
 - Comprehensive cross-links
 - Verified against latest research
 
@@ -2167,7 +2168,7 @@ These fields describe the resource itself, not the engineering knowledge it cont
 These fields contain the actual engineering knowledge:
 
 - **Package:** install, import_as, summary, tasks, alternatives, package_specific_debugging, migration_notes
-- **Model:** problem_types, use_when, avoid_when, pros, cons, key_hyperparams
+- **Model:** category (domain), problem_types, decisionsummary (summary, bestusecases, avoidwhen, strengths, limitations, interpretability, training/inference/computational characteristics), coreunderstanding (intuition, learningmechanism, assumptions, mathematicalintuition, complexity, memorycomplexity, robustness, scalability, overfittingtendency, biasvariance), hyperparameters, engineeringconsiderations, comparisons, relatedknowledge, quickstart, learning_resources
 - **Workflow:** type, category, overview, starter_stack, steps
 - **Pattern:** concept, applicability, anti_patterns, implementation_notes
 - **Debug Guide:** symptoms, root_causes, solutions
@@ -2676,6 +2677,7 @@ For questions or clarifications about knowledge requirements, consult the Archit
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** July 4, 2026  
-**Next Review:** July 4, 2027
+**Document Version:** 1.2  
+**Last Updated:** July 9, 2026  
+**Next Review:** July 9, 2027
+
