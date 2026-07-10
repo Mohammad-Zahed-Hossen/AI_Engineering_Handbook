@@ -1,5 +1,6 @@
 import { Activity, CheckCircle2, Shield, Flame, Gauge, Info, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ProseInline } from './Prose';
 
 interface ModelDecisionStripProps {
   interpretability?: string;
@@ -135,9 +136,7 @@ export default function ModelDecisionStrip({
             <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
               Interpretability & Explainability Profile
             </span>
-            <p className="text-foreground leading-relaxed font-sans font-medium">
-              {interpretability}
-            </p>
+            <ProseInline content={interpretability} className="text-foreground leading-relaxed font-sans font-medium" />
           </div>
         </div>
       )}

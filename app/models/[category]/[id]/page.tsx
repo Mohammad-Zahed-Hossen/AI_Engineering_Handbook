@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getModelIds, getModel, getRelatedContent } from '@/lib/data';
+import { getModelIds, getModel, getRelatedContent, resolveModelByName } from '@/lib/data';
 import { ModelCategory } from '@/types/model';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
@@ -58,6 +58,18 @@ export default async function ModelDetailPage({ params }: PageProps) {
   ];
   
   const relatedContent = getRelatedContent('model', model.id, validCategory);
+
+  // Resolve cross-links for "Also Worth Knowing" section
+  const relatedKnowledgeLinks = {
+    relatedmodels: model.relatedknowledge.relatedmodels.map(name => ({
+      name,
+      slug: resolveModelByName(name, validCategory)
+    })),
+    alternative_models: model.relatedknowledge.alternative_models.map(name => ({
+      name,
+      slug: resolveModelByName(name, validCategory)
+    })),
+  };
 
   return (
     <ContentPageLayout
@@ -236,7 +248,7 @@ export default async function ModelDetailPage({ params }: PageProps) {
         </section>
       )}
 
-      <ModelCollapsibleSections model={model} />
+      <ModelCollapsibleSections model={model} relatedKnowledgeLinks={relatedKnowledgeLinks} category={validCategory} />
 
       <RelatedContent items={relatedContent} />
 

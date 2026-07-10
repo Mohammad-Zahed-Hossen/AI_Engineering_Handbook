@@ -533,6 +533,23 @@ export const getPrincipleNavItems = cache(function getPrincipleNavItems(): NavIt
   return readJSON<NavItem[]>(navPath);
 });
 
+/**
+ * Resolves a display name (e.g., "Logistic Regression") to a model slug and checks if it exists.
+ * Used for cross-linking "Also Worth Knowing" chips to actual model pages.
+ * 
+ * @param displayName - The display name to resolve (e.g., "Logistic Regression")
+ * @param category - The model category to search within
+ * @returns The model slug if found, null otherwise
+ */
+export function resolveModelByName(displayName: string, category: ModelCategory): string | null {
+  const slug = displayName.toLowerCase().replace(/\s+/g, '-');
+  const modelIds = getModelIds(category);
+  if (modelIds.includes(slug)) {
+    return slug;
+  }
+  return null;
+}
+
 export interface RecentContentItem {
   id: string;
   name: string;

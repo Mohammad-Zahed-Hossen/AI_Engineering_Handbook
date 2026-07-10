@@ -17,12 +17,19 @@ import {
   Scale,
   Sparkles
 } from 'lucide-react';
+import Link from 'next/link';
 import { Model } from '@/types/model';
+import { ModelCategory } from '@/types/model';
 import { cn } from '@/lib/utils';
 import { Prose, ProseInline } from './Prose';
 
 interface ModelCollapsibleSectionsProps {
   model: Model;
+  relatedKnowledgeLinks?: {
+    relatedmodels: Array<{ name: string; slug: string | null }>;
+    alternative_models: Array<{ name: string; slug: string | null }>;
+  };
+  category?: ModelCategory;
 }
 
 interface CollapsibleSectionProps {
@@ -44,12 +51,15 @@ function CollapsibleSection({
   children,
   teaser,
 }: CollapsibleSectionProps) {
+  const contentId = `${id}-content`;
+  
   return (
     <section id={id} className="scroll-mt-24 border border-border rounded-lg bg-card overflow-hidden">
       <button
         onClick={onToggle}
         className="w-full flex items-center justify-between p-4 bg-muted/20 hover:bg-muted/40 transition-colors select-none text-left"
         aria-expanded={open}
+        aria-controls={contentId}
       >
         <div className="flex items-center gap-2.5">
           <span className="text-primary">{icon}</span>
@@ -70,7 +80,7 @@ function CollapsibleSection({
           )}
         </div>
       </button>
-      <div className={cn('p-5 border-t border-border bg-card', open ? 'block' : 'hidden')}>
+      <div id={contentId} className={cn('p-5 border-t border-border bg-card', open ? 'block' : 'hidden')}>
         {children}
       </div>
     </section>
@@ -108,7 +118,7 @@ const libraryParamsMap: Record<string, string> = {
   "bootstrap": "bootstrap",
 };
 
-export default function ModelCollapsibleSections({ model }: ModelCollapsibleSectionsProps) {
+export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks, category }: ModelCollapsibleSectionsProps) {
   const [coreOpen, setCoreOpen] = useState(false);
   const [engOpen, setEngOpen] = useState(false);
   const [hyperOpen, setHyperOpen] = useState(false);
@@ -117,7 +127,15 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
   const [openHp, setOpenHp] = useState<Record<string, boolean>>({});
 
   // Compute teasers
-  const coreTeaser = `6 specifications · ${model.coreunderstanding.assumptions.length} assumption${model.coreunderstanding.assumptions.length === 1 ? '' : 's'} noted`;
+  const specs = [
+    { label: 'Time Complexity', value: model.coreunderstanding.complexity, icon: <Clock className="w-3.5 h-3.5 text-blue-500" /> },
+    { label: 'Memory Complexity', value: model.coreunderstanding.memorycomplexity, icon: <Database className="w-3.5 h-3.5 text-purple-500" /> },
+    { label: 'Robustness Profile', value: model.coreunderstanding.robustness, icon: <Activity className="w-3.5 h-3.5 text-emerald-500" /> },
+    { label: 'Scalability Profile', value: model.coreunderstanding.scalability, icon: <TrendingUp className="w-3.5 h-3.5 text-cyan-500" /> },
+    { label: 'Overfitting Tendency', value: model.coreunderstanding.overfittingtendency, icon: <ShieldAlert className="w-3.5 h-3.5 text-amber-500" /> },
+    { label: 'Bias-Variance Profile', value: model.coreunderstanding.biasvariance, icon: <Scale className="w-3.5 h-3.5 text-indigo-500" /> },
+  ];
+  const coreTeaser = `${specs.length} specification${specs.length === 1 ? '' : 's'} · ${model.coreunderstanding.assumptions.length} assumption${model.coreunderstanding.assumptions.length === 1 ? '' : 's'} noted`;
   const engTeaser = `${model.engineeringconsiderations.commonlimitations.length} limitation${model.engineeringconsiderations.commonlimitations.length === 1 ? '' : 's'} noted`;
   const highPriorityCount = model.hyperparameters.filter(hp => hp.tuningpriority.toLowerCase() === 'high').length;
   const hyperTeaser = `${model.hyperparameters.length} parameter${model.hyperparameters.length === 1 ? '' : 's'} · ${highPriorityCount} high priority`;
@@ -160,14 +178,7 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
         <div className="space-y-5 text-xs font-sans">
           {/* Visual Specs Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            {[
-              { label: 'Time Complexity', value: model.coreunderstanding.complexity, icon: <Clock className="w-3.5 h-3.5 text-blue-500" /> },
-              { label: 'Memory Complexity', value: model.coreunderstanding.memorycomplexity, icon: <Database className="w-3.5 h-3.5 text-purple-500" /> },
-              { label: 'Robustness Profile', value: model.coreunderstanding.robustness, icon: <Activity className="w-3.5 h-3.5 text-emerald-500" /> },
-              { label: 'Scalability Profile', value: model.coreunderstanding.scalability, icon: <TrendingUp className="w-3.5 h-3.5 text-cyan-500" /> },
-              { label: 'Overfitting Tendency', value: model.coreunderstanding.overfittingtendency, icon: <ShieldAlert className="w-3.5 h-3.5 text-amber-500" /> },
-              { label: 'Bias-Variance Profile', value: model.coreunderstanding.biasvariance, icon: <Scale className="w-3.5 h-3.5 text-indigo-500" /> },
-            ].map(({ label, value, icon }) => (
+            {specs.map(({ label, value, icon }) => (
               <div key={label} className="rounded-lg border border-border/85 bg-muted/15 p-3 flex items-start gap-2.5">
                 <span className="mt-0.5 shrink-0">{icon}</span>
                 <div className="space-y-0.5 text-left">
@@ -515,15 +526,39 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
             {relatedKnowledgeSections.map(([label, items]) => {
               const arrayItems = items as readonly string[];
               if (!arrayItems || arrayItems.length === 0) return null;
+              
+              // Check if this section should use cross-linking
+              const isModelSection = label === 'Related Models' || label === 'Alternative Models';
+              const linkKey = label === 'Related Models' ? 'relatedmodels' : 'alternative_models';
+              const resolvedLinks = isModelSection && relatedKnowledgeLinks && category 
+                ? relatedKnowledgeLinks[linkKey as keyof typeof relatedKnowledgeLinks] 
+                : null;
+              
               return (
                 <div key={label} className="space-y-1.5">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-foreground">{label}</span>
                   <div className="flex flex-wrap gap-1.5">
-                    {arrayItems.map(item => (
-                      <span key={item} className="px-2 py-0.5 rounded border border-border bg-muted/40 text-[10px] font-mono text-muted-foreground">
-                        {item}
-                      </span>
-                    ))}
+                    {arrayItems.map((item, idx) => {
+                      const resolvedSlug = resolvedLinks?.[idx]?.slug;
+                      
+                      if (isModelSection && resolvedSlug && category) {
+                        return (
+                          <Link
+                            key={item}
+                            href={`/models/${category}/${resolvedSlug}`}
+                            className="px-2 py-0.5 rounded border border-border bg-muted/40 text-[10px] font-mono text-foreground hover:bg-muted hover:border-foreground/20 transition-colors"
+                          >
+                            {item}
+                          </Link>
+                        );
+                      }
+                      
+                      return (
+                        <span key={item} className="px-2 py-0.5 rounded border border-border bg-muted/40 text-[10px] font-mono text-muted-foreground">
+                          {item}
+                        </span>
+                      );
+                    })}
                   </div>
                 </div>
               );

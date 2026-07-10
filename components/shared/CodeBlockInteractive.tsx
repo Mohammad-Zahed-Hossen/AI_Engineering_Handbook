@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useLayoutEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Check, Copy, Terminal, ChevronDown } from 'lucide-react';
 
@@ -29,6 +29,23 @@ export function CodeBlockInteractive({
 }: CodeBlockInteractiveProps) {
   const [copied, setCopied] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const toggleButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Scroll position compensation to prevent jump on collapse
+  useLayoutEffect(() => {
+    if (!toggleButtonRef.current) return;
+    
+    const button = toggleButtonRef.current;
+    const beforeTop = button.getBoundingClientRect().top;
+    
+    return () => {
+      const afterTop = button.getBoundingClientRect().top;
+      const delta = afterTop - beforeTop;
+      if (delta !== 0) {
+        window.scrollBy({ top: delta, behavior: 'instant' });
+      }
+    };
+  }, [isExpanded]);
 
   const handleCopy = async () => {
     try {
@@ -100,7 +117,9 @@ export function CodeBlockInteractive({
       {/* Expand button for collapsed code */}
       {shouldCollapse && (
         <button
+          ref={toggleButtonRef}
           onClick={() => setIsExpanded(!isExpanded)}
+          aria-expanded={isExpanded}
           className="w-full py-2 text-[10px] font-sans font-semibold uppercase tracking-wider text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer select-none border-t border-zinc-800 bg-zinc-900/50"
         >
           {isExpanded ? (
