@@ -9,6 +9,13 @@ interface ProseProps {
   className?: string;
 }
 
+const normalizeContent = (text: string): string => {
+  if (!text) return text;
+  // Replace literal '\n' (backslash followed by n) with real newlines,
+  // except when it is part of a recognized LaTeX command starting with \n
+  return text.replace(/\\n(?!abla|exists|eg|eq|geq|leq|subseteq|supseteq|parallel|u\b|earrow|i\b|otin\b|ewline)/g, '\n');
+};
+
 export function Prose({ content, className }: ProseProps) {
   return (
     <div className={cn('content-prose', className)}>
@@ -16,7 +23,7 @@ export function Prose({ content, className }: ProseProps) {
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}
       >
-        {content}
+        {normalizeContent(content)}
       </ReactMarkdown>
     </div>
   );
@@ -33,7 +40,7 @@ export function ProseInline({ content, className }: ProseProps) {
           p: ({ children }) => <>{children}</>,
         }}
       >
-        {content}
+        {normalizeContent(content)}
       </ReactMarkdown>
     </span>
   );

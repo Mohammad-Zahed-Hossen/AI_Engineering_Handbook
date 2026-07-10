@@ -56,7 +56,9 @@ function CollapsibleSection({
           <div className="flex flex-col">
             <h2 className="text-sm font-bold text-foreground font-sans m-0">{label}</h2>
             {teaser && (
-              <span className="text-[10px] text-muted-foreground">{teaser}</span>
+              <span className="text-[10px] text-muted-foreground">
+                <ProseInline content={teaser} />
+              </span>
             )}
           </div>
         </div>
@@ -115,7 +117,7 @@ export default function ModelCollapsibleSections({ model }: ModelCollapsibleSect
   const [openHp, setOpenHp] = useState<Record<string, boolean>>({});
 
   // Compute teasers
-  const coreTeaser = `${model.coreunderstanding.complexity} · ${model.coreunderstanding.robustness}`;
+  const coreTeaser = `6 specifications · ${model.coreunderstanding.assumptions.length} assumption${model.coreunderstanding.assumptions.length === 1 ? '' : 's'} noted`;
   const engTeaser = `${model.engineeringconsiderations.commonlimitations.length} limitation${model.engineeringconsiderations.commonlimitations.length === 1 ? '' : 's'} noted`;
   const highPriorityCount = model.hyperparameters.filter(hp => hp.tuningpriority.toLowerCase() === 'high').length;
   const hyperTeaser = `${model.hyperparameters.length} parameter${model.hyperparameters.length === 1 ? '' : 's'} · ${highPriorityCount} high priority`;

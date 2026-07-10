@@ -13,7 +13,6 @@ import {
   ExternalLink, 
   Link2 
 } from 'lucide-react';
-import { CodeBlock } from '@/components/shared/CodeBlock';
 import type { PackageTask } from '@/types/package';
 import ExpandableText from '@/components/shared/ExpandableText';
 import VisualizationEquivalents from '@/components/shared/VisualizationEquivalents';
@@ -25,6 +24,8 @@ interface ResolvedTask extends PackageTask {
   related_workflow_links: ResolvedRef[];
   related_cheatsheet_links: ResolvedRef[];
   visualization_equivalents: VisualizationEquivalent[];
+  syntaxBlock?: React.ReactNode;
+  exampleBlock?: React.ReactNode;
 }
 
 interface PackageTaskListProps {
@@ -234,7 +235,7 @@ export default function PackageTaskList({ tasks, packageName, language = 'python
                         Syntax Definition
                       </h4>
                       <div className="text-xs">
-                        <CodeBlock code={task.syntax} language={language} />
+                        {task.syntaxBlock}
                       </div>
                     </div>
                   </div>
@@ -244,7 +245,7 @@ export default function PackageTaskList({ tasks, packageName, language = 'python
                       Code Example
                     </h4>
                     <div className="text-xs">
-                      <CodeBlock code={task.example} language={language} />
+                      {task.exampleBlock}
                     </div>
                   </div>
                 </div>

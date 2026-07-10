@@ -502,7 +502,42 @@ for (const [url, locations] of docsUrlRegistry.entries()) {
   }
 }
 
-// ── STEP 10: Report and Exit ───────────────────────────────
+// ── STEP 10: Double-Escaped Newline Check ─────────────────────
+console.log(`\n📊 Checking for double-escaped newlines (literal \\n) in content fields...`);
+
+function checkForDoubleEscapedNewlines(obj: any, filePath: string, path: string = ''): void {
+  if (typeof obj === 'string') {
+    // Check for literal \n (backslash followed by n) that appears to be used as line breaks
+    if (obj.includes('\\n')) {
+      const lines = obj.split('\\n');
+      if (lines.length > 1) {
+        reportError(`Double-escaped newline found in '${filePath}' field '${path}': literal \\n used where actual newlines should be`);
+      }
+    }
+  } else if (typeof obj === 'object' && obj !== null) {
+    for (const key in obj) {
+      // Exclude programming code/example fields which naturally contain literal \n characters
+      if (key === 'code' || key === 'example' || key === 'snippet') continue;
+      const newPath = path ? `${path}.${key}` : key;
+      checkForDoubleEscapedNewlines(obj[key], filePath, newPath);
+    }
+  } else if (Array.isArray(obj)) {
+    obj.forEach((item, idx) => {
+      const newPath = `${path}[${idx}]`;
+      checkForDoubleEscapedNewlines(item, filePath, newPath);
+    });
+  }
+}
+
+// Re-scan all files for double-escaped newlines
+for (const file of files) {
+  const relativePath = path.relative(process.cwd(), file).replace(/\\/g, '/');
+  const content = fs.readFileSync(file, 'utf-8');
+  const data = JSON.parse(content);
+  checkForDoubleEscapedNewlines(data, relativePath);
+}
+
+// ── STEP 11: Report and Exit ───────────────────────────────
 console.log(`\n📊 Validation Summary`);
 console.log(`   Files checked: ${files.length}`);
 console.log(`   Errors:        ${errorCount}`);

@@ -10,7 +10,6 @@ import {
   ExternalLink, 
   Code 
 } from 'lucide-react';
-import { CodeBlock } from '@/components/shared/CodeBlock';
 import type { CheatsheetEntry } from '@/types/cheatsheet';
 import ExpandableText from '@/components/shared/ExpandableText';
 
@@ -18,6 +17,7 @@ interface CheatsheetEntryProps {
   entry: CheatsheetEntry;
   idx: number;
   id: string;
+  codeBlock?: React.ReactNode;
 }
 
 function inferTag(docsUrl?: string): string {
@@ -25,7 +25,7 @@ function inferTag(docsUrl?: string): string {
   return 'API';
 }
 
-export default function CheatsheetEntry({ entry, idx, id }: CheatsheetEntryProps) {
+export default function CheatsheetEntry({ entry, idx, id, codeBlock }: CheatsheetEntryProps) {
   const [expanded, setExpanded] = useState(false);
   const tag = inferTag(entry.docs_url);
 
@@ -167,7 +167,7 @@ export default function CheatsheetEntry({ entry, idx, id }: CheatsheetEntryProps
               Code Snippet
             </h4>
             <div className="text-xs">
-              <CodeBlock code={entry.snippet} language="python" />
+              {codeBlock}
             </div>
           </div>
         </div>

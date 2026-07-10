@@ -5,6 +5,7 @@ import MetadataBadges from '@/components/shared/MetadataBadges';
 import OfficialResources from '@/components/shared/OfficialResources';
 import RelatedContent from '@/components/shared/RelatedContent';
 import CheatsheetEntry from '@/components/shared/CheatsheetEntry';
+import { CodeBlock } from '@/components/shared/CodeBlock';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 
 export async function generateStaticParams() {
@@ -108,6 +109,7 @@ export default async function CheatsheetDetailPage({ params }: PageProps) {
                 entry={entry}
                 idx={idx}
                 id={`entry-${idx}`}
+                codeBlock={<CodeBlock code={entry.snippet} language="python" />}
               />
             ))}
           </div>

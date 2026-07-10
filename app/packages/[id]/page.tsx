@@ -5,6 +5,7 @@ import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import OfficialResources from '@/components/shared/OfficialResources';
 import PackageTaskList from '@/components/shared/PackageTaskList';
+import { CodeBlock } from '@/components/shared/CodeBlock';
 import QuickSetupSection from '@/components/shared/QuickSetupSection';
 import RelatedContent from '@/components/shared/RelatedContent';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
@@ -38,6 +39,8 @@ export default async function PackageDetailPage({ params }: PageProps) {
   // Resolve task cross-references
   const resolvedTasks = pkg.tasks.map(task => ({
     ...task,
+    syntaxBlock: <CodeBlock code={task.syntax} language={pkg.language} />,
+    exampleBlock: <CodeBlock code={task.example} language={pkg.language} />,
     related_workflow_links: (task.related_workflows || [])
       .map(id => ({ 
         id, 
