@@ -60,16 +60,16 @@ This document captures the architectural decisions made for AENS (AI Engineering
 
 **Content Types and Their Owned Knowledge:**
 
-- **Workflow:** Owns complete engineering process (how to build X)
-- **Pattern:** Owns engineering concepts and best practices
+- **Package:** Owns implementation knowledge (how to implement X with library Y)
 - **Model:** Owns algorithm knowledge (which algorithm to use)
-- **Package:** Owns implementation knowledge (how to implement with library X)
+- **Workflow:** Owns process knowledge (how to build X end-to-end)
 - **Cheatsheet:** Owns syntax recall (what's the syntax again?)
-- **Debug Guide:** Owns debugging knowledge (how to fix X error)
-- **Decision Guide:** Owns decision criteria (X vs Y)
-- **Principle:** Owns engineering principles
-- **Registry:** Owns asset listings (models, datasets, services)
-- **Problem Index:** Owns problem categorization and taxonomy (discovery layer only, no knowledge)
+- **Pattern:** Owns concept knowledge (engineering concepts and best practices)
+- **Debug Guide:** Owns troubleshooting knowledge (how to fix X error)
+- **Decision Guide:** Owns decision knowledge (X vs Y, which to choose)
+- **Principle:** Owns principle knowledge (engineering principles and axioms)
+- **Registry:** Owns asset listing (models, datasets, services)
+- **Problem Index:** Owns problem categorization (discovery layer only, no knowledge)
 
 **Non-Ownership Rule:** Navigation views never own knowledge. They are dynamically generated from the content graph.
 
@@ -250,3 +250,79 @@ This document captures the architectural decisions made for AENS (AI Engineering
 | July 9, 2026 | 1.1 | Model Schema Evolution (Quick Start & Curated Resources) | AI Assistant |
 | July 9, 2026 | 1.2 | Model detail page visual refactor & UX specs update | AI Assistant |
 
+---
+
+# Implementation Status
+
+## Model Detail Page UX Refactor (v1.2)
+
+**Status:** ✅ Complete
+
+All implementation items from the AENS Model Page Audit Report have been successfully completed:
+
+### Original Audit Report (4 Prompts) - All Implemented
+
+1. **Prompt #1 - Shared Prose/Math Rendering Primitive** ✅
+   - Created `components/shared/Prose.tsx` with `Prose` and `ProseInline` components
+   - Added dependencies: `react-markdown`, `remark-gfm`, `remark-math`, `rehype-katex`, `katex`
+   - Imported KaTeX CSS in `app/layout.tsx`
+   - All content fields now render through Prose components
+
+2. **Prompt #2 - Quick Start: Syntax Highlighting + Progressive Disclosure** ✅
+   - `CodeBlock.tsx` uses Shiki's `codeToHtml` for server-side syntax highlighting
+   - `CodeBlockInteractive.tsx` handles collapse/expand with scroll compensation
+   - Line numbers via CSS counters in `globals.css`
+
+3. **Prompt #3 - "Updated" Badge → Relative Time** ✅
+   - Created `lib/format-date.ts` with `formatRelativeTime` function
+   - `MetadataBadges.tsx` shows relative time with ISO tooltip
+   - Added "Verified" badge for `lastverified` field
+
+4. **Prompt #4 - Section Defaults, Width, Inline-Code Styling** ✅
+   - Core Understanding collapsed by default (`useState(false)`)
+   - Teaser added: "6 specifications · N assumptions noted"
+   - `.content-prose` max-width applied consistently
+   - Inline `code` styling in `globals.css`
+
+### Regression Audit Report (3 Prompts) - All Implemented
+
+1. **Prompt #1 - Shiki to Build/Server Time** ✅
+   - `CodeBlock.tsx` is now an async Server Component
+   - `CodeBlockInteractive.tsx` handles client interactivity
+   - Double-collapse conflict resolved
+
+2. **Prompt #2 - Double-Escaped Newlines** ✅
+   - `normalizeContent` function in `Prose.tsx` with defensive regex
+   - Validation script updated to check for double-escaped newlines
+   - Data correction applied to affected model files
+
+3. **Prompt #3 - KaTeX Scoping + Teaser Fix** ✅
+   - `body .katex { font-size: 1em !important; }` in `globals.css`
+   - Teaser changed to computed summary instead of raw field concatenation
+
+### Final Polish Audit Report (4 Prompts) - All Implemented
+
+1. **Issue #1 - Interpretability field uses ProseInline** ✅
+   - `ModelDecisionStrip.tsx` updated to use `ProseInline` for LaTeX rendering
+
+2. **Issue #2 - Double background CSS override** ✅
+   - Scoped CSS rule for Shiki's inline background
+
+3. **Issue #3 - Scroll compensation in CodeBlockInteractive** ✅
+   - `useLayoutEffect` with `getBoundingClientRect` tracking
+   - `aria-expanded` added to expand/collapse button
+
+4. **Issue #4 - Cross-linking in ModelCollapsibleSections** ✅
+   - "Also Worth Knowing" chips link to real pages where available
+   - `aria-controls` added to `CollapsibleSection`
+
+### Build Verification
+
+- `npm run build` passes successfully
+- All 40 static pages generated
+- 0 errors, 23 warnings (only missing content references)
+
+### Git Status
+
+- Pushed to `feature/repository-foundation-v2` branch
+- Commit `7af1f7a` with all changes

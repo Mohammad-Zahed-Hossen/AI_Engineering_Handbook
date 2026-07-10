@@ -560,69 +560,51 @@ data/
 
 ### Current Knowledge Objects
 
-**Primary Knowledge Entities (9 Total):**
+**Primary Knowledge Abstractions (9 Total):**
 1. **Package** - Python library/package documentation
-   - Structure: Inherits `BaseMetaSchema` (ID, title, name, slug, description, tags, aliases, created_at, updated_at, sources, etc.).
-   - Specific fields: `version` (semantic version), `install` command, `import_as` syntax, `language` (default: python), `summary`, `tasks` array, `alternatives` (ContentRef array), `package_specific_debugging`, `migration_notes`, `breaking_changes`.
-   - Tasks contain: `task`, `mental_trigger` (first-person trigger starting with "I need to..."), `syntax`, `important_params` (max 5 parameters), `example` (raw python snippet), `use_when`, `avoid_when`, `decision_notes`, `gotchas`, `official_docs` URL, `related_workflows`, `related_cheatsheets`.
-   - Relationships: `alternatives` (ContentRef array), `related_content` (ContentRef array), task-level `related_workflows` (string IDs array), task-level `related_cheatsheets` (string IDs array).
+   - Abstraction level: High (package-level)
+   - Granularity: Package → Tasks
+   - Metadata: Version, language, installation, import alias
 
 2. **Model** - Machine Learning, Deep Learning, or LLM specifications
-   - Structure: Inherits `BaseMetaSchema` (Zod `ModelSchema`).
-   - Specific fields:
-     - `decisionsummary`: `summary`, `bestusecases` array, `avoidwhen` array, `strengths` (min 3), `limitations` (min 3), `interpretability`, `trainingcharacteristics`, `inferencecharacteristics`, `computationalcharacteristics`.
-     - `coreunderstanding`: `intuition`, `learningmechanism`, `assumptions` array, `mathematicalintuition`, `complexity`, `memorycomplexity`, `robustness`, `scalability`, `overfittingtendency`, `biasvariance`.
-     - `hyperparameters`: array of objects (`name`, `purpose`, `increaseeffect`, `decreaseeffect`, `tradeoffs`, `tuningpriority`, `interactions` array, `commonmistakes` array).
-     - `engineeringconsiderations`: `datasetsuitability` array, `scalability` array, `parallelization`, `computationalcost`, `memorybehavior`, `inferencecharacteristics`, `robustness` array, `sensitivitytooutliers`, `featureengineeringdependency`, `featurescalingrequirement`, `classimbalancebehavior`, `commonlimitations` array, `pipelineposition`.
-     - `comparisons`: array of direct alternative comparisons (`model`, `choose_this_when`, `prefer_other_when`, `tradeoffs`).
-     - `relatedknowledge`: related models, alternatives, principles, workflows, patterns, packages, guides, registry references.
-     - `quickstart` (optional): `language`, `implementation_package`, `code` (production-ready code snippet), `explanation`, `inputs` expected shape/type, `outputs` expected shape/type, `notes` (optional).
-     - `learning_resources` (optional): array of curated educational resources (`title`, `url`, `type` [article|video|course|guide|documentation|tutorial], `why_to_read`, `expected_outcome`, `reading_time` optional).
-   - Relationships: Bidirectional constraints enforced in validation; mapped in `relatedcontent` and `relatedknowledge`.
+   - Abstraction level: High (model architecture)
+   - Granularity: Model → Hyperparameters
+   - Metadata: Category, problem types, difficulty, engineering maturity
 
 3. **Workflow** - Production deployment workflows
-   - Structure: Inherits `BaseMetaSchema`.
-   - Specific fields: `type` (pipeline | snippet), `category`, `overview`, `starter_stack` array, `steps` array (min 3), `common_failure_points` array, `evaluation_checks` (optional), `next_links` (optional), `worked_examples` array, `production_notes`, `scaling_notes`.
-   - Steps contain: `step` (1-indexed sequential integer), `name`, `what`, `tools` array, `decision`, `uses` object (`{ packages: string[], models: string[], cheatsheets: string[] }`), `failure_points` array.
-   - Relationships: `related_patterns` (ContentRef array), `related_models` (ContentRef array), `related_packages` (ContentRef array), `related_debug_guides` (ContentRef array), `related_content` (ContentRef array).
+   - Abstraction level: High (end-to-end pipeline)
+   - Granularity: Workflow → Steps
+   - Metadata: Type, category, starter stack
 
 4. **Cheatsheet** - Rapid syntax reference sheets
-   - Structure: Inherits `BaseMetaSchema`.
-   - Specific fields: `name`, `entries` array (min 1, max 60), `package_reference` (optional singular string ID).
-   - Entries contain: `problem` (task goal), `trigger`, `snippet` (raw code syntax), `minimal_notes`, `common_bug`, `docs_url`.
-   - Relationships: `package_reference` (string ID), `related_content` (ContentRef array).
+   - Abstraction level: Medium (language/library)
+   - Granularity: Cheatsheet → Entries
+   - Metadata: None beyond base
 
 5. **Pattern** - Reusable design patterns
-   - Structure: Inherits `BaseMetaSchema`.
-   - Specific fields: `concept` (core concept description), `applicability`, `anti_patterns` array, `implementation_notes`, `examples` array.
-   - Relationships: `related_workflows` (string array), `related_models` (string array), `related_packages` (string array), `related_principles` (string array), `related_content` (ContentRef array).
+   - Abstraction level: Medium (concept)
+   - Granularity: Pattern → Examples
+   - Metadata: Context, examples, anti_patterns
 
 6. **Debug Guide** - Troubleshooting guides
-   - Structure: Inherits `BaseMetaSchema`.
-   - Specific fields: `category`, `symptoms` array (min 1), `root_causes` array (min 1), `diagnosis` array (min 1), `solutions` array (min 1), `prevention` array (min 1).
-   - Symptoms contain: `symptom`, `description`.
-   - Root Causes contain: `cause`, `probability` (high | medium | low), `explanation`.
-   - Diagnosis contains: `test`, `expected_result`, `how_to_perform`.
-   - Solutions contain: `solution`, `steps` array, `verification`.
-   - Prevention contain: `prevention`, `practices` array.
-   - Relationships: `related_packages` (ContentRef array), `related_workflows` (ContentRef array), `related_patterns` (ContentRef array), `related_models` (ContentRef array), `related_registry` (ContentRef array), `related_content` (ContentRef array).
+   - Abstraction level: Medium (symptom)
+   - Granularity: Debug Guide → Solutions
+   - Metadata: Symptoms, root_causes, solutions
 
 7. **Decision Guide** - Tech trade-off comparisons
-   - Structure: Inherits `BaseMetaSchema`.
-   - Specific fields: `category`, `problem`, `evaluation_criteria` array (min 1), `options` array (min 2), `comparison_table` (optional record), `recommendations`, `use_cases` array.
-   - Criteria contain: `criterion`, `weight` (number default 1), `description`.
-   - Options contain: `name`, `id` (reference ID string), `strengths` array, `weaknesses` array, `best_for`, `avoid_when`.
-   - Relationships: `related_workflows` (ContentRef array), `related_packages` (ContentRef array), `related_models` (ContentRef array), `related_content` (ContentRef array).
+   - Abstraction level: Medium (decision)
+   - Granularity: Decision Guide → Options
+   - Metadata: Problem, options, trade_offs, recommendations
 
-8. **Principle** - Fundamental engineering principles (the theoretical "why")
-   - Structure: Inherits `BaseMetaSchema`.
-   - Specific fields: `category`, `statement` (core principle statement), `mathematical_formulation` (TeX markup), `intuition` (intuitive reasoning), `implications` array, `limitations` array, `related_concepts` array.
-   - Relationships (inverse plain string IDs): `referenced_by_patterns` (string array), `referenced_by_models` (string array), `referenced_by_workflows` (string array), `related_content` (ContentRef array).
+8. **Principle** - Fundamental engineering principles
+   - Abstraction level: High (theoretical)
+   - Granularity: Principle → Implications
+   - Metadata: Statement, intuition, examples, applications
 
 9. **Registry** - Model registry entries
-   - Structure: Inherits `BaseMetaSchema`.
-   - Specific fields: `task` (embedding | reranker | vision | speech | llm | multimodal | ocr), `category` (models | datasets | benchmarks | services | leaderboards | mcp_servers | repos), `size_mb` (number), `link` (string download URL or MissingModelRef object), `hardware_requirements`, `download_location` URL, `license`, `supported_tasks` array, `version_compatibility` array, `official_resources` URLs array.
-   - Relationships: `related_content` (ContentRef array).
+   - Abstraction level: Low (individual model)
+   - Granularity: Single entry
+   - Metadata: Task, size_mb, link
 
 ### Current Relationships
 
@@ -635,7 +617,7 @@ data/
 ```
 
 **Relationship Types:**
-- **alternatives** - Direct alternatives (packages, models)
+- **alternatives** - Direct substitutes (packages, models)
 - **competitors** - Competitive alternatives (models)
 - **related_workflows** - Workflow references (packages, models)
 - **related_cheatsheets** - Cheatsheet references (packages)
@@ -679,18 +661,19 @@ data/
 **Sidebar Structure:**
 ```
 Dashboard
-├── Packages (expandable)
-├── Models Library
-│   ├── Machine Learning (expandable)
-│   ├── Deep Learning (expandable)
-│   └── Large Language Models (expandable)
-├── Registries (expandable)
-├── Workflows (expandable)
-├── Cheatsheets (expandable)
-├── Patterns (expandable) (NEW)
-├── Debug Guides (expandable) (NEW)
-├── Decision Guides (expandable) (NEW)
-└── Principles (expandable) (NEW)
+Problem Index
+Packages (expandable)
+Models Library
+  ├── Machine Learning (expandable)
+  ├── Deep Learning (expandable)
+  └── Large Language Models (expandable)
+Registries (expandable)
+Workflows (expandable)
+Cheatsheets (expandable)
+Patterns (expandable) (NEW)
+Debug Guides (expandable) (NEW)
+Decision Guides (expandable) (NEW)
+Principles (expandable) (NEW)
 ```
 
 **Navigation Indexes:**
@@ -740,6 +723,11 @@ Dashboard
 - Function-level entities: package tasks, cheatsheet entries
 - Enriched fields: mental_trigger, code_context, code_tokens, keywords, title, tags, aliases, search_tokens
 
+**Index Size Check:**
+- Development-only logging of index size
+- Monitors for index bloat
+- Logs entry count and KB size
+
 ### Metadata Strategy
 
 **Base Metadata (all entities) - Expanded BaseMetaSchema:**
@@ -784,1133 +772,9 @@ Dashboard
 - **Principles:** statement, intuition, examples, applications
 - **Registry:** task, size_mb, link, hardware_requirements, download_location, license
 
-### Current Limitations
-
-**Relationship Limitations:**
-- No bidirectional relationship enforcement (config requires it, validation doesn't enforce)
-- No relationship strength or confidence scores
-- No transitive relationship traversal
-
-**Metadata Limitations:**
-- No author/contributor fields
-- No popularity metrics
-- No usage statistics
-- Tags, labels, and difficulty ratings now available (RESOLVED by refactor)
-
-**Navigation Limitations:**
-- No custom navigation ordering (alphabetical only)
-- No bookmarking/favorites
-- No recent visits in sidebar (only on dashboard)
-
-**Search Limitations:**
-- Synonym expansion is empty (placeholder)
-- No concept groups populated
-- No faceted search (only type grouping)
-- No search history persistence beyond recent searches
-
 ---
 
-## 6. Data Layer
-
-### JSON Structure
-
-**File Organization:**
-- One JSON file per entity
-- Filename matches entity ID
-- Located in type-specific directories
-- Registry uses task-based filenames
-
-**Example Package Structure:**
-```json
-{
-  "id": "numpy",
-  "name": "NumPy",
-  "version": "2.0.0",
-  "language": "python",
-  "created_at": "2024-01-01",
-  "updated_at": "2024-01-15",
-  "summary": "...",
-  "sources": ["https://numpy.org/doc/"],
-  "github_repo": "https://github.com/numpy/numpy",
-  "install": "pip install numpy",
-  "import_as": "np",
-  "tasks": [...],
-  "alternatives": [...]
-}
-```
-
-### Schemas
-
-**Schema Technology:** Zod (runtime validation + TypeScript inference)
-
-**Schema Hierarchy:**
-```
-BaseMetaSchema (Identity, Discovery, Classification, Learning, Maintenance, Versioning, Governance, Sources)
-├── PackageSchema (extends BaseMeta)
-├── ModelSchema (extends BaseMeta)
-├── WorkflowSchema (extends BaseMeta)
-├── CheatsheetSchema (extends BaseMeta)
-├── PatternSchema (extends BaseMeta)
-├── DebugGuideSchema (extends BaseMeta)
-├── DecisionGuideSchema (extends BaseMeta)
-├── PrincipleSchema (extends BaseMeta)
-└── RegistryModelSchema (extends BaseMeta)
-```
-
-**Schema Features:**
-- Type coercion (date format validation)
-- URL validation (sources, github_repo, docs_url)
-- Enum constraints (categories, problem types, ratings)
-- Array constraints (min/max lengths)
-- Optional fields with defaults
-
-**Schema Files:**
-- `lib/schemas/base.ts` - Base metadata schema (renamed from meta.ts)
-- `lib/schemas/package.ts` - Package and PackageTask schemas
-- `lib/schemas/model.ts` - Model and related enums
-- `lib/schemas/workflow.ts` - Workflow and WorkflowStep schemas
-- `lib/schemas/cheatsheet.ts` - Cheatsheet and CheatsheetEntry schemas
-- `lib/schemas/pattern.ts` - Pattern schema
-- `lib/schemas/debug-guide.ts` - Debug guide schema
-- `lib/schemas/decision-guide.ts` - Decision guide schema
-- `lib/schemas/principle.ts` - Principle schema
-- `lib/schemas/registry.ts` - Registry and MissingModelRef schemas
-
-### Validation
-
-**Validation Pipeline:**
-1. JSON parse error checking
-2. Schema validation (Zod)
-3. Slug format validation (regex)
-4. Filename/ID sync check
-5. Placeholder text detection
-6. Minimum content quality checks
-7. Duplicate detection (ID and name)
-8. Reference integrity checking
-9. docs_url uniqueness check
-
-**Validation Script:** `scripts/validate-content.ts`
-- Runs via `npm run validate`
-- Runs automatically in `prebuild` hook
-- Exit code 1 on errors
-- STRICT_REFERENCE_MODE env var for strict reference checking
-
-**Quality Checks:**
-- Models: min 3 pros, min 3 cons, min 1 key_hyperparam (except detection-only)
-- Packages: min 1 task
-- Workflows: min 3 steps
-- Cheatsheets: min 1 entry
-- Patterns: min 1 context (NEW)
-- Debug Guides: min 1 symptom (NEW)
-- Decision Guides: min 1 option (NEW)
-- Principles: min 1 example (NEW)
-
-### Registry
-
-**Registry Structure:**
-- Task-based JSON files (e.g., `embedding.json`, `vision.json`)
-- Each file contains array of RegistryModel entries
-- Filename mapped to task via `REGISTRY_FILE_TO_TASK`
-
-**Registry Entry Structure:**
-```json
-{
-  "id": "all-MiniLM-L6-v2",
-  "task": "embedding",
-  "size_mb": 80,
-  "link": "https://huggingface.co/..."
-}
-```
-
-**Missing Model References:**
-```json
-{
-  "id": "missing-model",
-  "task": "embedding",
-  "size_mb": 0,
-  "link": {
-    "type": "missing",
-    "reason": "Model not yet cataloged"
-  }
-}
-```
-
-**Registry Tasks:**
-- embedding, reranker, vision, speech, llm, multimodal, ocr
-
-### Navigation Indexes
-
-**Purpose:** Lightweight navigation data to avoid loading full JSON files
-
-**Structure:**
-```json
-[
-  {
-    "id": "numpy",
-    "name": "NumPy",
-    "version": "2.0.0",
-    "updated_at": "2024-01-15",
-    "type": "package"
-  }
-]
-```
-
-**Generation:** `scripts/build-nav-index.ts`
-- Runs via `npm run build:nav`
-- Runs automatically in `prebuild` hook
-- Commits to Git alongside content
-
-**Usage:**
-- Sidebar navigation loading
-- Recent content loading
-- Dashboard counts
-
-### Content Loading
-
-**Loading Strategy:** React `cache()` function
-
-**Data Loading Functions:**
-- `getAllPackageIds()` - Scan directory for IDs
-- `getPackage(id)` - Load single package
-- `getAllPackages()` - Load all packages
-- Similar functions for models, workflows, cheatsheets, registry
-
-**Navigation Functions:**
-- `getPackageNavItems()` - Load from _nav.json or fallback
-- `getModelNavItems(category)` - Load from _nav.json or fallback
-- Similar functions for workflows, cheatsheets
-
-**Helper Functions:**
-- `contentExists(type, id)` - Check file existence
-- `getContentPath(type, id)` - Resolve href
-- `getContentName(type, id)` - Resolve name
-- `getRelatedContent(type, id)` - Compute related items
-- `getRecentContent(limit)` - Get recently updated items
-
-**Fallback Behavior:**
-- If _nav.json missing, falls back to full file scan
-- Ensures first-run compatibility before build scripts execute
-
-### Caching
-
-**Caching Strategy:** React `cache()` function
-
-**Cached Functions:**
-- All data loading functions in `lib/data.ts`
-- `buildSearchIndex()` in `lib/search.ts`
-- `buildSearchEngine()` in `lib/search.ts`
-
-**Cache Scope:** Per-request (Server Components)
-- Cache persists during single request
-- Invalidated between requests
-- No persistent caching
-
-**Performance Impact:**
-- Zero-latency repeated access within request
-- No memory leaks (request-scoped)
-- Optimal for static generation
-
-### Build Pipeline
-
-**Build Sequence:**
-1. `npm run validate` - Content validation
-2. `npm run build:nav` - Navigation index generation
-3. `npm run build` - Next.js static generation
-
-**Prebuild Hook:**
-```json
-"prebuild": "npm run validate && npm run build:nav"
-```
-
-**Validation Failures:**
-- Exit code 1 on errors
-- Blocks build process
-- Ensures data integrity before deployment
-
-**Static Generation:**
-- `generateStaticParams()` for all dynamic routes
-- Pre-renders all content pages at build time
-- Zero runtime data loading
-
----
-
-## 7. Search System
-
-### Search Engine
-
-**Primary Engine:** Fuse.js (fuzzy search)
-
-**Secondary Engine:** Custom hybrid engine (inverted index + Fuse.js)
-
-**Engine Implementation:** `lib/search/engine.ts`
-
-**Search Strategy:**
-1. Query expansion (synonyms, concept groups)
-2. Inverted index exact token matching
-3. Fuse.js fuzzy matching
-4. Score combination and ranking
-
-**Scoring Algorithm:**
-- Exact name match: 1.0
-- Name prefix match: 0.98
-- Name contains: 0.90
-- Summary contains: 0.85
-- Concept group match: 0.96
-- Token match ratio: up to 0.95
-- Fuzzy score: up to 0.45
-
-### Tokenizer
-
-**Tokenizer Implementation:** `lib/search/tokenizer.ts`
-
-**Tokenization Rules:**
-1. **Dot-split** - `np.linalg.inv` → `["np", "linalg", "inv"]`
-2. **Prefix segments** - `["np", "np.linalg", "np.linalg.inv"]`
-3. **Package alias expansion** - `np` → `["np", "numpy"]`
-4. **CamelCase split** - `CrossEntropyLoss` → `["Cross", "Entropy", "Loss", "cross", "entropy", "loss"]`
-5. **Snake/kebab split** - `learning_rate` → `["learning", "rate"]`
-6. **Abbreviation expansion** - `inv` → `["inv", "inverse"]`
-7. **Deduplicate and lowercase**
-
-**Package Aliases:**
-- np ↔ numpy, torch ↔ pytorch, tf ↔ tensorflow
-- pd ↔ pandas, sklearn ↔ scikit-learn
-- plt ↔ matplotlib, sns ↔ seaborn, cv2 ↔ opencv
-
-**Abbreviation Expansions:**
-- inv → inverse, svd → singular value decomposition
-- lstm → long short term memory, cnn → convolutional neural network
-- rag → retrieval augmented generation, llm → large language model
-- And 100+ more technical abbreviations
-
-### Ranking
-
-**Fuse.js Configuration:**
-```typescript
-{
-  keys: [
-    { name: 'name', weight: 0.25 },
-    { name: 'mental_trigger', weight: 0.20 },
-    { name: 'keywords', weight: 0.15 },
-    { name: 'code_context', weight: 0.15 },
-    { name: 'code_tokens', weight: 0.15 },
-    { name: 'summary', weight: 0.10 },
-    { name: 'fn_signature', weight: 0.08 },
-    { name: 'id', weight: 0.05 },
-    { name: 'category', weight: 0.02 },
-    { name: 'parent_name', weight: 0.02 },
-  ],
-  threshold: 0.25,
-  minMatchCharLength: 2,
-  includeScore: true,
-  includeMatches: true,
-}
-```
-
-**Custom Engine Ranking:**
-- Combines inverted index scores with Fuse.js scores
-- Boosts exact matches heavily
-- Penalizes partial matches
-- Concept group boosting
-
-### Synonyms
-
-**Current State:** Empty (placeholder)
-
-**Implementation:** `lib/search/synonym-expander.ts`
-
-**Data Structures:**
-```typescript
-const synonyms: Record<string, string[]> = {};
-const conceptGroups: Record<string, string[]> = {};
-```
-
-**Note:** TODO comment indicates re-implementation planned for Phase 2+
-
-### Concept Groups
-
-**Current State:** Empty (placeholder)
-
-**Purpose:** Group related entities for search boosting
-
-**Example (planned):**
-```typescript
-{
-  "transformer": ["bert", "gpt", "t5", "attention"],
-  "gradient-boosting": ["xgboost", "lightgbm", "catboost"]
-}
-```
-
-### Index Generation
-
-**Index Builder:** `lib/search.ts` - `buildSearchIndex()`
-
-**Index Structure:**
-```typescript
-SearchResult {
-  type: 'package' | 'model' | 'workflow' | 'cheatsheet' | 'registry' | 'function',
-  id: string,
-  name: string,
-  summary: string,
-  href: string,
-  updated_at: string,
-  category?: string,
-  problem_types?: string[],
-  fn_signature?: string,
-  fn_section?: string,
-  fn_package_id?: string,
-  mental_trigger?: string,
-  code_context?: string,
-  code_tokens?: string[],
-  keywords?: string[],
-  parent_name?: string,
-  aliases?: string[],
-}
-```
-
-**Indexing Strategy:**
-- Top-level entities: packages, models, workflows, cheatsheets, registry
-- Function-level entities: package tasks, cheatsheet entries
-- Keyword extraction from prose fields
-- Code tokenization from syntax fields
-
-**Index Size Check:**
-- Development-only logging of index size
-- Monitors for index bloat
-- Logs entry count and KB size
-
-### Search Lifecycle
-
-**User Flow:**
-1. User types in SearchBox
-2. Query tokenized and expanded
-3. Inverted index queried for exact matches
-4. Fuse.js queried for fuzzy matches
-5. Scores combined and ranked
-6. Results grouped by type
-7. Results displayed with highlighting
-
-**Keyboard Navigation:**
-- `/` to focus search
-- Arrow keys to navigate results
-- Enter to select
-- Escape to close
-
-**Recent Searches:**
-- Stored in localStorage
-- Max 5 recent searches
-- Displayed when search focused and empty
-
-**Result Highlighting:**
-- Fuse.js match highlighting for indexed fields
-- Text-based highlighting for engine path
-- Highlighted with `<mark>` tags
-
----
-
-## 8. UI Architecture
-
-### Layouts
-
-**Global Layout:** `app/layout.tsx`
-- Three-column layout (Sidebar, Main, TOC)
-- Responsive: Sidebar hidden on mobile
-- Theme initialization
-- Search index building
-- Navigation data loading
-
-**Content Page Layout:** `components/shared/ContentPageLayout`
-- Breadcrumbs
-- Main content area
-- Table of Contents (desktop)
-- Sticky action bar (mobile)
-- Scroll restoration
-
-**Mobile Layout:**
-- Sidebar hidden by default
-- Triggered via hamburger menu
-- Full-screen drawer navigation
-- Compact search in TopBar
-
-### Shared Components
-
-**Search Components:**
-- `SearchBox` - Full-featured search with keyboard navigation
-- `FilterBar` - Generic filter bar with multi-select
-- `ModelListFilter` - Problem type filtering for models
-
-**Content Display:**
-- `CodeBlock` - Code syntax display
-- `SectionCard` - Card container for sections
-- `MetadataBadges` - Content type and metadata badges
-- `OfficialResources` - External links display
-- `RelatedContent` - Cross-reference links
-- `ExpandableText` - Modern text clamping and expansion component with an absolute-positioned bottom-right overlay gradient fade for `... See more` trigger, inline flow trigger for `See less`, and performance optimization via height transition-safe clamping state tracking and ResizeObserver watching unconstrained inner content
-
-**Specialized Components:**
-- `PackageTaskList` - Developer task workbench that dynamically extracts category/module tags and trigger quotes, features split-panel syntax/runnable example layouts, side-by-side decision cards, blue warning alerts for performance notes, a parameter signature & return type grid, a unified amber runtime safety gotchas card, and related API chips with local task scroll-anchor link resolution
-- `WorkflowStepList` - Workflow step display
-- `CheatsheetEntry` - Two-column sandbox/card-based cheatsheet component that renders problem headers with modern background index badges, dynamic monospace tag badges parsed from official documentation URLs, details/gotchas cards with Lucide icons, and a styled code snippet panel
-- `ModelCollapsibleSections` - Collapsible model detail sections
-- `AlternativesList` - Alternative items display
-- `QuickSetupSection` - Package installation guide
-
-**Navigation Components:**
-- `Breadcrumbs` - Hierarchical navigation
-- `TableOfContents` - Sticky TOC with scroll tracking
-- `StickyActionBar` - Mobile action bar
-- `ContentTypeBadge` - Category badges
-- `StatusBadge` - Status indicators
-
-**Utility Components:**
-- `ScrollRestore` - Scroll position restoration
-- `BackToTop` - Scroll-to-top button
-- `ReadingProgress` - Reading progress indicator
-- `PageVisitTracker` - Visit tracking
-- `ReadingSessionTracker` - Session tracking
-- `ContinueReadingSection` - Session resumption
-- `RecentKnowledgeSection` - Browsing history
-
-### Page Composition
-
-**Dashboard Page:** `app/page.tsx`
-- Redesigned developer command center navigation hub
-- Unified Continue Learning container (combines reading progress and search history)
-- High-scanning Knowledge Explorer cards displaying custom Lucide icons, summaries, and dynamic entry tallies
-- 6 Developer Intent shortcuts (troubleshoot GPU, RAG vs Fine-tuning, training loops, vector search, SSO config, PyTorch cheatsheet) and 6 overview metrics cards
-- Dynamic Featured Collections (Most Complete Packages by task count, Complex Blueprints by step count, and top Neural Libraries category models)
-- Content-dense recents feed displaying type badges, timestamp formatting, resolved description summaries, and "Open Reference" access buttons
-
-**Package Detail Page:** `app/packages/[id]/page.tsx`
-- Breadcrumbs
-- Header with metadata badges
-- Quick setup section
-- Summary (integrated with `ExpandableText` capped to 2 lines to maintain compact layouts)
-- Official resources
-- Redesigned Developer task workbench (`PackageTaskList.tsx`) with category/module badge extraction, side-by-side split panels, decision framework cards, and clickable related API scroll anchors (local task resolution)
-- Related content
-
-**Model Category Page:** `app/models/[category]/page.tsx`
-- Category header card
-- Filter bar (problem types)
-- Mobile card view
-- Desktop table view
-
-**Model Detail Page:** `app/models/[category]/[id]/page.tsx`
-- Breadcrumbs
-- Header with metadata badges
-- Decision guide (use when / avoid when)
-- Decision notes
-- Pros and cons
-- Collapsible sections (performance, hyperparams, quick start)
-- Alternatives list
-- Related content
-
-**Registry Page:** `app/registry/[task]/page.tsx`
-- Registry header
-- Mobile card view
-- Desktop table view
-- Model size information
-- External links
-
-**Workflow Page:** `app/workflows/[id]/page.tsx`
-- Breadcrumbs
-- Header with metadata badges
-- Overview
-- Starter stack
-- Workflow steps
-- Common failure points
-- Evaluation checks
-- Next workflow links
-- Related content
-
-**Cheatsheet Page:** `app/cheatsheets/[id]/page.tsx`
-- Breadcrumbs
-- Header with metadata badges
-- Official resources
-- Redesigned Sandbox/card-based cheatsheet entries (`CheatsheetEntry.tsx`) featuring dynamic tag badges (e.g. `ax.bar`), numbered headers, details/gotchas cards with Lucide icons, and external API buttons
-- Related content
-
-**Problem Index Catalog Page:** `app/problem-index/page.tsx`
-- Primary problem-first discovery layer wrapped in React Suspense boundary
-- Stateful catalog dashboard (`ProblemIndexDashboard.tsx`) with 150ms debounced search filtering (synced to URL search params `?q=...` without layout jumps) and match highlighting
-- Focus keyboard shortcuts (`Ctrl+K` and `/`)
-- Horizontal viewport-spied category navigation tabs (IntersectionObserver)
-- Collapsible categories with smooth CSS Grid transitions (height 0.3s) and localStorage collapse persistence
-- Dynamic solved metrics in category headers (e.g., `(3/5 solved)`)
-- Solved problems sorted to the top of category stacks with direct link buttons to workflow guides
-
-### Reusable Patterns
-
-**Card Pattern:**
-- `SectionCard` - Reusable card container
-- Consistent padding, border, shadow
-- Title and subtitle props
-
-**Badge Pattern:**
-- `ContentTypeBadge` - Type-specific badges
-- `StatusBadge` - Status indicators
-- `MetadataBadges` - Composite metadata display
-
-**Filter Pattern:**
-- `FilterBar` - Generic multi-select filter
-- Toggle buttons with active states
-- Clear filters button
-
-**Expandable Pattern:**
-- `CheatsheetEntry` - Expandable content
-- `ModelCollapsibleSections` - Collapsible sections
-- Consistent expand/collapse UI
-
-### Design Philosophy
-
-**Principles:**
-- **Content-first** - Content takes precedence over chrome
-- **Minimal chrome** - Clean, distraction-free interface
-- **Responsive design** - Mobile-first approach
-- **Accessibility** - Keyboard navigation, ARIA labels
-- **Performance** - Client-side search, cached data loading
-- **Dark mode** - First-class dark mode support
-
-**Styling Strategy:**
-- Tailwind CSS v4 for utility classes
-- CSS custom properties for theming
-- shadcn/ui for component primitives
-- Consistent spacing and typography scales
-
-**Typography:**
-- Inter font for body text
-- Geist Sans for headings
-- Geist Mono for code
-- Consistent font sizes (text-xs to text-xl)
-
-**Color System:**
-- OKLCH color space for better perceptual uniformity
-- Semantic color tokens (primary, secondary, muted, destructive)
-- Dark mode color inversion
-- Chart colors for data visualization
-
----
-
-## 9. Navigation Architecture
-
-### Sidebar
-
-**Implementation:** `components/layout/Sidebar.tsx`
-
-**Features:**
-- Collapsible sections by content type
-- Alphabetical grouping for large lists (30+ items)
-- Item limits (12 visible, "see all" link)
-- Active state highlighting
-- Auto-scroll to active item on route change
-- Expand/collapse state management
-
-**Section Structure:**
-```
-Dashboard
-Problem Index
-Packages (expandable)
-Models Library
-  ├── Machine Learning (expandable)
-  ├── Deep Learning (expandable)
-  └── Large Language Models (expandable)
-Registries (expandable)
-Workflows (expandable)
-Cheatsheets (expandable)
-Patterns (expandable)
-Debug Guides (expandable)
-Decision Guides (expandable)
-Principles (expandable)
-```
-
-**Grouping Strategy:**
-- Groups by first letter when ≥ 30 items
-- A-Z sorting within groups
-- "See all" link when truncated
-
-**Item Limits:**
-- MAX_VISIBLE_ITEMS = 12
-- ALPHA_GROUP_THRESHOLD = 30
-- Active item always visible (replaces last item if needed)
-
-**Mobile Behavior:**
-- Hidden on mobile viewport, toggled via hamburger trigger (`MobileSidebarTrigger.tsx`)
-- Full-screen drawer layout mimicking the desktop sidebar navigation and styling
-- Restored "Problem Index" link within the mobile navigation drawer to align with the desktop menu structure
-
-### TopBar
-
-**Implementation:** `components/layout/TopBar.tsx`
-
-**Features:**
-- Mobile sidebar trigger (hamburger menu)
-- Compact search box
-- Dark mode toggle
-- "Static" indicator
-- App title (desktop only)
-
-**Responsive Behavior:**
-- Mobile: Hamburger menu + compact search
-- Desktop: App title + compact search + theme toggle
-
-### Dynamic Routes
-
-**Route Generation:** `generateStaticParams()` in each page component
-
-**Package Routes:**
-- Source: `getAllPackageIds()`
-- Pattern: `/packages/[id]`
-
-**Model Routes:**
-- Source: `getModelIds(category)` for each category
-- Pattern: `/models/[category]/[id]`
-- Categories: ml, dl, llm
-
-**Registry Routes:**
-- Source: `getRegistryTasks()`
-- Pattern: `/registry/[task]`
-
-**Workflow Routes:**
-- Source: `getAllWorkflowIds()`
-- Pattern: `/workflows/[id]`
-
-**Cheatsheet Routes:**
-- Source: `getAllCheatsheetIds()`
-- Pattern: `/cheatsheets/[id]`
-
-### Navigation Indexes
-
-**Index Files:** `_nav.json` in each content directory
-
-**Index Structure:**
-```json
-[
-  {
-    "id": "numpy",
-    "name": "NumPy",
-    "version": "2.0.0",
-    "updated_at": "2024-01-15",
-    "type": "package"
-  }
-]
-```
-
-**Index Generation:** `scripts/build-nav-index.ts`
-
-**Usage:**
-- Sidebar navigation loading
-- Recent content loading
-- Dashboard counts
-
-**Fallback:**
-- If _nav.json missing, falls back to full file scan
-- Ensures first-run compatibility
-
-### Discovery Strategy
-
-**Dashboard Discovery:**
-- Category cards with entry counts
-- Recently updated list
-- Quick access sections
-- Popular packages (hardcoded list)
-- Model category quick links
-
-**Sidebar Discovery:**
-- Alphabetical grouping
-- Expandable sections
-- Item limits with "see all"
-- Active state highlighting
-
-**Search Discovery:**
-- Fuzzy search across all content
-- Type grouping in results
-- Recent searches
-- Keyboard navigation
-
-**Related Content Discovery:**
-- Automatic related content computation
-- Alternatives display
-- Same category suggestions
-- Same problem type suggestions (models)
-
-### Performance Optimizations
-
-**React Cache:**
-- All navigation functions cached
-- Zero-latency repeated access
-- Request-scoped caching
-
-**Lightweight Indexes:**
-- _nav.json contains only navigation fields
-- Avoids loading full JSON files
-- Reduces memory footprint
-
-**Static Generation:**
-- All routes pre-generated at build time
-- Zero runtime routing overhead
-- Fast initial page load
-
-**Lazy Loading:**
-- Large sections collapsed by default
-- Expand/collapse on demand
-- Reduces initial DOM size
-
-**Debounced Search:**
-- Search results computed on demand
-- No pre-computation
-- Client-side only
-
----
-
-## 10. Current Engineering Principles
-
-### Content-First
-- **Evidence:** All features serve content display and discovery
-- **Implementation:** Minimal chrome, content-focused layouts, reading progress
-- **Manifestation:** ContentPageLayout, SectionCard, reading session tracking
-
-### Schema-First
-- **Evidence:** Zod schemas defined before types, validation in build pipeline
-- **Implementation:** lib/schemas/ directory, type inference from schemas
-- **Manifestation:** scripts/validate-content.ts, prebuild validation hook
-
-### Static-First
-- **Evidence:** Static generation, no database, no API calls
-- **Implementation:** generateStaticParams(), file-based data loading
-- **Manifestation:** Next.js static export, React cache, _nav.json indexes
-
-### Local-First
-- **Evidence:** No external dependencies for data, offline-capable
-- **Implementation:** JSON files in data/, no database connections
-- **Manifestation:** File system data loading, localStorage for sessions
-
-### Single Source of Truth
-- **Evidence:** JSON files are the authoritative data source
-- **Implementation:** No database sync, no external APIs
-- **Manifestation:** data/ directory as sole content store
-
-### Minimal Duplication
-- **Evidence:** Navigation indexes avoid loading full files
-- **Implementation:** _nav.json files, React cache
-- **Manifestation:** Lightweight navigation data, cached data loading
-
-### Type Safety
-- **Evidence:** Strict TypeScript, Zod runtime validation
-- **Implementation:** types/ directory inferred from schemas
-- **Manifestation:** Strict mode in tsconfig, schema validation
-
-### Performance-First
-- **Evidence:** React cache, static generation, client-side search
-- **Implementation:** Cached data loading, Fuse.js search
-- **Manifestation:** Zero-latency data access, fast search
-
-### Accessibility-First
-- **Evidence:** Keyboard navigation, ARIA labels, semantic HTML
-- **Implementation:** SearchBox keyboard shortcuts, proper heading hierarchy
-- **Manifestation:** `/` to focus search, arrow key navigation
-
-### Mobile-First
-- **Evidence:** Responsive design, mobile sidebar, compact layouts
-- **Implementation:** MobileSidebarTrigger, responsive breakpoints
-- **Manifestation:** Hidden sidebar on mobile, full-screen drawer
-
----
-
-## 11. Existing Knowledge Layer
-
-### Knowledge Objects
-
-**Primary Knowledge Abstractions:**
-1. **Package** - Represents a Python package with API documentation
-   - Abstraction level: High (package-level)
-   - Granularity: Package → Tasks
-   - Metadata: Version, language, installation, import alias
-
-2. **Model** - Represents an ML/DL/LLM model architecture
-   - Abstraction level: High (model architecture)
-   - Granularity: Model → Hyperparameters
-   - Metadata: Category, problem types, difficulty, engineering maturity
-
-3. **Workflow** - Represents a production pipeline
-   - Abstraction level: High (end-to-end pipeline)
-   - Granularity: Workflow → Steps
-   - Metadata: Type, category, starter stack
-
-4. **Cheatsheet** - Represents syntax reference
-   - Abstraction level: Medium (language/library)
-   - Granularity: Cheatsheet → Entries
-   - Metadata: None beyond base
-
-5. **Registry** - Represents model checkpoint navigation
-   - Abstraction level: Low (individual model)
-   - Granularity: Single entry
-   - Metadata: Task, size, link
-
-### Knowledge Representation
-
-**Data Structure:**
-- Flat JSON files per entity
-- Hierarchical directory organization
-- No nested relationships in file structure
-- Cross-references via ContentRef objects
-
-**Schema-Driven:**
-- Zod schemas define structure
-- TypeScript types inferred from schemas
-- Runtime validation ensures compliance
-
-**Metadata-Enriched:**
-- Base metadata on all entities (dates, sources)
-- Entity-specific metadata (version, category, ratings)
-- No free-form fields (all schema-defined)
-
-### Knowledge Connections
-
-**Relationship Types:**
-- **Alternatives** - Direct substitutes (packages, models)
-- **Competitors** - Competitive comparison (models)
-- **Related Workflows** - Workflow references (packages, models)
-- **Related Cheatsheets** - Cheatsheet references (packages)
-- **Next Links** - Sequential workflows (workflows)
-
-**Relationship Direction:**
-- Unidirectional in data (source → target)
-- Bidirectional validation in config (not enforced)
-- Computed bidirectional in related content (same category, same problem type)
-
-**Relationship Resolution:**
-- `getContentPath()` resolves href from type and ID
-- `getContentName()` resolves name from type and ID
-- `contentExists()` validates target existence
-- `getRelatedContent()` computes related items
-
-### Navigation Abstractions
-
-**Navigation Hierarchy:**
-- Content type → Category (models only) → Entity
-- Represented in sidebar structure
-- Reflected in route structure
-
-**Navigation Indexes:**
-- Lightweight _nav.json files
-- Contain only navigation fields
-- Enable fast sidebar loading
-
-**Navigation State:**
-- Active item highlighting
-- Expand/collapse state
-- Scroll position restoration
-
-### Metadata Abstractions
-
-**Base Metadata Schema:**
-```typescript
-{
-  created_at: string (YYYY-MM-DD)
-  updated_at: string (YYYY-MM-DD)
-  sources: string[] (URLs)
-  github_repo: string (optional GitHub URL)
-}
-```
-
-**Entity-Specific Metadata:**
-- **Packages:** version, language
-- **Models:** category, problem_types, difficulty, engineering maturity
-- **Workflows:** type, category, starter_stack
-- **Cheatsheets:** None
-- **Registry:** task, size_mb
-
-**Metadata Usage:**
-- Display in UI (badges, headers)
-- Sorting (recent content)
-- Filtering (problem types, categories)
-
-### Relationship Abstractions
-
-**ContentRef Schema:**
-```typescript
-{
-  id: string
-  type: 'model' | 'package' | 'workflow' | 'cheatsheet' | 'registry'
-}
-```
-
-**Relationship Storage:**
-- Arrays in parent entities
-- Example: `alternatives: [{ id: 'pandas', type: 'package' }]`
-- No relationship metadata (strength, confidence)
-
-**Relationship Validation:**
-- Referential integrity checked in validation script
-- STRICT_REFERENCE_MODE for strict checking
-- Bidirectional requirement in config (enforced in validation script)
-
-### Current Limitations
-
-**Abstraction Limitations:**
-- No knowledge graph (relationships are simple arrays)
-- No relationship strength or confidence
-- No transitive relationship traversal
-- No relationship metadata (when added, why added)
-
-**Metadata Limitations:**
-- No author/contributor fields
-- No popularity metrics
-- No usage statistics
-
-**Navigation Limitations:**
-- No custom ordering (alphabetical only)
-- No bookmarking/favorites
-- No custom navigation groups
-- No tag-based navigation
-
-**Relationship Limitations:**
-- No many-to-many relationships
-- No relationship attributes
-- No relationship history
-- Bidirectional relationships must have matching reciprocal definitions (enforced)
-
----
-
-## 12. Architecture Strengths
-
-### 1. Clear Separation of Concerns
-**Why Well-Designed:**
-- Distinct directories for app, components, lib, types, scripts
-- Business logic isolated in lib/
-- UI components isolated in components/
-- Data layer isolated in data/
-- No circular dependencies
-
-**Evidence:**
-- lib/ contains no UI code
-- components/ contain no data loading
-- app/ contains no business logic
-- Clean import graph
-
-### 2. Schema-First Data Model
-**Why Well-Designed:**
-- Zod schemas defined before implementation
-- TypeScript types inferred from schemas
-- Runtime validation ensures data integrity
-- Single source of truth for data structure
-
-**Evidence:**
-- lib/schemas/ directory with comprehensive schemas
-- types/ directory with inferred types
-- Validation script enforces schema compliance
-- Prebuild validation hook
-
-### 3. Performance-Optimized Data Loading
-**Why Well-Designed:**
-- React cache eliminates redundant file reads
-- Lightweight navigation indexes avoid full file loads
-- Static generation eliminates runtime data fetching
-- Client-side search eliminates server queries
-
-**Evidence:**
-- All data loading functions wrapped in React cache
-- _nav.json files contain only navigation fields
-- generateStaticParams() for all routes
-- Fuse.js client-side search
-
-### 4. Comprehensive Validation Pipeline
-**Why Well-Designed:**
-- Multi-stage validation (parse, schema, format, quality)
-- Referential integrity checking
-- Placeholder detection
-- Duplicate detection
-- Prebuild enforcement
-
-**Evidence:**
-- scripts/validate-content.ts with 10 validation steps
-- STRICT_REFERENCE_MODE for strict checking
-- Quality checks (min pros/cons, min tasks)
-- Prebuild hook prevents invalid builds
-
-### 5. Type Safety Throughout
-**Why Well-Designed:**
-- Strict TypeScript mode
-- Zod runtime validation
-- Type inference from schemas
-- No `any` types in core code
-
-**Evidence:**
-- tsconfig.json with strict mode
-- Zod schemas for all content types
-- types/ inferred from schemas
-- Route parameter validation
-
-### 6. Responsive and Accessible UI
-**Why Well-Designed:**
-- Mobile-first responsive design
-- Keyboard navigation support
-- ARIA labels and semantic HTML
-- Dark mode as first-class feature
-
-**Evidence:**
-- Mobile sidebar with full-screen drawer
-- SearchBox keyboard shortcuts
-- Proper heading hierarchy
-- Theme system with dark mode
-
-### 7. Extensible Search Architecture
-**Why Well-Designed:**
-- Modular search components (tokenizer, engine, inverted index)
-- Pluggable synonym expansion
-- Custom scoring algorithm
-- Support for multiple search engines
-
-**Evidence:**
-- lib/search/ directory with separate modules
-- createSearchEngine() factory function
-- Hybrid engine (Fuse.js + inverted index)
-- Placeholder for synonym expansion
-
-### 8. Zero-External-Dependency Data Layer
-**Why Well-Designed:**
-- No database required
-- No API calls for data
-- Version-controlled content
-- Offline-capable
-- Simple deployment
-
-**Evidence:**
-- data/ directory with JSON files
-- File system data loading
-- No database connection strings
-- Git as content version control
-
-### 9. Static Generation with Dynamic Feel
-**Why Well-Designed:**
-- Pre-generated routes for fast loads
-- Client components for interactivity
-- Best of both worlds (static + dynamic)
-- SEO-friendly
-
-**Evidence:**
-- generateStaticParams() for all routes
-- 'use client' for interactive components
-- Server components for data loading
-- Fast initial page loads
-
-### 10. Comprehensive Error Handling
-**Why Well-Designed:**
-- Global error boundary
-- Custom 404 page
-- Graceful fallbacks (nav index missing)
-- Try-catch in data loading
-
-**Evidence:**
-- app/error.tsx with error display
-- app/not-found.tsx with navigation links
-- Fallback to full file scan if _nav.json missing
-- try-catch in getPackage(), getModel(), etc.
-
----
-
-## 13. Current Limitations
+## 6. Current Limitations
 
 ### 1. Empty Search Expansion Data
 **Limitation:** Synonym and concept group expansion is empty
@@ -1992,7 +856,7 @@ Principles (expandable)
 
 ---
 
-## 14. Technical Debt
+## 7. Technical Debt
 
 ### Unused Files
 1. **lib/validation/** - Empty directory
@@ -2057,7 +921,7 @@ Principles (expandable)
 
 ---
 
-## 15. Future Extension Readiness
+## 8. Future Extension Readiness
 
 ### Knowledge Extension
 **Readiness:** High
@@ -2186,7 +1050,7 @@ Principles (expandable)
 
 ---
 
-## 16. Folder Dependency Diagram
+## 9. Folder Dependency Diagram
 
 ```
 ai-engineering-handbook/
@@ -2258,7 +1122,7 @@ ai-engineering-handbook/
 
 ---
 
-## 17. Data Flow Diagram
+## 10. Data Flow Diagram
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -2384,7 +1248,7 @@ ai-engineering-handbook/
 
 ---
 
-## 18. Request Flow Diagram
+## 11. Request Flow Diagram
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -2430,7 +1294,7 @@ ai-engineering-handbook/
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                   Data Transformation                           │
+│                   Data Transformation                             │
 │  • Resolve task cross-references (related_workflows, etc.)      │
 │  • Build table of contents                                      │
 │  • Get related content                                          │
@@ -2481,7 +1345,7 @@ Validation Error → Build fails → Error message
 
 ---
 
-## 19. Build Pipeline
+## 12. Build Pipeline
 
 ### Migration Stage
 **Script:** `scripts/migrate-to-v2.ts`
@@ -2627,7 +1491,7 @@ Production build output
 
 ---
 
-## 20. Current Project Health
+## 13. Current Project Health
 
 ### Maintainability: **Excellent**
 **Reasoning:**
@@ -2783,56 +1647,97 @@ The project demonstrates excellent engineering practices with clear architecture
 
 ---
 
-## Appendix
+## 14. Implementation Status
 
-### Technology Stack Summary
-- **Framework:** Next.js 16.2.9 (App Router)
-- **Runtime:** React 19.2.4
-- **Language:** TypeScript 5 (strict mode)
-- **Styling:** Tailwind CSS v4
-- **Components:** shadcn/ui, Radix UI
-- **Icons:** Lucide React
-- **Validation:** Zod 4.4.3, AJV 8.17.1
-- **Search:** Fuse.js 7.4.2
-- **Build:** tsx 4.22.4
-- **Linting:** ESLint 9.39.4
+## Model Detail Page UX Refactor (v1.2)
 
-### Key Dependencies
-- **next:** 16.2.9
-- **react:** 19.2.4
-- **react-dom:** 19.2.4
-- **zod:** 4.4.3
-- **fuse.js:** 7.4.2
-- **lucide-react:** 1.21.0
-- **tailwindcss:** 4
-- **typescript:** 5
+**Status:** ✅ Complete
 
-### Scripts
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run validate` - Validate content
-- `npm run build:nav` - Build navigation indexes
+All implementation items from the AENS Model Page Audit Report have been successfully completed:
 
-### Environment Variables
-- `STRICT_REFERENCE_MODE` - Enable strict reference checking (true/false)
-- `NODE_ENV` - Development/production mode (affects index size logging)
+### Original Audit Report (4 Prompts) - All Implemented
 
-### File Count Summary
-- **Total TypeScript/TSX files:** ~60
-- **Total JSON schema files:** 1
-- **Total JSON content files:** Variable (in data/)
-- **Total CSS files:** 1
-- **Total script files:** 2
+1. **Prompt #1 - Shared Prose/Math Rendering Primitive** ✅
+   - Created `components/shared/Prose.tsx` with `Prose` and `ProseInline` components
+   - Added dependencies: `react-markdown`, `remark-gfm`, `remark-math`, `rehype-katex`, `katex`
+   - Imported KaTeX CSS in `app/layout.tsx`
+   - All content fields now render through Prose components
 
-### Lines of Code (Approximate)
-- **app/:** ~400 lines
-- **components/:** ~2,000 lines
-- **lib/:** ~1,500 lines
-- **scripts/:** ~400 lines
-- **types/:** ~40 lines
-- **Total:** ~4,340 lines (excluding data/ and docs/)
+2. **Prompt #2 - Quick Start: Syntax Highlighting + Progressive Disclosure** ✅
+   - `CodeBlock.tsx` uses Shiki's `codeToHtml` for server-side syntax highlighting
+   - `CodeBlockInteractive.tsx` handles collapse/expand with scroll compensation
+   - Line numbers via CSS counters in `globals.css`
+
+3. **Prompt #3 - "Updated" Badge → Relative Time** ✅
+   - Created `lib/format-date.ts` with `formatRelativeTime` function
+   - `MetadataBadges.tsx` shows relative time with ISO tooltip
+   - Added "Verified" badge for `lastverified` field
+
+4. **Prompt #4 - Section Defaults, Width, Inline-Code Styling** ✅
+   - Core Understanding collapsed by default (`useState(false)`)
+   - Teaser added: "6 specifications · N assumptions noted"
+   - `.content-prose` max-width applied consistently
+   - Inline `code` styling in `globals.css`
+
+### Regression Audit Report (3 Prompts) - All Implemented
+
+1. **Prompt #1 - Shiki to Build/Server Time** ✅
+   - `CodeBlock.tsx` is now an async Server Component
+   - `CodeBlockInteractive.tsx` handles client interactivity
+   - Double-collapse conflict resolved
+
+2. **Prompt #2 - Double-Escaped Newlines** ✅
+   - `normalizeContent` function in `Prose.tsx` with defensive regex
+   - Validation script updated to check for double-escaped newlines
+   - Data correction applied to affected model files
+
+3. **Prompt #3 - KaTeX Scoping + Teaser Fix** ✅
+   - `body .katex { font-size: 1em !important; }` in `globals.css`
+   - Teaser changed to computed summary instead of raw field concatenation
+
+### Final Polish Audit Report (4 Prompts) - All Implemented
+
+1. **Issue #1 - Interpretability field uses ProseInline** ✅
+   - `ModelDecisionStrip.tsx` updated to use `ProseInline` for LaTeX rendering
+
+2. **Issue #2 - Double background CSS override** ✅
+   - Scoped CSS rule for Shiki's inline background
+
+3. **Issue #3 - Scroll compensation in CodeBlockInteractive** ✅
+   - `useLayoutEffect` with `getBoundingClientRect` tracking
+   - `aria-expanded` added to expand/collapse button
+
+4. **Issue #4 - Cross-linking in ModelCollapsibleSections** ✅
+   - "Also Worth Knowing" chips link to real pages where available
+   - `aria-controls` added to `CollapsibleSection`
+
+### Build Verification
+
+- `npm run build` passes successfully
+- All 40 static pages generated
+- 0 errors, 23 warnings (only missing content references)
+
+### Git Status
+
+- Pushed to `feature/repository-foundation-v2` branch
+- Commit `7af1f7a` with all changes
+
+---
+
+# Contact
+
+**Architecture Lead:** [To be filled]  
+**Review Date:** [To be scheduled]
+
+---
+
+# Change Log
+
+| Date | Version | Change | Author |
+|------|---------|--------|--------|
+| July 4, 2026 | 1.0 | Initial architecture freeze | Architecture Lead |
+| July 9, 2026 | 1.1 | Model Schema Evolution (Quick Start & Curated Resources) | AI Assistant |
+| July 9, 2026 | 1.2 | Model detail page visual refactor & UX specs update | AI Assistant |
 
 ---
 

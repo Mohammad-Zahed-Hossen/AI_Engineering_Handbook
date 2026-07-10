@@ -1,14 +1,11 @@
-
 ---
 
 # AENS Knowledge Layer Specification
 
 ## Version 1.2 (Post-Refactor Release)
 
-> **Status:** Released v1.2
->
-> **Owner:** AENS
->
+> **Status:** Released v1.2  
+> **Owner:** AENS  
 > **Purpose:** Define the complete knowledge architecture of AENS.
 >
 > This document is the single source of truth for how knowledge is organized, owned, maintained, retrieved, and evolved within the AI Engineering Navigation System.
@@ -181,7 +178,7 @@ It must never be interpreted as a navigation path.
 | Model         | Algorithms and architectures            |
 | Package       | Library implementation details          |
 | Cheatsheet    | Quick syntax recall                     |
-| Debug Guide   | Troubleshooting knowledge               |
+| Debug Guide   | Troubleshooting knowledge             |
 | Registry      | Deployment metadata and external assets |
 | Principle     | Fundamental why and theoretical foundations |
 
@@ -1781,6 +1778,52 @@ No duplication is allowed. Other pages summarize and link back to the canonical 
 
 ---
 
+## Canonical Rules
+
+Every page must be one of
+
+```
+Canonical
+
+Reference
+
+Generated
+```
+
+---
+
+### Canonical
+
+Owns information.
+
+---
+
+### Reference
+
+Summarizes.
+
+Links.
+
+---
+
+### Generated
+
+Created dynamically.
+
+Examples
+
+Dashboard
+
+Collections
+
+Recent
+
+Favorites
+
+Search Results
+
+---
+
 # 21. Retrieval Philosophy
 
 AENS supports multiple retrieval modes:
@@ -1796,17 +1839,6 @@ AENS supports multiple retrieval modes:
 All retrieval modes converge on the same underlying knowledge graph rather than duplicating content.
 
 ---
-
-### Part 3 Summary
-
-This section defines the **retrieval layer** of AENS:
-
-* **Cheatsheets** provide rapid syntax recall.
-* **Debug Guides** organize troubleshooting around symptoms.
-* **Registry** catalogs deployable assets without duplicating learning content.
-* **Decision Guides** capture high-impact engineering trade-offs.
-* **Cross-linking** and **typed graph relationships** connect all knowledge into a coherent system while preserving single-source ownership.
-
 
 # AENS Knowledge Layer Specification
 
@@ -2768,3 +2800,41 @@ Within these architectures, the system consists of:
 * **Principle** (fundamental why and theoretical foundations)
 
 Together, these components form a **knowledge operating system** rather than a documentation site. They separate ownership from navigation, emphasize retrieval over reading, minimize duplication through canonical ownership, and provide a scalable foundation that can support AI-assisted search, recommendations, and graph reasoning while remaining sustainable for a single maintainer over the long term. This specification is suitable as the baseline for freezing the AENS knowledge architecture and guiding implementation over the coming development phases.
+
+---
+
+# Implementation Status
+
+## Model Detail Page UX Refactor (v1.2)
+
+**Status:** ✅ Complete
+
+The Model Detail Page has been refactored to implement premium developer experience visual standards:
+
+### Completed Features
+
+1. **Shared Prose/Math Rendering Primitive** - `Prose.tsx` component with `react-markdown`, `remark-gfm`, `remark-math`, `rehype-katex` for rendering markdown and LaTeX content
+2. **Quick Start Syntax Highlighting** - `CodeBlock.tsx` with Shiki's `codeToHtml` for server-side syntax highlighting
+3. **Relative Time Formatting** - `formatRelativeTime` in `lib/format-date.ts` for human-readable timestamps
+4. **Section Defaults & Typography** - Core Understanding collapsed by default, `content-prose` width applied, inline code styling
+5. **Shiki Build-Time Rendering** - CodeBlock moved to async Server Component, eliminating client-side performance regression
+6. **Double-Escaped Newline Fix** - `normalizeContent` function in `Prose.tsx` handles literal `\n` sequences
+7. **KaTeX Typography Scoping** - CSS override `body .katex { font-size: 1em !important; }` for consistent sizing
+8. **Core Understanding Teaser** - Computed summary teaser instead of raw field concatenation
+9. **Interpretability Prose Rendering** - `ModelDecisionStrip.tsx` uses `ProseInline` for LaTeX/math rendering
+10. **Code Block Background Fix** - Scoped CSS override for Shiki's inline background
+11. **Collapse Scroll Compensation** - `useLayoutEffect` with `getBoundingClientRect` tracking
+12. **Also Worth Knowing Cross-Linking** - Links to real pages where available
+13. **Accessibility Attributes** - `aria-expanded` and `aria-controls` added to interactive elements
+
+### Build Verification
+
+- `npm run build` completed successfully
+- 0 errors, 23 warnings (only missing content references)
+- All 40 static pages generated
+- Validation script includes double-escaped newline checking
+
+### Git Status
+
+- Pushed to `feature/repository-foundation-v2` branch
+- Commit `7af1f7a` with all changes

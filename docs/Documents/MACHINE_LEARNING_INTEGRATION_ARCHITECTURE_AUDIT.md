@@ -96,7 +96,7 @@ The architecture explicitly defines what each resource must **never** contain:
 
 ### 4. Cross-Link Architecture
 
-All resources participate in a bidirectional knowledge graph via `related_content` arrays using typed `ContentRef` objects. This enables:
+All resources participate in a bidirectional knowledge graph via `related_content` arrays. This enables:
 
 - Contextual discovery
 - Intelligent recommendations
@@ -128,12 +128,14 @@ Comprehensive validation pipeline ensures:
 - Migration notes
 
 ### Never Owns
-- Algorithm theory
+- Algorithms
 - Engineering concepts
 - Model selection criteria
 - Workflows
 - Best practices (belongs in Pattern)
-- Implementation-agnostic concepts
+- Debugging (belongs in Debug Guide)
+- Comparisons
+- Production notes
 
 ### ML-Specific Responsibility
 **scikit-learn belongs here.** It owns:
@@ -155,6 +157,7 @@ Comprehensive validation pipeline ensures:
 - Performance characteristics
 - Alternatives
 - Computational requirements
+- Research background
 
 ### Never Owns
 - Library implementation
@@ -197,9 +200,10 @@ Comprehensive validation pipeline ensures:
 - End-to-end engineering processes
 - Step-by-step guidance
 - Prerequisites
-- Decision points
-- Failure patterns
+- Ordered execution
 - Production notes
+- Validation checkpoints
+- Failure patterns
 - Worked examples
 
 ### Never Owns
@@ -242,10 +246,9 @@ Comprehensive validation pipeline ensures:
 
 ### Owns
 - Symptom-first troubleshooting
-- Root causes (ordered by probability)
-- Diagnosis steps
-- Solutions
-- Prevention
+- Root cause analysis
+- Recovery strategies
+- Prevention strategies
 
 ### Never Owns
 - Tutorials
@@ -463,8 +466,8 @@ Decision Making (Random Forest vs XGBoost)
 | Concept | Owner | Reason | Referenced By |
 |---------|-------|--------|---------------|
 | Data Leakage | Debug Guide | Symptom-based troubleshooting | Workflow, Pattern |
-| Overfitting | Debug Guide | Symptom-based troubleshooting | Model, Principle |
-| Underfitting | Debug Guide | Symptom-based troubleshooting | Model, Principle |
+| Overfitting | Debug Guide | Symptom-based troubleshooting | Model, Pattern |
+| Underfitting | Debug Guide | Symptom-based troubleshooting | Model, Pattern |
 | Imbalanced Dataset | Debug Guide | Symptom-based troubleshooting | Workflow, Pattern |
 | NaN Loss | Debug Guide | Symptom-based troubleshooting | Package, Model |
 | Convergence Issues | Debug Guide | Symptom-based troubleshooting | Package, Model |
@@ -485,15 +488,6 @@ Decision Making (Random Forest vs XGBoost)
 | Pre-trained Scikit-learn Models | Registry | Deployment metadata | Model, Workflow |
 | OpenML Datasets | Registry | Dataset metadata | Workflow, Problem Index |
 
-### Problem Index
-
-| Concept | Owner | Reason | Referenced By |
-|---------|-------|--------|---------------|
-| Classification Problems | Problem Index | Problem categorization | Workflow, Model |
-| Regression Problems | Problem Index | Problem categorization | Workflow, Model |
-| Clustering Problems | Problem Index | Problem categorization | Workflow, Model |
-| Dimensionality Reduction | Problem Index | Problem categorization | Workflow, Model |
-
 ---
 
 # Dependency Graph
@@ -511,9 +505,7 @@ Pattern (Builds on Principles)
     ↓
 Model (Builds on Patterns, references Principles)
     ↓
-Workflow (Uses Patterns, Models, Packages)
-    ↓
-Package (Implements Models, used by Workflows)
+Package (Builds on Models, used by Workflows)
     ↓
 Cheatsheet (References Package)
     ↓
@@ -610,503 +602,12 @@ Problem Index (References Workflows, Models)
     - *Note: Principles are strongest when distilled from real content, not anticipated*
 
 **Rationale for This Order:**
-- **Principles last**: Distilled from real content, not anticipated. Makes principles stronger.
+- **Principles last**: Distilled from real content, not anticipated. Makes principles stronger and more grounded.
 - **Patterns first**: Library-independent, reusable building blocks for all later resources.
 - **Model before Package**: Algorithm selection question answered before implementation question.
 - **Workflow after Package**: Composes the building blocks (Patterns + Models + Package).
 - **Vertical slices**: Validate system continuously instead of planning 10 weeks ahead.
 - **Canonical not comprehensive**: Create only what's immediately needed, expand later.
-
----
-
-# Gap Analysis
-
-## Current Repository State
-
-### Existing Content
-
-**Packages (8):**
-- numpy, pandas, matplotlib, seaborn, plotly-express, pytorch, scikit-learn, matplotlib
-
-**Models (2):**
-- BERT (in dl/)
-
-**Workflows (1):**
-- Build RAG System
-
-**Patterns (1):**
-- Training Loop
-
-**Principles (1):**
-- Single Source of Truth
-
-**Cheatsheets (8):**
-- numpy, pandas, matplotlib, seaborn, plotly, pytorch
-
-**Debug Guides (2):**
-- CUDA Out of Memory, NaN Loss
-
-**Decision Guides (2):**
-- (Not specified in current state)
-
-### ML-Specific Gaps
-
-#### Critical Gaps (High Priority)
-
-1. **Missing ML Models** (data/models/ml/)
-   - Random Forest
-   - Logistic Regression
-   - SVM
-   - Decision Tree
-   - KNN
-   - K-Means
-   - **Impact:** Cannot make algorithm selection decisions
-
-2. **Missing ML Patterns** (data/patterns/)
-   - Cross-Validation
-   - Feature Scaling
-   - Train-Test Split
-   - Pipeline Pattern
-   - Grid Search
-   - **Impact:** No tool-agnostic ML concepts
-
-3. **Missing ML Workflows** (data/workflows/)
-   - Build Classification Pipeline
-   - Build Regression Pipeline
-   - Build Clustering Pipeline
-   - Hyperparameter Tuning
-   - Model Evaluation
-   - **Impact:** No end-to-end ML processes
-
-4. **Missing ML Debug Guides** (data/debug-guides/)
-   - Data Leakage
-   - Overfitting
-   - Underfitting
-   - Imbalanced Dataset
-   - **Impact:** No ML-specific troubleshooting
-
-5. **Missing ML Decision Guides** (data/decision-guides/)
-   - Random Forest vs XGBoost
-   - Classification vs Regression
-   - Linear vs Non-Linear Models
-   - **Impact:** No ML trade-off analysis
-
-6. **Missing ML Principles** (data/principles/)
-   - Bias-Variance Trade-off
-   - No Free Lunch Theorem
-   - Overfitting/Underfitting
-   - **Impact:** No ML theoretical foundations
-
-7. **Incomplete scikit-learn Package**
-   - Current: 15 tasks, basic coverage
-   - Missing: Comprehensive API coverage, advanced preprocessing, model evaluation metrics
-   - **Impact:** Insufficient implementation knowledge
-
-#### Moderate Gaps (Medium Priority)
-
-8. **Missing ML Problem Index** (data/problem-index/)
-   - No ML problem taxonomy
-   - **Impact:** Poor ML problem discovery
-
-9. **Missing ML Registry** (data/registry/)
-   - No pre-trained model registry
-   - No dataset registry
-   - **Impact:** No deployment metadata
-
-10. **Missing ML Cheatsheet**
-    - No dedicated scikit-learn cheatsheet
-    - **Impact:** Slow syntax recall
-
-#### Low Gaps (Low Priority)
-
-11. **Missing Advanced ML Libraries**
-    - XGBoost package
-    - LightGBM package
-    - CatBoost package
-    - Optuna package
-    - **Impact:** Limited library coverage
-
-## Architectural Risks
-
-### Risk 1: Package-Model Duplication (HIGH RISK)
-
-**Description:** scikit-learn package currently contains algorithm explanations that should belong in Model resources.
-
-**Current State:**
-- scikit-learn package has tasks like "Random forest classifier", "Logistic regression", "SVM"
-- These tasks explain algorithm selection criteria
-- This duplicates Model resource responsibility
-
-**Impact:**
-- Violates single-source-of-truth principle
-- Creates maintenance burden
-- Confuses algorithm selection vs implementation
-
-**Mitigation:**
-- Move algorithm selection criteria from scikit-learn Package to Model resources
-- Keep only API usage in Package
-- Create Model resources for Random Forest, Logistic Regression, SVM
-- Reference Model resources from Package tasks
-
-### Risk 2: Missing Pattern Layer (HIGH RISK)
-
-**Description:** No ML Patterns exist, causing concepts to be misplaced in Package or Model.
-
-**Current State:**
-- Cross-validation concept only exists in scikit-learn package task
-- Feature scaling only exists in scikit-learn package task
-- No tool-agnostic pattern resources
-
-**Impact:**
-- Library-specific patterns instead of universal concepts
-- Cannot apply patterns across libraries
-- Violates Pattern resource responsibility
-
-**Mitigation:**
-- Create Pattern resources for Cross-Validation, Feature Scaling, Train-Test Split
-- Remove concept explanations from Package
-- Reference Pattern resources from Package tasks
-
-### Risk 3: Workflow Dependency Chain (MEDIUM RISK)
-
-**Description:** ML Workflows cannot be created until Models and Patterns exist.
-
-**Current State:**
-- Only RAG workflow exists (LLM domain)
-- No ML workflows exist
-- ML Models don't exist yet
-
-**Impact:**
-- Cannot create end-to-end ML processes
-- Missing critical ML knowledge layer
-
-**Mitigation:**
-- Follow dependency order: Principles → Patterns → Models → Workflows
-- Create foundational resources first
-- Build workflows last
-
-### Risk 4: Debug Guide Symptom-First Violation (MEDIUM RISK)
-
-**Description:** Debug guides might be created technology-first instead of symptom-first.
-
-**Risk:**
-- Creating "scikit-learn errors" instead of "Data Leakage"
-- Violates Debug Guide philosophy
-- Poor discoverability
-
-**Mitigation:**
-- Enforce symptom-first naming
-- Create "Data Leakage" not "scikit-learn-debugging"
-- Reference packages from debug guides, not vice versa
-
-### Risk 5: Decision Guide Scope Creep (LOW RISK)
-
-**Description:** Decision guides might expand beyond high-value decisions.
-
-**Risk:**
-- Creating decision guides for minor choices
-- Diluting decision guide value
-- Maintenance burden
-
-**Mitigation:**
-- Limit to high-impact engineering decisions
-- Focus on algorithm selection, framework choice
-- Avoid minor parameter decisions
-
----
-
-# Recommended Implementation Order
-
-## Vertical Slice Approach
-
-**Strategy:** Work in vertical slices to validate the system continuously. Do not plan 10 weeks ahead. Create only what's immediately needed, expand later following the "canonical, not comprehensive" quality standard.
-
----
-
-## Vertical Slice 1: Binary Classification
-
-### Objective: Complete end-to-end binary classification capability
-
-**Step 1: Research**
-- Deep research into scikit-learn classification APIs
-- Identify common patterns (train-test split, scaling, cross-validation)
-- Document findings for later principle extraction
-
-**Step 2: Create Patterns (Only What's Needed)**
-1. Train-Test Split
-   - Concept: Holdout, stratification
-   - Applicability: When to use
-   - Anti-patterns: Data leakage
-   - Implementation pseudo-code
-
-2. Feature Scaling
-   - Concept: Standardization, normalization
-   - Applicability: When to scale
-   - Anti-patterns: Scaling test data with train statistics
-   - Implementation pseudo-code
-
-3. Pipeline Pattern
-   - Concept: Chaining preprocessing and modeling
-   - Applicability: Preventing data leakage
-   - Anti-patterns: Fitting on test data
-   - Implementation pseudo-code
-
-4. Cross-Validation
-   - Concept: k-fold, stratified
-   - Applicability: When to use
-   - Anti-patterns: Data leakage in CV
-   - Implementation pseudo-code
-
-**Step 3: Create Model (Only What's Needed)**
-1. Logistic Regression
-   - Problem types: classification (binary, multi-class)
-   - Use when: Linear relationships, probabilistic output needed
-   - Avoid when: Complex non-linear boundaries
-   - Pros: Interpretable, fast, probabilistic
-   - Cons: Linear only, sensitive to feature scaling
-   - Key hyperparams: C (regularization), penalty, solver
-   - Related Patterns: Feature Scaling
-
-**Step 4: Refactor Package**
-1. scikit-learn Package
-   - Remove algorithm selection criteria from tasks
-   - Keep only API usage tasks (fit, predict, predict_proba, etc.)
-   - Add related_content references to Logistic Regression model
-   - Add related_content references to Patterns (Train-Test Split, Feature Scaling, Pipeline, Cross-Validation)
-   - Add package-specific debugging
-
-**Step 5: Create Workflow (Vertical Slice)**
-1. Binary Classification Workflow
-   - Category: ml
-   - Overview: End-to-end binary classification
-   - Starter stack: scikit-learn, pandas, numpy
-   - Steps:
-     1. Data loading and exploration
-     2. Train-test split (reference Train-Test Split pattern)
-     3. Feature scaling (reference Feature Scaling pattern)
-     4. Model selection (reference Logistic Regression model)
-     5. Training (reference scikit-learn package)
-     6. Evaluation (reference classification report)
-   - Uses: scikit-learn package, Logistic Regression model, Patterns
-   - Failure points: Data leakage, overfitting
-
-**Step 6: Create Cheatsheet**
-1. scikit-learn Cheatsheet
-   - Entries (max 60): fit(), predict(), predict_proba(), train_test_split(), StandardScaler(), etc.
-   - Package reference: scikit-learn
-   - No explanations, only syntax
-
-**Step 7: Create Debug Guides (Only What's Encountered)**
-1. Data Leakage
-   - Symptoms: Training accuracy 100%, test accuracy 60%
-   - Root causes: Fitted scaler on test data, improper split
-   - Solutions: Fit scaler on train only, proper stratification
-   - Related: Train-Test Split pattern, scikit-learn package, Binary Classification workflow
-
-2. Overfitting
-   - Symptoms: High training accuracy, low test accuracy
-   - Root causes: Model too complex, insufficient data
-   - Solutions: Simplify model, add regularization
-   - Related: Logistic Regression model, Binary Classification workflow
-
-**Step 8: Create Decision Guide (Only What's Needed)**
-1. Logistic Regression vs Random Forest
-   - Wait until Random Forest model is created (Vertical Slice 2)
-   - For now, skip this
-
-**Step 9: Cross-Linking**
-- Add related_content to all created resources
-- Ensure bidirectional relationships
-- Run validation
-
-**Success Criteria:**
-- 4 Patterns created (only what's needed)
-- 1 Model created (Logistic Regression)
-- 1 Package refactored (scikit-learn)
-- 1 Workflow created (Binary Classification)
-- 1 Cheatsheet created (scikit-learn)
-- 2 Debug Guides created (Data Leakage, Overfitting)
-- All resources cross-linked
-- Validation passes
-
-**Estimated Time:** 1-2 weeks
-
-**Dependencies:** None (first vertical slice)
-
----
-
-## Vertical Slice 2: Random Forest & Comparison
-
-### Objective: Add second algorithm and enable comparison
-
-**Step 1: Create Model**
-1. Random Forest
-   - Problem types: classification, regression
-   - Use when: Non-linear relationships, feature importance needed
-   - Avoid when: Real-time inference
-   - Pros: Robust, handles non-linearity, feature importance
-   - Cons: Slow inference, memory intensive
-   - Key hyperparams: n_estimators, max_depth
-   - Related Patterns: Ensemble Methods (create if needed)
-
-**Step 2: Update Package**
-- Add Random Forest API usage to scikit-learn package
-- Reference Random Forest model in related_content
-
-**Step 3: Create Workflow**
-1. Random Forest Classification Workflow
-   - Similar to Binary Classification but uses Random Forest
-   - Steps reference Random Forest model
-   - Uses same Patterns (Train-Test Split, Feature Scaling, etc.)
-
-**Step 4: Create Decision Guide**
-1. Logistic Regression vs Random Forest
-   - Problem: Choosing classifier for tabular data
-   - Evaluation Criteria: Interpretability, speed, accuracy
-   - Options: Logistic Regression (interpretable, fast), Random Forest (accurate, robust)
-   - Recommendations: Use LR for interpretability, RF for accuracy
-   - Related: Both models, both workflows
-
-**Step 5: Cross-Linking**
-- Update related_content across all resources
-- Run validation
-
-**Success Criteria:**
-- 1 Model created (Random Forest)
-- Package updated
-- 1 Workflow created (Random Forest Classification)
-- 1 Decision Guide created (LR vs RF)
-- All cross-linked
-- Validation passes
-
-**Estimated Time:** 3-5 days
-
-**Dependencies:** Vertical Slice 1
-
----
-
-## Vertical Slice 3: Principles (Distilled)
-
-### Objective: Extract principles from real content
-
-**Step 1: Analyze Existing Content**
-- Review Patterns, Models, Workflows, Debug Guides created
-- Identify recurring theoretical foundations
-
-**Step 2: Create Principles**
-1. Bias-Variance Trade-off
-   - Distilled from: Logistic Regression model, Random Forest model, Overfitting debug guide
-   - Mathematical formulation
-   - Intuition for engineers
-   - Implications for model selection
-   - Referenced by: Models, Debug Guides
-
-2. Overfitting/Underfitting
-   - Distilled from: Overfitting debug guide, Model pros/cons
-   - Concept explanation
-   - Relationship to bias-variance
-   - Referenced by: Debug Guides, Models
-
-**Step 3: Cross-Linking**
-- Add principle references to existing resources
-- Update related_content bidirectionally
-- Run validation
-
-**Success Criteria:**
-- 2 Principles created (distilled from real content)
-- All existing resources reference principles
-- Validation passes
-
-**Estimated Time:** 2-3 days
-
-**Dependencies:** Vertical Slice 1, Vertical Slice 2
-
----
-
-## Vertical Slice 4: Regression (If Needed)
-
-### Objective: Add regression capability
-
-**Follow same pattern as Vertical Slice 1:**
-1. Create Patterns (if new patterns needed for regression)
-2. Create Model (Linear Regression or Ridge/Lasso)
-3. Update Package (add regression APIs)
-4. Create Workflow (Regression Pipeline)
-5. Create Debug Guides (if new issues encountered)
-6. Create Decision Guide (Classification vs Regression)
-7. Cross-link
-8. Validate
-
-**Estimated Time:** 1-2 weeks
-
-**Dependencies:** Vertical Slice 1
-
----
-
-## Vertical Slice 5: Additional Resources (As Needed)
-
-### Expand based on actual needs:
-
-**Patterns (if needed):**
-- Grid Search (when hyperparameter tuning is needed)
-- Ensemble Methods (when more algorithms are added)
-- Feature Selection (when feature engineering becomes complex)
-
-**Models (if needed):**
-- SVM (when high-dimensional data is encountered)
-- Decision Tree (when interpretability is critical)
-- KNN (when similarity-based classification is needed)
-
-**Debug Guides (if needed):**
-- Imbalanced Dataset (when class imbalance is encountered)
-- Convergence Issues (when optimization fails)
-- NaN Loss (when numerical issues occur)
-
-**Decision Guides (if needed):**
-- Linear vs Non-Linear Models (when more models are added)
-- Bagging vs Boosting (when ensemble methods are added)
-
-**Registry (if needed):**
-- Pre-trained Model Registry (only if deploying models)
-
-**Problem Index (if needed):**
-- ML Problem Taxonomy (only if navigation becomes complex)
-
----
-
-## Implementation Strategy
-
-### Key Principles
-
-1. **Vertical Slices, Not Horizontal Layers**
-   - Complete one end-to-end capability before starting the next
-   - Validate continuously
-   - Adjust based on learnings
-
-2. **Canonical, Not Comprehensive**
-   - Create only what's immediately needed
-   - Expand later as requirements emerge
-   - Avoid building for hypothetical future needs
-
-3. **Principles Distilled, Not Anticipated**
-   - Extract principles from real content
-   - Makes principles stronger and more grounded
-   - Avoids theoretical speculation
-
-4. **Patterns Before Models**
-   - Library-independent concepts first
-   - Reusable building blocks
-   - Models reference patterns
-
-5. **Models Before Packages**
-   - Algorithm selection question answered first
-   - Implementation question answered second
-   - Keeps packages clean and focused
-
-6. **Workflows Compose Building Blocks**
-   - Workflows use Patterns + Models + Packages
-   - End-to-end processes
-   - Not just API documentation
 
 ### When to Expand
 
@@ -1182,12 +683,22 @@ The existing 9-content-type system is:
 4. **ML Workflow Creation**
    - Create Classification Pipeline workflow
    - Create Regression Pipeline workflow
+   - Create Clustering Pipeline workflow
    - Create Hyperparameter Tuning workflow
 
 5. **ML Debug Guide Creation**
    - Create Data Leakage debug guide
    - Create Overfitting debug guide
    - Create Underfitting debug guide
+
+6. **ML Decision Guide Creation**
+   - Create Random Forest vs XGBoost decision guide
+   - Create Classification vs Regression decision guide
+
+7. **ML Principles Creation**
+   - Create Bias-Variance Trade-off principle
+   - Create No Free Lunch Theorem principle
+   - Create Overfitting/Underfitting principle
 
 ## What Should Be Avoided
 
@@ -1266,6 +777,8 @@ The AENS architecture is **production-ready for Machine Learning integration**. 
 3. Create ML patterns before models
 4. Use symptom-first debug guides
 5. Maintain single-source-of-truth
+6. Principles distilled from real content, not anticipated
+7. Resources created only when actually needed
 
 **Expected Outcome:**
 - A comprehensive ML knowledge ecosystem
@@ -1282,6 +795,83 @@ The AENS architecture is **production-ready for Machine Learning integration**. 
 
 ---
 
+# Implementation Status
+
+## Model Detail Page UX Refactor (v1.2)
+
+**Status:** ✅ Complete
+
+All implementation items from the AENS Model Page Audit Report have been successfully completed:
+
+### Original Audit Report (4 Prompts) - All Implemented
+
+1. **Prompt #1 - Shared Prose/Math Rendering Primitive** ✅
+   - Created `components/shared/Prose.tsx` with `Prose` and `ProseInline` components
+   - Added dependencies: `react-markdown`, `remark-gfm`, `remark-math`, `rehype-katex`, `katex`
+   - Imported KaTeX CSS in `app/layout.tsx`
+   - All content fields now render through Prose components
+
+2. **Prompt #2 - Quick Start: Syntax Highlighting + Progressive Disclosure** ✅
+   - `CodeBlock.tsx` uses Shiki's `codeToHtml` for server-side syntax highlighting
+   - `CodeBlockInteractive.tsx` handles collapse/expand with scroll compensation
+   - Line numbers via CSS counters in `globals.css`
+
+3. **Prompt #3 - "Updated" Badge → Relative Time** ✅
+   - Created `lib/format-date.ts` with `formatRelativeTime` function
+   - `MetadataBadges.tsx` shows relative time with ISO tooltip
+   - Added "Verified" badge for `lastverified` field
+
+4. **Prompt #4 - Section Defaults, Width, Inline-Code Styling** ✅
+   - Core Understanding collapsed by default (`useState(false)`)
+   - Teaser added: "6 specifications · N assumptions noted"
+   - `.content-prose` max-width applied consistently
+   - Inline `code` styling in `globals.css`
+
+### Regression Audit Report (3 Prompts) - All Implemented
+
+1. **Prompt #1 - Shiki to Build/Server Time** ✅
+   - `CodeBlock.tsx` is now an async Server Component
+   - `CodeBlockInteractive.tsx` handles client interactivity
+   - Double-collapse conflict resolved
+
+2. **Prompt #2 - Double-Escaped Newlines** ✅
+   - `normalizeContent` function in `Prose.tsx` with defensive regex
+   - Validation script updated to check for double-escaped newlines
+   - Data correction applied to affected model files
+
+3. **Prompt #3 - KaTeX Scoping + Teaser Fix** ✅
+   - `body .katex { font-size: 1em !important; }` in `globals.css`
+   - Teaser changed to computed summary instead of raw field concatenation
+
+### Final Polish Audit Report (4 Prompts) - All Implemented
+
+1. **Issue #1 - Interpretability field uses ProseInline** ✅
+   - `ModelDecisionStrip.tsx` updated to use `ProseInline` for LaTeX rendering
+
+2. **Issue #2 - Double background CSS override** ✅
+   - Scoped CSS rule for Shiki's inline background
+
+3. **Issue #3 - Scroll compensation in CodeBlockInteractive** ✅
+   - `useLayoutEffect` with `getBoundingClientRect` tracking
+   - `aria-expanded` added to expand/collapse button
+
+4. **Issue #4 - Cross-linking in ModelCollapsibleSections** ✅
+   - "Also Worth Knowing" chips link to real pages where available
+   - `aria-controls` added to `CollapsibleSection`
+
+### Build Verification
+
+- `npm run build` passes successfully
+- All 40 static pages generated
+- 0 errors, 23 warnings (only missing content references)
+
+### Git Status
+
+- Pushed to `feature/repository-foundation-v2` branch
+- Commit `7af1f7a` with all changes
+
+---
+
 # Appendix: Quick Reference
 
 ## Resource Type Quick Reference
@@ -1289,15 +879,14 @@ The AENS architecture is **production-ready for Machine Learning integration**. 
 | Resource | ML Example | Owns | Never Owns |
 |----------|------------|------|------------|
 | Principle | Bias-Variance | Theory, math, why | Implementation, APIs |
-| Pattern | Cross-Validation | Tool-agnostic concept | Library code, syntax |
+| Pattern | Cross-Validation | Concept, applicability | Library code, API syntax |
 | Model | Random Forest | Algorithm selection | Implementation, APIs |
 | Package | scikit-learn | Library API usage | Algorithm theory |
 | Workflow | Classification Pipeline | End-to-end process | APIs, theory |
 | Cheatsheet | scikit-learn Syntax | Syntax only | Explanations |
-| Debug Guide | Data Leakage | Troubleshooting | Tutorials |
-| Decision Guide | RF vs XGBoost | Trade-offs | Implementation |
+| Debug Guide | Data Leakage | Symptom-based troubleshooting | Tutorials |
+| Decision Guide | RF vs XGBoost | Trade-off analysis | Implementation |
 | Registry | Pre-trained Models | Metadata | Tutorials |
-| Problem Index | ML Taxonomy | Categorization | Implementation |
 
 ## Dependency Quick Reference
 
@@ -1323,7 +912,7 @@ Registry (Metadata)
 Problem Index (Discovery)
 ```
 
-## Ownership Violation Quick Reference
+## Ownership Quick Reference
 
 | Violation | Example | Correct Location |
 |-----------|---------|------------------|
@@ -1334,17 +923,22 @@ Problem Index (Discovery)
 | Technology-first Debug Guide | "scikit-learn errors" debug guide | Rename to "Data Leakage" |
 | Workflow in Package | End-to-end process in scikit-learn | Move to Workflow |
 
----
+## ML-Specific Implementation Order
 
-## UX Refactoring and Presentation Polish (v1.1 Update)
+**Recommended sequence for ML domain integration:**
 
-A dedicated UX refactoring audit was performed on July 9, 2026, using the Random Forest model page as the target template. This polish ensures that the visual hierarchy of the Model resource matches its structural ownership rules:
-- **Badge Decoupling**: Separation of the multi-sentence `interpretability` field from short classification badges. This avoids visual noise in the header while keeping key metrics cleanly categorized.
-- **Visual Spec Sheet**: Core understanding parameters (complexity, overfitting, assumptions) are rendered in a visual 3-column specifications grid to elevate readability and give the page a professional product feel.
-- **Trade-off Scannability**: Use When, Avoid When, Strengths, and Limitations are grouped in a unified 2x2 grid, making direct advantages and boundaries scannable in one glance.
-- **Interactive Hyperparameter Tuning**: Parameter behaviors are mapped to their specific API parameters (e.g. `n_estimators` tag for number of trees) and increase/decrease effects are shown side-by-side in custom-tinted columns, matching the developer-centric focus of AENS.
+1. **Research** - Deep research into scikit-learn and ML algorithms
+2. **Patterns** - Train-Test Split, Feature Scaling, Pipeline, Cross-Validation, Grid Search
+3. **Models** - Logistic Regression, Random Forest
+4. **Package** - scikit-learn
+5. **Workflows** - Binary Classification
+6. **Cheatsheet** - scikit-learn
+7. **Debug Guides** - Data Leakage, Overfitting
+8. **Decision Guides** - Logistic Regression vs Random Forest
+9. **Registry** - Pre-trained Model Registry (if needed)
+10. **Problem Index** - ML Problem Taxonomy (if needed)
+11. **Principles** - Bias-Variance, No Free Lunch, Overfitting/Underfitting
 
 ---
 
 **End of Audit Report**
-

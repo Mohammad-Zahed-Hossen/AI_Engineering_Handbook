@@ -77,7 +77,7 @@ This document defines what makes a resource "gold standard" in AENS. Every resou
 - Hyperparameters must be the most influential ones for the model.
 - **Visual Presentation & UX Standards:**
   - **Decision Strip**: Must render Difficulty, Stability, Confidence, and Maturity as semantic, icon-enriched badges (using Lucide icons `Gauge`, `Activity`, `CheckCircle2`, `Shield`). The detailed `interpretability` profile must be decoupled from the inline badge strip and rendered in a dedicated callout box with an `Eye` icon below it.
-  - **Decision Board & Tradeoffs**: Must present Use When, Avoid When, Strengths, and Limitations as a unified 2x2 grid block with clear indicators. Original IDs (`decision-guide` and `pros-cons`) must be kept on the container/parent nodes to support anchor navigation from the Table of Contents.
+  - **Decision Board & Tradeoffs**: Must present Use When, Avoid When, Strengths, and Limitations as a unified 2x2 grid with clear indicators. Original IDs (`decision-guide` and `pros-cons`) must be kept on the container/parent nodes to support anchor navigation from the Table of Contents.
   - **Core Understanding Specs Sheet**: Must display metrics as a 3-column specs-sheet grid using custom icons (`Clock`, `Database`, `TrendingUp`, etc.) and a mathematical monospace callout.
   - **Hyperparameter Details**: Must provide global Expand/Collapse All triggers, side-by-side comparative increase/decrease columns (emerald/rose-tinted), and exact library API parameter key mappings as mono tags.
   - **Engineering Considerations**: Must be structured into distinct categorized panels (*Data & Preprocessing*, *Runtime & Scalability*, and *Pipeline Fit & Robustness*).
@@ -97,9 +97,9 @@ This document defines what makes a resource "gold standard" in AENS. Every resou
 **Each Step Must Include:**
 - `name` - Step name
 - `description` - What this step accomplishes
-- `tools` - Tools/libraries used in this step
-- `decisions` - Key decisions made (optional but recommended)
-- `failure_points` - Common failure modes (optional but recommended)
+- `tools` - Tools/libraries used
+- `decisions` - Key decisions made
+- `failure_points` - Common failure modes
 
 **Quality Standard:**
 - Steps must be in logical order
@@ -113,7 +113,7 @@ This document defines what makes a resource "gold standard" in AENS. Every resou
 
 **Required Sections:**
 - `title` - Cheatsheet name
-- `entries` - Array of entries (minimum 1, maximum 60 per config)
+- `entries` - Array of entries (minimum 1, maximum 60)
 
 **Each Entry Must Include:**
 - `problem` - What problem this solves
@@ -137,8 +137,6 @@ This document defines what makes a resource "gold standard" in AENS. Every resou
 - `title` - Pattern name
 - `concept` - What this pattern is
 - `applicability` - When to apply this pattern
-- `anti_patterns` - Common mistakes (optional but recommended)
-- `implementation_notes` - Practical implementation guidance (optional but recommended)
 
 **Quality Standard:**
 - Concept must be clear and concise
@@ -184,7 +182,6 @@ This document defines what makes a resource "gold standard" in AENS. Every resou
 **Required Sections:**
 - `title` - Principle name
 - `statement` - The principle statement
-- `implications` - What this means in practice (optional but recommended)
 
 **Quality Standard:**
 - Statement must be concise and memorable
@@ -367,6 +364,7 @@ Before marking a resource as ready for publication:
 - [ ] Tags are relevant and consistent
 - [ ] Aliases cover common alternative names
 - [ ] Keywords include search terms
+- [ ] Search tokens include additional search terms
 - [ ] Lifecycle set to "stable" (unless draft)
 - [ ] Last verified date is current
 
@@ -469,3 +467,79 @@ This standard is a living document. As we create more resources, we may refine t
 | July 4, 2026 | 1.0 | Initial content quality standard | Architecture Lead |
 | July 9, 2026 | 1.2 | Model page UX presentation quality standards update | AI Assistant |
 
+---
+
+# Implementation Status
+
+## Model Detail Page UX Refactor (v1.2)
+
+**Status:** ✅ Complete
+
+All implementation items from the AENS Model Page Audit Report have been successfully completed:
+
+### Original Audit Report (4 Prompts) - All Implemented
+
+1. **Prompt #1 - Shared Prose/Math Rendering Primitive** ✅
+   - Created `components/shared/Prose.tsx` with `Prose` and `ProseInline` components
+   - Added dependencies: `react-markdown`, `remark-gfm`, `remark-math`, `rehype-katex`, `katex`
+   - Imported KaTeX CSS in `app/layout.tsx`
+   - All content fields now render through Prose components
+
+2. **Prompt #2 - Quick Start: Syntax Highlighting + Progressive Disclosure** ✅
+   - `CodeBlock.tsx` uses Shiki's `codeToHtml` for server-side syntax highlighting
+   - `CodeBlockInteractive.tsx` handles collapse/expand with scroll compensation
+   - Line numbers via CSS counters in `globals.css`
+
+3. **Prompt #3 - "Updated" Badge → Relative Time** ✅
+   - Created `lib/format-date.ts` with `formatRelativeTime` function
+   - `MetadataBadges.tsx` shows relative time with ISO tooltip
+   - Added "Verified" badge for `lastverified` field
+
+4. **Prompt #4 - Section Defaults, Width, Inline-Code Styling** ✅
+   - Core Understanding collapsed by default (`useState(false)`)
+   - Teaser added: "6 specifications · N assumptions noted"
+   - `.content-prose` max-width applied consistently
+   - Inline `code` styling in `globals.css`
+
+### Regression Audit Report (3 Prompts) - All Implemented
+
+1. **Prompt #1 - Shiki to Build/Server Time** ✅
+   - `CodeBlock.tsx` is now an async Server Component
+   - `CodeBlockInteractive.tsx` handles client interactivity
+   - Double-collapse conflict resolved
+
+2. **Prompt #2 - Double-Escaped Newlines** ✅
+   - `normalizeContent` function in `Prose.tsx` with defensive regex
+   - Validation script updated to check for double-escaped newlines
+   - Data correction applied to affected model files
+
+3. **Prompt #3 - KaTeX Scoping + Teaser Fix** ✅
+   - `body .katex { font-size: 1em !important; }` in `globals.css`
+   - Teaser changed to computed summary instead of raw field concatenation
+
+### Final Polish Audit Report (4 Prompts) - All Implemented
+
+1. **Issue #1 - Interpretability field uses ProseInline** ✅
+   - `ModelDecisionStrip.tsx` updated to use `ProseInline` for LaTeX rendering
+
+2. **Issue #2 - Double background CSS override** ✅
+   - Scoped CSS rule for Shiki's inline background
+
+3. **Issue #3 - Scroll compensation in CodeBlockInteractive** ✅
+   - `useLayoutEffect` with `getBoundingClientRect` tracking
+   - `aria-expanded` added to expand/collapse button
+
+4. **Issue #4 - Cross-linking in ModelCollapsibleSections** ✅
+   - "Also Worth Knowing" chips link to real pages where available
+   - `aria-controls` added to `CollapsibleSection`
+
+### Build Verification
+
+- `npm run build` passes successfully
+- All 40 static pages generated
+- 0 errors, 23 warnings (only missing content references)
+
+### Git Status
+
+- Pushed to `feature/repository-foundation-v2` branch
+- Commit `7af1f7a` with all changes
