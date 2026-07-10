@@ -1,0 +1,420 @@
+{
+  "id": "k-means-clustering",
+  "title": "K-Means Clustering",
+  "name": "K-Means Clustering",
+  "slug": "k-means-clustering",
+  "description": "K-Means is an iterative centroid-based clustering algorithm that partitions unlabeled data into $k$ compact clusters by minimizing within-cluster variance, with fast CPU-friendly optimization but strong sensitivity to scaling, initialization, and spherical-cluster assumptions.",
+  "tags": [
+    "ml",
+    "clustering",
+    "classical-ml",
+    "unsupervised"
+  ],
+  "aliases": [
+    "K-Means",
+    "KMeans"
+  ],
+  "keywords": [
+    "k-means",
+    "clustering",
+    "centroid",
+    "lloyd's algorithm",
+    "unsupervised learning",
+    "wcss",
+    "inertia"
+  ],
+  "searchtokens": [
+    "k-means clustering",
+    "kmeans",
+    "sklearn kmeans",
+    "centroid-based clustering",
+    "elbow method",
+    "silhouette score"
+  ],
+  "createdat": "2026-07-10T11:15:00+06:00",
+  "updatedat": "2026-07-10T11:15:00+06:00",
+  "lastverified": "2026-07-10T11:15:00+06:00",
+  "reviewfrequency": "annual",
+  "verifiedagainst": "canonical model knowledge as of 2026-07-10",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "verified",
+  "engineeringmaturity": "production",
+  "domain": "ml",
+  "category": "clustering",
+  "difficulty": "beginner",
+  "engineeringarea": "unsupervised learning",
+  "estimatedreadingtime": 10,
+  "prerequisites": [
+    "Unsupervised learning basics",
+    "Euclidean distance metrics",
+    "Linear algebra basics"
+  ],
+  "recommendednext": [
+    "DBSCAN",
+    "Gaussian Mixture Models",
+    "Spectral Clustering"
+  ],
+  "relatedcontent": [
+    {
+      "type": "package",
+      "id": "scikit-learn",
+      "relationship": "implemented-by"
+    }
+  ],
+  "owner": "AENS Knowledge Architecture",
+  "sources": [
+    {
+      "title": "Stanford CS229 Lecture Notes",
+      "url": "https://cs229.stanford.edu/main_notes.pdf"
+    },
+    {
+      "title": "scikit-learn KMeans Source Code",
+      "url": "https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/cluster/_kmeans.py"
+    }
+  ],
+  "githubrepo": "https://github.com/scikit-learn/scikit-learn",
+  "problemtypes": [
+    "Unsupervised data partitioning",
+    "Customer and behavioral segmentation",
+    "Prototype selection and vector quantization",
+    "Feature engineering and dimensionality reduction"
+  ],
+  "decisionsummary": {
+    "summary": "K-Means clusters data by alternating assignment to the nearest centroid and centroid recomputation until convergence, optimizing a within-cluster sum-of-squares objective.",
+    "bestusecases": [
+      "Customer segmentation with continuous behavioral features and a known need for a small number of operational segments.",
+      "User behavior clustering for product analytics, cohort discovery, and feature flag targeting.",
+      "Feature engineering via cluster labels, centroid distances, or cluster memberships for downstream supervised models.",
+      "Image compression and vector quantization where compact centroid representations are useful."
+    ],
+    "avoidwhen": [
+      "Clusters are arbitrarily shaped or lie on manifolds rather than around centroids.",
+      "Outliers are heavy and should not pull centroids toward anomalous points.",
+      "Cluster density or variance differs substantially across groups.",
+      "Features are categorical-only or Euclidean distance is not meaningful without transformation."
+    ],
+    "strengths": [
+      "Extremely fast and scalable for large dense numeric datasets, especially with good initialization.",
+      "Simple operational output: centroid coordinates, labels, inertia, and nearest-centroid distance are easy to explain to stakeholders.",
+      "Works well as a preprocessing step for segmentation, prototype selection, compression, and feature generation."
+    ],
+    "limitations": [
+      "Requires specifying k, so the model depends on a prior choice that may not be obvious in production.",
+      "Converges to a local optimum and can vary across random starts, especially on sparse or noisy data.",
+      "Assumes Euclidean, roughly spherical, similarly sized clusters, which often fails on real-world nonconvex data."
+    ],
+    "interpretability": "Cluster centroids are the learned prototypes, cluster assignments are the discrete segment labels, and inertia measures total squared distance to each point’s assigned centroid. Business interpretation usually comes from comparing centroid feature profiles and naming segments after dominant characteristics rather than treating labels as intrinsic categories.",
+    "trainingcharacteristics": "Training uses Lloyd’s alternating optimization: assign points to the nearest centroid, then recompute centroids as cluster means, repeating until convergence. Initialization matters a lot; k-means++ usually improves convergence quality over pure random seeding, while multiple restarts reduce the chance of poor local minima. Convergence is monotonic in the objective but not guaranteed to find a global optimum.",
+    "inferencecharacteristics": "Prediction is a nearest-centroid assignment, so latency is typically very low and CPU-friendly. Batch prediction is straightforward because distances can be computed efficiently over many samples at once. Memory footprint is small compared with many alternative clustering methods, though algorithm='elkan' uses extra memory.",
+    "computationalcharacteristics": "Training: average $O(nki)$, where $n$ is samples, $k$ is clusters, and $i$ is iterations. Prediction: $O(nk p)$ for $n$ samples with $p$ features in the standard nearest-centroid computation. Memory usage: $O(kp)$ for centroids, plus extra workspace for some algorithms such as Elkan. Scalability: strong on large numeric datasets; for very large $n$, MiniBatchKMeans is often preferred."
+  },
+  "coreunderstanding": {
+    "intuition": "K-Means forms clusters by repeatedly assigning each point to the nearest centroid and then moving each centroid to the mean of the assigned points. This is an alternating optimization loop that reduces within-cluster distance at each step until the objective stabilizes. The output is a partition of the input space into Voronoi-like regions around centroids, which makes the model simple and deterministic after fitting.",
+    "learningmechanism": "K-Means forms clusters by repeatedly assigning each point to the nearest centroid and then moving each centroid to the mean of the assigned points. This is an alternating optimization loop that reduces within-cluster distance at each step until the objective stabilizes. The output is a partition of the input space into Voronoi-like regions around centroids, which makes the model simple and deterministic after fitting.",
+    "assumptions": [
+      "Approximately spherical clusters: violations lead to poor cluster boundaries and unstable centroids.",
+      "Similar cluster variance: large variance differences can cause K-Means to over-split broad clusters or underfit tight ones.",
+      "Similar cluster size: strong imbalance can bias centroid placement toward larger groups.",
+      "Euclidean distance is meaningful: if feature geometry does not match Euclidean distance, assignments become unreliable.",
+      "Proper feature scaling: unscaled features dominate the distance calculation and distort clustering."
+    ],
+    "mathematicalintuition": "Using Euclidean distance:\n\n$$\nd(x, \\mu_j) = \\|x - \\mu_j\\|_2\n$$\n\nwhere $\\mu_j$ is the centroid of cluster $j$.\n\nWithin-Cluster Sum of Squares:\n\n$$\n\\mathrm{WCSS} = \\sum_{j=1}^{k}\\sum_{x_i \\in C_j}\\|x_i - \\mu_j\\|_2^2\n$$\n\nInertia in scikit-learn is the same squared-distance objective up to weighting details:\n\n$$\nJ = \\sum_{i=1}^{n}\\|x_i - \\mu_{c(i)}\\|_2^2\n$$\n\nwith $c(i)$ the assigned cluster index.\n\nLloyd optimization alternates:\n\n1. Assignment step: $c(i) := \n\\arg\\min_j \\|x_i - \\mu_j\\|_2$\n2. Update step: $\\mu_j := \\frac{1}{|C_j|}\\sum_{x_i \\in C_j} x_i.\n\nConvergence is reached when centroid movement falls below tolerance or max_iter is hit.",
+    "complexity": "For $n$ samples, $p$ features, $k$ clusters, and $i$ iterations, the average training cost is $O(nkpi)$ in the fully vectorized dense case, with scikit-learn noting average complexity as $O(knT)$ and sparse or structured cases often behaving better in practice.",
+    "memorycomplexity": "Memory is $O(kp)$ for centroids plus working buffers, with Elkan requiring additional $O(nk)$ space.",
+    "robustness": "Moderate to low; outliers, scaling errors, and initialization noise can materially move centroids.",
+    "scalability": "Strong for numeric CPU workloads, weaker for very large dense datasets unless mini-batch methods are used.",
+    "overfittingtendency": "Not a supervised overfitting issue, but overly large $k$ can fragment clusters and fit noise.",
+    "biasvariance": "High bias, low variance after convergence when $k$ is small; variance rises with unstable initialization or excessive $k$."
+  },
+  "hyperparameters": [
+    {
+      "name": "n_clusters",
+      "purpose": "Sets the number of centroids and therefore the number of output clusters.",
+      "increaseeffect": "Cluster quality can reduce inertia and capture finer structure. Runtime is slower, and memory is slightly higher due to more centroid storage. Stability may decrease if clusters become too small or noisy.",
+      "decreaseeffect": "Cluster quality can underfit true structure. Runtime is faster, memory is lower, and stability is often higher, but at the cost of coarser segmentation.",
+      "tradeoffs": "More clusters improve granularity but increase computation and risk overfragmentation.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Strongly interacts with init, n_init, and max_iter."
+      ],
+      "commonmistakes": [
+        "Choosing k only by habit or by business round numbers without validation."
+      ]
+    },
+    {
+      "name": "init",
+      "purpose": "Defines centroid initialization strategy such as k-means++ or random.",
+      "increaseeffect": "Better initialization usually improves quality and leads to faster convergence.",
+      "decreaseeffect": "Random initialization tends to be less reliable, requiring more iterations and showing lower stability.",
+      "tradeoffs": "Better initialization usually costs little and pays off in faster, more stable convergence.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Works with n_init; random init usually benefits from more restarts."
+      ],
+      "commonmistakes": [
+        "Using random initialization with too few restarts and blaming the dataset for unstable results."
+      ]
+    },
+    {
+      "name": "n_init",
+      "purpose": "Controls the number of independent runs with different initial seeds; the best inertia result is kept.",
+      "increaseeffect": "Cluster quality usually improves or becomes more reliable. Runtime is slower, memory is slightly higher during repeated runs, and stability improves.",
+      "decreaseeffect": "Cluster quality is more sensitive to bad local minima. Runtime is faster, memory is lower, and stability worsens.",
+      "tradeoffs": "More restarts increase robustness against local minima at a direct runtime cost.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Most important when init='random' or data are noisy/sparse."
+      ],
+      "commonmistakes": [
+        "Leaving the default unchanged on difficult datasets and assuming one run is representative."
+      ]
+    },
+    {
+      "name": "max_iter",
+      "purpose": "Sets the maximum number of Lloyd iterations per run.",
+      "increaseeffect": "More chance of convergence, potentially slower runtime if convergence is slow, and improved stability if the model had not converged.",
+      "decreaseeffect": "Saves time but can stop too early and produce inconsistent labels, centroids, and cluster quality.",
+      "tradeoffs": "Useful as a safety bound, but too small a value can truncate optimization before centroids stabilize.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Works with tol; low tolerance may require more iterations."
+      ],
+      "commonmistakes": [
+        "Reducing max_iter to save time without checking whether the final centroids are stable."
+      ]
+    },
+    {
+      "name": "tol",
+      "purpose": "Sets the relative tolerance for centroid movement to declare convergence.",
+      "increaseeffect": "May stop earlier and speed up training, but potentially slightly reduces cluster quality and stability.",
+      "decreaseeffect": "Saves computation but can run longer and improve convergence precision.",
+      "tradeoffs": "Tighter tolerance improves convergence precision but may yield diminishing returns.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Along with max_iter, the two form the convergence budget."
+      ],
+      "commonmistakes": [
+        "Setting tolerance so strict that runtime rises without meaningful cluster improvement."
+      ]
+    },
+    {
+      "name": "algorithm",
+      "purpose": "Chooses between lloyd and elkan; elkan can skip some distance computations but uses more memory.",
+      "increaseeffect": "Choosing elkan can speed up execution on well-separated clusters, but uses higher memory.",
+      "decreaseeffect": "Choosing lloyd is often simpler, more predictable, and more memory-light.",
+      "tradeoffs": "Elkan trades extra memory for fewer distance computations, while lloyd is the classical default and more memory-light.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Meaningful mainly with cluster separation and dataset size."
+      ],
+      "commonmistakes": [
+        "Using elkan on memory-constrained systems without accounting for its extra O(nk) workspace."
+      ]
+    },
+    {
+      "name": "random_state",
+      "purpose": "Fixes the random seed for reproducible centroid initialization and restart behavior.",
+      "increaseeffect": "No direct systematic change in quality, speed, or memory, but reproducibility is guaranteed.",
+      "decreaseeffect": "No direct systematic change, but reproducibility is lost.",
+      "tradeoffs": "Does not improve the clustering objective by itself, but it is essential for experiment repeatability.",
+      "tuningpriority": "High for production and experiment tracking",
+      "interactions": [
+        "Affects init and n_init outcomes."
+      ],
+      "commonmistakes": [
+        "Treating different random seeds as model drift when they are just initialization variability."
+      ]
+    },
+    {
+      "name": "copy_x",
+      "purpose": "Controls whether the input data is copied before centering and distance computation.",
+      "increaseeffect": "Input matrix is copied, using more memory and potentially slightly slower runtime.",
+      "decreaseeffect": "Centering is done in place, saving memory if a copy is avoided, but small numerical differences may appear.",
+      "tradeoffs": "A memory-saving choice with a small risk of numerical differences; important mainly in constrained pipelines.",
+      "tuningpriority": "Low",
+      "interactions": [
+        "Can be overridden by data layout or sparse format requirements."
+      ],
+      "commonmistakes": [
+        "Changing it to save memory without verifying whether the data layout still forces a copy."
+      ]
+    }
+  ],
+  "engineeringconsiderations": {
+    "datasetsuitability": [
+      "K-Means works best on numeric data with compact, separable structure and moderate feature dimensionality.",
+      "Dense datasets are the most natural fit, though sparse inputs can work if Euclidean distances still make sense.",
+      "High-dimensional data often requires dimensionality reduction because distance concentration can weaken centroid quality.",
+      "If clusters are not roughly convex and similar in scale, another clustering method is often a better production choice."
+    ],
+    "scalability": [
+      "K-Means is CPU-efficient and often benefits from vectorized linear algebra more than from complex parallel strategies.",
+      "MiniBatchKMeans is the standard alternative when scale becomes large enough that full batch updates are too slow.",
+      "For large-scale clustering, the main bottleneck is repeated distance computation against all centroids rather than centroid storage.",
+      "When throughput matters, batch scoring is usually easy to deploy because prediction is just nearest-centroid assignment."
+    ],
+    "parallelization": "Vectorized linear algebra is typically used on CPU, and mini-batch variations can scale training workloads without complex distributed coordination.",
+    "computationalcost": "Training is efficient because it avoids gradient descent and often only requires one pass or a small number of statistic updates. The distance computation step is the primary runtime cost and scales with both the number of samples and clusters.",
+    "memorybehavior": "Memory consumption is dominated by storing centroids plus any algorithm-specific buffers. Centroid storage is small, which makes serving and model distribution lightweight.",
+    "inferencecharacteristics": "Prediction is a nearest-centroid assignment, so latency is typically very low and CPU-friendly. Batch prediction is straightforward because distances can be computed efficiently over many samples at once.",
+    "robustness": [
+      "Outliers can drag centroids away from dense regions and distort cluster shapes, especially in Euclidean space.",
+      "Noise increases cluster instability because the assignment step can flip points near cluster boundaries.",
+      "Initialization sensitivity is a real operational concern, which is why multiple restarts are often worth the cost.",
+      "If your data has heavy contamination, a density-based or robust alternative is often safer."
+    ],
+    "sensitivitytooutliers": "High sensitivity; outliers pull centroids toward anomalous positions and distort spherical boundaries.",
+    "featureengineeringdependency": "High dependency on feature selection, dimensionality reduction (like PCA), and removing noisy or uninformative variables.",
+    "featurescalingrequirement": "Mandatory in most practical cases because Euclidean distance is scale-sensitive and unscaled features dominate the objective.",
+    "classimbalancebehavior": "Imbalanced cluster sizes are not directly restricted, but extreme size differences can cause centroids to merge or over-split groups.",
+    "commonlimitations": [
+      "Need to specify k, which is often the hardest engineering decision.",
+      "Local minima can produce inconsistent solutions across runs.",
+      "Euclidean distance assumption limits applicability to non-Euclidean or categorical feature spaces.",
+      "Poor performance on non-convex clusters is common because centroids cannot follow curved geometry.",
+      "Sensitivity to initialization means production results should be validated across seeds."
+    ],
+    "pipelineposition": "K-Means usually sits early in a pipeline as a preprocessing or segmentation step before supervised learning or downstream decision rules."
+  },
+  "comparisons": [
+    {
+      "model": "DBSCAN",
+      "choose_this_when": "You need fast centroid-based segmentation on numeric data.",
+      "prefer_other_when": "You need arbitrary-shaped clusters or explicit noise handling.",
+      "tradeoffs": "K-Means is simpler and faster; DBSCAN handles outliers and shape better."
+    },
+    {
+      "model": "Hierarchical Clustering",
+      "choose_this_when": "You want a scalable partitioning baseline with fixed k and cheap prediction.",
+      "prefer_other_when": "You need a dendrogram or multi-resolution clustering structure.",
+      "tradeoffs": "K-Means is more scalable; hierarchical methods provide richer structure but cost more."
+    },
+    {
+      "model": "Gaussian Mixture Models (GMM)",
+      "choose_this_when": "You want hard assignments and a simple centroid interpretation.",
+      "prefer_other_when": "You need soft probabilistic cluster memberships and ellipsoidal clusters.",
+      "tradeoffs": "K-Means is cheaper; GMM is more expressive but heavier."
+    },
+    {
+      "model": "Spectral Clustering",
+      "choose_this_when": "You need a fast, direct baseline for large numeric data.",
+      "prefer_other_when": "You have non-convex structure that requires graph-based separation.",
+      "tradeoffs": "K-Means is operationally simpler; spectral methods capture complex geometry better."
+    },
+    {
+      "model": "Mean Shift",
+      "choose_this_when": "You know k in advance and want predictable runtime.",
+      "prefer_other_when": "You want automatic cluster-count discovery from density modes.",
+      "tradeoffs": "K-Means is cheaper and more controllable; Mean Shift is more flexible but slower."
+    },
+    {
+      "model": "Birch",
+      "choose_this_when": "You need straightforward batch clustering with a compact final model.",
+      "prefer_other_when": "You need incremental, very large-scale clustering with hierarchical compression.",
+      "tradeoffs": "K-Means is simpler; Birch is better for streaming or huge datasets."
+    }
+  ],
+  "relatedknowledge": {
+    "relatedmodels": [
+      "MiniBatchKMeans",
+      "BisectingKMeans",
+      "GaussianMixture",
+      "AgglomerativeClustering",
+      "DBSCAN"
+    ],
+    "alternative_models": [
+      "DBSCAN",
+      "Hierarchical Clustering",
+      "Gaussian Mixture Models",
+      "Spectral Clustering",
+      "Mean Shift",
+      "Birch"
+    ],
+    "related_principles": [
+      "Distance Metrics",
+      "Cluster Validity",
+      "Elbow Method",
+      "Silhouette Analysis",
+      "Curse of Dimensionality"
+    ],
+    "related_workflows": [
+      "Clustering Workflow",
+      "Customer Segmentation",
+      "Exploratory Data Analysis",
+      "Feature Engineering",
+      "Dimensionality Reduction"
+    ],
+    "related_patterns": [
+      "PCA Pipeline",
+      "Feature Scaling Pattern",
+      "Cluster Evaluation Guide"
+    ],
+    "related_packages": [
+      "scikit-learn",
+      "SciPy",
+      "NumPy",
+      "Yellowbrick",
+      "HDBSCAN"
+    ],
+    "related_guides": [
+      "Unsupervised Learning Workflow",
+      "Data Preprocessing Guide"
+    ],
+    "related_registry": [
+      "Centroid-based ML models",
+      "Unsupervised Learning"
+    ]
+  },
+  "quickstart": {
+    "language": "python",
+    "implementation_package": "scikit-learn",
+    "code": "import numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nfrom sklearn.compose import ColumnTransformer\nfrom sklearn.impute import SimpleImputer\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.cluster import KMeans\nfrom sklearn.model_selection import GridSearchCV\nfrom sklearn.metrics import silhouette_score, davies_bouldin_score, calinski_harabasz_score\nfrom sklearn.datasets import make_blobs\n\nX_num, _ = make_blobs(n_samples=1200, centers=4, cluster_std=1.35, random_state=42)\ndf = pd.DataFrame(X_num, columns=[\"f1\", \"f2\"])\n\npreprocess = ColumnTransformer([\n    (\"num\", Pipeline([\n        (\"imputer\", SimpleImputer(strategy=\"median\")),\n        (\"scaler\", StandardScaler()),\n    ]), [\"f1\", \"f2\"]),\n])\n\nX = df.copy()\n\nelbow_inertia = []\nsilhouette_vals = []\nk_values = range(2, 11)\n\nX_processed = preprocess.fit_transform(X)\n\nfor k in k_values:\n    km = KMeans(n_clusters=k, init=\"k-means++\", n_init=10, random_state=42, algorithm=\"lloyd\")\n    labels = km.fit_predict(X_processed)\n    elbow_inertia.append(km.inertia_)\n    silhouette_vals.append(silhouette_score(X_processed, labels))\n\nparam_grid = {\n    \"cluster__n_clusters\": [3, 4, 5, 6],\n    \"cluster__init\": [\"k-means++\", \"random\"],\n    \"cluster__n_init\": [10],\n    \"cluster__max_iter\": [300],\n    \"cluster__tol\": [1e-4],\n    \"cluster__algorithm\": [\"lloyd\"],\n    \"cluster__random_state\": [42],\n}\n\npipe = Pipeline([\n    (\"preprocess\", preprocess),\n    (\"cluster\", KMeans(random_state=42)),\n])\n\ngrid = GridSearchCV(\n    pipe,\n    param_grid=param_grid,\n    scoring=\"silhouette_score\",\n    cv=[(slice(None), slice(None))],\n    refit=True,\n    n_jobs=-1\n)\n\ndef silhouette_scorer(estimator, X_eval, y=None):\n    Xt = estimator.named_steps[\"preprocess\"].transform(X_eval)\n    labels = estimator.named_steps[\"cluster\"].fit_predict(Xt)\n    return silhouette_score(Xt, labels)\n\ngrid.scoring = silhouette_scorer\ngrid.fit(X)\n\nbest_model = grid.best_estimator_\nX_best = best_model.named_steps[\"preprocess\"].transform(X)\nbest_labels = best_model.named_steps[\"cluster\"].fit_predict(X_best)\n\nsil = silhouette_score(X_best, best_labels)\ndbi = davies_bouldin_score(X_best, best_labels)\nchi = calinski_harabasz_score(X_best, best_labels)\n\nprint(\"Best params:\", grid.best_params_)\nprint(\"Silhouette:\", sil)\nprint(\"Davies-Bouldin:\", dbi)\nprint(\"Calinski-Harabasz:\", chi)\nprint(\"Inertia:\", best_model.named_steps[\"cluster\"].inertia_)\nprint(\"Cluster centers:\\n\", best_model.named_steps[\"cluster\"].cluster_centers_)\n\nplt.figure(figsize=(7, 4))\nplt.plot(list(k_values), elbow_inertia, marker=\"o\")\nplt.xlabel(\"k\")\nplt.ylabel(\"Inertia\")\nplt.title(\"Elbow Method\")\nplt.tight_layout()\nplt.savefig(\"elbow_method.png\", dpi=160)\n\nplt.figure(figsize=(7, 4))\nplt.plot(list(k_values), silhouette_vals, marker=\"o\")\nplt.xlabel(\"k\")\nplt.ylabel(\"Silhouette Score\")\nplt.title(\"Silhouette Evaluation\")\nplt.tight_layout()\nplt.savefig(\"silhouette_evaluation.png\", dpi=160)",
+    "explanation": "This pipeline imputes missing values, scales numeric features, and runs K-Means inside a reproducible scikit-learn workflow. It also computes inertia across several k values for the elbow method and uses silhouette scoring to compare candidate cluster counts.",
+    "inputs": "A numeric tabular dataset, ideally with scaled continuous features and a reasonably compact cluster structure.",
+    "outputs": "Cluster labels, cluster centers, inertia, silhouette score, Davies-Bouldin score, and Calinski-Harabasz score, plus elbow and silhouette plots.",
+    "notes": "Feature scaling is essential because distance calculations are scale-sensitive and K-Means uses Euclidean geometry. GridSearchCV is not always ideal for clustering because there is no ground-truth target, so custom unsupervised scorers like silhouette are usually required. Initialization strategy matters, so prefer k-means++ first and use random_state for reproducibility. For production, validate stability across multiple seeds and compare metrics, not just inertia."
+  },
+  "learning_resources": [
+    {
+      "title": "scikit-learn KMeans API",
+      "url": "https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html",
+      "type": "documentation",
+      "why_to_read": "Canonical parameter, attribute, and complexity reference.",
+      "expected_outcome": "Understand exact scikit-learn behavior and defaults.",
+      "reading_time": 20
+    },
+    {
+      "title": "Stanford CS229: The k-means clustering algorithm",
+      "url": "https://cs229.stanford.edu/notes2020spring/cs229-notes7a.pdf",
+      "type": "guide",
+      "why_to_read": "Clear derivation of Lloyd’s algorithm and local-optimum behavior.",
+      "expected_outcome": "Reinforce the optimization loop and convergence intuition.",
+      "reading_time": 25
+    },
+    {
+      "title": "CS229 clustering lecture notes",
+      "url": "https://cs229.stanford.edu/notes2022fall/kmeans.pdf",
+      "type": "guide",
+      "why_to_read": "Practical clustering framing and assignment/update loop.",
+      "expected_outcome": "Understand how K-Means is presented in a Stanford ML course.",
+      "reading_time": 20
+    },
+    {
+      "title": "The Elements of Statistical Learning, Chapter on Unsupervised Learning",
+      "url": "https://danhalligan.github.io/ISLRv2-solutions/unsupervised-learning.html",
+      "type": "guide",
+      "why_to_read": "Broad unsupervised learning context and model comparison framing.",
+      "expected_outcome": "Place K-Means within the unsupervised learning toolbox.",
+      "reading_time": 30
+    },
+    {
+      "title": "Stanford CS229 lecture video on clustering",
+      "url": "https://www.youtube.com/",
+      "type": "video",
+      "why_to_read": "A lecture-style reinforcement resource for the algorithm and its trade-offs.",
+      "expected_outcome": "Build a durable mental model of centroid-based clustering.",
+      "reading_time": 40
+    }
+  ]
+}

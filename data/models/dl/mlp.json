@@ -1,0 +1,416 @@
+{
+  "id": "mlp",
+  "title": "Multilayer Perceptron (MLP)",
+  "name": "Multilayer Perceptron (MLP)",
+  "slug": "mlp",
+  "description": "Multilayer Perceptron (MLP) is a fully connected feedforward neural network that learns nonlinear mappings by stacking hidden layers and optimizing weights with backpropagation and gradient-based solvers. It is most useful when structured features contain interactions that simpler linear models miss, but it remains sensitive to scaling, hyperparameters, and dataset size.",
+  "tags": [
+    "dl",
+    "classification",
+    "neural-networks",
+    "feedforward"
+  ],
+  "aliases": [
+    "MLP",
+    "Multilayer Perceptron",
+    "Dense Neural Network"
+  ],
+  "keywords": [
+    "mlp",
+    "multilayer perceptron",
+    "feedforward neural network",
+    "backpropagation",
+    "hidden layers",
+    "neural network"
+  ],
+  "searchtokens": [
+    "mlp",
+    "multilayer perceptron",
+    "mlpclassifier",
+    "mlpregressor",
+    "sklearn mlp",
+    "dense neural network"
+  ],
+  "createdat": "2026-07-10T11:22:00+06:00",
+  "updatedat": "2026-07-10T11:22:00+06:00",
+  "lastverified": "2026-07-10T11:22:00+06:00",
+  "reviewfrequency": "annual",
+  "verifiedagainst": "canonical model knowledge as of 2026-07-10",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "verified",
+  "engineeringmaturity": "production",
+  "domain": "dl",
+  "category": "classification",
+  "difficulty": "intermediate",
+  "engineeringarea": "supervised learning",
+  "estimatedreadingtime": 10,
+  "prerequisites": [
+    "Supervised learning basics",
+    "Linear algebra basics",
+    "Gradient descent basics"
+  ],
+  "recommendednext": [
+    "Convolutional Neural Network (CNN)",
+    "Recurrent Neural Network (RNN)",
+    "Transformer"
+  ],
+  "relatedcontent": [
+    {
+      "type": "package",
+      "id": "scikit-learn",
+      "relationship": "implemented-by"
+    }
+  ],
+  "owner": "AENS Knowledge Architecture",
+  "sources": [
+    {
+      "title": "Stanford CS229 Machine Learning Course Notes",
+      "url": "https://web.stanford.edu/~mossr/pdf/cs229-ml-notes.pdf"
+    },
+    {
+      "title": "ArXiv Neural Network Initialization & Training Reference",
+      "url": "https://arxiv.org/abs/1702.01460"
+    }
+  ],
+  "githubrepo": "https://github.com/scikit-learn/scikit-learn",
+  "problemtypes": [
+    "Supervised nonlinear classification",
+    "Supervised nonlinear regression",
+    "Structured tabular predictive modeling"
+  ],
+  "decisionsummary": {
+    "summary": "Multilayer Perceptron (MLP) is a fully connected feedforward neural network that learns nonlinear mappings by stacking hidden layers and optimizing weights with backpropagation and gradient-based solvers.",
+    "bestusecases": [
+      "Structured tabular data with nonlinear feature interactions, especially when relationships are not well captured by linear models.",
+      "Credit risk, fraud detection, and other medium-scale classification problems with dense engineered features.",
+      "Industrial prediction and forecasting on fixed-length feature vectors, such as process telemetry or equipment-state prediction.",
+      "Medium-sized regression problems where the target is continuous and the feature space is already well engineered."
+    ],
+    "avoidwhen": [
+      "Small datasets where overfitting risk is high and variance dominates.",
+      "Image tasks where convolutional architectures are usually a better inductive bias than dense connectivity.",
+      "Sequential or time-series problems where recurrence or attention is more suitable than a fixed feedforward mapping.",
+      "Very large tabular datasets where gradient boosting often delivers better accuracy-efficiency trade-offs in practice."
+    ],
+    "strengths": [
+      "Learns complex nonlinear decision boundaries without manual interaction terms, which makes it useful when feature engineering is partial rather than complete.",
+      "Works for both classification and regression with the same high-level interface, which simplifies pipeline standardization.",
+      "Supports probability outputs for classification via predict_proba, which is valuable for ranking, thresholding, and risk scoring.",
+      "Can be integrated cleanly into scikit-learn pipelines with preprocessing, cross-validation, and model selection."
+    ],
+    "limitations": [
+      "It is a black-box model with limited direct feature-importance interpretability, so post-hoc explanation is usually required.",
+      "Training is sensitive to feature scaling, learning rate, hidden layer size, and solver choice, which increases tuning cost.",
+      "scikit-learn’s implementation has no GPU support, so large-scale training can be slow compared with deep learning frameworks.",
+      "Non-convex optimization means different initializations can lead to different results, especially on smaller or noisier datasets."
+    ],
+    "interpretability": "MLP is inherently a black-box model: the learned parameters are distributed across hidden layers, so there is no native feature-importance vector comparable to linear models or tree splits. Hidden layers learn internal representations, but those representations are difficult to explain directly without post-hoc tools. In production, SHAP or LIME can provide local explanations, but they explain the approximation behavior rather than the model’s internal logic.",
+    "trainingcharacteristics": "MLP is trained by backpropagation with gradient-based optimization, typically using lbfgs, sgd, or adam in scikit-learn. Convergence depends strongly on initialization, scaling, regularization, and solver choice, and it may stop early when improvement falls below tolerance thresholds. Weight initialization is random, so reproducibility requires a fixed random_state.",
+    "inferencecharacteristics": "Inference is dominated by dense matrix multiplications, which are efficient on CPU for moderate-width models and batch inference. scikit-learn does not provide GPU acceleration, so CPU latency is usually acceptable only for medium-sized models and modest request rates. Memory footprint is driven by weight matrices and intermediate activations, so wide or deep networks increase both RAM use and inference cost.",
+    "computationalcharacteristics": "Training time is approximately $O(i \\cdot n \\cdot (p h + (L-1)h^2 + hk))$, where $n$ is samples, $p$ features, $h$ hidden units per layer, $L$ layers, $k$ outputs, and $i$ iterations. Inference time is approximately $O(n \\cdot (p h + (L-1)h^2 + hk))$ per batch, since each layer is a dense transform. Memory usage is approximately $O(ph + (L-1)h^2 + hk)$ for weights plus $O(n(p+k))$ for batch data and activations, with scalability limited by the cost of dense updates and the lack of native GPU support in scikit-learn."
+  },
+  "coreunderstanding": {
+    "intuition": "MLP transforms inputs layer by layer, learning intermediate hidden representations that capture nonlinear structure before producing the final prediction. Each hidden layer applies a weighted sum followed by a nonlinear activation, allowing the network to approximate functions that linear models cannot represent. With enough capacity, MLP is a universal function approximator, but production success depends on regularization and tuning rather than capacity alone.",
+    "learningmechanism": "MLP transforms inputs layer by layer, learning intermediate hidden representations that capture nonlinear structure before producing the final prediction. Each hidden layer applies a weighted sum followed by a nonlinear activation, allowing the network to approximate functions that linear models cannot represent. With enough capacity, MLP is a universal function approximator, but production success depends on regularization and tuning rather than capacity alone.",
+    "assumptions": [
+      "Representative training data: if the training set does not match production distribution, performance degrades through distribution shift.",
+      "Independent samples: strong correlation between samples can inflate apparent validation quality and hurt generalization.",
+      "Sufficient training examples: small datasets often let the model memorize noise instead of learning stable structure.",
+      "Proper feature scaling: unscaled inputs can slow convergence or prevent good optimization.",
+      "Appropriate network capacity: too few units underfit, while too many units overfit and increase instability."
+    ],
+    "mathematicalintuition": "A neuron computes a weighted sum and activation:\n\n$$\nz = w^\\top x + b,\\quad a = g(z)\n$$\n\nwhere $g(\\cdot)$ is an activation such as ReLU, tanh, or logistic. For a hidden layer, forward propagation is:\n\n$$\na^{(l)} = g\\left(W^{(l)} a^{(l-1)} + b^{(l)}\\right)\n$$\n\nand the output layer maps the final representation to class probabilities or continuous values.\n\nFor classification, scikit-learn’s MLP minimizes log-loss; for regression, it minimizes squared error, both with optional L2 regularization via alpha. Backpropagation uses the chain rule to compute gradients:\n\n$$\n\\frac{\\partial \\mathcal{L}}{\\partial W^{(l)}} =\n\\frac{\\partial \\mathcal{L}}{\\partial a^{(L)}} \\cdot\n\\frac{\\partial a^{(L)}}{\\partial z^{(L)}} \\cdots\n\\frac{\\partial a^{(l)}}{\\partial z^{(l)}} \\cdot\n\\frac{\\partial z^{(l)}}{\\partial W^{(l)}}\n$$\n\nand gradient descent updates parameters as:\n\n$$\nW \\leftarrow W - \\eta \\frac{\\partial \\mathcal{L}}{\\partial W}\n$$\n\nwhere $\\eta$ is the learning rate.",
+    "complexity": "Training complexity is $O(i \\cdot n \\cdot (p h + (L-1)h^2 + hk))$ under a dense fully connected assumption. Memory complexity is $O(ph + (L-1)h^2 + hk)$ for parameters and $O(n(p+k))$ for mini-batch activations and targets.",
+    "memorycomplexity": "Memory complexity is $O(ph + (L-1)h^2 + hk)$ for parameters and $O(n(p+k))$ for mini-batch activations and targets.",
+    "robustness": "MLP is moderately sensitive to outliers because large-magnitude features can dominate gradients unless preprocessing is careful.",
+    "scalability": "It scales reasonably on medium-sized tabular data, but dense computation and no native GPU support make it less attractive for very large workloads.",
+    "overfittingtendency": "Overfitting is common when hidden layers are wide or the dataset is small, so regularization and early stopping matter.",
+    "biasvariance": "MLP has lower bias than linear models but higher variance, especially when capacity is large or regularization is weak."
+  },
+  "hyperparameters": [
+    {
+      "name": "hidden_layer_sizes",
+      "purpose": "Defines network capacity by setting the width of each hidden layer.",
+      "increaseeffect": "Bias decreases because the network can fit more complex functions. Variance increases, training slows, and memory usage rises due to more weights.",
+      "decreaseeffect": "Bias increases, variance decreases, training becomes faster, and memory footprint drops.",
+      "tradeoffs": "More layers or wider layers improve expressiveness but increase overfitting risk and optimization difficulty. Smaller networks generalize better on limited data but may underfit nonlinear structure.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts strongly with alpha, solver, and early_stopping; large capacity usually needs stronger regularization and better stopping control."
+      ],
+      "commonmistakes": [
+        "Using large symmetric architectures by default, copying deep-learning defaults onto small tabular datasets, and increasing width without regularization."
+      ]
+    },
+    {
+      "name": "activation",
+      "purpose": "Sets the hidden-layer nonlinearity.",
+      "increaseeffect": "Choosing a more expressive or less saturating activation usually reduces bias and can increase optimization stability depending on the input scale.",
+      "decreaseeffect": "Choosing a saturating or linear activation can increase bias or reduce gradient quality.",
+      "tradeoffs": "ReLU often trains well on normalized dense data, tanh can work well on centered inputs, and logistic usually saturates earlier. The choice affects gradient flow, convergence speed, and sensitivity to scaling.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with feature scaling and solver behavior; poor scaling makes activation choice much more brittle."
+      ],
+      "commonmistakes": [
+        "Leaving the default without checking whether the feature distribution matches the activation, especially for non-standardized inputs."
+      ]
+    },
+    {
+      "name": "solver",
+      "purpose": "Chooses the optimization algorithm: lbfgs, sgd, or adam.",
+      "increaseeffect": "Moving toward more adaptive stochastic solvers often improves scalability but may reduce deterministic convergence behavior.",
+      "decreaseeffect": "Moving toward lbfgs can improve small-data convergence but increases memory pressure for optimization state.",
+      "tradeoffs": "lbfgs is often strong on small datasets, adam is robust on medium-sized data, and sgd can be competitive when carefully tuned. Solver choice strongly affects convergence speed, batch behavior, and reproducibility.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with batch_size, learning_rate_init, max_iter, and early_stopping. Practical order: choose solver first based on dataset size, then tune learning rate and regularization."
+      ],
+      "commonmistakes": [
+        "Using sgd without learning-rate tuning, using lbfgs on large datasets, and switching solvers without re-tuning other parameters."
+      ]
+    },
+    {
+      "name": "alpha",
+      "purpose": "Controls L2 regularization strength.",
+      "increaseeffect": "Bias increases, variance decreases, weights shrink, and overfitting risk drops. Training may become more stable but potentially underfit.",
+      "decreaseeffect": "Bias decreases, variance increases, and the model can fit sharper nonlinear boundaries but may generalize worse.",
+      "tradeoffs": "Strong regularization is useful when data are small, noisy, or highly correlated; weak regularization helps when the signal is strong and well sampled. This parameter is one of the main levers for controlling generalization.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with hidden_layer_sizes, solver, and early_stopping. Practical order: tune capacity first, then regularization."
+      ],
+      "commonmistakes": [
+        "Leaving alpha at a default value while changing network width substantially, or over-regularizing and misdiagnosing the result as solver failure."
+      ]
+    },
+    {
+      "name": "learning_rate_init",
+      "purpose": "Sets the initial step size for stochastic optimizers.",
+      "increaseeffect": "Training can become faster, but instability, oscillation, and divergence risk increase.",
+      "decreaseeffect": "Training becomes more stable but slower, and the model may stall before reaching a good optimum.",
+      "tradeoffs": "This is a speed-versus-convergence parameter: too high hurts stability, too low hurts progress. It matters mainly for sgd and adam.",
+      "tuningpriority": "High when using stochastic solvers",
+      "interactions": [
+        "Strongly interacts with solver, batch_size, and early_stopping. Practical order: tune this after selecting solver and before changing architecture."
+      ],
+      "commonmistakes": [
+        "Changing architecture while keeping a bad learning rate, which often masks whether the network is actually capable."
+      ]
+    },
+    {
+      "name": "max_iter",
+      "purpose": "Sets the maximum optimization passes over the training data.",
+      "increaseeffect": "Can reduce bias if the model has not converged, but increases runtime and may overfit if stopping is not otherwise controlled.",
+      "decreaseeffect": "Speeds experimentation but increases underfitting risk and convergence failures.",
+      "tradeoffs": "Higher limits help when optimization is slow or poorly conditioned, but they should not substitute for good preprocessing and learning-rate choices. Early stopping is often a better control mechanism than pushing max_iter high.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with early_stopping, solver, and learning_rate_init."
+      ],
+      "commonmistakes": [
+        "Treating max_iter as a performance knob instead of a convergence guardrail."
+      ]
+    },
+    {
+      "name": "batch_size",
+      "purpose": "Controls minibatch size for stochastic training.",
+      "increaseeffect": "Gradient estimates become smoother, memory use rises, and training may become more stable but less noisy.",
+      "decreaseeffect": "Updates become noisier, memory use falls, and optimization can escape shallow plateaus but may become unstable.",
+      "tradeoffs": "Small batches can improve exploration; larger batches improve throughput and stability. This parameter has no effect for lbfgs.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with learning_rate_init and solver. Practical order: leave auto unless you need tighter latency or memory control."
+      ],
+      "commonmistakes": [
+        "Manually forcing very small batches on noisy data without adjusting the learning rate."
+      ]
+    },
+    {
+      "name": "early_stopping",
+      "purpose": "Stops training when validation performance stops improving.",
+      "increaseeffect": "More aggressive stopping reduces overfitting and training time, but can raise bias if the model stops too early.",
+      "decreaseeffect": "Training runs longer, giving the model more chances to fit complex structure, but variance and overfitting risk increase.",
+      "tradeoffs": "Early stopping is one of the most practical production safeguards for MLP because it reduces wasted training and helps prevent overtraining. It is only effective for stochastic solvers.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with solver, max_iter, learning_rate_init, and alpha. Practical order: enable it early unless you have a specific reason not to."
+      ],
+      "commonmistakes": [
+        "Using it with lbfgs and expecting effect, or enabling it without enough training data to create a reliable validation split."
+      ]
+    }
+  ],
+  "engineeringconsiderations": {
+    "datasetsuitability": [
+      "MLP is a strong fit for dense tabular datasets where feature interactions matter more than sequential structure.",
+      "It is weaker on sparse bag-of-words style inputs unless the problem is well normalized and represented.",
+      "Mixed feature types are fine if preprocessing is done properly with numeric scaling and categorical encoding."
+    ],
+    "scalability": [
+      "scikit-learn’s MLP runs on CPU only and does not provide GPU training acceleration.",
+      "Mini-batch optimization helps with large datasets, but the implementation still depends on dense matrix operations.",
+      "The main bottlenecks are repeated forward/backward passes and memory bandwidth during training."
+    ],
+    "parallelization": "Vectorized execution runs on multi-core CPU, but scikit-learn provides no native GPU parallelization or multi-node training support.",
+    "computationalcost": "Forward propagation costs scale with the number of weights, so deeper or wider models increase both time and memory. Backpropagation roughly doubles the compute burden because gradients are propagated through the same layers.",
+    "memorybehavior": "RAM use grows with model size and batch size, storing weights, gradients, optimizer states, and batch activations on CPU host memory.",
+    "inferencecharacteristics": "Inference is dominated by dense matrix multiplications, which are efficient on CPU for moderate-width models and batch inference. CPU latency is usually acceptable only for medium-sized models and modest request rates.",
+    "robustness": [
+      "MLP is sensitive to outliers because extreme values can distort gradients and activation ranges.",
+      "Noise robustness improves with regularization, early stopping, and careful preprocessing.",
+      "Label noise is especially harmful because the model can memorize inconsistent supervision if capacity is high."
+    ],
+    "sensitivitytooutliers": "High sensitivity; outliers distort weight updates and saturate activations unless scaled carefully.",
+    "featureengineeringdependency": "Standardization or normalization is mandatory, along with encoding categoricals and imputing missing values inside a pipeline.",
+    "featurescalingrequirement": "Mandatory: standard scaling or normalization ensures gradients update weights uniformly and speeds up convergence.",
+    "classimbalancebehavior": "No native class weighting is supported, so imbalance must be handled via resampling, customized sample weights, or threshold tuning.",
+    "commonlimitations": [
+      "Hyperparameter sensitivity makes naive training unreliable on first pass.",
+      "Local minima and saddle points can cause inconsistent results across runs.",
+      "Black-box behavior limits auditability and regulatory comfort without post-hoc explanation.",
+      "Training time can be long when architecture or data size is not appropriate.",
+      "Large-data efficiency is weaker than specialized frameworks and many tree ensembles in tabular settings."
+    ],
+    "pipelineposition": "The model should sit after preprocessing in a single pipeline so that scaling and encoding are fit only on training folds."
+  },
+  "comparisons": [
+    {
+      "model": "Logistic Regression",
+      "choose_this_when": "You need a nonlinear extension of a linear baseline and can afford tuning.",
+      "prefer_other_when": "The data are nearly linearly separable or you need maximum interpretability.",
+      "tradeoffs": "MLP gains expressiveness but loses simplicity, calibration transparency, and ease of explanation."
+    },
+    {
+      "model": "Decision Tree",
+      "choose_this_when": "Feature interactions are nonlinear and smooth rather than rule-like.",
+      "prefer_other_when": "You need easy-to-read rules or low preprocessing overhead.",
+      "tradeoffs": "MLP usually generalizes better than a single tree on smooth boundaries, but trees are easier to inspect."
+    },
+    {
+      "model": "Random Forest",
+      "choose_this_when": "You want a single dense model with probability outputs and compact deployment.",
+      "prefer_other_when": "You want strong out-of-the-box tabular performance with less tuning.",
+      "tradeoffs": "Random forests are often more robust on small/medium tabular data; MLP can win when feature scaling and nonlinear structure are favorable."
+    },
+    {
+      "model": "XGBoost",
+      "choose_this_when": "The data are dense, moderately sized, and benefit from learned continuous representations.",
+      "prefer_other_when": "You need top-tier tabular accuracy with less sensitivity to scaling and initialization.",
+      "tradeoffs": "XGBoost usually offers stronger default tabular performance; MLP is more flexible for representation learning but harder to tune."
+    },
+    {
+      "model": "Support Vector Machine (SVM)",
+      "choose_this_when": "You need a neural-style nonlinear model with probability outputs and scalable minibatch training.",
+      "prefer_other_when": "The dataset is small-to-medium and a margin-based kernel method is a better fit.",
+      "tradeoffs": "SVMs can outperform MLP on smaller problems; MLP scales differently and supports deeper nonlinear composition."
+    },
+    {
+      "model": "Convolutional Neural Network (CNN)",
+      "choose_this_when": "The input is fixed-length structured features rather than spatial data.",
+      "prefer_other_when": "The task is image, grid, or local-pattern heavy.",
+      "tradeoffs": "CNNs exploit locality and parameter sharing; MLP uses full connectivity and is usually less efficient for images."
+    }
+  ],
+  "relatedknowledge": {
+    "relatedmodels": [
+      "Neural network models",
+      "Feedforward neural networks",
+      "Dense neural networks",
+      "Deep learning classifiers and regressors"
+    ],
+    "alternative_models": [
+      "Logistic Regression",
+      "Decision Tree",
+      "Random Forest",
+      "XGBoost",
+      "Support Vector Machine",
+      "Convolutional Neural Network"
+    ],
+    "related_principles": [
+      "Backpropagation",
+      "Gradient Descent",
+      "Universal Approximation Theorem",
+      "Bias-Variance Trade-off",
+      "Regularization",
+      "Representation Learning"
+    ],
+    "related_workflows": [
+      "Neural Network Training",
+      "Hyperparameter Optimization",
+      "Classification Pipeline",
+      "Regression Pipeline",
+      "Model Evaluation"
+    ],
+    "related_patterns": [
+      "Early Stopping Pattern",
+      "Learning Rate Scheduling",
+      "Feature Scaling Guide",
+      "Neural Network Debug Guide",
+      "Overfitting Guide"
+    ],
+    "related_packages": [
+      "scikit-learn",
+      "PyTorch",
+      "TensorFlow",
+      "Keras",
+      "NumPy"
+    ],
+    "related_guides": [],
+    "related_registry": [
+      "Deep Learning Models"
+    ]
+  },
+  "quickstart": {
+    "language": "python",
+    "implementation_package": "scikit-learn",
+    "code": "import numpy as np\nimport pandas as pd\n\nfrom sklearn.compose import ColumnTransformer\nfrom sklearn.impute import SimpleImputer\nfrom sklearn.metrics import classification_report, roc_auc_score\nfrom sklearn.model_selection import GridSearchCV, train_test_split\nfrom sklearn.neural_network import MLPClassifier\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import OneHotEncoder, StandardScaler\n\ndata = pd.DataFrame({\n    \"age\": [22, 35, 58, 46, 29, 41, 63, 52],\n    \"income\": [32000, 58000, 91000, 72000, 41000, 63000, 105000, 84000],\n    \"segment\": [\"A\", \"B\", \"A\", \"C\", \"B\", \"C\", \"A\", \"B\"],\n    \"target\": [0, 0, 1, 1, 0, 1, 1, 1],\n})\n\nX = data.drop(columns=[\"target\"])\ny = data[\"target\"]\n\nnum_cols = [\"age\", \"income\"]\ncat_cols = [\"segment\"]\n\nnumeric_transformer = Pipeline(steps=[\n    (\"imputer\", SimpleImputer(strategy=\"median\")),\n    (\"scaler\", StandardScaler()),\n])\n\ncategorical_transformer = Pipeline(steps=[\n    (\"imputer\", SimpleImputer(strategy=\"most_frequent\")),\n    (\"onehot\", OneHotEncoder(handle_unknown=\"ignore\")),\n])\n\npreprocessor = ColumnTransformer(\n    transformers=[\n        (\"num\", numeric_transformer, num_cols),\n        (\"cat\", categorical_transformer, cat_cols),\n    ]\n)\n\npipeline = Pipeline(steps=[\n    (\"preprocessor\", preprocessor),\n    (\"model\", MLPClassifier(\n        random_state=42,\n        max_iter=500,\n        early_stopping=True,\n        n_iter_no_change=20,\n    )),\n])\n\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.25, random_state=42, stratify=y\n)\n\nparam_grid = {\n    \"model__hidden_layer_sizes\": [(32,), (64,), (32, 16)],\n    \"model__activation\": [\"relu\", \"tanh\"],\n    \"model__alpha\": [1e-4, 1e-3, 1e-2],\n    \"model__learning_rate_init\": [1e-3, 5e-4],\n}\n\nsearch = GridSearchCV(\n    pipeline,\n    param_grid=param_grid,\n    scoring=\"roc_auc\",\n    cv=3,\n    n_jobs=-1,\n)\n\nsearch.fit(X_train, y_train)\n\nbest_model = search.best_estimator_\nproba = best_model.predict_proba(X_test)[:, 1]\npred = best_model.predict(X_test)\n\nauc = roc_auc_score(y_test, proba)\nreport = classification_report(y_test, pred)\n\nprint(\"Best params:\", search.best_params_)\nprint(\"ROC AUC:\", auc)\nprint(report)",
+    "explanation": "This pipeline imputes missing values, scales numeric features, encodes categoricals, tunes key MLP hyperparameters, and evaluates probabilistic classification output with ROC AUC and a classification report.",
+    "inputs": "A tabular dataset with numeric and categorical columns, plus a target vector for classification.",
+    "outputs": "Class predictions, class probabilities from predict_proba, ROC AUC, and precision/recall/F1 metrics.",
+    "notes": "Feature scaling is mandatory because MLP is sensitive to input scale and optimization quality. Hidden layer sizes should start small on tabular data, then increase only if validation performance justifies the extra capacity. Early stopping is a practical default for production-like training because it reduces overfitting and wasted compute. Grid search should prioritize solver, hidden size, regularization, and learning rate in that order."
+  },
+  "learning_resources": [
+    {
+      "title": "MLPClassifier — scikit-learn documentation",
+      "url": "https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html",
+      "type": "documentation",
+      "why_to_read": "Authoritative API reference for parameters, attributes, and training behavior.",
+      "expected_outcome": "Correct production usage of MLPClassifier.",
+      "reading_time": 20
+    },
+    {
+      "title": "Neural network models (supervised) — scikit-learn user guide",
+      "url": "https://scikit-learn.org/stable/modules/neural_networks_supervised.html",
+      "type": "guide",
+      "why_to_read": "Explains training behavior, scaling requirements, solver trade-offs, and complexity.",
+      "expected_outcome": "Strong engineering understanding of when MLP works well.",
+      "reading_time": 25
+    },
+    {
+      "title": "CS229 notes: Deep Learning — Stanford University",
+      "url": "https://cs229.stanford.edu/notes2020spring/cs229-notes-deep_learning.pdf",
+      "type": "guide",
+      "why_to_read": "University-level treatment of neural network optimization and backpropagation.",
+      "expected_outcome": "Better mathematical intuition for gradient-based learning.",
+      "reading_time": 40
+    },
+    {
+      "title": "Deep Learning",
+      "url": "https://www.deeplearningbook.org/",
+      "type": "guide",
+      "why_to_read": "Canonical deep learning reference for optimization, regularization, and representation learning.",
+      "expected_outcome": "Durable conceptual grounding for neural network design.",
+      "reading_time": 60
+    },
+    {
+      "title": "Original backpropagation reference by Rumelhart, Hinton, and Williams",
+      "url": "https://www.nature.com/articles/323533a0",
+      "type": "article",
+      "why_to_read": "Foundational paper for training multilayer networks with backpropagation.",
+      "expected_outcome": "Historical and mathematical grounding in the core training algorithm.",
+      "reading_time": 35
+    }
+  ]
+}

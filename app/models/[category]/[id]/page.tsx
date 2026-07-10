@@ -12,6 +12,7 @@ import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 import { CodeBlock } from '@/components/shared/CodeBlock';
 import LearningResources from '@/components/shared/LearningResources';
 import { Prose } from '@/components/shared/Prose';
+import RecommendedNextSection from '@/components/shared/RecommendedNextSection';
 import { Terminal, AlertCircle, Check, AlertTriangle, ArrowUpCircle, ArrowDownCircle, CheckCircle2 } from 'lucide-react';
 
 export async function generateStaticParams() {
@@ -58,6 +59,12 @@ export default async function ModelDetailPage({ params }: PageProps) {
   ];
   
   const relatedContent = getRelatedContent('model', model.id, validCategory);
+
+  // Resolve Recommended Next items
+  const recommendedNextItems = (model.recommendednext || []).map(name => ({
+    name,
+    slug: resolveModelByName(name, validCategory)
+  }));
 
   // Resolve cross-links for "Also Worth Knowing" section
   const relatedKnowledgeLinks = {
@@ -249,6 +256,8 @@ export default async function ModelDetailPage({ params }: PageProps) {
       )}
 
       <ModelCollapsibleSections model={model} relatedKnowledgeLinks={relatedKnowledgeLinks} category={validCategory} />
+
+      <RecommendedNextSection items={recommendedNextItems} category={validCategory} />
 
       <RelatedContent items={relatedContent} />
 

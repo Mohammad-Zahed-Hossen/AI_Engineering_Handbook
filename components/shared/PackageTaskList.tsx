@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { 
-  ChevronDown, 
   ChevronRight, 
   CheckCircle2, 
   XCircle, 
@@ -17,6 +16,7 @@ import type { PackageTask } from '@/types/package';
 import ExpandableText from '@/components/shared/ExpandableText';
 import VisualizationEquivalents from '@/components/shared/VisualizationEquivalents';
 import type { VisualizationEquivalent } from '@/types/package';
+import CollapsibleRow from './CollapsibleRow';
 
 interface ResolvedRef { id: string; href: string; name: string }
 
@@ -123,7 +123,7 @@ function getNormalizedSyntaxFunc(syntax: string): string {
   return lastPart;
 }
 
-export default function PackageTaskList({ tasks, packageName, language = 'python' }: PackageTaskListProps) {
+export default function PackageTaskList({ tasks, packageName }: PackageTaskListProps) {
   const [expandedTasks, setExpandedTasks] = useState<Set<number>>(new Set());
 
   const toggleTask = (idx: number) => {
@@ -184,46 +184,44 @@ export default function PackageTaskList({ tasks, packageName, language = 'python
         const visualizationEquivalents = task.visualization_equivalents ?? [];
 
         return (
-          <section
+          <CollapsibleRow
             key={`${task.task}-${idx}`}
             id={taskAnchor}
-            className="scroll-mt-24 rounded-lg border border-border bg-card overflow-hidden"
-          >
-            <button
-              onClick={() => toggleTask(idx)}
-              className="w-full px-4 py-3.5 border-b border-border bg-muted/10 flex items-start gap-3 text-left cursor-pointer hover:bg-muted/20 transition-all select-none"
-              aria-expanded={isExpanded}
-            >
+            label={
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span className="text-sm font-bold text-foreground leading-snug">
+                  {task.task}
+                </span>
+                {notes.category && (
+                  <span className="inline-block rounded-full bg-primary/10 text-primary px-2.5 py-0.5 text-[9px] font-semibold tracking-wide uppercase">
+                    {notes.category}
+                  </span>
+                )}
+                {notes.module && (
+                  <span className="inline-block rounded bg-muted text-muted-foreground px-1.5 py-0.5 text-[9px] font-mono font-medium">
+                    {notes.module}
+                  </span>
+                )}
+              </div>
+            }
+            teaser={
+              <div className="mt-1 text-xs text-muted-foreground leading-relaxed italic flex items-start sm:items-center gap-1">
+                <span className="text-primary/70 shrink-0 font-medium not-italic text-[10px] uppercase tracking-wider select-none">Trigger:</span>
+                <span className="line-clamp-2 sm:line-clamp-none">&quot;{task.mental_trigger}&quot;</span>
+              </div>
+            }
+            icon={
               <span className="shrink-0 mt-0.5 flex h-6 w-6 items-center justify-center rounded-lg border border-border bg-background text-[10px] font-mono font-bold text-muted-foreground select-none">
                 {idx + 1}
               </span>
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span className="text-sm font-bold text-foreground leading-snug">
-                    {task.task}
-                  </span>
-                  {notes.category && (
-                    <span className="inline-block rounded-full bg-primary/10 text-primary px-2.5 py-0.5 text-[9px] font-semibold tracking-wide uppercase">
-                      {notes.category}
-                    </span>
-                  )}
-                  {notes.module && (
-                    <span className="inline-block rounded bg-muted text-muted-foreground px-1.5 py-0.5 text-[9px] font-mono font-medium">
-                      {notes.module}
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground leading-relaxed italic flex items-start sm:items-center gap-1">
-                  <span className="text-primary/70 shrink-0 font-medium not-italic text-[10px] uppercase tracking-wider select-none">Trigger:</span>
-                  <span className="line-clamp-2 sm:line-clamp-none">&quot;{task.mental_trigger}&quot;</span>
-                </p>
-              </div>
-              {isExpanded
-                ? <ChevronDown className="w-4 h-4 shrink-0 mt-1 text-muted-foreground" />
-                : <ChevronRight className="w-4 h-4 shrink-0 mt-1 text-muted-foreground" />
-              }
-            </button>
-
+            }
+            open={isExpanded}
+            onToggle={() => toggleTask(idx)}
+            enableHashDeepLink={true}
+            align="start"
+            headerClassName="px-4 py-3.5 border-b border-border bg-muted/10 hover:bg-muted/20"
+            contentClassName="p-0 border-t-0 bg-card"
+          >
             {isExpanded && (
               <div className="p-4 space-y-6">
                 {/* 1. Technical Workbench: Syntax & Example */}
@@ -477,13 +475,12 @@ export default function PackageTaskList({ tasks, packageName, language = 'python
                       </div>
                     </div>
                   </div>
+                  </div>
                 </div>
-              </div>
-            )}
-          </section>
-        );
-      })}
-    </div>
+              )}
+            </CollapsibleRow>
+          );
+        })}
+      </div>
   );
 }
-

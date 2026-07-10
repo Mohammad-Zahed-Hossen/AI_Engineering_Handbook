@@ -1,0 +1,433 @@
+{
+  "id": "decision-tree",
+  "title": "Decision Tree",
+  "name": "Decision Tree",
+  "slug": "decision-tree",
+  "description": "Decision Tree is an interpretable, non-parametric model that recursively partitions feature space with greedy impurity reduction into rule-based paths that are easy to inspect, deploy, and explain.",
+  "tags": [
+    "ml",
+    "classification",
+    "regression",
+    "tree-based-learning",
+    "non-parametric-model"
+  ],
+  "aliases": [
+    "CART (Classification and Regression Tree)",
+    "Classification Tree",
+    "Regression Tree"
+  ],
+  "keywords": [
+    "decision tree",
+    "CART",
+    "tree classifier",
+    "tree regressor",
+    "entropy",
+    "gini",
+    "information gain",
+    "pruning"
+  ],
+  "searchtokens": [
+    "decision tree",
+    "cart algorithm",
+    "sklearn decision tree",
+    "tree classifier",
+    "tree regressor",
+    "gini impurity",
+    "entropy criterion"
+  ],
+  "createdat": "2026-07-10T16:23:40+06:00",
+  "updatedat": "2026-07-10T16:23:40+06:00",
+  "lastverified": "2026-07-10T16:23:40+06:00",
+  "reviewfrequency": "annual",
+  "verifiedagainst": "canonical model knowledge as of 2026-07-10",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "verified",
+  "engineeringmaturity": "production",
+  "domain": "ml",
+  "category": "classification",
+  "difficulty": "beginner",
+  "engineeringarea": "supervised learning",
+  "estimatedreadingtime": 10,
+  "prerequisites": [
+    "Supervised learning basics",
+    "Bias-variance trade-off",
+    "Metric evaluation concepts"
+  ],
+  "recommendednext": [
+    "Random Forest",
+    "Gradient Boosting",
+    "XGBoost"
+  ],
+  "relatedcontent": [
+    {
+      "type": "model",
+      "id": "random-forest",
+      "relationship": "alternative"
+    },
+    {
+      "type": "model",
+      "id": "logistic-regression",
+      "relationship": "alternative"
+    },
+    {
+      "type": "model",
+      "id": "knn",
+      "relationship": "alternative"
+    },
+    {
+      "type": "model",
+      "id": "naive-bayes",
+      "relationship": "alternative"
+    },
+    {
+      "type": "package",
+      "id": "scikit-learn",
+      "relationship": "implemented-by"
+    }
+  ],
+  "owner": "AENS Knowledge Architecture",
+  "sources": [
+    {
+      "title": "scikit-learn Decision Trees User Guide",
+      "url": "https://scikit-learn.org/stable/modules/tree.html"
+    },
+    {
+      "title": "DecisionTreeClassifier API Reference",
+      "url": "https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html"
+    }
+  ],
+  "githubrepo": "https://github.com/scikit-learn/scikit-learn",
+  "problemtypes": [
+    "Tabular classification",
+    "Tabular regression",
+    "Rule-based decision flow construction",
+    "Nonlinear interaction modeling"
+  ],
+  "decisionsummary": {
+    "summary": "Decision Tree is an interpretable, non-parametric model that recursively partitions feature space with greedy impurity reduction into rule-based paths that are easy to inspect, deploy, and explain.",
+    "bestusecases": [
+      "Explainable business decision systems where human-readable rules matter more than marginal accuracy gains.",
+      "Tabular datasets with nonlinear feature interactions and mixed feature importance patterns.",
+      "Small to medium-sized datasets where fast iteration and low inference latency are priorities.",
+      "Rule extraction, auditability, and white-box AI workflows that need leaf-level reasoning."
+    ],
+    "avoidwhen": [
+      "Extremely high predictive accuracy is required and ensembles or boosted trees are acceptable.",
+      "High-dimensional sparse datasets where a single tree tends to overfit or become unstable.",
+      "Highly noisy labels or features, because greedy splits can chase noise.",
+      "Smooth decision boundaries or calibrated continuous extrapolation are required, especially in regression."
+    ],
+    "strengths": [
+      "Highly interpretable structure with explicit if-then decision paths and leaf-level outcomes.",
+      "Minimal preprocessing compared with scale-sensitive models, and it can handle numerical and categorical features conceptually, though scikit-learn requires encoding for categoricals.",
+      "Low-latency inference because prediction is a root-to-leaf traversal with depth-dependent cost.",
+      "Flexible nonlinear partitioning without a fixed functional form, making it useful when interactions are hard to specify manually."
+    ],
+    "limitations": [
+      "High variance and instability; small data changes can produce a very different tree.",
+      "Greedy optimization is locally optimal, so it does not guarantee the globally best tree.",
+      "Piecewise-constant predictions make the model poor at smooth interpolation and extrapolation, especially in regression.",
+      "Unpruned or deeply grown trees can overfit quickly, particularly with limited data or many features."
+    ],
+    "interpretability": "Rule-based decision paths provide human-readable logic from root to leaf. Feature importance can be derived from impurity reduction, though it should be treated as heuristic rather than causal. Tree visualization is practical with plot_tree or text export, which supports audits and model reviews. Leaf interpretation is direct: classification leaves expose class proportions, regression leaves expose target summaries. White-box characteristics make it easier to explain, validate, and debug than black-box models.",
+    "trainingcharacteristics": "Training uses greedy recursive partitioning, selecting the best split at each node under the chosen criterion. Split search evaluates candidate features and thresholds, with splitter=\"best\" performing exhaustive greedy search and splitter=\"random\" reducing search cost. Pruning via ccp_alpha reduces tree size after growth and is a key control for overfitting. Training is deterministic only when randomness is controlled via random_state; otherwise tie-breaking and feature permutation can vary. Training is usually fast on tabular data, but can become expensive as tree depth and feature count grow.",
+    "inferencecharacteristics": "Inference is a root-to-leaf traversal with one split decision per visited node. Latency is low and scales with depth rather than sample count at prediction time. Memory footprint is modest for shallow trees but grows with node count and tree complexity. CPU behavior is branch-heavy and less vectorizable than linear models, but still efficient for online scoring. Throughput is strong for small trees and moderate batch sizes, but deep trees reduce cache efficiency.",
+    "computationalcharacteristics": "Training complexity is typically O(n p log n) for efficient implementations, with worst-case behavior increasing with tree size and depth. Inference complexity is O(d), where d is tree depth; balanced trees often behave like O(log n). Deep trees increase training time, inference latency, and memory roughly proportional to node count. Scalability is limited by greedy split search and tree growth; large, high-dimensional datasets often favor ensembles or histogram-based boosters. Memory grows with the number of nodes m, which can approach O(n) in extreme overfitting cases."
+  },
+  "coreunderstanding": {
+    "intuition": "The model recursively partitions the input space into regions that become increasingly homogeneous with respect to the target. At each node, it selects the feature and threshold that gives the largest local impurity reduction.",
+    "learningmechanism": "This creates hierarchical decision rules that encode interactions without needing explicit feature crossing. The learning process is greedy: it optimizes one split at a time, then repeats on child nodes.",
+    "assumptions": [
+      "Local partitionability: nearby examples can be separated by a sequence of axis-aligned rules; violating this often yields deeper trees and weaker generalization.",
+      "Representative training data: node splits reflect real structure rather than sampling noise; violation increases instability and overfitting.",
+      "Feature relevance: useful signals exist in the provided features; if features are weak or noisy, split quality degrades quickly.",
+      "Greedy optimization: locally best splits are acceptable approximations; when not true, the tree may miss globally better structures.",
+      "Axis-aligned splits: decision boundaries can be approximated by recursive thresholding; if the true boundary is oblique or smooth, accuracy often suffers."
+    ],
+    "mathematicalintuition": "Gini impurity for classification:\n\n$$\nG(Q_m)=\\sum_k p_{mk}(1-p_{mk})\n$$\n\nwhere p_{mk} is the class proportion at node m.\n\nEntropy for classification:\n\n$$\nH(Q_m)=-\\sum_k p_{mk}\\log(p_{mk})\n$$\n\nwhich corresponds to information-theoretic uncertainty in the node.\n\nInformation gain is the reduction in impurity from a split:\n\n$$\nIG = H(parent)-\\frac{n_L}{n}H(left)-\\frac{n_R}{n}H(right)\n$$\n\nand the split chosen maximizes this reduction.\n\nVariance reduction for regression uses within-node squared error, with splits chosen to minimize target dispersion.\n\nCost complexity pruning balances fit and tree size:\n\n$$\nR_\\alpha(T)=R(T)+\\alpha|T|\n$$\n\nwhere larger \\alpha favors smaller pruned trees.",
+    "complexity": "Training: typically O(n p log n) for efficient implementations, with split search dominating on many tabular problems. Inference: O(d) per sample, where d is depth. Depth effect: deeper trees increase both search cost during training and traversal cost during inference. Feature count effect: larger p increases split-search cost and makes greedy search more expensive.",
+    "memorycomplexity": "Nodes: memory is O(m), and in worst cases m can grow toward O(n).",
+    "robustness": "Decision Trees are moderately robust to monotonic feature transforms but not robust to label noise or unstable split boundaries.",
+    "scalability": "Scaling is acceptable for medium tabular problems, but single trees are usually not the best choice for very large, high-dimensional, or sparse workloads.",
+    "overfittingtendency": "The model is high variance by default; without constraints such as max_depth, min_samples_leaf, or ccp_alpha, it can memorize the training set.",
+    "biasvariance": "Decision Trees typically have low bias and high variance, so they are often strong when interpretability matters and weaker when stability is the top priority."
+  },
+  "hyperparameters": [
+    {
+      "name": "criterion",
+      "purpose": "Controls the split-quality objective used at each node, such as Gini impurity or entropy/information gain for classification.",
+      "increaseeffect": "Bias: Usually decreases slightly if the criterion is better aligned with the class distribution. Variance: Can increase marginally if the tree fits finer distinctions. Speed: Can slow training if the criterion is costlier to evaluate. Memory: Usually unchanged.",
+      "decreaseeffect": "Bias: May increase if the split criterion is less informative. Variance: May decrease slightly by producing simpler split choices. Speed: Often improves if the criterion is cheaper. Memory: Usually unchanged.",
+      "tradeoffs": "More expressive criteria can improve accuracy, but the gains are often small relative to pruning or depth control. Entropy is often more expensive than Gini, so Gini is a practical default when throughput matters. Criterion choice rarely compensates for poor structural controls like an excessive tree depth.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with max_depth, min_samples_leaf, and ccp_alpha.",
+        "Practical tuning order: start with default criterion, then tune structural regularizers first."
+      ],
+      "commonmistakes": [
+        "Treating criterion as the main lever for generalization instead of controlling tree size."
+      ]
+    },
+    {
+      "name": "splitter",
+      "purpose": "Chooses whether each node uses exhaustive greedy split search (best) or randomized candidate selection (random).",
+      "increaseeffect": "Bias: May increase with random if optimal splits are missed. Variance: Can decrease slightly because randomness can act as regularization. Speed: Usually improves with random. Memory: Usually unchanged.",
+      "decreaseeffect": "Bias: May decrease with best due to more exact local optimization. Variance: Can increase because the tree may more tightly fit the training data. Speed: Usually slows training with exhaustive search. Memory: Usually unchanged.",
+      "tradeoffs": "best is the standard choice for accuracy-oriented single trees. random can be useful when training speed or stochastic regularization matters. Randomness can make model audits less repeatable unless random_state is fixed.",
+      "tuningpriority": "Low to Medium",
+      "interactions": [
+        "Interacts with max_features and random_state.",
+        "Practical tuning order: leave best unless you need speed or extra randomness."
+      ],
+      "commonmistakes": [
+        "Using random without controlling random_state, then misreading variation as a performance regression."
+      ]
+    },
+    {
+      "name": "max_depth",
+      "purpose": "Caps tree depth to control overfitting, model size, and rule complexity.",
+      "increaseeffect": "Bias: Decreases. Variance: Increases. Speed: Slower training and slower inference. Memory: Increases due to more nodes.",
+      "decreaseeffect": "Bias: Increases. Variance: Decreases. Speed: Faster training and faster inference. Memory: Decreases.",
+      "tradeoffs": "Shallower trees are easier to explain and deploy. Deeper trees can capture more interactions but become unstable fast. In production, depth often governs the best balance between interpretability and accuracy.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts strongly with min_samples_leaf and ccp_alpha.",
+        "Practical tuning order: tune max_depth early because it sets the structural ceiling."
+      ],
+      "commonmistakes": [
+        "Letting the tree grow fully and hoping later tuning fixes overfitting."
+      ]
+    },
+    {
+      "name": "min_samples_split",
+      "purpose": "Sets the minimum number of samples required to split an internal node.",
+      "increaseeffect": "Bias: Increases. Variance: Decreases. Speed: Faster training because fewer candidate splits are explored. Memory: Decreases because fewer nodes are created.",
+      "decreaseeffect": "Bias: Decreases. Variance: Increases. Speed: Slower. Memory: Increases.",
+      "tradeoffs": "Larger values suppress weak splits and can stabilize training. Too-large values can block useful interactions and underfit complex tabular data. It is a coarse pre-pruning control and is often less precise than min_samples_leaf.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with min_samples_leaf, max_depth, and sample size.",
+        "Practical tuning order: use after setting a plausible depth cap."
+      ],
+      "commonmistakes": [
+        "Using too small a value on noisy data, which creates brittle branches."
+      ]
+    },
+    {
+      "name": "min_samples_leaf",
+      "purpose": "Forces each leaf to contain at least a minimum number of samples, improving stability and smoothing predictions.",
+      "increaseeffect": "Bias: Increases. Variance: Decreases significantly. Speed: Faster training due to fewer legal splits. Memory: Decreases.",
+      "decreaseeffect": "Bias: Decreases. Variance: Increases. Speed: Slower. Memory: Increases.",
+      "tradeoffs": "This is one of the most useful controls for preventing overfit leaves. It is especially important when rare classes or noisy labels create tiny, unreliable regions. In regression, it helps avoid extreme leaf-level predictions.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with max_depth, class_weight, and class imbalance handling.",
+        "Practical tuning order: tune with max_depth together."
+      ],
+      "commonmistakes": [
+        "Leaving it at 1 on small datasets and assuming pruning later will fully fix instability."
+      ]
+    },
+    {
+      "name": "max_features",
+      "purpose": "Limits how many features are considered at each split, injecting randomness and reducing split-search cost.",
+      "increaseeffect": "Bias: Decreases. Variance: Increases. Speed: Slower. Memory: Usually unchanged.",
+      "decreaseeffect": "Bias: Increases. Variance: Decreases. Speed: Faster. Memory: Usually unchanged.",
+      "tradeoffs": "Smaller values can regularize the tree and reduce correlated split behavior. Too-small values may miss the strongest feature at many nodes. It matters more when many features are noisy or redundant.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with splitter, criterion, and feature encoding width.",
+        "Practical tuning order: tune after depth and leaf-size constraints."
+      ],
+      "commonmistakes": [
+        "Applying aggressive feature limits on already small feature sets."
+      ]
+    },
+    {
+      "name": "ccp_alpha",
+      "purpose": "Controls minimal cost-complexity pruning and trims subtrees after growth to improve generalization.",
+      "increaseeffect": "Bias: Increases. Variance: Decreases. Speed: Faster inference and often smaller training artifact size. Memory: Decreases.",
+      "decreaseeffect": "Bias: Decreases. Variance: Increases. Speed: Slower inference if the tree grows larger. Memory: Increases.",
+      "tradeoffs": "Pruning is one of the most production-relevant controls for single trees. Larger values can improve stability, but overly aggressive pruning discards useful structure. It is often best tuned with a validation curve or pruning path.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with max_depth, min_samples_leaf, and min_samples_split.",
+        "Practical tuning order: tune structural pre-pruning first, then ccp_alpha for final cleanup."
+      ],
+      "commonmistakes": [
+        "Treating pruning as optional after an already overgrown tree instead of using it as a primary regularizer."
+      ]
+    },
+    {
+      "name": "class_weight",
+      "purpose": "Reweights classes during fitting to reduce bias toward dominant labels and improve minority-class sensitivity.",
+      "increaseeffect": "Bias: Decreases for minority classes, increases sensitivity to them. Variance: Can increase if weights are extreme. Speed: Usually unchanged. Memory: Usually unchanged.",
+      "decreaseeffect": "Bias: Increases toward majority classes. Variance: Can decrease slightly. Speed: Usually unchanged. Memory: Usually unchanged.",
+      "tradeoffs": "Helpful for class imbalance, but not a substitute for data quality or threshold calibration. Can interact poorly with tiny leaves if minority weights are overemphasized. Often best paired with evaluation metrics that reflect class imbalance.",
+      "tuningpriority": "High for imbalanced classification, Low otherwise.",
+      "interactions": [
+        "Interacts with min_samples_leaf, sampling strategy, and decision thresholds.",
+        "Practical tuning order: apply early if class imbalance is material."
+      ],
+      "commonmistakes": [
+        "Using class weights and then evaluating only raw accuracy."
+      ]
+    }
+  ],
+  "engineeringconsiderations": {
+    "datasetsuitability": [
+      "Decision Trees are best for tabular datasets with moderate feature counts and meaningful nonlinear interactions.",
+      "Mixed feature types are workable, but scikit-learn requires categorical encoding before fitting.",
+      "Missing values support depends on library version and splitter behavior; production pipelines should still impute explicitly for consistency.",
+      "Numerical features are handled naturally, and scaling is unnecessary because splits depend on thresholds, not distances."
+    ],
+    "scalability": [
+      "CPU scaling is limited because tree construction is inherently sequential across nodes, even if upstream preprocessing is parallelizable.",
+      "Training bottlenecks come from split search, sorting, and repeated node expansion.",
+      "Parallelism limitations make a single tree less scalable than some ensemble pipelines that can parallelize over estimators.",
+      "Ensemble scalability comparison: Random Forest and boosting scale better in predictive quality, but typically cost more in compute and memory per deployment artifact."
+    ],
+    "parallelization": "CPU scaling is limited because tree construction is inherently sequential across nodes, even if upstream preprocessing is parallelizable. Parallelism limitations make a single tree less scalable than some ensemble pipelines that can parallelize over estimators.",
+    "computationalcost": "Tree construction cost grows with feature count, candidate splits, and depth, making very deep trees expensive. Prediction is efficient because it follows a single path per sample and avoids dense matrix operations.",
+    "memorybehavior": "Memory growth is driven by node count, stored thresholds, child pointers, and leaf statistics. For memory-sensitive deployment, pruning and depth limits are more effective than post-hoc compression.",
+    "inferencecharacteristics": "Prediction is efficient because it follows a single path per sample and avoids dense matrix operations. Latency is low and scales with depth rather than sample count at prediction time.",
+    "robustness": [
+      "Decision Trees are less sensitive to feature scaling but can be sensitive to outliers because extreme values can create misleading split points.",
+      "Noisy labels can fragment the tree and reduce generalization sharply.",
+      "Feature noise reduces split quality and can cause unstable feature selection at upper nodes."
+    ],
+    "sensitivitytooutliers": "Decision Trees are less sensitive to feature scaling but can be sensitive to outliers because extreme values can create misleading split points.",
+    "featureengineeringdependency": "Encoding matters: categorical variables need one-hot or another compatible encoding in scikit-learn, since native categorical support is not provided in the classic API. Feature engineering is still valuable for missingness handling, rare-category control, and interaction exposure.",
+    "featurescalingrequirement": "Scaling is unnecessary because threshold splits are invariant to monotonic rescaling.",
+    "classimbalancebehavior": "class_weight=\"balanced\" is the first-line built-in control for imbalance. Sampling strategies can be combined with trees, but should be validated carefully because resampling changes split statistics. Thresholding may still be needed if business costs are asymmetric, since class weights do not directly optimize operating thresholds.",
+    "commonlimitations": [
+      "High variance under small data perturbations.",
+      "Instability across different training folds or random seeds.",
+      "Greedy optimization that cannot guarantee a globally optimal tree.",
+      "Axis-aligned boundaries that struggle with oblique or smooth target structure.",
+      "Poor extrapolation in regression because leaves are piecewise constant."
+    ],
+    "pipelineposition": "Pipeline placement should be after imputation and encoding, with class weighting applied only in the estimator stage."
+  },
+  "comparisons": [
+    {
+      "model": "Logistic Regression",
+      "choose_this_when": "You need nonlinearity, rule-based paths, and interaction discovery without manual feature crosses.",
+      "prefer_other_when": "You need smoother probability behavior, stronger calibration, or a smaller and more stable linear baseline.",
+      "tradeoffs": "Tree gives interpretability through branching; logistic regression gives stability, simpler deployment, and better behavior on linearly separable or high-dimensional sparse data."
+    },
+    {
+      "model": "Random Forest",
+      "choose_this_when": "You want interpretability from a single tree and very low inference overhead.",
+      "prefer_other_when": "You need substantially better accuracy and robustness with moderate interpretability loss.",
+      "tradeoffs": "Tree is easier to explain and smaller; Random Forest usually reduces variance and is more reliable in production."
+    },
+    {
+      "model": "Gradient Boosting",
+      "choose_this_when": "You need a transparent baseline, fast single-model inspection, or a compact rule set.",
+      "prefer_other_when": "You need stronger predictive performance and are willing to accept more tuning complexity.",
+      "tradeoffs": "Tree is simpler and more interpretable; boosting usually improves accuracy but is harder to explain and tune."
+    },
+    {
+      "model": "XGBoost",
+      "choose_this_when": "You need a white-box single model with minimal dependencies and easy visualization.",
+      "prefer_other_when": "You need top-tier tabular accuracy, regularization options, and efficient boosted-tree optimization.",
+      "tradeoffs": "Tree is the simplest tree learner; XGBoost is typically much stronger on structured data but less interpretable."
+    },
+    {
+      "model": "LightGBM",
+      "choose_this_when": "You want a compact, human-readable rule structure and low deployment complexity.",
+      "prefer_other_when": "You need very fast training on large tabular datasets and strong performance with histogram-based boosting.",
+      "tradeoffs": "Tree is less powerful but easier to audit; LightGBM is more scalable and usually more accurate."
+    },
+    {
+      "model": "Support Vector Machine (SVM)",
+      "choose_this_when": "You need explainable branching logic and direct feature-threshold rules.",
+      "prefer_other_when": "You need strong margin-based classification and are comfortable with kernel tuning or scaling requirements.",
+      "tradeoffs": "Tree handles heterogeneous tabular features naturally; SVM can outperform on some margin-based problems but is less interpretable and often less convenient for mixed tabular pipelines."
+    }
+  ],
+  "relatedknowledge": {
+    "relatedmodels": [
+      "DecisionTreeClassifier",
+      "DecisionTreeRegressor",
+      "Random Forest",
+      "Extra Trees",
+      "Gradient Boosting Trees"
+    ],
+    "alternative_models": [
+      "Logistic Regression",
+      "Support Vector Machine",
+      "Random Forest",
+      "Gradient Boosting",
+      "XGBoost",
+      "LightGBM"
+    ],
+    "related_principles": [
+      "Bias-Variance Trade-off",
+      "Divide-and-Conquer",
+      "Information Theory",
+      "Entropy",
+      "Greedy Optimization"
+    ],
+    "related_workflows": [
+      "Classification Pipeline",
+      "Regression Pipeline",
+      "Feature Engineering",
+      "Model Evaluation",
+      "Hyperparameter Optimization"
+    ],
+    "related_patterns": [
+      "Cross Validation",
+      "Feature Selection",
+      "Pipeline Pattern"
+    ],
+    "related_packages": [
+      "scikit-learn",
+      "XGBoost",
+      "LightGBM",
+      "CatBoost"
+    ],
+    "related_guides": [
+      "Overfitting Debug Guide",
+      "Class Imbalance Guide"
+    ],
+    "related_registry": []
+  },
+  "quickstart": {
+    "language": "python",
+    "implementation_package": "scikit-learn",
+    "code": "import numpy as np\nimport pandas as pd\n\nfrom sklearn.compose import ColumnTransformer\nfrom sklearn.impute import SimpleImputer\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import OneHotEncoder\nfrom sklearn.model_selection import train_test_split, GridSearchCV\nfrom sklearn.tree import DecisionTreeClassifier, plot_tree\nfrom sklearn.metrics import classification_report, confusion_matrix\nimport matplotlib.pyplot as plt\n\ndf = pd.DataFrame({\n    \"age\": [25, 45, 35, np.nan, 52, 23, 41, 36],\n    \"income\": [50000, 90000, 65000, 58000, np.nan, 48000, 72000, 61000],\n    \"city\": [\"Tokyo\", \"Osaka\", \"Tokyo\", \"Nagoya\", \"Osaka\", \"Tokyo\", \"Nagoya\", \"Tokyo\"],\n    \"owns_home\": [\"no\", \"yes\", \"yes\", \"no\", \"yes\", \"no\", \"yes\", \"no\"],\n    \"target\": [0, 1, 1, 0, 1, 0, 1, 0],\n})\n\nX = df.drop(columns=[\"target\"])\ny = df[\"target\"]\n\nnum_features = [\"age\", \"income\"]\ncat_features = [\"city\", \"owns_home\"]\n\nnumeric_pipe = Pipeline([\n    (\"imputer\", SimpleImputer(strategy=\"median\")),\n])\n\ncategorical_pipe = Pipeline([\n    (\"imputer\", SimpleImputer(strategy=\"most_frequent\")),\n    (\"onehot\", OneHotEncoder(handle_unknown=\"ignore\")),\n])\n\npreprocessor = ColumnTransformer([\n    (\"num\", numeric_pipe, num_features),\n    (\"cat\", categorical_pipe, cat_features),\n])\n\nmodel = DecisionTreeClassifier(random_state=42)\n\npipe = Pipeline([\n    (\"preprocess\", preprocessor),\n    (\"model\", model),\n])\n\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.25, random_state=42, stratify=y\n)\n\nparam_grid = {\n    \"model__max_depth\": [2, 3, 4, None],\n    \"model__min_samples_leaf\": [1, 2, 3],\n    \"model__min_samples_split\": [2, 4, 6],\n    \"model__ccp_alpha\": [0.0, 0.001, 0.01],\n    \"model__criterion\": [\"gini\", \"entropy\"],\n}\n\nsearch = GridSearchCV(\n    pipe,\n    param_grid=param_grid,\n    cv=3,\n    scoring=\"f1\",\n    n_jobs=-1,\n)\n\nsearch.fit(X_train, y_train)\n\nbest_model = search.best_estimator_\ny_pred = best_model.predict(X_test)\n\nprint(\"Best params:\", search.best_params_)\nprint(classification_report(y_test, y_pred))\nprint(confusion_matrix(y_test, y_pred))\n\nplt.figure(figsize=(14, 6))\ntree_model = best_model.named_steps[\"model\"]\nfeature_names = best_model.named_steps[\"preprocess\"].get_feature_names_out()\nplot_tree(tree_model, feature_names=feature_names, class_names=[\"0\", \"1\"], filled=True, rounded=True)\nplt.tight_layout()\nplt.show()",
+    "explanation": "The pipeline imputes missing numeric and categorical values, encodes categoricals, and then fits a Decision Tree classifier. GridSearchCV tunes the most production-relevant tree controls rather than relying on a single default fit. The final tree is visualized after training so the learned rules can be inspected directly.",
+    "inputs": "Tabular dataset as a pandas DataFrame. Mixed numeric and categorical columns. Binary or multiclass classification target as a 1D label series.",
+    "outputs": "Predicted class labels from predict. Evaluation metrics from classification_report. Confusion matrix for error analysis. A rendered tree visualization for inspection.",
+    "notes": "Scaling is unnecessary because tree splits use thresholds, not distance metrics. OneHotEncoder is used because classic scikit-learn trees do not natively accept categorical strings. Tuning should prioritize max_depth, min_samples_leaf, and ccp_alpha before minor criterion changes. Tree plots are most useful when kept shallow; otherwise use export_text or depth-limited plots for readability."
+  },
+  "learning_resources": [
+    {
+      "title": "CS229 Decision Trees Notes",
+      "url": "https://cs229.stanford.edu/cs229-notes-decision_trees.pdf",
+      "type": "guide",
+      "why_to_read": "Concise academic explanation of splitting, greedy search, and complexity.",
+      "expected_outcome": "Reinforce the learning mechanism and runtime intuition.",
+      "reading_time": 35
+    },
+    {
+      "title": "Introduction to Statistical Learning, Chapter on Trees",
+      "url": "https://www.statlearning.com/",
+      "type": "guide",
+      "why_to_read": "Practical statistical treatment of trees, bias-variance, and interpretability.",
+      "expected_outcome": "Better model selection judgment and cleaner trade-off reasoning.",
+      "reading_time": 45
+    },
+    {
+      "title": "Classification and Regression Trees (CART)",
+      "url": "https://www.routledge.com/Classification-and-Regression-Trees/Breiman-Friedman-Olshen-Stone/p/book/9780412048418",
+      "type": "article",
+      "why_to_read": "Original reference for CART methodology and pruning theory.",
+      "expected_outcome": "Know the foundational algorithmic design and historical context.",
+      "reading_time": 60
+    }
+  ]
+}

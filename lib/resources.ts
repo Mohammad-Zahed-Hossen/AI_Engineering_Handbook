@@ -61,6 +61,10 @@ export function formatContentType(type: string): string {
     workflow: 'Workflow',
     cheatsheet: 'Cheatsheet',
     registry: 'Registry',
+    debug_guide: 'Debug Guide',
+    pattern: 'Pattern',
+    principle: 'Principle',
+    decision_guide: 'Decision Guide',
   };
   return labels[type] ?? type;
 }

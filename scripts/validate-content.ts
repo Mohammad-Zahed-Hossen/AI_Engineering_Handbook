@@ -505,6 +505,7 @@ for (const [url, locations] of docsUrlRegistry.entries()) {
 // ── STEP 10: Double-Escaped Newline Check ─────────────────────
 console.log(`\n📊 Checking for double-escaped newlines (literal \\n) in content fields...`);
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function checkForDoubleEscapedNewlines(obj: any, filePath: string, path: string = ''): void {
   if (typeof obj === 'string') {
     // Check for literal \n (backslash followed by n) that appears to be used as line breaks

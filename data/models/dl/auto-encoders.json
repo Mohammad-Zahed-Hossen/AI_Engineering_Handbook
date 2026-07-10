@@ -1,0 +1,422 @@
+{
+  "id": "auto-encoders",
+  "title": "Autoencoder",
+  "name": "Autoencoder",
+  "slug": "auto-encoders",
+  "description": "An autoencoder is an unsupervised encoder-decoder neural network that learns compact latent representations by minimizing reconstruction error on its own inputs.",
+  "tags": [
+    "dl",
+    "autoencoder",
+    "representation-learning",
+    "unsupervised-learning"
+  ],
+  "aliases": [
+    "Autoencoder",
+    "Autoencoders",
+    "Auto-Encoder",
+    "Encoder-Decoder Network"
+  ],
+  "keywords": [
+    "autoencoder",
+    "autoencoder model",
+    "dimensionality reduction",
+    "latent space",
+    "reconstruction loss"
+  ],
+  "searchtokens": [
+    "autoencoder",
+    "representation learning",
+    "dimensionality reduction",
+    "reconstruction loss"
+  ],
+  "createdat": "2026-07-10T11:22:00+06:00",
+  "updatedat": "2026-07-10T11:22:00+06:00",
+  "lastverified": "2026-07-10T11:22:00+06:00",
+  "reviewfrequency": "annual",
+  "verifiedagainst": "canonical model knowledge as of 2026-07-10",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "verified",
+  "engineeringmaturity": "production",
+  "domain": "dl",
+  "category": "autoencoder",
+  "difficulty": "intermediate",
+  "engineeringarea": "unsupervised learning",
+  "estimatedreadingtime": 12,
+  "prerequisites": [
+    "Unsupervised learning basics",
+    "Deep learning primitives",
+    "Optimization algorithms"
+  ],
+  "recommendednext": [
+    "Variational Autoencoder (VAE)",
+    "Generative Adversarial Network (GAN)",
+    "Self-Supervised Learning"
+  ],
+  "relatedcontent": [
+    {
+      "type": "package",
+      "id": "pytorch",
+      "relationship": "implemented-by"
+    },
+    {
+      "type": "model",
+      "id": "mlp",
+      "relationship": "related_to"
+    },
+    {
+      "type": "model",
+      "id": "cnn",
+      "relationship": "related_to"
+    }
+  ],
+  "owner": "AENS Knowledge Architecture",
+  "sources": [
+    {
+      "title": "DataCamp: Introduction to Autoencoders",
+      "url": "https://www.datacamp.com/tutorial/introduction-to-autoencoders"
+    },
+    {
+      "title": "arXiv: Autoencoder Representation & Optimization",
+      "url": "https://arxiv.org/pdf/2501.13864.pdf"
+    }
+  ],
+  "githubrepo": "https://github.com/pytorch/pytorch",
+  "problemtypes": [
+    "Dimensionality reduction",
+    "Feature extraction",
+    "Anomaly detection"
+  ],
+  "decisionsummary": {
+    "summary": "An autoencoder is an unsupervised encoder-decoder neural network that learns compact latent representations by minimizing reconstruction error on its own inputs.",
+    "bestusecases": [
+      "Dimensionality reduction when you need nonlinear compression beyond PCA.",
+      "Feature extraction for downstream supervised models.",
+      "Anomaly detection using reconstruction error on mostly normal training data.",
+      "Data compression or representation learning for high-dimensional inputs such as images or sensor streams."
+    ],
+    "avoidwhen": [
+      "Supervised classification, where a task-specific classifier is usually a better fit.",
+      "Probabilistic generative modeling, where a VAE is preferred.",
+      "Large-scale multimodal generation, where autoencoders alone are usually too limited.",
+      "Small or unrepresentative datasets, where the model may learn unstable or trivial reconstructions."
+    ],
+    "strengths": [
+      "Learns nonlinear latent structure that can outperform linear compression methods on complex data.",
+      "Works well as a reusable feature compressor for downstream pipelines.",
+      "Can support anomaly detection without labels by using reconstruction error as a score.",
+      "Easy to deploy as an encoder-only feature extractor when reconstruction is not needed."
+    ],
+    "limitations": [
+      "Reconstruction does not guarantee semantic understanding; the model may preserve pixels or values without learning meaningful concepts.",
+      "Identity mapping is a real risk if the bottleneck or regularization is too weak.",
+      "Anomaly detection can fail when training data is contaminated with anomalies.",
+      "A basic autoencoder has no probabilistic latent model, so generation quality is limited relative to VAE."
+    ],
+    "interpretability": "The latent space is a learned compressed representation, but individual latent dimensions are rarely directly meaningful. The encoder compresses input information and the decoder expands it back to the original space. Feature visualization usually relies on latent interpolation, reconstruction inspection, or reconstruction-error analysis rather than direct symbolic interpretation.",
+    "trainingcharacteristics": "Autoencoders train end to end by minimizing reconstruction loss with backpropagation. Convergence is usually stable when input scaling and bottleneck size are chosen well, but the model can converge to trivial copy behavior if capacity is too high. Latent representations improve as the network learns to preserve only the most compressive signal needed for reconstruction.",
+    "inferencecharacteristics": "Encoder-only inference is fast and useful for embeddings, anomaly scoring, and feature extraction. Reconstruction inference is slightly heavier because it runs both encoder and decoder. CPU deployment is often acceptable for small models, while GPU helps more for large batches or image tensors.",
+    "computationalcharacteristics": "Training complexity is approximately $O(n \\cdot (p h + h z + z h))$ for $n$ samples with $p$ features, hidden size $h$, and latent size $z$, depending on layer depth. Inference is approximately $O(n \\cdot (p h + h z))$ for encoder-only use or similar to training without gradient cost for reconstruction. Memory usage is approximately $O(n \\cdot p)$ for data plus $O(p h + h z)$ for parameters and $O(h + z)$ per sample activation, with scalability limited by model depth and input dimensionality."
+  },
+  "coreunderstanding": {
+    "intuition": "An encoder maps the input into a compact bottleneck, the latent space stores the compressed representation, and the decoder reconstructs the original input from that latent vector. This works as information compression under reconstruction constraints, so the model is forced to learn which aspects of the input matter most. In practice, this is representation learning with reconstruction as the training signal.",
+    "learningmechanism": "An encoder maps the input into a compact bottleneck, the latent space stores the compressed representation, and the decoder reconstructs the original input from that latent vector. This works as information compression under reconstruction constraints, so the model is forced to learn which aspects of the input matter most. In practice, this is representation learning with reconstruction as the training signal.",
+    "assumptions": [
+      "Sufficient reconstruction signal: if inputs do not contain learnable structure, the model compresses noise and produces weak latent features.",
+      "Representative training distribution: if training data is biased, the latent space will encode that bias and generalize poorly.",
+      "Meaningful latent representation: if bottleneck design is too loose, the model may copy instead of compressing.",
+      "Moderate noise level: excessive noise can dominate the signal and hurt reconstruction quality.",
+      "Similar train/test distributions: strong domain shift reduces reconstruction fidelity and anomaly-score reliability."
+    ],
+    "mathematicalintuition": "Let $x \\in \\mathbb{R}^p$ be the input, $f_\\theta$ the encoder, and $g_\\phi$ the decoder:\n\n$$\nz = f_\\theta(x)\n$$\n\n$$\n\\hat{x} = g_\\phi(z)\n$$\n\nA basic mean-squared reconstruction objective is:\n\n$$\n\\mathcal{L}_{MSE} = \\frac{1}{n}\\sum_{i=1}^{n} \\|x_i - \\hat{x}_i\\|^2\n$$\n\nFor binary or normalized outputs in $[0,1]$, binary cross entropy can be used:\n\n$$\n\\mathcal{L}_{BCE} = -\\frac{1}{n}\\sum_{i=1}^{n}\\left(x_i \\log(\\hat{x}_i) + (1-x_i)\\log(1-\\hat{x}_i)\\right)\n$$\n\nThe model is optimized end to end by backpropagating the reconstruction loss through encoder and decoder parameters.",
+    "complexity": "Training cost scales roughly with samples $n$, features $p$, hidden dimension $h$, and latent dimension $z$ as $O(n \\cdot \\text{network cost})$, with the network cost dominated by dense matrix multiplies. Memory complexity is $O(p h + h z)$ for parameters and $O(h + z)$ per sample activation, plus batch storage during training. Runtime and memory increase quickly with deeper architectures and high-dimensional inputs.",
+    "memorycomplexity": "Memory complexity is $O(p h + h z)$ for parameters and $O(h + z)$ per sample activation, plus batch storage during training. Runtime and memory increase quickly with deeper architectures and high-dimensional inputs.",
+    "robustness": "Basic autoencoders are moderately robust to small perturbations but can be unstable under heavy noise, contamination, or out-of-distribution inputs.",
+    "scalability": "Scalability is limited by sequential execution, which constrains GPU parallelism and makes throughput lower than CNNs or Transformers.",
+    "overfittingtendency": "Overfitting is common when the bottleneck is too wide or the training set is small, because the model can learn near-identity mappings.",
+    "biasvariance": "A small bottleneck increases bias and reduces variance; a large model lowers bias but raises variance and identity-mapping risk."
+  },
+  "hyperparameters": [
+    {
+      "name": "latent_dim",
+      "purpose": "Controls the size of the compressed representation and is the most important capacity knob.",
+      "increaseeffect": "Bias decreases, variance rises, speed slows slightly, and memory use increases because the bottleneck becomes less restrictive.",
+      "decreaseeffect": "Bias rises, variance falls, speed may improve, and memory use decreases.",
+      "tradeoffs": "A larger latent space improves reconstruction quality but weakens compression. A smaller latent space improves feature compactness but may discard useful information.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Strongly interacts with hidden layer depth and dropout."
+      ],
+      "commonmistakes": [
+        "Choosing a latent space so large that the network learns an identity map."
+      ]
+    },
+    {
+      "name": "hidden_dims",
+      "purpose": "Defines intermediate encoder and decoder widths, which determine expressive power.",
+      "increaseeffect": "Bias decreases, variance rises, speed slows, and memory use increases.",
+      "decreaseeffect": "Bias rises, variance falls, speed improves, and memory use drops.",
+      "tradeoffs": "Wider layers help fit complex manifolds but increase overfitting risk and compute cost. Narrow layers enforce stronger compression but may underfit.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with latent_dim and epochs."
+      ],
+      "commonmistakes": [
+        "Using overly deep or wide layers before verifying the baseline bottleneck is useful."
+      ]
+    },
+    {
+      "name": "activation",
+      "purpose": "Controls nonlinearity in encoder and decoder layers.",
+      "increaseeffect": "More expressive activations typically reduce bias but can increase variance and instability.",
+      "decreaseeffect": "Simpler activations may reduce variance and speed up training, but can raise bias.",
+      "tradeoffs": "ReLU is common for hidden layers because it is efficient and stable. Output activation should match the input domain, especially for normalized or binary data.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with reconstruction loss and input scaling."
+      ],
+      "commonmistakes": [
+        "Using an output activation that mismatches the data range."
+      ]
+    },
+    {
+      "name": "dropout",
+      "purpose": "Regularizes the encoder-decoder network by reducing co-adaptation.",
+      "increaseeffect": "Bias rises, variance falls, speed may slow slightly, and the latent code may become more robust but less precise.",
+      "decreaseeffect": "Bias falls, variance rises, and overfitting risk increases.",
+      "tradeoffs": "Dropout improves generalization but can degrade reconstruction quality if too aggressive.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with latent_dim and hidden_dims."
+      ],
+      "commonmistakes": [
+        "Adding too much dropout and then inflating the network to compensate."
+      ]
+    },
+    {
+      "name": "batch_size",
+      "purpose": "Controls gradient estimate stability and training throughput.",
+      "increaseeffect": "Bias usually unchanged, variance of gradients decreases, speed can improve on GPU, and memory use increases.",
+      "decreaseeffect": "Gradient noise increases, speed may drop, and memory use decreases.",
+      "tradeoffs": "Large batches improve device utilization but may reduce generalization in some settings. Smaller batches can help optimization but increase wall-clock time.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with learning_rate and optimizer."
+      ],
+      "commonmistakes": [
+        "Using a batch size that exceeds GPU memory or makes reconstruction estimates too noisy."
+      ]
+    },
+    {
+      "name": "learning_rate",
+      "purpose": "Determines optimization step size for reconstruction-loss minimization.",
+      "increaseeffect": "Bias may fall faster early, variance and instability increase, and divergence risk rises.",
+      "decreaseeffect": "Training becomes more stable, but convergence slows and underfitting may persist longer.",
+      "tradeoffs": "Higher rates help rapid exploration but can overshoot good minima. Lower rates improve stability but often need more epochs.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts strongly with optimizer and batch_size."
+      ],
+      "commonmistakes": [
+        "Treating reconstruction loss plateaus as a reason to endlessly increase the learning rate."
+      ]
+    },
+    {
+      "name": "optimizer",
+      "purpose": "Defines the parameter update rule for encoder-decoder training.",
+      "increaseeffect": "More adaptive optimizers often speed convergence and reduce sensitivity to scale.",
+      "decreaseeffect": "Simpler optimizers may be cheaper per step but slower to tune and converge.",
+      "tradeoffs": "Adam is a strong default for most production autoencoders. Simpler optimizers can be useful in constrained or highly controlled environments.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with learning_rate and batch_size."
+      ],
+      "commonmistakes": [
+        "Changing optimizer without retuning learning rate."
+      ]
+    },
+    {
+      "name": "epochs",
+      "purpose": "Sets the number of full passes over the training set.",
+      "increaseeffect": "Bias usually decreases as fit improves, variance can rise, speed decreases, and memory is unchanged.",
+      "decreaseeffect": "Training may stop early and underfit, but overfitting risk may fall.",
+      "tradeoffs": "More epochs improve reconstruction only until validation loss stops improving. Early stopping is often safer than guessing a fixed large number.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with latent_dim, dropout, and learning_rate."
+      ],
+      "commonmistakes": [
+        "Training far past the point where validation reconstruction stops improving."
+      ]
+    }
+  ],
+  "engineeringconsiderations": {
+    "datasetsuitability": [
+      "Autoencoders work well on high-dimensional tabular data, images, sensor data, industrial monitoring streams, and feature extraction datasets.",
+      "They are most useful when the goal is compression, anomaly scoring, or learned embeddings rather than direct prediction."
+    ],
+    "scalability": [
+      "GPU acceleration helps because dense tensor operations parallelize well.",
+      "Mini-batching is standard, and distributed training is possible for larger datasets.",
+      "Mixed precision can reduce VRAM pressure, but the model is still limited by input size and decoder cost."
+    ],
+    "parallelization": "GPU acceleration leverages data and tensor parallelism natively. Batch operations are highly parallelized during dense forward and backward passes.",
+    "computationalcost": "The encoder-decoder must store activations for backpropagation, so memory use grows with depth and batch size. Latent representations are cheap to store and can be cached for downstream tasks. GPU VRAM can become a bottleneck with large inputs such as flattened images or dense feature vectors.",
+    "memorybehavior": "VRAM usage is dominated by activation maps stored during training. Deeper architectures require checkpointing or batch downsizing to fit memory limits.",
+    "inferencecharacteristics": "Encoder-only inference is fast and useful for embeddings, anomaly scoring, and feature extraction. Reconstruction inference is slightly heavier because it runs both encoder and decoder. CPU deployment is often acceptable for small models, while GPU helps more for large batches or image tensors.",
+    "robustness": [
+      "Basic autoencoders are moderately robust to small perturbations but can be unstable under heavy noise, contamination, or out-of-distribution inputs.",
+      "Denoising variants are often better when corruption is expected, while a basic AE can still reconstruct anomalies too well if the training distribution is contaminated."
+    ],
+    "sensitivitytooutliers": "High: training on outliers can distort the latent space and degrade normal reconstruction quality. During inference, outliers trigger large reconstruction errors.",
+    "featureengineeringdependency": "Normalization is required for training stability and meaningful reconstruction. Inputs should match output range constraints (e.g. [0,1] or [-1,1]).",
+    "featurescalingrequirement": "Mandatory: scale values (e.g., standard scaling or min-max normalization) to prevent gradient explosion and saturation of decoder output activations.",
+    "classimbalancebehavior": "Training is mostly label-independent, so class imbalance is less central than in supervised classification.",
+    "commonlimitations": [
+      "Reconstruction without semantic understanding.",
+      "Identity mapping risk when capacity is too high.",
+      "Poor anomaly detection with contaminated training data.",
+      "Lack of probabilistic interpretation compared with VAE.",
+      "Limited generative capability compared to VAEs."
+    ],
+    "pipelineposition": "In anomaly detection pipelines, the model usually sits before thresholding and downstream rule-based or supervised filtering. The anomaly score is typically reconstruction error, not a probability."
+  },
+  "comparisons": [
+    {
+      "model": "PCA",
+      "choose_this_when": "You need nonlinear compression or learned feature extraction.",
+      "prefer_other_when": "The data is close to linear structure and interpretability matters.",
+      "tradeoffs": "Autoencoders are more expressive; PCA is simpler, deterministic, and cheaper."
+    },
+    {
+      "model": "Variational Autoencoder (VAE)",
+      "choose_this_when": "You want a compact latent representation for reconstruction and representation learning.",
+      "prefer_other_when": "You need a probabilistic latent space and better generative behavior.",
+      "tradeoffs": "AEs are simpler and often easier to train; VAEs offer principled sampling and smoother latent spaces."
+    },
+    {
+      "model": "Denoising Autoencoder",
+      "choose_this_when": "The training data is mostly clean and you want the basic reconstruction objective.",
+      "prefer_other_when": "Inputs are corrupted or noisy and robustness is important.",
+      "tradeoffs": "Basic AE is simpler; DAE is usually more robust to noise by design."
+    },
+    {
+      "model": "Sparse Autoencoder",
+      "choose_this_when": "You want a straightforward latent bottleneck with minimal extra regularization.",
+      "prefer_other_when": "You need explicitly sparse activations for feature discovery.",
+      "tradeoffs": "Sparse AEs improve selectivity but add tuning complexity."
+    },
+    {
+      "model": "MLP",
+      "choose_this_when": "You need direct supervised prediction rather than representation learning.",
+      "prefer_other_when": "The task is supervised and labels are available.",
+      "tradeoffs": "Autoencoders learn embeddings; MLPs optimize task outputs directly."
+    },
+    {
+      "model": "Transformer Autoencoder",
+      "choose_this_when": "You want a simple latent compressor for fixed-size data.",
+      "prefer_other_when": "The data is sequence-heavy or requires attention-based context modeling.",
+      "tradeoffs": "AEs are lighter; Transformer AEs scale better for some structured sequence problems but are more expensive."
+    }
+  ],
+  "relatedknowledge": {
+    "relatedmodels": [
+      "Variational Autoencoder",
+      "Denoising Autoencoder",
+      "Sparse Autoencoder",
+      "Contractive Autoencoder",
+      "Convolutional Autoencoder"
+    ],
+    "alternative_models": [
+      "Principal Component Analysis",
+      "t-SNE",
+      "UMAP",
+      "Matrix Factorization",
+      "Transformer Autoencoder"
+    ],
+    "related_principles": [
+      "Representation Learning",
+      "Latent Space",
+      "Bottleneck Learning",
+      "Reconstruction Loss",
+      "Feature Learning",
+      "Dimensionality Reduction"
+    ],
+    "related_workflows": [
+      "Anomaly Detection",
+      "Feature Extraction",
+      "Data Compression",
+      "Representation Learning",
+      "Transfer Learning"
+    ],
+    "related_patterns": [
+      "Latent Space Visualization Guide",
+      "Encoder-Decoder Design Pattern",
+      "Dimensionality Reduction Guide",
+      "Model Regularization Pattern",
+      "Neural Network Debugging Guide"
+    ],
+    "related_packages": [
+      "PyTorch",
+      "TensorFlow",
+      "Keras",
+      "TorchVision",
+      "scikit-learn"
+    ],
+    "related_guides": [],
+    "related_registry": [
+      "Deep Learning Models"
+    ]
+  },
+  "quickstart": {
+    "language": "python",
+    "implementation_package": "PyTorch",
+    "code": "import torch\nimport torch.nn as nn\nfrom torch.utils.data import Dataset, DataLoader\n\ntorch.manual_seed(42)\n\nclass TabularDataset(Dataset):\n    def __init__(self, n=2000, input_dim=20):\n        x = torch.randn(n, input_dim)\n        x = (x - x.mean(dim=0)) / (x.std(dim=0) + 1e-6)\n        self.x = x\n\n    def __len__(self):\n        return self.x.size(0)\n\n    def __getitem__(self, idx):\n        return self.x[idx], self.x[idx]\n\nclass Autoencoder(nn.Module):\n    def __init__(self, input_dim=20, latent_dim=8):\n        super().__init__()\n        self.encoder = nn.Sequential(\n            nn.Linear(input_dim, 32),\n            nn.ReLU(),\n            nn.Linear(32, latent_dim),\n        )\n        self.decoder = nn.Sequential(\n            nn.Linear(latent_dim, 32),\n            nn.ReLU(),\n            nn.Linear(32, input_dim),\n        )\n\n    def forward(self, x):\n        z = self.encoder(x)\n        x_hat = self.decoder(z)\n        return x_hat, z\n\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\ntrain_ds = TabularDataset(n=3000, input_dim=20)\nval_ds = TabularDataset(n=600, input_dim=20)\n\ntrain_loader = DataLoader(train_ds, batch_size=64, shuffle=True)\nval_loader = DataLoader(val_ds, batch_size=64, shuffle=False)\n\nmodel = Autoencoder(input_dim=20, latent_dim=8).to(device)\ncriterion = nn.MSELoss()\noptimizer = torch.optim.Adam(model.parameters(), lr=1e-3)\n\ndef evaluate(model, loader):\n    model.eval()\n    total_loss = 0.0\n    total_n = 0\n    with torch.no_grad():\n        for xb, yb in loader:\n            xb = xb.to(device)\n            yb = yb.to(device)\n            x_hat, z = model(xb)\n            loss = criterion(x_hat, yb)\n            total_loss += loss.item() * xb.size(0)\n            total_n += xb.size(0)\n    return total_loss / max(total_n, 1)\n\nfor epoch in range(10):\n    model.train()\n    for xb, yb in train_loader:\n        xb = xb.to(device)\n        yb = yb.to(device)\n\n        optimizer.zero_grad()\n        x_hat, z = model(xb)\n        loss = criterion(x_hat, yb)\n        loss.backward()\n        optimizer.step()\n\n    val_loss = evaluate(model, val_loader)\n    print(f\"epoch={epoch+1} val_mse={val_loss:.6f}\")\n\nmodel.eval()\nsample = torch.randn(4, 20).to(device)\nwith torch.no_grad():\n    recon, latent = model(sample)\n    recon_error = ((sample - recon) ** 2).mean(dim=1)\n\nprint(\"latent_vectors_shape:\", tuple(latent.shape))\nprint(\"reconstructed_shape:\", tuple(recon.shape))\nprint(\"reconstruction_error:\", recon_error.cpu().numpy())\nprint(\"anomaly_scores:\", recon_error.cpu().numpy())",
+    "explanation": "This pipeline trains an encoder-decoder network to reconstruct its input, then uses latent vectors for representation extraction and reconstruction error for anomaly scoring. The same structure can serve compression, embedding, and detection workflows.",
+    "inputs": "Expected input tensor shape is (batch_size, input_features) for fully connected autoencoders. For images, tensors are usually flattened before entering the network, though convolutional autoencoders may keep spatial shape.",
+    "outputs": "The model returns latent vectors, reconstructed outputs, reconstruction loss, and anomaly scores when reconstruction error is used as a detector.",
+    "notes": "Feature normalization is essential for stable training and meaningful reconstruction. Latent dimension selection should be driven by validation loss and downstream utility, not just compression ratio. Reconstruction-error thresholds for anomaly detection are typically calibrated on clean validation data. GPU utilization improves with larger batches, but fully connected autoencoders can still be memory heavy on high-dimensional inputs. PyTorch is preferred over scikit-learn because autoencoders need differentiable neural-network layers, autograd, and accelerator support that scikit-learn does not provide."
+  },
+  "learning_resources": [
+    {
+      "title": "Intro to Autoencoders | TensorFlow Core",
+      "url": "https://www.tensorflow.org/tutorials/generative/autoencoder",
+      "type": "documentation",
+      "why_to_read": "Official Keras/TensorFlow reference with a practical autoencoder implementation.",
+      "expected_outcome": "Correct TensorFlow/Keras usage for reconstruction workflows.",
+      "reading_time": 25
+    },
+    {
+      "title": "Autoencoders in Machine Learning - GeeksforGeeks",
+      "url": "https://www.geeksforgeeks.org/machine-learning/auto-encoders/",
+      "type": "article",
+      "why_to_read": "Concise practitioner overview of autoencoder structure and common variants.",
+      "expected_outcome": "Fast refresh on AE concepts and terminology.",
+      "reading_time": 20
+    },
+    {
+      "title": "Deep Learning Book — Representation learning and autoencoders",
+      "url": "https://www.deeplearningbook.org/",
+      "type": "guide",
+      "why_to_read": "Foundational reference for representation learning, reconstruction, and latent-space reasoning.",
+      "expected_outcome": "Stronger conceptual grounding for production model selection.",
+      "reading_time": 45
+    },
+    {
+      "title": "From Autoencoder to Variational Autoencoder",
+      "url": "https://deep-generative-models.github.io/files/ppt/2020/Lecture%207-8%20From%20Autoencoder%20to%20VAE.pdf",
+      "type": "guide",
+      "why_to_read": "Academic lecture material showing the conceptual bridge from AE to VAE.",
+      "expected_outcome": "Clear understanding of why VAE is preferred for probabilistic latent modeling.",
+      "reading_time": 35
+    },
+    {
+      "title": "Denoising and Variational Autoencoders",
+      "url": "https://www.youtube.com/watch?v=SSXDkfiPs7c",
+      "type": "video",
+      "why_to_read": "High-quality lecture-style explanation of autoencoders, denoising autoencoders, and VAEs.",
+      "expected_outcome": "Better intuition for reconstruction loss and latent spaces.",
+      "reading_time": 50
+    }
+  ]
+}

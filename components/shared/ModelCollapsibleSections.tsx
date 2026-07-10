@@ -22,6 +22,7 @@ import { Model } from '@/types/model';
 import { ModelCategory } from '@/types/model';
 import { cn } from '@/lib/utils';
 import { Prose, ProseInline } from './Prose';
+import CollapsibleRow from './CollapsibleRow';
 
 interface ModelCollapsibleSectionsProps {
   model: Model;
@@ -51,39 +52,18 @@ function CollapsibleSection({
   children,
   teaser,
 }: CollapsibleSectionProps) {
-  const contentId = `${id}-content`;
-  
   return (
-    <section id={id} className="scroll-mt-24 border border-border rounded-lg bg-card overflow-hidden">
-      <button
-        onClick={onToggle}
-        className="w-full flex items-center justify-between p-4 bg-muted/20 hover:bg-muted/40 transition-colors select-none text-left"
-        aria-expanded={open}
-        aria-controls={contentId}
-      >
-        <div className="flex items-center gap-2.5">
-          <span className="text-primary">{icon}</span>
-          <div className="flex flex-col">
-            <h2 className="text-sm font-bold text-foreground font-sans m-0">{label}</h2>
-            {teaser && (
-              <span className="text-[10px] text-muted-foreground">
-                <ProseInline content={teaser} />
-              </span>
-            )}
-          </div>
-        </div>
-        <div>
-          {open ? (
-            <ChevronDown className="w-4 h-4 text-muted-foreground" />
-          ) : (
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          )}
-        </div>
-      </button>
-      <div id={contentId} className={cn('p-5 border-t border-border bg-card', open ? 'block' : 'hidden')}>
-        {children}
-      </div>
-    </section>
+    <CollapsibleRow
+      id={id}
+      label={label}
+      icon={<span className="text-primary">{icon}</span>}
+      open={open}
+      onToggle={onToggle}
+      teaser={teaser ? <ProseInline content={teaser} /> : undefined}
+      contentClassName="p-5 border-t border-border bg-card"
+    >
+      {children}
+    </CollapsibleRow>
   );
 }
 

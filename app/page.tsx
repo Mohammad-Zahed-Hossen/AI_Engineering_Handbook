@@ -20,8 +20,7 @@ import {
 import { buildSearchIndex } from "@/lib/search";
 import SearchBox from "@/components/shared/SearchBox";
 import ContentTypeBadge from "@/components/shared/ContentTypeBadge";
-import ContinueReadingSection from "@/components/shared/ContinueReadingSection";
-import RecentKnowledgeSection from "@/components/shared/RecentKnowledgeSection";
+import RecentActivity from "@/components/shared/RecentActivity";
 import { 
   ArrowRight, 
   Layers, 
@@ -34,7 +33,6 @@ import {
   FileCode2, 
   Star,
   Activity,
-  History,
   Bookmark,
   Flame,
   Zap,
@@ -127,20 +125,7 @@ export default function Home() {
       </header>
 
       {/* Section 2: Resume Learning (User Context Group) */}
-      <section className="rounded-xl border border-border bg-card p-5 space-y-4 shadow-sm">
-        <div className="flex items-center gap-2 border-b border-border pb-3 select-none">
-          <History className="w-4.5 h-4.5 text-primary" />
-          <h2 className="text-sm font-bold text-foreground">Continue Learning</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 divide-y md:divide-y-0 md:divide-x divide-border">
-          <div className="pb-4 md:pb-0 md:pr-4">
-            <ContinueReadingSection />
-          </div>
-          <div className="pt-4 md:pt-0 md:pl-6">
-            <RecentKnowledgeSection />
-          </div>
-        </div>
-      </section>
+      <RecentActivity />
 
       {/* Section 3: Knowledge Explorer */}
       <section className="space-y-3">

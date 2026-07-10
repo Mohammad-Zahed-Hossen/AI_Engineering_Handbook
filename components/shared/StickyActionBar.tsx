@@ -20,15 +20,18 @@ export default function StickyActionBar({ tocItems }: StickyActionBarProps) {
   const sectionIds = useMemo(() => tocItems?.map(t => t.id) || [], [tocItems]);
 
   useEffect(() => {
-    let lastScrollY = window.scrollY;
+    const mainElement = document.getElementById('main-scroll');
+    if (!mainElement) return;
+
+    let lastScrollY = mainElement.scrollTop;
 
     const updateState = () => {
-      const scrollY = window.scrollY;
+      const scrollY = mainElement.scrollTop;
       const direction = scrollY > lastScrollY ? 'down' : 'up';
 
       // Check if we are close to the bottom of the page
       const threshold = 50;
-      const isAtBottom = window.innerHeight + scrollY >= document.documentElement.scrollHeight - threshold;
+      const isAtBottom = mainElement.clientHeight + scrollY >= mainElement.scrollHeight - threshold;
 
       setVisible(scrollY > 200 && (direction === 'up' || isAtBottom));
 
@@ -59,9 +62,9 @@ export default function StickyActionBar({ tocItems }: StickyActionBarProps) {
       }
     };
 
-    window.addEventListener('scroll', updateState, { passive: true });
+    mainElement.addEventListener('scroll', updateState, { passive: true });
     updateState();
-    return () => window.removeEventListener('scroll', updateState);
+    return () => mainElement.removeEventListener('scroll', updateState);
   }, [sectionIds, tocItems]);
 
   const scrollToSection = (index: number) => {
@@ -158,7 +161,10 @@ export default function StickyActionBar({ tocItems }: StickyActionBarProps) {
             ))}
             <button
               onClick={() => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                const mainElement = document.getElementById('main-scroll');
+                if (mainElement) {
+                  mainElement.scrollTo({ top: 0, behavior: 'smooth' });
+                }
                 setSheetOpen(false);
               }}
               className="w-full text-left px-4 py-3 text-xs text-muted-foreground border-t border-border mt-1"

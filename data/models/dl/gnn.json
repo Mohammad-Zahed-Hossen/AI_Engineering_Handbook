@@ -1,0 +1,433 @@
+{
+  "id": "gnn",
+  "title": "Graph Neural Network (GNN)",
+  "name": "Graph Neural Network (GNN)",
+  "slug": "gnn",
+  "description": "Graph Neural Networks are deep learning models for graph-structured data that learn node, edge, or graph representations by iteratively passing and aggregating messages over edges, making them the default choice when relational structure is central to the prediction task.",
+  "tags": [
+    "dl",
+    "graph-neural-network",
+    "relational-learning",
+    "message-passing"
+  ],
+  "aliases": [
+    "GNN",
+    "Graph Neural Network",
+    "Message Passing Neural Network"
+  ],
+  "keywords": [
+    "gnn",
+    "graph neural network",
+    "message passing",
+    "neighborhood aggregation",
+    "graph convolution"
+  ],
+  "searchtokens": [
+    "gnn",
+    "graph neural network",
+    "neighborhood aggregation",
+    "message passing",
+    "relational learning"
+  ],
+  "createdat": "2026-07-10T11:22:00+06:00",
+  "updatedat": "2026-07-10T11:22:00+06:00",
+  "lastverified": "2026-07-10T11:22:00+06:00",
+  "reviewfrequency": "annual",
+  "verifiedagainst": "canonical model knowledge as of 2026-07-10",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "verified",
+  "engineeringmaturity": "production",
+  "domain": "dl",
+  "category": "graph neural network",
+  "difficulty": "advanced",
+  "engineeringarea": "supervised learning",
+  "estimatedreadingtime": 15,
+  "prerequisites": [
+    "Deep learning primitives",
+    "Graph theory basics",
+    "Linear algebra"
+  ],
+  "recommendednext": [
+    "Graph Convolutional Network (GCN)",
+    "Graph Attention Network (GAT)",
+    "GraphSAGE"
+  ],
+  "relatedcontent": [
+    {
+      "type": "package",
+      "id": "pytorch",
+      "relationship": "implemented-by"
+    },
+    {
+      "type": "model",
+      "id": "transformer",
+      "relationship": "related_to"
+    },
+    {
+      "type": "model",
+      "id": "cnn",
+      "relationship": "related_to"
+    },
+    {
+      "type": "model",
+      "id": "mlp",
+      "relationship": "related_to"
+    }
+  ],
+  "owner": "AENS Knowledge Architecture",
+  "sources": [
+    {
+      "title": "DataCamp: A Comprehensive Introduction to Graph Neural Networks (GNNs)",
+      "url": "https://www.datacamp.com/tutorial/comprehensive-introduction-graph-neural-networks-gnns-tutorial"
+    },
+    {
+      "title": "Medium: Build a Graph Neural Network with PyTorch Geometric",
+      "url": "https://medium.com/@rjnclarke/build-a-graph-neural-network-with-pytorch-geometric-fd7918345fa8"
+    }
+  ],
+  "githubrepo": "https://github.com/pyg-team/pytorch_geometric",
+  "problemtypes": [
+    "Node classification",
+    "Link prediction",
+    "Graph classification",
+    "Edge classification"
+  ],
+  "decisionsummary": {
+    "summary": "Graph Neural Networks are deep learning models for graph-structured data that learn node, edge, or graph representations by iteratively passing and aggregating messages over edges, making them the default choice when relational structure is central to the prediction task.",
+    "bestusecases": [
+      "Node classification on citation, social, biological, or knowledge graphs where neighborhood context is predictive.",
+      "Link prediction and edge classification for recommender systems, fraud detection, and relational forecasting.",
+      "Graph classification for molecules, proteins, circuits, or infrastructure networks where whole-graph structure matters.",
+      "Heterogeneous or sparse relational datasets where tabular feature engineering misses structural signal."
+    ],
+    "avoidwhen": [
+      "The data is naturally independent and tabular, where tree-based models often give simpler and stronger baselines.",
+      "The graph is poorly constructed, extremely noisy, or lacks meaningful edges, because message passing can amplify bad structure.",
+      "Very large graphs must be served with tight latency or memory limits and no sampling strategy is available.",
+      "Spatial or sequence tasks do not actually benefit from relational inductive bias, where CNNs or Transformers may be more appropriate."
+    ],
+    "strengths": [
+      "Learns directly from topology and attributes, so it can exploit relational information that standard ML misses.",
+      "Supports node-, edge-, and graph-level prediction with the same message-passing abstraction.",
+      "Works well with sparse graphs and mini-batch neighbor sampling at scale when paired with the right training strategy.",
+      "Can incorporate node features, edge features, and structural context in a unified representation."
+    ],
+    "limitations": [
+      "Performance depends heavily on graph quality, feature quality, and whether neighborhoods are informative.",
+      "Over-smoothing and over-squashing can reduce discriminative power in deeper models.",
+      "Training and inference can become expensive on large graphs without sampling, clustering, or subgraph batching.",
+      "Dynamic, heterogeneous, and highly non-homophilous graphs often require specialized architectures and tuning."
+    ],
+    "interpretability": "Node embeddings provide a learned latent representation of local and global graph context, but they are not inherently human-readable. Attention-based GNNs can offer per-edge importance signals, while message passing visualization can show which neighbors contribute to an update. Explainability methods such as subgraph attribution, gradient-based saliency, perturbation tests, and GNN-specific explainers help identify influential nodes, edges, and motifs. Attention weights should be treated as one signal, not a complete explanation, because message passing and nonlinear updates also affect the prediction.",
+    "trainingcharacteristics": "GNN training is usually driven by neighborhood aggregation, where each layer expands the effective receptive field by one hop. For large graphs, mini-batching plus neighbor sampling is common because full-batch training can be too memory intensive. Convergence behavior depends on graph homophily, depth, and sampling quality, and deeper models often need careful regularization to avoid over-smoothing. GraphSAINT and Cluster-GCN style sampling are useful when training on large, sparse graphs with limited GPU memory.",
+    "inferencecharacteristics": "GNN inference benefits from GPU acceleration, especially for dense batches of subgraphs or sampled neighborhoods, but full-graph inference can be slow on very large graphs. Latency is often dominated by neighborhood expansion, sparse aggregation, and graph data movement rather than raw matrix multiplies. Production deployment usually needs caching, sampling, offline embedding generation, or specialized serving paths for high-throughput graph workloads. For streaming or changing graphs, stale embeddings and incremental update strategy become important operational concerns.",
+    "computationalcharacteristics": "For $V$ nodes, $E$ edges, feature dimension $F$, hidden dimension $H$, and $L$ layers, a message-passing GNN typically costs about $O(L \\cdot E \\cdot H)$ to $O(L \\cdot (E F + V H^2))$ depending on layer type and implementation. Memory is usually dominated by node embeddings, edge index storage, intermediate activations, and sampling state. With neighbor sampling, training cost depends on sampled subgraph size rather than the full graph, which can make large-scale training tractable. Attention-based variants add extra per-edge or per-neighborhood overhead."
+  },
+  "coreunderstanding": {
+    "intuition": "A graph neural network learns by repeatedly letting each node collect information from its neighbors, transform that information, and update its embedding. This is often called message passing or neighborhood aggregation. Node features carry local attributes, edge structure carries relational context, and graph pooling can compress node-level information into graph-level representations. After several layers, each node embedding encodes increasingly larger neighborhoods, which is why GNN depth directly changes the scope of relational reasoning.",
+    "learningmechanism": "A graph neural network learns by repeatedly letting each node collect information from its neighbors, transform that information, and update its embedding. This is often called message passing or neighborhood aggregation. Node features carry local attributes, edge structure carries relational context, and graph pooling can compress node-level information into graph-level representations. After several layers, each node embedding encodes increasingly larger neighborhoods, which is why GNN depth directly changes the scope of relational reasoning.",
+    "assumptions": [
+      "The graph topology is meaningful and not just a noisy artifact.",
+      "Neighbor information is useful for the target task, or at least partially useful under heterophily-aware design.",
+      "Connected structure carries predictive signal beyond raw features.",
+      "Training and inference can respect graph sparsity or sampled subgraphs rather than requiring full dense operations."
+    ],
+    "mathematicalintuition": "A general message-passing layer can be written as:\n\n$$\nm_v^{(l)} = \\text{AGG}^{(l)}\\left(\\{\\, \\phi^{(l)}(h_v^{(l)}, h_u^{(l)}, e_{uv}) \\;|\\; u \\in \\mathcal{N}(v) \\,\\}\right)\n$$\n\n$$\nh_v^{(l+1)} = \\psi^{(l)}\\left(h_v^{(l)}, m_v^{(l)}\\right)\n$$\n\nwhere $h_v^{(l)}$ is the embedding of node $v$ at layer $l$, $\\mathcal{N}(v)$ is its neighborhood, and $e_{uv}$ is edge information if available. A graph convolution form using normalized adjacency can be written as:\n\n$$\nH^{(l+1)} = \\sigma\\left(\\tilde{D}^{-1/2}\\tilde{A}\\tilde{D}^{-1/2}H^{(l)}W^{(l)}\\right)\n$$\n\nwhere $\\tilde{A}=A+I$ and $\\tilde{D}$ is its degree matrix, which is the common GCN-style formulation. Aggregation functions are usually sum, mean, or max, and more advanced variants add attention:\n\n$$\n\\alpha_{uv} = \\text{softmax}_u\\left(a(h_v, h_u)\\right), \\quad\nm_v = \\sum_{u\\in \\mathcal{N}(v)} \\alpha_{uv} W h_u\n$$\n\nEmbedding updates are then repeated for $L$ layers, after which a node classifier, edge scorer, or graph readout head produces the final output.",
+    "complexity": "Node-wise update cost grows with neighborhood size and hidden dimension. Full-batch message passing is roughly $O(L \\cdot E \\cdot H)$ for common sparse implementations. Graph convolution variants may also involve $O(L \\cdot V \\cdot H^2)$ projection cost. Memory is roughly $O(VH + EH)$ plus activations and optimizer state, with sampling reducing effective batch memory. If neighbor sampling is used, complexity depends on sampled frontier size rather than full $E$, which can drastically reduce training cost.",
+    "memorycomplexity": "Memory is roughly $O(VH + EH)$ plus activations and optimizer state, with sampling reducing effective batch memory. If neighbor sampling is used, complexity depends on sampled frontier size rather than full $E$, which can drastically reduce training cost.",
+    "robustness": "GNNs can be robust when graph structure is trustworthy, but noisy edges, spurious links, and adversarial perturbations can strongly affect message passing.",
+    "scalability": "Scalability depends on sparsity and sampling; without them, large graphs quickly become memory- and latency-bound.",
+    "overfittingtendency": "GNNs can overfit on small labeled graphs, especially when expressive capacity is high but supervision is limited.",
+    "biasvariance": "They often have lower bias than linear graph baselines but can have high variance if the graph is small, noisy, or poorly sampled."
+  },
+  "hyperparameters": [
+    {
+      "name": "hidden_channels",
+      "purpose": "Sets the embedding width used inside message passing layers and downstream prediction heads.",
+      "increaseeffect": "Raises representational capacity, can improve accuracy, increases memory use, slows training/inference, and may overfit if labels are limited.",
+      "decreaseeffect": "Reduces capacity and memory, improves speed, and may underfit if graph structure is complex.",
+      "tradeoffs": "Wide embeddings help when node features and neighborhoods are rich, but they increase compute and can hurt generalization on small graphs.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts strongly with num_layers, dropout, and aggregation choice."
+      ],
+      "commonmistakes": [
+        "Increasing width to compensate for poor graph construction or inadequate sampling."
+      ]
+    },
+    {
+      "name": "num_layers",
+      "purpose": "Controls how many message-passing hops the model uses.",
+      "increaseeffect": "Expands receptive field, may improve long-range reasoning, but increases over-smoothing risk, latency, and training instability.",
+      "decreaseeffect": "Reduces receptive field, improves efficiency, and can preserve local distinctions better.",
+      "tradeoffs": "More layers can help if information is distributed across multiple hops, but too many layers often hurt node discrimination.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Strongly interacts with aggregation, neighbor_sampling, and graph homophily."
+      ],
+      "commonmistakes": [
+        "Using deep stacks without residual connections, normalization, or sampling-aware tuning."
+      ]
+    },
+    {
+      "name": "dropout",
+      "purpose": "Regularizes node embeddings and message-passing features during training.",
+      "increaseeffect": "Reduces overfitting, may stabilize noisy graphs, but can slow convergence and reduce signal propagation.",
+      "decreaseeffect": "Preserves signal strength, may improve fit on clean large graphs, but increases overfitting risk.",
+      "tradeoffs": "Useful on small or noisy graphs, but too much dropout can weaken already sparse relational signal.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Works together with weight_decay, dataset size, and label density."
+      ],
+      "commonmistakes": [
+        "Applying heavy dropout to already sparse supervision without checking training underfit."
+      ]
+    },
+    {
+      "name": "aggregation",
+      "purpose": "Defines how neighbor messages are combined, such as sum, mean, or max.",
+      "increaseeffect": "Not numeric in the usual sense; using richer or attention-based aggregation increases expressiveness and cost.",
+      "decreaseeffect": "Simpler aggregation reduces computation and often improves stability, but may lose relational nuance.",
+      "tradeoffs": "Mean aggregation is stable and efficient; attention or learned aggregation can improve accuracy but adds overhead and tuning complexity.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Should match graph homophily, edge noise level, and task complexity."
+      ],
+      "commonmistakes": [
+        "Using complex aggregation before validating that simple mean aggregation is insufficient."
+      ]
+    },
+    {
+      "name": "learning_rate",
+      "purpose": "Controls optimizer step size for end-to-end message-passing training.",
+      "increaseeffect": "Speeds early learning but can destabilize training or overshoot minima.",
+      "decreaseeffect": "Improves stability but can slow convergence and require more epochs.",
+      "tradeoffs": "Graph models often need conservative tuning because sparse batches and sampling noise can make gradients noisy.",
+      "tuningpriority": "Very high",
+      "interactions": [
+        "Interacts with batch_size, weight_decay, and neighbor sampling variance."
+      ],
+      "commonmistakes": [
+        "Using the same learning rate across very different graph batch sizes."
+      ]
+    },
+    {
+      "name": "weight_decay",
+      "purpose": "Adds L2 regularization to reduce overfitting.",
+      "increaseeffect": "Improves generalization, but may suppress useful embedding growth and underfit.",
+      "decreaseeffect": "Allows stronger fitting to graph structure, but raises overfitting risk.",
+      "tradeoffs": "Often important on small labeled graphs and weakly supervised settings, especially with high-capacity models.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Works with dropout, learning_rate, and graph size."
+      ],
+      "commonmistakes": [
+        "Leaving weight decay at defaults when training on tiny graphs."
+      ]
+    },
+    {
+      "name": "batch_size",
+      "purpose": "Determines how many nodes, seeds, or subgraphs are processed per update.",
+      "increaseeffect": "Improves GPU utilization and gradient stability, but raises memory use and may increase stale-neighborhood cost.",
+      "decreaseeffect": "Lowers memory use, but can produce noisier gradients and underutilize hardware.",
+      "tradeoffs": "For GNNs, batch size often means sampled nodes or subgraphs rather than IID examples, so the effective meaning depends on the loader.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Strongly interacts with neighbor_sampling, GPU memory, and graph size."
+      ],
+      "commonmistakes": [
+        "Treating graph batch size like standard tabular batch size without accounting for neighborhood expansion."
+      ]
+    },
+    {
+      "name": "neighbor_sampling",
+      "purpose": "Controls how many neighbors are sampled per hop during mini-batch training.",
+      "increaseeffect": "Improves neighborhood coverage and accuracy potential, but increases memory, compute, and latency.",
+      "decreaseeffect": "Reduces cost and speeds training/inference, but may miss useful context and lower accuracy.",
+      "tradeoffs": "This is often the key scalability knob for large graphs, but overly aggressive sampling can bias training.",
+      "tuningpriority": "Very high for large graphs",
+      "interactions": [
+        "Interacts with num_layers, batch_size, and graph sparsity."
+      ],
+      "commonmistakes": [
+        "Sampling too few neighbors for deep models, which starves upper layers of context."
+      ]
+    }
+  ],
+  "engineeringconsiderations": {
+    "datasetsuitability": [
+      "GNNs are most suitable when data is naturally relational, sparse, and graph-structured.",
+      "They work well for citation graphs, social graphs, molecule graphs, recommender systems, and knowledge graphs, especially when node and edge features are informative.",
+      "Homophilous graphs are the easiest setting, but heterophilous graphs can still work with specialized layers and feature design.",
+      "Dynamic and heterogeneous graphs are possible, but usually require more careful model and pipeline selection."
+    ],
+    "scalability": [
+      "Mini-batch training with neighbor sampling is the standard path to scaling beyond small graphs.",
+      "GraphSAINT and Cluster-GCN reduce memory pressure by training on sampled subgraphs or graph partitions, respectively.",
+      "Distributed GNN training can help when graphs exceed a single GPU, but it adds complexity around partitioning, communication, and feature caching."
+    ],
+    "parallelization": "Natively parallel across edges and node aggregates. Distributed platforms split computation via node-wise cluster partitioning.",
+    "computationalcost": "Sparse adjacency storage is far more memory-efficient than dense graph matrices, but message passing still scales with edges. The main bottlenecks are neighbor expansion, sparse aggregation, and activation storage across layers. Full-graph training can exhaust memory quickly as graph size and depth increase.",
+    "memorybehavior": "Memory footprint grows with the adjacency sparsity and node embedding sizes. Mini-batch neighbor sampling reduces active training memory dynamically.",
+    "inferencecharacteristics": "GNN inference benefits from GPU acceleration, especially for dense batches of subgraphs or sampled neighborhoods, but full-graph inference can be slow on very large graphs. Latency is often dominated by neighborhood expansion, sparse aggregation, and graph data movement rather than raw matrix multiplies. Production deployment usually needs caching, sampling, offline embedding generation, or specialized serving paths for high-throughput graph workloads. For streaming or changing graphs, stale embeddings and incremental update strategy become important operational concerns.",
+    "robustness": [
+      "Noisy nodes and adversarial edges can propagate errors through message passing, so graph quality matters strongly.",
+      "Disconnected components are usually manageable, but they can complicate batching and training if components are tiny or isolated.",
+      "Perturbations in topology can cause larger output changes than equivalent perturbations in IID tabular settings.",
+      "Robust training often uses feature normalization, dropout, edge dropout, and structural validation."
+    ],
+    "sensitivitytooutliers": "High: adversarial links or feature outliers easily propagate and bias neighboring node representations through successive message-passing hops.",
+    "featureengineeringdependency": "Constructing high-fidelity edges and scaling node/edge features is critical. Relational encoding replaces manual feature selection but relies on proper topology.",
+    "featurescalingrequirement": "Highly recommended to normalize node attributes and normalize the adjacency degrees to avoid scaling divergence during message updates.",
+    "classimbalancebehavior": "Imbalance is usually handled with weighted losses, class-aware sampling, focal-style variants, or data-level balancing at the graph or subgraph level. For node classification, minority classes may be underrepresented in neighborhoods, which makes sampling strategy especially important.",
+    "commonlimitations": [
+      "Over-smoothing makes deep GNNs produce overly similar node embeddings.",
+      "Over-squashing compresses long-range information into limited-dimensional representations.",
+      "Scalability limits appear quickly on dense neighborhoods or very large graphs.",
+      "Dynamic graph updates, heterophily, and dependence on graph quality often require architecture-specific fixes."
+    ],
+    "pipelineposition": "GNNs usually sit after graph construction and feature preprocessing, but before deployment-time caching or downstream graph analytics. In end-to-end systems, graph building and validation are critical upstream stages because model quality depends on topology quality."
+  },
+  "comparisons": [
+    {
+      "model": "Graph Convolutional Network (GCN)",
+      "choose_this_when": "You need the broad GNN family and may want to swap message-passing variants later.",
+      "prefer_other_when": "You know normalized graph convolution is sufficient and want a simpler fixed architecture.",
+      "tradeoffs": "GNN is the umbrella family; GCN is a specific convolutional instance with strong baseline behavior."
+    },
+    {
+      "model": "Graph Attention Network (GAT)",
+      "choose_this_when": "You want learnable neighbor weighting and interpretable edge-level importance.",
+      "prefer_other_when": "You need simpler, cheaper aggregation with lower overhead.",
+      "tradeoffs": "Attention adds flexibility but increases compute and tuning complexity."
+    },
+    {
+      "model": "GraphSAGE",
+      "choose_this_when": "You need inductive learning and scalable neighborhood sampling.",
+      "prefer_other_when": "You have a small, static graph and can afford full-batch methods.",
+      "tradeoffs": "GraphSAGE is strong for large-scale sampling; generic GNN framing is broader and model-agnostic."
+    },
+    {
+      "model": "Transformer",
+      "choose_this_when": "Your data is graph-structured and relational bias is essential.",
+      "prefer_other_when": "Your data is sequence-like, set-like, or globally tokenized without explicit graph topology.",
+      "tradeoffs": "Graph models exploit edges directly; Transformers usually need a different structural encoding."
+    },
+    {
+      "model": "Random Forest",
+      "choose_this_when": "The data is tabular or graph structure is weak, noisy, or unavailable.",
+      "prefer_other_when": "You can encode useful relational signal in a graph and benefit from message passing.",
+      "tradeoffs": "Random Forest is simpler, faster to deploy, and more robust on tabular baselines."
+    },
+    {
+      "model": "XGBoost",
+      "choose_this_when": "You need strong tabular performance with engineered graph-derived features.",
+      "prefer_other_when": "End-to-end relational learning is likely to outperform manual feature construction.",
+      "tradeoffs": "XGBoost is often stronger for tabular data; GNNs win when topology is first-class signal."
+    }
+  ],
+  "relatedknowledge": {
+    "relatedmodels": [
+      "GCN",
+      "GAT",
+      "GraphSAGE",
+      "MPNN",
+      "Graph Isomorphism Network",
+      "Heterogeneous GNN variants"
+    ],
+    "alternative_models": [
+      "Transformer",
+      "Random Forest",
+      "XGBoost",
+      "CNN for grid-like data",
+      "Classical link-prediction or embedding baselines"
+    ],
+    "related_principles": [
+      "Message Passing",
+      "Neighborhood Aggregation",
+      "Permutation Equivariance",
+      "Over-smoothing",
+      "Over-squashing",
+      "Graph Homophily"
+    ],
+    "related_workflows": [
+      "Node Classification",
+      "Link Prediction",
+      "Graph Classification",
+      "Graph Preprocessing",
+      "Large-Graph Sampling Training",
+      "Graph Inference and Embedding Export"
+    ],
+    "related_patterns": [
+      "Neighbor Sampling Pattern",
+      "Graph Mini-Batching Pattern",
+      "Feature Normalization Pattern",
+      "Graph Construction Pattern",
+      "Over-smoothing Debug Guide",
+      "Sparse Training Optimization Guide"
+    ],
+    "related_packages": [
+      "PyTorch Geometric",
+      "Deep Graph Library (DGL)",
+      "PyTorch",
+      "NetworkX",
+      "OGB (Open Graph Benchmark)"
+    ],
+    "related_guides": [],
+    "related_registry": [
+      "Deep Learning Models"
+    ]
+  },
+  "quickstart": {
+    "language": "python",
+    "implementation_package": "PyTorch Geometric",
+    "code": "import torch\nimport torch.nn.functional as F\nfrom torch_geometric.datasets import Planetoid\nfrom torch_geometric.nn import GCNConv\nfrom torch_geometric.loader import NeighborLoader\n\ndataset = Planetoid(root=\"data/Planetoid\", name=\"Cora\")\ndata = dataset[0]\n\nclass GCN(torch.nn.Module):\n    def __init__(self, in_channels, hidden_channels, out_channels):\n        super().__init__()\n        self.conv1 = GCNConv(in_channels, hidden_channels)\n        self.conv2 = GCNConv(hidden_channels, out_channels)\n\n    def forward(self, x, edge_index):\n        x = self.conv1(x, edge_index)\n        x = F.relu(x)\n        x = F.dropout(x, p=0.5, training=self.training)\n        x = self.conv2(x, edge_index)\n        return x\n\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nmodel = GCN(dataset.num_node_features, 64, dataset.num_classes).to(device)\ndata = data.to(device)\n\noptimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)\n\ndef train():\n    model.train()\n    optimizer.zero_grad()\n    out = model(data.x, data.edge_index)\n    loss = F.cross_entropy(out[data.train_mask], data.y[data.train_mask])\n    loss.backward()\n    optimizer.step()\n    return loss.item()\n\n@torch.no_grad()\ndef evaluate(mask):\n    model.eval()\n    out = model(data.x, data.edge_index)\n    pred = out.argmax(dim=-1)\n    acc = (pred[mask] == data.y[mask]).float().mean().item()\n    return acc\n\nfor epoch in range(1, 201):\n    loss = train()\n    if epoch % 20 == 0:\n        train_acc = evaluate(data.train_mask)\n        val_acc = evaluate(data.val_mask)\n        test_acc = evaluate(data.test_mask)\n        print(epoch, loss, train_acc, val_acc, test_acc)\n\n@torch.no_grad()\ndef infer_unseen_nodes(node_ids):\n    model.eval()\n    out = model(data.x, data.edge_index)\n    logits = out[node_ids]\n    probs = logits.softmax(dim=-1)\n    pred = probs.argmax(dim=-1)\n    conf = probs.max(dim=-1).values\n    return logits, pred, conf\n\nunseen_node_ids = torch.tensor([0, 10, 50], device=device)\nlogits, preds, confs = infer_unseen_nodes(unseen_node_ids)\nprint(logits.shape, preds.tolist(), confs.tolist())",
+    "explanation": "This example loads a benchmark node-classification dataset, builds a two-layer GCN-style message-passing model, trains it with masked supervision, and evaluates accuracy on standard splits. It also shows inference over selected nodes, which is the usual pattern for node-classification deployment on a fixed graph.",
+    "inputs": "Expected graph structure is node features x in R^(V x F), edge index edge_index in R^(2 x E), and labels y in R^V for node classification. Standard PyG Data objects also carry train, validation, and test masks for split management.",
+    "outputs": "Node embeddings from intermediate GNN layers. Predicted labels from the final logits. Graph embeddings if a pooling head is added for graph-level tasks. Evaluation metrics such as accuracy, F1, AUROC, or hits@k depending on the task.",
+    "notes": "Preprocessing should validate edges, normalize features, and construct the graph carefully before training. For large graphs, use neighbor sampling or subgraph loaders rather than full-batch training. GPU training is strongly recommended once the graph or hidden size grows beyond toy examples, and batch sizing should be chosen around neighborhood expansion cost rather than raw node count."
+  },
+  "learning_resources": [
+    {
+      "title": "PyTorch Geometric GNN Cheatsheet",
+      "url": "https://pytorch-geometric.readthedocs.io/en/2.6.1/cheatsheet/gnn_cheatsheet.html",
+      "type": "documentation",
+      "why_to_read": "Official compatibility and operator reference for message-passing layers.",
+      "expected_outcome": "Understand which PyG layers support sparse tensors, edge weights, and bipartite graphs.",
+      "reading_time": 20
+    },
+    {
+      "title": "A Gentle Introduction to Graph Neural Networks",
+      "url": "https://distill.pub/2021/gnn-intro/",
+      "type": "article",
+      "why_to_read": "Clear conceptual introduction to message passing and graph learning.",
+      "expected_outcome": "Build a strong mental model of GNN behavior.",
+      "reading_time": 30
+    },
+    {
+      "title": "PyTorch Geometric Tutorial",
+      "url": "https://www.youtube.com/watch?v=98RKasoZbPI",
+      "type": "video",
+      "why_to_read": "Practical end-to-end training walkthrough for graph classification and evaluation.",
+      "expected_outcome": "Learn a standard PyG training pipeline.",
+      "reading_time": 35
+    },
+    {
+      "title": "IBM: What is a GNN?",
+      "url": "https://www.ibm.com/think/topics/graph-neural-network",
+      "type": "article",
+      "why_to_read": "Concise industry-oriented overview of GNN use cases and value.",
+      "expected_outcome": "Connect GNNs to production applications.",
+      "reading_time": 15
+    },
+    {
+      "title": "GNNs Explained: Clear Guide to GNN Basics & Models",
+      "url": "https://www.youtube.com/watch?v=eGoszzMkGfU",
+      "type": "video",
+      "why_to_read": "Broad overview of GNN concepts, variants, and practical framing.",
+      "expected_outcome": "Reinforce the family of GNN methods and where they fit.",
+      "reading_time": 25
+    }
+  ]
+}

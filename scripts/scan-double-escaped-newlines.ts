@@ -10,6 +10,7 @@ function scanForDoubleEscapedNewlines(dir: string): { file: string; field: strin
     const content = fs.readFileSync(filePath, 'utf-8');
     const json = JSON.parse(content);
     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function scanObject(obj: any, prefix: string = '') {
       for (const key in obj) {
         const value = obj[key];

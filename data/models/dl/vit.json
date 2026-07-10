@@ -1,0 +1,429 @@
+{
+  "id": "vit",
+  "title": "Vision Transformer (ViT)",
+  "name": "Vision Transformer (ViT)",
+  "slug": "vit",
+  "description": "Vision Transformer is a transformer-based vision architecture that converts images into patch tokens and uses self-attention to model global spatial relationships, making it a strong choice when transfer learning, scale, and long-range visual context matter.",
+  "tags": [
+    "dl",
+    "transformer",
+    "computer-vision",
+    "image-classification"
+  ],
+  "aliases": [
+    "ViT",
+    "Vision Transformer"
+  ],
+  "keywords": [
+    "vit",
+    "vision transformer",
+    "self-attention",
+    "patch embedding",
+    "positional embedding"
+  ],
+  "searchtokens": [
+    "vit",
+    "vision transformer",
+    "patch embedding",
+    "attention mechanisms",
+    "computer vision"
+  ],
+  "createdat": "2026-07-10T11:22:00+06:00",
+  "updatedat": "2026-07-10T11:22:00+06:00",
+  "lastverified": "2026-07-10T11:22:00+06:00",
+  "reviewfrequency": "annual",
+  "verifiedagainst": "canonical model knowledge as of 2026-07-10",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "verified",
+  "engineeringmaturity": "production",
+  "domain": "dl",
+  "category": "transformer",
+  "difficulty": "advanced",
+  "engineeringarea": "supervised learning",
+  "estimatedreadingtime": 15,
+  "prerequisites": [
+    "Deep learning primitives",
+    "Computer vision basics",
+    "Attention mechanisms"
+  ],
+  "recommendednext": [
+    "Swin Transformer",
+    "Swin Transformer V2",
+    "Hybrid Vision Architectures"
+  ],
+  "relatedcontent": [
+    {
+      "type": "package",
+      "id": "pytorch",
+      "relationship": "implemented-by"
+    },
+    {
+      "type": "model",
+      "id": "transformer",
+      "relationship": "related_to"
+    },
+    {
+      "type": "model",
+      "id": "cnn",
+      "relationship": "related_to"
+    },
+    {
+      "type": "model",
+      "id": "mlp",
+      "relationship": "related_to"
+    }
+  ],
+  "owner": "AENS Knowledge Architecture",
+  "sources": [
+    {
+      "title": "arXiv: Swin Transformer V2: Scaling Up Capacity and Resolution",
+      "url": "https://arxiv.org/abs/2203.10638"
+    },
+    {
+      "title": "ICCV: Tokens-to-Token ViT: Training Vision Transformers from Scratch on ImageNet",
+      "url": "https://openaccess.thecvf.com/content/ICCV2021/papers/Yuan_Tokens-to-Token_ViT_Training_Vision_Transformers_From_Scratch_on_ImageNet_ICCV_2021_paper.pdf"
+    }
+  ],
+  "githubrepo": "https://github.com/google-research/vision_transformer",
+  "problemtypes": [
+    "Image classification",
+    "Fine-grained visual recognition",
+    "Multimodal sequence representation"
+  ],
+  "decisionsummary": {
+    "summary": "Vision Transformer is a transformer-based vision architecture that converts images into patch tokens and uses self-attention to model global spatial relationships, making it a strong choice when transfer learning, scale, and long-range visual context matter.",
+    "bestusecases": [
+      "Large-scale image classification and transfer learning pipelines.",
+      "Fine-grained visual recognition where global context improves discrimination.",
+      "Multimodal systems that reuse transformer-style token processing across vision and language.",
+      "Research and production settings where pretrained foundation models are adapted to downstream vision tasks."
+    ],
+    "avoidwhen": [
+      "Small labeled datasets without strong pretrained initialization.",
+      "Low-latency edge deployments with tight memory or compute limits.",
+      "Tasks dominated by local texture or small receptive-field cues where CNNs are more efficient.",
+      "Workloads that require strong robustness to resolution changes without careful resizing and adaptation."
+    ],
+    "strengths": [
+      "Global token interaction allows each patch to attend to every other patch, which is useful for long-range spatial dependencies.",
+      "Transfer learning is highly effective; pretrained ViT models adapt well to mid-sized and smaller benchmarks.",
+      "The architecture is clean and modular, which simplifies reuse across model families and tooling.",
+      "Strong fit for modern GPU training and batched inference workflows because attention stacks parallelize well in training."
+    ],
+    "limitations": [
+      "Standard attention scales quadratically with the number of patches, so high-resolution images increase compute and memory quickly.",
+      "ViT often needs large datasets or pretrained weights to match or exceed CNN performance.",
+      "Training from scratch can be unstable or data-hungry relative to convolutional baselines.",
+      "Deployment cost can be higher than lightweight CNNs for mobile or edge scenarios."
+    ],
+    "interpretability": "Attention maps can be visualized to inspect which patches influence a prediction, and attention rollout can aggregate attention flow across layers for a coarse saliency view. Token importance is useful for qualitative analysis, but it is not full explanation because class decisions also depend on MLP blocks, residual pathways, layer norm, and the learned patch embeddings.",
+    "trainingcharacteristics": "ViT typically performs best with substantial pretraining and transfer learning rather than training from scratch on small datasets. Convergence improves when image augmentation, warmup, and careful optimization are used, and the architecture benefits from large-scale training data and consistent preprocessing.",
+    "inferencecharacteristics": "ViT runs efficiently on GPUs in batched inference because patch embedding and transformer blocks are highly parallelizable. Latency grows with image resolution and patch count, so deployment decisions should account for resolution, batch size, and model depth. For production serving, preprocessing consistency is critical because resizing and normalization are part of the effective model input contract.",
+    "computationalcharacteristics": "For $N$ image patches, hidden size $d$, heads $h$, and layers $L$, standard self-attention has $O(N^2 d)$ time and $O(N^2)$ attention memory per layer. Training cost scales roughly with $O(LN^2 d)$, while inference cost is dominated by patch count and repeated attention across all encoder layers."
+  },
+  "coreunderstanding": {
+    "intuition": "ViT splits an image into fixed-size patches, flattens each patch, and projects it into a token embedding so the image becomes a sequence. A learnable class token aggregates information for classification, while positional embeddings preserve spatial order that would otherwise be lost in the tokenization step. Self-attention lets each patch interact with all others, which is why ViT can model global structure rather than only local neighborhoods. The transformer encoder then refines these representations through stacked attention and MLP blocks before the classification head produces logits.",
+    "learningmechanism": "ViT splits an image into fixed-size patches, flattens each patch, and projects it into a token embedding so the image becomes a sequence. A learnable class token aggregates information for classification, while positional embeddings preserve spatial order that would otherwise be lost in the tokenization step. Self-attention lets each patch interact with all others, which is why ViT can model global structure rather than only local neighborhoods. The transformer encoder then refines these representations through stacked attention and MLP blocks before the classification head produces logits.",
+    "assumptions": [
+      "Sufficient training data or pretrained weights are available; otherwise ViT may underperform CNN baselines.",
+      "Patch-based tokenization is a useful approximation of the image; if local structure matters more, this can be suboptimal.",
+      "Global attention provides value for the task; if the task is primarily local, the inductive bias may be weaker than CNNs.",
+      "Transfer learning assumptions hold across source and target domains; if domains differ heavily, adaptation quality drops."
+    ],
+    "mathematicalintuition": "Given image $x \\in \\mathbb{R}^{H \\times W \\times C}$, split it into $N$ patches of size $P \\times P$, flatten each patch, and embed it with a linear projection:\n\n$$\nz_0 = [x_{class}; x_p^1E; x_p^2E; \\dots; x_p^NE] + E_{pos}\n$$\n\nwhere $E$ is the patch projection matrix and $E_{pos}$ is the positional embedding. Multi-head self-attention is computed as:\n\n$$\n\\text{MSA}(Z)=\\text{Concat}(head_1,\\dots,head_h)W_O\n$$\n\n$$\nhead_i = \\text{Attention}(ZW_Q^{(i)},ZW_K^{(i)},ZW_V^{(i)})\n$$\n\n$$\n\\text{Attention}(Q,K,V)=\\text{softmax}\\left(\\frac{QK^\\top}{\\sqrt{d_k}}\\right)V\n$$\n\nwhich allows each head to learn different spatial relations. A transformer encoder block is:\n\n$$\nz'_l = \\text{MSA}(\\text{LN}(z_{l-1})) + z_{l-1}\n$$\n\n$$\nz_l = \\text{MLP}(\\text{LN}(z'_l)) + z'_l\n$$\n\nwith the classification head using the final class token:\n\n$$\n\\hat{y} = \\text{Head}(z_L^{class})\n$$\n\n.",
+    "complexity": "Patch count $N$ drives cost more directly than raw pixel count. Self-attention time: $O(N^2 d)$. Self-attention memory: $O(N^2)$. Training for $L$ layers: approximately $O(LN^2 d)$. Inference scales similarly with patch count, though batching can improve GPU efficiency.",
+    "memorycomplexity": "Self-attention memory: $O(N^2)$. Training for $L$ layers: approximately $O(LN^2 d)$. Inference scales similarly with patch count, though batching can improve GPU efficiency.",
+    "robustness": "ViT can be robust when pretrained at scale and adapted carefully, but it is sensitive to data quality, augmentation policy, and resolution changes.",
+    "scalability": "It scales well on accelerators for training and batch inference, but sequence length explodes with higher image resolution because patch count increases quadratically in attention cost.",
+    "overfittingtendency": "ViT tends to overfit more easily than CNNs on small datasets without strong regularization or pretrained initialization.",
+    "biasvariance": "Compared with CNNs, ViT generally has lower inductive bias and higher capacity, which helps at scale but can raise variance when data is limited."
+  },
+  "hyperparameters": [
+    {
+      "name": "image_size",
+      "purpose": "Defines the input resolution after preprocessing and resizing.",
+      "increaseeffect": "Bias can decrease for detail-heavy tasks, variance may increase, speed decreases, memory increases, and model capacity demand rises because patch count increases.",
+      "decreaseeffect": "Bias may increase, variance may decrease, speed improves, memory use drops, and representation quality may suffer if small details matter.",
+      "tradeoffs": "Higher resolution can improve accuracy, but compute and memory rise quickly due to more patches and quadratic attention cost.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Strongly interacts with patch_size, hidden_size, and deployment memory budget."
+      ],
+      "commonmistakes": [
+        "Changing resolution at inference without matching the preprocessing used in training."
+      ]
+    },
+    {
+      "name": "patch_size",
+      "purpose": "Sets the spatial granularity of tokenization.",
+      "increaseeffect": "Bias may increase, variance may decrease, speed improves, memory decreases, and local detail capture weakens.",
+      "decreaseeffect": "Bias may decrease, variance may increase, speed slows, memory increases, and fine-grained detail capture improves.",
+      "tradeoffs": "Small patches improve fidelity but rapidly increase token count and attention cost.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Directly controls token count N, which drives attention complexity."
+      ],
+      "commonmistakes": [
+        "Using very small patches without checking whether the resulting attention cost is feasible."
+      ]
+    },
+    {
+      "name": "hidden_size",
+      "purpose": "Sets the embedding width for patch tokens and transformer states.",
+      "increaseeffect": "Bias decreases, variance increases, speed decreases, memory increases, and capacity rises.",
+      "decreaseeffect": "Bias increases, variance decreases, speed improves, memory drops, and representation quality may fall.",
+      "tradeoffs": "Wider embeddings improve expressive power but increase parameter count and deployment cost.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Should be matched to num_attention_heads so per-head dimensions remain practical."
+      ],
+      "commonmistakes": [
+        "Scaling width without adjusting optimizer settings or batch size."
+      ]
+    },
+    {
+      "name": "num_hidden_layers",
+      "purpose": "Controls the depth of the transformer encoder stack.",
+      "increaseeffect": "Bias decreases, variance increases, speed decreases, memory increases, and representational depth improves.",
+      "decreaseeffect": "Bias increases, variance decreases, speed improves, memory drops, and model expressiveness declines.",
+      "tradeoffs": "Deeper models often improve accuracy but are harder to tune and serve.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts strongly with dropout, optimization stability, and transfer learning effectiveness."
+      ],
+      "commonmistakes": [
+        "Increasing depth to compensate for poor preprocessing or insufficient training data."
+      ]
+    },
+    {
+      "name": "num_attention_heads",
+      "purpose": "Determines how many attention subspaces process token relationships in parallel.",
+      "increaseeffect": "Bias may decrease slightly, variance may increase slightly, speed can decrease, memory can increase, and relational diversity can improve.",
+      "decreaseeffect": "Bias may increase, variance may decrease, speed improves, memory drops, and attention diversity can suffer.",
+      "tradeoffs": "Too many heads can fragment representation width; too few can reduce the model’s ability to model different spatial relations.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Must align with hidden_size because per-head dimension is derived from it."
+      ],
+      "commonmistakes": [
+        "Choosing head counts that leave each head too narrow to be useful."
+      ]
+    },
+    {
+      "name": "intermediate_size",
+      "purpose": "Sets the hidden width of the MLP block inside each transformer encoder layer.",
+      "increaseeffect": "Bias decreases, variance increases, speed decreases, memory increases, and nonlinear capacity improves.",
+      "decreaseeffect": "Bias increases, variance decreases, speed improves, memory drops, and representational richness may fall.",
+      "tradeoffs": "The MLP block often dominates parameter count, so this parameter strongly affects compute budget.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Should be tuned with hidden_size and depth rather than independently."
+      ],
+      "commonmistakes": [
+        "Over-sizing the MLP while ignoring patch count and image resolution constraints."
+      ]
+    },
+    {
+      "name": "hidden_dropout_prob",
+      "purpose": "Regularizes hidden activations in the transformer stack.",
+      "increaseeffect": "Bias increases slightly, variance decreases, speed is mostly unchanged, memory is mostly unchanged, and overfitting risk drops.",
+      "decreaseeffect": "Bias decreases, variance increases, speed is mostly unchanged, memory is mostly unchanged, and overfitting risk rises.",
+      "tradeoffs": "Useful for smaller datasets or noisy labels, but excessive dropout can slow convergence.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "More important when training data is limited."
+      ],
+      "commonmistakes": [
+        "Using dropout as a substitute for stronger data augmentation or transfer learning."
+      ]
+    },
+    {
+      "name": "attention_probs_dropout_prob",
+      "purpose": "Regularizes attention probability weights.",
+      "increaseeffect": "Bias increases slightly, variance decreases, speed is mostly unchanged, memory is mostly unchanged, and attention becomes less brittle.",
+      "decreaseeffect": "Bias decreases, variance increases, speed is mostly unchanged, memory is mostly unchanged, and overfitting risk rises.",
+      "tradeoffs": "Can improve robustness, but too much dropout may weaken attention sharpness and reduce accuracy.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with dataset size, augmentation strength, and pretrained initialization."
+      ],
+      "commonmistakes": [
+        "Applying heavy dropout without considering whether the model already has strong transfer learning support."
+      ]
+    }
+  ],
+  "engineeringconsiderations": {
+    "datasetsuitability": [
+      "ViT is best suited to medium-to-large image datasets or transfer learning pipelines with pretrained checkpoints.",
+      "It benefits from class diversity, good augmentation, and consistent image resolution.",
+      "Very small datasets usually need stronger regularization or a CNN baseline."
+    ],
+    "scalability": [
+      "ViT trains efficiently on GPUs with mixed precision and scales well across multiple devices because transformer operations are highly parallel.",
+      "Multi-GPU training and distributed data parallelism are common, and attention kernels benefit from modern accelerator support."
+    ],
+    "parallelization": "GPU acceleration parallelizes patch extraction and transformer layers natively. Batch training distributes computation effectively across threads.",
+    "computationalcost": "Training memory is dominated by activations and attention matrices, while inference memory also depends on batch size and preprocessing overhead. Quadratic attention cost makes high-resolution deployment expensive, and model depth amplifies the cost further.",
+    "memorybehavior": "VRAM usage scales with patch count $N$ quadratically during attention score computation. Activation storage during deep unrolling dominates VRAM usage.",
+    "inferencecharacteristics": "ViT runs efficiently on GPUs in batched inference because patch embedding and transformer blocks are highly parallelizable. Latency grows with image resolution and patch count, so deployment decisions should account for resolution, batch size, and model depth. For production serving, preprocessing consistency is critical because resizing and normalization are part of the effective model input contract.",
+    "robustness": [
+      "ViT can degrade under occlusion, noise, and distribution shifts if the training distribution is narrow.",
+      "Adversarial sensitivity remains a concern, especially without augmentation and robust validation.",
+      "Strong augmentation, pretrained initialization, and careful evaluation on shifted data improve resilience."
+    ],
+    "sensitivitytooutliers": "High: out-of-distribution textures or anomalies can confuse self-attention paths, distorting representations and dropping classification accuracy.",
+    "featureengineeringdependency": "Inputs require resizing, normalization, and patch tokenization. The model avoids manual feature descriptors, automatically learning visual abstractions.",
+    "featurescalingrequirement": "Mandatory: scale queries and keys by $1/\\sqrt{d_k}$ to prevent gradient decay during self-attention computation. Images should be normalized to target checkpoint expectations.",
+    "classimbalancebehavior": "Class imbalance is usually handled with loss weighting, sampling strategies, and augmentation rather than architectural changes.",
+    "commonlimitations": [
+      "Large data requirements.",
+      "Quadratic attention cost.",
+      "Sensitivity to image resolution changes.",
+      "Higher inference resource requirements."
+    ],
+    "pipelineposition": "ViT typically appears after preprocessing and augmentation in an end-to-end vision pipeline, and before calibration or deployment stages. Transfer learning and fine-tuning are the most common ways to adapt it to downstream tasks."
+  },
+  "comparisons": [
+    {
+      "model": "CNN",
+      "choose_this_when": "You need global context modeling and are using pretrained transformer pipelines.",
+      "prefer_other_when": "You need strong local inductive bias, low latency, or very small-data efficiency.",
+      "tradeoffs": "ViT is more flexible globally; CNN is more sample-efficient and cheaper to run."
+    },
+    {
+      "model": "ResNet",
+      "choose_this_when": "You need transformer-style token attention and better transfer learning with large-scale pretraining.",
+      "prefer_other_when": "You want a strong modern baseline with simpler deployment and robust training on smaller datasets.",
+      "tradeoffs": "ResNet is usually easier to train from scratch; ViT can outperform with enough data and pretraining."
+    },
+    {
+      "model": "EfficientNet",
+      "choose_this_when": "You need transformer-based feature modeling and have sufficient data/compute to justify it.",
+      "prefer_other_when": "You need strong accuracy per FLOP and a compact deployment footprint.",
+      "tradeoffs": "EfficientNet is more compute-efficient; ViT often scales better with data and pretraining."
+    },
+    {
+      "model": "Swin Transformer",
+      "choose_this_when": "You need the simplest patch-token transformer design or existing ViT pretrained checkpoints.",
+      "prefer_other_when": "You need hierarchical multi-scale vision representations and better efficiency on dense tasks.",
+      "tradeoffs": "Swin improves locality and efficiency; ViT is conceptually simpler and widely supported."
+    },
+    {
+      "model": "ConvNeXt",
+      "choose_this_when": "You want pure transformer-style patch processing and attention-based global interactions.",
+      "prefer_other_when": "You need CNN-like efficiency with transformer-era training recipes.",
+      "tradeoffs": "ConvNeXt keeps convolutional priors; ViT drops them for a cleaner attention architecture."
+    },
+    {
+      "model": "MLP-Mixer",
+      "choose_this_when": "You want token-mixing through self-attention rather than purely MLP-based mixing.",
+      "prefer_other_when": "You need a simpler non-attention architecture with different scaling behavior.",
+      "tradeoffs": "ViT offers richer interaction modeling; MLP-Mixer is architecturally simpler but less expressive."
+    }
+  ],
+  "relatedknowledge": {
+    "relatedmodels": [
+      "Vision Transformer family variants",
+      "DeiT",
+      "Swin Transformer",
+      "BEiT",
+      "DINO-based vision backbones",
+      "Transformer-based multimodal encoders"
+    ],
+    "alternative_models": [
+      "CNN",
+      "ResNet",
+      "EfficientNet",
+      "ConvNeXt",
+      "MLP-Mixer",
+      "Hybrid CNN-Transformer models"
+    ],
+    "related_principles": [
+      "Self-Attention",
+      "Patch Embedding",
+      "Positional Encoding",
+      "Transfer Learning",
+      "Residual Learning",
+      "Layer Normalization",
+      "Scaling Laws"
+    ],
+    "related_workflows": [
+      "Image Classification",
+      "Fine-Tuning",
+      "Transfer Learning",
+      "Pretraining",
+      "Data Augmentation",
+      "Vision Model Evaluation"
+    ],
+    "related_patterns": [
+      "Patch Tokenization",
+      "Attention Visualization",
+      "Resolution Scaling",
+      "Mixed Precision Training",
+      "GPU Memory Optimization",
+      "Transfer Learning Guide"
+    ],
+    "related_packages": [
+      "transformers",
+      "PyTorch",
+      "timm",
+      "TensorFlow/Keras"
+    ],
+    "related_guides": [],
+    "related_registry": [
+      "Deep Learning Models"
+    ]
+  },
+  "quickstart": {
+    "language": "python",
+    "implementation_package": "Hugging Face Transformers + PyTorch",
+    "code": "import torch\nimport numpy as np\nfrom datasets import load_dataset\nfrom transformers import AutoImageProcessor, ViTForImageClassification, TrainingArguments, Trainer\nfrom sklearn.metrics import accuracy_score, f1_score\nfrom PIL import Image\n\nmodel_name = \"google/vit-base-patch16-224\"\nimage_processor = AutoImageProcessor.from_pretrained(model_name)\nmodel = ViTForImageClassification.from_pretrained(model_name)\n\ndataset = load_dataset(\"cifar10\")\n\ndef transform_examples(examples):\n    images = [img.convert(\"RGB\") for img in examples[\"img\"]]\n    inputs = image_processor(images=images, return_tensors=\"pt\")\n    inputs[\"labels\"] = torch.tensor(examples[\"label\"])\n    return inputs\n\ndef collate_fn(batch):\n    pixel_values = torch.stack([x[\"pixel_values\"].squeeze(0) for x in batch])\n    labels = torch.tensor([x[\"labels\"] for x in batch])\n    return {\"pixel_values\": pixel_values, \"labels\": labels}\n\ndef preprocess(batch):\n    images = [img.convert(\"RGB\") for img in batch[\"img\"]]\n    enc = image_processor(images=images, return_tensors=\"pt\")\n    enc[\"labels\"] = batch[\"label\"]\n    return enc\n\ntrain_ds = dataset[\"train\"].select(range(2000)).with_transform(preprocess)\neval_ds = dataset[\"test\"].select(range(500)).with_transform(preprocess)\n\ndef compute_metrics(eval_pred):\n    logits, labels = eval_pred\n    preds = np.argmax(logits, axis=-1)\n    return {\n        \"accuracy\": accuracy_score(labels, preds),\n        \"f1\": f1_score(labels, preds, average=\"macro\")\n    }\n\nargs = TrainingArguments(\n    output_dir=\"./vit-cifar10\",\n    per_device_train_batch_size=16,\n    per_device_eval_batch_size=32,\n    learning_rate=5e-5,\n    num_train_epochs=1,\n    evaluation_strategy=\"epoch\",\n    save_strategy=\"epoch\",\n    remove_unused_columns=False,\n    fp16=torch.cuda.is_available(),\n    logging_steps=20\n)\n\ntrainer = Trainer(\n    model=model,\n    args=args,\n    train_dataset=train_ds,\n    eval_dataset=eval_ds,\n    compute_metrics=compute_metrics\n)\n\ntrainer.train()\nmetrics = trainer.evaluate()\n\nimage = dataset[\"test\"][0][\"img\"].convert(\"RGB\")\ninputs = image_processor(images=image, return_tensors=\"pt\")\nwith torch.no_grad():\n    outputs = model(**inputs)\n    probs = torch.softmax(outputs.logits, dim=-1)\n    pred = probs.argmax(dim=-1).item()\n    conf = probs.max(dim=-1).values.item()\n\nprint({\"predicted_label\": pred, \"confidence\": conf, \"metrics\": metrics})",
+    "explanation": "This pipeline shows pretrained ViT loading, image preprocessing, fine-tuning with Trainer, evaluation, and inference on a custom image. It is the standard production starting point when transferring ViT to a downstream image classification task.",
+    "inputs": "Expected image tensor shape after preprocessing is typically (batch_size, 3, image_size, image_size). The preprocessing pipeline should include resizing, normalization, and consistent label encoding.",
+    "outputs": "Classification logits from ViTForImageClassification. Predicted labels from argmax over logits. Confidence scores from softmax probabilities. Evaluation metrics such as accuracy and macro F1.",
+    "notes": "Transfer learning is usually the best entry point because pretrained ViT weights capture useful visual structure. Image normalization and resize policy must match the checkpoint’s expected preprocessing. GPU execution is strongly preferred for fine-tuning and batching, and batch size should be chosen to fit VRAM after accounting for resolution."
+  },
+  "learning_resources": [
+    {
+      "title": "Vision Transformer documentation",
+      "url": "https://huggingface.co/docs/transformers/model_doc/vit",
+      "type": "documentation",
+      "why_to_read": "Official Hugging Face reference for ViT model classes and preprocessing.",
+      "expected_outcome": "Understand the canonical HF implementation and usage patterns.",
+      "reading_time": 20
+    },
+    {
+      "title": "An Image is Worth 16x16 Words",
+      "url": "https://arxiv.org/abs/2010.11929",
+      "type": "guide",
+      "why_to_read": "Original ViT paper and primary source for architecture, training, and transfer learning behavior.",
+      "expected_outcome": "Understand the core design and scaling claims.",
+      "reading_time": 45
+    },
+    {
+      "title": "Hugging Face image classification tutorial",
+      "url": "https://huggingface.co/docs/transformers/tasks/image_classification",
+      "type": "guide",
+      "why_to_read": "Practical fine-tuning workflow for image classification with transformers.",
+      "expected_outcome": "Learn end-to-end fine-tuning structure.",
+      "reading_time": 25
+    },
+    {
+      "title": "Stanford CS231n course materials",
+      "url": "http://cs231n.stanford.edu/",
+      "type": "guide",
+      "why_to_read": "Strong background in vision fundamentals and evaluation practice.",
+      "expected_outcome": "Connect ViT to broader vision modeling concepts.",
+      "reading_time": 40
+    },
+    {
+      "title": "PyTorch vision model docs",
+      "url": "https://pytorch.org/vision/stable/models.html",
+      "type": "documentation",
+      "why_to_read": "Useful for comparing ViT-style workflows with vision baselines and pretrained vision models.",
+      "expected_outcome": "Compare transformer-based and CNN-based deployment choices.",
+      "reading_time": 20
+    }
+  ]
+}

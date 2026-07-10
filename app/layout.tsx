@@ -5,7 +5,6 @@ import "katex/dist/katex.min.css";
 import { cn } from "@/lib/utils";
 import Sidebar from "@/components/layout/Sidebar";
 import TopBar from "@/components/layout/TopBar";
-import ThemeInitializer from "@/components/layout/ThemeInitializer";
 import ReadingProgress from "@/components/shared/ReadingProgress";
 import BackToTop from "@/components/shared/BackToTop";
 import PageVisitTracker from "@/components/shared/PageVisitTracker";
@@ -63,8 +62,25 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const STORAGE_KEY = 'handbook-theme';
+                function getPreferredTheme() {
+                  const stored = localStorage.getItem(STORAGE_KEY);
+                  if (stored === 'light' || stored === 'dark') return stored;
+                  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                }
+                const theme = getPreferredTheme();
+                document.documentElement.classList.toggle('dark', theme === 'dark');
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="h-full flex overflow-hidden bg-background text-foreground text-sm leading-relaxed">
-        <ThemeInitializer />
         <PageVisitTracker />
         <ReadingProgress />
         <BackToTop />
@@ -99,7 +115,7 @@ export default function RootLayout({
             principles={principles}
             searchIndex={searchIndex}
           />
-          <main className="flex-1 overflow-y-auto bg-zinc-50 dark:bg-zinc-950 px-4 py-5 md:px-8 md:py-8">
+          <main id="main-scroll" className="flex-1 overflow-y-auto bg-zinc-50 dark:bg-zinc-950 px-4 py-5 md:px-8 md:py-8">
             <div className="max-w-5xl mx-auto w-full">
               {children}
             </div>

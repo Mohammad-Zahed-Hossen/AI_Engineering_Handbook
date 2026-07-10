@@ -798,7 +798,7 @@ Model pages must conform to a premium developer experience visual layout:
    - Model summary is displayed directly as prominent introduction prose without text clamping or collapse expanders.
    - The decision strip features four status badges: Difficulty, Stability, Confidence, and Maturity, decorated with Lucide icons (`Gauge`, `Activity`, `CheckCircle2`, `Shield`).
    - Badges are colored semantically (e.g. emerald/cyan for stable/easy, amber/rose for intermediate/complex).
-   - Detailed `interpretability` explanations are extracted from status badges and rendered as a separate full-width explainability callout with an `Eye` icon below the strip.
+   - Detailed `interpretability` explanations are extracted from status badges and rendered in a dedicated callout box with an `Eye` icon below the strip.
 
 2. **Unified Decision & Tradeoffs Board**:
    - "Use When", "Avoid When", "Strengths", and "Limitations" are unified into a cohesive 2x2 grid.
@@ -825,6 +825,11 @@ Model pages must conform to a premium developer experience visual layout:
 6. **Alternative Comparison Cards**:
    - Model comparisons are styled as side-by-side cards with prominent "VS" badges.
    - Options specify explicit "Choose [Model] When", "Prefer [Alternative] When", and "Tradeoffs" segments.
+
+7. **Recommended Next Section**:
+   - Displays curriculum progression recommendations from the `recommendednext` field.
+   - Uses the shared `CollapsibleRow` component for consistent expand/collapse behavior.
+   - Only renders when at least one recommendation resolves to a valid slug in the category.
 
 ---
 
@@ -893,7 +898,6 @@ Alternatives
 Trade-offs
 
 Benchmark summary
-
 
 ---
 
@@ -1070,6 +1074,7 @@ If not,
 the package page is incomplete.
 
 ---
+
 # AENS Knowledge Layer Specification
 
 ## Version 1.0 (Freeze Candidate)
@@ -2805,36 +2810,77 @@ Together, these components form a **knowledge operating system** rather than a d
 
 # Implementation Status
 
-## Model Detail Page UX Refactor (v1.2)
+## AENS Cross-Application UX Polish (v1.2)
 
 **Status:** ✅ Complete
 
-The Model Detail Page has been refactored to implement premium developer experience visual standards:
+All implementation items from the AENS Cross-Application UX Audit Report have been successfully completed:
 
-### Completed Features
+### Dashboard Recent Activity Consolidation
 
-1. **Shared Prose/Math Rendering Primitive** - `Prose.tsx` component with `react-markdown`, `remark-gfm`, `remark-math`, `rehype-katex` for rendering markdown and LaTeX content
-2. **Quick Start Syntax Highlighting** - `CodeBlock.tsx` with Shiki's `codeToHtml` for server-side syntax highlighting
-3. **Relative Time Formatting** - `formatRelativeTime` in `lib/format-date.ts` for human-readable timestamps
-4. **Section Defaults & Typography** - Core Understanding collapsed by default, `content-prose` width applied, inline code styling
-5. **Shiki Build-Time Rendering** - CodeBlock moved to async Server Component, eliminating client-side performance regression
-6. **Double-Escaped Newline Fix** - `normalizeContent` function in `Prose.tsx` handles literal `\n` sequences
-7. **KaTeX Typography Scoping** - CSS override `body .katex { font-size: 1em !important; }` for consistent sizing
-8. **Core Understanding Teaser** - Computed summary teaser instead of raw field concatenation
-9. **Interpretability Prose Rendering** - `ModelDecisionStrip.tsx` uses `ProseInline` for LaTeX/math rendering
-10. **Code Block Background Fix** - Scoped CSS override for Shiki's inline background
-11. **Collapse Scroll Compensation** - `useLayoutEffect` with `getBoundingClientRect` tracking
-12. **Also Worth Knowing Cross-Linking** - Links to real pages where available
-13. **Accessibility Attributes** - `aria-expanded` and `aria-controls` added to interactive elements
+- **Component File:** `components/shared/RecentActivity.tsx`
+- **Dashboard Integration:** `app/page.tsx`
+- **Deleted Files:** `ContinueReadingSection.tsx` and `RecentKnowledgeSection.tsx`
+- **UX Polish:**
+  - The section now uses a single client hydration mount-effect (one read from `localStorage`).
+  - Added subheadings explaining what qualifies for each history list.
+  - If the user has empty history lists, the entire parent container "Continue Learning" is hidden automatically to avoid a cluttered empty-state UI.
+  - Diminishing and clearing logic remains fully supported.
 
-### Build Verification
+### Unification of Time Formatting
 
-- `npm run build` completed successfully
-- 0 errors, 23 warnings (only missing content references)
-- All 40 static pages generated
-- Validation script includes double-escaped newline checking
+- **Component File:** `components/shared/RecentActivity.tsx`
+- Unified the display helper `formatTimeAgo` using the canonical utility in `lib/format-time.ts` instead of duplicated local functions.
 
-### Git Status
+### Recommended Next Curriculum Progression
 
-- Pushed to `feature/repository-foundation-v2` branch
-- Commit `7af1f7a` with all changes
+- **Component File:** `components/shared/RecommendedNextSection.tsx`
+- **Model Integration:** `app/models/[category]/[id]/page.tsx`
+- **Behavior:**
+  - Renders a lightweight card callout near the bottom of individual Model pages.
+  - Resolves `recommendednext` item names using the canonical name-resolver helper.
+  - Only displays the block if at least one recommendation resolves to a valid slug in the category, avoiding broken links.
+
+### Problem Index Keyboard Accessibility
+
+- **Component File:** `app/problem-index/ProblemIndexDashboard.tsx`
+- **Accessibility Fix:** Added `tabIndex={isFilterCollapsed ? -1 : undefined}` to all category selector chips and bulk toggles in the action toolbar. When the toolbar collapses on scroll, these hidden elements are excluded from keyboard focus navigation, resolving potential focus trap issues.
+
+### Metadata Badges Redesign
+
+- **Component File:** `components/shared/MetadataBadges.tsx`
+- **UX & Accessibility Polish:**
+  - Regrouped badges into semantic rows separated by clean vertical lines: **Identity** (Type, Category, Version), **Freshness** (Updated [with Clock icon], Verified), and **Applicability** (Problem Types).
+  - Replaced the hover-only `title` tooltip for truncated problem types with an interactive `<button>` that expands hidden types inline on click. The button supports standard `aria-expanded` and `aria-label` properties.
+
+### Shared Collapsible Row Primitive
+
+- **Shared Primitive:** `components/shared/CollapsibleRow.tsx`
+- **Model Refactor:** `components/shared/ModelCollapsibleSections.tsx`
+- **Cheatsheet Refactor:** `components/shared/CheatsheetEntry.tsx`
+- **Package Task List Refactor:** `components/shared/PackageTaskList.tsx`
+- **Refactoring Polish:**
+  - Standardized toggle markup, chevrons, and states.
+  - Strictly wired `aria-controls` to the content regions' `id`.
+  - Added support for hash-based deep linking (`enableHashDeepLink={true}`) which triggers automatic expansion and smooth scrolling if a hash fragment matches the row's `id`.
+
+### Validation Summary
+
+- **Type Check:** `npx tsc --noEmit` successfully resolved with no compilation errors.
+- **Linter Check:** `npm run lint` completed with no warning or error reports.
+- **Content Check:** `npm run validate` succeeded with zero content validation errors.
+
+---
+
+# Change Log
+
+| Date | Version | Change | Author |
+|------|---------|--------|--------|
+| July 4, 2026 | 1.0 | Initial knowledge layer specification | Architecture Lead |
+| July 9, 2026 | 1.1 | Model Schema Evolution (Quick Start & Curated Resources) | AI Assistant |
+| July 9, 2026 | 1.2 | Model detail page visual refactor & UX specs update | AI Assistant |
+| July 10, 2026 | 1.2.1 | Cross-application UX polish - Dashboard consolidation, metadata badges, shared collapsible row | AI Assistant |
+
+---
+
+**End of Specification**

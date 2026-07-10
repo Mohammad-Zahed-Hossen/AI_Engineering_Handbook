@@ -18,22 +18,22 @@ The AI Engineering Knowledge System & Handbook is a static-first, server-rendere
 - Provide instant, offline access to package documentation, model specifications, and workflow guides
 - Enable fast discovery through client-side fuzzy search
 - Maintain content in version-controlled JSON files without external database dependencies
-- Support 9 content types aligned with AENS Knowledge Layer Specification v1.0
+- Support 9 content types aligned with AENS Knowledge Layer Specification
 
 **Current Maturity**
 - **Development Stage:** Early production (v0.1.0)
 - **Architecture Maturity:** High - well-structured with clear separation of concerns, fully aligned with AENS Knowledge Layer Specification
 - **Content Maturity:** Initial - basic content populated across all 9 content types (10 JSON files in total)
 - **Feature Completeness:** Core features implemented, all 9 content types supported with full infrastructure
-- **Refactor Status:** Complete - AENS Knowledge Layer v1.0 implementation finished
+- **Refactor Status:** Complete - AENS Knowledge Layer v1.0 refactor finished
 
 **Overall Architecture**
 - **Framework:** Next.js 16.2.9 with App Router (React 19.2.4)
 - **Rendering Strategy:** Server Components with static generation, client-side interactivity where needed
-- **Data Layer:** File-based JSON database with React cache for performance
-- **Search:** Client-side Fuse.js fuzzy search with custom tokenizer
+- **Data Layer:** File-based JSON database with React cache
+- **Search:** Client-side Fuse.js fuzzy search
 - **Styling:** Tailwind CSS v4 with shadcn/ui components
-- **Validation:** Zod schemas with pre-build validation pipeline
+- **Validation:** Zod schemas with pre-build validation
 
 ---
 
@@ -75,7 +75,7 @@ User Request → Next.js Server → React Cache → JSON Files → Server Compon
 ```
 data/*.json files
     ↓
-lib/data.ts (React cache wrappers)
+lib/data.ts (React cached)
     ↓
 app/page components (Server Components)
     ↓
@@ -110,7 +110,7 @@ Collapsible sections with item limits
 ```
 1. Author JSON files in data/
 2. Run npm run validate (Zod schema validation)
-3. Run npm run build:nav (generate _nav.json indexes)
+3. Run npm run build:nav (generate _nav.json files)
 4. Run npm run build (Next.js static generation)
 5. Deploy static output
 ```
@@ -362,28 +362,25 @@ types/
 **Structure:**
 ```
 data/
-├── packages/               # Package documentation
-│   └── _nav.json          # Navigation index (generated)
-├── models/                 # Model specifications
+├── packages/               # Flat structure
+├── models/                 # Categorized by type
 │   ├── ml/                # Machine Learning models
 │   ├── dl/                # Deep Learning architectures
-│   ├── llm/               # Large Language Models
-│   └── (each has _nav.json)
-├── workflows/              # Production workflows
-│   └── _nav.json
-├── cheatsheets/           # Syntax reference sheets
-│   └── _nav.json
-├── patterns/              # Design patterns (NEW)
-│   └── _nav.json
-├── debug-guides/          # Debugging guides (NEW)
-│   └── _nav.json
-├── decision-guides/       # Decision frameworks (NEW)
-│   └── _nav.json
-├── principles/            # Engineering principles (NEW)
-│   └── _nav.json
-└── registry/              # Model registry by task
-    └── (task-specific JSON files)
+│   └── llm/               # Large Language Models
+├── workflows/              # Flat structure
+├── cheatsheets/           # Flat structure
+├── patterns/              # Flat structure (NEW)
+├── debug-guides/          # Flat structure (NEW)
+├── decision-guides/       # Flat structure (NEW)
+├── principles/            # Flat structure (NEW)
+└── registry/              # Task-based files
 ```
+
+**Naming Conventions:**
+- Filenames must match internal `id` field
+- IDs must match regex: `/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/`
+- Kebab-case for multi-word IDs
+- No uppercase, no spaces, no underscores (except in registry)
 
 ---
 
@@ -400,7 +397,7 @@ data/
 - **Models** - Model library with ML/DL/LLM categories
   - Status: Complete
   - Files: `app/models/[category]/page.tsx`, `app/models/[category]/[id]/page.tsx`
-  - Features: Category listing, problem type filtering, premium decision strip (difficulty, stability, confidence, maturity pills) with separate interpretability callout, unified 2x2 Decision Board & Tradeoffs grid, spec-sheet grid for core metrics, side-by-side comparative hyperparameter tuning with Expand/Collapse All and API mapping, alternative comparison matrix cards.
+  - Features: Category listing, problem type filtering, premium decision strip (difficulty, stability, confidence, maturity pills) with separate interpretability callout, unified 2x2 Decision Board & Tradeoffs grid, spec-sheet grid for core metrics, side-by-side comparative hyperparameter tuning with Expand/Collapse All and API mapping, alternative comparison matrix cards, Recommended Next section.
 
 - **Registry** - Task-based model registry
   - Status: Complete
@@ -516,6 +513,11 @@ data/
   - Files: `scripts/build-nav-index.ts`
   - Features: Lightweight _nav.json generation, version field for packages, category for models
 
+- **Static Generation** - Pre-rendered routes
+  - Status: Complete
+  - Files: All page components with `generateStaticParams()`
+  - Features: Build-time route generation, zero runtime routing overhead
+
 #### Infrastructure (Complete)
 - **Type Safety** - Zod schemas + TypeScript
   - Status: Complete
@@ -569,12 +571,12 @@ data/
 2. **Model** - Machine Learning, Deep Learning, or LLM specifications
    - Abstraction level: High (model architecture)
    - Granularity: Model → Hyperparameters
-   - Metadata: Category, problem types, difficulty, engineering maturity
+   - Metadata: Category, problem types, difficulty, engineering maturity, decisionsummary, coreunderstanding, hyperparameters, engineeringconsiderations, comparisons, relatedknowledge, quickstart, learning_resources
 
 3. **Workflow** - Production deployment workflows
    - Abstraction level: High (end-to-end pipeline)
    - Granularity: Workflow → Steps
-   - Metadata: Type, category, starter stack
+   - Metadata: Type, category, starter stack, steps, next_links
 
 4. **Cheatsheet** - Rapid syntax reference sheets
    - Abstraction level: Medium (language/library)
@@ -636,23 +638,23 @@ data/
 **Hierarchical Structure:**
 ```
 data/
-├── packages/           # Flat structure
-├── models/             # Categorized by type
+├── packages/               # Flat structure
+├── models/                 # Categorized by type
 │   ├── ml/
 │   ├── dl/
 │   └── llm/
-├── workflows/          # Flat structure
-├── cheatsheets/       # Flat structure
-├── patterns/          # Flat structure (NEW)
-├── debug-guides/      # Flat structure (NEW)
-├── decision-guides/   # Flat structure (NEW)
-├── principles/        # Flat structure (NEW)
-└── registry/          # Task-based files
+├── workflows/              # Flat structure
+├── cheatsheets/           # Flat structure
+├── patterns/              # Flat structure (NEW)
+├── debug-guides/          # Flat structure (NEW)
+├── decision-guides/       # Flat structure (NEW)
+├── principles/            # Flat structure (NEW)
+└── registry/              # Task-based files
 ```
 
 **Naming Conventions:**
 - Filenames must match internal `id` field
-- IDs must match regex: `/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/`
+- IDs must match `/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/`
 - Kebab-case for multi-word IDs
 - No uppercase, no spaces, no underscores (except in registry)
 
@@ -678,7 +680,7 @@ Principles (expandable) (NEW)
 
 **Navigation Indexes:**
 - `_nav.json` files in each content directory
-- Contains: id, name, version (packages only), updated_at, type, category (models only)
+- Contains: id, name, version (packages only), updated_at, type, category
 - Generated by `scripts/build-nav-index.ts`
 - Used for lightweight navigation loading
 
@@ -706,7 +708,7 @@ Principles (expandable) (NEW)
 - name (weight: 0.20)
 - title (weight: 0.20) (NEW)
 - mental_trigger (weight: 0.15)
-- keywords (weight: 0.12)
+- keywords (weight: 0.12) (NEW)
 - search_tokens (weight: 0.12) (NEW)
 - tags (weight: 0.10) (NEW)
 - aliases (weight: 0.08) (NEW)
@@ -728,50 +730,6 @@ Principles (expandable) (NEW)
 - Monitors for index bloat
 - Logs entry count and KB size
 
-### Metadata Strategy
-
-**Base Metadata (all entities) - Expanded BaseMetaSchema:**
-- created_at (YYYY-MM-DD format)
-- updated_at (YYYY-MM-DD format)
-- sources (array of URLs, min 1 required)
-- github_repo (optional, must be GitHub URL)
-- title (string, primary display name) (NEW)
-- slug (string, URL-friendly identifier) (NEW)
-- description (string, content summary) (NEW)
-- tags (array of strings, categorization) (NEW)
-- aliases (array of strings, alternative names) (NEW)
-- keywords (array of strings, search terms) (NEW)
-- search_tokens (array of strings, search optimization) (NEW)
-- domain (string, engineering domain) (NEW)
-- category (string, content category) (NEW)
-- difficulty (string, difficulty level) (NEW)
-- engineering_area (string, engineering specialization) (NEW)
-- estimated_reading_time (number, minutes) (NEW)
-- prerequisites (array of ContentRef, learning prerequisites) (NEW)
-- recommended_next (array of ContentRef, learning path) (NEW)
-- related_content (array of ContentRef, bidirectional relationships) (NEW)
-- last_verified (string, verification date) (NEW)
-- review_frequency (string, review cadence) (NEW)
-- verified_against (string, version reference) (NEW)
-- compatible_versions (array of strings, version compatibility) (NEW)
-- breaking_changes (array of strings, breaking changes) (NEW)
-- canonical_status (string, canonical status) (NEW)
-- lifecycle (string, lifecycle stage) (NEW)
-- stability (string, stability level) (NEW)
-- confidence (string, confidence level) (NEW)
-- engineering_maturity (string, maturity level) (NEW)
-
-**Entity-Specific Metadata:**
-- **Packages:** version, language, tasks, alternatives (legacy fields maintained for compatibility)
-- **Models:** category, problem_types, difficulty, engineering_maturity, decisionsummary, coreunderstanding, hyperparameters, engineeringconsiderations, comparisons, relatedknowledge, quickstart, learning_resources
-- **Workflows:** type, category, starter_stack, steps, next_links
-- **Cheatsheets:** entries array
-- **Patterns:** context, examples, anti_patterns
-- **Debug Guides:** symptoms, root_causes, solutions
-- **Decision Guides:** problem, options, trade_offs, recommendations
-- **Principles:** statement, intuition, examples, applications
-- **Registry:** task, size_mb, link, hardware_requirements, download_location, license
-
 ---
 
 ## 6. Current Limitations
@@ -780,7 +738,7 @@ Principles (expandable) (NEW)
 **Limitation:** Synonym and concept group expansion is empty
 **Impact:** Reduced search relevance for related terms
 **Evidence:** lib/search/synonym-expander.ts has empty data structures
-**Note:** TODO comment indicates Phase 2+ re-implementation
+**Note:** TODO comment indicates re-implementation planned for Phase 2+
 
 ### 2. Unimplemented Content Types
 **Limitation:** Pattern, debug-guide, decision-guide referenced in config but not implemented
@@ -795,7 +753,7 @@ Principles (expandable) (NEW)
 **Status:** Validation script only checks target existence
 
 ### 4. Limited Relationship Metadata
-**Limitation:** Relationships have no metadata (strength, confidence, when added)
+**Limitation:** Relationships have no metadata (strength, confidence)
 **Impact:** Cannot prioritize or explain relationships
 **Evidence:** ContentRef schema only has id and type
 **Status:** No relationship attributes
@@ -935,12 +893,10 @@ Principles (expandable) (NEW)
 6. Update validation script
 7. Update build-nav-index script
 
-**Status:** Pattern, debug-guide, decision-guide, and principle content types already implemented (COMPLETED in refactor)
-
 **Example:** Adding a new content type
 - Create lib/schemas/new-type.ts
 - Create types/new-type.ts
-- Add getNewType(), getAllNewTypes() to lib/data.ts
+- Add getNewType() to lib/data.ts
 - Add app/new-types/[id]/page.tsx
 - Update scripts/validate-content.ts
 - Update scripts/build-nav-index.ts
@@ -993,12 +949,6 @@ Principles (expandable) (NEW)
 4. Update navigation
 
 **Status:** Pattern, debug-guide, decision-guide, and principle routes already implemented (COMPLETED in refactor)
-
-**Example:** Adding a new route
-- Create app/new-types/[id]/page.tsx
-- Implement generateStaticParams()
-- Add getNewType() to lib/data.ts
-- Update Sidebar
 
 **Complexity:** Low (clear pattern to follow, 4 new routes already implemented)
 
@@ -1126,12 +1076,12 @@ ai-engineering-handbook/
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                         User Request                           │
+│                         User Request                                   │
 └──────────────────────────┬──────────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      Next.js Server                             │
+│                      Next.js Server                               │
 └──────────────────────────┬──────────────────────────────────────┘
                            │
                            ▼
@@ -1649,78 +1599,65 @@ The project demonstrates excellent engineering practices with clear architecture
 
 ## 14. Implementation Status
 
-## Model Detail Page UX Refactor (v1.2)
+## AENS Cross-Application UX Polish (v1.2)
 
 **Status:** ✅ Complete
 
-All implementation items from the AENS Model Page Audit Report have been successfully completed:
+All implementation items from the AENS Cross-Application UX Audit Report have been successfully completed:
 
-### Original Audit Report (4 Prompts) - All Implemented
+### Dashboard Recent Activity Consolidation
 
-1. **Prompt #1 - Shared Prose/Math Rendering Primitive** ✅
-   - Created `components/shared/Prose.tsx` with `Prose` and `ProseInline` components
-   - Added dependencies: `react-markdown`, `remark-gfm`, `remark-math`, `rehype-katex`, `katex`
-   - Imported KaTeX CSS in `app/layout.tsx`
-   - All content fields now render through Prose components
+- **Component File:** `components/shared/RecentActivity.tsx`
+- **Dashboard Integration:** `app/page.tsx`
+- **Deleted Files:** `ContinueReadingSection.tsx` and `RecentKnowledgeSection.tsx`
+- **UX Polish:**
+  - The section now uses a single client hydration mount-effect (one read from `localStorage`).
+  - Added subheadings explaining what qualifies for each history list.
+  - If the user has empty history lists, the entire parent container "Continue Learning" is hidden automatically to avoid a cluttered empty-state UI.
+  - Diminishing and clearing logic remains fully supported.
 
-2. **Prompt #2 - Quick Start: Syntax Highlighting + Progressive Disclosure** ✅
-   - `CodeBlock.tsx` uses Shiki's `codeToHtml` for server-side syntax highlighting
-   - `CodeBlockInteractive.tsx` handles collapse/expand with scroll compensation
-   - Line numbers via CSS counters in `globals.css`
+### Unification of Time Formatting
 
-3. **Prompt #3 - "Updated" Badge → Relative Time** ✅
-   - Created `lib/format-date.ts` with `formatRelativeTime` function
-   - `MetadataBadges.tsx` shows relative time with ISO tooltip
-   - Added "Verified" badge for `lastverified` field
+- **Component File:** `components/shared/RecentActivity.tsx`
+- Unified the display helper `formatTimeAgo` using the canonical utility in `lib/format-time.ts` instead of duplicated local functions.
 
-4. **Prompt #4 - Section Defaults, Width, Inline-Code Styling** ✅
-   - Core Understanding collapsed by default (`useState(false)`)
-   - Teaser added: "6 specifications · N assumptions noted"
-   - `.content-prose` max-width applied consistently
-   - Inline `code` styling in `globals.css`
+### Recommended Next Curriculum Progression
 
-### Regression Audit Report (3 Prompts) - All Implemented
+- **Component File:** `components/shared/RecommendedNextSection.tsx`
+- **Model Integration:** `app/models/[category]/[id]/page.tsx`
+- **Behavior:**
+  - Renders a lightweight card callout near the bottom of individual Model pages.
+  - Resolves `recommendednext` item names using the canonical name-resolver helper.
+  - Only displays the block if at least one recommendation resolves to a valid slug in the category, avoiding broken links.
 
-1. **Prompt #1 - Shiki to Build/Server Time** ✅
-   - `CodeBlock.tsx` is now an async Server Component
-   - `CodeBlockInteractive.tsx` handles client interactivity
-   - Double-collapse conflict resolved
+### Problem Index Keyboard Accessibility
 
-2. **Prompt #2 - Double-Escaped Newlines** ✅
-   - `normalizeContent` function in `Prose.tsx` with defensive regex
-   - Validation script updated to check for double-escaped newlines
-   - Data correction applied to affected model files
+- **Component File:** `app/problem-index/ProblemIndexDashboard.tsx`
+- **Accessibility Fix:** Added `tabIndex={isFilterCollapsed ? -1 : undefined}` to all category selector chips and bulk toggles in the action toolbar. When the toolbar collapses on scroll, these hidden elements are excluded from keyboard focus navigation, resolving potential focus trap issues.
 
-3. **Prompt #3 - KaTeX Scoping + Teaser Fix** ✅
-   - `body .katex { font-size: 1em !important; }` in `globals.css`
-   - Teaser changed to computed summary instead of raw field concatenation
+### Metadata Badges Redesign
 
-### Final Polish Audit Report (4 Prompts) - All Implemented
+- **Component File:** `components/shared/MetadataBadges.tsx`
+- **UX & Accessibility Polish:**
+  - Regrouped badges into semantic rows separated by clean vertical lines: **Identity** (Type, Category, Version), **Freshness** (Updated [with Clock icon], Verified), and **Applicability** (Problem Types).
+  - Replaced the hover-only `title` tooltip for truncated problem types with an interactive `<button>` that expands hidden types inline on click. The button supports standard `aria-expanded` and `aria-label` properties.
 
-1. **Issue #1 - Interpretability field uses ProseInline** ✅
-   - `ModelDecisionStrip.tsx` updated to use `ProseInline` for LaTeX rendering
+### Shared Collapsible Row Primitive
 
-2. **Issue #2 - Double background CSS override** ✅
-   - Scoped CSS rule for Shiki's inline background
+- **Shared Primitive:** `components/shared/CollapsibleRow.tsx`
+- **Model Refactor:** `components/shared/ModelCollapsibleSections.tsx`
+- **Cheatsheet Refactor:** `components/shared/CheatsheetEntry.tsx`
+- **Package Task List Refactor:** `components/shared/PackageTaskList.tsx`
+- **Refactoring Polish:**
+  - Standardized toggle markup, chevrons, and states.
+  - Strictly wired `aria-controls` to the content regions' `id`.
+  - Added support for hash-based deep linking (`enableHashDeepLink={true}`) which triggers automatic expansion and smooth scrolling if a hash fragment matches the row's `id`.
 
-3. **Issue #3 - Scroll compensation in CodeBlockInteractive** ✅
-   - `useLayoutEffect` with `getBoundingClientRect` tracking
-   - `aria-expanded` added to expand/collapse button
+### Validation Summary
 
-4. **Issue #4 - Cross-linking in ModelCollapsibleSections** ✅
-   - "Also Worth Knowing" chips link to real pages where available
-   - `aria-controls` added to `CollapsibleSection`
-
-### Build Verification
-
-- `npm run build` passes successfully
-- All 40 static pages generated
-- 0 errors, 23 warnings (only missing content references)
-
-### Git Status
-
-- Pushed to `feature/repository-foundation-v2` branch
-- Commit `7af1f7a` with all changes
+- `npx tsc --noEmit` successfully resolved with no compilation errors.
+- `npm run lint` completed with no warning or error reports.
+- `npm run validate` succeeded with zero content validation errors.
 
 ---
 
@@ -1738,6 +1675,7 @@ All implementation items from the AENS Model Page Audit Report have been success
 | July 4, 2026 | 1.0 | Initial architecture freeze | Architecture Lead |
 | July 9, 2026 | 1.1 | Model Schema Evolution (Quick Start & Curated Resources) | AI Assistant |
 | July 9, 2026 | 1.2 | Model detail page visual refactor & UX specs update | AI Assistant |
+| July 10, 2026 | 1.2.1 | Cross-application UX polish - Dashboard consolidation, metadata badges, shared collapsible row | AI Assistant |
 
 ---
 

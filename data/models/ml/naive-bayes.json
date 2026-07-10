@@ -1,0 +1,453 @@
+{
+  "id": "naive-bayes",
+  "title": "Naive Bayes",
+  "name": "Naive Bayes",
+  "slug": "naive-bayes",
+  "description": "Naive Bayes is a fast probabilistic classifier that applies Bayes’ theorem with a conditional independence assumption, making it especially effective as a production baseline for sparse, high-dimensional, and text-heavy classification problems.",
+  "tags": [
+    "ml",
+    "classification",
+    "classical-ml",
+    "probabilistic"
+  ],
+  "aliases": [
+    "GaussianNB",
+    "MultinomialNB",
+    "BernoulliNB",
+    "ComplementNB",
+    "CategoricalNB"
+  ],
+  "keywords": [
+    "naive bayes",
+    "bayes theorem",
+    "probabilistic classifier",
+    "conditional independence",
+    "laplace smoothing",
+    "text classification"
+  ],
+  "searchtokens": [
+    "naive bayes",
+    "bayes classifier",
+    "sklearn naive bayes",
+    "multinomialnb",
+    "gaussiannb",
+    "bernoullinb"
+  ],
+  "createdat": "2026-07-10T11:09:00+06:00",
+  "updatedat": "2026-07-10T11:09:00+06:00",
+  "lastverified": "2026-07-10T11:09:00+06:00",
+  "reviewfrequency": "annual",
+  "verifiedagainst": "canonical model knowledge as of 2026-07-10",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "verified",
+  "engineeringmaturity": "production",
+  "domain": "ml",
+  "category": "classification",
+  "difficulty": "beginner",
+  "engineeringarea": "supervised learning",
+  "estimatedreadingtime": 10,
+  "prerequisites": [
+    "Supervised learning basics",
+    "Probability basics",
+    "Bayes' Theorem"
+  ],
+  "recommendednext": [
+    "Logistic Regression",
+    "Decision Tree",
+    "Random Forest"
+  ],
+  "relatedcontent": [
+    {
+      "type": "model",
+      "id": "logistic-regression",
+      "relationship": "alternative"
+    },
+    {
+      "type": "model",
+      "id": "decision-tree",
+      "relationship": "alternative"
+    },
+    {
+      "type": "model",
+      "id": "random-forest",
+      "relationship": "alternative"
+    },
+    {
+      "type": "model",
+      "id": "svm",
+      "relationship": "alternative"
+    },
+    {
+      "type": "model",
+      "id": "knn",
+      "relationship": "alternative"
+    },
+    {
+      "type": "package",
+      "id": "scikit-learn",
+      "relationship": "implemented-by"
+    }
+  ],
+  "owner": "AENS Knowledge Architecture",
+  "sources": [
+    {
+      "title": "scikit-learn Naive Bayes API Reference",
+      "url": "https://scikit-learn.org/dev/api/sklearn.naive_bayes.html"
+    },
+    {
+      "title": "Stanford CS229 Lecture Notes",
+      "url": "https://cs229.stanford.edu/main_notes.pdf"
+    }
+  ],
+  "githubrepo": "https://github.com/scikit-learn/scikit-learn",
+  "problemtypes": [
+    "Text and document classification",
+    "Spam filtering and abuse detection",
+    "Sentiment analysis",
+    "Fast baseline classification for sparse high-dimensional data"
+  ],
+  "decisionsummary": {
+    "summary": "Naive Bayes estimates class posteriors from priors and feature likelihoods, then predicts the class with the highest posterior probability under a naive conditional-independence model.",
+    "bestusecases": [
+      "Email spam filtering and abuse detection, where sparse token counts often dominate signal.",
+      "Document and text classification, including topic labeling and intent classification.",
+      "Sentiment analysis on bag-of-words or TF-IDF features.",
+      "Fast baseline classifiers for very high-dimensional sparse data where latency and simplicity matter."
+    ],
+    "avoidwhen": [
+      "Features are strongly correlated, because independence violations can distort posterior estimates.",
+      "The decision boundary is highly nonlinear or depends on feature interactions.",
+      "Maximum predictive accuracy is the main objective and more expressive models are feasible.",
+      "Rich interaction modeling or calibrated probabilities are critical without extra calibration steps."
+    ],
+    "strengths": [
+      "Extremely fast training and inference because parameter estimation is mostly closed-form and lightweight.",
+      "Works very well on sparse, high-dimensional features common in NLP and text classification.",
+      "Strong engineering baseline for quick iteration, ablation testing, and deployment on CPU-only systems."
+    ],
+    "limitations": [
+      "Independence violations can materially reduce accuracy when correlated features carry redundant evidence.",
+      "Raw posterior probabilities are often poorly calibrated relative to more discriminative models.",
+      "Variant choice matters; Gaussian, Multinomial, Bernoulli, Complement, and Categorical NB assume different data types and can fail under mismatch."
+    ],
+    "interpretability": "Naive Bayes exposes class priors, feature likelihoods, and posterior probabilities, so engineers can inspect which classes are favored and why a prediction was made. This makes it useful for probabilistic decision making, especially when you need thresholding, ranking, or auditability rather than only hard labels.",
+    "trainingcharacteristics": "Training is typically closed-form or near closed-form, with very low optimization overhead compared with iterative linear models or tree ensembles. Different estimators estimate different sufficient statistics: GaussianNB fits mean/variance, MultinomialNB and ComplementNB fit class-feature counts, BernoulliNB fits binary feature probabilities, and CategoricalNB fits category-wise counts. In practice, this means training is usually fast enough for repeated retraining and grid search on CPU.",
+    "inferencecharacteristics": "Prediction latency is very low because inference is mostly a small number of arithmetic operations per feature and class. Memory use is compact, making the model suitable for batch scoring and high-throughput services with limited compute. CPU efficiency is strong because no tree traversal, kernel evaluation, or iterative optimization is required.",
+    "computationalcharacteristics": "Training: $O(npk)$ in the common dense case; sparse text variants are often closer to proportional to the number of nonzero feature values. Prediction: $O(p k)$ per sample for standard implementations, with sparse inputs reducing effective work. Memory usage: $O(pk)$ for class-conditional parameters plus class priors and small auxiliary state. Scalability: scales well with large $n$ and very large $p$ when features are sparse and the variant matches the data distribution."
+  },
+  "coreunderstanding": {
+    "intuition": "Naive Bayes models class membership by combining a prior belief about each class with the likelihood of observing the features under that class. The key simplification is the conditional independence assumption: features are treated as independent given the class, which turns joint likelihood estimation into a product of per-feature terms. Prediction is MAP classification: choose the class with the largest posterior probability after observing the input.",
+    "learningmechanism": "Naive Bayes models class membership by combining a prior belief about each class with the likelihood of observing the features under that class. The key simplification is the conditional independence assumption: features are treated as independent given the class, which turns joint likelihood estimation into a product of per-feature terms. Prediction is MAP classification: choose the class with the largest posterior probability after observing the input.",
+    "assumptions": [
+      "Conditional feature independence: if violated heavily, duplicate or correlated evidence can overcount signal and hurt accuracy.",
+      "Representative training data: if training priors differ from production priors, predicted posteriors and thresholds can drift.",
+      "Correct probability distribution: GaussianNB assumes normal features, MultinomialNB assumes counts or nonnegative term weights, BernoulliNB assumes binary indicators, and CategoricalNB assumes categorical values.",
+      "Stable class priors: if class proportions shift, fit_prior and class_prior choices can become misaligned with deployment reality."
+    ],
+    "mathematicalintuition": "Bayes’ theorem gives:\n\n$$\nP(y \\mid x) = \\frac{P(x \\mid y) P(y)}{P(x)}\n$$\n\nFor classification, the denominator is constant across classes, so the decision rule is:\n\n$$\n\\hat{y} = \\arg\\max_y P(y \\mid x) = \\arg\\max_y P(x \\mid y) P(y)\n$$\n\nUnder conditional independence:\n\n$$\nP(x \\mid y) = \\prod_{j=1}^{p} P(x_j \\mid y)\n$$\n\nso the model becomes efficient and tractable even for very large feature spaces.",
+    "complexity": "For $n$ samples, $p$ features, and $k$ classes, Naive Bayes is typically $O(npk)$ to train and $O(pk)$ to score a sample, with sparse text workloads often cheaper in practice.",
+    "memorycomplexity": "Memory is $O(pk)$ for the learned per-class parameters, plus modest overhead for priors and smoothing state.",
+    "robustness": "Robust to sparse high-dimensional inputs, but sensitive to distribution mismatch, correlation, and outliers in GaussianNB.",
+    "scalability": "Excellent on CPU and distributed batch preprocessing pipelines, especially for bag-of-words style features.",
+    "overfittingtendency": "Usually low variance and modest overfitting risk, but probability estimates can still be miscalibrated and overconfident.",
+    "biasvariance": "High-bias, low-variance behavior is typical because the independence assumption simplifies the hypothesis class."
+  },
+  "hyperparameters": [
+    {
+      "name": "var_smoothing",
+      "purpose": "Adds a small fraction of the largest feature variance to each variance estimate to improve numerical stability in GaussianNB.",
+      "increaseeffect": "Increases bias slightly because variance estimates become more regularized, and decreases variance by reducing sensitivity to tiny variances. Negligible effect on speed and memory.",
+      "decreaseeffect": "Decreases bias slightly, and increases variance because the model becomes more sensitive to small or unstable variances. Negligible effect on speed and memory.",
+      "tradeoffs": "Higher values improve stability when a feature has near-zero variance, but too much smoothing blunts class separation and can harm discrimination.",
+      "tuningpriority": "High for GaussianNB",
+      "interactions": [
+        "Variant compatibility: GaussianNB only.",
+        "Practical tuning: start with the default, then increase only if you see instability, divide-by-zero warnings, or overly sharp posteriors."
+      ],
+      "commonmistakes": [
+        "Using a Gaussian model on non-Gaussian count data and trying to fix the mismatch only with var_smoothing."
+      ]
+    },
+    {
+      "name": "alpha",
+      "purpose": "Laplace/Lidstone smoothing for feature likelihood estimates in count or binary Naive Bayes variants.",
+      "increaseeffect": "Bias increases and variance decreases. Speed and memory have a negligible effect.",
+      "decreaseeffect": "Bias decreases and variance increases. Speed and memory have a negligible effect.",
+      "tradeoffs": "More smoothing improves robustness on rare features and small datasets, but too much smoothing can wash out strong discriminative tokens.",
+      "tuningpriority": "High for text classification",
+      "interactions": [
+        "Variant compatibility: MultinomialNB, BernoulliNB, ComplementNB.",
+        "Practical tuning: sweep small values around the default first; larger values can help extreme sparsity."
+      ],
+      "commonmistakes": [
+        "Leaving alpha too low on tiny datasets, which can produce brittle likelihoods for rare terms."
+      ]
+    },
+    {
+      "name": "force_alpha",
+      "purpose": "Controls whether extremely small alpha values are accepted as-is or coerced to avoid numerical issues in newer scikit-learn versions.",
+      "increaseeffect": "No direct statistical effect. Negligible effect on speed and memory.",
+      "decreaseeffect": "No direct statistical effect. Negligible effect on speed and memory.",
+      "tradeoffs": "This is mainly a numerical-stability and reproducibility control, not a modeling knob.",
+      "tuningpriority": "Medium when using recent scikit-learn releases",
+      "interactions": [
+        "Variant compatibility: MultinomialNB, BernoulliNB, ComplementNB.",
+        "Practical tuning: keep the default unless you have a reason to preserve very small alpha values exactly."
+      ],
+      "commonmistakes": [
+        "Treating it like a regularization parameter instead of a stability flag."
+      ]
+    },
+    {
+      "name": "fit_prior",
+      "purpose": "Learns class priors from training data when enabled, rather than assuming uniform priors.",
+      "increaseeffect": "Can reduce bias if training priors match production. May increase sensitivity to prior drift. Negligible effect on speed and memory.",
+      "decreaseeffect": "Can increase bias if class frequencies are highly imbalanced. May decrease variance slightly by using fixed priors. Negligible effect on speed and memory.",
+      "tradeoffs": "Learning priors helps when the training set reflects the target distribution, but fixed priors can be better when the dataset is sampled or artificially balanced.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Variant compatibility: all Naive Bayes classifiers exposing priors.",
+        "Practical tuning: disable only when training class proportions are known to be unrepresentative."
+      ],
+      "commonmistakes": [
+        "Using balanced training data with fit_prior=True and assuming the learned priors match production reality."
+      ]
+    },
+    {
+      "name": "class_prior",
+      "purpose": "Manually sets class probabilities when you want to override empirical priors.",
+      "increaseeffect": "Shifts decision boundaries toward the specified classes, and can lower variance if priors are stable and known. Negligible effect on speed and memory.",
+      "decreaseeffect": "Shifts the model away from the specified classes, and may increase variance if priors are poorly chosen. Negligible effect on speed and memory.",
+      "tradeoffs": "Useful for prior correction, but incorrect priors can dominate the posterior and reduce recall for minority classes.",
+      "tuningpriority": "High only when you have a trustworthy deployment prior",
+      "interactions": [
+        "Variant compatibility: all estimators with prior support.",
+        "Practical tuning: use when class imbalance in the sample is known to differ from production."
+      ],
+      "commonmistakes": [
+        "Hard-coding priors from a stale dataset and never updating them after the target distribution changes."
+      ]
+    },
+    {
+      "name": "binarize",
+      "purpose": "Thresholds numeric inputs into binary indicators before fitting or scoring in BernoulliNB.",
+      "increaseeffect": "May increase bias if too many values collapse to zero, and may decrease variance because inputs become simpler. Negligible effect on speed and memory.",
+      "decreaseeffect": "May decrease bias if more values remain active, and may increase variance. Negligible effect on speed and memory.",
+      "tradeoffs": "Choosing the threshold affects whether weak signals are treated as present or absent, which can strongly change text and event features.",
+      "tuningpriority": "Medium for BernoulliNB",
+      "interactions": [
+        "Variant compatibility: BernoulliNB only.",
+        "Practical tuning: use when inputs are counts or TF-IDF scores that need binarization."
+      ],
+      "commonmistakes": [
+        "Applying BernoulliNB to already sparse binary features without checking whether the threshold is meaningful."
+      ]
+    },
+    {
+      "name": "priors",
+      "purpose": "Specifies class priors explicitly for GaussianNB.",
+      "increaseeffect": "Shifts toward the corresponding class, and can reduce variance if priors are correct. Negligible effect on speed and memory.",
+      "decreaseeffect": "Shifts away from the corresponding class, and may increase variance if priors are inaccurate. Negligible effect on speed and memory.",
+      "tradeoffs": "This is most useful when class frequencies are known from domain constraints rather than training sample counts.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Variant compatibility: GaussianNB.",
+        "Practical tuning: use for prior correction and cost-sensitive deployment setups."
+      ],
+      "commonmistakes": [
+        "Using priors and fit_prior together without understanding that the explicit prior should dominate the learned prior logic."
+      ]
+    },
+    {
+      "name": "sample_weight",
+      "purpose": "Reweights samples during fitting to reflect importance, cost sensitivity, or imbalance handling.",
+      "increaseeffect": "Can decrease bias for emphasized classes or regions, and may increase variance if weights are extreme. Slightly lower speed due to weighted accumulation overhead. Negligible effect on memory.",
+      "decreaseeffect": "Less emphasis on weighted samples, and may decrease variance if weights become more uniform. Slightly better speed. Negligible effect on memory.",
+      "tradeoffs": "Useful for cost-sensitive learning, but extreme weights can destabilize estimated likelihoods and class priors.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Variant compatibility: estimators that expose weighted fit support.",
+        "Practical tuning: use alongside class imbalance analysis, not as a substitute for correct prior handling."
+      ],
+      "commonmistakes": [
+        "Overusing large weights to compensate for feature mismatch instead of fixing preprocessing or variant choice."
+      ]
+    }
+  ],
+  "engineeringconsiderations": {
+    "datasetsuitability": [
+      "Naive Bayes is strongest on sparse text features, token counts, and one-hot/categorical representations where conditional independence is a reasonable approximation.",
+      "It is a good fit for high-dimensional datasets because training cost grows gently and the model remains compact.",
+      "Small datasets also benefit from the strong inductive bias and smoothing, though variant selection becomes more important.",
+      "Choose the variant to match feature semantics: GaussianNB for continuous numeric features, MultinomialNB for counts or nonnegative weights, BernoulliNB for binary indicators, ComplementNB for imbalanced text classes, and CategoricalNB for categorical inputs."
+    ],
+    "scalability": [
+      "CPU efficiency is a major advantage because fitting and scoring rely on simple aggregations and log-probability arithmetic.",
+      "Batch inference is straightforward and predictable, which makes Naive Bayes easy to place behind streaming or queue-based scoring systems.",
+      "Memory efficiency is strong because the learned state is small relative to tree ensembles or large-margin models with support vectors.",
+      "In production, the model scales best when preprocessing is also lightweight and sparse-friendly."
+    ],
+    "parallelization": "CPU efficiency is a major advantage because fitting and scoring rely on simple aggregations and log-probability arithmetic, facilitating straightforward parallelization for batch scoring.",
+    "computationalcost": "Training is efficient because it avoids gradient descent and often only requires one pass or a small number of statistic updates. Prediction is fast because the model evaluates per-feature log-likelihoods rather than complex nonlinear structures. Hardware utilization is usually CPU-bound and benefits more from vectorized preprocessing than from specialized accelerators.",
+    "memorybehavior": "Parameter storage is compact: class priors plus per-class feature statistics dominate the footprint. Memory use during inference is low, storing only class-conditional parameters, priors, and small auxiliary state.",
+    "inferencecharacteristics": "Prediction latency is very low because inference is mostly a small number of arithmetic operations per feature and class. Memory use is compact, making the model suitable for batch scoring and high-throughput services with limited compute. CPU efficiency is strong because no tree traversal, kernel evaluation, or iterative optimization is required.",
+    "robustness": [
+      "GaussianNB is the most sensitive variant to outliers because a few extreme values can distort mean and variance estimates.",
+      "MultinomialNB and BernoulliNB are usually more robust for text-like data because counts and binary indicators are less affected by single large magnitudes.",
+      "Rare-feature behavior is controlled by smoothing, so alpha choice matters when tokens or categories appear infrequently.",
+      "If distribution mismatch is severe, switching variants is usually more effective than fine-tuning hyperparameters."
+    ],
+    "sensitivitytooutliers": "GaussianNB is highly sensitive to outliers because extreme values distort mean and variance calculations. MultinomialNB and BernoulliNB are more robust because counts and binary indicators are less affected by extreme values.",
+    "featureengineeringdependency": "Tokenization matters for text tasks because the model expects a clean, consistent feature representation such as counts or TF-IDF. Count features are the natural input for MultinomialNB, while BernoulliNB expects binary indicators and may binarize numeric inputs internally. TF-IDF is compatible in practice, but it works best when the resulting values are nonnegative and the variant choice matches the data semantics.",
+    "featurescalingrequirement": "Scaling is generally unnecessary because the model is driven by likelihood estimation rather than distance metrics or margin geometry.",
+    "classimbalancebehavior": "Naive Bayes can handle imbalance reasonably well if priors and sample weights are configured deliberately, but it may still favor the majority class when priors are learned directly from skewed data. Probability calibration can drift under imbalance, so threshold tuning is often necessary before deployment. For imbalanced text problems, ComplementNB is often preferred over plain MultinomialNB because it is designed for such settings.",
+    "commonlimitations": [
+      "The conditional independence assumption is the core structural limitation and is the main reason Naive Bayes underperforms on feature-interaction-heavy problems.",
+      "Probability calibration is often weaker than discrimination, so raw probabilities should not be treated as perfectly calibrated risk estimates without validation.",
+      "Correlated features can cause double-counting of evidence and overconfident predictions.",
+      "Distribution mismatch between the estimator variant and the real data often causes more damage than tuning alone can repair."
+    ],
+    "pipelineposition": "Place Naive Bayes after deterministic preprocessing and before any threshold calibration or business-rule layer so posterior probabilities remain usable."
+  },
+  "comparisons": [
+    {
+      "model": "Logistic Regression",
+      "choose_this_when": "You need a very fast baseline for sparse text and simple probabilistic scoring.",
+      "prefer_other_when": "You need better calibration, stronger discriminative performance, or correlated features.",
+      "tradeoffs": "NB is faster and simpler; logistic regression usually models decision boundaries better."
+    },
+    {
+      "model": "Decision Tree",
+      "choose_this_when": "Inputs are high-dimensional sparse and you want a compact linear-time baseline.",
+      "prefer_other_when": "You need nonlinear splits and interpretable feature rules at the expense of stability.",
+      "tradeoffs": "Trees capture interactions; NB is usually cheaper and more stable on sparse text."
+    },
+    {
+      "model": "Random Forest",
+      "choose_this_when": "You want minimal latency and a compact model for text classification.",
+      "prefer_other_when": "You need higher accuracy on structured data and can afford more compute.",
+      "tradeoffs": "Random forests handle interactions better; NB is lighter and easier to deploy."
+    },
+    {
+      "model": "Support Vector Machine (SVM)",
+      "choose_this_when": "You want a fast, simple baseline or probability-like scoring in a sparse setting.",
+      "prefer_other_when": "You need a stronger margin-based classifier for high-accuracy text or numeric problems.",
+      "tradeoffs": "SVMs can outperform NB but often cost more to train and tune."
+    },
+    {
+      "model": "K-Nearest Neighbors (KNN)",
+      "choose_this_when": "You want cheap training and compact inference logic.",
+      "prefer_other_when": "You can tolerate slower inference for better local decision boundaries.",
+      "tradeoffs": "NB has far lower inference cost; KNN can adapt better to local structure."
+    },
+    {
+      "model": "XGBoost",
+      "choose_this_when": "You need a production baseline with tiny training cost and explainable probabilities.",
+      "prefer_other_when": "You need strong tabular performance and can manage more tuning and compute cost.",
+      "tradeoffs": "XGBoost is typically more accurate; NB is far simpler and faster."
+    }
+  ],
+  "relatedknowledge": {
+    "relatedmodels": [
+      "GaussianNB",
+      "MultinomialNB",
+      "BernoulliNB",
+      "ComplementNB",
+      "CategoricalNB"
+    ],
+    "alternative_models": [
+      "Logistic Regression",
+      "Decision Tree",
+      "Random Forest",
+      "Support Vector Machine",
+      "K-Nearest Neighbors",
+      "XGBoost"
+    ],
+    "related_principles": [
+      "Bayes’ Theorem",
+      "Conditional Probability",
+      "Probability Theory",
+      "Maximum A Posteriori Estimation",
+      "Bias-Variance Trade-off"
+    ],
+    "related_workflows": [
+      "Text Classification Pipeline",
+      "Document Classification",
+      "Feature Engineering",
+      "Model Evaluation",
+      "Hyperparameter Optimization"
+    ],
+    "related_patterns": [
+      "Cross Validation",
+      "NLP Pipeline"
+    ],
+    "related_packages": [
+      "scikit-learn",
+      "NumPy",
+      "SciPy",
+      "NLTK",
+      "spaCy"
+    ],
+    "related_guides": [
+      "Probability Calibration Guide",
+      "Feature Engineering Guide",
+      "Class Imbalance Guide"
+    ],
+    "related_registry": [
+      "Probabilistic ML models",
+      "Supervised Learning"
+    ]
+  },
+  "quickstart": {
+    "language": "python",
+    "implementation_package": "scikit-learn",
+    "code": "import pandas as pd\nfrom sklearn.compose import ColumnTransformer\nfrom sklearn.impute import SimpleImputer\nfrom sklearn.naive_bayes import GaussianNB\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import OneHotEncoder\nfrom sklearn.model_selection import train_test_split, GridSearchCV\nfrom sklearn.metrics import roc_auc_score, classification_report\nfrom sklearn.datasets import fetch_openml\nfrom sklearn.compose import make_column_selector as selector\n\ndata = fetch_openml(\"titanic\", version=1, as_frame=True)\ndf = data.frame.copy()\ny = df[\"survived\"].astype(int)\nX = df.drop(columns=[\"survived\"])\n\nnumeric_features = X.select_dtypes(include=[\"number\"]).columns\ncategorical_features = X.select_dtypes(exclude=[\"number\"]).columns\n\nnumeric_transformer = Pipeline([\n    (\"imputer\", SimpleImputer(strategy=\"median\")),\n])\n\ncategorical_transformer = Pipeline([\n    (\"imputer\", SimpleImputer(strategy=\"most_frequent\")),\n    (\"onehot\", OneHotEncoder(handle_unknown=\"ignore\")),\n])\n\npreprocess = ColumnTransformer([\n    (\"num\", numeric_transformer, numeric_features),\n    (\"cat\", categorical_transformer, categorical_features),\n])\n\nmodel = Pipeline([\n    (\"preprocess\", preprocess),\n    (\"nb\", GaussianNB()),\n])\n\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42, stratify=y\n)\n\nparam_grid = {\n    \"nb__var_smoothing\": [1e-9, 1e-8, 1e-7]\n}\n\nsearch = GridSearchCV(\n    model,\n    param_grid=param_grid,\n    scoring=\"roc_auc\",\n    cv=5,\n    n_jobs=-1\n)\n\nsearch.fit(X_train, y_train)\nbest_model = search.best_estimator_\n\ny_proba = best_model.predict_proba(X_test)[:, 1]\ny_pred = best_model.predict(X_test)\n\nauc = roc_auc_score(y_test, y_proba)\nreport = classification_report(y_test, y_pred)\n\nprint(\"Best params:\", search.best_params_)\nprint(\"ROC AUC:\", auc)\nprint(report)",
+    "explanation": "This pipeline imputes missing values, encodes categorical columns, and trains GaussianNB inside a scikit-learn workflow. It uses GridSearchCV to tune var_smoothing and evaluates the model with probabilistic and classification metrics.",
+    "inputs": "A tabular dataset with numeric and categorical columns, plus a binary or multiclass target column.",
+    "outputs": "Predicted class labels, predicted probabilities, ROC AUC, and a classification report suitable for deployment checks.",
+    "notes": "Choose GaussianNB only if the numeric features are reasonably continuous; use MultinomialNB for count-like features and BernoulliNB for binary features. For deployment, inspect calibration and threshold behavior before exposing raw probabilities to downstream decision systems."
+  },
+  "learning_resources": [
+    {
+      "title": "scikit-learn Naive Bayes user guide",
+      "url": "https://scikit-learn.org/stable/modules/naive_bayes.html",
+      "type": "documentation",
+      "why_to_read": "Canonical implementation overview and variant distinctions.",
+      "expected_outcome": "Understand estimator selection and core API behavior.",
+      "reading_time": 20
+    },
+    {
+      "title": "GaussianNB API reference",
+      "url": "https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html",
+      "type": "documentation",
+      "why_to_read": "Precise parameter and method reference for production use.",
+      "expected_outcome": "Understand var_smoothing, priors, and inference methods.",
+      "reading_time": 15
+    },
+    {
+      "title": "Stanford CS229 notes on Naive Bayes",
+      "url": "https://cs229.stanford.edu/notes-spring2019/cs229-notes2.pdf",
+      "type": "guide",
+      "why_to_read": "Strong mathematical and conceptual treatment from a top ML course.",
+      "expected_outcome": "Reinforce MAP reasoning and independence assumptions.",
+      "reading_time": 30
+    },
+    {
+      "title": "Introduction to Statistical Learning",
+      "url": "https://www.karlin.mff.cuni.cz/~pesta/NMFM334/StatLearning/Book2nd/ISLRv2_website.pdf",
+      "type": "guide",
+      "why_to_read": "Broad classification context and model comparison framing.",
+      "expected_outcome": "Understand where Naive Bayes fits among classifiers.",
+      "reading_time": 35
+    },
+    {
+      "title": "Stanford CS229 lecture on GDA and Naive Bayes",
+      "url": "https://www.youtube.com/watch?v=yieIOW9Kaw4",
+      "type": "video",
+      "why_to_read": "Clear lecture-style explanation from an authoritative course source.",
+      "expected_outcome": "Gain an accessible mental model of Naive Bayes and smoothing.",
+      "reading_time": 45
+    }
+  ]
+}

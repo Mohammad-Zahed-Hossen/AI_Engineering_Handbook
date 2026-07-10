@@ -3,7 +3,14 @@ import path from 'path';
 import { cache } from 'react';
 import { Package } from '@/types/package';
 import { Model, ModelCategory, ModelSubcategory } from '@/types/model';
+import { PackageSchema } from '@/lib/schemas/package';
 import { ModelSchema } from '@/lib/schemas/model';
+import { WorkflowSchema } from '@/lib/schemas/workflow';
+import { CheatsheetSchema } from '@/lib/schemas/cheatsheet';
+import { PatternSchema } from '@/lib/schemas/pattern';
+import { DebugGuideSchema } from '@/lib/schemas/debug-guide';
+import { DecisionGuideSchema } from '@/lib/schemas/decision-guide';
+import { PrincipleSchema } from '@/lib/schemas/principle';
 import { RegistryModel } from '@/types/registry';
 import { REGISTRY_TASK_FILES, REGISTRY_FILE_TO_TASK } from './config/registry';
 import type { RegistryTask } from './config/registry';
@@ -74,7 +81,8 @@ export const getPackage = cache(function getPackage(id: string): Package {
   if (!fs.existsSync(filePath)) {
     throw new Error(`Package not found: ${id}`);
   }
-  return readJSON<Package>(filePath);
+  const raw = readJSON<unknown>(filePath);
+  return PackageSchema.parse(raw);
 });
 
 /**
@@ -211,7 +219,8 @@ export const getWorkflow = cache(function getWorkflow(id: string): Workflow {
   if (!fs.existsSync(filePath)) {
     throw new Error(`Workflow not found: ${id}`);
   }
-  return readJSON<Workflow>(filePath);
+  const raw = readJSON<unknown>(filePath);
+  return WorkflowSchema.parse(raw);
 });
 
 /**
@@ -245,7 +254,8 @@ export const getCheatsheet = cache(function getCheatsheet(id: string): Cheatshee
   if (!fs.existsSync(filePath)) {
     throw new Error(`Cheatsheet not found: ${id}`);
   }
-  return readJSON<Cheatsheet>(filePath);
+  const raw = readJSON<unknown>(filePath);
+  return CheatsheetSchema.parse(raw);
 });
 
 // ── Meta (dashboard) ────────────────────────────────────────
@@ -378,7 +388,8 @@ export const getPattern = cache(function getPattern(id: string): Pattern {
   if (!fs.existsSync(filePath)) {
     throw new Error(`Pattern not found: ${id}`);
   }
-  return readJSON<Pattern>(filePath);
+  const raw = readJSON<unknown>(filePath);
+  return PatternSchema.parse(raw);
 });
 
 /**
@@ -421,7 +432,8 @@ export const getDebugGuide = cache(function getDebugGuide(id: string): DebugGuid
   if (!fs.existsSync(filePath)) {
     throw new Error(`Debug Guide not found: ${id}`);
   }
-  return readJSON<DebugGuide>(filePath);
+  const raw = readJSON<unknown>(filePath);
+  return DebugGuideSchema.parse(raw);
 });
 
 /**
@@ -464,7 +476,8 @@ export const getDecisionGuide = cache(function getDecisionGuide(id: string): Dec
   if (!fs.existsSync(filePath)) {
     throw new Error(`Decision Guide not found: ${id}`);
   }
-  return readJSON<DecisionGuide>(filePath);
+  const raw = readJSON<unknown>(filePath);
+  return DecisionGuideSchema.parse(raw);
 });
 
 /**
@@ -507,7 +520,8 @@ export const getPrinciple = cache(function getPrinciple(id: string): Principle {
   if (!fs.existsSync(filePath)) {
     throw new Error(`Principle not found: ${id}`);
   }
-  return readJSON<Principle>(filePath);
+  const raw = readJSON<unknown>(filePath);
+  return PrincipleSchema.parse(raw);
 });
 
 /**

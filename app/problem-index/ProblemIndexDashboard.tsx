@@ -114,6 +114,9 @@ export default function ProblemIndexDashboard({ taxonomy, workflowMap, decisionG
   });
 
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [isFilterCollapsed, setIsFilterCollapsed] = useState(false);
+  const [stickyState, setStickyState] = useState<'full' | 'compact' | 'icon'>('full');
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
 
   // Memoize Category Slugs
   const categorySlugs = useMemo(() => {
@@ -142,26 +145,88 @@ export default function ProblemIndexDashboard({ taxonomy, workflowMap, decisionG
     return () => clearTimeout(timer);
   }, [searchQuery, router]);
 
-  // 3. Keyboard Shortcut (focus with Ctrl+K or '/')
+  // 3. Keyboard Shortcut (focus with Ctrl+K or '/') and Escape to collapse
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const activeEl = document.activeElement;
+      
+      // Escape to collapse expanded search
+      if (e.key === 'Escape' && isSearchExpanded) {
+        setIsSearchExpanded(false);
+        return;
+      }
+
       if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.getAttribute('contenteditable') === 'true')) {
         return;
       }
       if (e.key === '/') {
         e.preventDefault();
+        setIsSearchExpanded(true);
         searchInputRef.current?.focus();
       } else if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault();
+        setIsSearchExpanded(true);
         searchInputRef.current?.focus();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSearchExpanded]);
+
+  // 4. Filter Collapse on Scroll with 3-State Sticky Bar
+  useEffect(() => {
+    const mainElement = document.getElementById('main-scroll');
+    if (!mainElement) return;
+
+    let lastScrollY = mainElement.scrollTop;
+    let stateTransitionTimeout: NodeJS.Timeout | null = null;
+
+    const handleScroll = () => {
+      const scrollY = mainElement.scrollTop;
+      const direction = scrollY > lastScrollY ? 'down' : 'up';
+
+      // Filter collapse (toolbar row only)
+      setIsFilterCollapsed(scrollY > 80);
+
+      // 3-state sticky bar logic with direction awareness
+      // Debounce state transitions to avoid flickering on rapid scroll
+      if (stateTransitionTimeout) {
+        clearTimeout(stateTransitionTimeout);
+      }
+
+      stateTransitionTimeout = setTimeout(() => {
+        if (scrollY <= 40) {
+          setStickyState('full');
+          setIsSearchExpanded(false);
+        } else if (scrollY <= 200) {
+          setStickyState('compact');
+          setIsSearchExpanded(false);
+        } else {
+          // Past 200px - use direction awareness
+          if (direction === 'down') {
+            setStickyState('icon');
+            setIsSearchExpanded(false);
+          } else {
+            // Scrolling up - return to compact
+            setStickyState('compact');
+          }
+        }
+      }, 50); // Small debounce for state transitions
+
+      lastScrollY = scrollY;
+    };
+
+    mainElement.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => {
+      mainElement.removeEventListener('scroll', handleScroll);
+      if (stateTransitionTimeout) {
+        clearTimeout(stateTransitionTimeout);
+      }
+    };
   }, []);
 
-  // 4. Highlight Visible Category on Scroll (Intersection Observer)
+  // 5. Highlight Visible Category on Scroll (Intersection Observer)
   useEffect(() => {
     const categories = Object.keys(taxonomy);
     const observer = new IntersectionObserver(
@@ -336,36 +401,65 @@ export default function ProblemIndexDashboard({ taxonomy, workflowMap, decisionG
       </section>
 
       {/* Sticky Filters & Search Area */}
-      <div className="sticky top-14 md:top-16 z-20 bg-background/95 backdrop-blur-md py-3 border-b border-border space-y-3">
+      <div className={`sticky top-14 md:top-16 z-20 bg-background/95 backdrop-blur-md border-b border-border space-y-3 transition-all duration-300 ${
+        stickyState === 'full' ? 'py-3' : 'py-1.5'
+      }`}>
         <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground" />
-          <input
-            ref={searchInputRef}
-            id="problem-search-input"
-            type="text"
-            placeholder="Search problems, workflows, tags, categories... (Press '/' to focus)"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-10 py-3 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
-            aria-label="Search problems"
-          />
-          {searchQuery ? (
+          {/* Icon trigger button (shown in icon state) */}
+          {stickyState === 'icon' && !isSearchExpanded && (
             <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-              aria-label="Clear search"
+              onClick={() => {
+                setIsSearchExpanded(true);
+                setTimeout(() => searchInputRef.current?.focus(), 0);
+              }}
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-border bg-card hover:bg-muted transition-all cursor-pointer"
+              aria-label="Open search"
             >
-              <X className="w-4 h-4" />
+              <Search className="w-4.5 h-4.5 text-muted-foreground" />
             </button>
-          ) : (
-            <kbd className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-              Ctrl K
-            </kbd>
           )}
+
+          {/* Search input (hidden in icon state unless expanded) */}
+          <div
+            className={`transition-all duration-300 ease-in-out ${
+              stickyState === 'icon' && !isSearchExpanded
+                ? 'opacity-0 pointer-events-none absolute'
+                : 'opacity-100 relative'
+            }`}
+          >
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground" />
+            <input
+              ref={searchInputRef}
+              id="problem-search-input"
+              type="text"
+              placeholder="Search problems, workflows, tags, categories... (Press '/' to focus)"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-10 py-3 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
+              aria-label="Search problems"
+            />
+            {searchQuery ? (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                aria-label="Clear search"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            ) : (
+              <kbd className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+                Ctrl K
+              </kbd>
+            )}
+          </div>
         </div>
 
         {/* Navigation & Action Toolbar */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pt-1">
+        <div 
+          className={`flex flex-col md:flex-row md:items-center md:justify-between gap-3 pt-1 transition-all duration-300 ${
+            isFilterCollapsed ? 'opacity-0 h-0 overflow-hidden pointer-events-none' : 'opacity-100'
+          }`}
+        >
           {/* Scrollable Navigation Chips */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 select-none scrollbar-none w-full md:max-w-[70%]">
             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider shrink-0 mr-1">
@@ -379,6 +473,7 @@ export default function ProblemIndexDashboard({ taxonomy, workflowMap, decisionG
                 <button
                   key={category}
                   onClick={() => handleScrollToCategory(category)}
+                  tabIndex={isFilterCollapsed ? -1 : undefined}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all whitespace-nowrap cursor-pointer ${
                     isActive 
                       ? 'bg-primary text-primary-foreground border-primary shadow-sm'
@@ -410,6 +505,7 @@ export default function ProblemIndexDashboard({ taxonomy, workflowMap, decisionG
             <div className="flex items-center gap-2">
               <button
                 onClick={expandAll}
+                tabIndex={isFilterCollapsed ? -1 : undefined}
                 className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-all cursor-pointer"
                 aria-label="Expand all categories"
               >
@@ -418,6 +514,7 @@ export default function ProblemIndexDashboard({ taxonomy, workflowMap, decisionG
               </button>
               <button
                 onClick={collapseAll}
+                tabIndex={isFilterCollapsed ? -1 : undefined}
                 className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-all cursor-pointer"
                 aria-label="Collapse all categories"
               >

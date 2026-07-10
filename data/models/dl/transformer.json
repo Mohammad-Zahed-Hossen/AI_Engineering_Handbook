@@ -1,0 +1,443 @@
+{
+  "id": "transformer",
+  "title": "Transformer",
+  "name": "Transformer",
+  "slug": "transformer",
+  "description": "Transformer is an attention-based sequence model that replaces recurrence and convolution with self-attention to model long-range dependencies efficiently in parallel, making it the default architecture for large-scale language, multimodal, and sequence-to-sequence systems.",
+  "tags": [
+    "dl",
+    "transformer",
+    "attention-mechanism",
+    "sequence-modeling"
+  ],
+  "aliases": [
+    "Transformer",
+    "Self-Attention Network",
+    "Attention-Based Model"
+  ],
+  "keywords": [
+    "transformer",
+    "self-attention",
+    "attention mechanism",
+    "multi-head attention",
+    "positional encoding"
+  ],
+  "searchtokens": [
+    "transformer",
+    "self-attention",
+    "multi-head attention",
+    "positional encoding",
+    "sequence modeling"
+  ],
+  "createdat": "2026-07-10T11:22:00+06:00",
+  "updatedat": "2026-07-10T11:22:00+06:00",
+  "lastverified": "2026-07-10T11:22:00+06:00",
+  "reviewfrequency": "annual",
+  "verifiedagainst": "canonical model knowledge as of 2026-07-10",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "verified",
+  "engineeringmaturity": "production",
+  "domain": "dl",
+  "category": "transformer",
+  "difficulty": "advanced",
+  "engineeringarea": "supervised learning",
+  "estimatedreadingtime": 15,
+  "prerequisites": [
+    "Deep learning primitives",
+    "Sequence modeling basics",
+    "Attention mechanisms"
+  ],
+  "recommendednext": [
+    "BERT",
+    "GPT",
+    "T5",
+    "Mamba"
+  ],
+  "relatedcontent": [
+    {
+      "type": "package",
+      "id": "pytorch",
+      "relationship": "implemented-by"
+    },
+    {
+      "type": "model",
+      "id": "rnn",
+      "relationship": "related_to"
+    },
+    {
+      "type": "model",
+      "id": "lstm",
+      "relationship": "related_to"
+    },
+    {
+      "type": "model",
+      "id": "gru",
+      "relationship": "related_to"
+    },
+    {
+      "type": "model",
+      "id": "cnn",
+      "relationship": "related_to"
+    },
+    {
+      "type": "model",
+      "id": "mlp",
+      "relationship": "related_to"
+    }
+  ],
+  "owner": "AENS Knowledge Architecture",
+  "sources": [
+    {
+      "title": "Understanding Positional Encoding in Transformers",
+      "url": "https://medium.com/@lixue421/understanding-positional-encoding-in-transformers-2c7336728be5"
+    },
+    {
+      "title": "Attention: From First Principles to Production",
+      "url": "https://medium.com/@lepicardhugo/attention-from-first-principles-to-production-the-fundamentals-def39bee8f46"
+    }
+  ],
+  "githubrepo": "https://github.com/pytorch/pytorch",
+  "problemtypes": [
+    "Language modeling",
+    "Machine translation",
+    "Sequence-to-sequence learning",
+    "Document understanding"
+  ],
+  "decisionsummary": {
+    "summary": "Transformer is an attention-based sequence model that replaces recurrence and convolution with self-attention to model long-range dependencies efficiently in parallel, making it the default architecture for large-scale language, multimodal, and sequence-to-sequence systems.",
+    "bestusecases": [
+      "Large language models and instruction-tuned assistants that benefit from large-scale pretraining and autoregressive decoding.",
+      "Machine translation and other sequence-to-sequence tasks where encoder-decoder attention is a strong fit.",
+      "Document understanding, retrieval-augmented generation, and long-form text processing where global token interactions matter.",
+      "Vision and multimodal systems that can tokenize non-text inputs and reuse the same attention stack."
+    ],
+    "avoidwhen": [
+      "Very small datasets where the model capacity is excessive and overfitting risk is high.",
+      "Low-latency edge deployments with severe memory constraints, especially for long sequences.",
+      "Tiny tabular datasets where classical ML or smaller neural models are more efficient.",
+      "Simple classification or regression tasks where the engineering cost is not justified."
+    ],
+    "strengths": [
+      "Parallel sequence processing during training enables high GPU/TPU utilization and scales well with distributed training.",
+      "Self-attention provides direct long-range token interaction, which is especially useful for context-rich inputs.",
+      "Transfer learning works extremely well because the architecture pretrains effectively on large corpora and adapts to downstream tasks.",
+      "The same core design transfers across text, vision, speech, and multimodal settings with limited architectural changes."
+    ],
+    "limitations": [
+      "Self-attention has quadratic time and memory cost in sequence length, which becomes a major bottleneck for long contexts.",
+      "Autoregressive generation is sequential at inference time, so latency can become high despite parallel training.",
+      "Large models require substantial compute, VRAM, and operational budget for training and serving.",
+      "Hallucination and sensitivity to prompt or distribution shift remain practical risks in production systems."
+    ],
+    "interpretability": "Attention weights can suggest which tokens influenced a prediction, and multi-head attention exposes multiple interaction subspaces, but these are only partial signals rather than a complete explanation of model behavior. Hidden representations encode distributed features that are not directly human-readable, and attention maps alone do not provide full feature attribution because downstream layers, residual paths, and value transformations also affect the output.",
+    "trainingcharacteristics": "Transformers are trained end-to-end with gradient descent, usually at large scale with pretraining followed by task adaptation. They benefit from parallel sequence processing, but optimization stability depends heavily on learning rate, batch size, warmup, normalization, and enough data and compute.",
+    "inferencecharacteristics": "Encoder-only inference can be parallel, while decoder-only or encoder-decoder generation is autoregressive and token-by-token. KV cache reduces repeated attention computation during decoding, but memory usage still grows with context and batch size, so GPU serving is usually preferred for throughput while CPU serving is better only for smaller or latency-tolerant workloads.",
+    "computationalcharacteristics": "For sequence length $n$, hidden size $d$, heads $h$, and layers $L$, standard self-attention has $O(n^2 d)$ time and $O(n^2)$ attention memory per layer, which makes long-context scaling expensive. End-to-end training is commonly approximated as $O(L n^2 d)$, while inference for autoregressive decoding is $O(L n d)$ per generated token with KV cache, but the accumulated cache memory grows with context length and number of layers."
+  },
+  "coreunderstanding": {
+    "intuition": "Self-attention lets each token look at every other token and weight the most relevant ones for the current computation. Multi-head attention repeats that idea in parallel subspaces so the model can learn different relational patterns at once. Positional encoding injects order information because attention alone is permutation-invariant, while feed-forward layers transform each position independently after attention. Residual connections and layer normalization stabilize optimization and let deep stacks train reliably.",
+    "learningmechanism": "Self-attention lets each token look at every other token and weight the most relevant ones for the current computation. Multi-head attention repeats that idea in parallel subspaces so the model can learn different relational patterns at once. Positional encoding injects order information because attention alone is permutation-invariant, while feed-forward layers transform each position independently after attention. Residual connections and layer normalization stabilize optimization and let deep stacks train reliably.",
+    "assumptions": [
+      "Large training datasets: if violated, the model often overfits or underperforms simpler baselines.",
+      "Sequence representation: if the input cannot be tokenized or ordered meaningfully, Transformer structure is a poor fit.",
+      "Positional encoding availability: without order signals, performance drops on tasks requiring sequence structure.",
+      "Adequate compute resources: if violated, training becomes slow, unstable, or operationally infeasible.",
+      "Sufficient model capacity: too little capacity underfits; too much capacity on limited data increases variance and deployment cost."
+    ],
+    "mathematicalintuition": "Given input $X \\in \\mathbb{R}^{n \\times d}$, the Transformer projects queries, keys, and values as:\n\n$$\nQ = XW_Q,\\quad K = XW_K,\\quad V = XW_V\n$$\n\nwith learned matrices $W_Q, W_K, W_V \\in \\mathbb{R}^{d \\times d_k}$. Scaled dot-product attention is:\n\n$$\n\\text{Attention}(Q,K,V)=\\text{softmax}\\left(\\frac{QK^\\top}{\\sqrt{d_k}}\\right)V\n$$\n\nwhich produces context-aware token representations by comparing each query against all keys.\n\nMulti-head attention is:\n\n$$\n\\text{MHA}(X)=\\text{Concat}(head_1,\\dots,head_h)W_O\n$$\n\n$$\nhead_i=\\text{Attention}(XW_Q^{(i)},XW_K^{(i)},XW_V^{(i)})\n$$\n\nso each head can specialize in a distinct relational pattern. A common sinusoidal positional encoding is:\n\n$$\nPE_{(pos,2i)}=\\sin\\left(pos / 10000^{2i/d}\\right),\\quad\nPE_{(pos,2i+1)}=\\cos\\left(pos / 10000^{2i/d}\\right)\n$$\n\nwhich is added to token embeddings before attention. A standard Transformer block applies residual and normalization around attention and the feed-forward network:\n\n$$\nY = \\text{LN}(X + \\text{MHA}(X)),\\quad\nZ = \\text{LN}(Y + \\text{FFN}(Y))\n$$\n\nwhere $\\text{FFN}(x)=W_2\\,\\sigma(W_1x+b_1)+b_2$.",
+    "complexity": "Self-attention time: $O(n^2 d)$. Self-attention memory: $O(n^2)$ for attention scores per layer, plus activations and KV cache during inference. Training for $L$ layers: approximately $O(L n^2 d)$. Inference with KV cache: per generated token is approximately $O(L n d)$ compute with growing cache memory. Scalability: standard attention scales poorly with long sequences unless optimized with sparse, linear, or kernelized attention variants.",
+    "memorycomplexity": "Self-attention memory: $O(n^2)$ for attention scores per layer, plus activations and KV cache during inference. Training for $L$ layers: approximately $O(L n^2 d)$. Inference with KV cache: per generated token is approximately $O(L n d)$ compute with growing cache memory. Scalability: standard attention scales poorly with long sequences unless optimized with sparse, linear, or kernelized attention variants.",
+    "robustness": "Transformers are robust when trained on diverse data, but they can be sensitive to token noise, prompt shifts, and long-context degradation if the training distribution does not match deployment conditions.",
+    "scalability": "They scale extremely well in data-parallel and mixed-precision training, but scaling sequence length is much harder than scaling model width because of quadratic attention cost.",
+    "overfittingtendency": "Overfitting risk rises sharply on small or narrow datasets because the architecture has high capacity and can memorize patterns quickly.",
+    "biasvariance": "Transformers typically reduce bias as capacity and data increase, but variance can remain high on limited data and low-noise tasks where simpler models are sufficient."
+  },
+  "hyperparameters": [
+    {
+      "name": "d_model",
+      "purpose": "Sets the embedding and hidden state width used throughout attention and feed-forward sublayers.",
+      "increaseeffect": "Bias decreases, variance increases, speed decreases, memory increases, capacity increases.",
+      "decreaseeffect": "Bias increases, variance decreases, speed increases, memory decreases, representation quality may drop.",
+      "tradeoffs": "Larger widths usually improve accuracy if data and compute scale with them, but deployment cost rises quickly.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts strongly with num_heads and ffn_dim; head dimension should remain practical for stable attention behavior."
+      ],
+      "commonmistakes": [
+        "Choosing a width that is too small for the task or not scaling FFN size proportionally."
+      ]
+    },
+    {
+      "name": "num_heads",
+      "purpose": "Determines how many attention subspaces operate in parallel.",
+      "increaseeffect": "Bias may decrease slightly, variance may increase slightly, speed can decrease, memory can increase, capacity can improve if d_model supports it.",
+      "decreaseeffect": "Bias may increase, variance may decrease, speed improves, memory drops, representation diversity can fall.",
+      "tradeoffs": "Too many heads with small per-head dimension can hurt quality; too few heads can reduce relational expressiveness.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Must be consistent with d_model because per-head dimension is typically d_model / num_heads."
+      ],
+      "commonmistakes": [
+        "Increasing heads without increasing d_model, which can starve each head of capacity."
+      ]
+    },
+    {
+      "name": "num_layers",
+      "purpose": "Controls the depth of encoder or decoder stacking.",
+      "increaseeffect": "Bias decreases, variance increases, speed decreases, memory increases, capacity increases.",
+      "decreaseeffect": "Bias increases, variance decreases, speed improves, memory decreases, representation depth drops.",
+      "tradeoffs": "Deep models are more expressive but harder to optimize and more expensive to serve.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Depth interacts with dropout, normalization, and learning rate stability."
+      ],
+      "commonmistakes": [
+        "Using depth to compensate for poor data quality or weak tokenization."
+      ]
+    },
+    {
+      "name": "ffn_dim",
+      "purpose": "Sets the inner expansion size of the feed-forward network in each layer.",
+      "increaseeffect": "Bias decreases, variance increases, speed decreases, memory increases, capacity increases.",
+      "decreaseeffect": "Bias increases, variance decreases, speed increases, memory decreases, representation quality may drop.",
+      "tradeoffs": "This is often one of the biggest hidden cost drivers because FFNs can dominate parameter count even when attention dominates sequence cost.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Typically should scale with d_model rather than be set independently."
+      ],
+      "commonmistakes": [
+        "Oversizing FFNs while ignoring sequence-length bottlenecks."
+      ]
+    },
+    {
+      "name": "dropout",
+      "purpose": "Regularizes training by preventing co-adaptation between features.",
+      "increaseeffect": "Bias increases slightly, variance decreases, speed may decrease slightly, memory unchanged, robustness may improve.",
+      "decreaseeffect": "Bias decreases, variance increases, speed unchanged, memory unchanged, overfitting risk rises.",
+      "tradeoffs": "Higher dropout can help on limited data, but too much hurts convergence and underfits large corpora.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Especially important with larger models and smaller datasets."
+      ],
+      "commonmistakes": [
+        "Using high dropout as a substitute for insufficient data."
+      ]
+    },
+    {
+      "name": "learning_rate",
+      "purpose": "Controls optimization step size and convergence stability.",
+      "increaseeffect": "Bias may decrease faster early, variance may increase, speed of initial progress improves, memory unchanged, instability risk rises.",
+      "decreaseeffect": "Bias decreases more slowly, variance can be more stable, speed slows, memory unchanged, representation quality may eventually improve if training remains stable.",
+      "tradeoffs": "A wrong learning rate can dominate every other design choice, especially in deep Transformer stacks.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Strongly interacts with batch size, warmup, and model scale."
+      ],
+      "commonmistakes": [
+        "Skipping warmup or reusing a learning rate from a very different model scale."
+      ]
+    },
+    {
+      "name": "batch_size",
+      "purpose": "Controls optimization noise, throughput, and memory pressure.",
+      "increaseeffect": "Bias may decrease slightly, variance decreases, speed per step may improve, memory increases, capacity unchanged.",
+      "decreaseeffect": "Bias may increase slightly, variance increases, speed may decrease due to less efficient hardware use, memory decreases.",
+      "tradeoffs": "Large batches help hardware efficiency but can harm generalization or require learning-rate retuning.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts directly with learning rate, mixed precision, and distributed training."
+      ],
+      "commonmistakes": [
+        "Scaling batch size without retuning optimization settings."
+      ]
+    },
+    {
+      "name": "max_sequence_length",
+      "purpose": "Defines the maximum context window the model can process or generate.",
+      "increaseeffect": "Bias may decrease for long-context tasks, variance may increase slightly, speed decreases, memory increases sharply, capacity to capture long dependencies improves.",
+      "decreaseeffect": "Bias increases for long-context tasks, variance may decrease, speed improves, memory decreases, long-range representation quality worsens.",
+      "tradeoffs": "This is a direct speed-versus-context trade-off because standard attention cost grows quadratically with sequence length.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Must be chosen with deployment memory budget, KV cache limits, and truncation strategy in mind."
+      ],
+      "commonmistakes": [
+        "Setting a long window without checking VRAM, throughput, or truncation behavior."
+      ]
+    }
+  ],
+  "engineeringconsiderations": {
+    "datasetsuitability": [
+      "Transformers are strongest on large text corpora, long documents, machine translation, speech, vision, and multimodal datasets where sequence structure matters.",
+      "They are weaker on tiny datasets and narrowly structured data where simpler models suffice."
+    ],
+    "scalability": [
+      "They train efficiently on GPUs and TPUs because sequence positions can be processed in parallel during training.",
+      "Distributed training, mixed precision, data parallelism, and model parallelism are common production strategies for larger models."
+    ],
+    "parallelization": "Natively parallel across sequence positions during training. High GPU utilization is achieved via data and tensor parallel frameworks.",
+    "computationalcost": "Self-attention memory grows quadratically with sequence length, making VRAM the main bottleneck for long-context workloads. Training cost rises quickly with depth, width, and context length, and inference is often limited by autoregressive decoding latency and KV cache footprint.",
+    "memorybehavior": "Attention matrices scale quadratically $O(n^2)$ during activation storage. Autoregressive inference memory is dominated by the KV cache growth across layers and batches.",
+    "inferencecharacteristics": "Encoder-only inference can be parallel, while decoder-only or encoder-decoder generation is autoregressive and token-by-token. KV cache reduces repeated attention computation during decoding, but memory usage still grows with context and batch size, so GPU serving is usually preferred for throughput while CPU serving is better only for smaller or latency-tolerant workloads.",
+    "robustness": [
+      "Token noise, adversarial prompts, and distribution shift can degrade behavior because the model is highly data-dependent and context-sensitive.",
+      "Robustness improves with diverse pretraining, careful fine-tuning, regularization, prompt hardening, and retrieval or verification layers."
+    ],
+    "sensitivitytooutliers": "High sensitivity to out-of-vocabulary tokens or extreme prompts, which can cause erratic attention distributions and hallucinated text generation.",
+    "featureengineeringdependency": "Requires text tokenization and positional encoding. Manual feature engineering is minimal because self-attention automatically constructs context representations.",
+    "featurescalingrequirement": "Scaling queries and keys by $1/\\sqrt{d_k}$ is mandatory to prevent softmax gradient vanishing during self-attention computation.",
+    "classimbalancebehavior": "For imbalanced tasks, dataset balancing, loss weighting, and careful evaluation are still required because the architecture does not automatically solve class imbalance.",
+    "commonlimitations": [
+      "Quadratic attention complexity.",
+      "High compute requirements.",
+      "Hallucination risk.",
+      "Long-context memory bottlenecks.",
+      "Heavy deployment cost."
+    ],
+    "pipelineposition": "Pretraining, fine-tuning, transfer learning, and instruction tuning are the normal pipeline stages for adapting a Transformer to downstream work."
+  },
+  "comparisons": [
+    {
+      "model": "RNN",
+      "choose_this_when": "You need parallel training, strong context modeling, and modern large-scale performance.",
+      "prefer_other_when": "Sequence length is small, compute is tight, or simplicity matters more than state-of-the-art accuracy.",
+      "tradeoffs": "Transformer is more parallel and expressive; RNN is cheaper and simpler but weaker on long dependencies."
+    },
+    {
+      "model": "LSTM",
+      "choose_this_when": "You want a legacy recurrent baseline for compact sequence tasks or constrained systems.",
+      "prefer_other_when": "You need better long-range modeling, larger-scale pretraining, or easier GPU parallelization.",
+      "tradeoffs": "LSTM handles recurrence better than vanilla RNN but is still slower and less scalable than Transformer."
+    },
+    {
+      "model": "GRU",
+      "choose_this_when": "You need a lighter recurrent model for smaller sequence workloads.",
+      "prefer_other_when": "You need large-context modeling and pretraining efficiency.",
+      "tradeoffs": "GRU is simpler and cheaper, but Transformer generally wins on scaling and accuracy at large data volume."
+    },
+    {
+      "model": "CNN",
+      "choose_this_when": "You need global token interactions rather than local receptive fields.",
+      "prefer_other_when": "The task is mostly local-pattern detection or resource constraints are strict.",
+      "tradeoffs": "CNNs are more efficient for local structure; Transformers are better for long-range dependency modeling."
+    },
+    {
+      "model": "Mamba (State Space Model)",
+      "choose_this_when": "You want sequence modeling with better long-context scaling than standard attention.",
+      "prefer_other_when": "You need full attention-based interaction, mature tooling, or a well-known encoder-decoder stack.",
+      "tradeoffs": "Mamba-style models reduce attention bottlenecks; Transformers offer more established tooling and direct token-to-token attention."
+    },
+    {
+      "model": "Linear Attention Transformer",
+      "choose_this_when": "You need Transformer-like structure but cannot afford quadratic attention cost.",
+      "prefer_other_when": "Exact attention fidelity is less important than scaling efficiency.",
+      "tradeoffs": "Linear attention reduces memory and compute, but may trade away some representational fidelity versus standard attention."
+    }
+  ],
+  "relatedknowledge": {
+    "relatedmodels": [
+      "BERT",
+      "GPT",
+      "T5",
+      "ViT",
+      "Transformer-XL",
+      "Encoder-decoder Transformer variants"
+    ],
+    "alternative_models": [
+      "RNN",
+      "LSTM",
+      "GRU",
+      "CNN",
+      "Mamba",
+      "Linear attention models"
+    ],
+    "related_principles": [
+      "Self-Attention",
+      "Multi-Head Attention",
+      "Positional Encoding",
+      "Residual Learning",
+      "Layer Normalization",
+      "Transfer Learning",
+      "Scaling Laws"
+    ],
+    "related_workflows": [
+      "Language Modeling",
+      "Machine Translation",
+      "Fine-Tuning",
+      "Pretraining",
+      "Instruction Tuning",
+      "Retrieval-Augmented Generation"
+    ],
+    "related_patterns": [
+      "Transformer Scaling Guide",
+      "Fine-Tuning Guide",
+      "Attention Visualization Guide",
+      "Context Window Optimization",
+      "GPU Memory Optimization Guide"
+    ],
+    "related_packages": [
+      "PyTorch",
+      "TensorFlow",
+      "Hugging Face Transformers",
+      "Accelerate",
+      "DeepSpeed",
+      "FlashAttention"
+    ],
+    "related_guides": [],
+    "related_registry": [
+      "Deep Learning Models"
+    ]
+  },
+  "quickstart": {
+    "language": "python",
+    "implementation_package": "PyTorch",
+    "code": "import math\nimport torch\nimport torch.nn as nn\nfrom torch.utils.data import Dataset, DataLoader\nfrom torch.optim import AdamW\nfrom torch.optim.lr_scheduler import StepLR\nfrom collections import Counter\n\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n\ntexts = [\n    \"the cat sat on the mat\",\n    \"the dog sat on the rug\",\n    \"transformers model long range dependencies\",\n    \"attention is all you need\",\n    \"the cat and the dog played\"\n]\n\nclass SimpleTokenizer:\n    def __init__(self, texts, pad_token=\"<pad>\", unk_token=\"<unk>\"):\n        tokens = [t for s in texts for t in s.lower().split()]\n        vocab = [pad_token, unk_token] + sorted(set(tokens))\n        self.stoi = {tok: i for i, tok in enumerate(vocab)}\n        self.itos = {i: tok for tok, i in self.stoi.items()}\n        self.pad_id = self.stoi[pad_token]\n        self.unk_id = self.stoi[unk_token]\n\n    def encode(self, text, max_len):\n        ids = [self.stoi.get(t, self.unk_id) for t in text.lower().split()]\n        ids = ids[:max_len]\n        ids += [self.pad_id] * (max_len - len(ids))\n        return torch.tensor(ids, dtype=torch.long)\n\n    def decode(self, ids):\n        return \" \".join(self.itos.get(i, \"<unk>\") for i in ids if i != self.pad_id)\n\ntokenizer = SimpleTokenizer(texts)\nvocab_size = len(tokenizer.stoi)\nmax_len = 8\n\nclass ToySeqDataset(Dataset):\n    def __init__(self, texts, tokenizer, max_len):\n        self.texts = texts\n        self.tokenizer = tokenizer\n        self.max_len = max_len\n\n    def __len__(self):\n        return len(self.texts)\n\n    def __getitem__(self, idx):\n        x = self.tokenizer.encode(self.texts[idx], self.max_len)\n        y = x.clone()\n        return x, y\n\ndataset = ToySeqDataset(texts, tokenizer, max_len)\nloader = DataLoader(dataset, batch_size=2, shuffle=True)\n\nclass PositionalEncoding(nn.Module):\n    def __init__(self, d_model, max_len=512, dropout=0.1):\n        super().__init__()\n        self.dropout = nn.Dropout(dropout)\n        pe = torch.zeros(max_len, d_model)\n        pos = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)\n        div = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))\n        pe[:, 0::2] = torch.sin(pos * div)\n        pe[:, 1::2] = torch.cos(pos * div)\n        self.register_buffer(\"pe\", pe.unsqueeze(0))\n\n    def forward(self, x):\n        x = x + self.pe[:, :x.size(1)]\n        return self.dropout(x)\n\nclass TransformerLM(nn.Module):\n    def __init__(self, vocab_size, d_model=64, nhead=4, num_layers=2, dim_feedforward=128, max_len=512, dropout=0.1):\n        super().__init__()\n        self.embedding = nn.Embedding(vocab_size, d_model)\n        self.positional_encoding = PositionalEncoding(d_model, max_len, dropout)\n        enc_layer = nn.TransformerEncoderLayer(\n            d_model=d_model,\n            nhead=nhead,\n            dim_feedforward=dim_feedforward,\n            dropout=dropout,\n            batch_first=True\n        )\n        self.transformer = nn.TransformerEncoder(enc_layer, num_layers=num_layers)\n        self.fc = nn.Linear(d_model, vocab_size)\n\n    def forward(self, src, src_key_padding_mask=None):\n        x = self.embedding(src) * math.sqrt(self.embedding.embedding_dim)\n        x = self.positional_encoding(x)\n        hidden = self.transformer(x, src_key_padding_mask=src_key_padding_mask)\n        logits = self.fc(hidden)\n        return hidden, logits\n\nmodel = TransformerLM(vocab_size=vocab_size, max_len=max_len).to(device)\ncriterion = nn.CrossEntropyLoss(ignore_index=tokenizer.pad_id)\noptimizer = AdamW(model.parameters(), lr=3e-4, weight_decay=0.01)\nscheduler = StepLR(optimizer, step_size=5, gamma=0.8)\n\ndef make_padding_mask(x, pad_id):\n    return x.eq(pad_id)\n\ndef train_one_epoch():\n    model.train()\n    total_loss = 0.0\n    for src, tgt in loader:\n        src, tgt = src.to(device), tgt.to(device)\n        pad_mask = make_padding_mask(src, tokenizer.pad_id)\n        hidden, logits = model(src, src_key_padding_mask=pad_mask)\n        loss = criterion(logits.reshape(-1, vocab_size), tgt.reshape(-1))\n        optimizer.zero_grad(set_to_none=True)\n        loss.backward()\n        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)\n        optimizer.step()\n        total_loss += loss.item()\n    scheduler.step()\n    return total_loss / len(loader)\n\n@torch.no_grad()\ndef validate():\n    model.eval()\n    total_loss = 0.0\n    for src, tgt in loader:\n        src, tgt = src.to(device), tgt.to(device)\n        pad_mask = make_padding_mask(src, tokenizer.pad_id)\n        hidden, logits = model(src, src_key_padding_mask=pad_mask)\n        loss = criterion(logits.reshape(-1, vocab_size), tgt.reshape(-1))\n        total_loss += loss.item()\n    return total_loss / len(loader)\n\nfor epoch in range(3):\n    train_loss = train_one_epoch()\n    val_loss = validate()\n    print(f\"epoch={epoch+1} train_loss={train_loss:.4f} val_loss={val_loss:.4f}\")\n\n@torch.no_grad()\ndef generate(prompt, max_new_tokens=5):\n    model.eval()\n    ids = tokenizer.encode(prompt, max_len=max_len).unsqueeze(0).to(device)\n    for _ in range(max_new_tokens):\n        pad_mask = make_padding_mask(ids, tokenizer.pad_id)\n        hidden, logits = model(ids, src_key_padding_mask=pad_mask)\n        next_token = logits[:, -1, :].argmax(dim=-1, keepdim=True)\n        ids = torch.cat([ids, next_token], dim=1)\n        if ids.size(1) >= max_len:\n            break\n    return tokenizer.decode(ids.squeeze(0).tolist())\n\nsample = generate(\"attention is\")\nprint(sample)",
+    "explanation": "This pipeline shows tokenization, embedding lookup, positional encoding, Transformer encoding, loss computation, optimization, validation, and greedy generation in one compact PyTorch implementation.",
+    "inputs": "Expected input tensor shape is (batch_size, sequence_length), where each element is a token id produced by tokenization and padded to a fixed length. Attention masks prevent padded tokens from influencing attention or loss.",
+    "outputs": "Hidden states: contextual token representations from the Transformer stack. Attention weights: per-head token interaction scores when the implementation exposes them. Logits: unnormalized vocabulary scores for each position. Predicted tokens: argmax or sampled ids from logits. Loss: CrossEntropyLoss over the target tokens.",
+    "notes": "Tokenization quality, padding policy, and attention masks strongly affect performance and correctness. Mixed precision and GPU execution are preferred for real workloads because Transformer training is compute-heavy. PyTorch is preferred over scikit-learn because Transformers require differentiable tensor graphs, custom attention modules, autograd, and GPU-native training loops that scikit-learn does not provide."
+  },
+  "learning_resources": [
+    {
+      "title": "Attention Is All You Need",
+      "url": "https://arxiv.org/abs/1706.03762",
+      "type": "guide",
+      "why_to_read": "Original encoder-decoder Transformer paper and primary architectural source.",
+      "expected_outcome": "Understand the canonical design, equations, and motivation.",
+      "reading_time": 45
+    },
+    {
+      "title": "PyTorch torch.nn.Transformer",
+      "url": "https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html",
+      "type": "documentation",
+      "why_to_read": "Official PyTorch implementation reference for encoder-decoder Transformer modules.",
+      "expected_outcome": "Learn production-ready module structure and API behavior.",
+      "reading_time": 25
+    },
+    {
+      "title": "TensorFlow MultiHeadAttention Documentation",
+      "url": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/MultiHeadAttention",
+      "type": "documentation",
+      "why_to_read": "Official TensorFlow attention layer reference for secondary framework comparison.",
+      "expected_outcome": "Understand Keras-level attention usage and shape conventions.",
+      "reading_time": 20
+    },
+    {
+      "title": "Hugging Face Transformers Docs",
+      "url": "https://huggingface.co/docs/transformers",
+      "type": "documentation",
+      "why_to_read": "Practical ecosystem documentation for modern Transformer training and inference workflows.",
+      "expected_outcome": "Learn model loading, fine-tuning, and deployment patterns.",
+      "reading_time": 30
+    },
+    {
+      "title": "Stanford CS224N",
+      "url": "https://web.stanford.edu/class/cs224n/",
+      "type": "guide",
+      "why_to_read": "High-quality academic course material covering attention and sequence models.",
+      "expected_outcome": "Build a deeper engineering understanding of sequence modeling foundations.",
+      "reading_time": 50
+    }
+  ]
+}

@@ -1,0 +1,424 @@
+{
+  "id": "cnn",
+  "title": "Convolutional Neural Network (CNN)",
+  "name": "Convolutional Neural Network (CNN)",
+  "slug": "cnn",
+  "description": "A CNN is a deep neural network that learns hierarchical spatial features from grid-structured data using convolutional filters with shared weights, making it the default choice for most vision pipelines.",
+  "tags": [
+    "dl",
+    "convolutional",
+    "neural-networks",
+    "computer-vision"
+  ],
+  "aliases": [
+    "CNN",
+    "Convolutional Neural Network",
+    "ConvNet"
+  ],
+  "keywords": [
+    "cnn",
+    "convolutional neural network",
+    "convnet",
+    "computer vision",
+    "pooling",
+    "convolution"
+  ],
+  "searchtokens": [
+    "cnn",
+    "convolutional neural network",
+    "convnet",
+    "computer vision",
+    "conv2d"
+  ],
+  "createdat": "2026-07-10T11:22:00+06:00",
+  "updatedat": "2026-07-10T11:22:00+06:00",
+  "lastverified": "2026-07-10T11:22:00+06:00",
+  "reviewfrequency": "annual",
+  "verifiedagainst": "canonical model knowledge as of 2026-07-10",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "verified",
+  "engineeringmaturity": "production",
+  "domain": "dl",
+  "category": "convolutional",
+  "difficulty": "intermediate",
+  "engineeringarea": "supervised learning",
+  "estimatedreadingtime": 12,
+  "prerequisites": [
+    "Supervised learning basics",
+    "Linear algebra basics",
+    "Deep learning primitives"
+  ],
+  "recommendednext": [
+    "Residual Network (ResNet)",
+    "EfficientNet",
+    "Vision Transformer (ViT)"
+  ],
+  "relatedcontent": [
+    {
+      "type": "package",
+      "id": "pytorch",
+      "relationship": "implemented-by"
+    },
+    {
+      "type": "model",
+      "id": "mlp",
+      "relationship": "related_to"
+    },
+    {
+      "type": "model",
+      "id": "rnn",
+      "relationship": "related_to"
+    }
+  ],
+  "owner": "AENS Knowledge Architecture",
+  "sources": [
+    {
+      "title": "TensorFlow Low-Level Conv2D Operation",
+      "url": "https://www.tensorflow.org/api_docs/python/tf/nn/conv2d"
+    },
+    {
+      "title": "PyTorch C++ Convolution Layer API",
+      "url": "https://docs.pytorch.org/cppdocs/api/nn/convolution.html"
+    }
+  ],
+  "githubrepo": "https://github.com/pytorch/pytorch",
+  "problemtypes": [
+    "Image classification",
+    "Object detection backbones",
+    "Spectrogram-based audio modeling"
+  ],
+  "decisionsummary": {
+    "summary": "A CNN is a deep neural network that learns hierarchical spatial features from grid-structured data using convolutional filters with shared weights, making it the default choice for most vision pipelines.",
+    "bestusecases": [
+      "Image classification on natural images, industrial inspection, and medical imaging.",
+      "Object detection backbones and dense feature extractors for downstream vision systems.",
+      "Satellite imagery and remote sensing where local spatial patterns matter.",
+      "Spectrogram-based audio tasks and other 2D representations of signals."
+    ],
+    "avoidwhen": [
+      "Long-range sequence modeling, where recurrence or attention is more appropriate.",
+      "Natural language understanding at scale, where Transformers dominate.",
+      "Pure tabular datasets, where tree ensembles or MLPs are usually better fits.",
+      "Tasks needing very large global context over long contexts without hierarchical locality assumptions."
+    ],
+    "strengths": [
+      "Strong inductive bias for local spatial correlation, which improves sample efficiency on images.",
+      "Parameter sharing reduces model size compared with dense layers over flattened inputs.",
+      "GPU execution is highly optimized for convolution, giving strong training and inference throughput.",
+      "Transfer learning works well because pretrained convolutional backbones learn reusable visual representations."
+    ],
+    "limitations": [
+      "Convolutions model local structure well but can miss global relationships unless the architecture is deep enough or augmented.",
+      "CNNs often require substantial labeled image data for best results, especially without pretraining.",
+      "Adversarial vulnerability remains a real production concern in vision systems.",
+      "High-resolution inputs can produce large feature maps and substantial memory cost."
+    ],
+    "interpretability": "CNN feature maps expose intermediate spatial activations that often correspond to edges, textures, parts, and higher-level objects. Learned convolution filters can sometimes be visualized directly, and saliency methods such as Grad-CAM help localize evidence used by the model. Activation visualization is useful for debugging domain shift, but interpretability remains approximate rather than fully causal.",
+    "trainingcharacteristics": "CNNs are trained with backpropagation over convolution, pooling, and dense layers, with weight sharing dramatically reducing the number of unique parameters. Training is usually batch-based and highly GPU-friendly because convolution kernels map efficiently to parallel hardware. Convergence is generally stable relative to vanilla recurrent models, but performance still depends on good initialization, learning-rate control, and regularization.",
+    "inferencecharacteristics": "CNN inference usually achieves high throughput on GPUs and remains practical on CPUs for moderate-sized models and image sizes. Latency depends on feature-map resolution, kernel size, and memory movement, not just parameter count. Real-time deployment often requires balancing accuracy against batch size, precision, and hardware-specific convolution optimizations.",
+    "computationalcharacteristics": "Training cost is roughly $O(n \\cdot H \\cdot W \\cdot c \\cdot k^2 \\cdot f)$ per convolutional layer, where $n$ is the number of images, $H \\times W$ is image size, $c$ is input channels, $k$ is kernel size, and $f$ is output channels. Inference cost is similar in form, but without gradient computation overhead. Memory usage is driven by parameter tensors and intermediate feature maps, which can grow substantially with image size and channel count."
+  },
+  "coreunderstanding": {
+    "intuition": "CNNs scan an input image with learned local filters, allowing the same detector to respond to the same pattern wherever it appears in the image. Early layers learn edges and textures, while deeper layers learn parts and object-level abstractions, forming a feature hierarchy. Pooling or strided convolutions reduce spatial resolution and increase the receptive field of deeper layers.",
+    "learningmechanism": "CNNs scan an input image with learned local filters, allowing the same detector to respond to the same pattern wherever it appears in the image. Early layers learn edges and textures, while deeper layers learn parts and object-level abstractions, forming a feature hierarchy. Pooling or strided convolutions reduce spatial resolution and increase the receptive field of deeper layers.",
+    "assumptions": [
+      "Local spatial correlation: if neighboring pixels are not informative together, the convolutional prior weakens and accuracy can drop.",
+      "Stationary visual patterns: if the same pattern appears in many places, weight sharing helps; if spatial semantics vary heavily, a CNN may underperform.",
+      "Grid-structured input: the model assumes a meaningful 2D neighborhood; violating this with unstructured vectors reduces effectiveness.",
+      "Representative training images: if data do not match deployment conditions, feature maps generalize poorly under domain shift.",
+      "Proper image preprocessing: wrong normalization or resizing can distort feature distributions and destabilize optimization."
+    ],
+    "mathematicalintuition": "A 2D convolution layer computes feature maps from an input tensor $x$:\n\n$$\ny_{i,j,f} = b_f + \\sum_{c=1}^{C} \\sum_{u=1}^{k_h} \\sum_{v=1}^{k_w} w_{u,v,c,f}\\,x_{i+u,j+v,c}\n$$\n\nwhere $w$ is the kernel, $b_f$ is the bias, and $f$ indexes output channels. Stride moves the kernel across the image, padding controls border handling, and pooling reduces spatial resolution by local aggregation.\n\nA standard network stacks convolution, nonlinearity, and pooling:\n\n$$\na^{(l)} = \\sigma(\\text{Conv}(a^{(l-1)}; W^{(l)}) + b^{(l)})\n$$\n\nLoss optimization is usually cross-entropy for classification, minimized by backpropagation through all convolutional and dense layers. Weight sharing means the same kernel parameters are reused across all spatial locations, which is what makes CNNs efficient and translation-equivariant.",
+    "complexity": "For one convolutional layer, training time is roughly $O(n \\cdot H \\cdot W \\cdot c \\cdot k^2 \\cdot f)$, where $n$ is images, $c$ channels, $H \\times W$ image size, $k$ kernel size, and $f$ output channels.",
+    "memorycomplexity": "Memory complexity is roughly $O(c \\cdot H \\cdot W + f \\cdot H' \\cdot W' + c \\cdot k^2 \\cdot f)$ per layer, dominated in practice by feature maps.",
+    "robustness": "CNNs are relatively robust to small translations and local perturbations, but occlusion and adversarial noise can still cause sharp failures.",
+    "scalability": "CNNs scale well on GPUs and multi-GPU systems because convolutions are parallelizable, but very large images and feature maps can create memory and bandwidth bottlenecks.",
+    "overfittingtendency": "Overfitting is common when the dataset is small relative to model capacity, especially if augmentation and transfer learning are weak.",
+    "biasvariance": "CNNs typically have lower bias than linear image models and lower variance than unconstrained dense networks on visual tasks because of their strong spatial inductive bias."
+  },
+  "hyperparameters": [
+    {
+      "name": "out_channels",
+      "purpose": "Sets the number of filters learned by the layer and therefore the output feature depth.",
+      "increaseeffect": "Bias usually decreases because the layer can learn richer features. Variance, speed cost, and memory usage all increase because more filters and activations are stored.",
+      "decreaseeffect": "Bias rises, variance falls, computation gets cheaper, and memory usage drops.",
+      "tradeoffs": "Higher output depth improves representational capacity but raises FLOPs and activation memory. Smaller channel counts are more efficient but may bottleneck accuracy.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with kernel size, input channels, and downstream classifier width. Tune alongside model depth and resolution."
+      ],
+      "commonmistakes": [
+        "Increasing channels aggressively without monitoring GPU memory or overfitting."
+      ]
+    },
+    {
+      "name": "kernel_size",
+      "purpose": "Defines the spatial extent of each convolutional filter.",
+      "increaseeffect": "Bias may decrease because each filter sees a larger context. Variance, speed cost, and memory use increase because each kernel has more parameters and compute.",
+      "decreaseeffect": "Bias may increase if the receptive field becomes too small. Speed improves and memory use falls.",
+      "tradeoffs": "Larger kernels expand receptive field faster, but stacked small kernels are often more efficient. Small kernels are usually preferred in modern CNN design for efficiency.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts strongly with stride, padding, and dilation. Tune with input resolution and target receptive field in mind."
+      ],
+      "commonmistakes": [
+        "Using large kernels everywhere when a stack of smaller kernels would be more efficient."
+      ]
+    },
+    {
+      "name": "stride",
+      "purpose": "Controls the step size of the kernel across the input and thus spatial downsampling.",
+      "increaseeffect": "Bias increases if important detail is skipped. Variance may decrease, speed improves, and memory use drops because feature maps shrink faster.",
+      "decreaseeffect": "Bias may drop because more spatial detail is preserved. Speed decreases and memory use rises.",
+      "tradeoffs": "Higher stride increases efficiency but can remove fine-grained details. Lower stride preserves accuracy on small objects but costs more compute.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with kernel size, padding, and detection vs classification task type. Use carefully for small-object tasks."
+      ],
+      "commonmistakes": [
+        "Applying aggressive early downsampling on tasks that need spatial precision."
+      ]
+    },
+    {
+      "name": "padding",
+      "purpose": "Controls border handling and output spatial size.",
+      "increaseeffect": "Bias can decrease because border information is preserved longer. Variance may increase slightly, speed and memory can rise due to larger activations.",
+      "decreaseeffect": "Bias may rise because border information is lost earlier. Speed and memory use fall.",
+      "tradeoffs": "Padding helps maintain resolution and receptive-field balance. Excessive padding can introduce boundary artifacts.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with kernel size and stride. Often essential for stable shape control."
+      ],
+      "commonmistakes": [
+        "Ignoring output-size effects and breaking skip connections or head dimensions."
+      ]
+    },
+    {
+      "name": "dilation",
+      "purpose": "Spaces kernel elements apart to expand receptive field without increasing kernel size dramatically.",
+      "increaseeffect": "Bias may decrease by enlarging context. Variance, compute cost, and memory use can rise depending on implementation and coverage.",
+      "decreaseeffect": "Bias may increase if receptive field becomes too small. Speed may improve.",
+      "tradeoffs": "Dilation improves context efficiency but can create sparse sampling patterns. It is useful when receptive field must grow without large kernels.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with stride and kernel size. Use when you need larger context without heavy downsampling."
+      ],
+      "commonmistakes": [
+        "Combining large dilation with aggressive stride and losing too much spatial information."
+      ]
+    },
+    {
+      "name": "groups",
+      "purpose": "Splits channels into independent convolution groups, including depthwise-style operations.",
+      "increaseeffect": "Bias may increase because channel mixing is reduced. Variance can decrease, speed and memory often improve because fewer cross-channel connections are learned.",
+      "decreaseeffect": "Bias may decrease as channel interaction increases. Speed and memory use rise.",
+      "tradeoffs": "Group convolution can improve efficiency significantly, but too much grouping reduces representational richness. Depthwise separable patterns are a major efficiency tool in mobile CNNs.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with out_channels and architecture design. Use when efficiency matters more than maximum accuracy."
+      ],
+      "commonmistakes": [
+        "Using groups without checking divisibility constraints or unintentionally reducing model capacity too much."
+      ]
+    },
+    {
+      "name": "bias",
+      "purpose": "Adds a learnable offset to convolution outputs.",
+      "increaseeffect": "Enabling bias usually improves flexibility and can lower bias error slightly, with minimal speed or memory change.",
+      "decreaseeffect": "Disabling bias slightly reduces parameters and memory, but can reduce flexibility.",
+      "tradeoffs": "Bias is usually harmless and often useful, especially when batch normalization is absent. In some architectures it can be removed for marginal simplification.",
+      "tuningpriority": "Low",
+      "interactions": [
+        "Interacts weakly with normalization layers."
+      ],
+      "commonmistakes": [
+        "Removing bias without considering whether subsequent normalization already absorbs affine shifts."
+      ]
+    },
+    {
+      "name": "dropout",
+      "purpose": "Regularizes classifier or dense heads by randomly dropping activations during training; it is usually applied after convolutional blocks rather than inside raw convolution.",
+      "increaseeffect": "Bias increases, variance decreases, speed can slow slightly during training, and memory benefit is limited.",
+      "decreaseeffect": "Bias falls, variance rises, and overfitting risk increases.",
+      "tradeoffs": "Dropout helps generalization in the classifier stack, but heavy dropout can hurt feature learning if applied too early. It is less central than augmentation and transfer learning in CNNs.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with model depth, dense head size, and data regime. Prefer modest dropout after convolutional feature extraction."
+      ],
+      "commonmistakes": [
+        "Applying dropout in the wrong place or relying on it instead of augmentation."
+      ]
+    }
+  ],
+  "engineeringconsiderations": {
+    "datasetsuitability": [
+      "CNNs are best for image datasets, video frames, medical imaging, satellite imagery, and spectrogram-based audio tasks.",
+      "They work best when the input has meaningful local structure.",
+      "They are less suitable for flat tabular data unless the data are first transformed into image-like grids."
+    ],
+    "scalability": [
+      "CNNs are highly GPU-friendly because convolution kernels parallelize well.",
+      "Multi-GPU training and mixed precision can significantly improve throughput.",
+      "Distributed training works well for large datasets, though batch size may be constrained by memory and communication overhead."
+    ],
+    "parallelization": "Highly parallelizable over batch and spatial dimensions on GPU hardware. Multi-GPU scaling is supported via distributed data parallel wrappers.",
+    "computationalcost": "VRAM consumption is dominated by intermediate feature map activations during forward/backward passes. Computation scaling is highly sensitive to input resolution, channel depth, and kernel dimensions.",
+    "memorybehavior": "Activation maps dominate GPU memory footprint during training, scaling directly with resolution, channel counts, and batch size.",
+    "inferencecharacteristics": "CNN inference usually achieves high throughput on GPUs and remains practical on CPUs for moderate-sized models and image sizes. Latency depends on feature-map resolution, kernel size, and memory movement, not just parameter count. Real-time deployment often requires balancing accuracy against batch size, precision, and hardware-specific convolution optimizations.",
+    "robustness": [
+      "CNNs are sensitive to occlusion, noise, and domain shift, and adversarial examples remain a major risk in production systems.",
+      "Data augmentation is the main practical defense for generalization.",
+      "Robustness improves when training data match deployment conditions closely."
+    ],
+    "sensitivitytooutliers": "High sensitivity: outliers or adversarial pixel perturbations can corrupt downstream feature maps and classifier predictions.",
+    "featureengineeringdependency": "No manual feature engineering is required. Preprocessing is limited to image resizing, normalizations, and robust data augmentations.",
+    "featurescalingrequirement": "Mandatory: input channels must be normalized (e.g. standard ImageNet stats) to stabilize training, prevent early saturation, and speed up convergence.",
+    "classimbalancebehavior": "Imbalanced datasets require targeted class weighting, focal loss, or stratified sampling, especially in dense object detection tasks.",
+    "commonlimitations": [
+      "Large computational cost for high-resolution inputs.",
+      "High GPU requirements for training large backbones.",
+      "Large labeled datasets are often needed without transfer learning.",
+      "Limited global context modeling compared with attention-based architectures.",
+      "Adversarial vulnerability is a persistent deployment concern."
+    ],
+    "pipelineposition": "The CNN sits downstream of input image resizing, normalization, and data augmentation layers, acting as the primary feature extractor."
+  },
+  "comparisons": [
+    {
+      "model": "Vision Transformer (ViT)",
+      "choose_this_when": "Local spatial structure is dominant and you want strong inductive bias with less data.",
+      "prefer_other_when": "You need global attention over large contexts and have enough data/compute.",
+      "tradeoffs": "CNNs are more efficient on smaller vision datasets; ViTs often need more data but model global relations better."
+    },
+    {
+      "model": "MLP",
+      "choose_this_when": "The input is image-like and spatial structure matters.",
+      "prefer_other_when": "The data are already fixed-size engineered features.",
+      "tradeoffs": "CNNs exploit locality and share parameters; MLPs flatten structure and lose spatial priors."
+    },
+    {
+      "model": "RNN",
+      "choose_this_when": "The task is visual rather than sequential.",
+      "prefer_other_when": "The data are ordered sequences rather than 2D grids.",
+      "tradeoffs": "CNNs process spatial grids efficiently; RNNs model time/order rather than locality in images."
+    },
+    {
+      "model": "ResNet",
+      "choose_this_when": "You want the simplest baseline that still leverages strong residual learning.",
+      "prefer_other_when": "You need a very shallow, compact CNN or a custom lightweight backbone.",
+      "tradeoffs": "ResNet is usually a better production CNN family default; plain CNNs are simpler but less robust at depth."
+    },
+    {
+      "model": "EfficientNet",
+      "choose_this_when": "You need a carefully scaled backbone for accuracy-efficiency balance.",
+      "prefer_other_when": "You want a standard foundational CNN and minimal compound-scaling complexity.",
+      "tradeoffs": "EfficientNet often wins on efficiency; basic CNNs are easier to reason about and customize."
+    },
+    {
+      "model": "MobileNet",
+      "choose_this_when": "You need ultra-low-latency or mobile deployment.",
+      "prefer_other_when": "Accuracy matters more than footprint and you can afford a larger backbone.",
+      "tradeoffs": "MobileNet is much lighter; standard CNNs usually have higher ceiling but more compute cost."
+    }
+  ],
+  "relatedknowledge": {
+    "relatedmodels": [
+      "LeNet-style CNNs",
+      "VGG networks",
+      "Convolutional backbones for detection and segmentation"
+    ],
+    "alternative_models": [
+      "Vision Transformer",
+      "MLP",
+      "RNN",
+      "ResNet",
+      "EfficientNet",
+      "MobileNet"
+    ],
+    "related_principles": [
+      "Convolution Operation",
+      "Weight Sharing",
+      "Local Receptive Field",
+      "Pooling",
+      "Transfer Learning",
+      "Representation Learning"
+    ],
+    "related_workflows": [
+      "Image Classification",
+      "Object Detection",
+      "Semantic Segmentation",
+      "Transfer Learning Workflow",
+      "Model Evaluation"
+    ],
+    "related_patterns": [
+      "Data Augmentation Guide",
+      "Transfer Learning Pattern",
+      "Mixed Precision Training",
+      "CNN Debugging Guide",
+      "Image Preprocessing Guide"
+    ],
+    "related_packages": [
+      "PyTorch",
+      "TorchVision",
+      "TensorFlow",
+      "Keras",
+      "OpenCV"
+    ],
+    "related_guides": [],
+    "related_registry": [
+      "Deep Learning Models"
+    ]
+  },
+  "quickstart": {
+    "language": "python",
+    "implementation_package": "PyTorch",
+    "code": "import os\nfrom pathlib import Path\n\nimport torch\nimport torch.nn as nn\nfrom torch.utils.data import DataLoader\nfrom torchvision import datasets, transforms\n\ntorch.manual_seed(42)\n\ndata_dir = Path(\"data\")\ntrain_dir = data_dir / \"train\"\nval_dir = data_dir / \"val\"\n\ntrain_tfms = transforms.Compose([\n    transforms.Resize((128, 128)),\n    transforms.RandomHorizontalFlip(),\n    transforms.RandomRotation(10),\n    transforms.ToTensor(),\n    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),\n])\n\nval_tfms = transforms.Compose([\n    transforms.Resize((128, 128)),\n    transforms.ToTensor(),\n    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),\n])\n\ntrain_ds = datasets.ImageFolder(root=str(train_dir), transform=train_tfms)\nval_ds = datasets.ImageFolder(root=str(val_dir), transform=val_tfms)\n\ntrain_loader = DataLoader(train_ds, batch_size=32, shuffle=True, num_workers=2, pin_memory=True)\nval_loader = DataLoader(val_ds, batch_size=32, shuffle=False, num_workers=2, pin_memory=True)\n\nclass SmallCNN(nn.Module):\n    def __init__(self, num_classes):\n        super().__init__()\n        self.features = nn.Sequential(\n            nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),\n            nn.ReLU(),\n            nn.MaxPool2d(2),\n            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),\n            nn.ReLU(),\n            nn.MaxPool2d(2),\n        )\n        self.classifier = nn.Sequential(\n            nn.Flatten(),\n            nn.Linear(64 * 32 * 32, 128),\n            nn.ReLU(),\n            nn.Dropout(0.3),\n            nn.Linear(128, num_classes),\n        )\n\n    def forward(self, x):\n        x = self.features(x)\n        logits = self.classifier(x)\n        return logits\n\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nmodel = SmallCNN(num_classes=len(train_ds.classes)).to(device)\ncriterion = nn.CrossEntropyLoss()\noptimizer = torch.optim.Adam(model.parameters(), lr=1e-3)\n\ndef run_eval(model, loader):\n    model.eval()\n    correct, total = 0, 0\n    with torch.no_grad():\n        for xb, yb in loader:\n            xb, yb = xb.to(device), yb.to(device)\n            logits = model(xb)\n            preds = logits.argmax(dim=1)\n            correct += (preds == yb).sum().item()\n            total += yb.size(0)\n    return correct / max(total, 1)\n\nfor epoch in range(5):\n    model.train()\n    for xb, yb in train_loader:\n        xb, yb = xb.to(device), yb.to(device)\n        optimizer.zero_grad()\n        logits = model(xb)\n        loss = criterion(logits, yb)\n        loss.backward()\n        optimizer.step()\n    val_acc = run_eval(model, val_loader)\n    print(f\"epoch={epoch+1} val_acc={val_acc:.4f}\")\n\nmodel.eval()\nsample = torch.randn(1, 3, 128, 128).to(device)\nwith torch.no_grad():\n    logits = model(sample)\n    probs = torch.softmax(logits, dim=1)\n    pred = probs.argmax(dim=1)\n\nprint(\"class_probabilities:\", probs.cpu().numpy())\nprint(\"predicted_label:\", pred.item())",
+    "explanation": "This pipeline loads images from folder structure, applies augmentation and normalization, trains a small CNN with convolution, pooling, and dense classification layers, and evaluates accuracy on a validation split.",
+    "inputs": "Expected input tensor shape is (batch_size, channels, height, width) for PyTorch. RGB images use 3 channels, while grayscale images use 1 channel.",
+    "outputs": "The model outputs class logits that can be converted to class probabilities with softmax, predicted labels, and evaluation metrics such as accuracy.",
+    "notes": "Image normalization stabilizes optimization and should match the pretrained or training-time statistics. Data augmentation improves robustness to viewpoint and lighting variation. GPU utilization is usually best with moderate batch sizes that fit VRAM without causing memory fragmentation. PyTorch is preferred over scikit-learn because CNNs require tensor-based convolution, automatic differentiation, and GPU training support that scikit-learn does not provide."
+  },
+  "learning_resources": [
+    {
+      "title": "Conv2d — PyTorch documentation",
+      "url": "https://docs.pytorch.org/docs/stable/generated/torch.nn.modules.conv.Conv2d.html",
+      "type": "documentation",
+      "why_to_read": "Primary API reference for convolutional layers in PyTorch.",
+      "expected_outcome": "Correct usage of kernel size, stride, padding, dilation, and groups.",
+      "reading_time": 20
+    },
+    {
+      "title": "tf.keras.layers.Conv2D — TensorFlow documentation",
+      "url": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Conv2D",
+      "type": "documentation",
+      "why_to_read": "Canonical TensorFlow/Keras convolutional layer reference.",
+      "expected_outcome": "Practical understanding of padding, data format, and layer configuration.",
+      "reading_time": 20
+    },
+    {
+      "title": "CS231n: Convolutional Neural Networks for Visual Recognition",
+      "url": "https://www.cs231n.stanford.edu/",
+      "type": "guide",
+      "why_to_read": "Foundational university course on CNNs and visual recognition.",
+      "expected_outcome": "Strong practical intuition for receptive fields, feature hierarchies, and training dynamics.",
+      "reading_time": 45
+    },
+    {
+      "title": "Deep Learning",
+      "url": "https://www.deeplearningbook.org/",
+      "type": "guide",
+      "why_to_read": "Canonical deep learning textbook with a full chapter on convolutional networks.",
+      "expected_outcome": "Durable understanding of CNN math, optimization, and representation learning.",
+      "reading_time": 60
+    },
+    {
+      "title": "Gradient-Based Learning Applied to Document Recognition",
+      "url": "http://yann.lecun.com/exdb/publis/pdf/lecun-98.pdf",
+      "type": "article",
+      "why_to_read": "Foundational LeNet-era reference for CNNs in pattern recognition.",
+      "expected_outcome": "Historical and technical grounding in learned convolutional feature extraction.",
+      "reading_time": 35
+    }
+  ]
+}

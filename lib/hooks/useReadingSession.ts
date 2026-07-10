@@ -5,6 +5,7 @@ import { saveContinueReading } from '@/lib/session-tracking';
 
 const QUALIFY_DWELL_MS = 45_000; // 45 seconds
 const QUALIFY_SCROLL_PCT = 15; // 15% scroll
+const COMPLETED_SCROLL_PCT = 90; // 90% scroll - treat as completed
 
 interface UseReadingSessionProps {
   href: string;
@@ -50,7 +51,10 @@ export function useReadingSession({ href, name, type, category }: UseReadingSess
     const handleSave = () => {
       const dwellMs = Date.now() - startTimeRef.current;
       
-      if (dwellMs >= QUALIFY_DWELL_MS && maxScrollPercentRef.current >= QUALIFY_SCROLL_PCT) {
+      // Only save if user has spent enough time AND scrolled enough, but hasn't completed the page
+      if (dwellMs >= QUALIFY_DWELL_MS && 
+          maxScrollPercentRef.current >= QUALIFY_SCROLL_PCT && 
+          maxScrollPercentRef.current < COMPLETED_SCROLL_PCT) {
         saveContinueReading({
           href,
           name,

@@ -1,6 +1,10 @@
 import { notFound } from 'next/navigation';
 import { getPattern, getAllPatternIds } from '@/lib/data';
+import ContentPageLayout from '@/components/shared/ContentPageLayout';
+import MetadataBadges from '@/components/shared/MetadataBadges';
+import RelatedContent from '@/components/shared/RelatedContent';
 import ExpandableText from '@/components/shared/ExpandableText';
+import { Lightbulb, AlertTriangle, Code, Layers } from 'lucide-react';
 
 export async function generateStaticParams() {
   const ids = getAllPatternIds();
@@ -19,31 +23,116 @@ export default async function PatternPage({ params }: PageProps) {
     notFound();
   }
 
+  const breadcrumbs = [
+    { label: 'Home', href: '/' },
+    { label: 'Patterns', href: '/patterns' },
+    { label: pattern.title },
+  ];
+
+  const toc = [
+    { id: 'concept', label: 'Concept' },
+    { id: 'applicability', label: 'Applicability' },
+    ...(pattern.implementation_notes ? [{ id: 'implementation-notes', label: 'Implementation Notes' }] : []),
+    ...(pattern.examples && pattern.examples.length > 0 ? [{ id: 'examples', label: 'Examples' }] : []),
+    ...(pattern.anti_patterns && pattern.anti_patterns.length > 0 ? [{ id: 'anti-patterns', label: 'Anti-Patterns' }] : []),
+  ];
+
+  // Combine all related content
+  const allRelatedContent = [
+    ...pattern.related_workflows.map(id => ({ id, type: 'workflow' as const })),
+    ...pattern.related_models.map(id => ({ id, type: 'model' as const })),
+    ...pattern.related_packages.map(id => ({ id, type: 'package' as const })),
+    ...pattern.related_principles.map(id => ({ id, type: 'principle' as const })),
+  ];
+
   return (
-    <div className="space-y-8">
-      <div>
+    <ContentPageLayout breadcrumbs={breadcrumbs} toc={toc}>
+      {/* Header */}
+      <div className="space-y-4">
         <h1 className="text-2xl font-semibold tracking-tight">{pattern.title}</h1>
         <ExpandableText cacheKey={`pattern-desc-${pattern.id}`} fadeClass="from-background to-transparent">
-          <p className="text-muted-foreground mt-2">{pattern.description}</p>
+          <p className="text-muted-foreground">{pattern.description}</p>
         </ExpandableText>
+        <MetadataBadges
+          type="pattern"
+          updatedAt={pattern.updated_at}
+          lastVerified={pattern.last_verified}
+          category={pattern.category}
+        />
       </div>
 
-      <div className="prose prose-zinc dark:prose-invert max-w-none space-y-4">
-        {/* Pattern content will be rendered here */}
-        <div>
-          <h2 className="text-lg font-semibold mb-1">Concept</h2>
-          <ExpandableText cacheKey={`pattern-concept-${pattern.id}`} fadeClass="from-background to-transparent">
-            <p>{pattern.concept}</p>
+      {/* Concept */}
+      <section id="concept" className="space-y-3 scroll-mt-24">
+        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <Lightbulb className="w-5 h-5 text-yellow-500" />
+          Concept
+        </h2>
+        <ExpandableText cacheKey={`pattern-concept-${pattern.id}`} fadeClass="from-background to-transparent">
+          <p className="text-sm text-muted-foreground">{pattern.concept}</p>
+        </ExpandableText>
+      </section>
+
+      {/* Applicability */}
+      <section id="applicability" className="space-y-3 scroll-mt-24">
+        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <Layers className="w-5 h-5 text-blue-500" />
+          Applicability
+        </h2>
+        <ExpandableText cacheKey={`pattern-app-${pattern.id}`} fadeClass="from-background to-transparent">
+          <p className="text-sm text-muted-foreground">{pattern.applicability}</p>
+        </ExpandableText>
+      </section>
+
+      {/* Implementation Notes */}
+      {pattern.implementation_notes && (
+        <section id="implementation-notes" className="space-y-3 scroll-mt-24">
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <Code className="w-5 h-5 text-purple-500" />
+            Implementation Notes
+          </h2>
+          <ExpandableText cacheKey={`pattern-impl-${pattern.id}`} fadeClass="from-background to-transparent">
+            <p className="text-sm text-muted-foreground">{pattern.implementation_notes}</p>
           </ExpandableText>
-        </div>
-        
-        <div>
-          <h2 className="text-lg font-semibold mb-1">Applicability</h2>
-          <ExpandableText cacheKey={`pattern-app-${pattern.id}`} fadeClass="from-background to-transparent">
-            <p>{pattern.applicability}</p>
-          </ExpandableText>
-        </div>
-      </div>
-    </div>
+        </section>
+      )}
+
+      {/* Examples */}
+      {pattern.examples && pattern.examples.length > 0 && (
+        <section id="examples" className="space-y-3 scroll-mt-24">
+          <h2 className="text-lg font-semibold text-foreground">Examples</h2>
+          <div className="space-y-2">
+            {pattern.examples.map((example, idx) => (
+              <div key={idx} className="rounded-lg border border-border bg-card p-4">
+                <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-mono">
+                  {example}
+                </pre>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Anti-Patterns */}
+      {pattern.anti_patterns && pattern.anti_patterns.length > 0 && (
+        <section id="anti-patterns" className="space-y-3 scroll-mt-24">
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-red-500" />
+            Anti-Patterns
+          </h2>
+          <div className="space-y-2">
+            {pattern.anti_patterns.map((antiPattern, idx) => (
+              <div key={idx} className="rounded-lg border border-red-500/20 bg-red-500/5 p-4">
+                <p className="text-sm text-red-700 dark:text-red-400">{antiPattern}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Related Content */}
+      {allRelatedContent.length > 0 && (
+        <RelatedContent items={allRelatedContent} />
+      )}
+    </ContentPageLayout>
   );
 }

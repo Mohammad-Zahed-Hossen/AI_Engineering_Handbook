@@ -1,0 +1,429 @@
+{
+  "id": "vae",
+  "title": "Variational Autoencoder (VAE)",
+  "name": "Variational Autoencoder (VAE)",
+  "slug": "vae",
+  "description": "A Variational Autoencoder (VAE) is a probabilistic encoder-decoder generative model that learns a continuous latent distribution, optimizes an ELBO objective, and supports both compact representation learning and controlled data generation.",
+  "tags": [
+    "dl",
+    "autoencoder",
+    "representation-learning",
+    "generative-model"
+  ],
+  "aliases": [
+    "VAE",
+    "Variational Autoencoder",
+    "Variational Auto-Encoder",
+    "Probabilistic Autoencoder"
+  ],
+  "keywords": [
+    "vae",
+    "variational autoencoder",
+    "generative model",
+    "latent distribution",
+    "elbo objective"
+  ],
+  "searchtokens": [
+    "vae",
+    "variational autoencoder",
+    "generative modeling",
+    "elbo optimization",
+    "reparameterization trick"
+  ],
+  "createdat": "2026-07-10T11:22:00+06:00",
+  "updatedat": "2026-07-10T11:22:00+06:00",
+  "lastverified": "2026-07-10T11:22:00+06:00",
+  "reviewfrequency": "annual",
+  "verifiedagainst": "canonical model knowledge as of 2026-07-10",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "verified",
+  "engineeringmaturity": "production",
+  "domain": "dl",
+  "category": "autoencoder",
+  "difficulty": "intermediate",
+  "engineeringarea": "unsupervised learning",
+  "estimatedreadingtime": 12,
+  "prerequisites": [
+    "Unsupervised learning basics",
+    "Deep learning primitives",
+    "Probability theory basics"
+  ],
+  "recommendednext": [
+    "Generative Adversarial Network (GAN)",
+    "Diffusion Models",
+    "Normalizing Flows"
+  ],
+  "relatedcontent": [
+    {
+      "type": "package",
+      "id": "pytorch",
+      "relationship": "implemented-by"
+    },
+    {
+      "type": "model",
+      "id": "auto-encoders",
+      "relationship": "related_to"
+    },
+    {
+      "type": "model",
+      "id": "mlp",
+      "relationship": "related_to"
+    },
+    {
+      "type": "model",
+      "id": "cnn",
+      "relationship": "related_to"
+    }
+  ],
+  "owner": "AENS Knowledge Architecture",
+  "sources": [
+    {
+      "title": "Wikipedia: Variational Autoencoder",
+      "url": "https://en.wikipedia.org/wiki/Variational_autoencoder"
+    },
+    {
+      "title": "IBM Think Topics: Variational Autoencoder",
+      "url": "https://www.ibm.com/think/topics/variational-autoencoder"
+    }
+  ],
+  "githubrepo": "https://github.com/pytorch/pytorch",
+  "problemtypes": [
+    "Image generation",
+    "Feature extraction",
+    "Data augmentation",
+    "Anomaly detection"
+  ],
+  "decisionsummary": {
+    "summary": "A Variational Autoencoder is a probabilistic encoder-decoder generative model that learns a continuous latent distribution, optimizes an ELBO objective, and supports both compact representation learning and controlled data generation.",
+    "bestusecases": [
+      "Image generation and latent-space interpolation where smooth sampling matters.",
+      "Representation learning for downstream models that benefit from structured embeddings.",
+      "Data augmentation when you need plausible synthetic samples from a learned data manifold.",
+      "Anomaly detection by comparing inputs against reconstruction behavior and latent uncertainty."
+    ],
+    "avoidwhen": [
+      "High-fidelity image synthesis, where GANs or diffusion models usually produce sharper outputs.",
+      "Autoregressive language modeling, where sequence likelihood is better handled by token-level generative architectures.",
+      "Deterministic feature compression, where a standard autoencoder is simpler and more direct.",
+      "Tasks that require exact reconstruction, because VAEs trade fidelity for a structured latent prior."
+    ],
+    "strengths": [
+      "Learns a smooth, sampleable latent manifold, which makes interpolation and generation practical.",
+      "Regularized latent structure improves representation robustness and reduces arbitrary latent collapse compared with unconstrained encoders.",
+      "Supports unsupervised or weakly supervised pipelines for augmentation, anomaly detection, and feature learning.",
+      "Fits naturally into end-to-end gradient-based training via the reparameterization trick."
+    ],
+    "limitations": [
+      "Reconstructions are often blurry compared with GANs and diffusion models.",
+      "Posterior collapse and KL vanishing can reduce latent usage, especially with a strong decoder.",
+      "The Gaussian prior can be too restrictive for complex multimodal data distributions.",
+      "Latent samples are probabilistic rather than deterministic, which can be undesirable for exact compression tasks."
+    ],
+    "interpretability": "The encoder outputs latent distribution parameters, usually mean and log-variance, rather than a single deterministic vector. The mean and variance describe uncertainty in the latent code, and sampling from that distribution defines the generative path. The latent manifold is continuous and can be traversed smoothly, but individual latent dimensions are still hard to interpret directly.",
+    "trainingcharacteristics": "VAE training jointly optimizes reconstruction and regularization through the evidence lower bound (ELBO). The KL term pushes the approximate posterior toward the prior, while the reconstruction term preserves input information. The reparameterization trick makes stochastic sampling differentiable for backpropagation.",
+    "inferencecharacteristics": "Encoder inference returns latent distribution parameters and often a sampled latent code; decoder inference generates reconstructions or new samples from prior draws. Latency is higher than a plain autoencoder because sampling and distribution parameterization add overhead. CPU deployment is feasible for small models, but GPU is better for larger latent spaces, convolutional encoders, and batched generation.",
+    "computationalcharacteristics": "Training complexity is approximately $O(n \\cdot \\text{network cost})$, with dense models dominated by matrix multiplications over $p$, $h$, and $z$. Inference is approximately $O(n \\cdot \\text{encoder cost} + n \\cdot \\text{decoder cost})$, with extra sampling overhead relative to deterministic models. Memory use is driven by activations for backpropagation plus the storage of mean and log-variance heads, and scalability depends heavily on model depth and batch size."
+  },
+  "coreunderstanding": {
+    "intuition": "A VAE is a probabilistic encoder-decoder model: the encoder produces a distribution in latent space, the latent sample is drawn from that distribution, and the decoder reconstructs or generates data from that sample. The key engineering idea is that the model does not merely compress; it learns a structured latent distribution that can be sampled at inference time. This makes the latent space useful for both representation and generation.",
+    "learningmechanism": "A VAE is a probabilistic encoder-decoder model: the encoder produces a distribution in latent space, the latent sample is drawn from that distribution, and the decoder reconstructs or generates data from that sample. The key engineering idea is that the model does not merely compress; it learns a structured latent distribution that can be sampled at inference time. This makes the latent space useful for both representation and generation.",
+    "assumptions": [
+      "Continuous latent space: if the true data structure is highly discrete or combinatorial, a Gaussian latent can be a poor fit and generations may be vague.",
+      "Gaussian latent prior: if the latent distribution is strongly multimodal, the prior can over-regularize and reduce sample quality.",
+      "Independent latent variables: if dimensions are highly dependent, diagonal covariance can underfit latent structure.",
+      "Representative training distribution: if training data is biased, the learned latent manifold will reflect that bias and generalize poorly.",
+      "Decoder expressive enough for reconstruction: if too weak, the ELBO is dominated by poor reconstructions and latent learning degrades."
+    ],
+    "mathematicalintuition": "Let $x$ be the input, $z$ the latent variable, $q_\\phi(z|x)$ the encoder distribution, $p_\\theta(x|z)$ the decoder likelihood, and $p(z)$ the prior. The approximate posterior is typically Gaussian:\n\n$$\nq_\\phi(z|x) = \\mathcal{N}(z;\\mu_\\phi(x), \\sigma_\\phi^2(x)I)\n$$\n\nThe prior is usually:\n\n$$\np(z) = \\mathcal{N}(0, I)\n$$\n\nThe ELBO objective is:\n\n$$\n\\log p_\\theta(x) \\ge \\mathbb{E}_{q_\\phi(z|x)}[\\log p_\\theta(x|z)] - D_{KL}(q_\\phi(z|x)\\|p(z))\n$$\n\nThe reconstruction term is often implemented as MSE for continuous data or BCE for normalized binary-like inputs. The reparameterization trick writes:\n\n$$\nz = \\mu + \\sigma \\odot \\epsilon,\\quad \\epsilon \\sim \\mathcal{N}(0, I)\n$$\n\nso gradients can flow through $\\mu$ and $\\sigma$ during optimization.",
+    "complexity": "Training cost scales roughly with $n$, $p$, $h$, and $z$, with dense layers contributing $O(nph + nhz)$-style costs depending on depth. Memory complexity includes parameter storage $O(ph + hz)$, activations $O(h + z)$ per sample, and extra tensors for mean, log-variance, and sampled latents. Latent sampling adds a small runtime overhead but can materially increase memory pressure in large convolutional or sequence models.",
+    "memorycomplexity": "Memory complexity includes parameter storage $O(ph + hz)$, activations $O(h + z)$ per sample, and extra tensors for mean, log-variance, and sampled latents. Latent sampling adds a small runtime overhead but can materially increase memory pressure in large convolutional or sequence models.",
+    "robustness": "VAEs are moderately robust to noise because the latent distribution and KL term discourage brittle encodings, but they still degrade under heavy corruption or domain shift.",
+    "scalability": "Scalability is limited by sequential execution, which constrains GPU parallelism and makes throughput lower than CNNs or Transformers.",
+    "overfittingtendency": "Overfitting appears when the encoder-decoder becomes too expressive and the KL term is too weak, allowing memorization and posterior collapse avoidance at the expense of sample quality.",
+    "biasvariance": "Increasing regularization raises bias but lowers variance; reducing KL pressure improves reconstruction fidelity but can increase overfitting and weaken latent organization."
+  },
+  "hyperparameters": [
+    {
+      "name": "latent_dim",
+      "purpose": "Controls latent capacity and the amount of compressed information preserved in the probabilistic code.",
+      "increaseeffect": "Bias decreases, variance rises, speed can slow slightly, memory increases, and latent regularization becomes harder because the model can store more detail.",
+      "decreaseeffect": "Bias rises, variance falls, speed improves slightly, memory drops, and latent regularization becomes easier but expressiveness decreases.",
+      "tradeoffs": "A larger latent space improves reconstruction and diversity but weakens compression and can reduce sampling discipline. A smaller latent space improves regularization and disentanglement pressure but may underfit.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Strongly interacts with beta and hidden_dims."
+      ],
+      "commonmistakes": [
+        "Choosing latent_dim too large and then assuming poor samples are a decoder issue."
+      ]
+    },
+    {
+      "name": "hidden_dims",
+      "purpose": "Defines encoder and decoder capacity, which governs representational power and reconstruction quality.",
+      "increaseeffect": "Bias decreases, variance rises, speed slows, memory increases, and the model may overpower the KL term.",
+      "decreaseeffect": "Bias rises, variance falls, speed improves, memory decreases, and the decoder may become too weak to support good ELBO optimization.",
+      "tradeoffs": "Deeper/wider models improve fidelity but can trigger posterior collapse if the decoder becomes too strong. Smaller networks are easier to regularize but may produce poor reconstructions.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with beta, latent_dim, and reconstruction_loss."
+      ],
+      "commonmistakes": [
+        "Scaling decoder depth without checking whether the latent variables are still used."
+      ]
+    },
+    {
+      "name": "beta",
+      "purpose": "Weights the KL term relative to reconstruction loss.",
+      "increaseeffect": "Bias increases, variance usually decreases, speed can be similar or slightly slower to converge, memory is unchanged, and latent regularization strengthens.",
+      "decreaseeffect": "Bias decreases, variance rises, speed may improve in early reconstruction fit, memory is unchanged, and latent expressiveness increases but structure weakens.",
+      "tradeoffs": "Higher beta improves disentanglement and latent organization but sacrifices reconstruction fidelity. Lower beta improves fidelity but can reduce the usefulness of the latent prior.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Directly interacts with latent_dim, hidden_dims, and reconstruction_loss."
+      ],
+      "commonmistakes": [
+        "Setting beta too high too early and causing posterior collapse or useless latents."
+      ]
+    },
+    {
+      "name": "learning_rate",
+      "purpose": "Controls optimization stability for ELBO maximization.",
+      "increaseeffect": "Bias may reduce faster early, variance and instability rise, speed increases initially, memory is unchanged, and latent regularization can become noisier.",
+      "decreaseeffect": "Training becomes more stable, speed slows, memory is unchanged, and convergence may become more reliable.",
+      "tradeoffs": "Too high can destabilize KL/reconstruction balance; too low can stall latent learning.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Strongly interacts with optimizer and batch_size."
+      ],
+      "commonmistakes": [
+        "Using a learning rate tuned for deterministic AEs and expecting the same behavior with stochastic latents."
+      ]
+    },
+    {
+      "name": "batch_size",
+      "purpose": "Determines gradient estimate stability and hardware utilization.",
+      "increaseeffect": "Bias usually unchanged, variance of gradients decreases, speed can improve on GPU, memory increases, and latent regularization becomes smoother across batches.",
+      "decreaseeffect": "Gradient noise rises, speed can fall, memory drops, and the latent objective may become noisier.",
+      "tradeoffs": "Large batches improve throughput but can reduce the stochasticity that sometimes helps generalization. Smaller batches can help optimization but increase wall-clock time.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with learning_rate and beta scheduling."
+      ],
+      "commonmistakes": [
+        "Picking a batch size that makes KL behavior unstable across steps."
+      ]
+    },
+    {
+      "name": "optimizer",
+      "purpose": "Defines how parameters are updated during ELBO optimization.",
+      "increaseeffect": "More adaptive optimizers typically improve convergence speed and reduce tuning sensitivity.",
+      "decreaseeffect": "Simpler optimizers can be cheaper per step but less forgiving.",
+      "tradeoffs": "Adam is a strong default for VAEs because it handles mixed-scale gradients from reconstruction and KL terms well. More specialized optimizers may help in constrained settings but usually require additional tuning.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with learning_rate and beta."
+      ],
+      "commonmistakes": [
+        "Changing optimizer without retuning the learning rate and KL schedule."
+      ]
+    },
+    {
+      "name": "epochs",
+      "purpose": "Sets the number of full passes over the dataset.",
+      "increaseeffect": "Bias decreases, variance can rise, speed decreases, memory stays the same, and latent regularization has more time to settle.",
+      "decreaseeffect": "Underfitting risk rises, reconstruction quality may suffer, and latent structure may never stabilize.",
+      "tradeoffs": "More epochs help only if validation ELBO still improves. Early stopping is often safer than a fixed long schedule.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with learning_rate, beta, and hidden_dims."
+      ],
+      "commonmistakes": [
+        "Stopping before the latent distribution has stabilized, then blaming the architecture."
+      ]
+    },
+    {
+      "name": "reconstruction_loss",
+      "purpose": "Selects the reconstruction objective matched to data type and output range.",
+      "increaseeffect": "Higher reconstruction emphasis lowers bias on fidelity, may raise variance, can speed visible reconstruction improvement, and reduces the relative impact of latent regularization.",
+      "decreaseeffect": "Higher relative KL pressure improves latent organization but can hurt fidelity and expressive reconstruction.",
+      "tradeoffs": "MSE is common for continuous data; BCE is often used for normalized binary-like pixels. The loss choice strongly affects output sharpness, calibration, and latent usage.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with beta, input scaling, and output activation."
+      ],
+      "commonmistakes": [
+        "Using BCE on poorly normalized continuous data or MSE on outputs that are better treated probabilistically."
+      ]
+    }
+  ],
+  "engineeringconsiderations": {
+    "datasetsuitability": [
+      "VAEs are strong choices for images, medical imaging, scientific datasets, feature learning, data generation, and moderate-dimensional continuous data.",
+      "They are especially useful when you need a structured latent manifold rather than just compression."
+    ],
+    "scalability": [
+      "GPU acceleration is a major advantage because the encoder, decoder, and sampling path are all tensor-heavy.",
+      "Distributed training works well for large datasets, and mixed precision can reduce memory use.",
+      "Mini-batching remains the standard approach for practical training."
+    ],
+    "parallelization": "Forward, backward, and sampling operations are highly parallelized over batch dimension on GPU devices.",
+    "computationalcost": "Encoder-decoder activations dominate memory usage, and the mean/log-variance heads add extra tensors per batch. Latent variable storage is usually small, but sampling overhead can matter in large generative or sequence models. VRAM consumption is driven mostly by model width, image resolution, and batch size.",
+    "memorybehavior": "Memory usage is driven by activation tensors for unrolled backpropagation, parameter sizes of encoder/decoder networks, and distribution heads. VRAM scales with resolution and batch size.",
+    "inferencecharacteristics": "Encoder inference returns latent distribution parameters and often a sampled latent code; decoder inference generates reconstructions or new samples from prior draws. Latency is higher than a plain autoencoder because sampling and distribution parameterization add overhead. CPU deployment is feasible for small models, but GPU is better for larger latent spaces, convolutional encoders, and batched generation.",
+    "robustness": [
+      "VAEs are moderately robust to noise due to the KL regularizer, but they can still be sensitive to domain shift and outliers.",
+      "Latent uncertainty can help signal unfamiliar inputs, but reconstructions may still look plausible for some anomalies, so detection thresholds must be validated carefully."
+    ],
+    "sensitivitytooutliers": "High: extreme outliers distort mean and variance representations, corrupting latent continuity and reconstruction fidelity. Outliers are typically detected via high reconstruction error or extreme KL values.",
+    "featureengineeringdependency": "Inputs require proper scaling and normalization to fit reconstruction assumptions (e.g. [0,1] for BCE loss). Latent mean features are directly useful as low-dimensional embeddings for downstream tasks.",
+    "featurescalingrequirement": "Mandatory: scale features to match loss criteria and activation capabilities, avoiding gradient decay or value distortion during reconstruction.",
+    "classimbalancebehavior": "Training is unsupervised, so class imbalance is usually handled indirectly through data selection rather than labels.",
+    "commonlimitations": [
+      "Blurry reconstructions.",
+      "Posterior collapse.",
+      "KL vanishing.",
+      "Gaussian prior limitations.",
+      "Inferior visual quality compared with GANs and diffusion models."
+    ],
+    "pipelineposition": "In production, VAEs often sit upstream of downstream supervised models or anomaly filters. They are also useful in synthetic data generation pipelines where latent sampling expands minority coverage."
+  },
+  "comparisons": [
+    {
+      "model": "Autoencoder (AE)",
+      "choose_this_when": "You need a probabilistic latent space and sampleable generative behavior.",
+      "prefer_other_when": "You need deterministic compression or pure reconstruction.",
+      "tradeoffs": "VAE adds latent regularization and sampling; AE is simpler and often reconstructs more sharply."
+    },
+    {
+      "model": "β-VAE",
+      "choose_this_when": "You want the standard probabilistic formulation with a simpler tuning surface.",
+      "prefer_other_when": "You need stronger disentanglement control.",
+      "tradeoffs": "β-VAE emphasizes latent factor separation more aggressively but may reduce fidelity."
+    },
+    {
+      "model": "GAN",
+      "choose_this_when": "You want stable latent inference and a probabilistic encoder.",
+      "prefer_other_when": "You need sharp, high-fidelity samples.",
+      "tradeoffs": "VAE is easier to train and encode; GANs usually produce sharper outputs but are harder to optimize."
+    },
+    {
+      "model": "Diffusion Model",
+      "choose_this_when": "You need a lighter latent-generative setup or faster conceptual simplicity.",
+      "prefer_other_when": "You need state-of-the-art sample quality.",
+      "tradeoffs": "VAE is cheaper and simpler; diffusion models usually win on image quality and realism."
+    },
+    {
+      "model": "Normalizing Flow",
+      "choose_this_when": "You want a latent-variable model with exact likelihood or invertibility.",
+      "prefer_other_when": "You can accept approximate likelihood for simpler architecture and faster implementation.",
+      "tradeoffs": "Flows offer exact density modeling but often at higher architectural and compute complexity."
+    },
+    {
+      "model": "Transformer-based Generative Models",
+      "choose_this_when": "You want continuous latent compression with probabilistic regularization.",
+      "prefer_other_when": "You need sequence-first or highly expressive token generation.",
+      "tradeoffs": "VAEs are better for latent structure and compression; Transformers excel at autoregressive sequence modeling."
+    }
+  ],
+  "relatedknowledge": {
+    "relatedmodels": [
+      "Autoencoder",
+      "Conditional VAE",
+      "β-VAE",
+      "VQ-VAE",
+      "Hierarchical VAE"
+    ],
+    "alternative_models": [
+      "GAN",
+      "Diffusion Model",
+      "Normalizing Flow",
+      "Transformer-based Generative Model",
+      "AutoRegressive Model"
+    ],
+    "related_principles": [
+      "Variational Inference",
+      "ELBO Optimization",
+      "Latent Variable Modeling",
+      "KL Divergence",
+      "Representation Learning",
+      "Bayesian Deep Learning"
+    ],
+    "related_workflows": [
+      "Generative Modeling",
+      "Representation Learning",
+      "Data Augmentation",
+      "Anomaly Detection",
+      "Dimensionality Reduction"
+    ],
+    "related_patterns": [
+      "Encoder-Decoder Pattern",
+      "Latent Space Visualization Guide",
+      "Generative Model Selection Guide",
+      "Posterior Collapse Debug Guide",
+      "Deep Learning Optimization Guide"
+    ],
+    "related_packages": [
+      "PyTorch",
+      "TensorFlow",
+      "Keras",
+      "TorchVision",
+      "Pyro"
+    ],
+    "related_guides": [],
+    "related_registry": [
+      "Deep Learning Models"
+    ]
+  },
+  "quickstart": {
+    "language": "python",
+    "implementation_package": "PyTorch",
+    "code": "import torch\nimport torch.nn as nn\nfrom torch.utils.data import Dataset, DataLoader\n\ntorch.manual_seed(42)\n\nclass ToyImageDataset(Dataset):\n    def __init__(self, n=4096, input_dim=784):\n        x = torch.randn(n, input_dim)\n        x = (x - x.mean(dim=0)) / (x.std(dim=0) + 1e-6)\n        self.x = x\n\n    def __len__(self):\n        return self.x.size(0)\n\n    def __getitem__(self, idx):\n        return self.x[idx]\n\nclass VAE(nn.Module):\n    def __init__(self, input_dim=784, hidden_dim=400, latent_dim=20):\n        super().__init__()\n        self.encoder = nn.Sequential(\n            nn.Linear(input_dim, hidden_dim),\n            nn.ReLU()\n        )\n        self.fc_mu = nn.Linear(hidden_dim, latent_dim)\n        self.fc_logvar = nn.Linear(hidden_dim, latent_dim)\n        self.decoder = nn.Sequential(\n            nn.Linear(latent_dim, hidden_dim),\n            nn.ReLU(),\n            nn.Linear(hidden_dim, input_dim),\n            nn.Sigmoid()\n        )\n\n    def encode(self, x):\n        h = self.encoder(x)\n        mu = self.fc_mu(h)\n        logvar = self.fc_logvar(h)\n        return mu, logvar\n\n    def reparameterize(self, mu, logvar):\n        std = torch.exp(0.5 * logvar)\n        eps = torch.randn_like(std)\n        return mu + eps * std\n\n    def decode(self, z):\n        return self.decoder(z)\n\n    def forward(self, x):\n        mu, logvar = self.encode(x)\n        z = self.reparameterize(mu, logvar)\n        recon = self.decode(z)\n        return recon, mu, logvar, z\n\ndef vae_loss(recon, x, mu, logvar, beta=1.0):\n    recon_loss = nn.functional.binary_cross_entropy(recon, x, reduction='sum') / x.size(0)\n    kl_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp()) / x.size(0)\n    elbo = -(recon_loss + beta * kl_loss)\n    return recon_loss + beta * kl_loss, elbo, recon_loss, kl_loss\n\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\ntrain_ds = ToyImageDataset(n=5000, input_dim=784)\nval_ds = ToyImageDataset(n=1000, input_dim=784)\n\ntrain_loader = DataLoader(train_ds, batch_size=128, shuffle=True)\nval_loader = DataLoader(val_ds, batch_size=128, shuffle=False)\n\nmodel = VAE(input_dim=784, hidden_dim=400, latent_dim=20).to(device)\noptimizer = torch.optim.Adam(model.parameters(), lr=1e-3)\n\ndef evaluate(model, loader, beta=1.0):\n    model.eval()\n    total_elbo = total_kl = total_recon = 0.0\n    total_n = 0\n    with torch.no_grad():\n        for x in loader:\n            x = x.to(device)\n            recon, mu, logvar, z = model(x)\n            loss, elbo, recon_loss, kl_loss = vae_loss(recon, x, mu, logvar, beta=beta)\n            bs = x.size(0)\n            total_elbo += elbo.item() * bs\n            total_kl += kl_loss.item() * bs\n            total_recon += recon_loss.item() * bs\n            total_n += bs\n    return {\n        \"elbo\": total_elbo / total_n,\n        \"kl\": total_kl / total_n,\n        \"recon\": total_recon / total_n\n    }\n\nbeta = 1.0\nfor epoch in range(10):\n    model.train()\n    for x in train_loader:\n        x = x.to(device)\n        optimizer.zero_grad()\n        recon, mu, logvar, z = model(x)\n        loss, elbo, recon_loss, kl_loss = vae_loss(recon, x, mu, logvar, beta=beta)\n        loss.backward()\n        optimizer.step()\n\n    metrics = evaluate(model, val_loader, beta=beta)\n    print(f\"epoch={epoch+1} val_elbo={metrics['elbo']:.4f} val_kl={metrics['kl']:.4f} val_recon={metrics['recon']:.4f}\")\n\nmodel.eval()\nwith torch.no_grad():\n    x = torch.randn(8, 784).to(device)\n    recon, mu, logvar, z = model(x)\n\n    prior_z = torch.randn(8, 20).to(device)\n    generated = model.decode(prior_z)\n\n    anomaly_score = ((x - recon) ** 2).mean(dim=1)\n\nprint(\"mu_shape:\", tuple(mu.shape))\nprint(\"logvar_shape:\", tuple(logvar.shape))\nprint(\"z_shape:\", tuple(z.shape))\nprint(\"recon_shape:\", tuple(recon.shape))\nprint(\"generated_shape:\", tuple(generated.shape))\nprint(\"anomaly_score:\", anomaly_score.detach().cpu().numpy())",
+    "explanation": "This pipeline trains a VAE by maximizing ELBO, which combines reconstruction quality and latent regularization. The encoder produces mean and log-variance, the reparameterization trick makes sampling differentiable, and the decoder can reconstruct inputs or generate new samples from the prior.",
+    "inputs": "Expected input tensor shape is (batch_size, input_features) for a fully connected VAE. For images, tensors are typically flattened before entering the model, while convolutional VAEs keep spatial structure and replace the dense encoder-decoder blocks.",
+    "outputs": "The model returns a mean vector, log variance, latent sample, reconstruction, ELBO, KL loss, and reconstruction loss.",
+    "notes": "Input normalization is important for stable training and meaningful reconstructions. Beta controls the trade-off between fidelity and latent regularization, and KL annealing is a common mitigation for posterior collapse. GPU utilization improves with moderate batch sizes and larger latent networks. PyTorch is preferred over scikit-learn because VAEs require differentiable sampling, custom loss composition, and autograd-driven stochastic optimization."
+  },
+  "learning_resources": [
+    {
+      "title": "Auto-Encoding Variational Bayes",
+      "url": "https://arxiv.org/abs/1312.6114",
+      "type": "guide",
+      "why_to_read": "Original VAE paper defining the ELBO-based formulation and reparameterization trick.",
+      "expected_outcome": "Canonical understanding of VAE objective and latent-variable training.",
+      "reading_time": 45
+    },
+    {
+      "title": "Intro to Autoencoders | TensorFlow Core",
+      "url": "https://www.tensorflow.org/tutorials/generative/autoencoder",
+      "type": "documentation",
+      "why_to_read": "Official TensorFlow/Keras reference for autoencoder-style generative modeling patterns.",
+      "expected_outcome": "Practical framework grounding for Keras-based implementations.",
+      "reading_time": 25
+    },
+    {
+      "title": "Deep Learning Book — latent variable models and variational inference",
+      "url": "https://www.deeplearningbook.org/",
+      "type": "guide",
+      "why_to_read": "Foundational theory for probabilistic latent-variable modeling and deep generative models.",
+      "expected_outcome": "Better understanding of why ELBO and approximate inference work.",
+      "reading_time": 50
+    },
+    {
+      "title": "Variational autoencoders - Matthew N. Bernstein",
+      "url": "https://mbernste.github.io/posts/vae/",
+      "type": "article",
+      "why_to_read": "Engineer-friendly explanation of VAE math and a practical PyTorch implementation.",
+      "expected_outcome": "Clear link between theory and implementation.",
+      "reading_time": 35
+    },
+    {
+      "title": "Variational Autoencoder [VAE] from scratch | Intuition + Coding",
+      "url": "https://www.youtube.com/watch?v=VUwAGLM6K_8",
+      "type": "video",
+      "why_to_read": "Concise lecture-style explanation of why VAEs differ from standard autoencoders.",
+      "expected_outcome": "Strong intuition for latent sampling and generative use.",
+      "reading_time": 40
+    }
+  ]
+}
