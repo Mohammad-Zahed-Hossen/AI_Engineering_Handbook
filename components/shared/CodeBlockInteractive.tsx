@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useLayoutEffect, useEffect } from 'react';
+import { useState, useRef, useLayoutEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Check, Copy, Terminal, ChevronDown, WrapText } from 'lucide-react';
 
@@ -29,14 +29,10 @@ export function CodeBlockInteractive({
 }: CodeBlockInteractiveProps) {
   const [copied, setCopied] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [wrapped, setWrapped] = useState(false);
+  // null means use default CSS wrapping behavior: wrap on mobile, scroll on desktop.
+  // true/false represents explicit manual toggle overrides by the user.
+  const [wrapped, setWrapped] = useState<boolean | null>(null);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
-
-  // Default wrap on for mobile, off for desktop
-  useEffect(() => {
-    const isMobile = window.matchMedia('(max-width: 767px)').matches;
-    setWrapped(isMobile);
-  }, []);
 
   // Scroll position compensation to prevent jump on collapse
   useLayoutEffect(() => {
@@ -80,11 +76,11 @@ export function CodeBlockInteractive({
         <div className="flex items-center gap-2">
           {/* Wrap toggle button */}
           <button
-            onClick={() => setWrapped(!wrapped)}
+            onClick={() => setWrapped(prev => prev === true ? false : true)}
             aria-label="Toggle line wrap"
             className={cn(
               "hidden md:flex items-center justify-center w-6 h-6 rounded transition-all duration-200 cursor-pointer select-none",
-              wrapped
+              wrapped === true
                 ? "text-emerald-400 bg-emerald-500/10"
                 : "text-zinc-400 bg-zinc-900 hover:text-zinc-200"
             )}
@@ -103,12 +99,12 @@ export function CodeBlockInteractive({
           >
             {copied ? (
               <>
-                <Check className="w-3 h-3" />
+                <Check className="w-3.5 h-3.5" />
                 Copied
               </>
             ) : (
               <>
-                <Copy className="w-3 h-3" />
+                <Copy className="w-3.5 h-3.5" />
                 Copy
               </>
             )}
@@ -121,9 +117,11 @@ export function CodeBlockInteractive({
         <div 
           className={cn(
             "text-[11px] leading-relaxed scrollbar-thin select-text",
-            wrapped 
-              ? "whitespace-pre-wrap break-words" 
-              : "overflow-x-auto",
+            wrapped === null
+              ? "max-md:whitespace-pre-wrap max-md:break-words md:overflow-x-auto md:whitespace-pre md:break-normal"
+              : wrapped
+                ? "whitespace-pre-wrap break-words"
+                : "overflow-x-auto whitespace-pre break-normal",
             showLineNumbers ? "pl-2 pr-4 py-3 show-line-numbers" : "p-4"
           )}
           dangerouslySetInnerHTML={{ __html: displayHtml }}
@@ -133,7 +131,7 @@ export function CodeBlockInteractive({
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-zinc-950 to-transparent pointer-events-none" />
         )}
         {/* Horizontal-scroll fade on mobile - only when not wrapped */}
-        {!wrapped && (
+        {wrapped === false && (
           <div
             className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-zinc-950 to-transparent md:hidden z-10"
             aria-hidden="true"

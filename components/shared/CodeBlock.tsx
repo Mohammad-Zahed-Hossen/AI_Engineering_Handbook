@@ -76,9 +76,7 @@ function truncateHighlightedHtml(html: string, maxLines: number): string {
     return html;
   }
 
-  const preStart = html.indexOf(preMatch[0]) + preMatch[0].length;
   const codeStart = html.indexOf(codeMatch[0]) + codeMatch[0].length;
-  const preEnd = html.lastIndexOf('</pre>');
   const codeEnd = html.lastIndexOf('</code>');
 
   if (codeStart >= codeEnd) {

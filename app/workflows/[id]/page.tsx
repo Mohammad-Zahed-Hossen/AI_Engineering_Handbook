@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getAllWorkflowIds, getWorkflow, getRelatedContent, contentExists, resolveWorkflowStepLinks, getContentName, getContentPath } from '@/lib/data';
+import { getAllWorkflowIds, getWorkflow, getRelatedContent, contentExists, resolveWorkflowStepLinks, getContentPath } from '@/lib/data';
 import SectionCard from '@/components/shared/SectionCard';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
@@ -170,7 +170,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                       <span className="text-[10px] font-semibold uppercase text-muted-foreground block mb-1">
                         Implementation Notes
                       </span>
-                      <p className="text-muted-foreground">{example.implementation_notes}</p>
+                      <p className="text-muted-foreground content-prose">{example.implementation_notes}</p>
                     </div>
                   )}
                 </div>
@@ -182,11 +182,55 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
 
       {workflow.common_failure_points.length > 0 && (
         <div id="failures" className="border-l-2 border-amber-500 bg-amber-500/5 p-4 rounded-r scroll-mt-24">
-          <h2 className="text-amber-700 dark:text-amber-400">Common Failure Points</h2>
-          <ul className="mt-2 list-disc pl-4 space-y-1 text-sm text-muted-foreground">
-            {workflow.common_failure_points.map((pt, idx) => (
-              <li key={idx}>{pt}</li>
-            ))}
+          <h2 className="text-amber-700 dark:text-amber-400 font-sans text-xs font-bold uppercase tracking-wider mb-2">Common Failure Points</h2>
+          <ul className="mt-2 space-y-4 text-sm text-muted-foreground">
+            {workflow.common_failure_points.map((pt, idx) => {
+              // Try parsing with recovery strategy first
+              let clauses = parseLabeledClauses(pt, [
+                'Failure:',
+                '* Origin:',
+                '* Trigger:',
+                '* Immediate symptom:',
+                '* Downstream propagation:',
+                '* Why debugging is difficult:',
+                '* Recommended detection:',
+                '* Recovery strategy:'
+              ]);
+              
+              if (!clauses) {
+                // Try without recovery strategy
+                clauses = parseLabeledClauses(pt, [
+                  'Failure:',
+                  '* Origin:',
+                  '* Trigger:',
+                  '* Immediate symptom:',
+                  '* Downstream propagation:',
+                  '* Why debugging is difficult:',
+                  '* Recommended detection:'
+                ]);
+              }
+              
+              if (clauses) {
+                return (
+                  <li key={idx} className="content-prose space-y-1 text-sm list-none">
+                    {clauses.map((clause, cIdx) => (
+                      <div key={cIdx} className={cIdx === 0 ? "mb-1.5" : "pl-3 border-l border-amber-500/20"}>
+                        <span className="font-semibold text-[10px] uppercase text-amber-800 dark:text-amber-400">
+                          {clause.label.replace(/^\*\s*/, '')}
+                        </span>
+                        <span className="ml-1 text-muted-foreground">{clause.text}</span>
+                      </div>
+                    ))}
+                  </li>
+                );
+              }
+              
+              return (
+                <li key={idx} className="content-prose list-disc pl-4">
+                  {pt}
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
@@ -198,6 +242,50 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
           teaser="Production, scaling, cost, latency, and observability wisdom"
           enableHashDeepLink={true}
         >
+          {/* Sub-navigation pills */}
+          <div className="flex flex-wrap gap-1.5 mb-6 border-b border-border pb-3">
+            {workflow.production_notes && (
+              <a
+                href="#production-deployment"
+                className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-1 text-[10px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
+              >
+                Deployment
+              </a>
+            )}
+            {workflow.scaling_notes && (
+              <a
+                href="#production-scaling"
+                className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-1 text-[10px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
+              >
+                Scaling
+              </a>
+            )}
+            {workflow.cost_notes && (
+              <a
+                href="#production-cost"
+                className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-1 text-[10px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
+              >
+                Cost
+              </a>
+            )}
+            {workflow.latency_notes && (
+              <a
+                href="#production-latency"
+                className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-1 text-[10px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
+              >
+                Latency
+              </a>
+            )}
+            {workflow.observability_notes && (
+              <a
+                href="#production-observability"
+                className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-1 text-[10px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
+              >
+                Observability
+              </a>
+            )}
+          </div>
+
           <div className="space-y-4 text-xs leading-relaxed text-muted-foreground">
             {workflow.production_notes && (
               <div id="production-deployment" className="scroll-mt-24">
@@ -208,7 +296,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                   const clauses = parseLabeledClauses(workflow.production_notes, ['Benefit:', 'Trade-off:', 'When not to use it:', 'Operational impact:']);
                   if (clauses) {
                     return (
-                      <div className="text-sm leading-relaxed space-y-0.5">
+                      <div className="text-sm leading-relaxed space-y-0.5 content-prose">
                         {clauses.map((clause, cIdx) => (
                           <div key={cIdx}>
                             <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
@@ -218,7 +306,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                       </div>
                     );
                   }
-                  return <p className="text-sm leading-relaxed">{workflow.production_notes}</p>;
+                  return <p className="text-sm leading-relaxed content-prose">{workflow.production_notes}</p>;
                 })()}
               </div>
             )}
@@ -231,7 +319,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                   const clauses = parseLabeledClauses(workflow.scaling_notes, ['Benefit:', 'Trade-off:', 'When not to use it:', 'Operational impact:']);
                   if (clauses) {
                     return (
-                      <div className="text-sm leading-relaxed space-y-0.5">
+                      <div className="text-sm leading-relaxed space-y-0.5 content-prose">
                         {clauses.map((clause, cIdx) => (
                           <div key={cIdx}>
                             <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
@@ -241,7 +329,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                       </div>
                     );
                   }
-                  return <p className="text-sm leading-relaxed">{workflow.scaling_notes}</p>;
+                  return <p className="text-sm leading-relaxed content-prose">{workflow.scaling_notes}</p>;
                 })()}
               </div>
             )}
@@ -254,7 +342,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                   const clauses = parseLabeledClauses(workflow.cost_notes, ['Benefit:', 'Trade-off:', 'When not to use it:', 'Operational impact:']);
                   if (clauses) {
                     return (
-                      <div className="text-sm leading-relaxed space-y-0.5">
+                      <div className="text-sm leading-relaxed space-y-0.5 content-prose">
                         {clauses.map((clause, cIdx) => (
                           <div key={cIdx}>
                             <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
@@ -264,7 +352,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                       </div>
                     );
                   }
-                  return <p className="text-sm leading-relaxed">{workflow.cost_notes}</p>;
+                  return <p className="text-sm leading-relaxed content-prose">{workflow.cost_notes}</p>;
                 })()}
               </div>
             )}
@@ -277,7 +365,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                   const clauses = parseLabeledClauses(workflow.latency_notes, ['Benefit:', 'Trade-off:', 'When not to use it:', 'Operational impact:']);
                   if (clauses) {
                     return (
-                      <div className="text-sm leading-relaxed space-y-0.5">
+                      <div className="text-sm leading-relaxed space-y-0.5 content-prose">
                         {clauses.map((clause, cIdx) => (
                           <div key={cIdx}>
                             <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
@@ -287,7 +375,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                       </div>
                     );
                   }
-                  return <p className="text-sm leading-relaxed">{workflow.latency_notes}</p>;
+                  return <p className="text-sm leading-relaxed content-prose">{workflow.latency_notes}</p>;
                 })()}
               </div>
             )}
@@ -300,7 +388,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                   const clauses = parseLabeledClauses(workflow.observability_notes, ['Benefit:', 'Trade-off:', 'When not to use it:', 'Operational impact:']);
                   if (clauses) {
                     return (
-                      <div className="text-sm leading-relaxed space-y-0.5">
+                      <div className="text-sm leading-relaxed space-y-0.5 content-prose">
                         {clauses.map((clause, cIdx) => (
                           <div key={cIdx}>
                             <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
@@ -310,7 +398,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                       </div>
                     );
                   }
-                  return <p className="text-sm leading-relaxed">{workflow.observability_notes}</p>;
+                  return <p className="text-sm leading-relaxed content-prose">{workflow.observability_notes}</p>;
                 })()}
               </div>
             )}

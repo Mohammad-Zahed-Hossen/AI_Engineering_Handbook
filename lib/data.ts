@@ -749,7 +749,7 @@ export function resolveWorkflowStepLinks(workflow: Workflow): Record<string, Rec
     if (step.uses) {
       Object.entries(step.uses).forEach(([key, ids]) => {
         if (!Array.isArray(ids)) return;
-        const contentType = typeMap[key] || (key.endsWith('s') ? key.slice(0, -1) : key) as any;
+        const contentType = typeMap[key] || (key.endsWith('s') ? key.slice(0, -1) : key);
         if (!resolvedLinks[contentType]) {
           resolvedLinks[contentType] = {};
         }
