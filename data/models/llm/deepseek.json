@@ -1,0 +1,432 @@
+{
+  "id": "deepseek",
+  "title": "DeepSeek",
+  "name": "DeepSeek",
+  "slug": "deepseek",
+  "description": "DeepSeek is an efficient open-weight foundation model family for language understanding, reasoning, coding, and generative AI workloads, with a strong emphasis on MoE efficiency, deployment flexibility, and reasoning-oriented post-training.",
+  "tags": [
+    "llm",
+    "decoder-only",
+    "transformer",
+    "generation",
+    "moe"
+  ],
+  "aliases": [
+    "DeepSeek LLM",
+    "DeepSeek-Coder",
+    "DeepSeek-V2",
+    "DeepSeek-V3",
+    "DeepSeek-R1"
+  ],
+  "keywords": [
+    "deepseek",
+    "large language model",
+    "transformer",
+    "mixture of experts",
+    "reasoning model",
+    "code generation",
+    "reinforcement learning",
+    "chain of thought",
+    "distillation"
+  ],
+  "searchtokens": [
+    "deepseek model",
+    "deepseek llm",
+    "deepseek coder",
+    "deepseek r1",
+    "deepseek v3",
+    "open reasoning model",
+    "moe transformer",
+    "efficient llm"
+  ],
+  "createdat": "2026-07-10T19:35:56Z",
+  "updatedat": "2026-07-10T19:35:56Z",
+  "lastverified": "2026-07-10T19:35:56Z",
+  "reviewfrequency": "annual",
+  "verifiedagainst": "canonical model knowledge as of 2026-07-10",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "verified",
+  "engineeringmaturity": "production",
+  "domain": "llm",
+  "category": "foundation_llm",
+  "difficulty": "intermediate",
+  "engineeringarea": "autoregressive generation",
+  "estimatedreadingtime": 10,
+  "prerequisites": [
+    "Transformer architecture basics",
+    "Self-attention and causal masking",
+    "Autoregressive generation concepts"
+  ],
+  "recommendednext": [
+    "vLLM Serving",
+    "PEFT/LoRA Fine-tuning",
+    "Mixture-of-Experts Serving"
+  ],
+  "relatedcontent": [
+    {
+      "type": "package",
+      "id": "pytorch",
+      "relationship": "implemented-by"
+    }
+  ],
+  "owner": "AENS Knowledge Architecture",
+  "sources": [
+    {
+      "title": "DeepSeek-V3 Technical Report (arXiv)",
+      "url": "https://arxiv.org/abs/2503.04153"
+    },
+    {
+      "title": "DeepSeek GitHub Repository",
+      "url": "https://github.com/deepseek-ai"
+    }
+  ],
+  "githubrepo": "https://github.com/deepseek-ai",
+  "problemtypes": [
+    "Conversational AI",
+    "Instruction following",
+    "Code generation",
+    "Reasoning and chain-of-thought"
+  ],
+  "decisionsummary": {
+    "summary": "DeepSeek is an efficient open-weight foundation model family for language understanding, reasoning, coding, and generative AI workloads, with a strong emphasis on MoE efficiency, deployment flexibility, and reasoning-oriented post-training.",
+    "bestusecases": [
+      "Production code generation and code-assist systems.",
+      "Reasoning-heavy assistants that benefit from open-weight deployment.",
+      "Cost-sensitive enterprise LLM serving where MoE efficiency matters.",
+      "RAG-backed document systems that need strong generative and instruction-following behavior."
+    ],
+    "avoidwhen": [
+      "Ultra-low-latency edge inference on constrained hardware.",
+      "Workloads that require fully deterministic symbolic reasoning.",
+      "Teams that cannot support distributed serving or quantization workflows.",
+      "Cases where strict closed-model managed-service guarantees are preferred over self-hosting."
+    ],
+    "strengths": [
+      "MoE-style routing can improve compute efficiency by activating only part of the full parameter set per token, which helps scale capability without linearly scaling inference cost.",
+      "DeepSeek-R1 and related reasoning variants are positioned for stronger reasoning traces and chain-of-thought-style behavior than plain chat LLMs.",
+      "Open-weight availability supports self-hosting, fine-tuning, and integration into local or regulated deployments.",
+      "The family spans general LLM, coding, and reasoning variants, which reduces fragmentation across product teams."
+    ],
+    "limitations": [
+      "Hallucination and prompt sensitivity remain production risks, especially in open-ended generation.",
+      "MoE systems typically require more complex serving infrastructure than small dense models.",
+      "Licensing, model availability, and usage terms can vary by checkpoint and hosting route.",
+      "Evaluation is harder because reasoning quality, structured output integrity, and factuality can diverge under prompt variation."
+    ],
+    "interpretability": "DeepSeek remains a transformer-based neural model, so attention maps can provide only partial insight into token influence and routing behavior. Reasoning traces, including chain-of-thought-like outputs, should not be treated as ground truth explanations because they are generated artifacts rather than faithful internal proofs. Hidden-state probing can reveal task structure or domain clustering, but it rarely yields a complete account of why a specific answer was produced. In practice, interpretability is useful for debugging prompt sensitivity, routing behavior, and safety issues, not for guaranteeing semantic transparency.",
+    "trainingcharacteristics": "DeepSeek-family models use large-scale pretraining, followed by instruction tuning and, for reasoning-oriented variants, reinforcement learning and distillation-based post-training. Public descriptions of DeepSeek-V3 and DeepSeek-R1 emphasize optimization strategies that improve reasoning, coding, and efficiency while keeping the model deployable at scale. MoE training generally requires careful load balancing, expert specialization, and distributed GPU infrastructure. The overall scaling pattern is familiar: bigger models and longer contexts improve capability, but increase training cost, infrastructure complexity, and validation burden.",
+    "inferencecharacteristics": "DeepSeek inference is token-by-token, so latency grows with output length and prompt size. MoE can reduce active compute per token, but memory, routing overhead, and KV-cache growth still matter in production. Quantization and engine-level optimization are common deployment strategies, especially when running large checkpoints locally or in private infrastructure. Hardware requirements depend heavily on the selected variant, but serious serving generally benefits from modern GPUs and optimized runtimes.",
+    "computationalcharacteristics": "Transformer attention has quadratic sequence-length cost, so long contexts are expensive regardless of model family. MoE changes parameter scaling by increasing total parameter count without activating all parameters per token, which improves efficiency relative to a dense model of similar capacity. Training and inference memory both grow with sequence length, layers, hidden size, batch size, and active experts. Practical scalability is therefore constrained by routing overhead, KV-cache size, and the serving stack’s ability to batch efficiently."
+  },
+  "coreunderstanding": {
+    "intuition": "DeepSeek learns language by predicting the next token from prior context using decoder-style transformer blocks. That mechanism supports chat, coding, multilingual generation, and reasoning because the model internalizes statistical patterns across large corpora. In MoE variants, a router selects a subset of experts for each token, which improves capacity efficiency without fully activating the entire model every step. Instruction tuning and reinforcement learning then reshape the base model into a more assistant-like and task-aligned system.",
+    "learningmechanism": "DeepSeek learns language by predicting the next token from prior context using decoder-style transformer blocks. That mechanism supports chat, coding, multilingual generation, and reasoning because the model internalizes statistical patterns across large corpora. In MoE variants, a router selects a subset of experts for each token, which improves capacity efficiency without fully activating the entire model every step. Instruction tuning and reinforcement learning then reshape the base model into a more assistant-like and task-aligned system.",
+    "assumptions": [
+      "Large-scale pretraining data represents useful language patterns; if violated, the model inherits weak generalization and poor lexical coverage.",
+      "Transformer attention can capture long-range dependencies; if violated, long-context reasoning and document coherence degrade.",
+      "Scaling model parameters improves representation capability; if violated, larger checkpoints deliver diminishing returns and cost grows without proportional gain.",
+      "Alignment methods improve instruction-following behavior; if violated, the model remains less useful as a product assistant and more prone to uncontrolled generation."
+    ],
+    "mathematicalintuition": "For a sequence $x = (x_1,\\dots,x_n)$, causal language modeling factorizes the joint probability as: $$ p(x) = \\prod_{t=1}^{n} p(x_t \\mid x_{<t}) $$ The model learns this by minimizing cross-entropy: $$ \\mathcal{L} = -\\sum_{t=1}^{n}\\log p(x_t \\mid x_{<t}) $$ Self-attention computes token interactions with: $$ \\mathrm{Attn}(Q,K,V)=\\mathrm{softmax}\\left(\\frac{QK^\\top}{\\sqrt{d_k}} + M\\right)V $$ where $M$ is a causal mask. A transformer block combines attention, residual paths, normalization, and a feed-forward network: $$ h' = h + \\mathrm{Attn}(\\mathrm{LN}(h)), \\quad h'' = h' + \\mathrm{FFN}(\\mathrm{LN}(h')) $$ In MoE layers, a router selects top experts $E_t$ for a token, so the feed-forward update becomes a sparse expert mixture rather than a fully dense MLP. This improves compute efficiency while keeping model capacity high. In production, the result is a model that is powerful but still sensitive to prompt design and decoding settings.",
+    "complexity": "Dense transformer attention is $O(L n^2 d)$ in compute for sequence length $n$, hidden dimension $d$, and layers $L$. Feed-forward compute is roughly $O(L n d^2)$. MoE routing adds expert-selection overhead, often approximated as $O(L n E)$ for routing logic, though only a subset of experts is activated per token.",
+    "memorycomplexity": "Parameter storage is $O(P)$, while active inference memory also includes KV-cache growth proportional to context length. In practice, MoE lowers per-token active compute relative to a dense model of comparable total parameters, but routing and serving complexity increase.",
+    "robustness": "DeepSeek is robust for broad natural-language generation, but it remains sensitive to prompt wording, adversarial instructions, and distribution shift.",
+    "scalability": "MoE makes DeepSeek attractive for scaling capability without fully linear inference cost growth, especially in distributed GPU environments.",
+    "overfittingtendency": "Fine-tuning on narrow datasets can overfit quickly, particularly when the instruction distribution is small or repetitive.",
+    "biasvariance": "Pretraining reduces bias for general language tasks, but task-specific adaptation can increase variance if data is limited or noisy."
+  },
+  "hyperparameters": [
+    {
+      "name": "temperature",
+      "purpose": "Controls randomness in token sampling.",
+      "increaseeffect": "Increases creativity and diversity, but reduces determinism and factual stability.",
+      "decreaseeffect": "Improves repeatability and output stability, but can make responses conservative or repetitive.",
+      "tradeoffs": "Higher values favor exploration; lower values favor reliability and testability.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts strongly with top_p and max_tokens."
+      ],
+      "commonmistakes": [
+        "Using a high temperature for structured outputs, code, or compliance-sensitive responses."
+      ]
+    },
+    {
+      "name": "top_p",
+      "purpose": "Nucleus sampling threshold for selecting a probability mass cutoff.",
+      "increaseeffect": "Broadens the candidate pool and can improve expressiveness, but may include lower-quality tokens.",
+      "decreaseeffect": "Narrows the distribution and improves consistency, but can reduce diversity.",
+      "tradeoffs": "Balances creativity against output control.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Typically paired with temperature."
+      ],
+      "commonmistakes": [
+        "Combining a very high temperature with a wide top_p and expecting stable factual answers."
+      ]
+    },
+    {
+      "name": "max_tokens",
+      "purpose": "Caps generated output length.",
+      "increaseeffect": "Allows longer reasoning or richer completions, but increases latency, memory, and hallucination exposure.",
+      "decreaseeffect": "Reduces cost and response time, but can truncate useful answers.",
+      "tradeoffs": "Completeness versus efficiency.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with prompt length and context limits."
+      ],
+      "commonmistakes": [
+        "Setting it too high in production and allowing verbose or drifting outputs."
+      ]
+    },
+    {
+      "name": "context_length",
+      "purpose": "Defines the maximum input context window.",
+      "increaseeffect": "Improves long-document handling and reasoning continuity, but increases memory use and serving cost.",
+      "decreaseeffect": "Reduces resource requirements, but can truncate context and hurt coherence.",
+      "tradeoffs": "Longer context improves task coverage but raises operational cost.",
+      "tuningpriority": "High in deployment planning",
+      "interactions": [
+        "Affects KV-cache and batching."
+      ],
+      "commonmistakes": [
+        "Assuming the maximum context is always practical at production batch sizes."
+      ]
+    },
+    {
+      "name": "batch_size",
+      "purpose": "Controls throughput versus memory usage during training or inference.",
+      "increaseeffect": "Improves throughput and hardware utilization, but raises VRAM pressure and may increase latency per request under some workloads.",
+      "decreaseeffect": "Reduces memory consumption and improves per-request responsiveness, but can lower throughput.",
+      "tradeoffs": "Capacity versus latency.",
+      "tuningpriority": "High for serving systems",
+      "interactions": [
+        "Interacts with quantization and context length."
+      ],
+      "commonmistakes": [
+        "Using a batch size that looks efficient on paper but causes OOM with long prompts."
+      ]
+    },
+    {
+      "name": "learning_rate",
+      "purpose": "Controls optimization step size during fine-tuning or continued training.",
+      "increaseeffect": "Speeds adaptation initially, but can destabilize training, degrade reasoning, or overwrite useful pretrained behavior.",
+      "decreaseeffect": "Improves stability and often preserves base capabilities, but slows convergence.",
+      "tradeoffs": "Fast adaptation versus stable retention.",
+      "tuningpriority": "High for fine-tuning",
+      "interactions": [
+        "Interacts with batch size, schedule, and warmup."
+      ],
+      "commonmistakes": [
+        "Reusing a generic learning rate from smaller models without adjustment."
+      ]
+    },
+    {
+      "name": "num_experts",
+      "purpose": "Sets or references the number of experts in an MoE design.",
+      "increaseeffect": "Raises model capacity and specialization potential, but increases routing and serving complexity.",
+      "decreaseeffect": "Simplifies inference and training, but reduces specialization and sometimes capability.",
+      "tradeoffs": "Capability versus operational complexity.",
+      "tuningpriority": "High at architecture-selection time, low at inference-only time for fixed checkpoints",
+      "interactions": [
+        "High at architecture-selection time, low at inference-only time for fixed checkpoints."
+      ],
+      "commonmistakes": [
+        "Treating expert count as a runtime knob for a fixed pretrained checkpoint."
+      ]
+    },
+    {
+      "name": "quantization_bits",
+      "purpose": "Controls precision reduction for deployment efficiency.",
+      "increaseeffect": "Improves numerical fidelity and sometimes output quality, but increases memory and compute cost.",
+      "decreaseeffect": "Reduces VRAM usage and can improve deployability, but may reduce quality or calibration stability.",
+      "tradeoffs": "Model capability versus serving efficiency.",
+      "tuningpriority": "High for deployment",
+      "interactions": [
+        "Interacts with batch size, context length, and hardware type."
+      ],
+      "commonmistakes": [
+        "Quantizing aggressively without measuring impact on reasoning, coding, and structured output quality."
+      ]
+    }
+  ],
+  "engineeringconsiderations": {
+    "datasetsuitability": [
+      "DeepSeek benefits from high-quality pretraining data with strong token diversity and low contamination.",
+      "It is especially suitable for instruction datasets, reasoning data, and code corpora, because those are the areas where aligned assistants deliver the most product value.",
+      "Domain adaptation works best when the target corpus is clean, consistent, and close to the intended production distribution.",
+      "Token distribution matters because long-tail domain jargon and formatting tokens can disproportionately affect downstream behavior."
+    ],
+    "scalability": [
+      "Data parallelism is standard for large-scale pretraining, while tensor parallelism and pipeline parallelism help distribute large checkpoints across GPUs.",
+      "MoE models also benefit from expert parallelism, which routes tokens to specialized experts and spreads compute across devices.",
+      "Distributed inference typically uses KV-cache-aware batching and routing optimization to keep latency acceptable.",
+      "Serving stacks such as modern transformer runtimes are usually required for practical multi-GPU deployment."
+    ],
+    "parallelization": "Data parallelism is standard for large-scale pretraining, while tensor parallelism and pipeline parallelism help distribute large checkpoints across GPUs. MoE models also benefit from expert parallelism, which routes tokens to specialized experts and spreads compute across devices. Distributed inference typically uses KV-cache-aware batching and routing optimization to keep latency acceptable.",
+    "computationalcost": "Training DeepSeek-class models requires substantial GPU memory, distributed coordination, and careful activation management. VRAM consumption at inference depends on model size, context length, batch size, and quantization level.",
+    "memorybehavior": "KV cache grows with prompt length and number of active layers, which can dominate memory for long-context deployments. Quantization helps reduce cost and broaden hardware compatibility, and some hosted environments also support managed self-deployment routes.",
+    "inferencecharacteristics": "DeepSeek inference is token-by-token, so latency grows with output length and prompt size. MoE can reduce active compute per token, but memory, routing overhead, and KV-cache growth still matter in production. Quantization and engine-level optimization are common deployment strategies, especially when running large checkpoints locally or in private infrastructure. Hardware requirements depend heavily on the selected variant, but serious serving generally benefits from modern GPUs and optimized runtimes.",
+    "robustness": [
+      "Prompt sensitivity is a real issue, especially for reasoning and structured-output tasks.",
+      "Data contamination can inflate benchmark scores while degrading real-world reliability.",
+      "Adversarial prompts and prompt injection can cause harmful or malformed outputs unless guarded.",
+      "Distribution shift typically shows up as hallucination, schema drift, or inconsistent reasoning."
+    ],
+    "sensitivitytooutliers": "Prompt sensitivity is a real issue, especially for reasoning and structured-output tasks. Data contamination can inflate benchmark scores while degrading real-world reliability. Adversarial prompts and prompt injection can cause harmful or malformed outputs unless guarded. Distribution shift typically shows up as hallucination, schema drift, or inconsistent reasoning.",
+    "featureengineeringdependency": "Traditional feature engineering is largely replaced by tokenization, prompt engineering, retrieval augmentation, fine-tuning, and alignment. These levers change the input distribution the model sees at inference and therefore have much more leverage than handcrafted features.",
+    "featurescalingrequirement": "Feature scaling is not applicable, but retrieval is often the best tool when factual accuracy matters more than pure generation fluency. Alignment and supervised instruction tuning are necessary when the model must behave like a product assistant rather than a raw generator.",
+    "classimbalancebehavior": "Instruction imbalance and domain imbalance matter more than class imbalance in the classical ML sense. If the training mix overweights certain response styles, the model can become overly verbose, overly cautious, or weak in specific domains. Safety alignment and dataset filtering become critical because bad samples are hard to “feature-engineer away” later.",
+    "commonlimitations": [
+      "Hallucination remains unavoidable without external grounding.",
+      "Context limits still constrain long-document workflows, even in large models.",
+      "Reasoning reliability is better than ordinary chat models in many variants, but still not guaranteed.",
+      "Fine-tuning can be expensive, infrastructure-dependent, and easy to overfit.",
+      "Evaluation is also difficult because prompt variability can change output structure and integrity materially."
+    ],
+    "pipelineposition": "In production pipelines, DeepSeek often sits as the generation layer inside RAG, agent orchestration, code assist, or structured reasoning systems."
+  },
+  "comparisons": [
+    {
+      "model": "GPT-4/ GPT-5-class Models",
+      "choose_this_when": "You want open-weight or self-hosted deployment and strong reasoning/coding capability.",
+      "prefer_other_when": "You need the strongest managed proprietary capability with minimal infra work.",
+      "tradeoffs": "DeepSeek offers control and deployability; GPT-class systems often reduce engineering burden."
+    },
+    {
+      "model": "Llama",
+      "choose_this_when": "You want MoE-oriented efficiency or a DeepSeek variant better aligned to reasoning/code tasks.",
+      "prefer_other_when": "You want a different open-weight ecosystem, license profile, or serving path.",
+      "tradeoffs": "Both are open-model ecosystems, but architecture and deployment ergonomics differ."
+    },
+    {
+      "model": "Mistral",
+      "choose_this_when": "You need open-weight scale and reasoning/coding performance with MoE efficiency.",
+      "prefer_other_when": "You need a smaller or simpler serving footprint.",
+      "tradeoffs": "DeepSeek often favors higher-capacity reasoning; Mistral can favor operational simplicity."
+    },
+    {
+      "model": "Claude",
+      "choose_this_when": "You want self-hosting, local deployment, or tighter control over inference infrastructure.",
+      "prefer_other_when": "You want a managed closed model with strong safety and low integration effort.",
+      "tradeoffs": "DeepSeek trades vendor control for more infrastructure responsibility."
+    },
+    {
+      "model": "Gemini",
+      "choose_this_when": "You want an open or self-hosted stack with model-family flexibility.",
+      "prefer_other_when": "You need tight integration with a managed multimodal ecosystem.",
+      "tradeoffs": "DeepSeek is stronger for ownership/control; Gemini is stronger for managed platform integration."
+    },
+    {
+      "model": "Traditional NLP Models",
+      "choose_this_when": "You need a general-purpose generator for reasoning, code, and instruction following.",
+      "prefer_other_when": "The task is narrow, symbolic, or best handled by classic supervised ML or rules.",
+      "tradeoffs": "DeepSeek is more flexible, but also more expensive and less deterministic."
+    }
+  ],
+  "relatedknowledge": {
+    "relatedmodels": [
+      "Transformer Models",
+      "LLaMA",
+      "Mistral",
+      "GPT Architecture",
+      "Mixture-of-Experts Models"
+    ],
+    "alternative_models": [
+      "GPT-4/ GPT-5-class models",
+      "Claude",
+      "Gemini",
+      "Llama family models",
+      "Mistral family models",
+      "Traditional NLP models",
+      "Small dense instruction models"
+    ],
+    "related_principles": [
+      "Transformer Architecture",
+      "Scaling Laws",
+      "Self-Supervised Learning",
+      "Reinforcement Learning from Human Feedback",
+      "Constitutional AI",
+      "Knowledge Distillation"
+    ],
+    "related_workflows": [
+      "LLM Evaluation Workflow",
+      "Fine-Tuning Workflow",
+      "Prompt Engineering Workflow",
+      "RAG Workflow",
+      "Model Deployment Workflow"
+    ],
+    "related_patterns": [
+      "Prompt Engineering Patterns",
+      "LLM Application Architecture"
+    ],
+    "related_packages": [
+      "transformers",
+      "PyTorch",
+      "vLLM",
+      "DeepSpeed",
+      "Hugging Face",
+      "LangChain"
+    ],
+    "related_guides": [
+      "Quantization Guide",
+      "Model Serving Guide",
+      "AI Safety Evaluation Guide"
+    ],
+    "related_registry": [
+      "Generative LLMs",
+      "Causal Transformers"
+    ]
+  },
+  "quickstart": {
+    "language": "python",
+    "implementation_package": "transformers",
+    "code": "import torch\nfrom transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, BitsAndBytesConfig\n\nmodel_name = \"deepseek-ai/DeepSeek-R1-Distill-Qwen-7B\"\n\ndevice = \"cuda\" if torch.cuda.is_available() else \"cpu\"\n\nquant_config = None\nif device == \"cuda\":\n    quant_config = BitsAndBytesConfig(\n        load_in_4bit=True,\n        bnb_4bit_quant_type=\"nf4\",\n        bnb_4bit_compute_dtype=torch.bfloat16,\n        bnb_4bit_use_double_quant=True,\n    )\n\ntokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)\n\nmodel = AutoModelForCausalLM.from_pretrained(\n    model_name,\n    device_map=\"auto\" if device == \"cuda\" else None,\n    quantization_config=quant_config,\n    torch_dtype=torch.bfloat16 if device == \"cuda\" else torch.float32,\n    trust_remote_code=True,\n)\n\nif device != \"cuda\":\n    model = model.to(device)\n\nprompt = \"Write a concise deployment checklist for serving an open-weight LLM in production.\"\n\nif hasattr(tokenizer, \"apply_chat_template\"):\n    messages = [\n        {\"role\": \"system\", \"content\": \"You are a helpful production LLM assistant.\"},\n        {\"role\": \"user\", \"content\": prompt},\n    ]\n    formatted_prompt = tokenizer.apply_chat_template(\n        messages,\n        tokenize=False,\n        add_generation_prompt=True\n    )\nelse:\n    formatted_prompt = prompt\n\ntext_gen = pipeline(\n    \"text-generation\",\n    model=model,\n    tokenizer=tokenizer,\n    device_map=\"auto\" if device == \"cuda\" else None,\n)\n\nresult = text_gen(\n    formatted_prompt,\n    max_new_tokens=128,\n    do_sample=True,\n    temperature=0.7,\n    top_p=0.9,\n    return_full_text=False,\n)\n\nprint(result[0][\"generated_text\"])\n\ninputs = tokenizer(formatted_prompt, return_tensors=\"pt\")\ninputs = {k: v.to(model.device) for k, v in inputs.items()}\n\nwith torch.no_grad():\n    output_ids = model.generate(\n        **inputs,\n        max_new_tokens=128,\n        temperature=0.7,\n        top_p=0.9,\n        do_sample=True,\n        pad_token_id=tokenizer.eos_token_id,\n    )\n\ngenerated_tokens = output_ids[0, inputs[\"input_ids\"].shape[-1]:]\ndecoded = tokenizer.decode(generated_tokens, skip_special_tokens=True)\n\nprint(\"generated_token_count:\", generated_tokens.shape[0])\nprint(\"decoded_text:\", decoded)\n\ndel model, text_gen, inputs, output_ids\nif torch.cuda.is_available():\n    torch.cuda.empty_cache()",
+    "explanation": "This example loads a DeepSeek-family checkpoint, initializes the tokenizer, configures optional 4-bit quantization, formats a chat prompt when supported, and runs both pipeline-based and direct generation. It shows the two most common production paths: fast prototyping with `pipeline` and explicit control with `generate()`.",
+    "inputs": "Prompt strings or chat message lists. Tokenized tensors such as input_ids and attention_mask. Prompt length constrained by the model’s context window. Quantization and device settings that match the available hardware.",
+    "outputs": "Generated text. Token statistics such as generated token count. Inference metadata from the serving stack if enabled.",
+    "notes": "Use chat templates consistently when the model expects instruction formatting. Prefer quantization for local or cost-sensitive serving, but validate reasoning and code quality after compression. For production, couple the model with batching, KV-cache optimization, and a strong inference runtime. If the task is factual or policy-sensitive, add retrieval and output validation rather than relying on the model alone."
+  },
+  "learning_resources": [
+    {
+      "title": "DeepSeek API Docs",
+      "url": "https://api-docs.deepseek.com/",
+      "type": "documentation",
+      "why_to_read": "Official source for model access, API behavior, and available routes.",
+      "expected_outcome": "Understand supported API usage and deployment entry points.",
+      "reading_time": 20
+    },
+    {
+      "title": "DeepSeek Model List",
+      "url": "https://api-docs.deepseek.com/api/list-models",
+      "type": "documentation",
+      "why_to_read": "Lists currently available models and basic metadata.",
+      "expected_outcome": "Identify which DeepSeek variants are available for your workflow.",
+      "reading_time": 10
+    },
+    {
+      "title": "DeepSeek on Hugging Face",
+      "url": "https://huggingface.co/deepseek-ai",
+      "type": "documentation",
+      "why_to_read": "Official Hugging Face organization page for DeepSeek models.",
+      "expected_outcome": "Find model cards and checkpoint families for self-hosting.",
+      "reading_time": 10
+    },
+    {
+      "title": "DeepSeek Technical Overview",
+      "url": "https://martinfowler.com/articles/deepseek-papers.html",
+      "type": "article",
+      "why_to_read": "Clear technical overview of the DeepSeek paper lineage.",
+      "expected_outcome": "Understand how the model family evolved across versions.",
+      "reading_time": 20
+    },
+    {
+      "title": "DeepSeek V4 Mixture of Experts Architecture Deep Dive",
+      "url": "https://www.youtube.com/watch?v=HPKfInHC1PY",
+      "type": "video",
+      "why_to_read": "Useful visual walkthrough of MoE concepts and DeepSeek-style scaling ideas.",
+      "expected_outcome": "Build intuition for routing, expert parallelism, and deployment trade-offs.",
+      "reading_time": 30
+    }
+  ]
+}

@@ -1,0 +1,439 @@
+{
+  "id": "llama",
+  "title": "Llama",
+  "name": "Llama",
+  "slug": "llama",
+  "description": "Llama is a decoder-only autoregressive foundation model designed for scalable language understanding and generation through next-token prediction, strong instruction-following behavior, and efficient deployment patterns built around transformer attention and KV caching.",
+  "tags": [
+    "llm",
+    "decoder-only",
+    "transformer",
+    "generation"
+  ],
+  "aliases": [
+    "Large Language Model Meta AI",
+    "LLaMA",
+    "Llama LLM"
+  ],
+  "keywords": [
+    "llama",
+    "decoder-only transformer",
+    "autoregressive language model",
+    "instruction tuning",
+    "causal language modeling",
+    "KV cache",
+    "grouped query attention"
+  ],
+  "searchtokens": [
+    "llama",
+    "llama model",
+    "meta llama",
+    "huggingface llama",
+    "causal language model",
+    "decoder transformer",
+    "instruction tuned llama"
+  ],
+  "createdat": "2026-07-11T00:32:00+06:00",
+  "updatedat": "2026-07-11T00:32:00+06:00",
+  "lastverified": "2026-07-11T00:32:00+06:00",
+  "reviewfrequency": "annual",
+  "verifiedagainst": "canonical model knowledge as of 2026-07-11",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "verified",
+  "engineeringmaturity": "production",
+  "domain": "llm",
+  "category": "foundation_llm",
+  "difficulty": "intermediate",
+  "engineeringarea": "autoregressive generation",
+  "estimatedreadingtime": 10,
+  "prerequisites": [
+    "Transformer architecture basics",
+    "Self-attention and causal masking",
+    "Autoregressive generation concepts"
+  ],
+  "recommendednext": [
+    "vLLM Serving",
+    "PEFT/LoRA Fine-tuning",
+    "Quantization (GPTQ/AWQ)"
+  ],
+  "relatedcontent": [
+    {
+      "type": "package",
+      "id": "pytorch",
+      "relationship": "implemented-by"
+    }
+  ],
+  "owner": "AENS Knowledge Architecture",
+  "sources": [
+    {
+      "title": "LLaMA: Open and Efficient Foundation Language Models (arXiv)",
+      "url": "https://arxiv.org/abs/2302.13971"
+    },
+    {
+      "title": "Meta Llama 3 Github Repository",
+      "url": "https://github.com/meta-llama/llama3"
+    }
+  ],
+  "githubrepo": "https://github.com/meta-llama/llama",
+  "problemtypes": [
+    "Conversational AI",
+    "Instruction following",
+    "Summarization and drafting",
+    "In-context reasoning"
+  ],
+  "decisionsummary": {
+    "summary": "Llama is a decoder-only autoregressive foundation model designed for scalable language understanding and generation through next-token prediction, strong instruction-following behavior, and efficient deployment patterns built around transformer attention and KV caching.",
+    "bestusecases": [
+      "Conversational AI and enterprise assistants.",
+      "Code generation and development tools.",
+      "Document summarization and retrieval-augmented generation (RAG).",
+      "Agentic workflows that need strong generation quality with broad fine-tuning support."
+    ],
+    "avoidwhen": [
+      "Strict real-time edge inference on constrained devices.",
+      "Tiny labeled datasets without pretraining leverage.",
+      "Vision-only applications without multimodal adaptation.",
+      "Classical ML problems that do not benefit from text generation."
+    ],
+    "strengths": [
+      "Strong instruction-tuning compatibility.",
+      "Broad open-weight ecosystem support.",
+      "Efficient scaling with KV cache and batching.",
+      "Good fit for PEFT/LoRA-style adaptation workflows."
+    ],
+    "limitations": [
+      "Autoregressive latency grows token by token.",
+      "Long-context inference increases memory cost.",
+      "Hallucinations and factual drift remain possible.",
+      "Production deployment often requires substantial GPU memory or quantization trade-offs."
+    ],
+    "interpretability": "Attention maps and hidden states can be inspected to study token-to-token influence, but these views are only partial explanations because transformer representations are distributed, context-dependent, and not directly human-readable.",
+    "trainingcharacteristics": "Llama-style models are typically pretrained with large-scale causal language modeling, then adapted with supervised fine-tuning and instruction tuning, and sometimes preference-optimization methods such as RLHF or DPO variants; training is usually distributed across many accelerators with gradient checkpointing, data parallelism, and memory-aware optimizations.",
+    "inferencecharacteristics": "Generation is autoregressive, so latency depends on sequence length and decoding strategy; KV cache reduces repeated attention computation, batching improves throughput, streaming generation improves responsiveness, and GPU memory is often the main bottleneck for larger checkpoints and long contexts.",
+    "computationalcharacteristics": "Training attention is $O(L \\cdot n^2 \\cdot d)$ in the standard transformer setting, inference is $O(n^2)$ per generated prefix without cache and lower per token with KV cache reuse, memory grows with sequence length and layer count, and distributed scaling is strong but bottlenecked by communication and attention memory bandwidth."
+  },
+  "coreunderstanding": {
+    "intuition": "Llama learns by predicting the next token in a sequence, which forces the model to build internal representations of syntax, semantics, and task patterns from text alone. It uses a decoder-only transformer stack with masked self-attention, token embeddings, and rotary positional embeddings to preserve token order while allowing each position to condition only on earlier context. In practice, this makes it good at generating fluent text, following instructions, and adapting to new tasks through prompt design or fine-tuning.",
+    "learningmechanism": "Llama learns general language representations via causal self-attention pre-trained on autoregressive next-token prediction, which are then adapted via instruction tuning, SFT, or reinforcement learning (RLHF/DPO) to align outputs with user intents.",
+    "assumptions": [
+      "Large-scale pretraining on diverse tokenized text is available.",
+      "Inputs are tokenized text sequences, not raw structured labels.",
+      "Behavior depends on autoregressive dependency modeling rather than bidirectional encoding.",
+      "Fine-tuning can adapt the model to domain-specific or instruction-following tasks.",
+      "If these assumptions fail, performance degrades through hallucination, poor formatting, weak domain coverage, or brittle prompt sensitivity."
+    ],
+    "mathematicalintuition": "For a token sequence $x_1, \\dots, x_n$, causal language modeling maximizes $\\prod_{t=1}^{n} p(x_t \\mid x_{<t})$, which is usually optimized with cross-entropy loss over the next-token targets. Scaled dot-product attention is commonly written as $\\text{Attention}(Q,K,V)=\\text{softmax}(QK^\\top/\\sqrt{d_k})V$, with a causal mask applied so positions cannot attend to future tokens. Rotary positional embeddings encode relative position information by rotating query and key vectors as a function of token index and frequency, which supports positional generalization beyond simple learned absolute embeddings.",
+    "complexity": "With sequence length $n$, hidden size $d$, heads $h$, layers $L$, vocabulary size $V$, and parameter count $P$, standard self-attention has $O(n^2 d)$ time per layer and $O(n^2)$ attention memory during training; feed-forward blocks add $O(nd^2)$ unless optimized.",
+    "memorycomplexity": "Inference memory scales roughly with $O(Lnd)$ for cached activations plus model weights, and large parameter count dominates static VRAM needs.",
+    "robustness": "Llama is robust to many prompt formulations, but adversarial prompts, jailbreak attempts, and prompt injection can steer outputs away from intended behavior.",
+    "scalability": "It scales well across larger data and larger compute budgets, especially with distributed training and serving stacks built around parallelism and batching.",
+    "overfittingtendency": "Fine-tuning on narrow datasets can overfit quickly, causing style drift, memorization, or catastrophic forgetting of general capabilities.",
+    "biasvariance": "Larger models usually reduce variance and improve fit to complex language patterns, but they may still carry high bias from pretraining data distribution and alignment choices."
+  },
+  "hyperparameters": [
+    {
+      "name": "hidden_size",
+      "purpose": "Sets the width of the model’s internal representations and strongly influences capacity, quality, and memory use.",
+      "increaseeffect": "Improves representational power, usually raises generalization ceiling, but increases latency, VRAM usage, and training cost.",
+      "decreaseeffect": "Reduces capacity and memory cost, but can harm reasoning quality and instruction following.",
+      "tradeoffs": "Wider models improve accuracy but make deployment more expensive and reduce throughput.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts strongly with attention heads, intermediate size, and overall parameter count."
+      ],
+      "commonmistakes": [
+        "Choosing a width that does not divide cleanly across attention heads or exceeds target hardware budget."
+      ]
+    },
+    {
+      "name": "num_hidden_layers",
+      "purpose": "Controls model depth and the number of sequential transformer blocks.",
+      "increaseeffect": "Improves compositional reasoning and abstraction, but increases training instability risk, latency, and memory overhead.",
+      "decreaseeffect": "Makes the model faster and cheaper, but reduces depth of representation and task performance.",
+      "tradeoffs": "More layers usually help accuracy, but deployment cost rises nearly linearly.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with hidden size, residual path stability, and training data scale."
+      ],
+      "commonmistakes": [
+        "Scaling depth without matching optimization, data quality, or hardware parallelism."
+      ]
+    },
+    {
+      "name": "num_attention_heads",
+      "purpose": "Splits representation into multiple attention subspaces for different relational patterns.",
+      "increaseeffect": "Can improve expressiveness and specialization, but adds overhead and may increase communication cost in distributed settings.",
+      "decreaseeffect": "Simplifies computation and lowers memory use, but can weaken attention diversity.",
+      "tradeoffs": "More heads can help accuracy, yet gains saturate and may not justify extra latency.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Must align with hidden size and grouped-query attention design."
+      ],
+      "commonmistakes": [
+        "Using too many heads with too-small per-head dimension, which can hurt efficiency and stability."
+      ]
+    },
+    {
+      "name": "intermediate_size",
+      "purpose": "Sets the width of the feed-forward network inside each transformer block.",
+      "increaseeffect": "Raises nonlinear capacity and often improves quality, but materially increases parameter count and compute.",
+      "decreaseeffect": "Reduces compute and memory, but can bottleneck model expressiveness.",
+      "tradeoffs": "Larger MLPs improve accuracy but amplify training and serving costs.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with hidden size, activation choice, and layer count."
+      ],
+      "commonmistakes": [
+        "Oversizing the MLP relative to the attention stack and target inference budget."
+      ]
+    },
+    {
+      "name": "max_position_embeddings",
+      "purpose": "Defines the nominal maximum context length the model is configured to handle.",
+      "increaseeffect": "Allows longer prompts and documents, but raises memory use and long-context compute cost.",
+      "decreaseeffect": "Improves efficiency, but restricts context window and limits RAG or document workflows.",
+      "tradeoffs": "Longer context helps retrieval and summarization, but increases attention cost and latency.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with RoPE scaling, KV cache size, and serving memory."
+      ],
+      "commonmistakes": [
+        "Increasing context length without testing throughput, memory, and quality at long sequence positions."
+      ]
+    },
+    {
+      "name": "rope_theta",
+      "purpose": "Sets the rotary positional embedding frequency base and influences positional extrapolation behavior.",
+      "increaseeffect": "Can support broader positional range in some configurations, but may require careful validation for stability and quality.",
+      "decreaseeffect": "Narrows positional spread and may limit long-context behavior.",
+      "tradeoffs": "Better long-context flexibility often comes with tuning sensitivity and compatibility concerns.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with max_position_embeddings, context extension methods, and training regime."
+      ],
+      "commonmistakes": [
+        "Changing RoPE base values without retraining or verifying long-context accuracy."
+      ]
+    },
+    {
+      "name": "attention_dropout",
+      "purpose": "Regularizes attention by randomly dropping attention weights during training.",
+      "increaseeffect": "Improves regularization in some regimes, but can slow convergence and reduce final fit if overused.",
+      "decreaseeffect": "Improves training throughput and fit, but may reduce robustness.",
+      "tradeoffs": "Higher dropout can guard against overfitting, but hurts very large-scale pretrained models that already generalize well.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with dataset size, fine-tuning regime, and other dropout settings."
+      ],
+      "commonmistakes": [
+        "Using excessive dropout during large-scale pretraining or leaving training-time dropout enabled at inference."
+      ]
+    },
+    {
+      "name": "rms_norm_eps",
+      "purpose": "Provides numerical stability in RMS normalization by preventing division instability.",
+      "increaseeffect": "Can improve stability marginally, but too large a value may slightly distort normalization behavior.",
+      "decreaseeffect": "May preserve tighter normalization, but risks instability in low-precision or mixed-precision training.",
+      "tradeoffs": "Stability versus numerical precision is the main concern.",
+      "tuningpriority": "Low",
+      "interactions": [
+        "Interacts with precision mode, optimizer choice, and training stability."
+      ],
+      "commonmistakes": [
+        "Setting epsilon inconsistently across checkpoints or changing it without validation."
+      ]
+    }
+  ],
+  "engineeringconsiderations": {
+    "datasetsuitability": [
+      "Llama benefits from large, diverse corpora with good token quality, because noisy or repetitive text can degrade language quality and factual consistency.",
+      "Multilingual data can improve cross-lingual behavior, while instruction datasets materially improve helpfulness and task-following behavior.",
+      "Domain-specific corpora can help strongly, but narrow fine-tuning data increases forgetting risk."
+    ],
+    "scalability": [
+      "Llama is commonly scaled with tensor parallelism, pipeline parallelism, FSDP, DeepSpeed, and distributed inference frameworks that support KV caching and continuous batching.",
+      "FlashAttention-style kernels reduce attention overhead, while batch size and sequence length must be balanced against GPU memory limits."
+    ],
+    "parallelization": "Serving stacks typically improve throughput by grouping requests and reusing cached keys and values across tokens.",
+    "computationalcost": "Larger checkpoints usually need GPUs with substantial VRAM, especially for long-context use or high concurrency.",
+    "memorybehavior": "INT8 and INT4 quantization can lower cost and enable CPU or smaller-GPU deployment, but may reduce accuracy slightly depending on calibration and workload.",
+    "inferencecharacteristics": "Inference relies on vLLM, TensorRT-LLM, llama.cpp, or Hugging Face pipelines to batch requests, manage the KV cache, and output tokens autoregressively.",
+    "robustness": [
+      "Llama can be sensitive to adversarial prompts, prompt injection, and noisy documents in retrieval pipelines, especially when context includes untrusted external text.",
+      "Hallucination risk rises when the model is forced to answer outside its knowledge or when prompts are underspecified."
+    ],
+    "sensitivitytooutliers": "Highly sensitive to out-of-distribution instruction formats and prompt injections that attempt to bypass system alignment.",
+    "featureengineeringdependency": "Llama is less dependent on manual feature engineering than classical ML, but tokenizer choice, prompt format, instruction templates, and context formatting strongly affect results.",
+    "featurescalingrequirement": "Feature scaling is not applicable, but prompt engineering, context window management, and generation hyperparameters (temperature, top-p) dictate serving quality.",
+    "classimbalancebehavior": "Class imbalance is generally not the right framing for Llama, because it is not primarily a classifier; instead, it is often a component inside RAG systems, agent pipelines, instruction-tuned assistants, evaluation loops, and downstream fine-tuning workflows.",
+    "commonlimitations": [
+      "Hallucination, factual inconsistency, catastrophic forgetting during fine-tuning, long-context cost growth, inference expense, safety concerns, prompt sensitivity, and alignment challenges are all practical production risks."
+    ],
+    "pipelineposition": "Llama usually sits at the center of modern AI pipelines as the generation or reasoning layer, often downstream of retrieval, routing, or safety filters."
+  },
+  "comparisons": [
+    {
+      "model": "GPT",
+      "choose_this_when": "You want open-weight deployment control, local hosting, or custom fine-tuning.",
+      "prefer_other_when": "You need a managed proprietary API with minimal ops burden.",
+      "tradeoffs": "Llama offers flexibility and self-hosting, while GPT often reduces operational complexity."
+    },
+    {
+      "model": "Mistral",
+      "choose_this_when": "You want a similar open-weight decoder-only stack and are comparing deployment quality.",
+      "prefer_other_when": "You need a smaller or different efficiency/latency profile for your target hardware.",
+      "tradeoffs": "The choice depends on cost, serving footprint, and benchmark fit for your workload."
+    },
+    {
+      "model": "Gemma",
+      "choose_this_when": "You want an open model family with strong ecosystem support and transformer-based generation.",
+      "prefer_other_when": "You need the best fit for a specific licensing, size, or serving constraint.",
+      "tradeoffs": "Trade-offs center on quality, memory, and deployment flexibility."
+    },
+    {
+      "model": "Falcon",
+      "choose_this_when": "You want a mature open decoder-only model family for text generation tasks.",
+      "prefer_other_when": "You need a newer architecture or stronger instruction-following behavior.",
+      "tradeoffs": "Llama often has stronger ecosystem momentum, while Falcon may suit legacy or compatibility needs."
+    },
+    {
+      "model": "BERT",
+      "choose_this_when": "You need text generation, chat, summarization, or agentic behavior.",
+      "prefer_other_when": "You only need embeddings, classification, or bidirectional encoding.",
+      "tradeoffs": "Llama is generative and autoregressive; BERT is better for encoder-style understanding tasks."
+    },
+    {
+      "model": "T5",
+      "choose_this_when": "You want a pure decoder-only generation workflow with causal LM behavior.",
+      "prefer_other_when": "You need encoder-decoder sequence-to-sequence abstraction for translation or structured text-to-text tasks.",
+      "tradeoffs": "T5 may be better for some seq2seq tasks, while Llama is simpler for open-ended generation."
+    }
+  ],
+  "relatedknowledge": {
+    "relatedmodels": [
+      "GPT",
+      "Mistral",
+      "Gemma",
+      "Falcon",
+      "BLOOM",
+      "OPT",
+      "Qwen",
+      "DeepSeek",
+      "Phi",
+      "Mixtral"
+    ],
+    "alternative_models": [
+      "T5",
+      "BERT",
+      "RoBERTa",
+      "Claude-family",
+      "Gemini-family",
+      "Encoder-Decoder Transformer",
+      "RNN"
+    ],
+    "related_principles": [
+      "Self-Attention",
+      "Causal Language Modeling",
+      "Transformer Architecture",
+      "Scaling Laws",
+      "Transfer Learning",
+      "In-Context Learning",
+      "RLHF",
+      "DPO",
+      "Chain-of-Thought Prompting"
+    ],
+    "related_workflows": [
+      "Pretraining",
+      "Instruction Fine-Tuning",
+      "PEFT",
+      "LoRA",
+      "QLoRA",
+      "RLHF",
+      "DPO",
+      "Quantization",
+      "RAG Pipeline",
+      "LLM Evaluation"
+    ],
+    "related_patterns": [
+      "Prompt Engineering",
+      "RAG Pattern",
+      "Agent Architecture",
+      "Tool Calling",
+      "Context Window Management",
+      "Safety Guardrails",
+      "Memory Systems",
+      "KV Cache Optimization"
+    ],
+    "related_packages": [
+      "transformers",
+      "trl",
+      "peft",
+      "accelerate",
+      "bitsandbytes",
+      "vllm",
+      "llama.cpp",
+      "unsloth",
+      "datasets"
+    ],
+    "related_guides": [
+      "Prompt Engineering",
+      "RAG Pattern",
+      "Safety Guardrails"
+    ],
+    "related_registry": [
+      "Generative LLMs",
+      "Causal Transformers"
+    ]
+  },
+  "quickstart": {
+    "language": "python",
+    "implementation_package": "transformers",
+    "code": "import torch\nfrom transformers import AutoTokenizer, LlamaForCausalLM, GenerationConfig\n\nmodel_name = \"meta-llama/Llama-3.1-8B-Instruct\"\ntokenizer = AutoTokenizer.from_pretrained(model_name)\nmodel = LlamaForCausalLM.from_pretrained(\n    model_name,\n    torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,\n    device_map=\"auto\" if torch.cuda.is_available() else None,\n)\n\ndevice = \"cuda\" if torch.cuda.is_available() else \"cpu\"\nprint(f\"Using device: {device}\")\n\nprompts = [\n    \"Explain KV cache in one paragraph.\",\n    \"Summarize the benefits of decoder-only transformers.\"\n]\n\ninputs = tokenizer(prompts, return_tensors=\"pt\", padding=True)\ninputs = {k: v.to(model.device) for k, v in inputs.items()}\n\ngeneration_config = GenerationConfig(\n    max_new_tokens=80,\n    do_sample=True,\n    temperature=0.7,\n    top_p=0.9,\n    pad_token_id=tokenizer.eos_token_id,\n    eos_token_id=tokenizer.eos_token_id,\n)\n\nwith torch.no_grad():\n    output_ids = model.generate(\n        **inputs,\n        generation_config=generation_config,\n    )\n\ndecoded = tokenizer.batch_decode(output_ids, skip_special_tokens=True)\nfor i, text in enumerate(decoded, 1):\n    print(f\"\\n--- Output {i} ---\\n{text}\")",
+    "explanation": "The typical inference flow is tokenizer input -> tensor batching -> causal generation with LlamaForCausalLM -> decoding back to text.",
+    "inputs": "Prompt strings, tokenized tensors, attention masks, and generation configuration.",
+    "outputs": "Generated text, token IDs, decoded sequences, and optionally generation scores."
+  },
+  "learning_resources": [
+    {
+      "title": "Hugging Face Llama documentation",
+      "url": "https://huggingface.co/docs/transformers/en/model_doc/llama",
+      "type": "documentation",
+      "why_to_read": "Canonical API and model-class reference for LlamaForCausalLM.",
+      "expected_outcome": "Correct loading, generation, and configuration usage in Transformers.",
+      "reading_time": 20
+    },
+    {
+      "title": "Meta Llama documentation",
+      "url": "https://ai.meta.com/llama/",
+      "type": "documentation",
+      "why_to_read": "Official family overview and model positioning from the model creator.",
+      "expected_outcome": "Understand model family intent, release framing, and usage boundaries.",
+      "reading_time": 15
+    },
+    {
+      "title": "Hugging Face model card examples",
+      "url": "https://huggingface.co/akreal/tiny-random-LlamaForCausalLM",
+      "type": "guide",
+      "why_to_read": "Quick practical example of loading and generating with a Llama-class model.",
+      "expected_outcome": "Learn the basic Transformers inference pattern quickly.",
+      "reading_time": 10
+    },
+    {
+      "title": "Stanford CS25 lecture on LLMs",
+      "url": "https://web.stanford.edu/class/cs25/",
+      "type": "video",
+      "why_to_read": "High-quality conceptual grounding for transformer and LLM architecture.",
+      "expected_outcome": "Build intuition for autoregressive decoding and scaling behavior.",
+      "reading_time": 60
+    },
+    {
+      "title": "Hugging Face blog on LLM deployment",
+      "url": "https://huggingface.co/blog",
+      "type": "article",
+      "why_to_read": "Practical engineering guidance for efficient inference and deployment.",
+      "expected_outcome": "Improve serving, batching, quantization, and deployment decisions.",
+      "reading_time": 30
+    }
+  ]
+}

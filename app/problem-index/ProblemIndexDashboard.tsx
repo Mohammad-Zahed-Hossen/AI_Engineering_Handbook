@@ -103,15 +103,17 @@ export default function ProblemIndexDashboard({ taxonomy, workflowMap, decisionG
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(initialQuery);
 
-  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem('problem_index_collapsed_categories');
-        if (stored) return new Set(JSON.parse(stored));
-      } catch {}
-    }
-    return new Set();
-  });
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
+
+  // Load collapsed categories from localStorage after hydration
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('problem_index_collapsed_categories');
+      if (stored) {
+        setCollapsedCategories(new Set(JSON.parse(stored)));
+      }
+    } catch {}
+  }, []);
 
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [isFilterCollapsed, setIsFilterCollapsed] = useState(false);
@@ -401,8 +403,12 @@ export default function ProblemIndexDashboard({ taxonomy, workflowMap, decisionG
       </section>
 
       {/* Sticky Filters & Search Area */}
-      <div className={`sticky top-14 md:top-16 z-20 bg-background/95 backdrop-blur-md border-b border-border space-y-3 transition-all duration-300 ${
-        stickyState === 'full' ? 'py-3' : 'py-1.5'
+      <div className={`sticky top-14 md:top-16 z-20 transition-all duration-300 ${
+        stickyState === 'icon' 
+          ? 'bg-transparent py-1' 
+          : 'bg-background/95 backdrop-blur-md border-b border-border'
+      } ${
+        stickyState === 'full' ? 'py-3' : stickyState === 'compact' ? 'py-2' : 'py-1'
       }`}>
         <div className="relative">
           {/* Icon trigger button (shown in icon state) */}
@@ -412,46 +418,42 @@ export default function ProblemIndexDashboard({ taxonomy, workflowMap, decisionG
                 setIsSearchExpanded(true);
                 setTimeout(() => searchInputRef.current?.focus(), 0);
               }}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-border bg-card hover:bg-muted transition-all cursor-pointer"
+              className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-muted/50 transition-all cursor-pointer"
               aria-label="Open search"
             >
-              <Search className="w-4.5 h-4.5 text-muted-foreground" />
+              <Search className="w-4 h-4 text-muted-foreground" />
             </button>
           )}
 
           {/* Search input (hidden in icon state unless expanded) */}
-          <div
-            className={`transition-all duration-300 ease-in-out ${
-              stickyState === 'icon' && !isSearchExpanded
-                ? 'opacity-0 pointer-events-none absolute'
-                : 'opacity-100 relative'
-            }`}
-          >
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground" />
-            <input
-              ref={searchInputRef}
-              id="problem-search-input"
-              type="text"
-              placeholder="Search problems, workflows, tags, categories... (Press '/' to focus)"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-10 py-3 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
-              aria-label="Search problems"
-            />
-            {searchQuery ? (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                aria-label="Clear search"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            ) : (
-              <kbd className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-                Ctrl K
-              </kbd>
-            )}
-          </div>
+          {stickyState !== 'icon' && (
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground" />
+              <input
+                ref={searchInputRef}
+                id="problem-search-input"
+                type="text"
+                placeholder="Search problems, workflows, tags, categories... (Press '/' to focus)"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-10 py-3 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
+                aria-label="Search problems"
+              />
+              {searchQuery ? (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  aria-label="Clear search"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              ) : (
+                <kbd className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+                  Ctrl K
+                </kbd>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Navigation & Action Toolbar */}

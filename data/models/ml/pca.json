@@ -1,0 +1,408 @@
+{
+  "id": "pca",
+  "title": "Principal Component Analysis (PCA)",
+  "name": "Principal Component Analysis (PCA)",
+  "slug": "pca",
+  "description": "PCA is a linear dimensionality reduction and feature extraction method that projects data onto orthogonal directions of maximum variance, usually to compress features, denoise inputs, and simplify downstream modeling.",
+  "tags": [
+    "ml",
+    "dimensionality-reduction",
+    "feature-extraction",
+    "unsupervised"
+  ],
+  "aliases": [
+    "PCA",
+    "Principal Component Analysis"
+  ],
+  "keywords": [
+    "pca",
+    "dimensionality reduction",
+    "feature extraction",
+    "variance maximization",
+    "eigenvalues",
+    "eigenvectors"
+  ],
+  "searchtokens": [
+    "pca dimensionality reduction",
+    "principal component analysis",
+    "sklearn pca",
+    "svd pca",
+    "variance projection"
+  ],
+  "createdat": "2026-07-10T23:55:00+06:00",
+  "updatedat": "2026-07-10T23:55:00+06:00",
+  "lastverified": "2026-07-10T23:55:00+06:00",
+  "reviewfrequency": "annual",
+  "verifiedagainst": "canonical model knowledge as of 2026-07-10",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "verified",
+  "engineeringmaturity": "production",
+  "domain": "ml",
+  "category": "dimensionality_reduction",
+  "difficulty": "intermediate",
+  "engineeringarea": "unsupervised learning",
+  "estimatedreadingtime": 10,
+  "prerequisites": [
+    "Linear algebra basics (eigenvalues, vectors)",
+    "Covariance and correlation concepts",
+    "Feature scaling requirements"
+  ],
+  "recommendednext": [
+    "Truncated SVD",
+    "Kernel PCA",
+    "UMAP"
+  ],
+  "relatedcontent": [
+    {
+      "type": "package",
+      "id": "scikit-learn",
+      "relationship": "implemented-by"
+    }
+  ],
+  "owner": "AENS Knowledge Architecture",
+  "sources": [
+    {
+      "title": "PCA — scikit-learn documentation",
+      "url": "https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html"
+    },
+    {
+      "title": "Wikipedia Principal component analysis",
+      "url": "https://en.wikipedia.org/wiki/Principal_component_analysis"
+    }
+  ],
+  "githubrepo": "https://github.com/scikit-learn/scikit-learn",
+  "problemtypes": [
+    "Linear dimensionality reduction",
+    "Feature compression",
+    "Feature denoising",
+    "Collinearity reduction"
+  ],
+  "decisionsummary": {
+    "summary": "PCA is a linear dimensionality reduction and feature extraction method that projects data onto orthogonal directions of maximum variance, usually to compress features, denoise inputs, and simplify downstream modeling.",
+    "bestusecases": [
+      "Preprocessing high-dimensional tabular data before linear or distance-based models.",
+      "Reducing multicollinearity in strongly correlated feature sets.",
+      "Visualizing complex datasets in 2D or 3D for exploratory analysis.",
+      "Compressing features for faster training, lower memory use, or cleaner downstream pipelines."
+    ],
+    "avoidwhen": [
+      "The structure is strongly nonlinear, where UMAP or t-SNE often preserves local manifolds better.",
+      "Interpretability requires original features, because PCA replaces them with linear combinations.",
+      "Data is heavily contaminated by outliers, which can distort the covariance structure.",
+      "You need supervised separation rather than unsupervised variance preservation, where LDA or task-specific feature selection may be better."
+    ],
+    "strengths": [
+      "Produces compact orthogonal features that reduce redundancy and multicollinearity.",
+      "Often speeds up downstream training by reducing feature dimension and memory footprint.",
+      "Provides an explicit explained-variance view for component selection and model governance.",
+      "Works well as a deterministic preprocessing step in reproducible pipelines."
+    ],
+    "limitations": [
+      "Assumes the important structure is linear and encoded in variance.",
+      "Sensitive to scaling and outliers, so preprocessing quality matters greatly.",
+      "Reduced components are less interpretable than raw features.",
+      "Can discard low-variance but predictive signals if variance is not aligned with task relevance."
+    ],
+    "interpretability": "Principal components are orthogonal directions in feature space, and loadings describe how strongly each original feature contributes to a component. The explained variance ratio tells you how much variance each component captures relative to the total. In practice, high absolute loadings indicate stronger feature contribution, but the sign is arbitrary and should be interpreted relative to other loadings rather than in isolation. PCA is more interpretable than many nonlinear embeddings, but still less transparent than the original feature space.",
+    "trainingcharacteristics": "PCA fitting is a closed-form linear algebra procedure based on covariance decomposition or SVD, so it does not use iterative gradient training in the usual sense. Convergence is therefore mostly about numerical solver behavior rather than model optimization. Exact solvers are deterministic for fixed data and settings, while randomized solvers introduce stochasticity controlled by `random_state`. Fitting cost depends strongly on the solver and matrix shape.",
+    "inferencecharacteristics": "Transformation is fast after fitting because it is essentially a matrix multiplication and optional centering. Memory footprint is usually small at inference time because only the learned components, mean, and selected metadata must be stored. Deployment is straightforward in batch and online pipelines, but preprocessing order must be frozen so that the same scaling and centering are applied consistently. `inverse_transform` enables approximate reconstruction when you need to inspect information loss.",
+    "computationalcharacteristics": "For data with $n$ samples, $p$ features, and $k$ retained components, exact covariance-based PCA is typically expensive in both time and memory when $p$ is large. SVD-based PCA is usually preferred in practice because it is numerically stable and often better suited to rectangular matrices. Randomized PCA can reduce fitting cost when $k \\ll \\min(n,p)$. Transformation cost is roughly $O(npk)$, while fitting cost varies by solver and can be much higher for exact methods."
+  },
+  "coreunderstanding": {
+    "intuition": "PCA finds directions in feature space where the data varies most, then projects the data onto a smaller set of mutually orthogonal axes. The first component captures the largest possible variance, the second captures the largest remaining variance subject to orthogonality, and so on. This makes PCA a feature extraction method rather than just a feature selection method, because it constructs new coordinates. It is especially useful when many features are correlated and the data effectively lives near a lower-dimensional subspace.",
+    "learningmechanism": "PCA learns a linear projection matrix by finding the eigenvectors of the data covariance matrix (or via Singular Value Decomposition of the centered data matrix). Retained principal components represent the orthogonal directions that maximize the variance of the projected data, minimizing the reconstruction error.",
+    "assumptions": [
+      "The meaningful structure is approximately linear.",
+      "High variance corresponds to useful information for the downstream task.",
+      "Features should be centered, and usually standardized, before fitting.",
+      "Orthogonal components are an acceptable representation of the latent structure.",
+      "Violating these assumptions can reduce usefulness or produce misleading component rankings in production."
+    ],
+    "mathematicalintuition": "Given centered data $X \\in \\mathbb{R}^{n \\times p}$, the sample covariance matrix is:\n\n$$\nS = \\frac{1}{n}X^\\top X\n$$\n\nPCA solves the eigenvalue problem:\n\n$$\nS w_i = \\lambda_i w_i\n$$\n\nwhere $w_i$ are eigenvectors and $\\lambda_i$ are eigenvalues. The variance maximization objective for the first component can be written as:\n\n$$\n\\max_{\\|w\\|=1} \\mathrm{Var}(Xw) = \\max_{\\|w\\|=1} w^\\top S w\n$$\n\nThe top $k$ eigenvectors form the projection matrix $W_k$, and the reduced representation is:\n\n$$\nZ = X W_k\n$$\n\nUsing SVD, centered data can be factorized as:\n\n$$\nX = U \\Sigma V^\\top\n$$\n\nand the principal directions are the top right singular vectors in $V$. The explained variance for component $i$ is:\n\n$$\n\\mathrm{EV}_i = \\lambda_i\n$$\n\nand the explained variance ratio is:\n\n$$\n\\mathrm{EVR}_i = \\frac{\\lambda_i}{\\sum_j \\lambda_j}\n$$\n\nwhich is the standard criterion for choosing $k$.",
+    "complexity": "Exact covariance-based fitting is roughly $O(np^2 + p^3)$ when $p$ is moderate; SVD-based fitting is around $O(\\min(np^2, n^2p))$. Randomized SVD reduces fitting cost to roughly $O(npk)$ when $k \\ll \\min(n,p)$.",
+    "memorycomplexity": "Memory use is driven by the centered matrix, covariance matrix if materialized, and learned components. Incremental solvers process in chunks to bound memory use.",
+    "robustness": "PCA is not robust to extreme outliers because covariance is highly sensitive to large deviations.",
+    "scalability": "It scales well with randomized or incremental solvers, but full exact PCA becomes expensive on very wide or very large matrices.",
+    "overfittingtendency": "PCA usually reduces overfitting risk by compressing noise, but retaining too many components can preserve irrelevant variation.",
+    "biasvariance": "It introduces bias by restricting the representation to linear orthogonal projections, but often lowers variance through dimensionality reduction."
+  },
+  "hyperparameters": [
+    {
+      "name": "n_components",
+      "purpose": "Controls how many principal components are retained.",
+      "increaseeffect": "Retains more variance, reduces information loss, increases dimensionality, and may weaken compression benefits.",
+      "decreaseeffect": "Compresses more aggressively, speeds downstream models, but can discard predictive variance.",
+      "tradeoffs": "The most important PCA tuning choice because it directly balances reconstruction fidelity against simplicity.",
+      "tuningpriority": "Highest",
+      "interactions": [
+        "Interacts with svd_solver, explained variance thresholds, and downstream model capacity."
+      ],
+      "commonmistakes": [
+        "Choosing too few components just to reduce dimension without checking downstream performance."
+      ]
+    },
+    {
+      "name": "svd_solver",
+      "purpose": "Selects the numerical method used to compute PCA.",
+      "increaseeffect": "Not numeric; more exact solvers improve deterministic fidelity but may cost more time and memory.",
+      "decreaseeffect": "More approximate solvers can improve speed and scalability but introduce stochasticity or solver-specific constraints.",
+      "tradeoffs": "full is precise, randomized is often efficient for large problems, and auto delegates the choice.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Strongly interacts with n_components, matrix shape, and random_state."
+      ],
+      "commonmistakes": [
+        "Using a solver that is unnecessarily expensive for large-scale dimensionality reduction."
+      ]
+    },
+    {
+      "name": "whiten",
+      "purpose": "Scales principal components to unit variance after projection.",
+      "increaseeffect": "Not numeric; enabling whitening decorrelates and rescales components, which can help some models but destroy relative variance scale.",
+      "decreaseeffect": "Disabling whitening preserves natural component variance and is usually safer for interpretation.",
+      "tradeoffs": "Can help algorithms sensitive to feature scale, but often reduces interpretability and may amplify noise in low-variance components.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with downstream model type and whether features will be standardized again."
+      ],
+      "commonmistakes": [
+        "Turning on whitening without a specific downstream need."
+      ]
+    },
+    {
+      "name": "tol",
+      "purpose": "Sets a convergence tolerance or numerical cutoff used by certain solvers.",
+      "increaseeffect": "Looser tolerance may speed fitting but reduce numerical precision.",
+      "decreaseeffect": "Tighter tolerance may improve accuracy but increase runtime.",
+      "tradeoffs": "Useful mostly when using iterative or approximate solvers where numerical stopping criteria matter.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Mainly relevant for randomized or iterative solver behavior."
+      ],
+      "commonmistakes": [
+        "Treating tolerance as a performance knob rather than a numerical control."
+      ]
+    },
+    {
+      "name": "iterated_power",
+      "purpose": "Controls the number of power iterations for randomized SVD.",
+      "increaseeffect": "Improves approximation quality and stability, but adds compute cost.",
+      "decreaseeffect": "Speeds fitting, but can reduce accuracy of estimated components.",
+      "tradeoffs": "Higher values are useful when spectral separation is weak or accuracy matters more than speed.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Relevant if svd_solver=\"randomized\"."
+      ],
+      "commonmistakes": [
+        "Keeping it too low on difficult, noisy matrices and assuming the approximation is adequate."
+      ]
+    },
+    {
+      "name": "n_oversamples",
+      "purpose": "Adds extra random vectors to improve randomized SVD accuracy.",
+      "increaseeffect": "Improves basis coverage and numerical quality, but raises cost.",
+      "decreaseeffect": "Lowers compute and memory but can weaken approximation quality.",
+      "tradeoffs": "Useful when components are close in strength or the matrix is noisy.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Relevant with randomized solvers, especially for ill-conditioned data."
+      ],
+      "commonmistakes": [
+        "Reducing oversampling too aggressively for speed."
+      ]
+    },
+    {
+      "name": "power_iteration_normalizer",
+      "purpose": "Chooses how to normalize intermediate vectors during randomized power iterations.",
+      "increaseeffect": "Not numeric; stronger normalization choices can improve stability at extra cost.",
+      "decreaseeffect": "Simpler normalization can be faster but less stable.",
+      "tradeoffs": "Mainly a numerical stability control for randomized PCA.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Relevant when using randomized solver with repeated power iterations."
+      ],
+      "commonmistakes": [
+        "Ignoring solver stability if the matrix is ill-conditioned."
+      ]
+    },
+    {
+      "name": "random_state",
+      "purpose": "Controls randomness in randomized PCA and ensures reproducibility.",
+      "increaseeffect": "Not numeric in the optimization sense; changing the seed changes the sampled approximation path.",
+      "decreaseeffect": "Not applicable as a monotonic notion; leaving it unset reduces reproducibility.",
+      "tradeoffs": "Essential for auditability and stable experiments when approximate solvers are used.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Relevant with randomized solver, lower priority with exact deterministic solvers."
+      ],
+      "commonmistakes": [
+        "Comparing randomized runs without fixing the seed."
+      ]
+    }
+  ],
+  "engineeringconsiderations": {
+    "datasetsuitability": [
+      "PCA works best when the sample-to-feature ratio is adequate and many features are correlated.",
+      "It is especially useful for high-dimensional numeric data where compression or denoising matters more than preserving original feature names.",
+      "Sparse matrices may require special handling, and very sparse text-like data is often better served by Truncated SVD.",
+      "If features are not on comparable scales, PCA can be dominated by the largest-magnitude variables."
+    ],
+    "scalability": [
+      "Exact PCA can become expensive in both compute and memory as p grows.",
+      "Randomized SVD is the common choice when only a small number of components is needed.",
+      "Incremental PCA is useful when data does not fit in memory, because it processes chunks rather than the full matrix at once."
+    ],
+    "parallelization": "CPU performance is usually the bottleneck; parallelization depends on the BLAS/LAPACK backend utilized by NumPy/SciPy.",
+    "computationalcost": "Fitting is much more expensive than transformation, because fitting requires decomposition of the training matrix. In production, it is common to fit PCA offline and persist the transform for fast inference.",
+    "memorybehavior": "Randomized decomposition reduces memory pressure by avoiding full exact factorization. Covariance-based approaches can become memory-heavy for very wide matrices because p x p storage grows quickly.",
+    "inferencecharacteristics": "Transformation is fast after fitting because it is essentially a matrix multiplication and optional centering. Memory footprint is usually small at inference time because only the learned components, mean, and selected metadata must be stored.",
+    "robustness": [
+      "PCA is not robust to extreme outliers because covariance is highly sensitive to large deviations.",
+      "This can rotate principal directions and distort explained variance rankings.",
+      "If outliers are expected, PCA should usually be preceded by cleaning, clipping, or robust scaling."
+    ],
+    "sensitivitytooutliers": "High sensitivity: outliers strongly distort the covariance structure, rotating the principal components away from the true directions of maximum variance for typical samples.",
+    "featureengineeringdependency": "Centering is mandatory, and standardization is usually required when features have different units or scales. If preprocessing is inconsistent between train and inference, component projections will drift.",
+    "featurescalingrequirement": "Standardization is usually required when features have different units or scales. Otherwise, features with larger magnitudes will dominate the variance calculations and rotate the components.",
+    "classimbalancebehavior": "PCA is unsupervised and label-agnostic, meaning it does not directly address class imbalance. Components maximize overall variance regardless of target label distributions.",
+    "commonlimitations": [
+      "PCA loses information whenever k < p.",
+      "It is hard to interpret because components are mixtures of original variables.",
+      "It assumes linear structure and can miss nonlinear manifolds.",
+      "It is sensitive to scaling and outliers, so preprocessing quality is decisive."
+    ],
+    "pipelineposition": "Placed in the preprocessing branch of the pipeline, after scaling (StandardScaler) and before supervised modeling, inside a single reproducible pipeline."
+  },
+  "comparisons": [
+    {
+      "model": "Kernel PCA",
+      "choose_this_when": "You want a fast, linear baseline and the structure is mostly linear.",
+      "prefer_other_when": "The data has strong nonlinear structure that needs kernelized projections.",
+      "tradeoffs": "PCA is simpler, more scalable, and easier to deploy; Kernel PCA can capture nonlinear geometry but is heavier."
+    },
+    {
+      "model": "Truncated SVD",
+      "choose_this_when": "You need dense centered PCA-like behavior on standard numeric data.",
+      "prefer_other_when": "Your matrix is sparse and centering would destroy sparsity.",
+      "tradeoffs": "PCA is the canonical choice for dense centered data; Truncated SVD is better for sparse text-like matrices."
+    },
+    {
+      "model": "ICA",
+      "choose_this_when": "You want maximum-variance orthogonal components for compression.",
+      "prefer_other_when": "You need statistically independent latent sources rather than orthogonal variance directions.",
+      "tradeoffs": "PCA is more stable and common; ICA is more specialized and less numerically forgiving."
+    },
+    {
+      "model": "Factor Analysis",
+      "choose_this_when": "You want a simple compression and visualization baseline.",
+      "prefer_other_when": "You believe observed variables are generated from latent factors plus noise.",
+      "tradeoffs": "PCA models variance geometry; Factor Analysis explicitly separates shared variance from noise."
+    },
+    {
+      "model": "t-SNE",
+      "choose_this_when": "You need a deterministic linear transform for downstream ML.",
+      "prefer_other_when": "You want local neighborhood visualization with stronger nonlinear manifold emphasis.",
+      "tradeoffs": "PCA is fast and reusable in pipelines; t-SNE is mainly for visualization and not general-purpose preprocessing."
+    },
+    {
+      "model": "UMAP",
+      "choose_this_when": "You need stable, explainable linear feature extraction.",
+      "prefer_other_when": "You want nonlinear embedding that better preserves local structure.",
+      "tradeoffs": "PCA is linear and composable; UMAP is more expressive but less straightforward for model pipelines."
+    }
+  ],
+  "relatedknowledge": {
+    "relatedmodels": [
+      "Linear Discriminant Analysis (LDA)",
+      "Kernel PCA",
+      "Sparse PCA",
+      "Incremental PCA",
+      "Truncated SVD",
+      "ICA"
+    ],
+    "alternative_models": [
+      "UMAP",
+      "t-SNE",
+      "Autoencoder",
+      "Variational Autoencoder",
+      "Factor Analysis"
+    ],
+    "related_principles": [
+      "Eigenvalue Decomposition",
+      "Singular Value Decomposition (SVD)",
+      "Covariance Matrix",
+      "Variance Maximization",
+      "Orthogonality",
+      "Curse of Dimensionality"
+    ],
+    "related_workflows": [
+      "Feature Scaling",
+      "Feature Selection",
+      "Dimensionality Reduction Pipeline",
+      "Exploratory Data Analysis (EDA)",
+      "Visualization Workflow"
+    ],
+    "related_patterns": [
+      "Preprocessing Pipeline",
+      "Model Compression",
+      "Visualization Guide",
+      "Feature Engineering Guide"
+    ],
+    "related_packages": [
+      "scikit-learn",
+      "scipy",
+      "numpy"
+    ],
+    "related_guides": [
+      "Visualization Guide",
+      "Feature Engineering Guide"
+    ],
+    "related_registry": [
+      "Dimensionality reduction models",
+      "Unsupervised Learning"
+    ]
+  },
+  "quickstart": {
+    "language": "python",
+    "implementation_package": "scikit-learn",
+    "code": "import numpy as np\nfrom sklearn.datasets import load_breast_cancer\nfrom sklearn.model_selection import train_test_split, GridSearchCV\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.decomposition import PCA\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.metrics import accuracy_score, classification_report\n\n# Load data and split\nX, y = load_breast_cancer(return_X_y=True)\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42, stratify=y\n)\n\n# Construct pipeline\npipe = Pipeline([\n    (\"scaler\", StandardScaler()),\n    (\"pca\", PCA()),\n    (\"clf\", LogisticRegression(max_iter=5000, solver=\"lbfgs\"))\n])\n\nparam_grid = {\n    \"pca__n_components\": [5, 10, 15, 20],\n    \"pca__svd_solver\": [\"full\"],\n    \"clf__C\": [0.1, 1.0, 10.0]\n}\n\n# Fit GridSearch\nsearch = GridSearchCV(pipe, param_grid=param_grid, cv=5, n_jobs=-1)\nsearch.fit(X_train, y_train)\n\nbest_model = search.best_estimator_\ny_pred = best_model.predict(X_test)\n\npca_step = best_model.named_steps[\"pca\"]\nX_test_scaled = best_model.named_steps[\"scaler\"].transform(X_test)\nX_test_pca = pca_step.transform(X_test_scaled)\nX_test_recon = pca_step.inverse_transform(X_test_pca)\n\nprint(\"best_params:\", search.best_params_)\nprint(\"test_accuracy:\", accuracy_score(y_test, y_pred))\nprint(\"explained_variance_ratio_:\", pca_step.explained_variance_ratio_)\nprint(\"cumulative_explained_variance:\", np.cumsum(pca_step.explained_variance_ratio_))\nprint(\"principal_components_shape:\", pca_step.components_.shape)\nprint(\"reconstruction_shape:\", X_test_recon.shape)\nprint(classification_report(y_test, y_pred))",
+    "explanation": "This pipeline scales features, fits PCA inside a cross-validated grid search, and trains a downstream classifier on the reduced representation. It also shows how to inspect explained variance and how to reconstruct inputs approximately with `inverse_transform`.",
+    "inputs": "Expected input is a numeric matrix of shape (n_samples, n_features), usually float32 or float64. PCA is most stable when features are preprocessed and centered before fitting.",
+    "outputs": "Transformed feature matrix with lower dimensionality, explained variance metrics, principal component loading components, approximate reconstruction, and downstream model accuracy/evaluation metrics."
+  },
+  "learning_resources": [
+    {
+      "title": "Decomposing signals in components",
+      "url": "https://scikit-learn.org/stable/modules/decomposition.html",
+      "type": "documentation",
+      "why_to_read": "Official explanation of decomposition methods and PCA context.",
+      "expected_outcome": "See how PCA fits into the broader decomposition toolbox.",
+      "reading_time": 15
+    },
+    {
+      "title": "Dimensionality Reduction Principal Component Analysis (PCA)",
+      "url": "https://cs229.stanford.edu/notes2021fall/lecture14-pca.pdf",
+      "type": "article",
+      "why_to_read": "Strong university-level derivation of PCA using covariance and SVD.",
+      "expected_outcome": "Build mathematical intuition for variance maximization and reconstruction error.",
+      "reading_time": 30
+    },
+    {
+      "title": "Principal components analysis (PCA) on Iris Dataset",
+      "url": "https://scikit-learn.org/stable/auto_examples/decomposition/plot_pca_iris.html",
+      "type": "guide",
+      "why_to_read": "Practical example of PCA in a canonical scikit-learn workflow.",
+      "expected_outcome": "Learn how PCA behaves on real feature matrices.",
+      "reading_time": 20
+    },
+    {
+      "title": "PCA Tutorial for Beginners",
+      "url": "https://www.youtube.com/watch?v=oL95BS4Xmcs",
+      "type": "video",
+      "why_to_read": "Clear visual explanation of PCA concepts and applications.",
+      "expected_outcome": "Reinforce intuition with visual examples.",
+      "reading_time": 25
+    }
+  ]
+}

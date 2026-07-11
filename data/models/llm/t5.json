@@ -1,0 +1,421 @@
+{
+  "id": "t5",
+  "title": "T5 (Text-to-Text Transfer Transformer)",
+  "name": "T5",
+  "slug": "t5",
+  "description": "T5 is a unified encoder-decoder foundation model that reformulates every NLP task as text-to-text generation, making it a strong production choice for sequence-to-sequence problems that benefit from transferable multilingual or multitask pretraining.",
+  "tags": [
+    "llm",
+    "encoder-decoder",
+    "transformer",
+    "generation"
+  ],
+  "aliases": [
+    "T5",
+    "Text-to-Text Transfer Transformer"
+  ],
+  "keywords": [
+    "t5",
+    "text-to-text",
+    "encoder-decoder",
+    "span corruption",
+    "multitask transfer learning"
+  ],
+  "searchtokens": [
+    "t5-small",
+    "t5-base",
+    "t5-large",
+    "flan-t5",
+    "huggingface t5",
+    "encoder-decoder transformer"
+  ],
+  "createdat": "2026-07-11T00:19:00+06:00",
+  "updatedat": "2026-07-11T00:19:00+06:00",
+  "lastverified": "2026-07-11T00:19:00+06:00",
+  "reviewfrequency": "annual",
+  "verifiedagainst": "canonical model knowledge as of 2026-07-11",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "verified",
+  "engineeringmaturity": "production",
+  "domain": "llm",
+  "category": "foundation_llm",
+  "difficulty": "intermediate",
+  "engineeringarea": "sequence-to-sequence generation",
+  "estimatedreadingtime": 10,
+  "prerequisites": [
+    "Transformer encoder-decoder architecture",
+    "Autoregressive generation basics",
+    "Transfer learning principles"
+  ],
+  "recommendednext": [
+    "FLAN-T5",
+    "BART",
+    "vLLM Serving"
+  ],
+  "relatedcontent": [
+    {
+      "type": "package",
+      "id": "pytorch",
+      "relationship": "implemented-by"
+    }
+  ],
+  "owner": "AENS Knowledge Architecture",
+  "sources": [
+    {
+      "title": "Google Research Publication: Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer",
+      "url": "https://research.google/pubs/pub50316/"
+    },
+    {
+      "title": "Google Research T5 Repository",
+      "url": "https://github.com/google-research/text-to-text-transfer-transformer"
+    }
+  ],
+  "githubrepo": "https://github.com/huggingface/transformers",
+  "problemtypes": [
+    "Document and sentence summarization",
+    "Machine translation",
+    "Conditional text generation",
+    "Question answering and span extraction"
+  ],
+  "decisionsummary": {
+    "summary": "T5 is a unified encoder-decoder foundation model that reformulates every NLP task as text-to-text generation, making it a strong production choice for sequence-to-sequence problems that benefit from transferable multilingual or multitask pretraining.",
+    "bestusecases": [
+      "Summarization pipelines for documents, meetings, or support tickets.",
+      "Machine translation and other cross-lingual generation tasks.",
+      "Question answering and text rewriting where inputs map cleanly to outputs.",
+      "Instruction-following or task-unified NLP systems, especially with FLAN-style fine-tuning."
+    ],
+    "avoidwhen": [
+      "Pure classification or embedding-only workloads where an encoder-only model is cheaper.",
+      "Open-ended conversational generation where decoder-only LLMs are more natural.",
+      "Ultra-low-latency inference or tight edge deployments with strict memory limits.",
+      "Tasks that need very long context windows without architectural modification."
+    ],
+    "strengths": [
+      "One text-to-text interface simplifies dataset design, training, and deployment across tasks.",
+      "Strong transfer learning behavior makes fine-tuning efficient on small to medium task-specific corpora.",
+      "Encoder-decoder structure supports conditional generation with strong input conditioning.",
+      "Works well for multilingual and multitask setups when pretrained and adapted properly."
+    ],
+    "limitations": [
+      "Autoregressive decoding adds latency, especially with beam search.",
+      "Memory and compute costs are higher than encoder-only classifiers for simple understanding tasks.",
+      "Context length is still bounded, so long-document tasks can require chunking or long-context variants.",
+      "Hallucination and generation drift remain possible, especially on ambiguous or underspecified prompts."
+    ],
+    "interpretability": "T5 is only partially interpretable because its behavior is distributed across encoder self-attention, decoder self-attention, and cross-attention. Attention maps can help trace which source tokens influenced a generated token, but they do not fully explain the causal decision path. Token attribution and hidden-state probing can reveal task specialization, while cross-attention inspection often helps diagnose alignment between input spans and output spans. In practice, T5 remains a mostly black-box system whose outputs are easier to validate than whose reasoning is fully explainable.",
+    "trainingcharacteristics": "T5 is pretrained with span corruption, where contiguous spans in the input are masked and the model learns to reconstruct them as text sequences. This objective supports flexible transfer to translation, summarization, QA, and other conditional generation tasks. Supervised fine-tuning usually converges well when task formatting is consistent and data quality is high. Scaling generally improves quality, but it also increases training cost, memory pressure, and the need for stable optimization and careful batching.",
+    "inferencecharacteristics": "T5 decoding is autoregressive on the decoder side, so latency grows with the number of generated tokens. Beam search often improves output quality for summarization and translation, while sampling can help in creative rewriting or instruction-style tasks. GPU utilization is typically best when batching multiple requests or using sequence bucketing. KV-cache is less central than in decoder-only LLMs but can still matter in decoder-side generation efficiency depending on implementation.",
+    "computationalcharacteristics": "Training complexity scales with encoder and decoder attention, roughly $O(N L^2 d)$ per stack component, plus feed-forward cost. Cross-attention adds additional interaction cost between encoder and decoder token sequences. Inference cost is dominated by decoder autoregression and beam search, both of which increase compute and memory use as output length grows. Practical deployment limits are usually set by context length, batch size, and decoding strategy rather than raw parameter count alone."
+  },
+  "coreunderstanding": {
+    "intuition": "T5 treats every task as a text-to-text problem: the input is text, and the target is text. The encoder converts the input into contextual representations, and the decoder generates the output token by token while attending to both its own prefix and the encoder states. This makes the same architecture usable for summarization, translation, QA, rewriting, and instruction-style tasks. The key engineering advantage is that task differences become mostly a formatting problem instead of a custom model design problem.",
+    "learningmechanism": "T5 reformulates all language tasks into a unified text-to-text format, using an encoder-decoder Transformer trained on span corruption during pretraining, followed by multi-task fine-tuning.",
+    "assumptions": [
+      "Tokenization captures the relevant subword structure for the target domain.",
+      "Pretraining data is broad enough to support transfer across tasks.",
+      "Input-output relationships can be expressed as text generation.",
+      "The target language distribution is not too far from pretraining data.",
+      "The context window is sufficient to represent the full input."
+    ],
+    "mathematicalintuition": "Let the input sequence be $x = (x_1,\\dots,x_L)$ and the output be $y = (y_1,\\dots,y_T)$. The model factorizes the conditional likelihood as:\n\n$$\np(y \\mid x) = \\prod_{t=1}^{T} p(y_t \\mid y_{<t}, x)\n$$\n\nThe encoder uses self-attention:\n\n$$\n\\mathrm{Attn}(Q,K,V)=\\mathrm{softmax}\\left(\\frac{QK^\\top}{\\sqrt{d_k}}\\right)V\n$$\n\nThe decoder uses masked self-attention over generated tokens and cross-attention over encoder outputs:\n\n$$\n\\mathrm{CrossAttn}(Q,K,V)=\\mathrm{softmax}\\left(\\frac{QK^\\top}{\\sqrt{d_k}}\\right)V\n$$\n\nwhere $Q$ comes from decoder states and $K,V$ come from encoder states. T5 pretraining uses a span corruption objective, where masked spans are replaced by sentinel tokens and the decoder reconstructs the missing text. The loss is standard token-level cross-entropy over the target sequence.",
+    "complexity": "Encoder self-attention is roughly $O(N L^2 d)$, decoder self-attention is roughly $O(N T^2 d)$, and cross-attention is roughly $O(NLTd)$ where $L$ is source length and $T$ is target length.",
+    "memorycomplexity": "Memory complexity scales quadratically with input and target sequences, and is highly sensitive to the decoder cache and beam search candidates during inference.",
+    "robustness": "T5 is reasonably robust to diverse text forms, but noisy input, paraphrase drift, and prompt ambiguity can still reduce output quality.",
+    "scalability": "It scales well with distributed training, but encoder-decoder cost is heavier than encoder-only models for simple tasks.",
+    "overfittingtendency": "Fine-tuning can overfit small datasets, especially when output formatting is unstable or labels are sparse.",
+    "biasvariance": "T5 generally has low bias after pretraining, but variance can rise during task-specific adaptation if fine-tuning data is narrow or noisy."
+  },
+  "hyperparameters": [
+    {
+      "name": "num_beams",
+      "purpose": "Controls the width of beam search during decoding.",
+      "increaseeffect": "Usually improves output quality and search coverage, but increases latency, memory, and compute.",
+      "decreaseeffect": "Speeds up inference and reduces memory use, but may lower output quality and completeness.",
+      "tradeoffs": "Higher beam counts favor precision over throughput.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts strongly with length_penalty, early_stopping, and max_new_tokens."
+      ],
+      "commonmistakes": [
+        "Using large beam counts for every task, including tasks that benefit more from sampling."
+      ]
+    },
+    {
+      "name": "max_new_tokens",
+      "purpose": "Sets the maximum generated output length.",
+      "increaseeffect": "Allows longer responses and reduces truncation risk, but raises latency and memory use.",
+      "decreaseeffect": "Improves speed and limits verbosity, but can cut off valid outputs.",
+      "tradeoffs": "Longer outputs cost more and can drift off task.",
+      "tuningpriority": "Very High",
+      "interactions": [
+        "Interacts with num_beams, early_stopping, and task length distribution."
+      ],
+      "commonmistakes": [
+        "Using a one-size-fits-all output limit across different workflows."
+      ]
+    },
+    {
+      "name": "temperature",
+      "purpose": "Controls randomness in token sampling.",
+      "increaseeffect": "Increases diversity and creativity, but can reduce determinism and factual reliability.",
+      "decreaseeffect": "Makes outputs more stable and conservative, but can cause repetitive decoding.",
+      "tradeoffs": "Useful when sampling is desired; often unnecessary for beam-search-heavy tasks.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with top_k and top_p."
+      ],
+      "commonmistakes": [
+        "Combining high temperature with weak constraints on sensitive generation tasks."
+      ]
+    },
+    {
+      "name": "top_k",
+      "purpose": "Limits sampling to the top k most probable tokens.",
+      "increaseeffect": "Allows broader exploration, but can introduce more noise.",
+      "decreaseeffect": "Narrows the candidate set and improves determinism, but can reduce diversity.",
+      "tradeoffs": "Useful for balancing quality and randomness in open-ended generation.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with temperature and top_p."
+      ],
+      "commonmistakes": [
+        "Using top_k and top_p without understanding their combined effect."
+      ]
+    },
+    {
+      "name": "top_p",
+      "purpose": "Samples from the smallest token set whose cumulative probability exceeds p.",
+      "increaseeffect": "Allows more diverse outputs, but can admit lower-quality tokens.",
+      "decreaseeffect": "Makes decoding more conservative and focused, but may reduce variety.",
+      "tradeoffs": "Often a better diversity control than top_k alone.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts closely with temperature."
+      ],
+      "commonmistakes": [
+        "Over-tuning both top_k and top_p at the same time without a clear policy."
+      ]
+    },
+    {
+      "name": "length_penalty",
+      "purpose": "Adjusts the beam-search preference for shorter or longer outputs.",
+      "increaseeffect": "Can favor longer outputs, depending on implementation and normalization behavior.",
+      "decreaseeffect": "Can bias toward shorter sequences.",
+      "tradeoffs": "Critical for summarization, where output length matters as much as lexical quality.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with num_beams and task-specific length targets."
+      ],
+      "commonmistakes": [
+        "Ignoring length normalization and then blaming the model for truncated or overly verbose summaries."
+      ]
+    },
+    {
+      "name": "repetition_penalty",
+      "purpose": "Discourages repeated tokens and degenerate loops.",
+      "increaseeffect": "Reduces repetition and improves readability, but can harm faithful terminology reuse.",
+      "decreaseeffect": "Preserves exact phrasing more easily, but may increase repetition.",
+      "tradeoffs": "Useful for long-form generation and summarization.",
+      "tuningpriority": "Medium-High",
+      "interactions": [
+        "Interacts with temperature and beam settings."
+      ],
+      "commonmistakes": [
+        "Setting it too high and making output awkward or unnatural."
+      ]
+    },
+    {
+      "name": "early_stopping",
+      "purpose": "Stops beam search when all beams finish.",
+      "increaseeffect": "Usually reduces latency and prevents unnecessary decoding.",
+      "decreaseeffect": "Can allow more exhaustive search, but increases cost.",
+      "tradeoffs": "A practical efficiency control rather than a quality knob by itself.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Most relevant in beam-search production settings."
+      ],
+      "commonmistakes": [
+        "Assuming it fixes poor decoding strategy or bad length settings."
+      ]
+    }
+  ],
+  "engineeringconsiderations": {
+    "datasetsuitability": [
+      "T5 works best with high-quality paired input-output data and tasks that naturally fit a text transformation format.",
+      "Multilingual and instruction datasets are valuable, but consistency in prompts and targets matters a lot.",
+      "Sequence length distribution should be monitored because truncation can silently hurt training.",
+      "Domain adaptation is often effective when the input-output mapping is clear and the target style is stable."
+    ],
+    "scalability": [
+      "T5 fine-tuning is compatible with distributed training, mixed precision, DeepSpeed, and FSDP-style sharding.",
+      "Tensor parallelism can help larger checkpoints, though encoder-decoder communication adds overhead."
+    ],
+    "parallelization": "Inference batching is highly beneficial because decoder generation is expensive per token.",
+    "computationalcost": "Fine-tuning is much cheaper than pretraining but still resource intensive for large checkpoints. Beam search increases both memory and latency.",
+    "memorybehavior": "Memory grows with activations, attention maps, and decoder cache, so long inputs and beam search both increase pressure substantially.",
+    "inferencecharacteristics": "T5 decoding is autoregressive on the decoder side, so latency grows with the number of generated tokens. Beam search often improves output quality for summarization and translation, while sampling can help in creative rewriting or instruction-style tasks. GPU utilization is typically best when batching multiple requests or using sequence bucketing.",
+    "robustness": [
+      "T5 is sensitive to noisy input, adversarial prompts, and domain shift when the input-output format is ambiguous.",
+      "Hallucination can appear when the model must invent missing information from weak context.",
+      "Prompt sensitivity is lower than for many decoder-only chat systems, but output formatting still matters."
+    ],
+    "sensitivitytooutliers": "High sensitivity to format violations or noisy inputs that trigger unexpected generation loops or output hallucinations.",
+    "featureengineeringdependency": "Manual feature engineering is largely replaced by tokenization, prompt formatting, and task design. SentencePiece-style tokenization is important because it affects multilingual behavior.",
+    "featurescalingrequirement": "Feature scaling is not applicable, but prompt prefix formatting (e.g., 'summarize: ') and decoding constraints (length penalty, beam count) are critical to performance.",
+    "classimbalancebehavior": "Traditional class imbalance matters less because many T5 tasks are generation or seq2seq tasks, but label imbalance still matters in classification-as-generation settings. Sampling strategies and target balancing help.",
+    "commonlimitations": [
+      "T5 still has context length constraints and can be expensive to run with beam search.",
+      "Hallucination remains a risk when the input is incomplete or ambiguous.",
+      "Fine-tuning on small corpora can cause catastrophic forgetting.",
+      "Decoding is slower than encoder-only classification because output is generated token by token."
+    ],
+    "pipelineposition": "T5 often sits in the conditional generation stage after preprocessing and optionally after retrieval, serving as the sequence-to-sequence transform layer."
+  },
+  "comparisons": [
+    {
+      "model": "BERT",
+      "choose_this_when": "You need to transform text into text, not just classify or embed it.",
+      "prefer_other_when": "You only need understanding tasks like classification, retrieval, or NER.",
+      "tradeoffs": "T5 is more flexible for generation; BERT is cheaper for encoding-only tasks."
+    },
+    {
+      "model": "GPT",
+      "choose_this_when": "You need encoder-conditioned generation with strong source-to-target alignment.",
+      "prefer_other_when": "You need open-ended causal generation or chat-first behavior.",
+      "tradeoffs": "T5 conditions on both input and output context; GPT is simpler for free-form generation."
+    },
+    {
+      "model": "BART",
+      "choose_this_when": "You want a similar encoder-decoder model but prefer a denoising-pretrained alternative.",
+      "prefer_other_when": "You need the T5 text-to-text framing or T5-specific fine-tuning recipes.",
+      "tradeoffs": "Both are seq2seq; T5 emphasizes unified text-to-text transfer, BART emphasizes denoising pretraining."
+    },
+    {
+      "model": "Transformer (Original Encoder-Decoder)",
+      "choose_this_when": "You want a pretrained seq2seq backbone for production tasks.",
+      "prefer_other_when": "You are building from scratch or need a non-pretrained baseline.",
+      "tradeoffs": "T5 brings transfer learning; original Transformer is a weaker baseline without large-scale pretraining."
+    },
+    {
+      "model": "LSTM",
+      "choose_this_when": "You need modern generative quality and transfer learning.",
+      "prefer_other_when": "You need a very small, simple sequential model with minimal runtime complexity.",
+      "tradeoffs": "T5 is much more capable; LSTM is lighter but far less expressive."
+    },
+    {
+      "model": "FLAN-T5",
+      "choose_this_when": "You want the base T5 family and plan to fine-tune heavily on your own data.",
+      "prefer_other_when": "You need stronger instruction-following out of the box.",
+      "tradeoffs": "FLAN-T5 often behaves better on prompted tasks; base T5 may be preferable for custom pretraining pipelines."
+    }
+  ],
+  "relatedknowledge": {
+    "relatedmodels": [
+      "T5",
+      "FLAN-T5",
+      "BART",
+      "mT5",
+      "LongT5",
+      "mLongT5",
+      "UL2",
+      "Encoder-Decoder Transformer"
+    ],
+    "alternative_models": [
+      "BERT",
+      "GPT",
+      "RoBERTa",
+      "LSTM",
+      "GRU",
+      "Transformer Encoder",
+      "Transformer Decoder"
+    ],
+    "related_principles": [
+      "Transfer Learning",
+      "Self-Attention",
+      "Seq2Seq Learning",
+      "Scaling Laws",
+      "Instruction Tuning",
+      "Representation Learning",
+      "Positional Encoding"
+    ],
+    "related_workflows": [
+      "NLP preprocessing",
+      "Tokenization",
+      "Fine-tuning",
+      "Evaluation",
+      "Inference optimization",
+      "Prompt engineering",
+      "Distributed training"
+    ],
+    "related_patterns": [
+      "Prompt Engineering",
+      "Retrieval-Augmented Generation (RAG)",
+      "PEFT",
+      "LoRA",
+      "Quantization",
+      "Distributed Training",
+      "Production Deployment"
+    ],
+    "related_packages": [
+      "transformers",
+      "torch",
+      "sentencepiece",
+      "datasets",
+      "accelerate",
+      "evaluate",
+      "peft"
+    ],
+    "related_guides": [
+      "Prompt Engineering",
+      "Retrieval-Augmented Generation (RAG)"
+    ],
+    "related_registry": [
+      "Encoder-Decoder Models",
+      "Seq2Seq LLMs"
+    ]
+  },
+  "quickstart": {
+    "language": "python",
+    "implementation_package": "transformers",
+    "code": "import numpy as np\nimport torch\nfrom torch.utils.data import Dataset\nfrom datasets import Dataset as HFDataset\nfrom transformers import (\n    AutoTokenizer,\n    T5ForConditionalGeneration,\n    DataCollatorForSeq2Seq,\n    Seq2SeqTrainer,\n    Seq2SeqTrainingArguments,\n    pipeline\n)\nfrom evaluate import load as load_metric\n\nmodel_name = \"t5-small\"\ntokenizer = AutoTokenizer.from_pretrained(model_name)\nmodel = T5ForConditionalGeneration.from_pretrained(model_name)\n\nraw_data = [\n    {\"input_text\": \"summarize: The meeting discussed product launch risks and deployment milestones.\", \"target_text\": \"The meeting covered launch risks and deployment milestones.\"},\n    {\"input_text\": \"translate English to German: The model is ready for production.\", \"target_text\": \"Das Modell ist bereit für die Produktion.\"},\n    {\"input_text\": \"question: What does T5 stand for?\", \"target_text\": \"Text-to-Text Transfer Transformer\"}\n]\n\nds = HFDataset.from_list(raw_data)\n\ndef preprocess(batch):\n    inputs = tokenizer(\n        batch[\"input_text\"],\n        max_length=64,\n        truncation=True\n    )\n    with tokenizer.as_target_tokenizer():\n        labels = tokenizer(\n            batch[\"target_text\"],\n            max_length=64,\n            truncation=True\n        )\n    inputs[\"labels\"] = labels[\"input_ids\"]\n    return inputs\n\ntokenized = ds.map(preprocess, batched=False, remove_columns=ds.column_names)\ncollator = DataCollatorForSeq2Seq(tokenizer=tokenizer, model=model)\nmetric = load_metric(\"rouge\")\n\ndef compute_metrics(eval_pred):\n    preds, labels = eval_pred\n    if isinstance(preds, tuple):\n        preds = preds[0]\n    decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)\n    labels = np.where(labels != -100, labels, tokenizer.pad_token_id)\n    decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)\n    scores = metric.compute(predictions=decoded_preds, references=decoded_labels)\n    return {k: round(v.mid.fmeasure * 100, 4) for k, v in scores.items()}\n\ntraining_args = Seq2SeqTrainingArguments(\n    output_dir=\"./t5_out\",\n    per_device_train_batch_size=2,\n    per_device_eval_batch_size=2,\n    num_train_epochs=1,\n    learning_rate=5e-5,\n    predict_with_generate=True,\n    fp16=torch.cuda.is_available(),\n    logging_steps=1,\n    save_strategy=\"epoch\",\n    eval_strategy=\"no\",\n    report_to=[]\n)\n\ntrainer = Seq2SeqTrainer(\n    model=model,\n    args=training_args,\n    train_dataset=tokenized,\n    data_collator=collator,\n    tokenizer=tokenizer,\n    compute_metrics=compute_metrics\n)\n\ntrainer.train()\ntrainer.save_model(\"./t5_saved\")\ntokenizer.save_pretrained(\"./t5_saved\")\n\nreloaded_tokenizer = AutoTokenizer.from_pretrained(\"./t5_saved\")\nreloaded_model = T5ForConditionalGeneration.from_pretrained(\"./t5_saved\")\n\ndevice = \"cuda\" if torch.cuda.is_available() else \"cpu\"\nreloaded_model.to(device)\n\ngen_pipe = pipeline(\n    \"text2text-generation\",\n    model=reloaded_model,\n    tokenizer=reloaded_tokenizer,\n    device=0 if device == \"cuda\" else -1\n)\n\nprompt = \"summarize: T5 is a text-to-text model that can handle many NLP tasks.\"\nwith torch.no_grad():\n    generated = reloaded_model.generate(\n        **reloaded_tokenizer(prompt, return_tensors=\"pt\").to(device),\n        max_new_tokens=32,\n        num_beams=4,\n        length_penalty=1.0,\n        early_stopping=True\n    )\n\ndecoded = reloaded_tokenizer.batch_decode(generated, skip_special_tokens=True)\npipe_out = gen_pipe(prompt, max_new_tokens=32)\n\nprint(\"generated_text:\", decoded)\nprint(\"pipeline_output:\", pipe_out)",
+    "explanation": "This pipeline shows tokenization, seq2seq fine-tuning, metric computation with ROUGE, model saving/loading, and inference with generation. It also demonstrates a production-style setup using Seq2SeqTrainer and DataCollatorForSeq2Seq.",
+    "inputs": "Text pairs in the form of input prompts and target text. Tokenizer outputs such as input_ids, attention_mask, and labels, usually shaped (batch, sequence_length).",
+    "outputs": "Generated text strings, decoded sequences from generate(), and evaluation metrics such as ROUGE or BLEU."
+  },
+  "learning_resources": [
+    {
+      "title": "Exploring Transfer Learning with T5: The Text-to-Text Transfer Transformer",
+      "url": "https://research.google/blog/exploring-transfer-learning-with-t5-the-text-to-text-transfer-transformer/",
+      "type": "article",
+      "why_to_read": "Google’s overview of T5’s design and transfer-learning philosophy.",
+      "expected_outcome": "Understand why text-to-text framing is powerful.",
+      "reading_time": 25
+    },
+    {
+      "title": "Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer",
+      "url": "https://arxiv.org/abs/1910.10683",
+      "type": "article",
+      "why_to_read": "Original T5 paper from Google Research.",
+      "expected_outcome": "Learn span corruption, multitask training, and the core architecture.",
+      "reading_time": 45
+    },
+    {
+      "title": "mT5: A Massively Multilingual Pre-trained Text-to-Text Transformer",
+      "url": "https://arxiv.org/abs/2010.11934",
+      "type": "article",
+      "why_to_read": "Important extension showing multilingual T5-style training.",
+      "expected_outcome": "Understand multilingual pretraining and adaptation.",
+      "reading_time": 35
+    },
+    {
+      "title": "Hugging Face Course: Summarization with Transformers",
+      "url": "https://huggingface.co/learn/nlp-course/chapter7/5?fw=pt",
+      "type": "guide",
+      "why_to_read": "Practical fine-tuning guidance for seq2seq NLP workflows.",
+      "expected_outcome": "Build working intuition for training and evaluation.",
+      "reading_time": 30
+    }
+  ]
+}

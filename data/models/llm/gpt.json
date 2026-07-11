@@ -1,0 +1,435 @@
+{
+  "id": "gpt",
+  "title": "GPT (Generative Pre-trained Transformer)",
+  "name": "GPT",
+  "slug": "gpt",
+  "description": "GPT is the dominant decoder-only autoregressive foundation model family for language generation, instruction following, reasoning, and in-context learning, built around next-token prediction and scalable transfer learning.",
+  "tags": [
+    "llm",
+    "decoder-only",
+    "transformer",
+    "generation"
+  ],
+  "aliases": [
+    "GPT",
+    "Generative Pre-trained Transformer",
+    "GPT-1",
+    "GPT-2",
+    "GPT-3",
+    "GPT-4"
+  ],
+  "keywords": [
+    "gpt",
+    "autoregressive",
+    "decoder-only",
+    "causal language modeling",
+    "next token prediction"
+  ],
+  "searchtokens": [
+    "gpt-1",
+    "gpt-2",
+    "gpt-3",
+    "gpt-4",
+    "huggingface gpt",
+    "causal lm",
+    "decoder-only transformer"
+  ],
+  "createdat": "2026-07-11T00:05:00+06:00",
+  "updatedat": "2026-07-11T00:05:00+06:00",
+  "lastverified": "2026-07-11T00:05:00+06:00",
+  "reviewfrequency": "annual",
+  "verifiedagainst": "canonical model knowledge as of 2026-07-11",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "verified",
+  "engineeringmaturity": "production",
+  "domain": "llm",
+  "category": "foundation_llm",
+  "difficulty": "intermediate",
+  "engineeringarea": "autoregressive generation",
+  "estimatedreadingtime": 10,
+  "prerequisites": [
+    "Transformer architecture basics",
+    "Self-attention and causal masking",
+    "Autoregressive generation concepts"
+  ],
+  "recommendednext": [
+    "LLaMA",
+    "Mistral",
+    "vLLM Serving"
+  ],
+  "relatedcontent": [
+    {
+      "type": "package",
+      "id": "pytorch",
+      "relationship": "implemented-by"
+    }
+  ],
+  "owner": "AENS Knowledge Architecture",
+  "sources": [
+    {
+      "title": "GPT-2 — Hugging Face Transformers documentation",
+      "url": "https://huggingface.co/docs/transformers/en/model_doc/gpt2"
+    },
+    {
+      "title": "Improving Language Understanding by Generative Pre-Training",
+      "url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf"
+    }
+  ],
+  "githubrepo": "https://github.com/huggingface/transformers",
+  "problemtypes": [
+    "Open-ended text generation",
+    "Instruction following",
+    "Summarization and drafting",
+    "In-context reasoning"
+  ],
+  "decisionsummary": {
+    "summary": "GPT is the dominant decoder-only autoregressive foundation model family for language generation, instruction following, reasoning, and in-context learning, built around next-token prediction and scalable transfer learning.",
+    "bestusecases": [
+      "Conversational AI and assistant systems that need open-ended generation.",
+      "Content generation, summarization, drafting, and rewriting workflows.",
+      "Coding assistants and tool-using agent systems.",
+      "Retrieval-augmented generation pipelines and knowledge assistants."
+    ],
+    "avoidwhen": [
+      "Tiny embedded devices or strict edge deployments with tight memory budgets.",
+      "Problems that require highly deterministic symbolic reasoning.",
+      "Ultra-low-latency inference where a much smaller model is sufficient.",
+      "Workloads dominated by structured prediction rather than generation."
+    ],
+    "strengths": [
+      "Strong transfer learning and broad task coverage from one pretrained backbone.",
+      "Few-shot and in-context learning capabilities that reduce task-specific retraining.",
+      "Broad ecosystem support for fine-tuning, serving, quantization, and orchestration.",
+      "Flexible downstream adaptation across chat, RAG, tool use, summarization, and code generation."
+    ],
+    "limitations": [
+      "Hallucination and factual inconsistency remain core production risks.",
+      "Inference cost and latency are high relative to smaller encoder models.",
+      "Context window limits still constrain long-document reasoning and memory.",
+      "Alignment, safety, and misuse control require extra layers beyond the base model."
+    ],
+    "interpretability": "GPT is poorly interpretable because its behavior is distributed across many layers, heads, and activations. Attention visualization can reveal token interaction patterns, but it does not fully explain causal decision-making. Probing, attribution, and activation analysis can recover partial structure, yet internal reasoning remains difficult to explain reliably. In production, GPT should be treated as a high-capacity black-box system with observable outputs rather than a transparent symbolic reasoner.",
+    "trainingcharacteristics": "GPT is pretrained with autoregressive next-token prediction on large-scale text corpora, using distributed GPU or TPU training and optimizer schedules designed for stability and scale. Later-stage adaptation often uses supervised fine-tuning, instruction tuning, RLHF, or preference optimization to align behavior with user goals. Convergence is usually managed through scale, data quality, learning-rate schedules, and careful regularization rather than architectural changes. Fine-tuning can be efficient, but poor tuning can quickly degrade pretrained capability.",
+    "inferencecharacteristics": "GPT generates tokens autoregressively, so latency grows with output length because each step depends on the previous one. KV-cache reuse is a major optimization because it avoids recomputing attention over earlier tokens. Streaming generation improves user experience, while batching improves throughput on GPU servers. Quantization, speculative decoding, and other serving optimizations are often necessary for cost-effective deployment.",
+    "computationalcharacteristics": "Transformer attention is $O(n^2)$ in sequence length $n$, which makes long contexts expensive in both time and memory. Autoregressive decoding adds step-by-step generation overhead, so latency accumulates with each token. Memory scaling also depends on layers $L$, hidden size $d$, number of heads $h$, and KV-cache storage during inference. Practical limits are usually set by VRAM, throughput targets, context length, and serving architecture rather than by parameter count alone."
+  },
+  "coreunderstanding": {
+    "intuition": "GPT learns by predicting the next token from previous tokens, forcing the model to build internal representations that capture syntax, semantics, style, and task structure. Masked causal self-attention ensures each position can only attend to earlier positions, so the model stays autoregressive. During pretraining, this simple objective produces surprisingly general capabilities because the model sees massive linguistic diversity. In-context learning emerges when the model adapts behavior from prompt examples without weight updates.",
+    "learningmechanism": "GPT learns general language representations via causal self-attention pre-trained on autoregressive next-token prediction, which are then adapted via instruction tuning, SFT, or reinforcement learning (RLHF/DPO) to align outputs with user intents.",
+    "assumptions": [
+      "Sufficient pretraining data exists to learn useful statistical structure.",
+      "Token order matters and autoregressive factorization is appropriate.",
+      "Causal attention is enough to capture the dependencies needed for the target task.",
+      "Larger scale and better data generally improve capabilities.",
+      "Violating these assumptions often leads to weaker reasoning, poor long-context behavior, or brittle domain transfer."
+    ],
+    "mathematicalintuition": "For tokens $x_1, \\dots, x_n$, GPT models the joint probability as:\n\n$$\np(x_1,\\dots,x_n)=\\prod_{t=1}^{n} p(x_t \\mid x_{<t})\n$$\n\nThe training objective is negative log-likelihood, usually written with cross-entropy:\n\n$$\n\\mathcal{L} = -\\sum_{t=1}^{n}\\log p(x_t \\mid x_{<t})\n$$\n\nIn a decoder block, token embeddings and positional embeddings are combined, then passed through masked multi-head self-attention and a feed-forward network:\n\n$$\nQ = XW_Q,\\quad K = XW_K,\\quad V = XW_V\n$$\n\n$$\n\\mathrm{Attn}(Q,K,V)=\\mathrm{softmax}\\left(\\frac{QK^\\top + M}{\\sqrt{d_k}}\\right)V\n$$\n\nwhere $M$ is the causal mask that blocks attention to future tokens. The decoder stacks $L$ such layers with residual connections and normalization to build progressively richer representations. Final hidden states are projected to vocabulary logits for next-token prediction.",
+    "complexity": "Per-layer self-attention is $O(n^2 d)$ time, while feed-forward blocks add $O(nd^2)$ time. Full-model training cost is roughly $O(L(n^2 d + nd^2))$ across $L$ layers.",
+    "memorycomplexity": "Memory complexity is dominated by $O(n^2)$ attention matrices during training, and by the size of the KV-cache ($O(Lnh)$) during autoregressive inference.",
+    "robustness": "GPT is moderately robust across natural language variation, but prompt wording, noise, and adversarial text can significantly alter outputs.",
+    "scalability": "It scales well with distributed training and large serving clusters, but decoding and context length remain the main bottlenecks.",
+    "overfittingtendency": "Base pretraining is usually underfit-by-design at scale, but fine-tuning on small datasets can overfit or catastrophically forget.",
+    "biasvariance": "GPT tends toward low bias because of its large capacity, but variance can rise in downstream adaptation if alignment and regularization are weak."
+  },
+  "hyperparameters": [
+    {
+      "name": "num_hidden_layers",
+      "purpose": "Controls model depth and the number of stacked Transformer decoder blocks.",
+      "increaseeffect": "Improves capacity and reasoning depth, but raises compute, memory use, and inference latency.",
+      "decreaseeffect": "Reduces cost and speeds inference, but limits capability and representation richness.",
+      "tradeoffs": "Depth is a major driver of quality, but it is expensive to scale and serve.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with hidden_size, num_attention_heads, and training data scale."
+      ],
+      "commonmistakes": [
+        "Adding depth without enough data, compute, or optimization stability."
+      ]
+    },
+    {
+      "name": "hidden_size",
+      "purpose": "Defines the dimensionality of hidden states and token representations.",
+      "increaseeffect": "Raises expressiveness and capacity, but increases memory, compute, and parameter count.",
+      "decreaseeffect": "Improves speed and reduces memory, but lowers model capacity.",
+      "tradeoffs": "A wider model can learn richer representations, but deployment cost rises quickly.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Must align with num_attention_heads and intermediate_size."
+      ],
+      "commonmistakes": [
+        "Choosing widths that are too large for the target serving budget."
+      ]
+    },
+    {
+      "name": "num_attention_heads",
+      "purpose": "Sets the number of parallel attention subspaces per layer.",
+      "increaseeffect": "Can improve relational modeling and feature diversity, but adds overhead.",
+      "decreaseeffect": "Simplifies computation, but may reduce flexibility and representation diversity.",
+      "tradeoffs": "More heads help some tasks, but only if head dimension remains sensible.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Tightly coupled with hidden_size."
+      ],
+      "commonmistakes": [
+        "Using incompatible width-head combinations or assuming more heads always helps."
+      ]
+    },
+    {
+      "name": "intermediate_size",
+      "purpose": "Defines the expansion width of the feed-forward sublayer.",
+      "increaseeffect": "Improves nonlinearity and capacity, but increases parameter count and compute significantly.",
+      "decreaseeffect": "Lowers cost, but can create a bottleneck inside each block.",
+      "tradeoffs": "Often one of the largest contributors to total parameters.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Tightly tied to hidden_size."
+      ],
+      "commonmistakes": [
+        "Ignoring the feed-forward block when estimating inference cost."
+      ]
+    },
+    {
+      "name": "max_position_embeddings",
+      "purpose": "Sets the maximum supported context length.",
+      "increaseeffect": "Supports longer inputs, but raises memory and can increase training difficulty.",
+      "decreaseeffect": "Makes the model cheaper, but truncates more context and reduces usefulness for long prompts.",
+      "tradeoffs": "Longer context is useful, but the quadratic attention cost still applies.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with sequence padding and truncation."
+      ],
+      "commonmistakes": [
+        "Assuming a model can safely process beyond its configured context length."
+      ]
+    },
+    {
+      "name": "dropout",
+      "purpose": "Regularizes hidden activations and attention patterns.",
+      "increaseeffect": "Reduces overfitting risk, but can slow convergence and hurt capacity.",
+      "decreaseeffect": "Improves fit and sometimes training speed, but increases overfitting risk.",
+      "tradeoffs": "Useful for small or noisy fine-tuning sets, less critical when data is large.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with dataset size, learning rate, and label noise."
+      ],
+      "commonmistakes": [
+        "Overusing dropout during small-data fine-tuning and underfitting the task."
+      ]
+    },
+    {
+      "name": "learning_rate",
+      "purpose": "Controls the size of parameter updates during training or fine-tuning.",
+      "increaseeffect": "Speeds adaptation but increases instability, forgetting, and divergence risk.",
+      "decreaseeffect": "Improves stability and retention of pretrained knowledge, but may slow convergence.",
+      "tradeoffs": "Usually the most sensitive fine-tuning hyperparameter.",
+      "tuningpriority": "Highest",
+      "interactions": [
+        "Strongly coupled to batch size, warmup, and tuning method."
+      ],
+      "commonmistakes": [
+        "Using learning rates that are too high for pretrained LLMs."
+      ]
+    },
+    {
+      "name": "temperature",
+      "purpose": "Controls randomness during generation by reshaping the token probability distribution.",
+      "increaseeffect": "Produces more diverse and creative outputs, but raises hallucination risk and reduces determinism.",
+      "decreaseeffect": "Makes outputs more focused and repeatable, but can become repetitive or overly conservative.",
+      "tradeoffs": "A serving-time knob that balances creativity against reliability.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with top-k, top-p, and task requirements."
+      ],
+      "commonmistakes": [
+        "Treating temperature as a training parameter instead of a decoding control."
+      ]
+    }
+  ],
+  "engineeringconsiderations": {
+    "datasetsuitability": [
+      "GPT benefits from very large, diverse corpora with strong token diversity and low duplication.",
+      "Multilingual and instruction-heavy data can expand capability, but quality matters as much as scale.",
+      "Synthetic data can help specific behaviors, but contamination and low-quality repetition can degrade performance.",
+      "For domain-specific applications, instruction data and curated domain corpora often matter more than raw volume."
+    ],
+    "scalability": [
+      "Large GPT models are typically trained with data parallelism, tensor parallelism, pipeline parallelism, and sometimes sequence parallelism.",
+      "ZeRO-style optimization and sharded training are common for managing optimizer and activation memory.",
+      "GPU cluster requirements grow quickly with model size and context length."
+    ],
+    "parallelization": "Inference stacks often rely on batching, continuous batching, and cache-aware serving (such as vLLM) to sustain throughput.",
+    "computationalcost": "Training is far more expensive than inference because activations, optimizer state, and gradients must all be stored. Autoregressive decoding adds step-by-step generation overhead.",
+    "memorybehavior": "KV-cache improves generation speed but increases memory use during long decoding sessions. Mixed precision and quantization are standard for reducing cost.",
+    "inferencecharacteristics": "GPT generates tokens autoregressively, so latency grows with output length. KV-cache reuse is a major optimization. Streaming generation improves user experience, while batching improves throughput.",
+    "robustness": [
+      "GPT can be strongly affected by noisy corpora, prompt injection, jailbreak attempts, toxic data, and dataset contamination.",
+      "Adversarial prompts can override intended behavior if the model is not sufficiently aligned or sandboxed.",
+      "Robust systems usually add policy layers, prompt filtering, retrieval controls, and output validation."
+    ],
+    "sensitivitytooutliers": "High sensitivity to prompt jailbreaks, adversarial formatting, and input noise that deviates from pretraining distributions.",
+    "featureengineeringdependency": "Manual feature engineering is largely replaced by representation learning. Tokenizer selection still matters because it determines vocabulary coverage, token efficiency, and multilingual behavior.",
+    "featurescalingrequirement": "Feature scaling is not applicable, but prompt engineering, context window management, and generation hyperparameters (temperature, top-p) dictate serving quality.",
+    "classimbalancebehavior": "Class imbalance is less central than in classical supervised ML, but token frequency imbalance and instruction balance still matter. Fine-tuning datasets should be balanced across capabilities.",
+    "commonlimitations": [
+      "Hallucination and factual inconsistency are persistent risks.",
+      "Context window limits can truncate important evidence.",
+      "Catastrophic forgetting can happen during fine-tuning.",
+      "Prompt sensitivity and alignment issues can produce brittle behavior."
+    ],
+    "pipelineposition": "GPT usually sits at the center of modern AI pipelines as the generation or reasoning layer, often downstream of retrieval, routing, or safety filters."
+  },
+  "comparisons": [
+    {
+      "model": "BERT",
+      "choose_this_when": "You need generation, instruction following, or open-ended reasoning.",
+      "prefer_other_when": "You need bidirectional encoding for classification or retrieval-only tasks.",
+      "tradeoffs": "GPT is generative and flexible; BERT is often cheaper for understanding-only workloads."
+    },
+    {
+      "model": "T5",
+      "choose_this_when": "You want a decoder-only foundation model with strong text generation behavior.",
+      "prefer_other_when": "You want a text-to-text framework that uses both encoder and decoder for structured transformations.",
+      "tradeoffs": "GPT is simpler to deploy for generation; T5 can be more natural for certain seq2seq tasks."
+    },
+    {
+      "model": "Transformer Encoder",
+      "choose_this_when": "You need text generation or chat behavior.",
+      "prefer_other_when": "You only need embeddings or classification features.",
+      "tradeoffs": "GPT supports autoregressive output; encoder-only models are typically faster and cheaper."
+    },
+    {
+      "model": "LLaMA",
+      "choose_this_when": "You need a well-known decoder-only model family with broad ecosystem support.",
+      "prefer_other_when": "You specifically need a smaller or alternative open-weight foundation model with different licensing or alignment characteristics.",
+      "tradeoffs": "GPT is the canonical concept; LLaMA is often a practical open-weight deployment choice."
+    },
+    {
+      "model": "Mistral",
+      "choose_this_when": "You want a standard decoder-only baseline with mature tooling.",
+      "prefer_other_when": "You need higher efficiency per parameter or newer architectural optimizations.",
+      "tradeoffs": "GPT is the reference family; Mistral often targets efficiency and serving practicality."
+    },
+    {
+      "model": "Mixture of Experts (MoE)",
+      "choose_this_when": "You need a straightforward dense decoder architecture.",
+      "prefer_other_when": "You need much larger effective capacity with sparse activation for cost control.",
+      "tradeoffs": "GPT is simpler and more predictable; MoE can scale capacity more efficiently but adds routing complexity."
+    },
+    {
+      "model": "RNN/LSTM",
+      "choose_this_when": "You need modern long-form generation, tool use, or instruction following.",
+      "prefer_other_when": "You only need a small sequential model with simpler deployment constraints.",
+      "tradeoffs": "GPT is much more capable; RNN/LSTM are lighter but far less expressive."
+    }
+  ],
+  "relatedknowledge": {
+    "relatedmodels": [
+      "GPT-2",
+      "GPT-3",
+      "GPT-4",
+      "LLaMA",
+      "Mistral",
+      "Falcon",
+      "BLOOM",
+      "OPT",
+      "PaLM",
+      "Gemma",
+      "Phi",
+      "Transformer Decoder"
+    ],
+    "alternative_models": [
+      "BERT",
+      "RoBERTa",
+      "T5",
+      "Encoder-Decoder Transformer",
+      "RNN",
+      "LSTM",
+      "GRU",
+      "MoE Models"
+    ],
+    "related_principles": [
+      "Self-Attention",
+      "Scaling Laws",
+      "In-Context Learning",
+      "Transfer Learning",
+      "Representation Learning",
+      "Causal Language Modeling",
+      "Tokenization",
+      "RLHF",
+      "Preference Optimization"
+    ],
+    "related_workflows": [
+      "LLM Fine-Tuning",
+      "Prompt Engineering",
+      "RAG Pipeline",
+      "Agent Workflow",
+      "PEFT/LoRA Fine-Tuning",
+      "Quantization Workflow",
+      "Model Deployment Pipeline"
+    ],
+    "related_patterns": [
+      "Prompt Chaining",
+      "Chain-of-Thought",
+      "KV Cache Optimization",
+      "Context Window Management",
+      "Hallucination Debugging",
+      "Tokenization Debug Guide"
+    ],
+    "related_packages": [
+      "transformers",
+      "tokenizers",
+      "accelerate",
+      "peft",
+      "trl",
+      "bitsandbytes",
+      "vLLM",
+      "DeepSpeed",
+      "Megatron-LM",
+      "FlashAttention"
+    ],
+    "related_guides": [
+      "KV Cache Optimization",
+      "Context Window Management",
+      "Hallucination Debugging"
+    ],
+    "related_registry": [
+      "Transformer Decoders",
+      "Generative LLMs"
+    ]
+  },
+  "quickstart": {
+    "language": "python",
+    "implementation_package": "transformers",
+    "code": "import torch\nfrom transformers import AutoTokenizer, AutoModelForCausalLM, pipeline\n\nmodel_name = \"gpt2\"\ntokenizer = AutoTokenizer.from_pretrained(model_name)\nmodel = AutoModelForCausalLM.from_pretrained(model_name)\n\nif tokenizer.pad_token is None:\n    tokenizer.pad_token = tokenizer.eos_token\n\ndevice = 0 if torch.cuda.is_available() else -1\ngenerator = pipeline(\n    \"text-generation\",\n    model=model,\n    tokenizer=tokenizer,\n    device=device\n)\n\nprompts = [\n    \"Write a short product announcement for an AI assistant:\",\n    \"Explain autoregressive language modeling in one paragraph:\"\n]\n\ninputs = tokenizer(\n    prompts,\n    return_tensors=\"pt\",\n    padding=True,\n    truncation=True,\n    max_length=64\n)\n\nif torch.cuda.is_available():\n    model = model.to(\"cuda\")\n    inputs = {k: v.to(\"cuda\") for k, v in inputs.items()}\n\ngen_config = dict(\n    max_new_tokens=40,\n    do_sample=True,\n    temperature=0.7,\n    top_p=0.9,\n    repetition_penalty=1.05,\n    pad_token_id=tokenizer.eos_token_id\n)\n\nwith torch.no_grad():\n    if torch.cuda.is_available():\n        with torch.cuda.amp.autocast():\n            output_ids = model.generate(**inputs, **gen_config)\n    else:\n        output_ids = model.generate(**inputs, **gen_config)\n\ndecoded = tokenizer.batch_decode(output_ids, skip_special_tokens=True)\npipe_outputs = generator(\n    prompts,\n    max_new_tokens=40,\n    do_sample=True,\n    temperature=0.7,\n    top_p=0.9,\n    truncation=True\n)\n\nprint(\"generated_text:\", decoded)\nprint(\"pipeline_output:\", pipe_outputs)\nprint(\"generated_token_ids:\", output_ids.tolist())",
+    "explanation": "This example shows tokenizer setup, model loading, GPU detection, batched prompting, generation configuration, and streaming-ready inference behavior. It also demonstrates how to use both the low-level model API and the higher-level generation pipeline.",
+    "inputs": "Prompt strings or tokenized tensors with input_ids and attention_mask, usually shaped (batch, sequence_length). Some GPT checkpoints also rely on tokenizer-specific padding and EOS handling.",
+    "outputs": "Generated text strings, generated token IDs, optional token probabilities or logits if you inspect the generation loop, and decoded sequences suitable for downstream use."
+  },
+  "learning_resources": [
+    {
+      "title": "Language Models are Few-Shot Learners",
+      "url": "https://arxiv.org/abs/2005.14165",
+      "type": "article",
+      "why_to_read": "Key GPT-3 scaling paper showing emergent few-shot behavior.",
+      "expected_outcome": "Understand scaling, prompting, and in-context learning.",
+      "reading_time": 40
+    },
+    {
+      "title": "Stanford CS25: Transformers United",
+      "url": "https://web.stanford.edu/class/cs25/",
+      "type": "video",
+      "why_to_read": "Strong university-level lecture series on Transformer family models and modern LLMs.",
+      "expected_outcome": "Build architectural and scaling intuition.",
+      "reading_time": 30
+    },
+    {
+      "title": "Hugging Face text generation tutorial",
+      "url": "https://huggingface.co/docs/transformers/tasks/text_generation",
+      "type": "guide",
+      "why_to_read": "Practical engineering guide for generation workflows and inference setup.",
+      "expected_outcome": "Learn production-style text generation with Transformers.",
+      "reading_time": 25
+    }
+  ]
+}

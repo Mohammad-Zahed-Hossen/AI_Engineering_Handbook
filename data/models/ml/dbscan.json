@@ -1,0 +1,416 @@
+{
+  "id": "dbscan",
+  "title": "DBSCAN (Density-Based Spatial Clustering of Applications with Noise)",
+  "name": "DBSCAN",
+  "slug": "dbscan",
+  "description": "DBSCAN is a density-based clustering algorithm that discovers arbitrarily shaped clusters from dense regions while labeling low-density points as noise, making it a strong choice when cluster count is unknown and outlier detection matters.",
+  "tags": [
+    "ml",
+    "clustering",
+    "density-based",
+    "unsupervised"
+  ],
+  "aliases": [
+    "DBSCAN",
+    "Density-Based Spatial Clustering of Applications with Noise"
+  ],
+  "keywords": [
+    "dbscan",
+    "clustering",
+    "density-based clustering",
+    "noise detection",
+    "eps",
+    "min_samples"
+  ],
+  "searchtokens": [
+    "dbscan clustering",
+    "density-based clustering",
+    "sklearn dbscan",
+    "anomaly detection clustering",
+    "noise clustering"
+  ],
+  "createdat": "2026-07-10T23:45:00+06:00",
+  "updatedat": "2026-07-10T23:45:00+06:00",
+  "lastverified": "2026-07-10T23:45:00+06:00",
+  "reviewfrequency": "annual",
+  "verifiedagainst": "canonical model knowledge as of 2026-07-10",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "verified",
+  "engineeringmaturity": "production",
+  "domain": "ml",
+  "category": "clustering",
+  "difficulty": "intermediate",
+  "engineeringarea": "unsupervised learning",
+  "estimatedreadingtime": 10,
+  "prerequisites": [
+    "Unsupervised learning basics",
+    "Distance metrics",
+    "Feature scaling concepts"
+  ],
+  "recommendednext": [
+    "HDBSCAN",
+    "OPTICS",
+    "Spectral Clustering"
+  ],
+  "relatedcontent": [
+    {
+      "type": "model",
+      "id": "k-means-clustering",
+      "relationship": "alternative"
+    },
+    {
+      "type": "package",
+      "id": "scikit-learn",
+      "relationship": "implemented-by"
+    }
+  ],
+  "owner": "AENS Knowledge Architecture",
+  "sources": [
+    {
+      "title": "DBSCAN — scikit-learn documentation",
+      "url": "https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html"
+    },
+    {
+      "title": "Wikipedia DBSCAN",
+      "url": "https://en.wikipedia.org/wiki/DBSCAN"
+    }
+  ],
+  "githubrepo": "https://github.com/scikit-learn/scikit-learn",
+  "problemtypes": [
+    "Spatial point clustering",
+    "Anomaly and outlier detection",
+    "Unsupervised data partitioning",
+    "Geospatial analytics"
+  ],
+  "decisionsummary": {
+    "summary": "DBSCAN is a density-based clustering algorithm that discovers arbitrarily shaped clusters from dense regions while labeling low-density points as noise, making it a strong choice when cluster count is unknown and outlier detection matters.",
+    "bestusecases": [
+      "Geospatial or spatial analytics where clusters are irregularly shaped and noise points are expected.",
+      "Anomaly detection workflows where isolated samples should be labeled as noise rather than forced into a cluster.",
+      "Medium-sized numerical datasets with meaningful distance geometry and separable density regions.",
+      "Exploratory clustering when the number of clusters is unknown and you want density-derived cluster formation."
+    ],
+    "avoidwhen": [
+      "You need a centroid-based method with predictable cluster prototypes, where K-Means is simpler.",
+      "Cluster densities vary substantially across the dataset, where HDBSCAN or OPTICS is usually more reliable.",
+      "You need a probabilistic soft assignment model, where Gaussian Mixture Models are more appropriate.",
+      "Your data is very high-dimensional and distance concentration makes neighborhood search unreliable."
+    ],
+    "strengths": [
+      "Automatically discovers the number of clusters from density structure instead of requiring $k$.",
+      "Detects noise explicitly through the $-1$ label, which is useful for anomaly-oriented workflows.",
+      "Can recover arbitrarily shaped clusters that centroid-based methods cannot represent well.",
+      "Works naturally with sparse, spatial, or geometric data when the distance metric is meaningful."
+    ],
+    "limitations": [
+      "Strong sensitivity to `eps` and `min_samples`, so small tuning errors can change results materially.",
+      "Struggles with varying-density clusters because one global density threshold is applied across the dataset.",
+      "Prediction for unseen data is not native; DBSCAN is fundamentally a fit-time clustering method rather than a predictive model.",
+      "Computational and memory cost can rise sharply when neighborhood queries become dense."
+    ],
+    "interpretability": "DBSCAN is interpretable through point roles rather than latent parameters: core points have enough neighbors to seed a cluster, border points are reachable from core points, and noise points fall outside all dense regions. Cluster formation is explained by density reachability and density connectivity, which provides a clear structural reason why points are grouped. This makes the clustering result easier to explain than many black-box clustering methods, especially in spatial applications. The main interpretability caveat is that the final clusters are highly dependent on the chosen distance metric and radius threshold.",
+    "trainingcharacteristics": "DBSCAN does not train with gradient descent; it performs neighborhood search and cluster expansion deterministically once the parameters are fixed. Neighborhood search is the computational bottleneck, and performance depends heavily on the chosen indexing structure and distance metric. Convergence is not iterative in the optimization sense; instead, the algorithm terminates after all reachable points have been assigned or rejected as noise. Parameter sensitivity is high, so tuning `eps` and `min_samples` is typically the dominant training concern.",
+    "inferencecharacteristics": "DBSCAN is not inherently predictive, so it does not naturally assign cluster labels to unseen samples after fitting. In deployment, new samples usually require refitting, approximate assignment via nearest-neighbor heuristics, or a separate downstream classifier. Latency is low once clusters are computed, but the lack of a native `.predict()` style workflow is an important operational limitation. For production use, DBSCAN is best treated as an offline clustering stage rather than a continuously serving model.",
+    "computationalcharacteristics": "With efficient indexing, neighborhood search is often near $O(n \\log n)$ in favorable low-dimensional settings, but worst-case behavior can approach $O(n^2)$ when neighborhoods are dense or indexing degrades. Clustering expansion itself is typically linear in the number of reachable samples once neighborhoods are known. Scalability depends strongly on the metric, dimensionality, and whether KD-Tree or Ball Tree is effective. In scikit-learn, memory usage can also become quadratic in unfavorable cases because neighborhood queries may be bulk-computed."
+  },
+  "coreunderstanding": {
+    "intuition": "DBSCAN defines a cluster as a dense region of points separated by lower-density space. A point becomes a core point if its $\\varepsilon$-neighborhood contains at least `min_samples` points, border points are nearby but not dense enough themselves, and noise points do not belong to any dense region. The algorithm starts from unvisited core points and expands clusters through density reachability, which means that nearby dense regions are merged if they are connected by chains of core points. This is why DBSCAN can discover arbitrary shapes without pre-specifying the number of clusters.",
+    "learningmechanism": "DBSCAN identifies core points based on local density and propagates cluster membership via density reachability. It traverses the dataset, identifies core points, and constructs clusters by recursively adding density-reachable points, designating non-reachable points as noise (-1). No parametric learning occurs.",
+    "assumptions": [
+      "The chosen distance metric meaningfully reflects similarity.",
+      "Clusters are separated by regions of lower density.",
+      "Feature scaling is important because $\\varepsilon$ operates in metric space.",
+      "Neighborhood structure should be locally consistent enough for density reachability to be meaningful.",
+      "A single global density threshold is an acceptable approximation for the dataset."
+    ],
+    "mathematicalintuition": "The $\\varepsilon$-neighborhood of a point $p$ is:\n\n$$\nN_\\varepsilon(p)=\\{q \\in X \\mid dist(p,q)\\le \\varepsilon\\}\n$$\n\nA point $p$ is a core point if:\n\n$$\n|N_\\varepsilon(p)| \\ge \\text{MinPts}\n$$\n\nwhere MinPts includes the point itself in the scikit-learn formulation. A point $q$ is directly density-reachable from $p$ if $q \\in N_\\varepsilon(p)$ and $p$ is a core point. Density-reachability is the transitive closure of this relation, and two points are density-connected if they are both density-reachable from some common core point. The metric can be Euclidean or another distance metric, and the selected metric defines the geometry of neighborhoods.",
+    "complexity": "KD-Tree or Ball Tree query overhead is near $O(n \\log n)$ average in low dimensions; brute-force neighbor search is $O(n^2 d)$. Cluster expansion is $O(n)$ once neighborhood lists are populated.",
+    "memorycomplexity": "Average memory is linear in the number of samples if queries are done iteratively, but scikit-learn notes worst-case memory complexity of $O(n^2)$ when caching pairwise distance matrices.",
+    "robustness": "DBSCAN is robust to isolated outliers because noise is an explicit output category rather than something that must be absorbed into a cluster.",
+    "scalability": "It scales well on moderate low-dimensional data with efficient indexing, but can degrade rapidly on large or high-dimensional datasets.",
+    "overfittingtendency": "DBSCAN does not overfit in the supervised sense, but overly small `eps` can fragment clusters and overly large `eps` can merge unrelated regions.",
+    "biasvariance": "Its bias comes from the assumption of a single density threshold; variance rises when local density estimates are unstable under parameter changes."
+  },
+  "hyperparameters": [
+    {
+      "name": "eps",
+      "purpose": "Defines the maximum distance for two points to be considered neighbors.",
+      "increaseeffect": "Produces larger neighborhoods, fewer noise points, fewer clusters, and a greater risk of merging distinct clusters.",
+      "decreaseeffect": "Produces smaller neighborhoods, more noise points, more clusters, and a greater risk of fragmenting true clusters.",
+      "tradeoffs": "This is the most important DBSCAN parameter and directly controls density thresholding.",
+      "tuningpriority": "Highest",
+      "interactions": [
+        "Interacts strongly with `min_samples`, scaling, and the chosen metric."
+      ],
+      "commonmistakes": [
+        "Choosing `eps` before feature scaling or using an arbitrary value without inspecting distance distributions."
+      ]
+    },
+    {
+      "name": "min_samples",
+      "purpose": "Sets the minimum number of points required in an $\\varepsilon$-neighborhood for a core point.",
+      "increaseeffect": "Requires denser clusters, increases noise labeling, and reduces the chance of weak clusters forming.",
+      "decreaseeffect": "Allows sparser clusters, reduces noise labeling, and increases the chance of false clusters.",
+      "tradeoffs": "Higher values improve robustness to noise but can eliminate small or sparse true clusters.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Should be tuned jointly with `eps`, especially when class density varies."
+      ],
+      "commonmistakes": [
+        "Using the default blindly on datasets with very different local densities."
+      ]
+    },
+    {
+      "name": "metric",
+      "purpose": "Defines the distance function used to compute neighborhoods.",
+      "increaseeffect": "Not numeric in the usual sense; using a more appropriate metric can improve cluster quality, while an inappropriate metric damages it.",
+      "decreaseeffect": "A simpler or less appropriate metric may speed computation but can reduce clustering fidelity.",
+      "tradeoffs": "The metric encodes what “nearby” means, so it is often as important as `eps`.",
+      "tuningpriority": "High",
+      "interactions": [
+        "Interacts with feature scaling, data geometry, and `p` for Minkowski metrics."
+      ],
+      "commonmistakes": [
+        "Using Euclidean distance on unscaled heterogeneous features."
+      ]
+    },
+    {
+      "name": "algorithm",
+      "purpose": "Chooses the nearest-neighbor search strategy: `auto`, `ball_tree`, `kd_tree`, or `brute`.",
+      "increaseeffect": "Not numeric; more advanced indexing may improve speed in suitable data regimes, while brute force is more general but slower.",
+      "decreaseeffect": "Choosing a simpler strategy can reduce setup overhead but increase query cost.",
+      "tradeoffs": "KD-Tree and Ball Tree can accelerate low-dimensional searches, but brute force is often unavoidable in high dimensions.",
+      "tuningpriority": "Medium-High",
+      "interactions": [
+        "Interacts with leaf_size and metric choice."
+      ],
+      "commonmistakes": [
+        "Assuming `auto` will always pick the best choice for all data regimes."
+      ]
+    },
+    {
+      "name": "leaf_size",
+      "purpose": "Controls tree leaf size for BallTree or KDTree construction and querying.",
+      "increaseeffect": "Can reduce tree depth and construction overhead, but may slow queries and increase memory trade-offs.",
+      "decreaseeffect": "Can improve query pruning in some cases, but increases tree overhead and may hurt construction speed.",
+      "tradeoffs": "Best tuned only after the search algorithm is chosen because its effect is implementation-dependent.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Relevant mainly when `algorithm` is tree-based."
+      ],
+      "commonmistakes": [
+        "Adjusting leaf size before fixing `eps` and the distance metric."
+      ]
+    },
+    {
+      "name": "p",
+      "purpose": "Sets the Minkowski distance power when using a Minkowski metric.",
+      "increaseeffect": "Changes the geometry of distance calculations and can make neighborhoods more or less sensitive to outliers depending on the chosen value.",
+      "decreaseeffect": "Alters neighborhood geometry in the opposite direction, affecting cluster shape and density thresholding.",
+      "tradeoffs": "Useful when Euclidean distance is not the best fit, but it should not be treated as a generic tuning knob.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Interacts with `metric`, preprocessing, and feature scale."
+      ],
+      "commonmistakes": [
+        "Changing p without validating whether the resulting metric matches domain geometry."
+      ]
+    },
+    {
+      "name": "n_jobs",
+      "purpose": "Controls parallel execution for neighborhood computations.",
+      "increaseeffect": "Can improve throughput on multi-core systems, but may raise memory pressure and overhead.",
+      "decreaseeffect": "Reduces resource contention but can slow clustering substantially.",
+      "tradeoffs": "Parallelism helps when neighborhood queries dominate runtime, but scaling is limited by memory bandwidth and implementation details.",
+      "tuningpriority": "Medium",
+      "interactions": [
+        "Most useful after the data geometry and metric are settled."
+      ],
+      "commonmistakes": [
+        "Expecting linear speedup on all datasets and hardware."
+      ]
+    },
+    {
+      "name": "metric_params",
+      "purpose": "Passes extra parameters to the chosen distance metric.",
+      "increaseeffect": "Not numeric; richer metric settings can better match domain structure but also increase complexity.",
+      "decreaseeffect": "Simpler metric configuration reduces tuning burden but may weaken neighborhood semantics.",
+      "tradeoffs": "Only useful when the distance function truly needs extra parameters.",
+      "tuningpriority": "Low-Medium",
+      "interactions": [
+        "Relevant only for custom or parameterized metrics."
+      ],
+      "commonmistakes": [
+        "Adding custom metric parameters without verifying that they materially affect clustering."
+      ]
+    }
+  ],
+  "engineeringconsiderations": {
+    "datasetsuitability": [
+      "DBSCAN works best when clusters have similar density and the feature space supports a meaningful distance metric.",
+      "It is a strong fit for spatial data, geospatial points, sensor readings, and other numerical datasets with local density structure.",
+      "It is less suitable when cluster density varies widely or when intrinsic dimensionality is high enough to weaken neighborhood contrast."
+    ],
+    "scalability": [
+      "KD-Tree and Ball Tree indexing can accelerate neighborhood lookup in low-dimensional spaces.",
+      "Brute-force search is more general and sometimes the only reliable choice in higher dimensions.",
+      "For very large datasets, approximate preprocessing or chunked sparse neighborhood construction may be necessary."
+    ],
+    "parallelization": "n_jobs can parallelize work, but scalability is constrained by memory bandwidth and the cost of neighborhood enumeration.",
+    "computationalcost": "Neighborhood search is the main cost center, and indexing structures add overhead but often pay off when the geometry is favorable.",
+    "memorybehavior": "Memory use can grow sharply if many neighborhoods are materialized at once. On large datasets, the memory footprint of pairwise distances or dense neighbor lists can become the limiting factor.",
+    "inferencecharacteristics": "DBSCAN is not inherently predictive, so it does not naturally assign cluster labels to unseen samples after fitting. In deployment, new samples usually require refitting, approximate assignment via nearest-neighbor heuristics, or a separate downstream classifier. Latency is low once clusters are computed, but the lack of a native .predict() style workflow is an important operational limitation.",
+    "robustness": [
+      "DBSCAN naturally classifies isolated observations as noise rather than forcing them into a cluster.",
+      "This makes it especially useful in anomaly-oriented clustering workflows.",
+      "However, it is sensitive to varying densities, so a single eps can be too strict for sparse clusters and too permissive for dense ones."
+    ],
+    "sensitivitytooutliers": "Low sensitivity overall because noise/outliers are explicitly detected and labeled as -1, but noisy observations inside dense regions may still be absorbed if they are within reach of core points.",
+    "featureengineeringdependency": "Standardization or normalization helps prevent one feature from dominating neighborhood geometry. Dimensionality reduction can improve neighborhood quality when the feature space is too sparse or noisy, but it can also destroy meaningful density structure if overdone.",
+    "featurescalingrequirement": "Feature scaling is usually mandatory because DBSCAN is distance-based and eps is measured in the same metric space as the features. Standardization or normalization is key.",
+    "classimbalancebehavior": "DBSCAN is unsupervised, so class imbalance is not handled through labels or losses. Minority-density groups can be discovered if they form sufficiently dense local regions, but tiny sparse groups may be labeled as noise.",
+    "commonlimitations": [
+      "DBSCAN struggles with varying-density clusters and the curse of dimensionality.",
+      "It is highly sensitive to eps and min_samples.",
+      "It cannot naturally assign cluster labels to unseen samples without refitting or approximation.",
+      "Scalability can become a problem when neighborhoods are dense or indexing is ineffective."
+    ],
+    "pipelineposition": "In clustering pipelines, DBSCAN usually comes after preprocessing, scaling, and optional dimensionality reduction, and before downstream labeling or analysis."
+  },
+  "comparisons": [
+    {
+      "model": "K-Means",
+      "choose_this_when": "You want arbitrary-shaped clusters and explicit noise detection.",
+      "prefer_other_when": "You know the cluster count and clusters are compact, spherical, and similar in size.",
+      "tradeoffs": "DBSCAN is more flexible geometrically; K-Means is simpler, faster, and more predictable."
+    },
+    {
+      "model": "Hierarchical Clustering",
+      "choose_this_when": "You want density-based noise handling and no forced dendrogram cut.",
+      "prefer_other_when": "You need multiscale cluster inspection or small-dataset interpretability via linkage structure.",
+      "tradeoffs": "DBSCAN is more noise-aware; hierarchical methods give richer tree structure but can be costlier."
+    },
+    {
+      "model": "Gaussian Mixture Model (GMM)",
+      "choose_this_when": "You want hard noise labels and clusters defined by local density.",
+      "prefer_other_when": "You need soft probabilistic assignments and ellipsoidal cluster assumptions.",
+      "tradeoffs": "DBSCAN is nonparametric in cluster count; GMM is probabilistic but assumes a distributional form."
+    },
+    {
+      "model": "HDBSCAN",
+      "choose_this_when": "You want the classic DBSCAN behavior on similar-density clusters.",
+      "prefer_other_when": "You need variable-density robustness and a more stable density hierarchy.",
+      "tradeoffs": "HDBSCAN is usually better for varying density; DBSCAN is simpler and easier to reason about."
+    },
+    {
+      "model": "OPTICS",
+      "choose_this_when": "You need fixed-eps density clustering and direct cluster labels.",
+      "prefer_other_when": "You want an ordering-based method that can reveal structure across density scales.",
+      "tradeoffs": "OPTICS is more flexible for density variation; DBSCAN is simpler when one density scale is enough."
+    },
+    {
+      "model": "Spectral Clustering",
+      "choose_this_when": "You want direct density-based noise detection.",
+      "prefer_other_when": "You have graph-like affinity structure and can afford eigenvector-based partitioning.",
+      "tradeoffs": "DBSCAN uses local density geometry; spectral methods can capture nonconvex structure but need more computation."
+    }
+  ],
+  "relatedknowledge": {
+    "relatedmodels": [
+      "HDBSCAN",
+      "OPTICS",
+      "K-Means Clustering",
+      "Gaussian Mixture Models",
+      "Hierarchical Clustering"
+    ],
+    "alternative_models": [
+      "K-Means Clustering",
+      "Hierarchical Clustering",
+      "Gaussian Mixture Models",
+      "HDBSCAN",
+      "OPTICS",
+      "Spectral Clustering"
+    ],
+    "related_principles": [
+      "Density Reachability",
+      "Density Connectivity",
+      "Feature Scaling",
+      "Distance Metric Selection",
+      "Curse of Dimensionality",
+      "Noise Detection"
+    ],
+    "related_workflows": [
+      "Clustering Pipeline",
+      "Anomaly Detection Workflow",
+      "Spatial Point Clustering",
+      "Preprocessing and Scaling Workflow",
+      "Unsupervised Evaluation Workflow"
+    ],
+    "related_patterns": [
+      "Feature Scaling Pattern",
+      "Distance-Based Clustering Pattern",
+      "Noise-Aware Clustering Pattern",
+      "DBSCAN Tuning Guide",
+      "Clustering Evaluation Guide"
+    ],
+    "related_packages": [
+      "scikit-learn",
+      "SciPy",
+      "hdbscan",
+      "NumPy",
+      "matplotlib"
+    ],
+    "related_guides": [
+      "DBSCAN Tuning Guide",
+      "Clustering Evaluation Guide"
+    ],
+    "related_registry": [
+      "Density-based ML models",
+      "Unsupervised Learning"
+    ]
+  },
+  "quickstart": {
+    "language": "python",
+    "implementation_package": "scikit-learn",
+    "code": "import numpy as np\nimport matplotlib.pyplot as plt\nfrom sklearn.datasets import make_blobs\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.cluster import DBSCAN\nfrom sklearn.metrics import silhouette_score\n\n# Generate sample data\nX, y_true = make_blobs(\n    n_samples=750,\n    centers=[(0, 0), (4, 4), (0, 5)],\n    cluster_std=[0.35, 0.45, 0.3],\n    random_state=42\n)\n\n# Set up preprocessing and DBSCAN pipeline\npipe = Pipeline([\n    (\"scaler\", StandardScaler()),\n    (\"dbscan\", DBSCAN(eps=0.35, min_samples=10, metric=\"euclidean\"))\n])\n\nlabels = pipe.fit_predict(X)\nnoise_mask = labels == -1\nn_clusters = len(set(labels)) - (1 if -1 in labels else 0)\nn_noise = int(noise_mask.sum())\n\nX_scaled = pipe.named_steps[\"scaler\"].transform(X)\n\n# Compute silhouette score if clusters are valid\nsil_score = None\nunique_clusters = set(labels) - {-1}\nif len(unique_clusters) > 1:\n    sil_score = silhouette_score(X_scaled[labels != -1], labels[labels != -1])\n\n# Visualize clustering results\nplt.figure(figsize=(7, 6))\ncolors = plt.cm.tab10((labels.astype(float) % 10) / 10.0)\ncolors[noise_mask] = (0, 0, 0, 1)\nplt.scatter(X_scaled[:, 0], X_scaled[:, 1], c=colors, s=20)\nplt.title(f\"DBSCAN clusters={n_clusters}, noise={n_noise}\")\nplt.xlabel(\"feature 1\")\nplt.ylabel(\"feature 2\")\nplt.tight_layout()\nplt.show()\n\nprint(\"cluster_labels:\", labels)\nprint(\"noise_points:\", np.where(noise_mask)[0][:10])\nprint(\"num_clusters:\", n_clusters)\nprint(\"num_noise:\", n_noise)\nprint(\"silhouette_score:\", sil_score)",
+    "explanation": "This workflow generates synthetic data, standardizes features, runs DBSCAN in a pipeline, and visualizes clusters plus noise points. It also computes silhouette score only when cluster structure is meaningful enough for that metric to be valid.",
+    "inputs": "Expected input is a numerical feature matrix of shape (n_samples, n_features). Because DBSCAN is distance-based, preprocessing and scaling are typically required before fitting. Label inputs are not used because the algorithm is unsupervised.",
+    "outputs": "Cluster labels for each sample, noise labels with value -1, number of discovered clusters, and evaluation metrics when applicable, such as silhouette score on non-noise samples.",
+    "notes": "Feature scaling is critical because eps depends on feature-space distance. Distance metric choice can change results materially, so it should reflect domain geometry. Tuning eps and min_samples is usually the primary optimization task. Supervised metrics like classification_report are not appropriate because DBSCAN does not learn class labels."
+  },
+  "learning_resources": [
+    {
+      "title": "A Density-Based Algorithm for Discovering Clusters in Large Spatial Databases with Noise",
+      "url": "https://www.cs.sfu.ca/~ester/papers/kdd-96.pdf",
+      "type": "article",
+      "why_to_read": "Original DBSCAN paper and canonical definition of core, border, and noise points.",
+      "expected_outcome": "Understand the algorithm’s original motivation and formal density definitions.",
+      "reading_time": 40
+    },
+    {
+      "title": "Demo of DBSCAN clustering algorithm",
+      "url": "https://scikit-learn.org/stable/auto_examples/cluster/plot_dbscan.html",
+      "type": "guide",
+      "why_to_read": "Official worked example showing scaling, cluster counts, noise detection, and evaluation.",
+      "expected_outcome": "Understand a production-style workflow for fitting and evaluating DBSCAN.",
+      "reading_time": 20
+    },
+    {
+      "title": "DBSCAN clustering lecture/materials",
+      "url": "https://cs229.stanford.edu/",
+      "type": "video",
+      "why_to_read": "Stanford course materials provide clustering context and unsupervised learning framing.",
+      "expected_outcome": "Connect DBSCAN to broader clustering theory and evaluation.",
+      "reading_time": 35
+    },
+    {
+      "title": "A Gentle Introduction to DBSCAN",
+      "url": "https://www.scipy.org/",
+      "type": "guide",
+      "why_to_read": "Useful when distance metrics, preprocessing, and numerical behavior need broader context.",
+      "expected_outcome": "Reinforce practical metric and scaling considerations.",
+      "reading_time": 15
+    }
+  ]
+}
