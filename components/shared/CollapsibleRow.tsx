@@ -119,9 +119,9 @@ export default function CollapsibleRow({
         className={cn(
           "p-5 bg-card",
           contentClassName?.includes('border-t-0') ? '' : 'border-t border-border',
-          contentClassName,
-          isOpen ? "block" : "hidden"
+          contentClassName
         )}
+        {...(!isOpen && { hidden: true })}
       >
         {children}
       </div>

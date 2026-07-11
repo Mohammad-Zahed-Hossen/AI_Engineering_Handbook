@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef, useLayoutEffect } from 'react';
+import { useState, useRef, useLayoutEffect, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Check, Copy, Terminal, ChevronDown } from 'lucide-react';
+import { Check, Copy, Terminal, ChevronDown, WrapText } from 'lucide-react';
 
 interface CodeBlockInteractiveProps {
   code: string;
@@ -29,7 +29,14 @@ export function CodeBlockInteractive({
 }: CodeBlockInteractiveProps) {
   const [copied, setCopied] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [wrapped, setWrapped] = useState(false);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Default wrap on for mobile, off for desktop
+  useEffect(() => {
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+    setWrapped(isMobile);
+  }, []);
 
   // Scroll position compensation to prevent jump on collapse
   useLayoutEffect(() => {
@@ -70,35 +77,53 @@ export function CodeBlockInteractive({
             {filename || languageLabel}
           </span>
         </div>
-        {/* Desktop copy button in header - smooth transitions */}
-        <button
-          onClick={handleCopy}
-          className={cn(
-            "hidden md:flex items-center gap-1 text-[9px] font-sans font-semibold uppercase tracking-wider px-2 py-0.5 rounded border transition-all duration-200 cursor-pointer select-none",
-            copied
-              ? "text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
-              : "text-zinc-400 border-zinc-700 bg-zinc-900 hover:text-zinc-200 hover:border-zinc-500"
-          )}
-        >
-          {copied ? (
-            <>
-              <Check className="w-3 h-3" />
-              Copied
-            </>
-          ) : (
-            <>
-              <Copy className="w-3 h-3" />
-              Copy
-            </>
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Wrap toggle button */}
+          <button
+            onClick={() => setWrapped(!wrapped)}
+            aria-label="Toggle line wrap"
+            className={cn(
+              "hidden md:flex items-center justify-center w-6 h-6 rounded transition-all duration-200 cursor-pointer select-none",
+              wrapped
+                ? "text-emerald-400 bg-emerald-500/10"
+                : "text-zinc-400 bg-zinc-900 hover:text-zinc-200"
+            )}
+          >
+            <WrapText className="w-3.5 h-3.5" />
+          </button>
+          {/* Desktop copy button in header - smooth transitions */}
+          <button
+            onClick={handleCopy}
+            className={cn(
+              "hidden md:flex items-center gap-1 text-[9px] font-sans font-semibold uppercase tracking-wider px-2 py-0.5 rounded border transition-all duration-200 cursor-pointer select-none",
+              copied
+                ? "text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
+                : "text-zinc-400 border-zinc-700 bg-zinc-900 hover:text-zinc-200 hover:border-zinc-500"
+            )}
+          >
+            {copied ? (
+              <>
+                <Check className="w-3 h-3" />
+                Copied
+              </>
+            ) : (
+              <>
+                <Copy className="w-3 h-3" />
+                Copy
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Code body */}
       <div className="relative">
         <div 
           className={cn(
-            "overflow-x-auto text-[11px] leading-relaxed scrollbar-thin select-text",
+            "text-[11px] leading-relaxed scrollbar-thin select-text",
+            wrapped 
+              ? "whitespace-pre-wrap break-words" 
+              : "overflow-x-auto",
             showLineNumbers ? "pl-2 pr-4 py-3 show-line-numbers" : "p-4"
           )}
           dangerouslySetInnerHTML={{ __html: displayHtml }}
@@ -107,11 +132,13 @@ export function CodeBlockInteractive({
         {shouldCollapse && !isExpanded && (
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-zinc-950 to-transparent pointer-events-none" />
         )}
-        {/* Horizontal-scroll fade on mobile */}
-        <div
-          className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-zinc-950 to-transparent md:hidden z-10"
-          aria-hidden="true"
-        />
+        {/* Horizontal-scroll fade on mobile - only when not wrapped */}
+        {!wrapped && (
+          <div
+            className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-zinc-950 to-transparent md:hidden z-10"
+            aria-hidden="true"
+          />
+        )}
       </div>
 
       {/* Expand button for collapsed code */}

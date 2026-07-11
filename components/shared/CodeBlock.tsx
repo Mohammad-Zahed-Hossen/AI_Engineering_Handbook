@@ -30,7 +30,7 @@ export async function CodeBlock({
 
   const highlightedLang = normalizeLang(language);
 
-  // Generate full highlighted HTML
+  // Generate full highlighted HTML once
   try {
     fullHighlighted = await codeToHtml(code, {
       lang: highlightedLang,
@@ -41,19 +41,9 @@ export async function CodeBlock({
     fullHighlighted = `<pre><code>${escapeHtml(code)}</code></pre>`;
   }
 
-  // Generate collapsed highlighted HTML if needed
+  // Generate collapsed view by truncating the already-highlighted HTML
   if (shouldCollapse) {
-    const displayLines = lines.slice(0, MAX_COLLAPSED_LINES);
-    const displayCode = displayLines.join('\n');
-    try {
-      collapsedHighlighted = await codeToHtml(displayCode, {
-        lang: highlightedLang,
-        theme: 'github-dark',
-      });
-    } catch (err) {
-      console.error('Shiki highlighting error (collapsed):', err);
-      collapsedHighlighted = `<pre><code>${escapeHtml(displayCode)}</code></pre>`;
-    }
+    collapsedHighlighted = truncateHighlightedHtml(fullHighlighted, MAX_COLLAPSED_LINES);
   }
 
   return (
@@ -69,6 +59,52 @@ export async function CodeBlock({
       maxCollapsedLines={MAX_COLLAPSED_LINES}
     />
   );
+}
+
+/**
+ * Truncates Shiki-highlighted HTML to the first N line spans.
+ * Shiki wraps each source line in <span class="line">...</span>.
+ * This extracts only the first N line spans while preserving the wrapper structure.
+ */
+function truncateHighlightedHtml(html: string, maxLines: number): string {
+  // Find the opening <pre> and <code> tags
+  const preMatch = html.match(/<pre[^>]*>/i);
+  const codeMatch = html.match(/<code[^>]*>/i);
+  
+  if (!preMatch || !codeMatch) {
+    // Fallback if structure is unexpected
+    return html;
+  }
+
+  const preStart = html.indexOf(preMatch[0]) + preMatch[0].length;
+  const codeStart = html.indexOf(codeMatch[0]) + codeMatch[0].length;
+  const preEnd = html.lastIndexOf('</pre>');
+  const codeEnd = html.lastIndexOf('</code>');
+
+  if (codeStart >= codeEnd) {
+    return html;
+  }
+
+  // Extract the inner content between <code> and </code>
+  const innerContent = html.slice(codeStart, codeEnd);
+  
+  // Split by line spans - Shiki uses <span class="line"> for each line
+  const lineSpanRegex = /<span class="line"[^>]*>[\s\S]*?<\/span>/g;
+  const lineSpans = innerContent.match(lineSpanRegex);
+  
+  if (!lineSpans || lineSpans.length <= maxLines) {
+    // If we can't parse line spans or there aren't enough to truncate, return full
+    return html;
+  }
+
+  // Take only the first N line spans
+  const truncatedLines = lineSpans.slice(0, maxLines).join('');
+  
+  // Reconstruct the HTML with truncated content
+  const preTag = preMatch[0];
+  const codeTag = codeMatch[0];
+  
+  return `${preTag}${codeTag}${truncatedLines}</code></pre>`;
 }
 
 function escapeHtml(text: string): string {

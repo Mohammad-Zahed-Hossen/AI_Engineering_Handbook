@@ -89,7 +89,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
 
       <OfficialResources sources={workflow.sources} githubRepo={workflow.github_repo} />
 
-      <SectionCard title="Workflow Steps" subtitle="Sequential pipeline">
+      <SectionCard title="Workflow Steps" subtitle="Sequential pipeline" badge={`${workflow.steps.length} steps`}>
         <WorkflowStepList steps={workflow.steps} resolvedLinks={resolvedLinks} />
       </SectionCard>
 
@@ -131,8 +131,8 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
       )}
 
       {workflow.common_failure_points.length > 0 && (
-        <div id="failures" className="border-l-2 border-rose-500 bg-rose-500/5 p-4 rounded-r scroll-mt-24">
-          <h2 className="text-rose-700 dark:text-rose-400">Common Failure Points</h2>
+        <div id="failures" className="border-l-2 border-amber-500 bg-amber-500/5 p-4 rounded-r scroll-mt-24">
+          <h2 className="text-amber-700 dark:text-amber-400">Common Failure Points</h2>
           <ul className="mt-2 list-disc pl-4 space-y-1 text-sm text-muted-foreground">
             {workflow.common_failure_points.map((pt, idx) => (
               <li key={idx}>{pt}</li>
