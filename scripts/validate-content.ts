@@ -13,6 +13,7 @@ import {
   PrincipleSchema,
 } from '../lib/schemas/index.js';
 import { REGISTRY_FILE_TO_TASK } from '../lib/config/registry';
+import { WORKFLOW_CATEGORIES } from '../lib/config/workflows';
 import type { VisualizationEquivalent } from '../types/package';
 
 const dataDir = path.join(process.cwd(), 'data');
@@ -265,9 +266,14 @@ for (const file of files) {
         reportError(`Package '${normalizedPath}' has fewer than 1 tasks (${pkg.tasks?.length ?? 0})`);
       }
     } else if (type === 'workflow') {
-      const wf = obj as { steps?: unknown[] };
+      const wf = obj as { steps?: unknown[]; category?: string };
       if (!Array.isArray(wf.steps) || wf.steps.length < 3) {
         reportError(`Workflow '${normalizedPath}' has fewer than 3 steps (${wf.steps?.length ?? 0})`);
+      }
+      if (!wf.category) {
+        reportError(`Workflow '${normalizedPath}' is missing required 'category' field`);
+      } else if (!(WORKFLOW_CATEGORIES as readonly string[]).includes(wf.category)) {
+        reportError(`Invalid workflow category '${wf.category}' in '${normalizedPath}'. Must be one of: ${WORKFLOW_CATEGORIES.join(', ')}`);
       }
     } else if (type === 'cheatsheet') {
       const cs = obj as { entries?: unknown[] };

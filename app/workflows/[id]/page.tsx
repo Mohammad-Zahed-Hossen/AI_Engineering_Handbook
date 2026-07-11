@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getAllWorkflowIds, getWorkflow, getRelatedContent, contentExists } from '@/lib/data';
+import { getAllWorkflowIds, getWorkflow, getRelatedContent, contentExists, getContentName, getContentPath } from '@/lib/data';
 import SectionCard from '@/components/shared/SectionCard';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
@@ -9,6 +9,8 @@ import RelatedContent from '@/components/shared/RelatedContent';
 import WorkflowStepList from '@/components/shared/WorkflowStepList';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 import ExpandableText from '@/components/shared/ExpandableText';
+import { CodeBlock } from '@/components/shared/CodeBlock';
+import CollapsibleRow from '@/components/shared/CollapsibleRow';
 
 export async function generateStaticParams() {
   return getAllWorkflowIds().map((id) => ({ id }));
@@ -30,6 +32,46 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
   }
   const relatedContent = getRelatedContent('workflow', workflow.id);
 
+  const hasProductionProfile = !!(
+    workflow.production_notes ||
+    workflow.scaling_notes ||
+    workflow.cost_notes ||
+    workflow.latency_notes ||
+    workflow.observability_notes
+  );
+
+  // Build a generic map of resolved links: type -> id -> { name, href }
+  const resolvedLinks: Record<string, Record<string, { name: string; href: string | null }>> = {};
+  const typeMap: Record<string, 'package' | 'model' | 'cheatsheet' | 'pattern' | 'debug_guide' | 'decision_guide' | 'principle'> = {
+    packages: 'package',
+    models: 'model',
+    cheatsheets: 'cheatsheet',
+    patterns: 'pattern',
+    debug_guides: 'debug_guide',
+    decision_guides: 'decision_guide',
+    principles: 'principle',
+  };
+
+  workflow.steps.forEach(step => {
+    if (step.uses) {
+      Object.entries(step.uses).forEach(([key, ids]) => {
+        if (!Array.isArray(ids)) return;
+        const contentType = typeMap[key] || (key.endsWith('s') ? key.slice(0, -1) : key) as any;
+        if (!resolvedLinks[contentType]) {
+          resolvedLinks[contentType] = {};
+        }
+        ids.forEach(id => {
+          if (typeof id === 'string' && contentExists(contentType, id)) {
+            resolvedLinks[contentType][id] = {
+              name: getContentName(contentType, id),
+              href: getContentPath(contentType, id),
+            };
+          }
+        });
+      });
+    }
+  });
+
   return (
     <ContentPageLayout
       breadcrumbs={[
@@ -40,7 +82,13 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
       toc={[
         { id: 'overview', label: 'Overview' },
         { id: 'steps', label: 'Steps' },
+        ...(workflow.worked_examples?.length
+          ? [{ id: 'worked-examples', label: 'Worked Examples' }]
+          : []),
         { id: 'failures', label: 'Failure Points' },
+        ...(hasProductionProfile
+          ? [{ id: 'production', label: 'Production Profile' }]
+          : []),
         ...(workflow.evaluation_checks?.length
           ? [{ id: 'evaluation', label: 'Evaluation' }]
           : []),
@@ -72,8 +120,45 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
       <OfficialResources sources={workflow.sources} githubRepo={workflow.github_repo} />
 
       <SectionCard title="Workflow Steps" subtitle="Sequential pipeline">
-        <WorkflowStepList steps={workflow.steps} />
+        <WorkflowStepList steps={workflow.steps} resolvedLinks={resolvedLinks} />
       </SectionCard>
+
+      {workflow.worked_examples && workflow.worked_examples.length > 0 && (
+        <section id="worked-examples" className="space-y-4 scroll-mt-24">
+          <h2 className="text-base font-bold text-foreground uppercase tracking-wider text-[10px] font-sans">
+            Worked Examples
+          </h2>
+          <div className="space-y-4">
+            {workflow.worked_examples.map((example, idx) => (
+              <div key={idx} className="border border-border rounded-lg bg-card overflow-hidden transition-colors hover:border-foreground/15">
+                <div className="border-b border-border bg-muted/20 px-4 py-3">
+                  <h3 className="text-xs font-semibold text-foreground uppercase tracking-tight">{example.name}</h3>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{example.description}</p>
+                </div>
+                <div className="p-4 space-y-4">
+                  {example.code && (
+                    <div className="rounded overflow-hidden text-xs">
+                      <CodeBlock
+                        code={example.code}
+                        language={example.language || 'python'}
+                        filename={example.name}
+                      />
+                    </div>
+                  )}
+                  {example.implementation_notes && (
+                    <div className="rounded border border-border bg-muted/30 p-3 text-xs leading-relaxed">
+                      <span className="text-[10px] font-semibold uppercase text-muted-foreground block mb-1">
+                        Implementation Notes
+                      </span>
+                      <p className="text-muted-foreground">{example.implementation_notes}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {workflow.common_failure_points.length > 0 && (
         <div id="failures" className="border-l-2 border-rose-500 bg-rose-500/5 p-4 rounded-r scroll-mt-24">
@@ -84,6 +169,58 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
             ))}
           </ul>
         </div>
+      )}
+
+      {hasProductionProfile && (
+        <CollapsibleRow
+          id="production"
+          label="Production Profile"
+          teaser="Production, scaling, cost, latency, and observability wisdom"
+          enableHashDeepLink={true}
+        >
+          <div className="space-y-4 text-xs leading-relaxed text-muted-foreground">
+            {workflow.production_notes && (
+              <div>
+                <span className="text-[10px] font-semibold uppercase text-foreground block mb-1">
+                  Production Deployment
+                </span>
+                <p className="text-sm leading-relaxed">{workflow.production_notes}</p>
+              </div>
+            )}
+            {workflow.scaling_notes && (
+              <div>
+                <span className="text-[10px] font-semibold uppercase text-foreground block mb-1">
+                  Scaling & Throughput
+                </span>
+                <p className="text-sm leading-relaxed">{workflow.scaling_notes}</p>
+              </div>
+            )}
+            {workflow.cost_notes && (
+              <div>
+                <span className="text-[10px] font-semibold uppercase text-foreground block mb-1">
+                  Infrastructure Cost
+                </span>
+                <p className="text-sm leading-relaxed">{workflow.cost_notes}</p>
+              </div>
+            )}
+            {workflow.latency_notes && (
+              <div>
+                <span className="text-[10px] font-semibold uppercase text-foreground block mb-1">
+                  Latency & Performance
+                </span>
+                <p className="text-sm leading-relaxed">{workflow.latency_notes}</p>
+              </div>
+            )}
+            {workflow.observability_notes && (
+              <div>
+                <span className="text-[10px] font-semibold uppercase text-foreground block mb-1">
+                  Observability & Monitoring
+                </span>
+                <p className="text-sm leading-relaxed">{workflow.observability_notes}</p>
+              </div>
+            )}
+          </div>
+        </CollapsibleRow>
       )}
 
       {workflow.evaluation_checks && workflow.evaluation_checks.length > 0 && (

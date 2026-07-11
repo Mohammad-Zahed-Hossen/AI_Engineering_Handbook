@@ -21,6 +21,8 @@ export const WorkflowStepSchema = z.object({
 export const WorkedExampleSchema = z.object({
   name: z.string(),
   description: z.string(),
+  code: z.string().optional(),
+  language: z.string().optional(),
   implementation_notes: z.string().optional(),
 });
 
