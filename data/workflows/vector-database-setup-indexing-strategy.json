@@ -1,0 +1,402 @@
+{
+  "id": "vector-database-setup-indexing-strategy",
+  "title": "Vector Database Setup & Indexing Strategy",
+  "name": "Vector Database Setup & Indexing Strategy",
+  "slug": "vector-database-setup-indexing-strategy",
+  "description": "Production indexing layer for RAG systems: embedding schema design, chunk normalization, ANN index construction, metadata-aware retrieval, incremental maintenance, and benchmark validation.",
+  "type": "pipeline",
+  "category": "rag",
+  "overview": "This workflow defines the production indexing layer for RAG systems: embedding schema design, chunk normalization, ANN index construction, metadata-aware retrieval, incremental maintenance, and benchmark validation. The central engineering challenge is keeping embedding compatibility, metadata lineage, retrieval semantics, and index lifecycle decisions stable enough that latency and recall changes remain attributable to a single cause rather than a moving stack.[^6][^21][^22]",
+  "starter_stack": [
+    "faiss-cpu",
+    "qdrant-client",
+    "pymilvus",
+    "pinecone",
+    "sentence-transformers",
+    "langchain",
+    "numpy",
+    "pandas"
+  ],
+  "created_at": "2026-07-12",
+  "updated_at": "2026-07-12",
+  "last_verified": "2026-07-12",
+  "review_frequency": "quarterly",
+  "verified_against": "1.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "sources": [
+    "https://ninjastudio.ai/blog/vector-database-architecture-production-scaling",
+    "https://www.theagenticweb.dev/blog/vector-databases-in-production",
+    "https://unstructured.io/insights/vector-indexing-strategies-for-high-performance-ai-search",
+    "https://reintech.io/blog/vector-database-indexing-strategies-rag-performance",
+    "https://medium.com/kx-systems/vector-indexing-a-roadmap-for-vector-databases-65866f07daf5",
+    "https://masonailab.com/tech/vector-database-2026/",
+    "https://www.youtube.com/watch?v=gM_7DbppaaI",
+    "https://www.instaclustr.com/education/vector-database/how-a-vector-index-works-and-5-critical-best-practices/",
+    "https://medium.com/@datarawatai/vector-databases-in-production-lessons-from-building-semantic-retrieval-systems-dfa61e8bbe1b",
+    "https://www.youtube.com/watch?v=MXDfS8StOBs",
+    "https://sjtechnology.org/index.php/ojs/article/view/37",
+    "https://arxiv.org/abs/2603.08036",
+    "https://esj.eastasouth-institute.com/index.php/esiscs/article/view/938",
+    "https://ieeexplore.ieee.org/document/11366770/",
+    "https://arxiv.org/abs/2604.09550",
+    "https://ieeexplore.ieee.org/document/11339281/",
+    "https://dl.acm.org/doi/10.14778/3750601.3750619",
+    "https://dl.acm.org/doi/10.1145/3722212.3724444"
+  ],
+  "tags": [
+    "vector-database",
+    "ann",
+    "retrieval",
+    "rag",
+    "indexing",
+    "metadata-filtering",
+    "hybrid-retrieval",
+    "lifecycle-management"
+  ],
+  "aliases": [
+    "vector indexing strategy",
+    "production vector retrieval",
+    "ann indexing workflow"
+  ],
+  "keywords": [
+    "FAISS",
+    "Qdrant",
+    "Milvus",
+    "Pinecone",
+    "HNSW",
+    "IVF",
+    "IVF-PQ",
+    "metadata isolation",
+    "hybrid retrieval"
+  ],
+  "search_tokens": [
+    "faiss qdrant milvus pinecone indexing metadata filtering incremental updates"
+  ],
+  "domain": "retrieval-augmented generation",
+  "difficulty": "advanced",
+  "engineering_area": "vector database engineering",
+  "estimated_reading_time": 18,
+  "prerequisites": [
+    "sentence embeddings",
+    "approximate nearest neighbor search",
+    "data modeling",
+    "retrieval benchmarks"
+  ],
+  "recommended_next": [
+    "rag-evaluation-harness"
+  ],
+  "next_links": [
+    "rag-evaluation-harness"
+  ],
+  "related_content": [
+    {
+      "id": "rag-evaluation-harness",
+      "type": "workflow",
+      "relationship_type": "related_to"
+    }
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "name": "Embedding Space Selection & Schema Design",
+      "what": "Define the embedding contract before any chunks are materialized or indexed. This step selects similarity space, dimensionality, normalization policy, namespace structure, and schema fields so every later index artifact can be validated against a single source of truth.[^21][^6]\n\n* **Input Interface Contract:**\n  * Artifact: Source documents and retrieval requirements.\n  * Type: corpus + schema brief.\n  * Ownership: retrieval engineering team.\n  * Persistence: design spec and source repository.\n  * Consumer: chunking, embedding, and indexing stages.\n\n* **Output Interface Contract:**\n  * Artifact: Embedding schema specification.\n  * Type: versioned schema document.\n  * Ownership: retrieval platform team.\n  * Persistence: config repository.\n  * Consumer: embedding generation and index builders.\n\n* **Required Metadata:**\n  * Embedding model ID.\n  * Dimension.\n  * Similarity metric.\n  * Normalization policy.\n  * Namespace or tenant key.\n\n* **Pipeline Contract:**\n  * All vectors in a collection must originate from the same embedding space.\n  * Similarity metric and normalization policy must be compatible with the chosen ANN structure.\n  * Any embedding model swap requires an explicit schema version bump and migration plan.[^6][^21]\n\n* **Primary Consumer:** embedding generation and index builders.\n\n### Minimal Integration Example\n```python\nfrom sentence_transformers import SentenceTransformer\nimport numpy as np\n\nmodel = SentenceTransformer(\"sentence-transformers/all-MiniLM-L6-v2\")\nvec = model.encode([\"schema check\"], normalize_embeddings=True)\nschema = {\"model_id\": \"all-MiniLM-L6-v2\", \"dim\": int(vec.shape[-1]), \"metric\": \"cosine\"}\n```",
+      "tools": [
+        "sentence-transformers",
+        "numpy",
+        "langchain"
+      ],
+      "decision": "Default: Single embedding model, fixed dimension, cosine-compatible normalized vectors. Alternative: Dual-space schema for dense retrieval plus reranking features. Trade-off: Single-space schemas simplify indexing and rollback; dual-space schemas improve flexibility but increase storage and migration complexity. Scale Trigger: Multi-tenant corpora, multilingual embeddings, or model upgrades. Failure Prevented: Mixing vectors from incompatible spaces and corrupting retrieval quality. Uses: Schema locking, metric compatibility, namespace planning.",
+      "uses": {
+        "packages": [
+          "sentence-transformers",
+          "numpy",
+          "langchain"
+        ],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Failure: Dimension mismatch. Trigger: Model swap without schema update. Downstream Effect: Index build failure or silent retrieval degradation. Detection: Dimension assertions at ingest time. Recovery Strategy: Reject the batch and republish the schema revision. Production Metrics: Primary Metric: Embedding dimension validation pass rate, Expected Range: 100%, Alert Threshold: Any mismatched vector dimension."
+      ]
+    },
+    {
+      "step": 2,
+      "name": "Document Chunk Preparation & Metadata Normalization",
+      "what": "Normalize documents into stable chunks and enforce consistent metadata keys for filtering, tenancy, provenance, and deletion. This step determines whether downstream retrieval can filter cleanly without losing document identity.[^21][^6]\n\n* **Input Interface Contract:**\n  * Artifact: Raw documents.\n  * Type: text records with source metadata.\n  * Ownership: data pipeline team.\n  * Persistence: source store or lake.\n  * Consumer: embedding pipeline.\n\n* **Output Interface Contract:**\n  * Artifact: Chunk table with normalized metadata.\n  * Type: dataframe or parquet.\n  * Ownership: indexing pipeline team.\n  * Persistence: dataset store.\n  * Consumer: embedding generation and retrieval filtering.\n\n* **Required Metadata:**\n  * Chunk ID.\n  * Document ID.\n  * Tenant ID.\n  * Source URI.\n  * Timestamp or version tag.\n\n* **Pipeline Contract:**\n  * Metadata keys must be stable across all index versions.\n  * Provenance fields must survive every transformation stage.\n  * Large payloads should remain outside the vector DB and join by ID when needed.[^6][^21]\n\n* **Primary Consumer:** embedding generation and retrieval filtering.\n\n### Minimal Integration Example\n```python\nimport pandas as pd\n\ndf = pd.read_parquet(\"documents.parquet\")\ndf[\"chunk_id\"] = df[\"doc_id\"].astype(str) + \":\" + df[\"chunk_no\"].astype(str)\ndf[\"tenant_id\"] = df[\"tenant_id\"].fillna(\"default\")\ndf.to_parquet(\"chunks_normalized.parquet\", index=False)\n```",
+      "tools": [
+        "langchain",
+        "pandas"
+      ],
+      "decision": "Default: Deterministic chunking with normalized metadata columns. Alternative: Semantic chunking with adaptive boundaries. Trade-off: Deterministic chunking is easier to reproduce; semantic chunking can improve retrieval quality but complicates parity across releases. Scale Trigger: Large corpora or high update volume. Failure Prevented: Query-time ambiguity caused by inconsistent chunk identity. Uses: Chunking, metadata normalization, provenance preservation.",
+      "uses": {
+        "packages": [
+          "langchain",
+          "pandas"
+        ],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Failure: Duplicate or missing chunk IDs. Trigger: Non-deterministic preprocessing or merge bugs. Downstream Effect: Retrieval duplicates, broken deletes, or audit failures. Detection: Uniqueness checks and row-count reconciliation. Recovery Strategy: Regenerate chunk IDs from source lineage and rebuild affected partitions. Production Metrics: Primary Metric: Metadata normalization completeness, Expected Range: 100%, Alert Threshold: Any missing required field."
+      ]
+    },
+    {
+      "step": 3,
+      "name": "Embedding Generation & Validation",
+      "what": "Generate embeddings and validate that the produced vectors match the schema contract before indexing. This is where model versioning, normalization policy, and similarity compatibility are enforced at the artifact boundary.[^21][^6]\n\n* **Input Interface Contract:**\n  * Artifact: Normalized chunk table.\n  * Type: text + metadata dataframe.\n  * Ownership: embedding service team.\n  * Persistence: dataset store.\n  * Consumer: vector index construction.\n\n* **Output Interface Contract:**\n  * Artifact: Embedding table with validation results.\n  * Type: vector matrix + metadata.\n  * Ownership: embedding service team.\n  * Persistence: parquet or vector store staging area.\n  * Consumer: ANN builders and index QA.\n\n* **Required Metadata:**\n  * Embedding model version.\n  * Batch ID.\n  * Vector norm policy.\n  * Dimension.\n  * Validation status.\n\n* **Pipeline Contract:**\n  * Every batch must be validated against the schema dimension and similarity policy.\n  * Embeddings must be reproducible from the model version and input chunk version.\n  * Any failed validation blocks index construction.[^6][^21]\n\n* **Primary Consumer:** ANN builders and index QA.\n\n### Minimal Integration Example\n```python\nfrom sentence_transformers import SentenceTransformer\nimport numpy as np\n\nmodel = SentenceTransformer(\"sentence-transformers/all-MiniLM-L6-v2\")\nemb = model.encode([\"chunk a\", \"chunk b\"], normalize_embeddings=True)\nassert emb.shape[-1] == 384\nassert np.allclose(np.linalg.norm(emb, axis=1), 1.0, atol=1e-3)\n```",
+      "tools": [
+        "sentence-transformers",
+        "numpy"
+      ],
+      "decision": "Default: Batch embedding with shape and norm checks. Alternative: Streaming embedding with micro-batch validation. Trade-off: Batch mode is simpler and more reproducible; streaming mode improves freshness but raises operational complexity. Scale Trigger: Continuous Ingestion or near-real-time updates. Failure Prevented: Indexing malformed vectors or inconsistent normalization. Uses: Batch scoring, embedding QA, model migration readiness.",
+      "uses": {
+        "packages": [
+          "sentence-transformers",
+          "numpy"
+        ],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Failure: Non-unit vectors under cosine schema. Trigger: Normalization disabled or partial batch corruption. Downstream Effect: Rank instability and inconsistent similarity scores. Detection: Norm distribution checks. Recovery Strategy: Recompute embeddings with the declared normalization policy. Production Metrics: Primary Metric: Embedding validation pass rate, Expected Range: 100%, Alert Threshold: Any out-of-bound norm or dimension."
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Vector Index Construction",
+      "what": "Build the serving index in the selected backend and persist the index artifact with a versioned snapshot. This step chooses the storage engine and index family based on collection size, update rate, and latency envelope.[^20][^22][^21][^6]\n\n* **Input Interface Contract:**\n  * Artifact: Validated embeddings and chunk metadata.\n  * Type: vector table.\n  * Ownership: indexing platform team.\n  * Persistence: staging store.\n  * Consumer: ANN index builders.\n\n* **Output Interface Contract:**\n  * Artifact: Built ANN index and collection snapshot.\n  * Type: FAISS index or vector DB collection.\n  * Ownership: indexing platform team.\n  * Persistence: index store or managed vector DB.\n  * Consumer: query serving and rollback.\n\n* **Required Metadata:**\n  * Index family.\n  * Corpus version.\n  * Embedding model ID.\n  * Build timestamp.\n  * Shard or collection ID.\n\n* **Pipeline Contract:**\n  * Index builds must be tied to a fixed corpus and embedding version.\n  * Snapshot artifacts must be restorable without recomputing embeddings.\n  * Index type selection must reflect collection scale and update requirements.[^22][^20][^21][^6]\n\n* **Primary Consumer:** query serving and rollback.\n\n### Minimal Integration Example\n```python\nimport faiss\nimport numpy as np\n\nxb = np.random.rand(1000, 384).astype(\"float32\")\nindex = faiss.IndexFlatIP(384)\nfaiss.normalize_L2(xb)\nindex.add(xb)\nfaiss.write_index(index, \"index.faiss\")\n```",
+      "tools": [
+        "faiss-cpu",
+        "qdrant-client",
+        "pymilvus",
+        "pinecone"
+      ],
+      "decision": "Default: FAISS as the reference build target for local and reproducible benchmarking. Alternative: Managed or distributed serving via Qdrant, Milvus, or Pinecone. Trade-off: FAISS offers precise control and low overhead; managed systems improve ops, filtering, and distribution at the cost of platform dependency. Scale Trigger: Billion-scale corpora, multi-region serving, or strict tenant isolation. Failure Prevented: Serving from an index that cannot be reproduced or audited. Uses: Offline builds, production collections, snapshotting.",
+      "uses": {
+        "packages": [
+          "faiss-cpu",
+          "qdrant-client",
+          "pymilvus",
+          "pinecone"
+        ],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Failure: Index built from stale embeddings. Trigger: Staging path drift or partial rebuild. Downstream Effect: Retrieval quality regresses despite unchanged query traffic. Detection: Corpus/version hash comparison before publish. Recovery Strategy: Rebuild from the validated embedding snapshot. Production Metrics: Primary Metric: Index build success rate, Expected Range: 100% for published releases, Alert Threshold: Any collection built from mismatched inputs."
+      ]
+    },
+    {
+      "step": 5,
+      "name": "Index Optimization & Search Configuration",
+      "what": "Tune ANN parameters for latency, recall, and memory footprint under production load. This step selects the operational profile of the index rather than its raw storage format.[^20][^21][^6]\n\n* **Input Interface Contract:**\n  * Artifact: Built index.\n  * Type: ANN collection.\n  * Ownership: search infrastructure team.\n  * Persistence: index store.\n  * Consumer: retrieval service.\n\n* **Output Interface Contract:**\n  * Artifact: Search-tuned index configuration.\n  * Type: parameter profile.\n  * Ownership: search infrastructure team.\n  * Persistence: config repository and index metadata.\n  * Consumer: online query serving.\n\n* **Required Metadata:**\n  * Search policy ID.\n  * Recall target.\n  * Candidate probe or ef parameter set.\n  * Memory budget.\n  * SLA tier.\n\n* **Pipeline Contract:**\n  * Search tuning must be benchmarked against the same labeled query set and corpus snapshot.\n  * Parameters should be selected at the knee of the recall-latency curve, not at the maximum recall point.\n  * Optimized settings must remain compatible with the embedding metric and index family.[^20][^21][^6]\n\n* **Primary Consumer:** online query serving.\n\n### Minimal Integration Example\n```python\nimport faiss\nimport numpy as np\n\nxb = np.random.rand(10000, 384).astype(\"float32\")\nindex = faiss.IndexIVFFlat(faiss.IndexFlatIP(384), 384, 100)\nfaiss.normalize_L2(xb)\nindex.train(xb)\nindex.add(xb)\nindex.nprobe = 10\n```",
+      "tools": [
+        "faiss-cpu",
+        "qdrant-client",
+        "pymilvus"
+      ],
+      "decision": "Default: Tune for the lowest p95 latency that satisfies recall@k and memory limits. Alternative: Tune for maximum recall and rerank downstream. Trade-off: Aggressive recall tuning increases latency and footprint; aggressive latency tuning can suppress tail recall. Scale Trigger: Large query volume or strict latency SLOs. Failure Prevented: Over-optimized indexes that satisfy offline recall but miss online latency budgets. Uses: ANN tuning, memory planning, p95/p99 control.",
+      "uses": {
+        "packages": [
+          "faiss-cpu",
+          "qdrant-client",
+          "pymilvus"
+        ],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Failure: Probe settings too low for target recall. Trigger: Under-tuned IVF or HNSW parameters. Downstream Effect: Hidden misses in top-k retrieval. Detection: Benchmarked recall on labeled queries. Recovery Strategy: Increase probes/ef and re-run validation. Production Metrics: Primary Metric: Recall@k, Expected Range: Task-dependent but stable relative to baseline, Alert Threshold: Significant negative delta from baseline."
+      ]
+    },
+    {
+      "step": 6,
+      "name": "Metadata Filtering & Hybrid Retrieval Configuration",
+      "what": "Attach filterable fields, namespace boundaries, sparse retrieval hooks, and fusion policy. This step makes dense retrieval operationally usable in enterprise settings where tenant isolation and structured filters are non-negotiable.[^22][^21][^6]\n\n* **Input Interface Contract:**\n  * Artifact: Indexed vectors plus metadata schema.\n  * Type: collection with filterable payloads.\n  * Ownership: retrieval platform team.\n  * Persistence: vector DB collection.\n  * Consumer: serving layer and retrieval router.\n\n* **Output Interface Contract:**\n  * Artifact: Metadata-aware retrieval configuration.\n  * Type: namespace/filter/fusion policy.\n  * Ownership: search team.\n  * Persistence: config repository.\n  * Consumer: query router and reranker.\n\n* **Required Metadata:**\n  * Tenant ID.\n  * Namespace.\n  * Access scope.\n  * Filter keys.\n  * Sparse retrieval field set.\n\n* **Pipeline Contract:**\n  * Metadata must be preserved through ingestion, compaction, and incremental updates.\n  * Retrieval must respect namespace isolation and tenant boundaries.\n  * Hybrid retrieval should keep dense and sparse candidates logically separable before fusion.[^22][^21][^6]\n\n* **Primary Consumer:** query router and reranker.\n\n### Minimal Integration Example\n```python\nfrom qdrant_client import QdrantClient\n\nclient = QdrantClient(\":memory:\")\n# collection creation omitted; focus is payload contract\npayload = {\"tenant_id\": \"t1\", \"namespace\": \"prod\", \"doc_type\": \"policy\"}\nassert payload[\"tenant_id\"] and payload[\"namespace\"]\n```",
+      "tools": [
+        "qdrant-client",
+        "pinecone",
+        "langchain"
+      ],
+      "decision": "Default: Dense retrieval with metadata filters and optional RRF fusion. Alternative: Sparse-only retrieval for exact-token-heavy domains. Trade-off: Hybrid retrieval improves precision and robustness; sparse-only is simpler but weaker on semantic variation. Scale Trigger: Multi-tenant search, strict access control, or query intent diversity. Failure Prevented: Cross-tenant leakage and filter-unsafe candidate sets. Uses: Filtering, hybrid retrieval, namespace isolation.",
+      "uses": {
+        "packages": [
+          "qdrant-client",
+          "pinecone",
+          "langchain"
+        ],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Failure: Filter fields missing from payload. Trigger: Incomplete ingestion or schema drift. Downstream Effect: Queries return unscoped or empty results. Detection: Filter coverage audits and empty-result monitoring. Recovery Strategy: Backfill payloads and rebuild affected collections. Production Metrics: Primary Metric: Filtering accuracy, Expected Range: 100% for policy-compliant queries, Alert Threshold: Any cross-tenant or access-scope violation."
+      ]
+    },
+    {
+      "step": 7,
+      "name": "Incremental Updates, Versioning & Maintenance",
+      "what": "Apply inserts, deletes, rebuilds, and rolling migrations without breaking serving availability. This step is responsible for snapshot cadence, index compaction, and zero-downtime replacement of embedding or index versions.[^20][^21][^22][^6]\n\n* **Input Interface Contract:**\n  * Artifact: Live collection and update feed.\n  * Type: delta records.\n  * Ownership: indexing operations team.\n  * Persistence: change log and staging store.\n  * Consumer: live index maintenance jobs.\n\n* **Output Interface Contract:**\n  * Artifact: Updated index snapshot and lineage record.\n  * Type: refreshed collection.\n  * Ownership: indexing operations team.\n  * Persistence: index store.\n  * Consumer: serving layer and rollback.\n\n* **Required Metadata:**\n  * Update sequence number.\n  * Index version.\n  * Embedding version.\n  * Deletion tombstone flag.\n  * Migration cohort ID.\n\n* **Pipeline Contract:**\n  * Updates must be idempotent and lineage-aware.\n  * Namespace isolation must remain intact during compaction or rebuild.\n  * Rollbacks must restore a prior snapshot rather than mutate the active one in place.[^21][^6]\n\n* **Primary Consumer:** serving layer and rollback.\n\n### Minimal Integration Example\n```python\nupdates = [\n    {\"id\": \"c1\", \"op\": \"upsert\", \"version\": \"v2\"},\n    {\"id\": \"c2\", \"op\": \"delete\", \"version\": \"v2\"}\n]\nmaintenance_window = \"rolling\"\n```",
+      "tools": [
+        "faiss-cpu",
+        "qdrant-client",
+        "pymilvus"
+      ],
+      "decision": "Default: Micro-batch incremental updates with periodic snapshot rebuilds. Alternative: Full rebuild on a fixed cadence. Trade-off: Micro-batches improve freshness; full rebuilds simplify correctness and compaction. Scale Trigger: Frequent document ingestion or embedding model rotations. Failure Prevented: Serving stale or duplicate vectors during maintenance. Uses: Deletes, compaction, rolling migration, snapshot backups.",
+      "uses": {
+        "packages": [
+          "faiss-cpu",
+          "qdrant-client",
+          "pymilvus"
+        ],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Failure: Duplicate IDs after retry. Trigger: Non-idempotent update pipeline. Downstream Effect: Rank instability and inflated memory usage. Detection: Deduplication audits on update keys. Recovery Strategy: Reconcile by primary key and rebuild the affected shard. Production Metrics: Primary Metric: Update latency, Expected Range: Within SLA for the ingestion tier, Alert Threshold: Any backlog beyond maintenance window."
+      ]
+    },
+    {
+      "step": 8,
+      "name": "Retrieval Benchmarking & Production Validation",
+      "what": "Measure offline retrieval quality and production readiness against a labeled query set using the same corpus, embedding, and index versions that serve traffic. This closes the loop between index design and actual retrieval outcomes.[^22][^6][^20][^21]\n\n* **Input Interface Contract:**\n  * Artifact: Served index and labeled query set.\n  * Type: benchmark table.\n  * Ownership: evaluation team.\n  * Persistence: benchmark store.\n  * Consumer: release gating and index tuning.\n\n* **Output Interface Contract:**\n  * Artifact: Retrieval benchmark report.\n  * Type: metrics table.\n  * Ownership: evaluation team.\n  * Persistence: analytics store.\n  * Consumer: search owners and release managers.\n\n* **Required Metadata:**\n  * Query set version.\n  * Corpus version.\n  * Index version.\n  * Metric definition version.\n  * Benchmark timestamp.\n\n* **Pipeline Contract:**\n  * Benchmark runs must be reproducible across index rebuilds.\n  * Retrieval quality must be tracked with the same semantic space used in production.\n  * Latency results must be reported with tail percentiles, not averages alone.[^6][^20]\n\n* **Primary Consumer:** search owners and release managers.\n\n### Minimal Integration Example\n```python\nimport pandas as pd\n\nreport = pd.DataFrame(\n    [{\"index_version\": \"v1\", \"recall_at_10\": 0.92, \"mrr\": 0.71, \"p95_ms\": 48}]\n)\nreport.to_csv(\"retrieval_benchmark.csv\", index=False)\n```",
+      "tools": [
+        "sentence-transformers",
+        "faiss-cpu",
+        "pandas"
+      ],
+      "decision": "Default: Fixed labeled benchmark with recall, MRR, nDCG, and tail latency. Alternative: Shadow traffic validation on live queries. Trade-off: Offline benchmarks are reproducible; shadow traffic better reflects live distribution but is harder to control. Scale Trigger: New index family, embedding migration, or SLO change. Failure Prevented: Deploying an index that looks good offline but degrades real serving. Uses: Benchmarking, release gating, validation of retrieval changes.",
+      "uses": {
+        "packages": [
+          "sentence-transformers",
+          "faiss-cpu",
+          "pandas"
+        ],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Failure: Benchmark corpus and serving corpus diverge. Trigger: Unpinned snapshot or partial refresh. Downstream Effect: Reported quality no longer predicts production quality. Detection: Corpus hash reconciliation and index lineage checks. Recovery Strategy: Re-run on the exact serving snapshot and freeze the benchmark. Production Metrics: Primary Metric: MRR, Expected Range: Stable or improving versus baseline, Alert Threshold: Material negative delta on the frozen benchmark."
+      ]
+    }
+  ],
+  "common_failure_points": [
+    "Failure: Embedding Space Drift\n* Origin: Embedding model or normalization policy changes without a coordinated schema migration.\n* Trigger: Silent model upgrade or mixed-batch ingestion.\n* Immediate symptom: Similarity scores become inconsistent across batches or tenants.\n* Downstream propagation: Retrieval ranking shifts, and historical benchmarks lose comparability.\n* Why debugging is difficult: The index may still respond normally while relevance quietly degrades.\n* Recommended detection: Embedding version checks, norm audits, and schema hash comparisons.\n* Recovery strategy: Freeze the old space, rebuild the new space separately, and migrate traffic only after validation.",
+    "Failure: Index-Corpus Mismatch\n* Origin: The published index does not match the frozen embedding or chunk snapshot.\n* Trigger: Stale staging artifacts or partial rebuilds.\n* Immediate symptom: Recall drops without a corresponding query or model change.\n* Downstream propagation: Regression analysis becomes misleading because the serving artifact is no longer reproducible.\n* Why debugging is difficult: The mismatch often exists only in build provenance, not in the visible query API.\n* Recommended detection: Corpus hash and index lineage reconciliation before publish.\n* Recovery strategy: Rebuild from the validated snapshot and invalidate all stale derived artifacts.",
+    "Failure: Metadata Loss\n* Origin: Filtering fields are dropped or renamed during preprocessing or compaction.\n* Trigger: Schema drift, faulty joins, or partial backfills.\n* Immediate symptom: Queries return cross-tenant results or unexpectedly empty sets.\n* Downstream propagation: Access controls become unreliable and retrieval quality appears erratic.\n* Why debugging is difficult: The vector search itself may be correct while the payload layer is broken.\n* Recommended detection: Field-completeness audits and filter-scope test cases.\n* Recovery strategy: Restore missing payloads, rebuild affected partitions, and re-run filter benchmarks.",
+    "Failure: Over-Tuned ANN Parameters\n* Origin: Search configuration prioritizes latency too aggressively.\n* Trigger: Low probe counts or overly compressed indexes.\n* Immediate symptom: p95 latency improves while recall@k falls below acceptable bounds.\n* Downstream propagation: RAG generation quality degrades even though vector service SLOs appear healthy.\n* Why debugging is difficult: The retrieval service looks fast and stable, masking semantic loss.\n* Recommended detection: Paired recall-latency sweeps against a labeled benchmark.\n* Recovery strategy: Increase search depth, add reranking, or move to a less compressed index family."
+  ],
+  "evaluation_checks": [
+    "Retrieval quality meets labeled benchmark targets for Recall@k, Precision@k, MRR, and nDCG.",
+    "Online serving latency satisfies p50, p95, and p99 SLOs under realistic filter selectivity.",
+    "Operational health shows zero untracked schema drift, no stale collections, and successful snapshot restores.",
+    "Index lifecycle correctness is validated through rebuild, rollback, and rolling migration tests.",
+    "Retrieval reproducibility is demonstrated by rerunning the same benchmark against the same corpus, embedding, and index versions and reproducing the same metrics within expected tolerance."
+  ],
+  "worked_examples": [
+    {
+      "name": "FAISS IVF-PQ Index Construction",
+      "description": "This example builds a compressed ANN index for million-scale corpora where memory pressure matters more than exact search. The main design choice is trading a small amount of recall for much lower storage and faster search at scale.[^20][^6]",
+      "language": "python",
+      "code": "import numpy as np\nimport faiss\n\nd = 384\nnb = 100000\nnp.random.seed(0)\nxb = np.random.random((nb, d)).astype(\"float32\")\nfaiss.normalize_L2(xb)\n\nquantizer = faiss.IndexFlatIP(d)\nindex = faiss.IndexIVFPQ(quantizer, d, 4096, 32, 8)\nindex.train(xb)\nindex.add(xb)\nindex.nprobe = 16\n\nxq = xb[:5]\nscores, ids = index.search(xq, 10)",
+      "implementation_notes": "IVF-PQ is appropriate when index memory footprint is a first-class constraint and the collection is large enough that Flat is no longer economical. Validate recall against a small exact-search baseline before promoting the compressed index.[^6][^20]"
+    },
+    {
+      "name": "Hybrid Retrieval with Metadata Filtering",
+      "description": "This example combines dense candidate generation with structured metadata filtering for tenant-isolated retrieval. It is the right shape when semantic recall is needed but access rules or business filters must still dominate the final candidate set.[^21][^6]",
+      "language": "python",
+      "code": "from qdrant_client import QdrantClient\nfrom qdrant_client.http import models\n\nclient = QdrantClient(\":memory:\")\nclient.recreate_collection(\n    collection_name=\"docs\",\n    vectors_config=models.VectorParams(size=384, distance=models.Distance.COSINE),\n)\n\nflt = models.Filter(\n    must=[models.FieldCondition(\n        key=\"tenant_id\",\n        match=models.MatchValue(value=\"tenant-a\"),\n    )]\n)\n\nquery = [0.1] * 384\nhits = client.search(\n    collection_name=\"docs\",\n    query_vector=query,\n    query_filter=flt,\n    limit=10,\n)",
+      "implementation_notes": "Keep tenant, namespace, and access scope in payload fields that are validated at ingest time. Hybrid retrieval should be benchmarked with the same filters that will exist in production, because filter selectivity can change both latency and recall materially.[^22][^21][^6]"
+    },
+    {
+      "name": "Zero-Downtime Index Migration",
+      "description": "This example shows a rolling migration from one embedding or index version to another without taking retrieval offline. The key requirement is dual-running old and new collections until validation clears the new path.[^21][^6]",
+      "language": "python",
+      "code": "import pandas as pd\n\nmigration = pd.DataFrame([\n    {\"collection\": \"docs_v1\", \"state\": \"serve\"},\n    {\"collection\": \"docs_v2\", \"state\": \"warm\"}\n])\nmigration[\"cutover_ready\"] = migration[\"state\"].eq(\"warm\")\nactive = migration.loc[migration[\"cutover_ready\"], \"collection\"].tolist()",
+      "implementation_notes": "Treat the new collection as a shadow candidate until recall, latency, and filter behavior match the cutover policy. Keep rollback metadata pinned so you can restore the previous collection instantly if the new path violates SLOs.[^20][^6][^21]"
+    }
+  ],
+  "production_notes": "Benefit: A versioned index rollout gives deterministic cutovers and clean rollback boundaries. It is the safest way to migrate embedding models or index families without disrupting serving.[^6][^21]\nTrade-off: Operational complexity increases because you must maintain dual collections, shadow validation, and cutover gates.\nWhen not to use it: Do not use full rolling migration for tiny collections or one-off prototypes where rebuild time is negligible.\nOperational impact: Deployment requires explicit lineage tracking and release controls, but it sharply reduces the chance of serving broken retrieval.",
+  "scaling_notes": "Benefit: Distributed engines and compressed ANN structures extend retrieval to very large corpora without forcing exact search everywhere. IVF, IVF-PQ, and HNSW each support different scaling envelopes.[^22][^20][^21][^6]\nTrade-off: Higher throughput often comes from accepting some recall loss, extra tuning, or more memory.\nWhen not to use it: Avoid heavyweight distributed indexing when the corpus is small enough for straightforward in-memory search.\nOperational impact: Scaling usually shifts effort from query execution to build pipelines, compaction windows, and capacity planning.",
+  "cost_notes": "Benefit: Compressed indexes and filtered retrieval reduce the storage and compute cost per query. ANN methods can cut the cost of serving compared with exact search at large scale.[^20][^6]\nTrade-off: Lower cost often comes with more careful tuning and more complex rebuild logic.\nWhen not to use it: Do not optimize for minimal cost if the retrieval task is recall-critical and latency budgets are generous.\nOperational impact: Cost efficiency improves when vectors, metadata, and snapshot policies are designed together rather than independently.",
+  "latency_notes": "Benefit: Properly tuned ANN search delivers sub-100 ms retrieval for production query loads while maintaining acceptable recall. Tail latency is the real constraint, especially when filters and shard imbalance are present.[^21][^22][^6]\nTrade-off: Aggressive p95 optimization can reduce recall, while higher recall settings can consume more memory and CPU.\nWhen not to use it: Avoid aggressive compression when exact neighbor fidelity matters more than serving speed.\nOperational impact: You need percentile-based latency monitoring, not averages, and you should benchmark under realistic filter selectivity.",
+  "observability_notes": "Benefit: Lineage-aware metrics let you distinguish embedding drift, index drift, and metadata drift instead of treating them as one problem. This shortens incident resolution and improves rollback precision.[^6][^21]\nTrade-off: Observability adds overhead in logging, storage, and dashboard maintenance.\nWhen not to use it: Do not over-instrument low-stakes prototypes where the operational surface is intentionally minimal.\nOperational impact: Useful monitoring includes corpus hashes, index versions, filter hit rates, recall@k, and tail latency rather than generic uptime alone.",
+  "related_patterns": [
+    {
+      "id": "hybrid-search-rrf",
+      "type": "pattern",
+      "relationship_type": "uses"
+    },
+    {
+      "id": "rolling-index-migration",
+      "type": "pattern",
+      "relationship_type": "uses"
+    },
+    {
+      "id": "tenant-isolated-collections",
+      "type": "pattern",
+      "relationship_type": "uses"
+    }
+  ],
+  "related_models": [
+    {
+      "id": "bert",
+      "type": "model",
+      "relationship_type": "uses"
+    },
+    {
+      "id": "sentence-transformers",
+      "type": "model",
+      "relationship_type": "uses"
+    }
+  ],
+  "related_packages": [
+    {
+      "id": "faiss",
+      "type": "package",
+      "relationship_type": "uses"
+    },
+    {
+      "id": "qdrant",
+      "type": "package",
+      "relationship_type": "uses"
+    },
+    {
+      "id": "milvus",
+      "type": "package",
+      "relationship_type": "uses"
+    },
+    {
+      "id": "pinecone",
+      "type": "package",
+      "relationship_type": "uses"
+    },
+    {
+      "id": "langchain",
+      "type": "package",
+      "relationship_type": "uses"
+    }
+  ],
+  "related_debug_guides": [
+    {
+      "id": "embedding-dimension-mismatch",
+      "type": "debug_guide",
+      "relationship_type": "debugged_by"
+    },
+    {
+      "id": "index-corpus-drift",
+      "type": "debug_guide",
+      "relationship_type": "debugged_by"
+    },
+    {
+      "id": "metadata-filter-failure",
+      "type": "debug_guide",
+      "relationship_type": "debugged_by"
+    }
+  ]
+}

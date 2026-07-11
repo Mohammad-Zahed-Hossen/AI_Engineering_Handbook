@@ -55,15 +55,16 @@ export default function CollapsibleRow({
 
     const expandFromHash = () => {
       const hash = window.location.hash.replace('#', '');
-      if (hash === id) {
+      // Match exact id or prefix (e.g., #production-cost matches #production)
+      if (hash === id || hash.startsWith(id + '-')) {
         if (isControlled && controlledOnToggle && !controlledOpen) {
           controlledOnToggle();
         } else if (!isControlled) {
           setLocalOpen(true);
         }
-        
+
         setTimeout(() => {
-          document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);
       }
     };

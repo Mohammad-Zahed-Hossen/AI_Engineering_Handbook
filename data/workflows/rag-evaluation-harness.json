@@ -1,0 +1,346 @@
+{
+  "id": "rag-evaluation-harness",
+  "title": "RAG Evaluation Harness",
+  "name": "RAG Evaluation Harness",
+  "slug": "rag-evaluation-harness",
+  "description": "Production evaluation harness for RAG systems that emits immutable benchmark datasets, frozen reference answers, retrieval traces, generation-quality scores, and regression reports.",
+  "type": "pipeline",
+  "category": "evaluation",
+  "overview": "This workflow defines a production evaluation harness for RAG systems that emits immutable benchmark datasets, frozen reference answers, retrieval traces, generation-quality scores, and regression reports. The hard part in production is not metric calculation; it is preserving corpus identity, judge identity, and baseline identity so that changes in retrieval, reranking, prompts, or model weights do not collapse into a single ambiguous regression signal.[^1][^2][^3]",
+  "starter_stack": [
+    "ragas",
+    "trulens",
+    "deepeval",
+    "datasets",
+    "pandas",
+    "transformers",
+    "sentence-transformers",
+    "faiss-cpu",
+    "langchain",
+    "git-lfs"
+  ],
+  "created_at": "2026-07-12",
+  "updated_at": "2026-07-12",
+  "last_verified": "2026-07-12",
+  "review_frequency": "quarterly",
+  "verified_against": "1.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "sources": [
+    "https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/",
+    "https://deepeval.com/docs/metrics-hallucination",
+    "https://huggingface.co/docs/datasets/v2.1.0/en/share",
+    "https://huggingface.co/docs/datasets/upload_dataset",
+    "https://huggingface.co/docs/hub/en/datasets-downloading",
+    "https://github.com/facebookresearch/faiss",
+    "https://arxiv.org/abs/2109.02846",
+    "https://arxiv.org/abs/2504.14891",
+    "https://arxiv.org/abs/2604.01733",
+    "https://ieeexplore.ieee.org/document/11319066/",
+    "https://mbrenndoerfer.com/writing/rag-evaluation-metrics-retrieval-generation",
+    "https://menuagentic.com/deep-dives/retrieval-and-rag/evaluating-rag",
+    "https://nlp.stanford.edu/courses/IR-eval",
+    "https://conf.video/rag-benchmarking-talk"
+  ],
+  "tags": [
+    "evaluation",
+    "rag",
+    "regression-testing",
+    "retrieval",
+    "hallucination",
+    "benchmarking",
+    "ci-cd"
+  ],
+  "aliases": [
+    "rag-eval-harness",
+    "rag-regression-framework",
+    "rag-benchmark-pipeline"
+  ],
+  "keywords": [
+    "context precision",
+    "context recall",
+    "faithfulness",
+    "groundedness",
+    "mrr",
+    "ndcg",
+    "immutable benchmark",
+    "git-lfs"
+  ],
+  "search_tokens": [
+    "ragas trulens deepeval dataset versioning retrieval evaluation"
+  ],
+  "domain": "LLM systems",
+  "difficulty": "expert",
+  "engineering_area": "Evaluation infrastructure",
+  "estimated_reading_time": 25,
+  "prerequisites": [
+    "retrieval systems",
+    "experiment tracking",
+    "CI/CD",
+    "statistical testing"
+  ],
+  "recommended_next": [
+    "vector-database-setup-indexing-strategy"
+  ],
+  "related_content": [
+    {
+      "id": "vector-database-setup-indexing-strategy",
+      "type": "workflow",
+      "relationship_type": "related_to"
+    }
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "name": "Benchmark Dataset Construction",
+      "what": "Build the frozen benchmark corpus, query set, and chunked document inventory that all later evaluations must share. This step is responsible for dataset normalization, canonical chunk boundaries, and the first persistence of evaluation-ready artifacts.[^4][^5]\n\n* **Input Interface Contract:**\n  * Artifact: Raw source corpus.\n  * Type: documents + metadata table.\n  * Ownership: data curation team.\n  * Persistence: source repository or object storage.\n  * Consumer: dataset versioning step.\n\n* **Output Interface Contract:**\n  * Artifact: Frozen benchmark corpus.\n  * Type: parquet/jsonl plus manifest.\n  * Ownership: evaluation infrastructure team.\n  * Persistence: Hugging Face Datasets repository.\n  * Consumer: reference generation, retrieval evaluation, benchmark audits.\n\n* **Required Metadata:**\n  * Corpus source IDs.\n  * Chunking strategy ID.\n  * Chunk hash.\n  * Document lineage.\n  * Creation timestamp.\n\n* **Pipeline Contract:**\n  * The corpus must be deterministic for a given source snapshot and chunking policy.\n  * Every chunk must be traceable back to a source document and offset range.\n  * Any content rebuild must create a new dataset release rather than overwrite the prior one.[^5][^4]\n\n* **Primary Consumer:** reference generation, retrieval evaluation, benchmark audits.\n\n### Minimal Integration Example\n```python\nimport pandas as pd\nfrom datasets import Dataset\nfrom langchain.text_splitter import RecursiveCharacterTextSplitter\n\ndf = pd.read_parquet(\"raw_documents.parquet\")\nsplitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)\nchunks = [{\"chunk_id\": f\"{row['doc_id']}_{i}\", \"text\": chk, \"doc_id\": row[\"doc_id\"]}\n          for _, row in df.iterrows() for i, chk in enumerate(splitter.split_text(row[\"text\"]))]\nDataset.from_pandas(pd.DataFrame(chunks)).to_parquet(\"canonical_chunks.parquet\")\n```",
+      "tools": [
+        "datasets",
+        "pandas",
+        "langchain"
+      ],
+      "decision": "Default: Deterministic chunking with explicit manifests and HF Datasets storage. Alternative: Semantic chunking with embedding-aware boundaries. Trade-off: Deterministic chunking improves reproducibility; semantic chunking can improve retrieval quality but complicates exact baseline replay. Scale Trigger: Large corpora or frequent content refreshes. Failure Prevented: Incomparable retrieval metrics caused by drifting chunk boundaries. Uses: Corpus freezing, benchmark query alignment, index construction.",
+      "uses": {
+        "packages": [
+          "datasets",
+          "pandas",
+          "langchain"
+        ],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Failure: Non-deterministic chunk output. Trigger: Unpinned preprocessing logic. Downstream Effect: Retrieval metrics become non-comparable across runs. Detection: Chunk hash drift and manifest diff checks. Recovery Strategy: Rebuild from a pinned source snapshot and publish a new version. Production Metrics: Primary Metric: Chunk determinism rate, Expected Range: 100% for frozen benchmark releases, Alert Threshold: Any hash mismatch."
+      ]
+    },
+    {
+      "step": 2,
+      "name": "Evaluation Dataset Versioning",
+      "what": "Publish immutable benchmark releases with semantic versions, frozen splits, and Git LFS-backed artifact lineage. This step is the control point that prevents evaluation drift and supports rollback to prior baselines.[^6][^7][^5]\n\n* **Input Interface Contract:**\n  * Artifact: Frozen benchmark corpus.\n  * Type: dataset + manifest.\n  * Ownership: evaluation platform team.\n  * Persistence: Hugging Face Datasets + Git LFS.\n  * Consumer: all downstream evaluation jobs.\n\n* **Output Interface Contract:**\n  * Artifact: Versioned evaluation dataset release.\n  * Type: semver-tagged dataset repo revision.\n  * Ownership: evaluation platform team.\n  * Persistence: immutable dataset revision.\n  * Consumer: retrieval, generation, regression, reporting.\n\n* **Required Metadata:**\n  * Dataset semantic version.\n  * Git LFS object hashes.\n  * Frozen test split hash.\n  * Benchmark lineage record.\n  * Rollback target version.\n\n* **Pipeline Contract:**\n  * Dataset versions are immutable once released.\n  * Train/eval overlap must be checked before promotion.\n  * Rollback must reference a prior release, not a mutable branch.[^7][^6][^5]\n\n* **Primary Consumer:** all downstream evaluation jobs.\n\n### Minimal Integration Example\n```python\nimport subprocess\nfrom datasets import DatasetDict\n\n# Load local splits and push to Hub with pinned Git commit/revision\nds_dict = DatasetDict.load_from_disk(\"canonical_dataset\")\nds_dict.push_to_hub(\"org/rag-benchmark\", commit_message=\"Release v1.0.0 benchmark\")\n\n# Track local binary indices using Git LFS and create tag\nsubprocess.run([\"git\", \"lfs\", \"track\", \"*.faiss\"])\nsubprocess.run([\"git\", \"tag\", \"-a\", \"v1.0.0\", \"-m\", \"Release version v1.0.0\"])\n```",
+      "tools": [
+        "datasets",
+        "git-lfs",
+        "pandas"
+      ],
+      "decision": "Default: Semver-tagged HF Datasets release with Git LFS artifacts and frozen split manifest. Alternative: Internal object-store snapshots with catalog metadata. Trade-off: HF Datasets gives strong version semantics and ecosystem compatibility; internal snapshots may fit stricter governance. Scale Trigger: Regulated data or very large private corpora. Failure Prevented: Silent benchmark contamination and unreproducible regressions. Uses: Immutable baselines, audit trails, release rollback.",
+      "uses": {
+        "packages": [
+          "datasets",
+          "git-lfs",
+          "pandas"
+        ],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Failure: Benchmark version overwritten or repointed. Trigger: Manual repo mutation or broken LFS pointer. Downstream Effect: Baselines lose meaning. Detection: Revision pinning and checksum verification. Recovery Strategy: Restore prior dataset tag and republish as a new semver. Production Metrics: Primary Metric: Version immutability pass rate, Expected Range: 100%, Alert Threshold: Any revision mismatch or missing blob."
+      ]
+    },
+    {
+      "step": 3,
+      "name": "Golden Answer & Reference Context Preparation",
+      "what": "Prepare ground-truth answers and reference passages with provenance preserved at passage granularity. This step makes answer correctness and retrieval grounding measurable without retrofitting provenance later.[^2][^1]\n\n* **Input Interface Contract:**\n  * Artifact: Versioned query set.\n  * Type: parquet/jsonl.\n  * Ownership: annotation or evaluation team.\n  * Persistence: dataset repository.\n  * Consumer: metric computation and human review.\n\n* **Output Interface Contract:**\n  * Artifact: Golden answers and reference context map.\n  * Type: query-to-passage mapping.\n  * Ownership: annotation team.\n  * Persistence: immutable dataset revision.\n  * Consumer: faithfulness, exact match, context recall.\n\n* **Required Metadata:**\n  * Annotator ID.\n  * Provenance source document IDs.\n  * Evidence span offsets.\n  * Annotation schema version.\n  * Confidence or adjudication status.\n\n* **Pipeline Contract:**\n  * Every answer must link to a specific corpus version and supporting passage set.\n  * Reference context cannot outlive the dataset version it was derived from.\n  * Human adjudication is required where reference ambiguity is material.[^1][^2]\n\n* **Primary Consumer:** faithfulness, exact match, context recall.\n\n### Minimal Integration Example\n```python\nfrom datasets import load_dataset\n\n# Validate referential integrity (provenance) of references against frozen dataset\nbenchmark = load_dataset(\"org/rag-benchmark\", revision=\"v1.0.0\", split=\"test\")\nvalid_chunk_ids = set(benchmark[\"chunk_id\"])\nfor row in benchmark:\n    assert all(ref_id in valid_chunk_ids for ref_id in row[\"ref_passage_ids\"]), \\\n        f\"Broken provenance: query {row['query_id']} references missing chunk\"\n```",
+      "tools": [
+        "datasets",
+        "transformers"
+      ],
+      "decision": "Default: Human-curated gold answers with provenance and passage IDs. Alternative: LLM-bootstrapped references that are human-verified. Trade-off: Human labels maximize trust; bootstrapping scales faster but adds verification overhead. Scale Trigger: Large benchmark growth or rapid domain expansion. Failure Prevented: Unsupported gold answers that poison grounding metrics. Uses: Exact match, context recall, faithfulness anchors, audit sampling.",
+      "uses": {
+        "packages": [
+          "datasets",
+          "transformers"
+        ],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Failure: Reference passage no longer exists in the frozen corpus. Trigger: Dataset version mismatch. Downstream Effect: False negatives in recall and grounding metrics. Detection: Referential integrity checks before evaluation. Recovery Strategy: Rebind references to the correct version or regenerate the gold set. Production Metrics: Primary Metric: Reference integrity rate, Expected Range: 100%, Alert Threshold: Any broken query-to-passage link."
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Automated RAG Evaluation Pipeline",
+      "what": "Execute the end-to-end evaluation pass that computes retrieval, answer, grounding, and hallucination signals over the frozen benchmark. This is the stage that unifies Ragas, TruLens, and DeepEval into a single production evaluation run.[^8][^2][^1]\n\n* **Input Interface Contract:**\n  * Artifact: Versioned benchmark, gold answers, model snapshot.\n  * Type: dataset pointers + model pointer.\n  * Ownership: ML evaluation platform.\n  * Persistence: run registry.\n  * Consumer: regression detector and reporting.\n\n* **Output Interface Contract:**\n  * Artifact: Per-query evaluation trace.\n  * Type: parquet/jsonl.\n  * Ownership: evaluation runner.\n  * Persistence: artifact store.\n  * Consumer: metric aggregation and debugging.\n\n* **Required Metadata:**\n  * Model commit hash.\n  * Prompt template version.\n  * Judge model version.\n  * Retrieval snapshot ID.\n  * Evaluation run ID.\n\n* **Pipeline Contract:**\n  * Each run must be reproducible from run metadata alone.\n  * Retrieval and generation signals must remain separable in the trace.\n  * Judge versions are part of the evaluation identity.[^8][^2][^1]\n\n* **Primary Consumer:** regression detector and reporting.\n\n### Minimal Integration Example\n```python\nfrom datasets import load_dataset\nfrom ragas import evaluate\nfrom ragas.metrics import faithfulness, answer_relevance\n\n# Perform a deterministic automated evaluation using official Ragas API\nds = load_dataset(\"org/rag-benchmark\", revision=\"v1.0.0\", split=\"test\")\nresults = evaluate(dataset=ds, metrics=[faithfulness, answer_relevance])\nresults.to_pandas().to_parquet(\"evaluation_runs/eval_run_v1.0.0.parquet\")\n```",
+      "tools": [
+        "ragas",
+        "trulens",
+        "deepeval"
+      ],
+      "decision": "Default: Full run with trace capture and version-locked judges. Alternative: Sampled evaluation for large candidate pools. Trade-off: Full runs maximize coverage; sampled runs reduce compute but may miss tail regressions. Scale Trigger: More than a few candidate models per day or strict nightly budget. Failure Prevented: Invisible regressions hidden behind aggregate-only scores. Uses: End-to-end scoring, grounding checks, trace retention.",
+      "uses": {
+        "packages": [
+          "ragas",
+          "trulens",
+          "deepeval"
+        ],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Failure: Judge drift. Trigger: Unpinned judge model or prompt changes. Downstream Effect: False release blocks or missed hallucination regressions. Detection: Calibration set stability checks. Recovery Strategy: Re-pin judge version and re-run flagged slices. Production Metrics: Primary Metric: Run completion rate, Expected Range: Near 100% for scheduled jobs, Alert Threshold: Any run failure on a release candidate."
+      ]
+    },
+    {
+      "step": 5,
+      "name": "Retriever Performance Evaluation",
+      "what": "Measure how well each retrieval strategy surfaces the passages needed for downstream answering. Dense, hybrid, and reranked pipelines should be compared under the same corpus version so retrieval deltas are attributable rather than confounded.[^3][^9]\n\n* **Input Interface Contract:**\n  * Artifact: Frozen corpus and query set.\n  * Type: embeddings + query table.\n  * Ownership: retrieval team.\n  * Persistence: index build artifacts.\n  * Consumer: generator evaluation and benchmarking.\n\n* **Output Interface Contract:**\n  * Artifact: Retrieval ranking report.\n  * Type: per-query ranks and scores.\n  * Ownership: retrieval team.\n  * Persistence: artifact store.\n  * Consumer: regression analysis and index tuning.\n\n* **Required Metadata:**\n  * Embedding model ID.\n  * FAISS index type.\n  * Corpus version.\n  * Reranker version.\n  * Query set version.\n\n* **Pipeline Contract:**\n  * Retrieval metrics must be computed against one corpus version and one query set version.\n  * Dense, BM25, and hybrid outputs should be separable for attribution.\n  * Corpus and index versions must be recorded together.[^9][^3]\n\n* **Primary Consumer:** generator evaluation and benchmarking.\n\n### Minimal Integration Example\n```python\nimport numpy as np\nimport faiss\nfrom sentence_transformers import SentenceTransformer\n\n# Load embeddings, populate FAISS Index, and execute vector search\nmodel = SentenceTransformer(\"all-MiniLM-L6-v2\")\nembeddings = np.load(\"chunk_embeddings.npy\").astype(\"float32\")\nindex = faiss.IndexFlatIP(embeddings.shape[1])\nindex.add(embeddings)\n\nscores, indices = index.search(model.encode([\"search query\"]).astype(\"float32\"), k=5)\n```",
+      "tools": [
+        "sentence-transformers",
+        "faiss-cpu"
+      ],
+      "decision": "Default: Dense retrieval with FAISS and separate reranker comparison. Alternative: Hybrid dense + BM25 retrieval. Trade-off: Hybrid often improves recall on lexical-heavy corpora; dense retrieval is simpler to operate and faster to standardize. Scale Trigger: Retrieval errors dominate overall regression rate or corpus contains many exact-match tokens. Failure Prevented: Misattributing generation failures to retrieval quality. Uses: Context recall, MRR, nDCG, retrieval accuracy.",
+      "uses": {
+        "packages": [
+          "sentence-transformers",
+          "faiss-cpu"
+        ],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Failure: Index built from a different corpus version. Trigger: Unpinned index rebuild. Downstream Effect: Ranking metrics become misleading. Detection: Index-to-corpus hash comparison. Recovery Strategy: Rebuild index from the frozen corpus release. Production Metrics: Primary Metric: MRR, Expected Range: Task-dependent, but stable relative to baseline, Alert Threshold: Significant negative delta versus prior release."
+      ]
+    },
+    {
+      "step": 6,
+      "name": "Generator Faithfulness & Hallucination Analysis",
+      "what": "Score output faithfulness, unsupported claims, and groundedness relative to retrieved context and gold references. This step should distinguish retriever-supported grounding from generator-level contradiction so the failure source is actionable.[^2][^8]\n\n* **Input Interface Contract:**\n  * Artifact: Retrieved context plus model outputs.\n  * Type: traces + generated answers.\n  * Ownership: model evaluation team.\n  * Persistence: run artifact store.\n  * Consumer: gatekeeping and audit review.\n\n* **Output Interface Contract:**\n  * Artifact: Faithfulness and hallucination report.\n  * Type: scored per-query records.\n  * Ownership: evaluation team.\n  * Persistence: metrics registry.\n  * Consumer: regression detection and human review.\n\n* **Required Metadata:**\n  * Model version.\n  * Retrieval context version.\n  * Judge version.\n  * Prompt template version.\n  * Calibration set ID.\n\n* **Pipeline Contract:**\n  * Faithfulness must be measured against the retrieved context used at runtime, not an alternate corpus.\n  * Hallucination metrics should remain versioned with the judge configuration.\n  * Human calibration samples are required for threshold setting.[^8]\n\n* **Primary Consumer:** gatekeeping and audit review.\n\n### Minimal Integration Example\n```python\nfrom deepeval.metrics import HallucinationMetric\nfrom deepeval.test_case import LLMTestCase\n\n# Measure hallucination rate over generated answer using DeepEval test case contract\nmetric = HallucinationMetric(threshold=0.5)\ntest_case = LLMTestCase(\n    input=\"What is the capital of France?\",\n    actual_output=\"The capital of France is Paris.\",\n    retrieval_context=[\"Paris is the capital and most populous city of France.\"]\n)\nmetric.measure(test_case)\nprint(f\"Hallucination Score: {metric.score}, Passed: {metric.is_successful()}\")\n```",
+      "tools": [
+        "ragas",
+        "deepeval"
+      ],
+      "decision": "Default: Faithfulness and hallucination scoring on runtime retrieval context. Alternative: Human review-only audit on selected slices. Trade-off: Automated scoring scales; human review gives higher precision but lower coverage. Scale Trigger: High-risk domains or persistent metric disagreement. Failure Prevented: Shipping answers that are fluent but unsupported. Uses: Hallucination detection, grounding validation, deployment readiness.",
+      "uses": {
+        "packages": [
+          "ragas",
+          "deepeval"
+        ],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Failure: Judge overcalls contradictions. Trigger: Prompt or judge mismatch. Downstream Effect: False-positive rollbacks. Detection: Calibration against audited samples. Recovery Strategy: Tighten judge versioning and threshold calibration. Production Metrics: Primary Metric: Faithfulness score, Expected Range: Comparable to historical baseline, Alert Threshold: Material drop or hallucination spike."
+      ]
+    },
+    {
+      "step": 7,
+      "name": "Regression Testing & CI Integration",
+      "what": "Wire the evaluation harness into pytest and GitHub Actions so model releases are blocked when benchmark deltas exceed policy. The purpose is to convert offline metric movement into a deployable decision rather than a dashboard-only observation.[^6][^5]\n\n* **Input Interface Contract:**\n  * Artifact: Aggregated evaluation snapshot.\n  * Type: JSON/parquet metrics bundle.\n  * Ownership: CI/evaluation team.\n  * Persistence: CI artifacts.\n  * Consumer: release pipeline.\n\n* **Output Interface Contract:**\n  * Artifact: CI pass/fail decision.\n  * Type: job status + artifacts.\n  * Ownership: CI owners.\n  * Persistence: workflow logs.\n  * Consumer: deployment gates.\n\n* **Required Metadata:**\n  * Baseline run ID.\n  * Threshold policy version.\n  * Dataset version.\n  * Model version.\n  * CI job ID.\n\n* **Pipeline Contract:**\n  * Release gates must compare against a reproducible previous-version baseline.\n  * Threshold changes require explicit policy versioning.\n  * A failed gate must block promotion until adjudicated.[^5][^6]\n\n* **Primary Consumer:** release pipeline.\n\n### Minimal Integration Example\n```python\nimport pandas as pd\nimport pytest\n\ndef test_rag_regression():\n    baseline = pd.read_parquet(\"runs/baseline_metrics.parquet\")\n    current = pd.read_parquet(\"runs/current_metrics.parquet\")\n    # Gate CI run by asserting that metric regressions do not exceed 2% negative delta\n    for metric in [\"faithfulness\", \"context_recall\"]:\n        delta = current[metric].mean() - baseline[metric].mean()\n        assert delta >= -0.02, f\"Regression detected for {metric}: delta={delta:.4f}\"\n```",
+      "tools": [
+        "pytest",
+        "GitHub Actions",
+        "trulens"
+      ],
+      "decision": "Default: Nightly regression jobs plus release-candidate gates. Alternative: PR-only smoke tests. Trade-off: Nightly jobs catch drift earlier; PR-only checks cost less but miss time-based regressions. Scale Trigger: Multiple releases per day or frequent model refreshes. Failure Prevented: Deploying a regressed candidate. Uses: Deployment blocking, regression enforcement, rollback triggers.",
+      "uses": {
+        "packages": [
+          "pytest",
+          "trulens"
+        ],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Failure: Flaky CI caused by external rate limits or transient timeouts. Trigger: Judge or data-host unavailability. Downstream Effect: False alarms and release delays. Detection: Failure pattern analysis over multiple runs. Recovery Strategy: Retry, isolate external dependencies, and use cached artifacts. Production Metrics: Primary Metric: CI pass rate, Expected Range: High and stable on pinned jobs, Alert Threshold: Any release gate failure."
+      ]
+    },
+    {
+      "step": 8,
+      "name": "Evaluation Reporting & Trend Analysis",
+      "what": "Aggregate metric history, compare model families, and visualize regression trends across dataset versions and releases. The reporting layer exists to make cross-run movement interpretable without rerunning the whole benchmark corpus.[^3][^2]\n\n* **Input Interface Contract:**\n  * Artifact: Historical evaluation snapshots.\n  * Type: timeseries table.\n  * Ownership: analytics or evaluation ops.\n  * Persistence: metrics warehouse or parquet archive.\n  * Consumer: engineering leads and release managers.\n\n* **Output Interface Contract:**\n  * Artifact: Trend report and dashboards.\n  * Type: CSV/HTML/report bundle.\n  * Ownership: evaluation ops.\n  * Persistence: dashboard store.\n  * Consumer: engineering stakeholders.\n\n* **Required Metadata:**\n  * Run ID.\n  * Model family.\n  * Dataset version.\n  * Metric definition version.\n  * Time window.\n\n* **Pipeline Contract:**\n  * Trend views must retain the baseline identity for each comparison.\n  * Historical charts should never mix corpus versions without explicit labeling.\n  * Reporting must read only from authoritative evaluation artifacts.[^2][^3]\n\n* **Primary Consumer:** engineering leads and release managers.\n\n### Minimal Integration Example\n```python\nimport pandas as pd\n\nhistory = pd.read_parquet(\"eval_history.parquet\")\n# Pivot historical runs to generate a longitudinal performance drift report\npivot = history.pivot_table(\n    index=\"model_id\",\n    columns=\"dataset_version\",\n    values=[\"faithfulness\", \"context_precision\"],\n    aggfunc=\"mean\"\n)\npivot.to_csv(\"reports/longitudinal_drift_report.csv\")\n```",
+      "tools": [
+        "pandas",
+        "trulens",
+        "ragas"
+      ],
+      "decision": "Default: Version-keyed longitudinal dashboards with metric deltas. Alternative: Weekly static reports. Trade-off: Dashboards provide faster detection; static reports are easier to archive and audit. Scale Trigger: High release cadence or many model variants. Failure Prevented: Long-term drift hidden by isolated point-in-time results. Uses: Trend analysis, stakeholder review, multi-model comparison.",
+      "uses": {
+        "packages": [
+          "pandas",
+          "trulens",
+          "ragas"
+        ],
+        "models": [],
+        "cheatsheets": []
+      },
+      "failure_points": [
+        "Failure: Stale or partial metric ingestion. Trigger: Backfill gaps or warehouse lag. Downstream Effect: Misleading trend lines. Detection: Freshness checks and row-count validation. Recovery Strategy: Backfill from immutable run artifacts. Production Metrics: Primary Metric: Dashboard freshness, Expected Range: Near real-time for nightly jobs, Alert Threshold: Missing latest run or stale baseline view."
+      ]
+    }
+  ],
+  "common_failure_points": [
+    "Failure: Benchmark Contamination\n* Origin: Training or fine-tuning data overlaps the frozen evaluation corpus.\n* Trigger: Corpus refresh without overlap detection.\n* Immediate symptom: Scores improve unexpectedly without corresponding product changes.\n* Downstream propagation: Regression baselines become inflated and future releases are judged against a contaminated benchmark.\n* Why debugging is difficult: The contamination is often indirect through duplicated passages, paraphrases, or reused documents.\n* Recommended detection: Train/eval overlap checks, duplicate detection, and corpus lineage audits.\n* Recovery strategy: Remove contaminated items, republish a new benchmark version, and rebaseline historical comparisons.",
+    "Failure: Dataset Version Drift\n* Origin: A mutable dataset pointer is used in evaluation jobs.\n* Trigger: Implicit \"latest\" references or manual repo edits.\n* Immediate symptom: The same run produces different scores across invocations.\n* Downstream propagation: Regression deltas lose meaning and CI gates become unreliable.\n* Why debugging is difficult: The artifact names may remain stable while the underlying bytes change.\n* Recommended detection: Revision pinning and checksum verification on load.\n* Recovery strategy: Lock to immutable revisions and invalidate all runs using the mutable pointer.",
+    "Failure: Judge Model Drift\n* Origin: The LLM-as-judge used by Ragas, TruLens, or DeepEval changes version or prompt behavior.\n* Trigger: Vendor model refresh or unpinned judge config.\n* Immediate symptom: Faithfulness and hallucination scores move independently of retrieval metrics.\n* Downstream propagation: False release blocks or missed regressions.\n* Why debugging is difficult: The evaluation system itself becomes the unstable component.\n* Recommended detection: Calibration set with repeated human-labeled samples and judge-version tracking.\n* Recovery strategy: Pin the judge version, rerun affected slices, and reset thresholds if needed.",
+    "Failure: Index-Corpus Mismatch\n* Origin: FAISS or hybrid index is built from a corpus different from the benchmark corpus.\n* Trigger: Manual rebuild or stale build cache.\n* Immediate symptom: Recall and MRR degrade or fluctuate sharply.\n* Downstream propagation: Generation quality appears to regress even when the model is stable.\n* Why debugging is difficult: The retrieval layer still returns plausible passages, so the mismatch looks like a model issue.\n* Recommended detection: Corpus hash matching and known-query smoke tests.\n* Recovery strategy: Rebuild the index from the frozen corpus version and rerun retrieval evaluation.",
+    "Failure: CI Flakiness from External Dependencies\n* Origin: Evaluation jobs depend on networked judges, hosted models, or large artifact pulls.\n* Trigger: Timeouts, rate limiting, or temporary service degradation.\n* Immediate symptom: Intermittent CI failures and inconsistent runtimes.\n* Downstream propagation: Blocked releases and alert fatigue.\n* Why debugging is difficult: Failures are non-deterministic and often environment-specific.\n* Recommended detection: Job retry telemetry and failure clustering by dependency.\n* Recovery strategy: Cache stable artifacts, isolate external calls, and separate smoke tests from full regressions."
+  ],
+  "evaluation_checks": [
+    "Offline quality metrics: context precision, context recall, faithfulness, answer relevance, MRR, nDCG, exact match where applicable, and hallucination rate must be recorded against a pinned corpus version.[^1][^2]",
+    "Online serving metrics: release-candidate pass rate, rollback rate, and manual override count must stay within policy for production promotion.",
+    "Operational health: dataset revision integrity, index rebuild success, CI stability, and artifact freshness must remain within SLOs.",
+    "Regression detection: metric deltas must be compared against previous-version baselines with explicit thresholds and release-blocking criteria.",
+    "Benchmark reproducibility: every run must be reproducible from model version, dataset revision, judge version, index snapshot, and aggregation policy.[^5][^6]"
+  ],
+  "worked_examples": [
+    {
+      "name": "Continuous Regression Benchmark",
+      "description": "This run evaluates every release candidate against a frozen benchmark corpus and blocks promotion when metric deltas exceed threshold policy. It is the canonical nightly regression harness for reproducible model comparisons.[^1][^5]",
+      "language": "python",
+      "code": "import pandas as pd\nfrom datasets import load_dataset\nfrom ragas import evaluate\nfrom ragas.metrics import faithfulness, answer_relevance\nfrom trulens.core import TruSession\nfrom trulens.providers.openai import OpenAI as OpenAIProvider\n\n# Load frozen test split at release version v1.0.0\nds = load_dataset(\"org/rag-benchmark\", revision=\"v1.0.0\", split=\"test\")\n\n# Part 1: Run Ragas evaluation metrics on dataset\nresults = evaluate(\n    dataset=ds,\n    metrics=[faithfulness, answer_relevance]\n)\ndf_ragas = results.to_pandas()\ndf_ragas.to_parquet(\"evaluation_runs/ragas_regression.parquet\")\n\n# Part 2: Capture granular groundedness feedback using TruLens session\nsession = TruSession()\nprovider = OpenAIProvider(model_engine=\"gpt-4o\")\nf_groundedness = provider.groundedness()\n\nfor row in ds:\n    score = f_groundedness(row[\"contexts\"], row[\"answer\"])\n    session.add_feedback(name=\"groundedness\", result=score)",
+      "implementation_notes": "Keep model, dataset, and judge versions pinned in the run metadata so historical comparisons remain reproducible. Use a paired baseline comparison instead of raw score thresholds when release volume is high, because aggregate metrics can hide tail regressions.[^1][^8]"
+    },
+    {
+      "name": "Retriever Comparison Harness",
+      "description": "This harness compares dense, hybrid, and reranked retrieval on the same frozen query set and corpus version. It is designed to separate retrieval quality from generation quality so the retrieval layer can be tuned without confounding effects.[^9][^3]",
+      "language": "python",
+      "code": "import pandas as pd\nfrom sentence_transformers import SentenceTransformer\nimport faiss\n\nchunks = pd.read_parquet(\"chunks.parquet\")\nqueries = pd.read_parquet(\"queries.parquet\")\n\nmodel = SentenceTransformer(\"sentence-transformers/all-MiniLM-L6-v2\")\nemb = model.encode(chunks[\"text\"].tolist(), normalize_embeddings=True)\nindex = faiss.IndexFlatIP(emb.shape[-1])\nindex.add(emb)\n\nretrieved = []\nfor q in queries[\"question\"].tolist():\n    qv = model.encode([q], normalize_embeddings=True)\n    scores, ids = index.search(qv, 10)\n    retrieved.append({\"question\": q, \"top_ids\": ids[0].tolist()})\n\npd.DataFrame(retrieved).to_parquet(\"dense_retrieval.parquet\")",
+      "implementation_notes": "Use the same corpus snapshot and query version for dense, BM25, and reranked branches so MRR and nDCG remain comparable. When lexical-heavy domains dominate, hybrid retrieval may improve recall even when dense semantic search looks stronger on paper.[^3]"
+    },
+    {
+      "name": "Hallucination Detection Pipeline",
+      "description": "This pipeline flags unsupported claims before deployment by comparing generated answers against the retrieved context and the frozen reference set. It is intended for pre-release gates where groundedness is more important than fluency.[^8][^2]",
+      "language": "python",
+      "code": "import pandas as pd\nfrom deepeval import HallucinationMetric\nfrom ragas import evaluate\n\ncases = pd.read_parquet(\"llm_cases.parquet\")\nmetric = HallucinationMetric(threshold=0.2)\n\nscores = []\nfor _, row in cases.iterrows():\n    score = metric.measure(\n        input=row[\"question\"],\n        actual_output=row[\"answer\"],\n        context=row[\"retrieved_context\"],\n    )\n    scores.append({\"query_id\": row[\"query_id\"], \"hallucination\": score})\n\npd.DataFrame(scores).to_csv(\"hallucination_flags.csv\", index=False)",
+      "implementation_notes": "Use a calibration set with human review to set the threshold, because unsupported-claim detectors can overreact to domain-specific phrasing. Keep the reference context versioned independently from the live retriever context so you can tell whether the model or the retrieval layer introduced the error.[^8]"
+    }
+  ],
+  "production_notes": "Benefit: Nightly gating gives the team a reproducible decision boundary for candidate promotion. It creates a clear chain from benchmark release to deployment decision.[^6][^5]\nTrade-off: Operational overhead increases because benchmark versions, judges, and model snapshots must all be managed explicitly.\nWhen not to use it: Do not use full nightly gating for one-off experiments that will never be promoted.\nOperational impact: Requires artifact retention, release policy ownership, and explicit rollback procedures.",
+  "scaling_notes": "Benefit: Parallel evaluation lets the harness handle many candidates or large query sets without turning regression checks into a bottleneck.\nTrade-off: Higher concurrency increases coordination cost for artifacts, index snapshots, and judge workload.\nWhen not to use it: Avoid heavy parallelism when the benchmark is small enough that orchestration overhead dominates.\nOperational impact: Needs run isolation, queue management, and deterministic aggregation order.",
+  "cost_notes": "Benefit: Sampling can reduce judge cost while still preserving signal for common regressions.\nTrade-off: Reduced coverage can miss rare but severe hallucinations or retrieval failures.\nWhen not to use it: Do not sample away high-risk slices such as compliance, safety, or numeric accuracy workloads.\nOperational impact: Requires slice definitions and budget-aware run policies.",
+  "latency_notes": "Benefit: Fast retrieval evaluation shortens the feedback loop for model and index tuning.\nTrade-off: Low-latency indices often require higher memory use or more constrained retrieval strategies.\nWhen not to use it: Avoid prioritizing latency over fidelity in release gates where correctness is the main concern.\nOperational impact: May require separate “fast smoke” and “full benchmark” paths.",
+  "observability_notes": "Benefit: Traces and per-query metrics make it possible to identify whether regressions originate in retrieval, generation, or judging.\nTrade-off: Trace retention increases storage and governance overhead.\nWhen not to use it: Do not keep high-volume trace retention for short-lived experiments that will not be debugged later.\nOperational impact: Needs metric lineage, trace retention policy, and baseline-aware dashboards.[^2][^1][^8]",
+  "related_patterns": [
+    {
+      "id": "hybrid-retrieval",
+      "type": "pattern",
+      "relationship_type": "uses"
+    }
+  ],
+  "related_models": [
+    {
+      "id": "bert",
+      "type": "model",
+      "relationship_type": "uses"
+    }
+  ],
+  "related_packages": [
+    {
+      "id": "faiss",
+      "type": "package",
+      "relationship_type": "uses"
+    }
+  ],
+  "related_debug_guides": [
+    {
+      "id": "retrieval-regression-debug-guide",
+      "type": "debug_guide",
+      "relationship_type": "debugged_by"
+    }
+  ]
+}

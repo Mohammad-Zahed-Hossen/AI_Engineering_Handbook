@@ -729,6 +729,45 @@ function uniqueExistingRefs(refs: ContentRef[], current?: ContentRef): ContentRe
   });
 }
 
+/**
+ * Resolves workflow step cross-references into a lookup map.
+ * Extracted from page.tsx to enable testing and reuse.
+ */
+export function resolveWorkflowStepLinks(workflow: Workflow): Record<string, Record<string, { name: string; href: string | null }>> {
+  const resolvedLinks: Record<string, Record<string, { name: string; href: string | null }>> = {};
+  const typeMap: Record<string, 'package' | 'model' | 'cheatsheet' | 'pattern' | 'debug_guide' | 'decision_guide' | 'principle'> = {
+    packages: 'package',
+    models: 'model',
+    cheatsheets: 'cheatsheet',
+    patterns: 'pattern',
+    debug_guides: 'debug_guide',
+    decision_guides: 'decision_guide',
+    principles: 'principle',
+  };
+
+  workflow.steps.forEach(step => {
+    if (step.uses) {
+      Object.entries(step.uses).forEach(([key, ids]) => {
+        if (!Array.isArray(ids)) return;
+        const contentType = typeMap[key] || (key.endsWith('s') ? key.slice(0, -1) : key) as any;
+        if (!resolvedLinks[contentType]) {
+          resolvedLinks[contentType] = {};
+        }
+        ids.forEach(id => {
+          if (typeof id === 'string' && contentExists(contentType, id)) {
+            resolvedLinks[contentType][id] = {
+              name: getContentName(contentType, id),
+              href: getContentPath(contentType, id),
+            };
+          }
+        });
+      });
+    }
+  });
+
+  return resolvedLinks;
+}
+
 export const getRelatedContent = cache(function getRelatedContent(
   type: ContentRef['type'],
   id: string,
@@ -787,7 +826,14 @@ export const getRelatedContent = cache(function getRelatedContent(
       })
       .map(candidate => ({ type: 'workflow', id: candidate.id } satisfies ContentRef));
 
-    return uniqueExistingRefs([...sharedCategory, ...sharedTools], current).slice(0, 6);
+    const typedRefs = [
+      ...(workflow.related_patterns || []),
+      ...(workflow.related_models || []),
+      ...(workflow.related_packages || []),
+      ...(workflow.related_debug_guides || []),
+    ];
+
+    return uniqueExistingRefs([...typedRefs, ...sharedCategory, ...sharedTools], current).slice(0, 6);
   }
 
   if (type === 'cheatsheet') {

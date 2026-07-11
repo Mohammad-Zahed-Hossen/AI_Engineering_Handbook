@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getAllWorkflowIds, getWorkflow, getRelatedContent, contentExists, getContentName, getContentPath } from '@/lib/data';
+import { getAllWorkflowIds, getWorkflow, getRelatedContent, contentExists, resolveWorkflowStepLinks } from '@/lib/data';
 import SectionCard from '@/components/shared/SectionCard';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
@@ -40,37 +40,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
     workflow.observability_notes
   );
 
-  // Build a generic map of resolved links: type -> id -> { name, href }
-  const resolvedLinks: Record<string, Record<string, { name: string; href: string | null }>> = {};
-  const typeMap: Record<string, 'package' | 'model' | 'cheatsheet' | 'pattern' | 'debug_guide' | 'decision_guide' | 'principle'> = {
-    packages: 'package',
-    models: 'model',
-    cheatsheets: 'cheatsheet',
-    patterns: 'pattern',
-    debug_guides: 'debug_guide',
-    decision_guides: 'decision_guide',
-    principles: 'principle',
-  };
-
-  workflow.steps.forEach(step => {
-    if (step.uses) {
-      Object.entries(step.uses).forEach(([key, ids]) => {
-        if (!Array.isArray(ids)) return;
-        const contentType = typeMap[key] || (key.endsWith('s') ? key.slice(0, -1) : key) as any;
-        if (!resolvedLinks[contentType]) {
-          resolvedLinks[contentType] = {};
-        }
-        ids.forEach(id => {
-          if (typeof id === 'string' && contentExists(contentType, id)) {
-            resolvedLinks[contentType][id] = {
-              name: getContentName(contentType, id),
-              href: getContentPath(contentType, id),
-            };
-          }
-        });
-      });
-    }
-  });
+  const resolvedLinks = resolveWorkflowStepLinks(workflow);
 
   return (
     <ContentPageLayout
@@ -180,7 +150,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
         >
           <div className="space-y-4 text-xs leading-relaxed text-muted-foreground">
             {workflow.production_notes && (
-              <div>
+              <div id="production-deployment" className="scroll-mt-24">
                 <span className="text-[10px] font-semibold uppercase text-foreground block mb-1">
                   Production Deployment
                 </span>
@@ -188,7 +158,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
               </div>
             )}
             {workflow.scaling_notes && (
-              <div>
+              <div id="production-scaling" className="scroll-mt-24">
                 <span className="text-[10px] font-semibold uppercase text-foreground block mb-1">
                   Scaling & Throughput
                 </span>
@@ -196,7 +166,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
               </div>
             )}
             {workflow.cost_notes && (
-              <div>
+              <div id="production-cost" className="scroll-mt-24">
                 <span className="text-[10px] font-semibold uppercase text-foreground block mb-1">
                   Infrastructure Cost
                 </span>
@@ -204,7 +174,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
               </div>
             )}
             {workflow.latency_notes && (
-              <div>
+              <div id="production-latency" className="scroll-mt-24">
                 <span className="text-[10px] font-semibold uppercase text-foreground block mb-1">
                   Latency & Performance
                 </span>
@@ -212,7 +182,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
               </div>
             )}
             {workflow.observability_notes && (
-              <div>
+              <div id="production-observability" className="scroll-mt-24">
                 <span className="text-[10px] font-semibold uppercase text-foreground block mb-1">
                   Observability & Monitoring
                 </span>

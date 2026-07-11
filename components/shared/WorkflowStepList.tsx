@@ -96,6 +96,7 @@ export default function WorkflowStepList({ steps, resolvedLinks }: WorkflowStepL
               onClick={() => toggleStep(idx)}
               className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-muted/20 transition-colors cursor-pointer"
               aria-expanded={isOpen}
+              aria-controls={`step-panel-${s.step}`}
             >
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-xs font-mono font-semibold mt-0.5">
                 {s.step}
@@ -126,7 +127,7 @@ export default function WorkflowStepList({ steps, resolvedLinks }: WorkflowStepL
 
             {/* Step body — collapsible */}
             {isOpen && (
-              <div className="px-4 pb-4 pt-1 space-y-3 border-t border-border">
+              <div id={`step-panel-${s.step}`} className="px-4 pb-4 pt-1 space-y-3 border-t border-border">
                 <p className="text-sm text-muted-foreground">{s.what}</p>
 
                 {hasUses && (
