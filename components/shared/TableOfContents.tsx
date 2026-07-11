@@ -33,6 +33,7 @@ export default function TableOfContents({ items }: TableOfContentsProps) {
         }
       },
       {
+        root: document.getElementById('main-scroll') || null,
         rootMargin: '-88px 0px -65% 0px',
         threshold: [0, 1],
       }
@@ -45,31 +46,57 @@ export default function TableOfContents({ items }: TableOfContentsProps) {
   if (items.length < 2) return null;
 
   return (
-    <aside className="hidden xl:block w-48 shrink-0">
-      <div className="sticky top-6 rounded-lg border border-border bg-card p-3 select-none">
-        <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          On this page
-        </h2>
-        <nav aria-label="Table of contents">
-          <ul className="space-y-1.5">
-            {items.map(item => (
-              <li key={item.id}>
+    <>
+      <aside className="hidden lg:block w-48 shrink-0">
+        <div className="sticky top-6 rounded-lg border border-border bg-card p-3 select-none">
+          <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            On this page
+          </h2>
+          <nav aria-label="Table of contents">
+            <ul className="space-y-1.5">
+              {items.map(item => (
+                <li key={item.id}>
+                  <a
+                    href={`#${item.id}`}
+                    className={cn(
+                      'block border-l px-2 py-0.5 text-[11px] leading-snug transition-colors',
+                      activeId === item.id
+                        ? 'border-primary text-foreground font-medium'
+                        : 'border-border text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'
+                    )}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+      </aside>
+
+      {/* Compact horizontal pill-row ToC (md to lg) */}
+      <div className="hidden md:block lg:hidden w-full shrink-0">
+        <div className="sticky top-4 rounded-lg border border-border bg-card p-2 select-none">
+          <nav aria-label="Table of contents">
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+              {items.map(item => (
                 <a
+                  key={item.id}
                   href={`#${item.id}`}
                   className={cn(
-                    'block border-l px-2 py-0.5 text-[11px] leading-snug transition-colors',
+                    'whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-medium transition-colors border',
                     activeId === item.id
-                      ? 'border-primary text-foreground font-medium'
-                      : 'border-border text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-muted text-muted-foreground border-border hover:bg-muted/80 hover:text-foreground'
                   )}
                 >
                   {item.label}
                 </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+              ))}
+            </div>
+          </nav>
+        </div>
       </div>
-    </aside>
+    </>
   );
 }

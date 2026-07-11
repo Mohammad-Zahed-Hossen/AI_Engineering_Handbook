@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getAllWorkflowIds, getWorkflow, getRelatedContent, contentExists, resolveWorkflowStepLinks } from '@/lib/data';
+import { getAllWorkflowIds, getWorkflow, getRelatedContent, contentExists, resolveWorkflowStepLinks, getContentName, getContentPath } from '@/lib/data';
 import SectionCard from '@/components/shared/SectionCard';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
@@ -11,6 +11,8 @@ import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 import ExpandableText from '@/components/shared/ExpandableText';
 import { CodeBlock } from '@/components/shared/CodeBlock';
 import CollapsibleRow from '@/components/shared/CollapsibleRow';
+import ContentTypeBadge from '@/components/shared/ContentTypeBadge';
+import { parseLabeledClauses } from '@/lib/text/parseLabeledClauses';
 
 export async function generateStaticParams() {
   return getAllWorkflowIds().map((id) => ({ id }));
@@ -72,17 +74,53 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
           updatedAt={workflow.updated_at}
           category={workflow.category}
         />
-        <ExpandableText cacheKey={`workflow-overview-${workflow.id}`} fadeClass="from-background to-transparent">
+        <ExpandableText cacheKey={`workflow-overview-${workflow.id}`} fadeClass="from-background to-transparent" maxLines={4}>
           <p className="content-prose text-sm text-muted-foreground">{workflow.overview}</p>
         </ExpandableText>
         {workflow.starter_stack.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-semibold text-muted-foreground">Starter Stack:</span>
-            {workflow.starter_stack.map(tool => (
-              <span key={tool} className="rounded border border-border bg-muted px-2 py-0.5 text-[10px] font-mono">
-                {tool}
-              </span>
-            ))}
+            {workflow.starter_stack.map(tool => {
+              // Try to resolve as package first, then model
+              let link = null;
+              let type = null;
+              
+              if (contentExists('package', tool)) {
+                link = getContentPath('package', tool);
+                type = 'package';
+              } else if (contentExists('model', tool)) {
+                link = getContentPath('model', tool);
+                type = 'model';
+              }
+              
+              const content = (
+                <>
+                  <ContentTypeBadge type={type || 'package'} className="px-1 py-0 text-[8px] h-3.5 leading-none shrink-0" />
+                  <span className="truncate text-[10px] font-mono">{tool}</span>
+                </>
+              );
+              
+              if (link) {
+                return (
+                  <Link
+                    key={tool}
+                    href={link}
+                    className="inline-flex items-center gap-1 rounded border border-border bg-muted/40 px-1.5 py-0.5 text-[9px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
+                  >
+                    {content}
+                  </Link>
+                );
+              }
+              
+              return (
+                <span
+                  key={tool}
+                  className="inline-flex items-center gap-1 rounded border border-border bg-muted px-1.5 py-0.5 text-[9px] text-muted-foreground select-none"
+                >
+                  {content}
+                </span>
+              );
+            })}
           </div>
         )}
       </header>
@@ -90,7 +128,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
       <OfficialResources sources={workflow.sources} githubRepo={workflow.github_repo} />
 
       <SectionCard title="Workflow Steps" subtitle="Sequential pipeline" badge={`${workflow.steps.length} steps`}>
-        <WorkflowStepList steps={workflow.steps} resolvedLinks={resolvedLinks} />
+        <WorkflowStepList steps={workflow.steps} resolvedLinks={resolvedLinks} workedExamples={workflow.worked_examples} />
       </SectionCard>
 
       {workflow.worked_examples && workflow.worked_examples.length > 0 && (
@@ -102,8 +140,20 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
             {workflow.worked_examples.map((example, idx) => (
               <div key={idx} className="border border-border rounded-lg bg-card overflow-hidden transition-colors hover:border-foreground/15">
                 <div className="border-b border-border bg-muted/20 px-4 py-3">
-                  <h3 className="text-xs font-semibold text-foreground uppercase tracking-tight">{example.name}</h3>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">{example.description}</p>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <h3 className="text-xs font-semibold text-foreground uppercase tracking-tight">{example.name}</h3>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{example.description}</p>
+                    </div>
+                    {example.related_step && (
+                      <Link
+                        href={`#step-${example.related_step}`}
+                        className="shrink-0 text-[10px] font-medium text-primary hover:underline"
+                      >
+                        Used in Step {example.related_step}
+                      </Link>
+                    )}
+                  </div>
                 </div>
                 <div className="p-4 space-y-4">
                   {example.code && (
@@ -154,7 +204,22 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                 <span className="text-[10px] font-semibold uppercase text-foreground block mb-1">
                   Production Deployment
                 </span>
-                <p className="text-sm leading-relaxed">{workflow.production_notes}</p>
+                {(() => {
+                  const clauses = parseLabeledClauses(workflow.production_notes, ['Benefit:', 'Trade-off:', 'When not to use it:', 'Operational impact:']);
+                  if (clauses) {
+                    return (
+                      <div className="text-sm leading-relaxed space-y-0.5">
+                        {clauses.map((clause, cIdx) => (
+                          <div key={cIdx}>
+                            <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
+                            <span className="ml-1">{clause.text}</span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+                  return <p className="text-sm leading-relaxed">{workflow.production_notes}</p>;
+                })()}
               </div>
             )}
             {workflow.scaling_notes && (
@@ -162,7 +227,22 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                 <span className="text-[10px] font-semibold uppercase text-foreground block mb-1">
                   Scaling & Throughput
                 </span>
-                <p className="text-sm leading-relaxed">{workflow.scaling_notes}</p>
+                {(() => {
+                  const clauses = parseLabeledClauses(workflow.scaling_notes, ['Benefit:', 'Trade-off:', 'When not to use it:', 'Operational impact:']);
+                  if (clauses) {
+                    return (
+                      <div className="text-sm leading-relaxed space-y-0.5">
+                        {clauses.map((clause, cIdx) => (
+                          <div key={cIdx}>
+                            <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
+                            <span className="ml-1">{clause.text}</span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+                  return <p className="text-sm leading-relaxed">{workflow.scaling_notes}</p>;
+                })()}
               </div>
             )}
             {workflow.cost_notes && (
@@ -170,7 +250,22 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                 <span className="text-[10px] font-semibold uppercase text-foreground block mb-1">
                   Infrastructure Cost
                 </span>
-                <p className="text-sm leading-relaxed">{workflow.cost_notes}</p>
+                {(() => {
+                  const clauses = parseLabeledClauses(workflow.cost_notes, ['Benefit:', 'Trade-off:', 'When not to use it:', 'Operational impact:']);
+                  if (clauses) {
+                    return (
+                      <div className="text-sm leading-relaxed space-y-0.5">
+                        {clauses.map((clause, cIdx) => (
+                          <div key={cIdx}>
+                            <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
+                            <span className="ml-1">{clause.text}</span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+                  return <p className="text-sm leading-relaxed">{workflow.cost_notes}</p>;
+                })()}
               </div>
             )}
             {workflow.latency_notes && (
@@ -178,7 +273,22 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                 <span className="text-[10px] font-semibold uppercase text-foreground block mb-1">
                   Latency & Performance
                 </span>
-                <p className="text-sm leading-relaxed">{workflow.latency_notes}</p>
+                {(() => {
+                  const clauses = parseLabeledClauses(workflow.latency_notes, ['Benefit:', 'Trade-off:', 'When not to use it:', 'Operational impact:']);
+                  if (clauses) {
+                    return (
+                      <div className="text-sm leading-relaxed space-y-0.5">
+                        {clauses.map((clause, cIdx) => (
+                          <div key={cIdx}>
+                            <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
+                            <span className="ml-1">{clause.text}</span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+                  return <p className="text-sm leading-relaxed">{workflow.latency_notes}</p>;
+                })()}
               </div>
             )}
             {workflow.observability_notes && (
@@ -186,7 +296,22 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                 <span className="text-[10px] font-semibold uppercase text-foreground block mb-1">
                   Observability & Monitoring
                 </span>
-                <p className="text-sm leading-relaxed">{workflow.observability_notes}</p>
+                {(() => {
+                  const clauses = parseLabeledClauses(workflow.observability_notes, ['Benefit:', 'Trade-off:', 'When not to use it:', 'Operational impact:']);
+                  if (clauses) {
+                    return (
+                      <div className="text-sm leading-relaxed space-y-0.5">
+                        {clauses.map((clause, cIdx) => (
+                          <div key={cIdx}>
+                            <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
+                            <span className="ml-1">{clause.text}</span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+                  return <p className="text-sm leading-relaxed">{workflow.observability_notes}</p>;
+                })()}
               </div>
             )}
           </div>

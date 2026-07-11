@@ -14,6 +14,8 @@ export const WorkflowStepSchema = z.object({
     packages: z.array(z.string()),
     models: z.array(z.string()),
     cheatsheets: z.array(z.string()),
+    patterns: z.array(z.string()).default([]),
+    debug_guides: z.array(z.string()).default([]),
   }),
   failure_points: z.array(z.string()),
 });
@@ -24,6 +26,7 @@ export const WorkedExampleSchema = z.object({
   code: z.string().optional(),
   language: z.string().optional(),
   implementation_notes: z.string().optional(),
+  related_step: z.number().optional(),
 });
 
 export const WorkflowSchema = BaseMetaSchema.extend({

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -41,6 +41,7 @@ export default function CollapsibleRow({
   const [localOpen, setLocalOpen] = useState(false);
   const isControlled = controlledOpen !== undefined;
   const isOpen = isControlled ? controlledOpen : localOpen;
+  const contentRef = useRef<HTMLDivElement>(null);
   
   const handleToggle = () => {
     if (isControlled && controlledOnToggle) {
@@ -49,6 +50,16 @@ export default function CollapsibleRow({
       setLocalOpen(prev => !prev);
     }
   };
+
+  // Attach onBeforeMatch handler imperatively
+  useEffect(() => {
+    const element = contentRef.current;
+    if (element && !isOpen) {
+      const handleBeforeMatch = handleToggle;
+      element.addEventListener('beforematch', handleBeforeMatch as any);
+      return () => element.removeEventListener('beforematch', handleBeforeMatch as any);
+    }
+  }, [isOpen, handleToggle]);
 
   useEffect(() => {
     if (!enableHashDeepLink) return;
@@ -115,13 +126,14 @@ export default function CollapsibleRow({
         </div>
       </button>
       <div
+        ref={contentRef}
         id={contentId}
         className={cn(
-          "p-5 bg-card",
+          "p-5 bg-card [content-visibility:auto]",
           contentClassName?.includes('border-t-0') ? '' : 'border-t border-border',
           contentClassName
         )}
-        {...(!isOpen && { hidden: true })}
+        {...(!isOpen ? { hidden: 'until-found' as any } : {})}
       >
         {children}
       </div>
