@@ -78,6 +78,7 @@ export function CodeBlockInteractive({
           <button
             onClick={() => setWrapped(prev => prev === true ? false : true)}
             aria-label="Toggle line wrap"
+            aria-pressed={wrapped === true}
             className={cn(
               "hidden md:flex items-center justify-center w-6 h-6 rounded transition-all duration-200 cursor-pointer select-none",
               wrapped === true

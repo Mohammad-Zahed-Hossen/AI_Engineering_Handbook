@@ -13,7 +13,9 @@ import { CodeBlock } from '@/components/shared/CodeBlock';
 import CollapsibleRow from '@/components/shared/CollapsibleRow';
 import ContentTypeBadge from '@/components/shared/ContentTypeBadge';
 import { parseLabeledClauses } from '@/lib/text/parseLabeledClauses';
-import { Prose } from '@/components/shared/Prose';
+import { Prose, ProseInline } from '@/components/shared/Prose';
+import { parseResourceUrl, categorizeSources } from '@/lib/resources';
+import { BadgeRow } from '@/components/shared/BadgeRow';
 
 export async function generateStaticParams() {
   return getAllWorkflowIds().map((id) => ({ id }));
@@ -84,34 +86,60 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                 <Prose content={overviewWithLinks} className="text-sm text-muted-foreground" />
               </ExpandableText>
               {workflow.sources && workflow.sources.length > 0 && (
-                <div className="text-[10px] text-muted-foreground border-t border-border/50 pt-2 mt-1 space-y-1">
-                  <span className="font-semibold uppercase tracking-wider block text-[8px] text-muted-foreground/80 select-none">Citations</span>
-                  <ol className="list-decimal pl-4 space-y-0.5">
-                    {workflow.sources.map((src, idx) => {
-                      const url = typeof src === 'string' ? src : (src as any).url;
-                      return (
-                        <li key={idx} id={`footnote-${idx + 1}`}>
-                          <a
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:underline hover:text-foreground break-all"
-                          >
-                            {url}
-                          </a>
-                        </li>
-                      );
-                    })}
-                  </ol>
-                </div>
+                <span className="text-[9px] text-muted-foreground/70">
+                  {workflow.sources.length} {workflow.sources.length === 1 ? 'source' : 'sources'} cited
+                </span>
               )}
             </>
+          );
+        })()}
+        {/* Citations block - rendered outside ExpandableText so it's always visible */}
+        {workflow.sources && workflow.sources.length > 0 && (() => {
+          const sourceUrls = workflow.sources.map((s): string => typeof s === 'string' ? s : (s as any).url);
+          const categorized = categorizeSources(sourceUrls);
+          
+          // Build a map of URL -> (category, index) for linking
+          const urlToResource: Record<string, { category: string; index: number }> = {};
+          Object.entries(categorized).forEach(([category, urls]: [string, string[]]) => {
+            urls.forEach((url: string, idx: number) => {
+              urlToResource[url] = { category, index: idx };
+            });
+          });
+          
+          return (
+            <div className="text-[10px] text-muted-foreground border-t border-border/50 pt-2 mt-1 space-y-1">
+              <span className="font-semibold uppercase tracking-wider block text-[8px] text-muted-foreground/80 select-none">Citations</span>
+              <ol className="list-decimal pl-4 space-y-0.5">
+                {workflow.sources.map((src, idx) => {
+                  const url = typeof src === 'string' ? src : (src as any).url;
+                  const resourceInfo = urlToResource[url];
+                  const resourceId = resourceInfo ? `resource-${resourceInfo.category}-${resourceInfo.index}` : undefined;
+                  const info = parseResourceUrl(url, resourceInfo?.category || 'external');
+                  const customTitle = typeof src !== 'string' ? (src as any).title : undefined;
+                  const displayTitle = customTitle || info.title;
+                  
+                  return (
+                    <li key={idx} id={`footnote-${idx + 1}`}>
+                      <a
+                        href={resourceId ? `#${resourceId}` : url}
+                        target={resourceId ? undefined : "_blank"}
+                        rel={resourceId ? undefined : "noopener noreferrer"}
+                        className="hover:underline hover:text-foreground break-all"
+                      >
+                        {displayTitle}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
           );
         })()}
         {workflow.starter_stack.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-semibold text-muted-foreground">Starter Stack:</span>
-            {workflow.starter_stack.map(tool => {
+            <BadgeRow defaultVisible={8}>
+              {workflow.starter_stack.map(tool => {
               // Try to resolve as package first, then model
               let link = null;
               let type = null;
@@ -152,13 +180,14 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                 </span>
               );
             })}
+            </BadgeRow>
           </div>
         )}
       </header>
 
-      <OfficialResources sources={workflow.sources} githubRepo={workflow.github_repo} />
+      <OfficialResources sources={workflow.sources} githubRepo={workflow.github_repo} hasCitations={!!(workflow.sources && workflow.sources.length > 0)} />
 
-      <SectionCard title="Workflow Steps" subtitle="Sequential pipeline" badge={`${workflow.steps.length} steps`}>
+      <SectionCard title="Workflow Steps" subtitle="Sequential pipeline" badge={`${workflow.steps.length} steps`} id="steps" className="scroll-mt-24">
         <WorkflowStepList steps={workflow.steps} resolvedLinks={resolvedLinks} workedExamples={workflow.worked_examples} />
       </SectionCard>
 
@@ -169,7 +198,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
           </h2>
           <div className="space-y-4">
             {workflow.worked_examples.map((example, idx) => (
-              <div key={idx} className="border border-border rounded-lg bg-card overflow-hidden transition-colors hover:border-foreground/15">
+              <div key={idx} id={`example-${idx}`} className="border border-border rounded-lg bg-card overflow-hidden transition-colors hover:border-foreground/15">
                 <div className="border-b border-border bg-muted/20 px-4 py-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
@@ -249,7 +278,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                         <span className="font-semibold text-[10px] uppercase text-amber-800 dark:text-amber-400">
                           {clause.label.replace(/^\*\s*/, '')}
                         </span>
-                        <span className="ml-1 text-muted-foreground">{clause.text}</span>
+                        <span className="ml-1 text-muted-foreground"><ProseInline content={clause.text} /></span>
                       </div>
                     ))}
                   </li>
@@ -258,7 +287,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
               
               return (
                 <li key={idx} className="content-prose list-disc pl-4">
-                  {pt}
+                  <ProseInline content={pt} />
                 </li>
               );
             })}
@@ -331,13 +360,13 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                         {clauses.map((clause, cIdx) => (
                           <div key={cIdx}>
                             <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
-                            <span className="ml-1">{clause.text}</span>
+                            <span className="ml-1"><ProseInline content={clause.text} /></span>
                           </div>
                         ))}
                       </div>
                     );
                   }
-                  return <p className="text-sm leading-relaxed content-prose">{workflow.production_notes}</p>;
+                  return <p className="text-sm leading-relaxed content-prose"><ProseInline content={workflow.production_notes} /></p>;
                 })()}
               </div>
             )}
@@ -354,13 +383,13 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                         {clauses.map((clause, cIdx) => (
                           <div key={cIdx}>
                             <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
-                            <span className="ml-1">{clause.text}</span>
+                            <span className="ml-1"><ProseInline content={clause.text} /></span>
                           </div>
                         ))}
                       </div>
                     );
                   }
-                  return <p className="text-sm leading-relaxed content-prose">{workflow.scaling_notes}</p>;
+                  return <p className="text-sm leading-relaxed content-prose"><ProseInline content={workflow.scaling_notes} /></p>;
                 })()}
               </div>
             )}
@@ -377,13 +406,13 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                         {clauses.map((clause, cIdx) => (
                           <div key={cIdx}>
                             <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
-                            <span className="ml-1">{clause.text}</span>
+                            <span className="ml-1"><ProseInline content={clause.text} /></span>
                           </div>
                         ))}
                       </div>
                     );
                   }
-                  return <p className="text-sm leading-relaxed content-prose">{workflow.cost_notes}</p>;
+                  return <p className="text-sm leading-relaxed content-prose"><ProseInline content={workflow.cost_notes} /></p>;
                 })()}
               </div>
             )}
@@ -400,13 +429,13 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                         {clauses.map((clause, cIdx) => (
                           <div key={cIdx}>
                             <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
-                            <span className="ml-1">{clause.text}</span>
+                            <span className="ml-1"><ProseInline content={clause.text} /></span>
                           </div>
                         ))}
                       </div>
                     );
                   }
-                  return <p className="text-sm leading-relaxed content-prose">{workflow.latency_notes}</p>;
+                  return <p className="text-sm leading-relaxed content-prose"><ProseInline content={workflow.latency_notes} /></p>;
                 })()}
               </div>
             )}
@@ -423,13 +452,13 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                         {clauses.map((clause, cIdx) => (
                           <div key={cIdx}>
                             <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
-                            <span className="ml-1">{clause.text}</span>
+                            <span className="ml-1"><ProseInline content={clause.text} /></span>
                           </div>
                         ))}
                       </div>
                     );
                   }
-                  return <p className="text-sm leading-relaxed content-prose">{workflow.observability_notes}</p>;
+                  return <p className="text-sm leading-relaxed content-prose"><ProseInline content={workflow.observability_notes} /></p>;
                 })()}
               </div>
             )}

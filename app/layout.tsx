@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import "katex/dist/katex.min.css";
 import { cn } from "@/lib/utils";
@@ -62,8 +63,10 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
     >
-      <head>
-        <script
+      <body className="h-full flex overflow-hidden bg-background text-foreground text-sm leading-relaxed">
+        <Script
+          id="theme-script"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
@@ -79,8 +82,6 @@ export default function RootLayout({
             `,
           }}
         />
-      </head>
-      <body className="h-full flex overflow-hidden bg-background text-foreground text-sm leading-relaxed">
         <PageVisitTracker />
         <ReadingProgress />
         <BackToTop />

@@ -1,15 +1,18 @@
 import { ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 
 interface SectionCardProps {
   title: string;
   subtitle?: string;
   badge?: ReactNode;
   children: ReactNode;
+  id?: string;
+  className?: string;
 }
 
-export default function SectionCard({ title, subtitle, badge, children }: SectionCardProps) {
+export default function SectionCard({ title, subtitle, badge, children, id, className }: SectionCardProps) {
   return (
-    <div className="bg-card text-card-foreground border border-border rounded-lg overflow-hidden transition-colors hover:border-foreground/15">
+    <div id={id} className={cn("bg-card text-card-foreground border border-border rounded-lg overflow-hidden transition-colors hover:border-foreground/15", className)}>
       {/* Card Header section */}
       <div className="px-4 py-3 border-b border-border bg-muted/20 flex items-center justify-between select-none">
         <div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { categorizeSources } from '@/lib/resources';
+import { categorizeSources, parseResourceUrl, toTitleCase } from '@/lib/resources';
 import { 
   FileText, 
   BookOpen, 
@@ -19,268 +19,10 @@ interface OfficialResourcesProps {
    *  suppress the generic "Further Reading" fallback bucket here so the same kind
    *  of link doesn't appear twice on the page with two different levels of context. */
   hasLearningResources?: boolean;
-}
-
-interface ResourceInfo {
-  title: string;
-  subtitle?: string;
-}
-
-// ===== URL PARSING STRATEGY =====
-
-type Parser = (url: URL) => ResourceInfo | null;
-
-const parsers: Parser[] = [
-  // NumPy documentation
-  (url) => {
-    if (url.hostname === 'numpy.org' && url.pathname.includes('/reference/generated/')) {
-      const match = url.pathname.match(/generated\/(numpy\.\w+)\.html/);
-      if (match) {
-        const func = match[1];
-        // Convert numpy.array to np.array
-        const shortName = func.replace('numpy.', 'np.');
-        return { title: shortName, subtitle: 'API Reference' };
-      }
-    }
-    if (url.hostname === 'numpy.org' && url.pathname.includes('/user/')) {
-      const match = url.pathname.match(/user\/([\w.-]+)\.html/);
-      if (match) {
-        return { title: toTitleCase(match[1].replace(/-/g, ' ')), subtitle: 'Guide' };
-      }
-    }
-    if (url.hostname === 'numpy.org' && url.pathname === '/doc/stable/reference/') {
-      return { title: 'NumPy Reference', subtitle: 'Documentation' };
-    }
-    return null;
-  },
-
-  // Pandas documentation
-  (url) => {
-    if (url.hostname === 'pandas.pydata.org' || url.hostname === 'pandas.pydata.org') {
-      // API reference: pandas.DataFrame.groupby.html
-      const apiMatch = url.pathname.match(/reference\/api\/(pandas\.[\w.]+)\.html/);
-      if (apiMatch) {
-        const api = apiMatch[1];
-        // Shorten common patterns
-        const shortName = api
-          .replace('pandas.DataFrame.', 'DataFrame.')
-          .replace('pandas.Series.', 'Series.')
-          .replace('pandas.', '');
-        return { title: shortName, subtitle: 'API Reference' };
-      }
-      
-      // Reference sections: reference/frame.html
-      const refMatch = url.pathname.match(/reference\/(\w+)\.html/);
-      if (refMatch) {
-        const section = refMatch[1];
-        const titles: Record<string, string> = {
-          frame: 'DataFrame API',
-          series: 'Series API',
-          groupby: 'GroupBy API',
-          io: 'Input/Output',
-          indexing: 'Indexing',
-          window: 'Window Operations',
-        };
-        return { title: titles[section] || toTitleCase(section), subtitle: 'Reference' };
-      }
-      
-      // Main docs
-      if (url.pathname === '/docs/' || url.pathname === '/docs/reference/index.html') {
-        return { title: 'Pandas Documentation', subtitle: 'Documentation' };
-      }
-    }
-    return null;
-  },
-
-  // PyTorch documentation
-  (url) => {
-    if (url.hostname === 'pytorch.org' && url.pathname.includes('/docs/')) {
-      // torch.nn.Linear, torch.optim.Adam, etc.
-      const match = url.pathname.match(/docs\/stable\/generated\/([\w.]+)\.html/);
-      if (match) {
-        return { title: match[1], subtitle: 'API Reference' };
-      }
-    }
-    return null;
-  },
-
-  // Scikit-learn documentation
-  (url) => {
-    if (url.hostname === 'scikit-learn.org') {
-      const match = url.pathname.match(/modules\/generated\/sklearn\.([\w.]+)\.html/);
-      if (match) {
-        const className = match[1];
-        // sklearn.preprocessing.StandardScaler -> StandardScaler
-        const shortName = className.split('.').pop() || className;
-        return { title: shortName, subtitle: 'API Reference' };
-      }
-    }
-    return null;
-  },
-
-  // HuggingFace models
-  (url) => {
-    if (url.hostname === 'huggingface.co') {
-      const match = url.pathname.match(/\/models\/([^\/]+)/);
-      if (match) {
-        return { title: match[1], subtitle: 'Model Card' };
-      }
-    }
-    return null;
-  },
-
-  // GitHub repositories
-  (url) => {
-    if (url.hostname === 'github.com') {
-      const match = url.pathname.match(/\/([^\/]+)\/([^\/]+)/);
-      if (match) {
-        return { title: `${match[1]}/${match[2]}`, subtitle: 'Repository' };
-      }
-    }
-    return null;
-  },
-
-  // Python documentation
-  (url) => {
-    if (url.hostname === 'docs.python.org') {
-      const match = url.pathname.match(/\/3\/library\/([\w.]+)\.html/);
-      if (match) {
-        const moduleName = match[1];
-        return { title: moduleName, subtitle: 'Module' };
-      }
-      if (url.pathname.includes('/3/')) {
-        const match = url.pathname.match(/\/3\/([\w-]+)\//);
-        if (match) {
-          return { title: toTitleCase(match[1].replace(/-/g, ' ')), subtitle: 'Documentation' };
-        }
-      }
-    }
-    return null;
-  },
-
-  // ArXiv papers
-  (url) => {
-    if (url.hostname === 'arxiv.org' || url.hostname.includes('arxiv')) {
-      const match = url.pathname.match(/(\d{4}\.\d{4,5})/);
-      if (match) {
-        return { title: `arXiv:${match[1]}`, subtitle: 'Research Paper' };
-      }
-    }
-    return null;
-  },
-
-  // Matplotlib documentation
-  (url) => {
-    if (url.hostname === 'matplotlib.org') {
-      const match = url.pathname.match(/stable\/api\/(_\w+\.html)/);
-      if (match) {
-        return { title: match[1].replace('.html', ''), subtitle: 'API Reference' };
-      }
-      if (url.pathname.includes('/stable/')) {
-        const match = url.pathname.match(/stable\/([\w-]+)\.html/);
-        if (match) {
-          return { title: toTitleCase(match[1].replace(/-/g, ' ')), subtitle: 'Guide' };
-        }
-      }
-    }
-    return null;
-  },
-
-  // Zenodo records
-  (url) => {
-    if (url.hostname === 'zenodo.org') {
-      const match = url.pathname.match(/record\/(\d+)/);
-      if (match) {
-        return { title: `Zenodo Record ${match[1]}`, subtitle: 'Research Paper' };
-      }
-    }
-    return null;
-  },
-
-  // MDPI journals
-  (url) => {
-    if (url.hostname === 'www.mdpi.com') {
-      const match = url.pathname.match(/\/(\d+)\/(\d+)\//);
-      if (match) {
-        return { title: `MDPI Article`, subtitle: 'Research Paper' };
-      }
-    }
-    return null;
-  },
-
-  // Frontiers journals
-  (url) => {
-    if (url.hostname === 'www.frontiersin.org') {
-      const match = url.pathname.match(/articles\/10\.\d+\/([\w.]+)/);
-      if (match) {
-        return { title: 'Frontiers Article', subtitle: 'Research Paper' };
-      }
-    }
-    return null;
-  },
-
-  // TensorFlow documentation
-  (url) => {
-    if (url.hostname === 'www.tensorflow.org' && url.pathname.includes('/api/')) {
-      const match = url.pathname.match(/api\/python\/([\w/]+)\.html/);
-      if (match) {
-        const path = match[1];
-        const shortName = path.split('/').pop() || path;
-        return { title: shortName, subtitle: 'API Reference' };
-      }
-    }
-    return null;
-  },
-
-  // Keras documentation
-  (url) => {
-    if (url.hostname === 'keras.io' && url.pathname.includes('/api/')) {
-      const match = url.pathname.match(/api\/([\w-]+)/);
-      if (match) {
-        return { title: toTitleCase(match[1].replace(/-/g, ' ')), subtitle: 'API Reference' };
-      }
-    }
-    return null;
-  },
-];
-
-// Helper: Convert string to Title Case
-function toTitleCase(str: string): string {
-  return str
-    .replace(/([a-z])([A-Z])/g, '$1 $2')
-    .replace(/[_-]/g, ' ')
-    .replace(/\b\w/g, l => l.toUpperCase());
-}
-
-// Main parser function
-function parseResourceUrl(url: string, category: string): ResourceInfo {
-  try {
-    const urlObj = new URL(url);
-    
-    // Try each parser
-    for (const parser of parsers) {
-      const result = parser(urlObj);
-      if (result) return result;
-    }
-    
-    // Fallback based on category
-    if (category === 'modelCards') {
-      const pathParts = urlObj.pathname.split('/').filter(Boolean);
-      if (pathParts.length >= 2) {
-        return { title: pathParts.slice(-2).join(' / ') };
-      }
-      return { title: urlObj.hostname };
-    }
-    
-    if (category === 'papers') {
-      return { title: 'Research Paper' };
-    }
-    
-    // Final fallback: hostname
-    return { title: urlObj.hostname };
-  } catch {
-    return { title: url };
-  }
+  /** When a Citations block is already rendering the sources above, suppress
+   *  Official Resources to avoid duplication. The Citations block links into
+   *  this section's anchors, so nothing is lost. */
+  hasCitations?: boolean;
 }
 
 interface ResourceCategoryProps {
@@ -307,12 +49,13 @@ function ResourceCategory({ icon, iconBg, title, urls, category, sources }: Reso
           {title}
         </h3>
         <ul className="space-y-1.5">
-          {visibleUrls.map(url => {
+          {visibleUrls.map((url, urlIdx) => {
             const matchObj = sources.find(s => typeof s === 'string' ? s === url : s.url === url);
             const customTitle = matchObj && typeof matchObj !== 'string' ? matchObj.title : undefined;
             const info = parseResourceUrl(url, category);
+            const resourceId = `resource-${category}-${urlIdx}`;
             return (
-              <li key={url}>
+              <li key={url} id={resourceId}>
                 <a 
                   href={url} 
                   target="_blank" 
@@ -356,7 +99,10 @@ function ResourceCategory({ icon, iconBg, title, urls, category, sources }: Reso
   );
 }
 
-export default function OfficialResources({ sources, githubRepo, hasLearningResources = false }: OfficialResourcesProps) {
+export default function OfficialResources({ sources, githubRepo, hasLearningResources = false, hasCitations = false }: OfficialResourcesProps) {
+  // If Citations block is already showing the sources, suppress this section entirely
+  if (hasCitations) return null;
+  
   const sourceUrls = sources.map(s => typeof s === 'string' ? s : s.url);
   const categorized = categorizeSources(sourceUrls);
   // If a dedicated Learning Resources section is already rendering curated educational

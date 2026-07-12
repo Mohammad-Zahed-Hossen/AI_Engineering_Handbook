@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { WorkflowStep } from '@/types/workflow';
 import ContentTypeBadge from './ContentTypeBadge';
 import { parseLabeledClauses } from '@/lib/text/parseLabeledClauses';
-import { Prose } from './Prose';
+import { Prose, ProseInline } from './Prose';
+import { BadgeRow } from './BadgeRow';
 
 interface WorkflowStepItemProps {
   s: WorkflowStep;
@@ -15,6 +16,7 @@ interface WorkflowStepItemProps {
   toggleStep: (idx: number) => void;
   renderAllUses: (uses: Record<string, string[]>) => React.ReactNode;
   relatedExample?: { name: string; related_step?: number };
+  relatedExampleIndex?: number;
 }
 
 function WorkflowStepItem({
@@ -23,7 +25,8 @@ function WorkflowStepItem({
   isOpen,
   toggleStep,
   renderAllUses,
-  relatedExample
+  relatedExample,
+  relatedExampleIndex
 }: WorkflowStepItemProps) {
   const hasUses = s.uses && Object.values(s.uses).some(ids => Array.isArray(ids) && ids.length > 0);
   const stepBodyRef = useRef<HTMLDivElement>(null);
@@ -116,7 +119,7 @@ function WorkflowStepItem({
                       {clauses.map((clause, cIdx) => (
                         <div key={cIdx}>
                           <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
-                          <span className="ml-1">{clause.text}</span>
+                          <span className="ml-1"><ProseInline content={clause.text} /></span>
                         </div>
                       ))}
                     </li>
@@ -126,7 +129,7 @@ function WorkflowStepItem({
                 // Fallback to plain text
                 return (
                   <li key={fpIdx} className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
-                    {fp}
+                    <ProseInline content={fp} />
                   </li>
                 );
               })}
@@ -134,9 +137,9 @@ function WorkflowStepItem({
           </div>
         )}
 
-        {relatedExample && (
+        {relatedExample && relatedExampleIndex !== undefined && (
           <Link
-            href="#worked-examples"
+            href={`#example-${relatedExampleIndex}`}
             className="inline-flex items-center gap-1 text-[10px] font-medium text-primary hover:underline"
           >
             View worked example →
@@ -224,10 +227,12 @@ export default function WorkflowStepList({ steps, resolvedLinks, workedExamples 
       principles: 'principle',
     };
 
-    return Object.entries(uses).map(([key, ids]) => {
+    const allBadges = Object.entries(uses).flatMap(([key, ids]) => {
       const type = typeMap[key] || (key.endsWith('s') ? key.slice(0, -1) : key);
       return renderUses(type, ids);
-    });
+    }).filter(Boolean);
+
+    return <BadgeRow defaultVisible={4}>{allBadges}</BadgeRow>;
   };
 
   return (
@@ -244,13 +249,14 @@ export default function WorkflowStepList({ steps, resolvedLinks, workedExamples 
           onClick={collapseAll}
           className="text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
         >
-          Collapse All
+          Collapse
         </button>
       </div>
-      <ol id="steps" className="space-y-2 scroll-mt-24">
+      <ol className="space-y-2">
       {steps.map((s, idx) => {
         const isOpen = expandedSteps.has(idx);
         const relatedExample = workedExamples?.find(ex => ex.related_step === s.step);
+        const relatedExampleIndex = workedExamples?.findIndex(ex => ex.related_step === s.step);
 
         return (
           <WorkflowStepItem
@@ -261,6 +267,7 @@ export default function WorkflowStepList({ steps, resolvedLinks, workedExamples 
             toggleStep={toggleStep}
             renderAllUses={renderAllUses}
             relatedExample={relatedExample}
+            relatedExampleIndex={relatedExampleIndex}
           />
         );
       })}
