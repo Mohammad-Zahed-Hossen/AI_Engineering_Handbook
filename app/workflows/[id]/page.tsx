@@ -13,6 +13,7 @@ import { CodeBlock } from '@/components/shared/CodeBlock';
 import CollapsibleRow from '@/components/shared/CollapsibleRow';
 import ContentTypeBadge from '@/components/shared/ContentTypeBadge';
 import { parseLabeledClauses } from '@/lib/text/parseLabeledClauses';
+import { Prose } from '@/components/shared/Prose';
 
 export async function generateStaticParams() {
   return getAllWorkflowIds().map((id) => ({ id }));
@@ -74,9 +75,20 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
           updatedAt={workflow.updated_at}
           category={workflow.category}
         />
-        <ExpandableText cacheKey={`workflow-overview-${workflow.id}`} fadeClass="from-background to-transparent" maxLines={4}>
-          <p className="content-prose text-sm text-muted-foreground">{workflow.overview}</p>
-        </ExpandableText>
+        {(() => {
+          const footnoteDefs = (workflow.sources || [])
+            .map((src, idx) => {
+              const url = typeof src === 'string' ? src : (src as any).url;
+              return `\n[^${idx + 1}]: ${url}`;
+            })
+            .join('');
+          const overviewWithFootnotes = workflow.overview + '\n' + footnoteDefs;
+          return (
+            <ExpandableText cacheKey={`workflow-overview-${workflow.id}`} fadeClass="from-background to-transparent" maxLines={4}>
+              <Prose content={overviewWithFootnotes} className="text-sm text-muted-foreground" />
+            </ExpandableText>
+          );
+        })()}
         {workflow.starter_stack.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-semibold text-muted-foreground">Starter Stack:</span>
@@ -95,7 +107,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
               
               const content = (
                 <>
-                  <ContentTypeBadge type={type || 'package'} className="px-1 py-0 text-[8px] h-3.5 leading-none shrink-0" />
+                  <ContentTypeBadge type={type || 'tool'} className="px-1 py-0 text-[8px] h-3.5 leading-none shrink-0" />
                   <span className="truncate text-[10px] font-mono">{tool}</span>
                 </>
               );
@@ -170,7 +182,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                       <span className="text-[10px] font-semibold uppercase text-muted-foreground block mb-1">
                         Implementation Notes
                       </span>
-                      <p className="text-muted-foreground content-prose">{example.implementation_notes}</p>
+                      <Prose content={example.implementation_notes} className="text-muted-foreground" />
                     </div>
                   )}
                 </div>

@@ -86,17 +86,57 @@ function truncateHighlightedHtml(html: string, maxLines: number): string {
   // Extract the inner content between <code> and </code>
   const innerContent = html.slice(codeStart, codeEnd);
   
-  // Split by line spans - Shiki uses <span class="line"> for each line
-  const lineSpanRegex = /<span class="line"[^>]*>[\s\S]*?<\/span>/g;
-  const lineSpans = innerContent.match(lineSpanRegex);
+  // Find all outermost `<span class="line"` blocks using a depth-counter walk
+  const lineSpans: string[] = [];
+  let currentIndex = 0;
   
-  if (!lineSpans || lineSpans.length <= maxLines) {
-    // If we can't parse line spans or there aren't enough to truncate, return full
+  while (currentIndex < innerContent.length && lineSpans.length < maxLines) {
+    // Find the next line span opening tag
+    const lineStartMatch = innerContent.slice(currentIndex).match(/<span class="line"[^>]*>/);
+    if (!lineStartMatch || lineStartMatch.index === undefined) {
+      break;
+    }
+    
+    const lineStartPos = currentIndex + lineStartMatch.index;
+    const startTag = lineStartMatch[0];
+    
+    // Walk character by character from after the line start tag to find the matching close tag
+    let depth = 1;
+    let scanIndex = lineStartPos + startTag.length;
+    let foundEnd = false;
+    
+    while (scanIndex < innerContent.length) {
+      if (innerContent.startsWith('</span>', scanIndex)) {
+        depth--;
+        scanIndex += 7; // Length of </span>
+        if (depth === 0) {
+          foundEnd = true;
+          break;
+        }
+      } else if (innerContent.startsWith('<span', scanIndex)) {
+        depth++;
+        scanIndex += 5; // Length of <span
+      } else {
+        scanIndex++;
+      }
+    }
+    
+    if (foundEnd) {
+      const lineSpanText = innerContent.slice(lineStartPos, scanIndex);
+      lineSpans.push(lineSpanText);
+      currentIndex = scanIndex;
+    } else {
+      // If we couldn't find a matching close tag, break and fallback
+      break;
+    }
+  }
+
+  if (lineSpans.length === 0) {
     return html;
   }
 
   // Take only the first N line spans
-  const truncatedLines = lineSpans.slice(0, maxLines).join('');
+  const truncatedLines = lineSpans.join('');
   
   // Reconstruct the HTML with truncated content
   const preTag = preMatch[0];
