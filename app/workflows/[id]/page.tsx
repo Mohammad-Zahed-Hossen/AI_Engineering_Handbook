@@ -76,17 +76,36 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
           category={workflow.category}
         />
         {(() => {
-          const footnoteDefs = (workflow.sources || [])
-            .map((src, idx) => {
-              const url = typeof src === 'string' ? src : (src as any).url;
-              return `\n[^${idx + 1}]: ${url}`;
-            })
-            .join('');
-          const overviewWithFootnotes = workflow.overview + '\n' + footnoteDefs;
+          // Replace GFM footnote references [^1] with standard markdown link [[1]](#footnote-1) to support cross-Prose links
+          const overviewWithLinks = workflow.overview.replace(/\[\^(\d+)\]/g, ' [[$1]](#footnote-$1)');
           return (
-            <ExpandableText cacheKey={`workflow-overview-${workflow.id}`} fadeClass="from-background to-transparent" maxLines={4}>
-              <Prose content={overviewWithFootnotes} className="text-sm text-muted-foreground" />
-            </ExpandableText>
+            <>
+              <ExpandableText cacheKey={`workflow-overview-${workflow.id}`} fadeClass="from-background to-transparent" maxLines={4}>
+                <Prose content={overviewWithLinks} className="text-sm text-muted-foreground" />
+              </ExpandableText>
+              {workflow.sources && workflow.sources.length > 0 && (
+                <div className="text-[10px] text-muted-foreground border-t border-border/50 pt-2 mt-1 space-y-1">
+                  <span className="font-semibold uppercase tracking-wider block text-[8px] text-muted-foreground/80 select-none">Citations</span>
+                  <ol className="list-decimal pl-4 space-y-0.5">
+                    {workflow.sources.map((src, idx) => {
+                      const url = typeof src === 'string' ? src : (src as any).url;
+                      return (
+                        <li key={idx} id={`footnote-${idx + 1}`}>
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline hover:text-foreground break-all"
+                          >
+                            {url}
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </div>
+              )}
+            </>
           );
         })()}
         {workflow.starter_stack.length > 0 && (

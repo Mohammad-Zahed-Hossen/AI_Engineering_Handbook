@@ -65,6 +65,7 @@ export function formatContentType(type: string): string {
     pattern: 'Pattern',
     principle: 'Principle',
     decision_guide: 'Decision Guide',
+    tool: 'Tool',
   };
   return labels[type] ?? type;
 }

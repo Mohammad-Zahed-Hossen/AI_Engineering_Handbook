@@ -8,12 +8,7 @@ interface TocItem {
   label: string;
 }
 
-interface TableOfContentsProps {
-  items: TocItem[];
-  variant?: 'sidebar' | 'horizontal' | 'both';
-}
-
-export default function TableOfContents({ items, variant = 'both' }: TableOfContentsProps) {
+export function useActiveSection(items: { id: string }[]) {
   const [activeId, setActiveId] = useState(items[0]?.id ?? '');
 
   useEffect(() => {
@@ -44,6 +39,28 @@ export default function TableOfContents({ items, variant = 'both' }: TableOfCont
     return () => observer.disconnect();
   }, [items]);
 
+  return activeId;
+}
+
+interface TableOfContentsProps {
+  items: TocItem[];
+  variant?: 'sidebar' | 'horizontal' | 'both';
+  activeId?: string;
+}
+
+export default function TableOfContents({ items, variant = 'both', activeId }: TableOfContentsProps) {
+  if (activeId !== undefined) {
+    return <TableOfContentsPresentational items={items} variant={variant} activeId={activeId} />;
+  }
+  return <TableOfContentsSelfManaged items={items} variant={variant} />;
+}
+
+function TableOfContentsSelfManaged({ items, variant }: { items: TocItem[]; variant: 'sidebar' | 'horizontal' | 'both' }) {
+  const activeId = useActiveSection(items);
+  return <TableOfContentsPresentational items={items} variant={variant} activeId={activeId} />;
+}
+
+function TableOfContentsPresentational({ items, variant, activeId }: { items: TocItem[]; variant: 'sidebar' | 'horizontal' | 'both'; activeId: string }) {
   if (items.length < 2) return null;
 
   return (
