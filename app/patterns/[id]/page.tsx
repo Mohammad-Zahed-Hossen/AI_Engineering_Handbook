@@ -4,6 +4,8 @@ import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import RelatedContent from '@/components/shared/RelatedContent';
 import ExpandableText from '@/components/shared/ExpandableText';
+import { Prose } from '@/components/shared/Prose';
+import { CodeBlock } from '@/components/shared/CodeBlock';
 import { Lightbulb, AlertTriangle, Code, Layers } from 'lucide-react';
 
 export async function generateStaticParams() {
@@ -51,7 +53,7 @@ export default async function PatternPage({ params }: PageProps) {
       <div className="space-y-4">
         <h1 className="text-2xl font-semibold tracking-tight">{pattern.title}</h1>
         <ExpandableText cacheKey={`pattern-desc-${pattern.id}`} fadeClass="from-background to-transparent">
-          <p className="text-muted-foreground">{pattern.description}</p>
+          <Prose content={pattern.description} className="text-muted-foreground" />
         </ExpandableText>
         <MetadataBadges
           type="pattern"
@@ -68,7 +70,7 @@ export default async function PatternPage({ params }: PageProps) {
           Concept
         </h2>
         <ExpandableText cacheKey={`pattern-concept-${pattern.id}`} fadeClass="from-background to-transparent">
-          <p className="text-sm text-muted-foreground">{pattern.concept}</p>
+          <Prose content={pattern.concept} className="text-sm text-muted-foreground" />
         </ExpandableText>
       </section>
 
@@ -79,7 +81,7 @@ export default async function PatternPage({ params }: PageProps) {
           Applicability
         </h2>
         <ExpandableText cacheKey={`pattern-app-${pattern.id}`} fadeClass="from-background to-transparent">
-          <p className="text-sm text-muted-foreground">{pattern.applicability}</p>
+          <Prose content={pattern.applicability} className="text-sm text-muted-foreground" />
         </ExpandableText>
       </section>
 
@@ -91,7 +93,7 @@ export default async function PatternPage({ params }: PageProps) {
             Implementation Notes
           </h2>
           <ExpandableText cacheKey={`pattern-impl-${pattern.id}`} fadeClass="from-background to-transparent">
-            <p className="text-sm text-muted-foreground">{pattern.implementation_notes}</p>
+            <Prose content={pattern.implementation_notes} className="text-sm text-muted-foreground" />
           </ExpandableText>
         </section>
       )}
@@ -103,9 +105,7 @@ export default async function PatternPage({ params }: PageProps) {
           <div className="space-y-2">
             {pattern.examples.map((example, idx) => (
               <div key={idx} className="rounded-lg border border-border bg-card p-4">
-                <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-mono">
-                  {example}
-                </pre>
+                <CodeBlock code={example} language="python" />
               </div>
             ))}
           </div>

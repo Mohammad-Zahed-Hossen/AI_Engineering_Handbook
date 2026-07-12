@@ -6,8 +6,7 @@ import Link from 'next/link';
 import { WorkflowStep } from '@/types/workflow';
 import ContentTypeBadge from './ContentTypeBadge';
 import { parseLabeledClauses } from '@/lib/text/parseLabeledClauses';
-import { linkFootnotes } from '@/lib/text/linkFootnotes';
-import { Prose, ProseInline } from './Prose';
+import { ProseClient, ProseInline } from './Prose';
 import { BadgeRow } from './BadgeRow';
 import { CodeBlockInteractive } from './CodeBlockInteractive';
 
@@ -89,7 +88,7 @@ function WorkflowStepItem({
         className="px-4 pb-4 pt-1 space-y-3 border-t border-border [content-visibility:auto]"
         hidden={isOpen ? undefined : ('until-found' as unknown as boolean)}
       >
-        <Prose content={linkFootnotes(s.what)} className="text-sm text-muted-foreground" />
+        <ProseClient content={s.what} className="text-sm text-muted-foreground" />
 
         {s.code && s.highlightedCodeData && (
           <div className="rounded overflow-hidden text-xs my-2">
@@ -118,7 +117,7 @@ function WorkflowStepItem({
           <span className="text-[10px] font-semibold uppercase text-muted-foreground block mb-1">
             Key Decision
           </span>
-          <Prose content={linkFootnotes(s.decision)} className="text-muted-foreground" />
+          <ProseClient content={s.decision} className="text-muted-foreground" />
         </div>
 
         {s.failure_points.length > 0 && (
@@ -195,7 +194,7 @@ export default function WorkflowStepList({ steps, resolvedLinks, workedExamples 
   };
 
   const collapseAll = () => {
-    setExpandedSteps(new Set([0])); // Keep Step 1 open by default
+    setExpandedSteps(new Set());
   };
 
   const renderUses = (type: string, ids: string[] | undefined) => {
@@ -250,7 +249,7 @@ export default function WorkflowStepList({ steps, resolvedLinks, workedExamples 
       return renderUses(type, ids);
     }).filter(Boolean);
 
-    return <BadgeRow defaultVisible={4}>{allBadges}</BadgeRow>;
+    return <BadgeRow defaultVisible={3}>{allBadges}</BadgeRow>;
   };
 
   return (

@@ -6,7 +6,7 @@
   "description": "A production serving pipeline for routing, validation, safety guardrails, streaming token generation, caching, and observability across large-scale LLM deployments.",
   "type": "pipeline",
   "category": "production-systems",
-  "overview": "This workflow defines a production serving pipeline for routing, validation, safety guardrails, streaming token generation, caching, and observability across large-scale LLM deployments. It establishes a multi-stage architecture where each stage (validation, routing, generation, caching) has explicit input/output contracts, tools, metrics, and failure modes to ensure reliable, high-throughput model serving while protecting quality and cost SLOs.[^1][^2]",
+  "overview": "This workflow defines a production serving pipeline for routing, validation, safety guardrails, streaming token generation, caching, and observability across large-scale LLM deployments. It establishes a multi-stage architecture where each stage (validation, routing, generation, caching) has explicit input/output contracts, tools, metrics, and failure modes to ensure reliable, high-throughput model serving while protecting quality and cost SLOs.",
   "starter_stack": [
     "FastAPI",
     "Pydantic",
@@ -270,13 +270,13 @@
     {
       "step": 1,
       "name": "Request Validation & API Gateway",
-      "what": "Terminate client traffic at a stateless API edge that enforces schema, size limits, auth context, deadline propagation, and request IDs before any prompt work begins. FastAPI and Pydantic are the right boundary because they keep validation close to the transport while preserving typed request contracts.[^1][^2]\n\n**Input Interface Contract**\n- Artifact: inbound chat/completion request.\n- Type: JSON over HTTP or SSE-adjacent request metadata.\n- Ownership: API gateway.\n- Persistence: transient only.\n- Consumer: prompt assembly and routing stages.\n\n**Output Interface Contract**\n- Artifact: normalized request envelope.\n- Type: validated Pydantic model.\n- Ownership: gateway.\n- Persistence: transient only.\n- Consumer: safety, prompt, and routing steps.\n\n**Required Metadata**\n- Request ID.\n- Tenant or user ID.\n- Model preference hints.\n- Deadline or timeout budget.\n- Trace context.\n- Stream flag.\n\n**Pipeline Contract**\n- Reject malformed or oversized payloads before allocation-heavy work.\n- Preserve request identity across all later stages.\n- Normalize cancellation and timeout semantics at ingress.\n- Keep the edge stateless so horizontal scaling remains trivial.[^1]\n\n**Uses**\n- Public LLM APIs.\n- Internal inference gateways.\n- Tenant-isolated serving front doors.\n\n**Production Metrics**\n- Primary Metric: validation rejection rate.\n- Expected Range: low single-digit percent in mature systems.\n- Alert Threshold: sustained increase over baseline or sudden spike.",
+      "what": "Terminate client traffic at a stateless API edge that enforces schema, size limits, auth context, deadline propagation, and request IDs before any prompt work begins. FastAPI and Pydantic are the right boundary because they keep validation close to the transport while preserving typed request contracts.\n\n**Input Interface Contract**\n- Artifact: inbound chat/completion request.\n- Type: JSON over HTTP or SSE-adjacent request metadata.\n- Ownership: API gateway.\n- Persistence: transient only.\n- Consumer: prompt assembly and routing stages.\n\n**Output Interface Contract**\n- Artifact: normalized request envelope.\n- Type: validated Pydantic model.\n- Ownership: gateway.\n- Persistence: transient only.\n- Consumer: safety, prompt, and routing steps.\n\n**Required Metadata**\n- Request ID.\n- Tenant or user ID.\n- Model preference hints.\n- Deadline or timeout budget.\n- Trace context.\n- Stream flag.\n\n**Pipeline Contract**\n- Reject malformed or oversized payloads before allocation-heavy work.\n- Preserve request identity across all later stages.\n- Normalize cancellation and timeout semantics at ingress.\n- Keep the edge stateless so horizontal scaling remains trivial.\n\n**Uses**\n- Public LLM APIs.\n- Internal inference gateways.\n- Tenant-isolated serving front doors.\n\n**Production Metrics**\n- Primary Metric: validation rejection rate.\n- Expected Range: low single-digit percent in mature systems.\n- Alert Threshold: sustained increase over baseline or sudden spike.",
       "tools": [
         "FastAPI",
         "Pydantic",
         "Uvicorn"
       ],
-      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Validation strategy | Strict schema validation | Soft validation with repair | Strict validation reduces ambiguity; soft validation raises latency and hidden drift | High-volume public API | Prompt injection via malformed payloads |\n| Deployment shape | Stateless edge pods | Stateful gateway | Stateless is simpler to autoscale; stateful can cache sessions locally but complicates failover | Traffic spikes | Gateway hot-spotting |\n| Timeout policy | Per-request deadline propagation | Fixed server timeout | Deadlines improve end-to-end control; fixed timeouts are simpler but less precise | Mixed workloads | Zombie requests |\n| Cancellation handling | Cancel downstream on disconnect | Let backend finish | Canceling saves GPU time; letting finish can simplify bookkeeping | Streaming workloads | Wasted decode cycles |",
+      "decision": "Default: Strict schema validation. Alternative: Soft validation with repair. Trade-off: Strict validation reduces ambiguity; soft validation raises latency and hidden drift. Scale Trigger: High-volume public API. Failure Prevented: Prompt injection via malformed payloads.\n\nDefault: Stateless edge pods. Alternative: Stateful gateway. Trade-off: Stateless is simpler to autoscale; stateful can cache sessions locally but complicates failover. Scale Trigger: Traffic spikes. Failure Prevented: Gateway hot-spotting.\n\nDefault: Per-request deadline propagation. Alternative: Fixed server timeout. Trade-off: Deadlines improve end-to-end control; fixed timeouts are simpler but less precise. Scale Trigger: Mixed workloads. Failure Prevented: Zombie requests.\n\nDefault: Cancel downstream on disconnect. Alternative: Let backend finish. Trade-off: Canceling saves GPU time; letting finish can simplify bookkeeping. Scale Trigger: Streaming workloads. Failure Prevented: Wasted decode cycles.",
       "uses": {
         "packages": [
           "fastapi",
@@ -291,10 +291,10 @@
         "debug_guides": []
       },
       "failure_points": [
-        "Oversized payloads causing memory pressure.",
-        "Invalid schema producing downstream prompt corruption.",
-        "Missing request IDs breaking traceability.",
-        "Client disconnects not propagated to backend."
+        "Failure: Oversized payloads causing memory pressure.",
+        "Failure: Invalid schema producing downstream prompt corruption.",
+        "Failure: Missing request IDs breaking traceability.",
+        "Failure: Client disconnects not propagated to backend."
       ],
       "code": "from fastapi import FastAPI\nfrom pydantic import BaseModel, Field\n\napp = FastAPI()\n\nclass ChatRequest(BaseModel):\n    request_id: str = Field(min_length=8)\n    prompt: str = Field(min_length=1)\n    stream: bool = False\n\n@app.post(\"/chat\")\nasync def chat(req: ChatRequest):\n    return {\"request_id\": req.request_id, \"accepted\": True}",
       "language": "python"
@@ -302,12 +302,12 @@
     {
       "step": 2,
       "name": "Prompt Construction & Context Assembly",
-      "what": "Compose the model-ready prompt from system policy, user input, conversation state, and retrieved context using deterministic templates and explicit budgeting. LangChain should be used for composition, while Transformers handles tokenizer-aware length accounting so truncation matches the served model.[^2]\n\n**Input Interface Contract**\n- Artifact: validated request envelope plus retrieved session/context artifacts.\n- Type: structured prompt inputs.\n- Ownership: prompt assembler.\n- Persistence: transient, template versioned.\n- Consumer: safety validation and model routing.\n\n**Output Interface Contract**\n- Artifact: model prompt bundle.\n- Type: prompt text plus token budget metadata.\n- Ownership: prompt assembler.\n- Persistence: transient only.\n- Consumer: safety and serving backend.\n\n**Required Metadata**\n- Template version.\n- Token budget.\n- Conversation turn count.\n- Retrieved context identifiers.\n- Tokenizer identity.\n- Truncation policy.\n\n**Pipeline Contract**\n- Keep template versions deterministic for reproducibility.\n- Use the served model’s tokenizer for budget decisions.\n- Preserve ordering of system, memory, retrieval, and user fields.\n- Treat prompt assembly as pure composition, not policy execution.\n\n**Uses**\n- Chat templating.\n- RAG prompt assembly.\n- Session-aware context windows.\n\n**Production Metrics**\n- Primary Metric: prompt validation pass rate.\n- Expected Range: near 100% in stable systems.\n- Alert Threshold: any sustained decline.",
+      "what": "Compose the model-ready prompt from system policy, user input, conversation state, and retrieved context using deterministic templates and explicit budgeting. LangChain should be used for composition, while Transformers handles tokenizer-aware length accounting so truncation matches the served model.\n\n**Input Interface Contract**\n- Artifact: validated request envelope plus retrieved session/context artifacts.\n- Type: structured prompt inputs.\n- Ownership: prompt assembler.\n- Persistence: transient, template versioned.\n- Consumer: safety validation and model routing.\n\n**Output Interface Contract**\n- Artifact: model prompt bundle.\n- Type: prompt text plus token budget metadata.\n- Ownership: prompt assembler.\n- Persistence: transient only.\n- Consumer: safety and serving backend.\n\n**Required Metadata**\n- Template version.\n- Token budget.\n- Conversation turn count.\n- Retrieved context identifiers.\n- Tokenizer identity.\n- Truncation policy.\n\n**Pipeline Contract**\n- Keep template versions deterministic for reproducibility.\n- Use the served model’s tokenizer for budget decisions.\n- Preserve ordering of system, memory, retrieval, and user fields.\n- Treat prompt assembly as pure composition, not policy execution.\n\n**Uses**\n- Chat templating.\n- RAG prompt assembly.\n- Session-aware context windows.\n\n**Production Metrics**\n- Primary Metric: prompt validation pass rate.\n- Expected Range: near 100% in stable systems.\n- Alert Threshold: any sustained decline.",
       "tools": [
         "LangChain",
         "Transformers"
       ],
-      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Template style | Versioned deterministic template | Dynamic ad hoc assembly | Deterministic templates aid replay; dynamic assembly is faster to prototype | Multi-team ownership | Prompt drift |\n| Context policy | Budget-first truncation | Full-history retention | Budgeting protects latency; retention maximizes recall but increases cost | Long conversations | Context overflow |\n| Tokenizer source | Served model tokenizer | Generic tokenizer | Exact tokenizer prevents mismatch; generic tokenizer can miscount tokens | Multi-model routing | Silent truncation |\n| Composition mode | Pure function assembly | Stateful builder | Pure composition is reproducible; stateful builders can leak session data | High concurrency | Cross-session contamination |",
+      "decision": "Default: Versioned deterministic template. Alternative: Dynamic ad hoc assembly. Trade-off: Deterministic templates aid replay; dynamic assembly is faster to prototype. Scale Trigger: Multi-team ownership. Failure Prevented: Prompt drift.\n\nDefault: Budget-first truncation. Alternative: Full-history retention. Trade-off: Budgeting protects latency; retention maximizes recall but increases cost. Scale Trigger: Long conversations. Failure Prevented: Context overflow.\n\nDefault: Served model tokenizer. Alternative: Generic tokenizer. Trade-off: Exact tokenizer prevents mismatch; generic tokenizer can miscount tokens. Scale Trigger: Multi-model routing. Failure Prevented: Silent truncation.\n\nDefault: Pure function assembly. Alternative: Stateful builder. Trade-off: Pure composition is reproducible; stateful builders can leak session data. Scale Trigger: High concurrency. Failure Prevented: Cross-session contamination.",
       "uses": {
         "packages": [
           "langchain",
@@ -319,10 +319,10 @@
         "debug_guides": []
       },
       "failure_points": [
-        "Token budget overruns.",
-        "Wrong tokenizer for the routed model.",
-        "Non-deterministic template changes.",
-        "Memory leakage across sessions."
+        "Failure: Token budget overruns.",
+        "Failure: Wrong tokenizer for the routed model.",
+        "Failure: Non-deterministic template changes.",
+        "Failure: Memory leakage across sessions."
       ],
       "code": "from transformers import AutoTokenizer\nfrom langchain_core.prompts import ChatPromptTemplate\n\ntokenizer = AutoTokenizer.from_pretrained(\"mistralai/Mistral-7B-Instruct-v0.3\")\nprompt = ChatPromptTemplate.from_messages([\n    (\"system\", \"Answer concisely.\"),\n    (\"user\", \"{question}\")\n])\nmessages = prompt.format_messages(question=\"What is TTFT?\")\ntoken_count = len(tokenizer.apply_chat_template(messages, tokenize=True))",
       "language": "python"
@@ -336,7 +336,7 @@
         "Presidio",
         "Pydantic"
       ],
-      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Enforcement mode | Pre-inference blocking | Post-hoc filtering only | Blocking prevents unsafe compute; post-hoc is cheaper but too late for leakage prevention | Regulated workloads | Policy violations |\n| PII handling | Redact before inference | Detect only | Redaction improves compliance; detection-only preserves fidelity but leaks risk | Enterprise tenants | Sensitive-data exposure |\n| Schema control | Pydantic-validated structured output | Free-form output | Structured output simplifies downstream validation; free-form allows flexibility | Tool-using agents | Invalid response shapes |\n| Policy failure behavior | Fail closed | Fail open | Fail closed is safer; fail open preserves uptime but risks violations | Audit-heavy environments | Unsafe bypass |",
+      "decision": "Default: Pre-inference blocking. Alternative: Post-hoc filtering only. Trade-off: Blocking prevents unsafe compute; post-hoc is cheaper but too late for leakage prevention. Scale Trigger: Regulated workloads. Failure Prevented: Policy violations.\n\nDefault: Redact before inference. Alternative: Detect only. Trade-off: Redaction improves compliance; detection-only preserves fidelity but leaks risk. Scale Trigger: Enterprise tenants. Failure Prevented: Sensitive-data exposure.\n\nDefault: Pydantic-validated structured output. Alternative: Free-form output. Trade-off: Structured output simplifies downstream validation; free-form allows flexibility. Scale Trigger: Tool-using agents. Failure Prevented: Invalid response shapes.\n\nDefault: Fail closed. Alternative: Fail open. Trade-off: Fail closed is safer; fail open preserves uptime but risks violations. Scale Trigger: Audit-heavy environments. Failure Prevented: Unsafe bypass.",
       "uses": {
         "packages": [
           "guardrails-ai",
@@ -349,10 +349,10 @@
         "debug_guides": []
       },
       "failure_points": [
-        "False positives reducing utility.",
-        "False negatives leaking sensitive content.",
-        "Policy drift across versions.",
-        "Output schema violations."
+        "Failure: False positives reducing utility.",
+        "Failure: False negatives leaking sensitive content.",
+        "Failure: Policy drift across versions.",
+        "Failure: Output schema violations."
       ],
       "code": "from pydantic import BaseModel\nfrom presidio_analyzer import AnalyzerEngine\n\nclass SafetyInput(BaseModel):\n    text: str\n\nanalyzer = AnalyzerEngine()\npayload = SafetyInput(text=\"Call me at 555-123-4567\")\nresults = analyzer.analyze(text=payload.text, language=\"en\")",
       "language": "python"
@@ -360,13 +360,13 @@
     {
       "step": 4,
       "name": "Model Routing & Serving Backend Selection",
-      "what": "Choose the serving backend and model variant using latency budget, prompt complexity, and cost constraints. vLLM should be the default backend for high-throughput, OpenAI-compatible serving, with Transformers as a fallback path when model support or custom logic requires it.[^3][^2]\n\n**Input Interface Contract**\n- Artifact: safety-approved prompt bundle.\n- Type: routing request with model hints.\n- Ownership: router.\n- Persistence: transient only.\n- Consumer: serving backend.\n\n**Output Interface Contract**\n- Artifact: backend invocation plan.\n- Type: model ID plus backend selector.\n- Ownership: router.\n- Persistence: transient only.\n- Consumer: token generation.\n\n**Required Metadata**\n- Candidate model set.\n- Latency budget.\n- Cost budget.\n- Prompt complexity score.\n- Tenant tier.\n- Fallback order.\n\n**Pipeline Contract**\n- Make routing deterministic for the same input and policy version.\n- Prefer smaller models when latency budgets are tight and task complexity is low.\n- Fall back to a larger or more capable model when confidence or safety thresholds demand it.\n- Keep the router independent from generation logic.\n\n**Uses**\n- Cost-aware model tiering.\n- Availability fallback.\n- Prompt-complexity routing.\n\n**Production Metrics**\n- Primary Metric: routing correctness rate.\n- Expected Range: stable and policy-compliant.\n- Alert Threshold: increased fallback frequency or quality regressions.",
+      "what": "Choose the serving backend and model variant using latency budget, prompt complexity, and cost constraints. vLLM should be the default backend for high-throughput, OpenAI-compatible serving, with Transformers as a fallback path when model support or custom logic requires it.\n\n**Input Interface Contract**\n- Artifact: safety-approved prompt bundle.\n- Type: routing request with model hints.\n- Ownership: router.\n- Persistence: transient only.\n- Consumer: serving backend.\n\n**Output Interface Contract**\n- Artifact: backend invocation plan.\n- Type: model ID plus backend selector.\n- Ownership: router.\n- Persistence: transient only.\n- Consumer: token generation.\n\n**Required Metadata**\n- Candidate model set.\n- Latency budget.\n- Cost budget.\n- Prompt complexity score.\n- Tenant tier.\n- Fallback order.\n\n**Pipeline Contract**\n- Make routing deterministic for the same input and policy version.\n- Prefer smaller models when latency budgets are tight and task complexity is low.\n- Fall back to a larger or more capable model when confidence or safety thresholds demand it.\n- Keep the router independent from generation logic.\n\n**Uses**\n- Cost-aware model tiering.\n- Availability fallback.\n- Prompt-complexity routing.\n\n**Production Metrics**\n- Primary Metric: routing correctness rate.\n- Expected Range: stable and policy-compliant.\n- Alert Threshold: increased fallback frequency or quality regressions.",
       "tools": [
         "vLLM",
         "Transformers",
         "OpenAI-compatible API"
       ],
-      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Routing policy | Latency-aware heuristic routing | Manual model pinning | Heuristics optimize cost/latency; pinning gives predictability but lower efficiency | Multiple models in prod | Overusing large models |\n| Primary backend | vLLM | Transformers generate loop | vLLM improves serving efficiency; Transformers offers flexibility but lower throughput | High concurrency | Backend bottlenecks |\n| Fallback plan | Larger model on failure | Retry same model | Fallback preserves availability; same-model retries can compound queueing | Overload or quality issues | Hard outage |\n| API compatibility | OpenAI-compatible contract | Native backend contract | Compatibility simplifies clients; native contracts expose more features but fragment integrations | Multi-client ecosystems | Client lock-in |",
+      "decision": "Default: Latency-aware heuristic routing. Alternative: Manual model pinning. Trade-off: Heuristics optimize cost/latency; pinning gives predictability but lower efficiency. Scale Trigger: Multiple models in prod. Failure Prevented: Overusing large models.\n\nDefault: vLLM. Alternative: Transformers generate loop. Trade-off: vLLM improves serving efficiency; Transformers offers flexibility but lower throughput. Scale Trigger: High concurrency. Failure Prevented: Backend bottlenecks.\n\nDefault: Larger model on failure. Alternative: Retry same model. Trade-off: Fallback preserves availability; same-model retries can compound queueing. Scale Trigger: Overload or quality issues. Failure Prevented: Hard outage.\n\nDefault: OpenAI-compatible contract. Alternative: Native backend contract. Trade-off: Compatibility simplifies clients; native contracts expose more features but fragment integrations. Scale Trigger: Multi-client ecosystems. Failure Prevented: Client lock-in.",
       "uses": {
         "packages": [
           "vllm",
@@ -385,10 +385,10 @@
         "debug_guides": []
       },
       "failure_points": [
-        "Wrong model selection under tight budgets.",
-        "Router inconsistency across replicas.",
-        "Model capability mismatch.",
-        "Fallback loops during overload."
+        "Failure: Wrong model selection under tight budgets.",
+        "Failure: Router inconsistency across replicas.",
+        "Failure: Model capability mismatch.",
+        "Failure: Fallback loops during overload."
       ],
       "code": "def choose_model(complexity: int, budget_ms: int) -> str:\n    if complexity < 3 and budget_ms < 1000:\n        return \"small-model\"\n    return \"large-model\"\n\nmodel_id = choose_model(complexity=2, budget_ms=800)",
       "language": "python"
@@ -396,12 +396,12 @@
     {
       "step": 5,
       "name": "Streaming Token Generation",
-      "what": "Stream tokens as they are produced to minimize perceived latency and support interactive UX. vLLM’s OpenAI-style streaming path is the default because it already supports token streaming for chat completion workflows.[^4][^3]\n\n**Input Interface Contract**\n- Artifact: routed backend invocation plan.\n- Type: generation request.\n- Ownership: serving engine.\n- Persistence: transient only.\n- Consumer: streaming response layer.\n\n**Output Interface Contract**\n- Artifact: token stream fragments.\n- Type: ordered partial deltas.\n- Ownership: serving engine.\n- Persistence: transient only.\n- Consumer: client stream and post-processing.\n\n**Required Metadata**\n- Stream ID.\n- Decode state.\n- Chunk sequence number.\n- Client disconnect state.\n- TTFT timestamp.\n- Batch assignment.\n\n**Pipeline Contract**\n- Preserve token ordering end to end.\n- Flush chunks early enough to reduce TTFT without sacrificing stability.\n- Cancel decode on disconnect to reclaim GPU capacity.\n- Support backpressure at the transport boundary.\n\n**Uses**\n- Real-time chat.\n- Low-latency assistants.\n- Long-generation tasks with early partial output.\n\n**Production Metrics**\n- Primary Metric: TTFT.\n- Expected Range: sub-2-second P95 target in well-tuned deployments.\n- Alert Threshold: sustained TTFT regression or stalled streams.",
+      "what": "Stream tokens as they are produced to minimize perceived latency and support interactive UX. vLLM’s OpenAI-style streaming path is the default because it already supports token streaming for chat completion workflows.\n\n**Input Interface Contract**\n- Artifact: routed backend invocation plan.\n- Type: generation request.\n- Ownership: serving engine.\n- Persistence: transient only.\n- Consumer: streaming response layer.\n\n**Output Interface Contract**\n- Artifact: token stream fragments.\n- Type: ordered partial deltas.\n- Ownership: serving engine.\n- Persistence: transient only.\n- Consumer: client stream and post-processing.\n\n**Required Metadata**\n- Stream ID.\n- Decode state.\n- Chunk sequence number.\n- Client disconnect state.\n- TTFT timestamp.\n- Batch assignment.\n\n**Pipeline Contract**\n- Preserve token ordering end to end.\n- Flush chunks early enough to reduce TTFT without sacrificing stability.\n- Cancel decode on disconnect to reclaim GPU capacity.\n- Support backpressure at the transport boundary.\n\n**Uses**\n- Real-time chat.\n- Low-latency assistants.\n- Long-generation tasks with early partial output.\n\n**Production Metrics**\n- Primary Metric: TTFT.\n- Expected Range: sub-2-second P95 target in well-tuned deployments.\n- Alert Threshold: sustained TTFT regression or stalled streams.",
       "tools": [
         "vLLM",
         "Transformers"
       ],
-      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Delivery mode | Incremental streaming | Full-response buffering | Streaming improves UX and TTFT; buffering simplifies state but hurts latency | Interactive chat | Slow first response |\n| Disconnect handling | Immediate cancel | Continue generation | Cancel saves compute; continue can simplify logs but wastes GPU | Mobile or browser clients | GPU waste |\n| Flush policy | Frequent chunk flush | Larger aggregation windows | Frequent flushes reduce TTFT; aggregation improves throughput but increases latency | Real-time use cases | Perceived slowness |\n| Ordering guarantee | Strict sequence preservation | Opportunistic reordering | Ordering preserves correctness; reordering can optimize transport but breaks UX | Any chat stream | Garbled output |",
+      "decision": "Default: Incremental streaming. Alternative: Full-response buffering. Trade-off: Streaming improves UX and TTFT; buffering simplifies state but hurts latency. Scale Trigger: Interactive chat. Failure Prevented: Slow first response.\n\nDefault: Immediate cancel. Alternative: Continue generation. Trade-off: Cancel saves compute; continue can simplify logs but wastes GPU. Scale Trigger: Mobile or browser clients. Failure Prevented: GPU waste.\n\nDefault: Frequent chunk flush. Alternative: Larger aggregation windows. Trade-off: Frequent flushes reduce TTFT; aggregation improves throughput but increases latency. Scale Trigger: Real-time use cases. Failure Prevented: Perceived slowness.\n\nDefault: Strict sequence preservation. Alternative: Opportunistic reordering. Trade-off: Ordering preserves correctness; reordering can optimize transport but breaks UX. Scale Trigger: Any chat stream. Failure Prevented: Garbled output.",
       "uses": {
         "packages": [
           "vllm",
@@ -415,10 +415,10 @@
         "debug_guides": []
       },
       "failure_points": [
-        "Streaming interruption.",
-        "Chunk reordering.",
-        "Backpressure collapse.",
-        "Cancel signals not honored."
+        "Failure: Streaming interruption.",
+        "Failure: Chunk reordering.",
+        "Failure: Backpressure collapse.",
+        "Failure: Cancel signals not honored."
       ],
       "code": "from openai import OpenAI\n\nclient = OpenAI(base_url=\"http://localhost:8000/v1\", api_key=\"EMPTY\")\nstream = client.chat.completions.create(\n    model=\"your-model\",\n    messages=[{\"role\": \"user\", \"content\": \"Hello\"}],\n    stream=True,\n)\nfor event in stream:\n    print(event)",
       "language": "python"
@@ -431,7 +431,7 @@
         "Guardrails AI",
         "Pydantic"
       ],
-      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Validation timing | Validate before emit | Validate after emit | Pre-emit prevents bad data from escaping; post-emit lowers latency but risks exposure | Structured outputs | Invalid client payloads |\n| Repair policy | Deterministic repair | Reject on first failure | Repair improves completion rate; reject is simpler and safer | High-volume extraction workflows | Minor schema drift |\n| Output shape | Strict schema | Loose text | Strict schema aids integrations; loose text maximizes flexibility | Tool-executed workflows | Downstream parser failures |\n| Finalization rule | One final canonical response | Multiple response variants | Canonical output simplifies observability; variants complicate comparisons | Multi-step pipelines | Ambiguous client state |",
+      "decision": "Default: Validate before emit. Alternative: Validate after emit. Trade-off: Pre-emit prevents bad data from escaping; post-emit lowers latency but risks exposure. Scale Trigger: Structured outputs. Failure Prevented: Invalid client payloads.\n\nDefault: Deterministic repair. Alternative: Reject on first failure. Trade-off: Repair improves completion rate; reject is simpler and safer. Scale Trigger: High-volume extraction workflows. Failure Prevented: Minor schema drift.\n\nDefault: Strict schema. Alternative: Loose text. Trade-off: Strict schema aids integrations; loose text maximizes flexibility. Scale Trigger: Tool-executed workflows. Failure Prevented: Downstream parser failures.\n\nDefault: One final canonical response. Alternative: Multiple response variants. Trade-off: Canonical output simplifies observability; variants complicate comparisons. Scale Trigger: Multi-step pipelines. Failure Prevented: Ambiguous client state.",
       "uses": {
         "packages": [
           "guardrails-ai",
@@ -443,10 +443,10 @@
         "debug_guides": []
       },
       "failure_points": [
-        "Malformed JSON.",
-        "Schema drift.",
-        "Unsafe content leakage.",
-        "Partial stream finalization errors."
+        "Failure: Malformed JSON.",
+        "Failure: Schema drift.",
+        "Failure: Unsafe content leakage.",
+        "Failure: Partial stream finalization errors."
       ],
       "code": "from pydantic import BaseModel\n\nclass Answer(BaseModel):\n    text: str\n    confidence: float\n\nraw = {\"text\": \"ok\", \"confidence\": 0.93}\nvalidated = Answer.model_validate(raw)",
       "language": "python"
@@ -454,12 +454,12 @@
     {
       "step": 7,
       "name": "Caching, Session Memory & Conversation State",
-      "what": "Store session-scoped conversation state, prompt fragments, and reusable prefixes in Redis to cut repeated work and preserve user continuity. LangChain can orchestrate memory composition, while Redis should own the durable session-side cache layer.[^2][^1]\n\n**Input Interface Contract**\n- Artifact: validated request plus session key.\n- Type: cache lookup or session mutation.\n- Ownership: cache layer.\n- Persistence: bounded durable cache with TTL.\n- Consumer: prompt construction and routing.\n\n**Output Interface Contract**\n- Artifact: retrieved memory state or cache miss.\n- Type: serialized session object.\n- Ownership: cache layer.\n- Persistence: TTL-bound.\n- Consumer: prompt assembly.\n\n**Required Metadata**\n- Session ID.\n- Cache key.\n- Model version.\n- Prompt template version.\n- TTL.\n- Cache lineage.\n\n**Pipeline Contract**\n- Isolate conversation state per session.\n- Bind cache entries to model version and template version.\n- Use prefix caching only when tokenizer and model are compatible.\n- Prevent cache poisoning by validating all writes.\n\n**Uses**\n- Conversation continuity.\n- Prefix caching.\n- Prompt fragment reuse.\n\n**Production Metrics**\n- Primary Metric: cache hit ratio.\n- Expected Range: workload-dependent, improving with repetition.\n- Alert Threshold: sharp hit-rate collapse or unexpected cross-tenant reuse.",
+      "what": "Store session-scoped conversation state, prompt fragments, and reusable prefixes in Redis to cut repeated work and preserve user continuity. LangChain can orchestrate memory composition, while Redis should own the durable session-side cache layer.\n\n**Input Interface Contract**\n- Artifact: validated request plus session key.\n- Type: cache lookup or session mutation.\n- Ownership: cache layer.\n- Persistence: bounded durable cache with TTL.\n- Consumer: prompt construction and routing.\n\n**Output Interface Contract**\n- Artifact: retrieved memory state or cache miss.\n- Type: serialized session object.\n- Ownership: cache layer.\n- Persistence: TTL-bound.\n- Consumer: prompt assembly.\n\n**Required Metadata**\n- Session ID.\n- Cache key.\n- Model version.\n- Prompt template version.\n- TTL.\n- Cache lineage.\n\n**Pipeline Contract**\n- Isolate conversation state per session.\n- Bind cache entries to model version and template version.\n- Use prefix caching only when tokenizer and model are compatible.\n- Prevent cache poisoning by validating all writes.\n\n**Uses**\n- Conversation continuity.\n- Prefix caching.\n- Prompt fragment reuse.\n\n**Production Metrics**\n- Primary Metric: cache hit ratio.\n- Expected Range: workload-dependent, improving with repetition.\n- Alert Threshold: sharp hit-rate collapse or unexpected cross-tenant reuse.",
       "tools": [
         "Redis",
         "LangChain"
       ],
-      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| State store | Redis with TTL | In-process memory | Redis survives pod churn; in-process memory is faster but not shareable | Horizontal scaling | Session loss |\n| Cache scope | Prefix and session cache | Session-only cache | Prefix cache improves reuse; session-only is simpler and safer | Repetitive prompts | Duplicate compute |\n| Keying strategy | Versioned keys | Raw keys | Versioned keys avoid stale reuse; raw keys are easier but unsafe | Model upgrades | Cache poisoning |\n| Memory policy | TTL + bounded size | Unbounded retention | TTL controls cost; unbounded retention raises memory risk | Long-lived tenants | Memory exhaustion |",
+      "decision": "Default: Redis with TTL. Alternative: In-process memory. Trade-off: Redis survives pod churn; in-process memory is faster but not shareable. Scale Trigger: Horizontal scaling. Failure Prevented: Session loss.\n\nDefault: Prefix and session cache. Alternative: Session-only cache. Trade-off: Prefix cache improves reuse; session-only is simpler and safer. Scale Trigger: Repetitive prompts. Failure Prevented: Duplicate compute.\n\nDefault: Versioned keys. Alternative: Raw keys. Trade-off: Versioned keys avoid stale reuse; raw keys are easier but unsafe. Scale Trigger: Model upgrades. Failure Prevented: Cache poisoning.\n\nDefault: TTL + bounded size. Alternative: Unbounded retention. Trade-off: TTL controls cost; unbounded retention raises memory risk. Scale Trigger: Long-lived tenants. Failure Prevented: Memory exhaustion.",
       "uses": {
         "packages": [
           "redis",
@@ -473,10 +473,10 @@
         "debug_guides": []
       },
       "failure_points": [
-        "Stale cache entries after model upgrade.",
-        "Session bleed across tenants.",
-        "Cache poisoning.",
-        "TTL misconfiguration."
+        "Failure: Stale cache entries after model upgrade.",
+        "Failure: Session bleed across tenants.",
+        "Failure: Cache poisoning.",
+        "Failure: TTL misconfiguration."
       ],
       "code": "import redis\n\nr = redis.Redis(host=\"localhost\", port=6379, decode_responses=True)\nr.setex(\"session:123\", 300, '{\"turns\": 4}')\nstate = r.get(\"session:123\")",
       "language": "python"
@@ -484,13 +484,13 @@
     {
       "step": 8,
       "name": "Observability, Monitoring & Production Operations",
-      "what": "Expose serving KPIs, traces, structured logs, and model-level counters so operators can debug queueing, decode stalls, cache failures, and rollout regressions. Prometheus and OpenTelemetry provide the core observability surface; Grafana consumes it for dashboards and alerting.[^5][^1]\n\n**Input Interface Contract**\n- Artifact: runtime telemetry and request lifecycle events.\n- Type: counters, histograms, traces, and logs.\n- Ownership: observability layer.\n- Persistence: time-series and trace backend.\n- Consumer: SRE, platform engineers, and autoscalers.\n\n**Output Interface Contract**\n- Artifact: alerts, dashboards, traces, and SLO reports.\n- Type: operational feedback.\n- Ownership: observability layer.\n- Persistence: time-series store and trace backend.\n- Consumer: incident response and scaling control loops.\n\n**Required Metadata**\n- Trace ID.\n- Span ID.\n- Model ID.\n- Queue time.\n- TTFT.\n- Tokens/sec.\n- Error class.\n- GPU utilization.\n\n**Pipeline Contract**\n- Instrument every stage with consistent request IDs.\n- Make queue latency separately from model decode latency.\n- Export metrics that map directly to routing, batching, and scaling decisions.\n- Use tracing to reconstruct slow paths across cache, router, and backend layers.\n\n**Uses**\n- SLO monitoring.\n- Alerting.\n- Capacity planning.\n- Incident response.\n\n**Production Metrics**\n- Primary Metric: availability.\n- Expected Range: high four-nines or better depending on topology.\n- Alert Threshold: breach of latency, error-rate, or saturation SLOs.",
+      "what": "Expose serving KPIs, traces, structured logs, and model-level counters so operators can debug queueing, decode stalls, cache failures, and rollout regressions. Prometheus and OpenTelemetry provide the core observability surface; Grafana consumes it for dashboards and alerting.\n\n**Input Interface Contract**\n- Artifact: runtime telemetry and request lifecycle events.\n- Type: counters, histograms, traces, and logs.\n- Ownership: observability layer.\n- Persistence: time-series and trace backend.\n- Consumer: SRE, platform engineers, and autoscalers.\n\n**Output Interface Contract**\n- Artifact: alerts, dashboards, traces, and SLO reports.\n- Type: operational feedback.\n- Ownership: observability layer.\n- Persistence: time-series store and trace backend.\n- Consumer: incident response and scaling control loops.\n\n**Required Metadata**\n- Trace ID.\n- Span ID.\n- Model ID.\n- Queue time.\n- TTFT.\n- Tokens/sec.\n- Error class.\n- GPU utilization.\n\n**Pipeline Contract**\n- Instrument every stage with consistent request IDs.\n- Make queue latency separately from model decode latency.\n- Export metrics that map directly to routing, batching, and scaling decisions.\n- Use tracing to reconstruct slow paths across cache, router, and backend layers.\n\n**Uses**\n- SLO monitoring.\n- Alerting.\n- Capacity planning.\n- Incident response.\n\n**Production Metrics**\n- Primary Metric: availability.\n- Expected Range: high four-nines or better depending on topology.\n- Alert Threshold: breach of latency, error-rate, or saturation SLOs.",
       "tools": [
         "Prometheus",
         "OpenTelemetry",
         "Grafana"
       ],
-      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Metrics model | Prometheus histograms and counters | Logs-only monitoring | Metrics support alerting and SLOs; logs-only are cheaper but slow to query | Production traffic | Blind latency regressions |\n| Tracing depth | End-to-end request tracing | Partial tracing | Full tracing improves root cause analysis; partial tracing lowers overhead | Multi-stage pipeline | Missing bottleneck attribution |\n| Dashboards | SLO-focused Grafana views | Ad hoc dashboards | SLO views improve actionability; ad hoc views are flexible but inconsistent | Large ops team | Alert fatigue |\n| Autoscaling signals | Queue latency, GPU saturation, TTFT | CPU-only scaling | Serving signals track actual bottlenecks; CPU-only signals miss GPU pressure | HPA/KEDA control loops | Bad scaling decisions |",
+      "decision": "Default: Prometheus histograms and counters. Alternative: Logs-only monitoring. Trade-off: Metrics support alerting and SLOs; logs-only are cheaper but slow to query. Scale Trigger: Production traffic. Failure Prevented: Blind latency regressions.\n\nDefault: End-to-end request tracing. Alternative: Partial tracing. Trade-off: Full tracing improves root cause analysis; partial tracing lowers overhead. Scale Trigger: Multi-stage pipeline. Failure Prevented: Missing bottleneck attribution.\n\nDefault: SLO-focused Grafana views. Alternative: Ad hoc dashboards. Trade-off: SLO views improve actionability; ad hoc views are flexible but inconsistent. Scale Trigger: Large ops team. Failure Prevented: Alert fatigue.\n\nDefault: Queue latency, GPU saturation, TTFT. Alternative: CPU-only scaling. Trade-off: Serving signals track actual bottlenecks; CPU-only signals miss GPU pressure. Scale Trigger: HPA/KEDA control loops. Failure Prevented: Bad scaling decisions.",
       "uses": {
         "packages": [
           "opentelemetry-api"
@@ -501,10 +501,10 @@
         "debug_guides": []
       },
       "failure_points": [
-        "Missing spans on slow paths.",
-        "Misleading CPU-centric autoscaling.",
-        "Metric cardinality explosions.",
-        "Silent GPU saturation."
+        "Failure: Missing spans on slow paths.",
+        "Failure: Misleading CPU-centric autoscaling.",
+        "Failure: Metric cardinality explosions.",
+        "Failure: Silent GPU saturation."
       ],
       "code": "from prometheus_client import Counter, Histogram\n\nrequests = Counter(\"llm_requests_total\", \"Total LLM requests\")\nttft = Histogram(\"llm_ttft_seconds\", \"Time to first token\")\n\nrequests.inc()\nwith ttft.time():\n    pass",
       "language": "python"
@@ -532,10 +532,10 @@
   "worked_examples": [
     {
       "name": "Streaming Chat API",
-      "description": "A FastAPI edge forwards validated chat requests to a vLLM OpenAI-compatible backend and relays token deltas to the client as they arrive. This pattern keeps the API stateless while still giving low TTFT and predictable streaming behavior.[^3][^2]",
+      "description": "A FastAPI edge forwards validated chat requests to a vLLM OpenAI-compatible backend and relays token deltas to the client as they arrive. This pattern keeps the API stateless while still giving low TTFT and predictable streaming behavior.",
       "language": "python",
       "code": "from fastapi import FastAPI\nfrom fastapi.responses import StreamingResponse\nfrom openai import OpenAI\n\napp = FastAPI()\nclient = OpenAI(base_url=\"http://localhost:8000/v1\", api_key=\"EMPTY\")\n\n@app.post(\"/chat\")\nasync def chat(payload: dict):\n    stream = client.chat.completions.create(\n        model=\"your-model\",\n        messages=payload[\"messages\"],\n        stream=True,\n    )\n    def gen():\n        for event in stream:\n            yield str(event)\n    return StreamingResponse(gen(), media_type=\"text/plain\")",
-      "implementation_notes": "- Keep the edge process stateless and let vLLM own decode throughput.\n- Use chunked streaming so the client sees output before completion.\n- Propagate disconnects to stop wasting decode cycles on abandoned requests.[^4][^3]",
+      "implementation_notes": "- Keep the edge process stateless and let vLLM own decode throughput.\n- Use chunked streaming so the client sees output before completion.\n- Propagate disconnects to stop wasting decode cycles on abandoned requests.",
       "related_step": 5
     },
     {
@@ -543,7 +543,7 @@
       "description": "Route low-complexity prompts to a smaller model and reserve the larger model for harder prompts or tighter quality constraints. The router should encode latency and cost budgets, not just prompt length, so selection remains reproducible under load.",
       "language": "python",
       "code": "def route(prompt: str, latency_budget_ms: int) -> str:\n    complexity = len(prompt.split())\n    if complexity < 80 and latency_budget_ms < 1000:\n        return \"small-model\"\n    if latency_budget_ms < 2000:\n        return \"medium-model\"\n    return \"large-model\"\n\nmodel_id = route(\"Summarize this incident report.\", 900)",
-      "implementation_notes": "- Route before queueing to reduce wasted batching on oversized models.\n- Keep fallback order explicit so outages do not create routing loops.\n- Re-evaluate thresholds after every model refresh or quantization change.[^3]",
+      "implementation_notes": "- Route before queueing to reduce wasted batching on oversized models.\n- Keep fallback order explicit so outages do not create routing loops.\n- Re-evaluate thresholds after every model refresh or quantization change.",
       "related_step": 4
     },
     {
@@ -551,13 +551,13 @@
       "description": "Persist session turns in Redis, reconstruct the last window on each request, and feed that state into the prompt assembler. This preserves continuity without turning the API tier into a stateful bottleneck.",
       "language": "python",
       "code": "import redis\nfrom langchain_core.prompts import ChatPromptTemplate\n\nr = redis.Redis(host=\"localhost\", port=6379, decode_responses=True)\nprompt = ChatPromptTemplate.from_messages([\n    (\"system\", \"You are a production assistant.\"),\n    (\"user\", \"{question}\")\n])\n\nsession_key = \"session:42\"\nr.setex(session_key, 600, \"prior turns\")\nmessages = prompt.format_messages(question=\"Continue the thread.\")\nhistory = r.get(session_key)",
-      "implementation_notes": "- Bind keys to model and template versions to avoid stale reuse.\n- Apply TTLs so abandoned sessions do not accumulate indefinitely.\n- Validate session ownership before reuse to prevent cross-tenant leakage.[^1][^2]",
+      "implementation_notes": "- Bind keys to model and template versions to avoid stale reuse.\n- Apply TTLs so abandoned sessions do not accumulate indefinitely.\n- Validate session ownership before reuse to prevent cross-tenant leakage.",
       "related_step": 7
     }
   ],
-  "production_notes": "Benefit: FastAPI plus vLLM on Kubernetes is the default operational shape because it cleanly separates stateless request handling from GPU-bound generation. This simplifies rolling updates and replica scaling.\nTrade-off: introduces the usual Kubernetes trade-off of more moving parts and higher control-plane complexity.\nWhen not to use it: when the deployment target is a single-node prototype or when GPU scheduling is manually managed outside cluster control.[^2][^1]",
+  "production_notes": "Benefit: FastAPI plus vLLM on Kubernetes is the default operational shape because it cleanly separates stateless request handling from GPU-bound generation. This simplifies rolling updates and replica scaling.\nTrade-off: introduces the usual Kubernetes trade-off of more moving parts and higher control-plane complexity.\nWhen not to use it: when the deployment target is a single-node prototype or when GPU scheduling is manually managed outside cluster control.",
   "scaling_notes": "Benefit: Dynamic batching, autoscaling, and request routing work together to raise throughput and keep GPU utilization above target without sacrificing streaming behavior.\nTrade-off: larger batches improve efficiency but can raise queue latency and TTFT if admission control is too loose.\nWhen not to use it: when your product is dominated by ultra-low-latency interactive chat.",
   "cost_notes": "Benefit: Quantization, prefix caching, and GPU packing reduce cost per request and improve capacity density.\nTrade-off: occasional quality loss, extra routing complexity, or stricter compatibility constraints around tokenizer and model versioning.\nWhen not to use it: over-optimizing these levers for small workloads where operational complexity outweighs savings.",
   "latency_notes": "Benefit: TTFT, decode throughput, and queue latency are the primary performance signals for serving quality. Lower TTFT improves perceived responsiveness, while higher decode throughput and lower queue time improve total capacity.\nTrade-off: none.\nWhen not to use it: least useful when generation length is tiny or when the workload is dominated by non-LLM application logic.",
-  "observability_notes": "Benefit: Prometheus metrics, tracing, and structured logging form the production feedback loop for overload, regressions, and rollout safety. The benefit is fast root cause analysis and actionable SLOs.\nTrade-off: extra instrumentation overhead and cardinality management.\nWhen not to use it: ad hoc logging as a substitute for request-scoped metrics when the system must support autoscaling and incident response.[^5]"
+  "observability_notes": "Benefit: Prometheus metrics, tracing, and structured logging form the production feedback loop for overload, regressions, and rollout safety. The benefit is fast root cause analysis and actionable SLOs.\nTrade-off: extra instrumentation overhead and cardinality management.\nWhen not to use it: ad hoc logging as a substitute for request-scoped metrics when the system must support autoscaling and incident response."
 }

@@ -21,7 +21,7 @@ import Link from 'next/link';
 import { Model } from '@/types/model';
 import { ModelCategory } from '@/types/model';
 import { cn } from '@/lib/utils';
-import { Prose, ProseInline } from './Prose';
+import { ProseClient, ProseInline } from './Prose';
 import CollapsibleRow from './CollapsibleRow';
 
 interface ModelCollapsibleSectionsProps {
@@ -172,11 +172,11 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
           <div className="space-y-3.5 leading-relaxed text-muted-foreground pt-1">
             <div>
               <h4 className="font-semibold text-foreground text-xs mb-1">Intuition</h4>
-              <Prose content={model.coreunderstanding.intuition} className="text-xs text-muted-foreground" />
+              <ProseClient content={model.coreunderstanding.intuition} className="text-xs text-muted-foreground" />
             </div>
             <div>
               <h4 className="font-semibold text-foreground text-xs mb-1">Learning Mechanism</h4>
-              <Prose content={model.coreunderstanding.learningmechanism} className="text-xs text-muted-foreground" />
+              <ProseClient content={model.coreunderstanding.learningmechanism} className="text-xs text-muted-foreground" />
             </div>
             {model.coreunderstanding.assumptions.length > 0 && (
               <div>
@@ -194,7 +194,7 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
                 <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                 Mathematical Intuition & Formulation
               </h4>
-              <Prose content={model.coreunderstanding.mathematicalintuition} className="font-mono text-[11px] leading-relaxed text-muted-foreground m-0 pt-1.5" />
+              <ProseClient content={model.coreunderstanding.mathematicalintuition} className="font-mono text-[11px] leading-relaxed text-muted-foreground m-0 pt-1.5" />
             </div>
           </div>
         </div>
@@ -228,11 +228,11 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground mb-0.5">Feature Scaling</h4>
-                    <Prose content={model.engineeringconsiderations.featurescalingrequirement} className="text-xs text-muted-foreground" />
+                    <ProseClient content={model.engineeringconsiderations.featurescalingrequirement} className="text-xs text-muted-foreground" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground mb-0.5">Feature Engineering</h4>
-                    <Prose content={model.engineeringconsiderations.featureengineeringdependency} className="text-xs text-muted-foreground" />
+                    <ProseClient content={model.engineeringconsiderations.featureengineeringdependency} className="text-xs text-muted-foreground" />
                   </div>
                 </div>
               </div>
@@ -247,15 +247,15 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
                 <div className="space-y-3 text-xs leading-relaxed text-muted-foreground">
                   <div>
                     <h4 className="font-semibold text-foreground mb-0.5">Parallelization</h4>
-                    <Prose content={model.engineeringconsiderations.parallelization} className="text-xs text-muted-foreground" />
+                    <ProseClient content={model.engineeringconsiderations.parallelization} className="text-xs text-muted-foreground" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground mb-0.5">Sensitivity to Outliers</h4>
-                    <Prose content={model.engineeringconsiderations.sensitivitytooutliers} className="text-xs text-muted-foreground" />
+                    <ProseClient content={model.engineeringconsiderations.sensitivitytooutliers} className="text-xs text-muted-foreground" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground mb-0.5">Computational Complexity</h4>
-                    <Prose content={model.engineeringconsiderations.computationalcost} className="text-xs text-muted-foreground" />
+                    <ProseClient content={model.engineeringconsiderations.computationalcost} className="text-xs text-muted-foreground" />
                   </div>
                 </div>
               </div>
@@ -270,7 +270,7 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
                 <div className="space-y-3 text-xs leading-relaxed text-muted-foreground">
                   <div>
                     <h4 className="font-semibold text-foreground mb-0.5">Class Imbalance Behavior</h4>
-                    <Prose content={model.engineeringconsiderations.classimbalancebehavior} className="text-xs text-muted-foreground" />
+                    <ProseClient content={model.engineeringconsiderations.classimbalancebehavior} className="text-xs text-muted-foreground" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground mb-0.5">Robustness</h4>
@@ -299,7 +299,7 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
             ].map(([label, val]) => (
               <div key={label} className="p-3 rounded-lg border border-border/80 bg-muted/10">
                 <span className="text-[10px] font-bold text-foreground uppercase tracking-wider block mb-1">{label}</span>
-                <Prose content={val} className="text-xs text-muted-foreground leading-relaxed m-0" />
+                <ProseClient content={val} className="text-xs text-muted-foreground leading-relaxed m-0" />
               </div>
             ))}
           </div>
@@ -385,7 +385,7 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
                   <div className="space-y-3.5">
                     <div>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-foreground block mb-0.5">Purpose & Description</span>
-                      <Prose content={hp.purpose} className="text-muted-foreground" />
+                      <ProseClient content={hp.purpose} className="text-muted-foreground" />
                     </div>
 
                     <div className="space-y-3">
@@ -393,7 +393,7 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
                         <span className="text-[10px] font-bold uppercase tracking-wider text-foreground block mb-1">
                           Tuning Tradeoffs
                         </span>
-                        <Prose content={hp.tradeoffs} className="text-muted-foreground leading-relaxed" />
+                        <ProseClient content={hp.tradeoffs} className="text-muted-foreground leading-relaxed" />
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
@@ -402,7 +402,7 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
                           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
                             <span className="text-[10px] font-sans">▲</span> Effect of Increasing
                           </span>
-                          <Prose content={hp.increaseeffect} className="text-muted-foreground leading-relaxed m-0" />
+                          <ProseClient content={hp.increaseeffect} className="text-muted-foreground leading-relaxed m-0" />
                         </div>
 
                         {/* Effect of Decreasing */}
@@ -410,7 +410,7 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
                           <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-400 flex items-center gap-1">
                             <span className="text-[10px] font-sans">▼</span> Effect of Decreasing
                           </span>
-                          <Prose content={hp.decreaseeffect} className="text-muted-foreground leading-relaxed m-0" />
+                          <ProseClient content={hp.decreaseeffect} className="text-muted-foreground leading-relaxed m-0" />
                         </div>
                       </div>
                     </div>
@@ -470,21 +470,21 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
                     <span className="text-[9px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
                       Choose {model.name} When
                     </span>
-                    <Prose content={comp.choose_this_when} className="text-[11px] text-muted-foreground m-0" />
+                    <ProseClient content={comp.choose_this_when} className="text-[11px] text-muted-foreground m-0" />
                   </div>
 
                   <div className="p-3 rounded-lg border border-amber-500/10 bg-amber-500/5 dark:bg-amber-950/5 space-y-1">
                     <span className="text-[9px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider block">
                       Prefer {comp.model} When
                     </span>
-                    <Prose content={comp.prefer_other_when} className="text-[11px] text-muted-foreground m-0" />
+                    <ProseClient content={comp.prefer_other_when} className="text-[11px] text-muted-foreground m-0" />
                   </div>
 
                   <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-1">
                     <span className="text-[9px] font-bold text-foreground uppercase tracking-wider block">
                       Key Tradeoffs
                     </span>
-                    <Prose content={comp.tradeoffs} className="text-[11px] text-muted-foreground m-0" />
+                    <ProseClient content={comp.tradeoffs} className="text-[11px] text-muted-foreground m-0" />
                   </div>
                 </div>
               </div>
@@ -549,4 +549,3 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
     </div>
   );
 }
-

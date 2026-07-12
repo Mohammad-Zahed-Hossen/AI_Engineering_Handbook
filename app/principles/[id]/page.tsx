@@ -4,6 +4,7 @@ import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import RelatedContent from '@/components/shared/RelatedContent';
 import ExpandableText from '@/components/shared/ExpandableText';
+import { Prose } from '@/components/shared/Prose';
 import { BookOpen, Brain, AlertTriangle, CheckCircle2, Link2 } from 'lucide-react';
 
 export async function generateStaticParams() {
@@ -51,7 +52,7 @@ export default async function PrinciplePage({ params }: PageProps) {
       <div className="space-y-4">
         <h1 className="text-2xl font-semibold tracking-tight">{principle.title}</h1>
         <ExpandableText cacheKey={`principle-desc-${principle.id}`} fadeClass="from-background to-transparent">
-          <p className="text-muted-foreground">{principle.description}</p>
+          <Prose content={principle.description} className="text-muted-foreground" />
         </ExpandableText>
         <MetadataBadges
           type="principle"
@@ -68,7 +69,7 @@ export default async function PrinciplePage({ params }: PageProps) {
           Statement
         </h2>
         <ExpandableText cacheKey={`principle-statement-${principle.id}`} fadeClass="from-background to-transparent">
-          <p className="text-sm text-muted-foreground">{principle.statement}</p>
+          <Prose content={principle.statement} className="text-sm text-muted-foreground" />
         </ExpandableText>
       </section>
 
@@ -79,7 +80,7 @@ export default async function PrinciplePage({ params }: PageProps) {
           Intuition
         </h2>
         <ExpandableText cacheKey={`principle-intuition-${principle.id}`} fadeClass="from-background to-transparent">
-          <p className="text-sm text-muted-foreground">{principle.intuition}</p>
+          <Prose content={principle.intuition} className="text-sm text-muted-foreground" />
         </ExpandableText>
       </section>
 
@@ -88,9 +89,7 @@ export default async function PrinciplePage({ params }: PageProps) {
         <section id="mathematical-formulation" className="space-y-3 scroll-mt-24">
           <h2 className="text-lg font-semibold text-foreground">Mathematical Formulation</h2>
           <div className="rounded-lg border border-border bg-card p-4">
-            <pre className="text-sm text-muted-foreground whitespace-pre-wrap font-mono">
-              {principle.mathematical_formulation}
-            </pre>
+            <Prose content={principle.mathematical_formulation} className="text-sm text-muted-foreground" />
           </div>
         </section>
       )}

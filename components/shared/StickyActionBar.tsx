@@ -114,7 +114,7 @@ export default function StickyActionBar({ tocItems }: StickyActionBarProps) {
           title="Jump to section"
           aria-label="Open section navigation"
         >
-          <span className="truncate">§ {activeLabel}</span>
+          <span className="truncate">{activeLabel}</span>
         </button>
 
         {/* Next section */}

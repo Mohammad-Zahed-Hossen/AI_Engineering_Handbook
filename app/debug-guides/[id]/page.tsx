@@ -5,6 +5,7 @@ import MetadataBadges from '@/components/shared/MetadataBadges';
 import RelatedContent from '@/components/shared/RelatedContent';
 import DebugSolutionList from '@/components/shared/DebugSolutionList';
 import ExpandableText from '@/components/shared/ExpandableText';
+import { Prose } from '@/components/shared/Prose';
 import { AlertTriangle, CheckCircle2, Activity, Shield } from 'lucide-react';
 
 export async function generateStaticParams() {
@@ -53,14 +54,14 @@ export default async function DebugGuidePage({ params }: PageProps) {
       <div className="space-y-4">
         <h1 className="text-2xl font-semibold tracking-tight">{debugGuide.title}</h1>
         <ExpandableText cacheKey={`debug-desc-${debugGuide.id}`} fadeClass="from-background to-transparent">
-          <p className="text-muted-foreground">{debugGuide.description}</p>
+          <Prose content={debugGuide.description} className="text-muted-foreground" />
         </ExpandableText>
-        <MetadataBadges
-          type="workflow"
-          updatedAt={debugGuide.updated_at}
-          lastVerified={debugGuide.last_verified}
-          category={debugGuide.category}
-        />
+<MetadataBadges
+  type="debug_guide"
+  updatedAt={debugGuide.updated_at}
+  lastVerified={debugGuide.last_verified}
+  category={debugGuide.category}
+/>
       </div>
 
       {/* Symptoms */}
@@ -74,7 +75,7 @@ export default async function DebugGuidePage({ params }: PageProps) {
             <div key={idx} className="rounded-lg border border-border bg-card p-4">
               <p className="text-sm font-medium text-foreground">{symptom.symptom}</p>
               {symptom.description && (
-                <p className="text-xs text-muted-foreground mt-1">{symptom.description}</p>
+                <Prose content={symptom.description} className="text-xs text-muted-foreground mt-1" />
               )}
             </div>
           ))}
@@ -94,7 +95,7 @@ export default async function DebugGuidePage({ params }: PageProps) {
                 <div className="flex-1">
                   <p className="text-sm font-medium text-foreground">{cause.cause}</p>
                   {cause.explanation && (
-                    <p className="text-xs text-muted-foreground mt-1">{cause.explanation}</p>
+                    <Prose content={cause.explanation} className="text-xs text-muted-foreground mt-1" />
                   )}
                 </div>
                 <span className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
@@ -128,11 +129,11 @@ export default async function DebugGuidePage({ params }: PageProps) {
                 </div>
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Expected Result</span>
-                  <p className="text-sm text-muted-foreground mt-0.5">{diag.expected_result}</p>
+                  <Prose content={diag.expected_result} className="text-sm text-muted-foreground mt-0.5" />
                 </div>
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">How to Perform</span>
-                  <p className="text-sm text-muted-foreground mt-0.5">{diag.how_to_perform}</p>
+                  <Prose content={diag.how_to_perform} className="text-sm text-muted-foreground mt-0.5" />
                 </div>
               </div>
             </div>
@@ -158,7 +159,7 @@ export default async function DebugGuidePage({ params }: PageProps) {
         <div className="space-y-3">
           {debugGuide.prevention.map((prev, idx) => (
             <div key={idx} className="rounded-lg border border-purple-500/20 bg-purple-500/5 p-4">
-              <p className="text-sm font-medium text-purple-700 dark:text-purple-400">{prev.prevention}</p>
+              <Prose content={prev.prevention} className="text-sm font-medium text-purple-700 dark:text-purple-400" />
               {prev.practices && prev.practices.length > 0 && (
                 <ul className="mt-2 space-y-1">
                   {prev.practices.map((practice, pIdx) => (

@@ -5,6 +5,7 @@ import MetadataBadges from '@/components/shared/MetadataBadges';
 import RelatedContent from '@/components/shared/RelatedContent';
 import DecisionOptionGrid from '@/components/shared/DecisionOptionGrid';
 import ExpandableText from '@/components/shared/ExpandableText';
+import { Prose } from '@/components/shared/Prose';
 import { Scale, ArrowRight, Link as LinkIcon } from 'lucide-react';
 import Link from 'next/link';
 
@@ -53,7 +54,7 @@ export default async function DecisionGuidePage({ params }: PageProps) {
       <div className="space-y-4">
         <h1 className="text-2xl font-semibold tracking-tight">{decisionGuide.title}</h1>
         <ExpandableText cacheKey={`decision-desc-${decisionGuide.id}`} fadeClass="from-background to-transparent">
-          <p className="text-muted-foreground">{decisionGuide.description}</p>
+          <Prose content={decisionGuide.description} className="text-muted-foreground" />
         </ExpandableText>
         <MetadataBadges
           type="decision_guide"
@@ -70,7 +71,7 @@ export default async function DecisionGuidePage({ params }: PageProps) {
           Problem
         </h2>
         <ExpandableText cacheKey={`decision-prob-${decisionGuide.id}`} fadeClass="from-background to-transparent">
-          <p className="text-sm text-muted-foreground">{decisionGuide.problem}</p>
+          <Prose content={decisionGuide.problem} className="text-sm text-muted-foreground" />
         </ExpandableText>
       </section>
 
@@ -127,7 +128,7 @@ export default async function DecisionGuidePage({ params }: PageProps) {
       <section id="recommendations" className="space-y-3 scroll-mt-24">
         <h2 className="text-lg font-semibold text-foreground">Recommendations</h2>
         <div className="rounded-lg border border-border bg-card p-4">
-          <p className="text-sm text-muted-foreground">{decisionGuide.recommendations}</p>
+          <Prose content={decisionGuide.recommendations} className="text-sm text-muted-foreground" />
         </div>
       </section>
 

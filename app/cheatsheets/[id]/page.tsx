@@ -7,6 +7,7 @@ import RelatedContent from '@/components/shared/RelatedContent';
 import CheatsheetEntry from '@/components/shared/CheatsheetEntry';
 import { CodeBlock } from '@/components/shared/CodeBlock';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
+import DataTable from '@/components/shared/DataTable';
 
 export async function generateStaticParams() {
   return getAllCheatsheetIds().map((id) => ({ id }));
@@ -118,128 +119,56 @@ export default async function CheatsheetDetailPage({ params }: PageProps) {
         {cheatsheet.pyplot_vs_object_oriented_api && (
           <section id="pyplot-vs-oo" className="space-y-3 scroll-mt-24">
             <h2>Pyplot vs Object-Oriented API</h2>
-            <div className="overflow-x-auto rounded-lg border border-border">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead className="bg-muted/40 font-semibold text-foreground border-b border-border">
-                  <tr>
-                    <th className="p-3">API Interface</th>
-                    <th className="p-3">Advantages</th>
-                    <th className="p-3">Limitations</th>
-                    <th className="p-3">Recommended Use Cases</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {cheatsheet.pyplot_vs_object_oriented_api.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-muted/10">
-                      <td className="p-3 font-mono font-semibold text-foreground">{item.api}</td>
-                      <td className="p-3 text-muted-foreground">{item.advantages}</td>
-                      <td className="p-3 text-muted-foreground">{item.limitations}</td>
-                      <td className="p-3 text-muted-foreground">{item.recommended_use_cases}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <DataTable
+              headers={['API Interface', 'Advantages', 'Limitations', 'Recommended Use Cases']}
+              rows={cheatsheet.pyplot_vs_object_oriented_api.map(item => [item.api, item.advantages, item.limitations, item.recommended_use_cases])}
+              monoColumns={[0]}
+            />
           </section>
         )}
 
         {cheatsheet.common_plot_types && (
           <section id="common-plot-types" className="space-y-3 scroll-mt-24">
             <h2>Common Plot Types</h2>
-            <div className="overflow-x-auto rounded-lg border border-border">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead className="bg-muted/40 font-semibold text-foreground border-b border-border">
-                  <tr>
-                    <th className="p-3">API Method</th>
-                    <th className="p-3">Purpose</th>
-                    <th className="p-3">Most Important Parameters</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {cheatsheet.common_plot_types.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-muted/10">
-                      <td className="p-3 font-mono font-semibold text-foreground">{item.api}</td>
-                      <td className="p-3 text-muted-foreground">{item.purpose}</td>
-                      <td className="p-3 font-mono text-[11px] text-muted-foreground">{item.most_important_parameters}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <DataTable
+              headers={['API Method', 'Purpose', 'Most Important Parameters']}
+              rows={cheatsheet.common_plot_types.map(item => [item.api, item.purpose, item.most_important_parameters])}
+              monoColumns={[0]}
+              columnStyles={[undefined, undefined, 'font-mono text-[11px] text-muted-foreground']}
+            />
           </section>
         )}
 
         {cheatsheet.figure_layout_options && (
           <section id="figure-layout" className="space-y-3 scroll-mt-24">
             <h2>Figure Layout Options</h2>
-            <div className="overflow-x-auto rounded-lg border border-border">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead className="bg-muted/40 font-semibold text-foreground border-b border-border">
-                  <tr>
-                    <th className="p-3">API / Method</th>
-                    <th className="p-3">Purpose</th>
-                    <th className="p-3">Best For</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {cheatsheet.figure_layout_options.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-muted/10">
-                      <td className="p-3 font-mono font-semibold text-foreground">{item.api}</td>
-                      <td className="p-3 text-muted-foreground">{item.purpose}</td>
-                      <td className="p-3 text-muted-foreground">{item.best_for}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <DataTable
+              headers={['API / Method', 'Purpose', 'Best For']}
+              rows={cheatsheet.figure_layout_options.map(item => [item.api, item.purpose, item.best_for])}
+              monoColumns={[0]}
+            />
           </section>
         )}
 
         {cheatsheet.savefig_parameters && (
           <section id="savefig-parameters" className="space-y-3 scroll-mt-24">
             <h2>savefig Parameters</h2>
-            <div className="overflow-x-auto rounded-lg border border-border">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead className="bg-muted/40 font-semibold text-foreground border-b border-border">
-                  <tr>
-                    <th className="p-3">Parameter</th>
-                    <th className="p-3">Purpose / Behavior</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {cheatsheet.savefig_parameters.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-muted/10">
-                      <td className="p-3 font-mono font-semibold text-foreground">{item.parameter}</td>
-                      <td className="p-3 text-muted-foreground">{item.purpose}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <DataTable
+              headers={['Parameter', 'Purpose / Behavior']}
+              rows={cheatsheet.savefig_parameters.map(item => [item.parameter, item.purpose])}
+              monoColumns={[0]}
+            />
           </section>
         )}
 
         {cheatsheet.rcparams_quick_reference && (
           <section id="rcparams-reference" className="space-y-3 scroll-mt-24">
             <h2>rcParams Reference</h2>
-            <div className="overflow-x-auto rounded-lg border border-border">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead className="bg-muted/40 font-semibold text-foreground border-b border-border">
-                  <tr>
-                    <th className="p-3">Setting Key</th>
-                    <th className="p-3">Typical Use Case</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {cheatsheet.rcparams_quick_reference.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-muted/10">
-                      <td className="p-3 font-mono font-semibold text-foreground">{item.setting}</td>
-                      <td className="p-3 text-muted-foreground">{item.use}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <DataTable
+              headers={['Setting Key', 'Typical Use Case']}
+              rows={cheatsheet.rcparams_quick_reference.map(item => [item.setting, item.use])}
+              monoColumns={[0]}
+            />
           </section>
         )}
 
@@ -247,48 +176,22 @@ export default async function CheatsheetDetailPage({ params }: PageProps) {
           {cheatsheet.marker_reference && (
             <section id="marker-reference" className="space-y-3 scroll-mt-24">
               <h2>Marker Reference</h2>
-              <div className="overflow-x-auto rounded-lg border border-border">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead className="bg-muted/40 font-semibold text-foreground border-b border-border">
-                    <tr>
-                      <th className="p-3 w-16">Marker</th>
-                      <th className="p-3">Meaning</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {cheatsheet.marker_reference.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-muted/10">
-                        <td className="p-3 font-mono font-semibold text-foreground">{item.marker}</td>
-                        <td className="p-3 text-muted-foreground">{item.meaning}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <DataTable
+                headers={['Marker', 'Meaning']}
+                rows={cheatsheet.marker_reference.map(item => [item.marker, item.meaning])}
+                monoColumns={[0]}
+              />
             </section>
           )}
 
           {cheatsheet.line_styles && (
             <section id="line-styles" className="space-y-3 scroll-mt-24">
               <h2>Line Styles</h2>
-              <div className="overflow-x-auto rounded-lg border border-border">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead className="bg-muted/40 font-semibold text-foreground border-b border-border">
-                    <tr>
-                      <th className="p-3 w-16">Style</th>
-                      <th className="p-3">Meaning</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {cheatsheet.line_styles.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-muted/10">
-                        <td className="p-3 font-mono font-semibold text-foreground">{item.style}</td>
-                        <td className="p-3 text-muted-foreground">{item.meaning}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <DataTable
+                headers={['Style', 'Meaning']}
+                rows={cheatsheet.line_styles.map(item => [item.style, item.meaning])}
+                monoColumns={[0]}
+              />
             </section>
           )}
         </div>
@@ -297,48 +200,22 @@ export default async function CheatsheetDetailPage({ params }: PageProps) {
           {cheatsheet.named_colors && (
             <section id="named-colors" className="space-y-3 scroll-mt-24">
               <h2>Named Colors</h2>
-              <div className="overflow-x-auto rounded-lg border border-border">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead className="bg-muted/40 font-semibold text-foreground border-b border-border">
-                    <tr>
-                      <th className="p-3 w-28">Color</th>
-                      <th className="p-3">Typical Use Case</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {cheatsheet.named_colors.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-muted/10">
-                        <td className="p-3 font-mono font-semibold text-foreground">{item.color}</td>
-                        <td className="p-3 text-muted-foreground">{item.typical_use}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <DataTable
+                headers={['Color', 'Typical Use Case']}
+                rows={cheatsheet.named_colors.map(item => [item.color, item.typical_use])}
+                monoColumns={[0]}
+              />
             </section>
           )}
 
           {cheatsheet.recommended_colormaps && (
             <section id="recommended-colormaps" className="space-y-3 scroll-mt-24">
               <h2>Recommended Colormaps</h2>
-              <div className="overflow-x-auto rounded-lg border border-border">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead className="bg-muted/40 font-semibold text-foreground border-b border-border">
-                    <tr>
-                      <th className="p-3 w-28">Type</th>
-                      <th className="p-3">Colormaps</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {cheatsheet.recommended_colormaps.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-muted/10">
-                        <td className="p-3 font-medium text-foreground">{item.type}</td>
-                        <td className="p-3 font-mono text-[11px] text-muted-foreground">{item.colormaps}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <DataTable
+                headers={['Type', 'Colormaps']}
+                rows={cheatsheet.recommended_colormaps.map(item => [item.type, item.colormaps])}
+                columnStyles={['font-medium text-foreground', 'font-mono text-[11px] text-muted-foreground']}
+              />
             </section>
           )}
         </div>
@@ -346,61 +223,22 @@ export default async function CheatsheetDetailPage({ params }: PageProps) {
         {cheatsheet.quick_references && cheatsheet.quick_references.map((ref, refIdx) => (
           <section key={refIdx} id={`quick-ref-${refIdx}`} className="space-y-3 scroll-mt-24">
             <h2>{ref.title}</h2>
-            <div className="overflow-x-auto rounded-lg border border-border">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead className="bg-muted/40 font-semibold text-foreground border-b border-border">
-                  <tr>
-                    {ref.headers.map((header, idx) => (
-                      <th key={idx} className="p-3">{header}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {ref.rows.map((row, rowIdx) => (
-                    <tr key={rowIdx} className="hover:bg-muted/10">
-                      {row.map((cell, cellIdx) => (
-                        <td
-                          key={cellIdx}
-                          className={`p-3 ${
-                            ['api', 'attribute', 'style', 'marker', 'setting', 'parameter'].includes(
-                              ref.headers[cellIdx].toLowerCase()
-                            )
-                              ? 'font-mono font-semibold text-foreground'
-                              : 'text-muted-foreground'
-                          }`}
-                        >
-                          {cell}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <DataTable
+              headers={ref.headers}
+              rows={ref.rows}
+              monoColumns={ref.headers.map((h, i) => ['api', 'attribute', 'style', 'marker', 'setting', 'parameter'].includes(h.toLowerCase()) ? i : -1).filter(i => i >= 0)}
+            />
           </section>
         ))}
 
         {cheatsheet.performance_checklist && (
           <section id="performance-checklist" className="space-y-3 scroll-mt-24">
             <h2>Performance Checklist</h2>
-            <div className="overflow-x-auto rounded-lg border border-border">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead className="bg-muted/40 font-semibold text-foreground border-b border-border">
-                  <tr>
-                    <th className="p-3 w-40">Optimization Area</th>
-                    <th className="p-3">Recommendations</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {cheatsheet.performance_checklist.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-muted/10">
-                      <td className="p-3 font-medium text-foreground">{item.area}</td>
-                      <td className="p-3 text-muted-foreground">{item.recommendations}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <DataTable
+              headers={['Optimization Area', 'Recommendations']}
+              rows={cheatsheet.performance_checklist.map(item => [item.area, item.recommendations])}
+              columnStyles={['font-medium text-foreground', undefined]}
+            />
           </section>
         )}
 

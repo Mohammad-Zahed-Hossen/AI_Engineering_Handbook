@@ -13,9 +13,7 @@ import { CodeBlock, highlightCodeSnippet } from '@/components/shared/CodeBlock';
 import CollapsibleRow from '@/components/shared/CollapsibleRow';
 import ContentTypeBadge from '@/components/shared/ContentTypeBadge';
 import { parseLabeledClauses } from '@/lib/text/parseLabeledClauses';
-import { linkFootnotes } from '@/lib/text/linkFootnotes';
 import { Prose, ProseInline } from '@/components/shared/Prose';
-import { parseResourceUrl, categorizeSources } from '@/lib/resources';
 import { BadgeRow } from '@/components/shared/BadgeRow';
 
 export async function generateStaticParams() {
@@ -88,40 +86,13 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
           type="workflow"
           updatedAt={workflow.updated_at}
           category={workflow.category}
+          difficulty={workflow.difficulty}
+          domain={workflow.domain}
+          engineeringArea={workflow.engineering_area}
         />
-        {(() => {
-          // Build a map of footnote number -> resource-${category}-${index} anchor for direct linking to Further Study
-          const sourceUrls = workflow.sources.map((s): string => typeof s === 'string' ? s : (s as any).url);
-          const categorized = categorizeSources(sourceUrls);
-          const footnoteToAnchor: Record<number, string> = {};
-          Object.entries(categorized).forEach(([category, urls]: [string, string[]]) => {
-            urls.forEach((url: string, idx: number) => {
-              const sourceIndex = sourceUrls.indexOf(url);
-              if (sourceIndex !== -1) {
-                footnoteToAnchor[sourceIndex + 1] = `resource-${category}-${idx}`;
-              }
-            });
-          });
-
-          // Replace GFM footnote references [^1] with direct links to Further Study anchors
-          const overviewWithLinks = workflow.overview.replace(/\[\^(\d+)\]/g, (match, numStr) => {
-            const num = parseInt(numStr, 10);
-            const anchor = footnoteToAnchor[num];
-            return anchor ? ` [[${num}]](#${anchor})` : match;
-          });
-          return (
-            <>
-              <ExpandableText cacheKey={`workflow-overview-${workflow.id}`} fadeClass="from-background to-transparent" maxLines={4}>
-                <Prose content={overviewWithLinks} className="text-sm text-muted-foreground" />
-              </ExpandableText>
-              {workflow.sources && workflow.sources.length > 0 && (
-                <span className="text-[9px] text-muted-foreground/70">
-                  {workflow.sources.length} {workflow.sources.length === 1 ? 'source' : 'sources'} cited
-                </span>
-              )}
-            </>
-          );
-        })()}
+        <ExpandableText cacheKey={`workflow-overview-${workflow.id}`} fadeClass="from-background to-transparent" maxLines={4}>
+          <Prose content={workflow.overview} className="text-sm text-muted-foreground" />
+        </ExpandableText>
         {workflow.starter_stack.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-semibold text-muted-foreground">Starter Stack:</span>
@@ -219,7 +190,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                       <span className="text-[10px] font-semibold uppercase text-muted-foreground block mb-1">
                         Implementation Notes
                       </span>
-                      <Prose content={linkFootnotes(example.implementation_notes)} className="text-muted-foreground" />
+                      <Prose content={example.implementation_notes} className="text-muted-foreground" />
                     </div>
                   )}
                 </div>

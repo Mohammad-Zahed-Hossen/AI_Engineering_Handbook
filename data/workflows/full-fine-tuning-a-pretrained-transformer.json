@@ -1,0 +1,434 @@
+{
+  "id": "full-fine-tuning-a-pretrained-transformer",
+  "title": "Full Fine-Tuning a Pretrained Transformer",
+  "name": "Full Fine-Tuning a Pretrained Transformer",
+  "slug": "full-fine-tuning-a-pretrained-transformer",
+  "description": "Production full-model training pipeline that updates every trainable parameter of a pretrained transformer while preserving reproducibility, checkpoint integrity, and deployment compatibility.",
+  "type": "pipeline",
+  "category": "fine-tuning",
+  "overview": "This workflow defines a production full-model training pipeline that updates every trainable parameter of a pretrained transformer while preserving reproducibility, checkpoint integrity, and deployment compatibility. It is built around frozen dataset snapshots, deterministic tokenization, distributed optimization, and explicit checkpoint selection so the resulting model can move from training to packaging without ambiguity.",
+  "starter_stack": [
+    "transformers",
+    "trl",
+    "accelerate",
+    "datasets",
+    "tokenizers",
+    "safetensors",
+    "evaluate",
+    "wandb",
+    "torch"
+  ],
+  "created_at": "2026-07-13",
+  "updated_at": "2026-07-13",
+  "last_verified": "2026-07-13",
+  "review_frequency": "quarterly",
+  "verified_against": "3.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "sources": [
+    "https://github.com/Mohammad-Zahed-Hossen/AI_Engineering_Handbook/blob/main/docs/AENS-Knowledge-Layer-Specification.md",
+    "https://github.com/Mohammad-Zahed-Hossen/AI_Engineering_Handbook/blob/main/docs/MACHINE_LEARNING_INTEGRATION_ARCHITECTURE_AUDIT.md",
+    "https://github.com/Mohammad-Zahed-Hossen/AI_Engineering_Handbook/blob/main/docs/ARCHITECTURE_FREEZE.md",
+    "https://github.com/Mohammad-Zahed-Hossen/AI_Engineering_Handbook/blob/main/docs/RESOURCE_KNOWLEDGE_REQUIREMENTS_REPORT.md",
+    "https://ijsrem.com/download/script-to-scene-cinematic-scene-generation-via-fine-tuning-stable-diffusion-with-dreambooth-and-lora/",
+    "https://arxiv.org/abs/2605.17159",
+    "https://ieeexplore.ieee.org/document/11365232/",
+    "https://www.semanticscholar.org/paper/a51beb589db54bdb5e401ca2be2cc1d99d1eaa5f",
+    "https://www.mdpi.com/2227-7390/14/2/225",
+    "https://www.semanticscholar.org/paper/a1a44f6582bc4ae811a22c2dace9e1a41fa8585b",
+    "https://dl.acm.org/doi/10.1145/3637528.3671897",
+    "https://ieeexplore.ieee.org/document/11170527/",
+    "https://deepmind.google/research/publications/57039/",
+    "https://openreview.net/pdf/3f6d8046c1a9856022b0e94083d5bfbd5e844d65.pdf",
+    "https://cgiannoula.github.io/assets/publications/Mist_EuroSys2025_full.pdf",
+    "https://d-nb.info/1386513172/34",
+    "https://arxiv.org/abs/2312.12705",
+    "https://arxiv.org/html/2312.12705v1",
+    "https://latitude.so/blog/distributed-optimizers-llm-fine-tuning",
+    "https://www.databricks.com/blog/llm-fine-tuning",
+    "https://apxml.com/courses/fine-tuning-adapting-large-language-models/chapter-7-optimization-deployment-considerations/distributed-training-strategies",
+    "https://www.ibm.com/think/topics/fine-tuning"
+  ],
+  "tags": [
+    "full-fine-tuning",
+    "transformers",
+    "distributed-training",
+    "accelerate",
+    "pytorch"
+  ],
+  "aliases": [
+    "full-transformer-training",
+    "full-model-fine-tuning"
+  ],
+  "keywords": [
+    "full fine tuning",
+    "transformers",
+    "accelerate",
+    "deepspeed",
+    "fsdp"
+  ],
+  "search_tokens": [
+    "full transformer fine tuning",
+    "distributed transformer training",
+    "accelerate workflow",
+    "deepspeed training",
+    "huggingface trainer"
+  ],
+  "domain": "llm",
+  "difficulty": "advanced",
+  "engineering_area": "training, distributed-training, optimization",
+  "estimated_reading_time": 40,
+  "prerequisites": [
+    "PyTorch training loops",
+    "transformer architectures",
+    "GPU memory management",
+    "distributed training basics",
+    "dataset curation"
+  ],
+  "recommended_next": [
+    "optimizer sharding patterns",
+    "checkpoint orchestration",
+    "evaluation regression testing"
+  ],
+  "next_links": [
+    "transformers",
+    "accelerate",
+    "torch",
+    "deepspeed",
+    "evaluate"
+  ],
+  "related_content": [
+    { "id": "llama", "type": "model", "relationship_type": "related_to" },
+    { "id": "mistral", "type": "model", "relationship_type": "related_to" },
+    { "id": "qwen", "type": "model", "relationship_type": "related_to" },
+    { "id": "gemma", "type": "model", "relationship_type": "related_to" },
+    { "id": "transformers", "type": "package", "relationship_type": "related_to" },
+    { "id": "accelerate", "type": "package", "relationship_type": "related_to" },
+    { "id": "torch", "type": "package", "relationship_type": "related_to" },
+    { "id": "deepspeed", "type": "package", "relationship_type": "related_to" },
+    { "id": "evaluate", "type": "package", "relationship_type": "related_to" },
+    { "id": "distributed-training", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "gradient-checkpointing", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "mixed-precision", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "checkpointing", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "supervised-fine-tuning", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "gpu-oom", "type": "debug_guide", "relationship_type": "related_to" },
+    { "id": "unstable-loss", "type": "debug_guide", "relationship_type": "related_to" },
+    { "id": "optimizer-divergence", "type": "debug_guide", "relationship_type": "related_to" },
+    { "id": "checkpoint-corruption", "type": "debug_guide", "relationship_type": "related_to" }
+  ],
+  "related_models": [
+    { "id": "llama", "type": "model", "relationship_type": "related_to" },
+    { "id": "mistral", "type": "model", "relationship_type": "related_to" },
+    { "id": "qwen", "type": "model", "relationship_type": "related_to" },
+    { "id": "gemma", "type": "model", "relationship_type": "related_to" }
+  ],
+  "related_packages": [
+    { "id": "transformers", "type": "package", "relationship_type": "related_to" },
+    { "id": "accelerate", "type": "package", "relationship_type": "related_to" },
+    { "id": "torch", "type": "package", "relationship_type": "related_to" },
+    { "id": "deepspeed", "type": "package", "relationship_type": "related_to" },
+    { "id": "evaluate", "type": "package", "relationship_type": "related_to" }
+  ],
+  "related_patterns": [
+    { "id": "distributed-training", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "gradient-checkpointing", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "mixed-precision", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "checkpointing", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "supervised-fine-tuning", "type": "pattern", "relationship_type": "related_to" }
+  ],
+  "related_debug_guides": [
+    { "id": "gpu-oom", "type": "debug_guide", "relationship_type": "related_to" },
+    { "id": "unstable-loss", "type": "debug_guide", "relationship_type": "related_to" },
+    { "id": "optimizer-divergence", "type": "debug_guide", "relationship_type": "related_to" },
+    { "id": "checkpoint-corruption", "type": "debug_guide", "relationship_type": "related_to" }
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "name": "Dataset Preparation & Validation",
+      "what": "Construct a frozen, deduplicated, schema-validated dataset with contamination checks and stable train/validation splits. For full fine-tuning, dataset errors propagate more aggressively than in adapter-based methods because every parameter is allowed to move.\n* Input Interface Contract:\n  - Artifact: raw task corpus.\n  - Type: tabular, JSONL, or parquet records.\n  - Ownership: data engineering.\n  - Persistence: versioned source snapshot.\n  - Consumer: tokenization stage.\n* Output Interface Contract:\n  - Artifact: validated dataset split bundle.\n  - Type: train/validation partitions plus quality flags.\n  - Ownership: training pipeline.\n  - Persistence: immutable dataset snapshot.\n  - Consumer: tokenizer and trainer.\n* Required Metadata:\n  - Dataset version.\n  - Source lineage.\n  - Split seed.\n  - Deduplication status.\n  - Contamination scan result.\n  - Owner.\n* Pipeline Contract:\n  - Splits remain frozen after validation.\n  - Duplicate and near-duplicate records are removed before training.\n  - Validation data must not overlap with training data or benchmark data.\n  - Record-level provenance must remain queryable for audit and rollback.\n* Uses:\n  - Instruction corpora.\n  - Domain adaptation datasets.\n  - Safety and quality filtering.\n* Production Metrics:\n  - Primary Metric: contamination rate.\n  - Expected Range: zero for frozen production splits.\n  - Alert Threshold: any confirmed overlap with evaluation data.",
+      "tools": [
+        "datasets",
+        "pandas",
+        "tokenizers"
+      ],
+      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Split strategy | Frozen train/validation split | Dynamic resampling per run | Frozen splits maximize reproducibility; dynamic resampling improves coverage but breaks comparability | Repeated production retrains | Reproducibility loss |\n| Deduplication | Exact plus near-duplicate removal | Exact-only deduplication | Near-duplicate removal reduces memorization risk; exact-only is cheaper but leaves leakage risk | Large scraped or merged corpora | Data leakage |\n| Validation policy | Schema and content checks before training | Load-time checks only | Preflight checks catch bad rows earlier; load-time checks fail later under load | Multi-source datasets | Corrupt training input |\n| Contamination scan | Explicit overlap detection against eval sets | Manual review only | Automated scans catch overlap systematically; manual review is incomplete | Shared corpora | Benchmark contamination |",
+      "uses": {
+        "packages": [
+          "datasets",
+          "pandas",
+          "tokenizers"
+        ],
+        "models": [],
+        "cheatsheets": [],
+        "patterns": [],
+        "debug_guides": []
+      },
+      "failure_points": [
+        "Split leakage.",
+        "Duplicate records.",
+        "Invalid schema rows.",
+        "Eval contamination."
+      ],
+      "language": "python",
+      "code": "import pandas as pd\nfrom datasets import Dataset\n\ndf = pd.DataFrame([{\"instruction\": \"Summarize\", \"output\": \"Summary\"}])\ndataset = Dataset.from_pandas(df)"
+    },
+    {
+      "step": 2,
+      "name": "Tokenizer Configuration & Sequence Processing",
+      "what": "Align tokenizer behavior with the pretrained model and convert raw examples into deterministic training sequences. Tokenizer mismatch and unstable padding or truncation rules are common causes of silent quality regressions in full fine-tuning.\n* Input Interface Contract:\n  - Artifact: validated dataset split.\n  - Type: text examples with task fields.\n  - Ownership: training pipeline.\n  - Persistence: versioned formatting spec.\n  - Consumer: model loading and training.\n* Output Interface Contract:\n  - Artifact: tokenized training record.\n  - Type: input IDs, attention masks, labels.\n  - Ownership: tokenizer stage.\n  - Persistence: reproducible tokenization snapshot.\n  - Consumer: optimizer and trainer.\n* Required Metadata:\n  - Tokenizer revision.\n  - Special token map.\n  - Max sequence length.\n  - Truncation policy.\n  - Padding policy.\n  - Prompt template version.\n* Pipeline Contract:\n  - Tokenizer must exactly match the pretrained model family.\n  - Special tokens must be stable across all runs.\n  - Packing, truncation, and padding policies must be fixed and reproducible.\n  - Sequence formatting must preserve label boundaries and loss masking behavior.\n* Uses:\n  - Instruction tuning.\n  - Chat formatting.\n  - Sequence packing for throughput.\n* Production Metrics:\n  - Primary Metric: formatted sequence validity.\n  - Expected Range: 100 percent schema-valid tokenized samples.\n  - Alert Threshold: any malformed sequence or label mask.",
+      "tools": [
+        "transformers",
+        "tokenizers"
+      ],
+      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Tokenizer choice | Model-native tokenizer | Rebuilt tokenizer with resized embeddings | Native tokenizer preserves compatibility; rebuilt tokenizer may better fit new tokens but changes model state | Vocabulary extension or domain-specific symbols | Tokenizer mismatch |\n| Sequence handling | Fixed truncation and optional packing | Variable-length batches only | Fixed rules make runs reproducible; variable-length batches can waste compute or alter learning dynamics | Long-context training | Silent truncation bias |\n| Padding policy | Explicit padding side and pad token | Library default behavior | Explicit padding removes ambiguity; defaults can differ by model class | Distributed training | Inconsistent batch shapes |\n| Prompt formatting | Versioned template | Ad hoc formatting | Versioned templates stabilize training signal; ad hoc formatting is faster to prototype but harder to reproduce | Production training | Prompt drift |",
+      "uses": {
+        "packages": [
+          "transformers",
+          "tokenizers"
+        ],
+        "models": [],
+        "cheatsheets": [],
+        "patterns": [],
+        "debug_guides": []
+      },
+      "failure_points": [
+        "Special token mismatch.",
+        "Over-truncation.",
+        "Wrong label masking.",
+        "Inconsistent prompt structure."
+      ],
+      "language": "python",
+      "code": "from transformers import AutoTokenizer\n\ntok = AutoTokenizer.from_pretrained(\"meta-llama/Llama-3.1-8B\")\nsample = tok(\"### Instruction\\nWrite a haiku.\", truncation=True, max_length=512)"
+    },
+    {
+      "step": 3,
+      "name": "Base Model Loading & Training Configuration",
+      "what": "Load the pretrained transformer, pin its revision, and establish the training envelope before optimization begins. The main production concern is architectural compatibility between the checkpoint, tokenizer, sequence length, and intended distributed strategy.\n* Input Interface Contract:\n  - Artifact: pretrained model identifier or checkpoint.\n  - Type: model weights plus config.\n  - Ownership: model runtime.\n  - Persistence: immutable upstream reference.\n  - Consumer: optimizer and distributed runtime.\n* Output Interface Contract:\n  - Artifact: initialized training model.\n  - Type: model object ready for optimization.\n  - Ownership: training runtime.\n  - Persistence: transient in-memory state.\n  - Consumer: optimizer setup and trainer.\n* Required Metadata:\n  - Base model ID.\n  - Revision hash.\n  - Max sequence length.\n  - Precision mode.\n  - Device placement plan.\n  - Memory budget.\n* Pipeline Contract:\n  - Model architecture must remain compatible with its checkpoint.\n  - Vocabulary must remain unchanged unless intentionally resized.\n  - Base weights become the authoritative starting point for all subsequent states.\n  - Training configuration must be fixed before optimizer creation.\n* Uses:\n  - Full checkpoint training.\n  - Architecture compatibility checks.\n  - Memory planning.\n* Production Metrics:\n  - Primary Metric: initialization memory footprint.\n  - Expected Range: within planned device budget.\n  - Alert Threshold: load failure or materially excessive VRAM use.",
+      "tools": [
+        "transformers",
+        "accelerate"
+      ],
+      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Precision mode | Mixed precision aligned to hardware | Full precision | Mixed precision improves throughput and memory efficiency; full precision is safer numerically but more expensive | Large models or long sequences | OOM and slow training |\n| Loading strategy | Device-mapped model load | Manual parameter placement | Device mapping is simpler and repeatable; manual placement offers finer control but adds failure modes | Multi-GPU or heterogeneous hardware | Bad placement |\n| Model revision | Pinned upstream revision | Floating latest version | Pinned revisions are reproducible; floating revisions can silently change behavior | Regulated or audited runs | Baseline drift |\n| Sequence envelope | Fixed max length | Adaptive runtime length | Fixed length makes planning predictable; adaptive length may improve utilization but complicates comparison | High-cost training | Capacity mismatch |",
+      "uses": {
+        "packages": [
+          "transformers",
+          "accelerate"
+        ],
+        "models": [],
+        "cheatsheets": [],
+        "patterns": [],
+        "debug_guides": []
+      },
+      "failure_points": [
+        "Wrong checkpoint revision.",
+        "Architecture mismatch.",
+        "Memory budget misestimation.",
+        "Precision incompatibility."
+      ],
+      "language": "python",
+      "code": "from transformers import AutoModelForCausalLM, AutoConfig\n\nconfig = AutoConfig.from_pretrained(\"meta-llama/Llama-3.1-8B\")\nmodel = AutoModelForCausalLM.from_pretrained(\"meta-llama/Llama-3.1-8B\", config=config)"
+    },
+    {
+      "step": 4,
+      "name": "Optimizer, Scheduler & Distributed Training Setup",
+      "what": "Configure AdamW or fused optimizer variants, attach a scheduler, and select the distributed strategy that matches the cluster topology. Distributed optimization quality depends on preserving optimizer state, synchronization semantics, and gradient scaling behavior across replicas.\n* Input Interface Contract:\n  - Artifact: initialized model and tokenized dataset.\n  - Type: trainable parameters plus training batches.\n  - Ownership: training runtime.\n  - Persistence: optimizer and scheduler state.\n  - Consumer: full fine-tuning loop.\n* Output Interface Contract:\n  - Artifact: distributed training plan.\n  - Type: optimizer, scheduler, and parallelism state.\n  - Ownership: runtime orchestration.\n  - Persistence: checkpointable state bundle.\n  - Consumer: trainer.\n* Required Metadata:\n  - Optimizer type.\n  - Learning rate.\n  - Weight decay.\n  - Scheduler policy.\n  - Gradient clipping threshold.\n  - Distributed topology.\n* Pipeline Contract:\n  - Optimizer state must remain aligned with model weights.\n  - Distributed synchronization must be deterministic enough for checkpoint replay.\n  - Gradient clipping and warmup must be fixed before run start.\n  - Communication overhead must be measured, not assumed.\n* Uses:\n  - Multi-GPU training.\n  - Memory-sharded optimizer state.\n  - Large-scale full fine-tuning.\n* Production Metrics:\n  - Primary Metric: distributed scaling efficiency.\n  - Expected Range: near-linear up to platform limits.\n  - Alert Threshold: scaling collapse or synchronization errors.",
+      "tools": [
+        "torch",
+        "accelerate",
+        "deepspeed",
+        "fsdp"
+      ],
+      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Optimizer | AdamW | Fused AdamW or sharded optimizer | AdamW is robust and familiar; fused/sharded optimizers improve speed or memory but add platform constraints | Large-scale distributed runs | Optimizer divergence |\n| Scheduler | Linear warmup then decay | Cosine or constant schedule | Linear warmup is predictable; alternative schedules can fit specific regimes better | Long training runs | Early instability |\n| Distributed strategy | Accelerate-managed data parallel + FSDP/DeepSpeed | Single-node data parallel only | Sharding improves memory efficiency; simpler setups are easier to debug | Multi-node or large models | GPU OOM |\n| Gradient handling | Explicit clipping and accumulation | No clipping, minimal accumulation | Clipping stabilizes training; aggressive accumulation saves memory but may slow feedback | Large batches or unstable loss | Exploding gradients |",
+      "uses": {
+        "packages": [
+          "torch",
+          "accelerate",
+          "deepspeed"
+        ],
+        "models": [],
+        "cheatsheets": [],
+        "patterns": [],
+        "debug_guides": []
+      },
+      "failure_points": [
+        "Synchronization mismatch.",
+        "Optimizer state corruption.",
+        "Excessive communication overhead.",
+        "Gradient instability."
+      ],
+      "language": "python",
+      "code": "import torch\nfrom torch.optim import AdamW\n\noptimizer = AdamW(model.parameters(), lr=2e-5, weight_decay=0.01)\nscheduler = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.1, total_iters=100)"
+    },
+    {
+      "step": 5,
+      "name": "Full Model Fine-Tuning",
+      "what": "Run the supervised optimization loop over all trainable parameters using the selected distributed strategy and checkpoint cadence. Full fine-tuning is sensitive to optimizer settings and gradient synchronization because every weight participates in the update path.\n* Input Interface Contract:\n  - Artifact: distributed training plan and initialized model.\n  - Type: batches, optimizer state, scheduler state.\n  - Ownership: trainer.\n  - Persistence: resumable checkpoints.\n  - Consumer: evaluation and export.\n* Output Interface Contract:\n  - Artifact: trained model checkpoints.\n  - Type: full-parameter model states.\n  - Ownership: training runtime.\n  - Persistence: periodic checkpoint snapshots.\n  - Consumer: evaluation and packaging.\n* Required Metadata:\n  - Global seed.\n  - Batch size.\n  - Gradient accumulation steps.\n  - Mixed precision mode.\n  - Checkpoint frequency.\n  - Early stopping criteria.\n* Pipeline Contract:\n  - Full model gradients must update every trainable parameter.\n  - Checkpoints must preserve model, optimizer, and scheduler state.\n  - Seed, dataloader order, and precision policy must remain fixed within a run.\n  - Gradient accumulation must be reflected in throughput and convergence analysis.\n* Uses:\n  - End-to-end supervised adaptation.\n  - Domain transfer.\n  - Large-batch distributed optimization.\n* Production Metrics:\n  - Primary Metric: training throughput.\n  - Expected Range: stable tokens/sec within planned hardware envelope.\n  - Alert Threshold: sustained throughput collapse or divergence.",
+      "tools": [
+        "transformers",
+        "trl",
+        "accelerate",
+        "torch"
+      ],
+      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Training loop | Transformers or TRL supervised training loop | Custom training loop | Standard trainers reduce implementation risk; custom loops offer flexibility but increase bug surface | Production training | Trainer drift |\n| Gradient accumulation | Moderate accumulation | Large accumulation | Moderate accumulation balances memory and convergence; large accumulation reduces memory but slows feedback | Long sequences or smaller VRAM | OOM |\n| Precision policy | Mixed precision | Full precision | Mixed precision improves throughput and memory use; full precision is numerically conservative but slower | Large-scale training | Inefficient compute use |\n| Checkpoint cadence | Fixed step interval | Metric-triggered only | Fixed cadence supports recovery; metric-triggered saves reduce storage but can miss the right rollback point | Long runs or unstable loss | Lost recoverability |",
+      "uses": {
+        "packages": [
+          "transformers",
+          "trl",
+          "accelerate",
+          "torch"
+        ],
+        "models": [],
+        "cheatsheets": [],
+        "patterns": [],
+        "debug_guides": []
+      },
+      "failure_points": [
+        "Exploding gradients.",
+        "Loss divergence.",
+        "OOM due to batch or sequence settings.",
+        "Non-reproducible checkpoints."
+      ],
+      "language": "python",
+      "code": "from trl import SFTTrainer\nfrom transformers import TrainingArguments\n\nargs = TrainingArguments(output_dir=\"out\", per_device_train_batch_size=1, fp16=True)\ntrainer = SFTTrainer(model=model, args=args, train_dataset=None)"
+    },
+    {
+      "step": 6,
+      "name": "Evaluation & Checkpoint Selection",
+      "what": "Score candidate checkpoints on validation loss, perplexity, and task-specific metrics, then select a stable checkpoint for export. Reproducible evaluation is essential because checkpoint choice affects downstream deployment quality and rollback confidence.\n* Input Interface Contract:\n  - Artifact: candidate checkpoints.\n  - Type: saved model states.\n  - Ownership: evaluation pipeline.\n  - Persistence: checkpoint registry.\n  - Consumer: export and release review.\n* Output Interface Contract:\n  - Artifact: selected checkpoint and eval report.\n  - Type: scalar metrics plus selection decision.\n  - Ownership: evaluation pipeline.\n  - Persistence: immutable evaluation record.\n  - Consumer: export and tracking.\n* Required Metadata:\n  - Checkpoint ID.\n  - Eval dataset revision.\n  - Validation loss.\n  - Perplexity.\n  - Task metric.\n  - Selection rule.\n* Pipeline Contract:\n  - Evaluation data must be frozen and isolated from training.\n  - Selection criteria must be defined before training starts.\n  - Multiple metrics should be retained rather than collapsed prematurely.\n  - Re-running evaluation on the same artifacts must reproduce the same winner.\n* Uses:\n  - Best checkpoint selection.\n  - Generalization checks.\n  - Regression testing versus baseline.\n* Production Metrics:\n  - Primary Metric: validation loss.\n  - Expected Range: decreases then plateaus.\n  - Alert Threshold: divergence or repeated oscillation.",
+      "tools": [
+        "evaluate",
+        "transformers",
+        "lm-evaluation-harness"
+      ],
+      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Selection metric | Validation loss plus task metric | Task metric only | Combined selection balances fit and utility; task-only may miss overfitting | Production deployment | Wrong checkpoint |\n| Eval scope | Frozen validation plus benchmark set | Validation only | Benchmarking broadens confidence; validation-only is faster but narrower | Release gating | Hidden regressions |\n| Reproducibility | Fixed seed and fixed split | Ad hoc evaluation | Fixed evaluation supports auditability; ad hoc evaluation is more exploratory | Regulated or recurring releases | Non-repeatable results |\n| Acceptance rule | Best metric under stability constraints | Best single score | Stability constraints avoid overfitting spikes; single-score selection is simpler but riskier | Model promotion | Unstable winner selection |",
+      "uses": {
+        "packages": [
+          "evaluate",
+          "transformers"
+        ],
+        "models": [],
+        "cheatsheets": [],
+        "patterns": [],
+        "debug_guides": []
+      },
+      "failure_points": [
+        "Unstable validation loss.",
+        "Catastrophic forgetting.",
+        "Metric mismatch.",
+        "Non-repeatable benchmark scores."
+      ],
+      "language": "python",
+      "code": "import evaluate\n\nmetric = evaluate.load(\"perplexity\")\nresult = metric.compute(predictions=[1, 2, 3], references=[1, 2, 3])"
+    },
+    {
+      "step": 7,
+      "name": "Model Export, Serialization & Packaging",
+      "what": "Serialize the full model, separate optimizer state when required, and package the artifact in a deployment-compatible format. Export is not a mechanical afterthought; it is the stage where training-time assumptions are converted into runtime guarantees.\n* Input Interface Contract:\n  - Artifact: selected checkpoint.\n  - Type: full model weights and states.\n  - Ownership: packaging layer.\n  - Persistence: artifact store.\n  - Consumer: deployment runtime.\n* Output Interface Contract:\n  - Artifact: packaged model release.\n  - Type: Hugging Face-compatible model folder with safe serialization.\n  - Ownership: packaging layer.\n  - Persistence: release artifact.\n  - Consumer: serving and CI.\n* Required Metadata:\n  - Export version.\n  - Base revision.\n  - Checkpoint ID.\n  - Serialization format.\n  - Optimizer-state separation status.\n  - Deployment compatibility target.\n* Pipeline Contract:\n  - Model serialization must preserve numerical correctness.\n  - Optimizer and scheduler state should be separable from inference-only artifacts.\n  - safetensors or equivalent safe serialization should be used for production artifacts.\n  - The exported artifact must load in the intended serving stack without code changes.\n* Uses:\n  - Model release packaging.\n  - Inference deployment.\n  - Rollback-ready artifact storage.\n* Production Metrics:\n  - Primary Metric: export compatibility.\n  - Expected Range: clean load in serving environment.\n  - Alert Threshold: load failure or output mismatch against frozen sanity cases.",
+      "tools": [
+        "transformers",
+        "safetensors"
+      ],
+      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Export format | Hugging Face model directory with safetensors | Framework-specific checkpoint bundle | HF format is widely compatible; custom bundles can preserve more training detail but are harder to serve | Production release | Deployment incompatibility |\n| Optimizer state | Separate training-state artifact | Bundled with model weights | Separate state keeps serving clean; bundled state simplifies restart but bloats release artifacts | Long-running training | Confusing inference artifact |\n| Serialization | safetensors | Legacy serialization formats | safetensors reduces security and corruption risk; legacy formats may be easier for some tooling | Security-sensitive deployments | Corrupt or unsafe artifacts |\n| Versioning | Explicit artifact version | Latest-only overwrite | Versioning supports rollback; overwrite is simpler but unsafe | Continuous delivery | Lost rollback path |",
+      "uses": {
+        "packages": [
+          "transformers",
+          "safetensors"
+        ],
+        "models": [],
+        "cheatsheets": [],
+        "patterns": [],
+        "debug_guides": []
+      },
+      "failure_points": [
+        "Serialization corruption.",
+        "Mismatched model format.",
+        "Exported artifact incompatible with runtime.",
+        "Missing optimizer-state separation."
+      ],
+      "language": "python",
+      "code": "from transformers import AutoModelForCausalLM\n\nmodel.save_pretrained(\"exported-model\", safe_serialization=True)\nAutoModelForCausalLM.from_pretrained(\"exported-model\")"
+    },
+    {
+      "step": 8,
+      "name": "Experiment Tracking & Production Operations",
+      "what": "Track runs, lineage, metrics, checkpoints, and promotion metadata so full fine-tuning remains auditable and restartable. W&B plus GitHub Actions turns training from a one-off job into a controlled production operation.\n* Input Interface Contract:\n  - Artifact: training run and exported model.\n  - Type: metrics, logs, and artifact references.\n  - Ownership: MLOps.\n  - Persistence: tracker and CI records.\n  - Consumer: release management.\n* Output Interface Contract:\n  - Artifact: experiment record.\n  - Type: run history plus promotion status.\n  - Ownership: MLOps.\n  - Persistence: durable registry.\n  - Consumer: governance and deployment.\n* Required Metadata:\n  - Run ID.\n  - Git SHA.\n  - Dataset version.\n  - Model revision.\n  - Hardware profile.\n  - Final metrics.\n* Pipeline Contract:\n  - Lineage must fully identify code, data, and model state.\n  - Checkpoint and metric histories must remain queryable after training ends.\n  - CI must gate promotion on declared thresholds.\n  - Rollback paths must point to the last known-good artifact.\n* Uses:\n  - Run auditing.\n  - Reproducible retraining.\n  - Release governance.\n* Production Metrics:\n  - Primary Metric: checkpoint reproducibility.\n  - Expected Range: identical lineage reconstruction for identical inputs.\n  - Alert Threshold: inability to recover the run or reproduce metrics.",
+      "tools": [
+        "wandb",
+        "accelerate",
+        "GitHub Actions"
+      ],
+      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Tracking scope | Metrics, artifacts, lineage | Metrics only | Full tracking supports audits and reproducibility; metrics-only reduces overhead but hides provenance | Production retraining | Lost traceability |\n| Promotion policy | CI-gated release | Manual release | CI gates improve consistency; manual release is faster but riskier | Scheduled deployments | Bad model promotion |\n| Lineage granularity | Dataset, code, model, hardware | Code only | Full lineage enables replay; code-only misses hidden dependencies | Multi-team work | Undiagnosable drift |\n| Rollback policy | Last known-good artifact | Ad hoc recovery | Formal rollback is reliable; ad hoc recovery is slower and error-prone | Production incident | Slow restoration |",
+      "uses": {
+        "packages": [
+          "wandb",
+          "accelerate"
+        ],
+        "models": [],
+        "cheatsheets": [],
+        "patterns": [],
+        "debug_guides": []
+      },
+      "failure_points": [
+        "Missing lineage.",
+        "Lost checkpoints.",
+        "CI bypass.",
+        "Stale baseline references."
+      ],
+      "language": "python",
+      "code": "import wandb\nfrom accelerate import Accelerator\n\nacc = Accelerator()\nrun = wandb.init(project=\"full-ft\")\nwandb.log({\"loss\": 0.42})"
+    }
+  ],
+  "common_failure_points": [
+    "Failure: Tokenizer Mismatch\n* Origin: Tokenizer configuration and sequence processing.\n* Trigger: The tokenizer revision differs from the pretrained model revision or the special token map changes midstream.\n* Immediate symptom: Degraded generations, malformed boundaries, or unstable loss.\n* Downstream propagation: Training updates the wrong token statistics and export artifacts become unreliable.\n* Why debugging is difficult: The model often still trains, so the issue appears as quality drift instead of a hard failure.\n* Recommended detection: Hash tokenizer revisions and validate formatted samples before the first training step.\n* Recovery strategy: Retrain with the correct tokenizer and freeze the formatting contract.",
+    "Failure: Exploding Gradients\n* Origin: Full model fine-tuning and optimizer configuration.\n* Trigger: Learning rate is too high, clipping is absent, or gradient accumulation masks instability.\n* Immediate symptom: Loss spikes, NaNs, or sudden divergence.\n* Downstream propagation: Checkpoints become unusable and training restarts from a previous stable save.\n* Why debugging is difficult: The failure may appear several hours into a run after many apparently healthy steps.\n* Recommended detection: Track gradient norms, loss curves, and checkpoint deltas.\n* Recovery strategy: Lower learning rate, enable clipping, and resume from the last stable checkpoint.",
+    "Failure: Unstable Validation Loss\n* Origin: Evaluation and checkpoint selection.\n* Trigger: Validation set leakage, schedule mismatch, or noisy evaluation cadence.\n* Immediate symptom: Loss oscillates or selected checkpoints vary run to run.\n* Downstream propagation: Promotion decisions become unreliable and rollback confidence drops.\n* Why debugging is difficult: The training run may appear healthy while evaluation artifacts are inconsistent.\n* Recommended detection: Freeze eval splits and compare repeated evaluations on the same checkpoint.\n* Recovery strategy: Rebuild the eval set, stabilize cadence, and retune selection criteria.",
+    "Failure: Optimizer Divergence\n* Origin: Optimizer, scheduler, and distributed setup.\n* Trigger: State mismatch after resume, poor LR warmup, or sharded optimizer misconfiguration.\n* Immediate symptom: Training loss jumps after restart or fails to recover.\n* Downstream propagation: Previously healthy checkpoints no longer reproduce and experiments become non-comparable.\n* Why debugging is difficult: The run can look correct until a resume event or topology change occurs.\n* Recommended detection: Verify optimizer-state hashes and resume on a known replay test.\n* Recovery strategy: Restore from a checkpoint with matching optimizer and scheduler state.",
+    "Failure: Distributed Synchronization Failure\n* Origin: Distributed training setup.\n* Trigger: FSDP or DeepSpeed configuration mismatch, rank desynchronization, or communication timeout.\n* Immediate symptom: Hangs, crashes, or inconsistent gradients across ranks.\n* Downstream propagation: Training stalls and checkpoint state can become partially written or unusable.\n* Why debugging is difficult: The failure often depends on scale, topology, and timing rather than a single code path.\n* Recommended detection: Test on the exact target topology and monitor rank-level health signals.\n* Recovery strategy: Reduce the topology, fix communication settings, and re-run from a clean checkpoint."
+  ],
+  "evaluation_checks": [
+    "Validation loss improves and stabilizes.",
+    "Perplexity is lower than the frozen baseline on validation data.",
+    "GPU utilization stays above the target threshold.",
+    "Distributed scaling efficiency remains acceptable as node count increases.",
+    "Convergence is stable without repeated divergence or NaN spikes.",
+    "Checkpoint reloads reproduce the same metrics.",
+    "Evaluation quality meets task-specific thresholds.",
+    "Training throughput stays within the planned tokens/sec range.",
+    "Memory efficiency remains within the allocated budget."
+  ],
+  "worked_examples": [
+    {
+      "name": "Instruction-Tuning Llama 3 with Full Fine-Tuning",
+      "description": "This example updates every trainable weight in a Llama 3 checkpoint using a frozen instruction dataset, distributed training, and periodic evaluation. The key engineering choice is to keep tokenizer, model revision, and optimizer state pinned so restart and rollback remain deterministic.",
+      "language": "python",
+      "code": "from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments\nfrom trl import SFTTrainer\nfrom datasets import Dataset\n\ntok = AutoTokenizer.from_pretrained(\"meta-llama/Llama-3.1-8B\")\nmodel = AutoModelForCausalLM.from_pretrained(\"meta-llama/Llama-3.1-8B\")\ndata = Dataset.from_list([{\"text\": \"### Instruction\\nWrite a haiku.\\n### Response\\n...\" }])\nargs = TrainingArguments(output_dir=\"runs/llama3\", per_device_train_batch_size=1, fp16=True)\ntrainer = SFTTrainer(model=model, args=args, train_dataset=data, tokenizer=tok)",
+      "implementation_notes": "This pattern is suitable when the task justifies the compute cost of updating every parameter and the deployment target expects a single consolidated model artifact. Use a frozen eval split and checkpoint comparison against the base model to detect catastrophic forgetting early."
+    },
+    {
+      "name": "Domain-Specific Biomedical Transformer Fine-Tuning",
+      "description": "This example adapts a pretrained transformer to biomedical instruction following with strict validation on terminology-rich data. The main concern is evaluation fidelity: biomedical domains can look improved on narrow metrics while regressing on general instruction quality.",
+      "language": "python",
+      "code": "import pandas as pd\nfrom datasets import Dataset\nfrom transformers import AutoTokenizer\n\ndf = pd.DataFrame([{\"instruction\": \"Explain biomarkers\", \"response\": \"...\" }])\nds = Dataset.from_pandas(df)\ntok = AutoTokenizer.from_pretrained(\"microsoft/deberta-v3-base\")\nsample = tok(ds[0][\"instruction\"], truncation=True, max_length=256)",
+      "implementation_notes": "Biomedical corpora often need stronger contamination control because benchmark overlap can be subtle and domain terms are dense. Full fine-tuning is justified when the adaptation target requires model-wide calibration rather than a narrow output-layer shift."
+    },
+    {
+      "name": "Production Distributed Training Pipeline",
+      "description": "This example shows a multi-GPU full fine-tuning pipeline with explicit distributed initialization, run tracking, and checkpointing. The core requirement is preserving optimizer and scheduler state across resume events while monitoring scaling efficiency and throughput.",
+      "language": "python",
+      "code": "import torch\nimport wandb\nfrom accelerate import Accelerator\nfrom torch.optim import AdamW\n\nacc = Accelerator()\nrun = wandb.init(project=\"distributed-ft\")\noptimizer = AdamW(model.parameters(), lr=2e-5)\nmodel, optimizer = acc.prepare(model, optimizer)\nwandb.log({\"gpu_util\": 92, \"tokens_per_sec\": 1450})",
+      "implementation_notes": "This pattern is the default choice when the model no longer fits cleanly into a single-device budget or when time-to-train matters enough to justify orchestration overhead. Distributed full fine-tuning only stays maintainable if checkpointing, metric logging, and process topology are treated as first-class artifacts."
+    }
+  ],
+  "production_notes": "Transformers plus Accelerate plus DeepSpeed or FSDP is the baseline for full-model training because it separates model code from distributed execution concerns. The benefit is production-grade scaling without custom training infrastructure. The trade-off is more configuration complexity and a larger failure surface. Do not use it for trivial single-GPU experiments. The operational impact is stronger checkpoint discipline and more predictable deployment packaging.",
+  "scaling_notes": "Distributed fine-tuning, gradient accumulation, and pipeline or data parallelism are the main levers for throughput and memory pressure. The benefit is the ability to train models and sequence lengths that would otherwise be infeasible. The trade-off is communication overhead and more difficult performance tuning. Do not over-shard if the model already fits comfortably on one device. The operational impact is shorter wall-clock time when scaling is justified.",
+  "cost_notes": "Mixed precision, gradient checkpointing, activation checkpointing, and optimizer sharding reduce memory pressure and improve hardware efficiency. The benefit is lower memory use and often higher effective batch sizes. The trade-off is extra compute, more complex debugging, and potential numerical fragility. Do not enable every optimization by default if the system already meets its targets. The operational impact is lower cost per run and better hardware utilization.",
+  "latency_notes": "Training throughput, GPU utilization, communication overhead, and memory efficiency are the main operational indicators for this workflow. The benefit of tracking them is that scaling regressions become visible before budget burn becomes excessive. The trade-off is additional instrumentation and performance measurement overhead. Do not treat utilization alone as success if convergence or checkpoint quality degrades. The operational impact is more stable training schedules and better capacity planning.",
+  "observability_notes": "Weights & Biases plus optimizer statistics plus gradient norms and checkpoint metrics provide the most useful operational visibility for full fine-tuning. The benefit is that failures can be correlated with training dynamics instead of inferred after the fact. The trade-off is extra logging cost and artifact management. Do not rely solely on final validation scores. The operational impact is faster incident response and more reliable model promotion."
+}
