@@ -316,7 +316,9 @@
         "Non-reproducible benchmarks.",
         "Incomplete latency decomposition.",
         "GPU telemetry gaps."
-      ]
+      ],
+      "code": "from torch.profiler import profile, ProfilerActivity\n\nwith profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]) as prof:\n    pass\n\nevents = prof.key_averages()\nlatency_ms = sum(e.self_cuda_time_total for e in events) / 1000.0",
+      "language": "python"
     },
     {
       "step": 2,
@@ -344,7 +346,9 @@
         "Unsupported kernels or operators.",
         "Calibration mismatch.",
         "Latency gains offset by dequant overhead."
-      ]
+      ],
+      "code": "from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig\n\nbnb = BitsAndBytesConfig(load_in_8bit=True)\ntok = AutoTokenizer.from_pretrained(\"meta-llama/Llama-2-7b-hf\")\nmodel = AutoModelForCausalLM.from_pretrained(\"meta-llama/Llama-2-7b-hf\", quantization_config=bnb)",
+      "language": "python"
     },
     {
       "step": 3,
@@ -372,7 +376,9 @@
         "Prefix cache misses from unstable prompts.",
         "Stale KV reuse after model change.",
         "Cache pollution across tenants."
-      ]
+      ],
+      "code": "import hashlib\n\nprefix = \"system: be concise\\nuser: summarize\"\nkey = hashlib.sha256(prefix.encode()).hexdigest()\ncache_value = {\"model\": \"llama-3\", \"kv_slots\": 128, \"key\": key}",
+      "language": "python"
     },
     {
       "step": 4,
@@ -398,7 +404,9 @@
         "Queue saturation.",
         "Starvation of long prompts.",
         "Tail latency amplification."
-      ]
+      ],
+      "code": "queue = [\n    {\"id\": \"r1\", \"prefill\": 120, \"deadline_ms\": 900},\n    {\"id\": \"r2\", \"prefill\": 40, \"deadline_ms\": 700},\n]\nbatch = sorted(queue, key=lambda x: (x[\"deadline_ms\"], x[\"prefill\"]))",
+      "language": "python"
     },
     {
       "step": 5,
@@ -433,7 +441,9 @@
         "Route drift after policy updates.",
         "Stale Redis decision state.",
         "Fallback loops."
-      ]
+      ],
+      "code": "from fastapi import FastAPI\nimport redis\n\napp = FastAPI()\nr = redis.Redis(host=\"localhost\", port=6379, decode_responses=True)\n\ndef route(prompt_len: int) -> str:\n    return \"small\" if prompt_len < 500 else \"large\"\n\nr.set(\"route:last\", route(120))",
+      "language": "python"
     },
     {
       "step": 6,
@@ -461,7 +471,9 @@
         "Tokenizer mismatch.",
         "Extra verifier overhead.",
         "Negative speedup on simple prompts."
-      ]
+      ],
+      "code": "target = \"llama-3-8b\"\ndraft = \"llama-3-1b\"\nspeculative_depth = 4\nenabled = target.split(\"-\")[0] == draft.split(\"-\")[0]",
+      "language": "python"
     },
     {
       "step": 7,
@@ -484,7 +496,9 @@
         "Underprovisioned warm-up windows.",
         "Overreaction to transient spikes.",
         "Node packing inefficiency."
-      ]
+      ],
+      "code": "queue_latency_ms = 180\ngpu_util = 0.88\nscale_up = queue_latency_ms > 150 and gpu_util > 0.85\ndesired_replicas = 6 if scale_up else 4",
+      "language": "python"
     },
     {
       "step": 8,
@@ -510,7 +524,9 @@
         "Missing tenant-level attribution.",
         "Alert fatigue.",
         "Slow rollback of harmful policies."
-      ]
+      ],
+      "code": "from prometheus_client import Counter, Histogram\n\nreq_cost = Counter(\"llm_request_cost_total\", \"Estimated request cost\")\nttft = Histogram(\"llm_ttft_seconds\", \"Time to first token\")\nreq_cost.inc(1)\nttft.observe(0.28)",
+      "language": "python"
     }
   ],
   "common_failure_points": [

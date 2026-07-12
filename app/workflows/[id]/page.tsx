@@ -9,10 +9,11 @@ import RelatedContent from '@/components/shared/RelatedContent';
 import WorkflowStepList from '@/components/shared/WorkflowStepList';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 import ExpandableText from '@/components/shared/ExpandableText';
-import { CodeBlock } from '@/components/shared/CodeBlock';
+import { CodeBlock, highlightCodeSnippet } from '@/components/shared/CodeBlock';
 import CollapsibleRow from '@/components/shared/CollapsibleRow';
 import ContentTypeBadge from '@/components/shared/ContentTypeBadge';
 import { parseLabeledClauses } from '@/lib/text/parseLabeledClauses';
+import { linkFootnotes } from '@/lib/text/linkFootnotes';
 import { Prose, ProseInline } from '@/components/shared/Prose';
 import { parseResourceUrl, categorizeSources } from '@/lib/resources';
 import { BadgeRow } from '@/components/shared/BadgeRow';
@@ -47,6 +48,17 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
 
   const resolvedLinks = resolveWorkflowStepLinks(workflow);
 
+  const stepsWithHighlightedCode = await Promise.all(
+    workflow.steps.map(async (step) => {
+      if (!step.code) return step;
+      const highlightedCodeData = await highlightCodeSnippet(step.code, step.language || 'python');
+      return {
+        ...step,
+        highlightedCodeData,
+      };
+    })
+  );
+
   return (
     <ContentPageLayout
       breadcrumbs={[
@@ -78,8 +90,25 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
           category={workflow.category}
         />
         {(() => {
-          // Replace GFM footnote references [^1] with standard markdown link [[1]](#footnote-1) to support cross-Prose links
-          const overviewWithLinks = workflow.overview.replace(/\[\^(\d+)\]/g, ' [[$1]](#footnote-$1)');
+          // Build a map of footnote number -> resource-${category}-${index} anchor for direct linking to Further Study
+          const sourceUrls = workflow.sources.map((s): string => typeof s === 'string' ? s : (s as any).url);
+          const categorized = categorizeSources(sourceUrls);
+          const footnoteToAnchor: Record<number, string> = {};
+          Object.entries(categorized).forEach(([category, urls]: [string, string[]]) => {
+            urls.forEach((url: string, idx: number) => {
+              const sourceIndex = sourceUrls.indexOf(url);
+              if (sourceIndex !== -1) {
+                footnoteToAnchor[sourceIndex + 1] = `resource-${category}-${idx}`;
+              }
+            });
+          });
+
+          // Replace GFM footnote references [^1] with direct links to Further Study anchors
+          const overviewWithLinks = workflow.overview.replace(/\[\^(\d+)\]/g, (match, numStr) => {
+            const num = parseInt(numStr, 10);
+            const anchor = footnoteToAnchor[num];
+            return anchor ? ` [[${num}]](#${anchor})` : match;
+          });
           return (
             <>
               <ExpandableText cacheKey={`workflow-overview-${workflow.id}`} fadeClass="from-background to-transparent" maxLines={4}>
@@ -91,48 +120,6 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                 </span>
               )}
             </>
-          );
-        })()}
-        {/* Citations block - rendered outside ExpandableText so it's always visible */}
-        {workflow.sources && workflow.sources.length > 0 && (() => {
-          const sourceUrls = workflow.sources.map((s): string => typeof s === 'string' ? s : (s as any).url);
-          const categorized = categorizeSources(sourceUrls);
-          
-          // Build a map of URL -> (category, index) for linking
-          const urlToResource: Record<string, { category: string; index: number }> = {};
-          Object.entries(categorized).forEach(([category, urls]: [string, string[]]) => {
-            urls.forEach((url: string, idx: number) => {
-              urlToResource[url] = { category, index: idx };
-            });
-          });
-          
-          return (
-            <div className="text-[10px] text-muted-foreground border-t border-border/50 pt-2 mt-1 space-y-1">
-              <span className="font-semibold uppercase tracking-wider block text-[8px] text-muted-foreground/80 select-none">Citations</span>
-              <ol className="list-decimal pl-4 space-y-0.5">
-                {workflow.sources.map((src, idx) => {
-                  const url = typeof src === 'string' ? src : (src as any).url;
-                  const resourceInfo = urlToResource[url];
-                  const resourceId = resourceInfo ? `resource-${resourceInfo.category}-${resourceInfo.index}` : undefined;
-                  const info = parseResourceUrl(url, resourceInfo?.category || 'external');
-                  const customTitle = typeof src !== 'string' ? (src as any).title : undefined;
-                  const displayTitle = customTitle || info.title;
-                  
-                  return (
-                    <li key={idx} id={`footnote-${idx + 1}`}>
-                      <a
-                        href={resourceId ? `#${resourceId}` : url}
-                        target={resourceId ? undefined : "_blank"}
-                        rel={resourceId ? undefined : "noopener noreferrer"}
-                        className="hover:underline hover:text-foreground break-all"
-                      >
-                        {displayTitle}
-                      </a>
-                    </li>
-                  );
-                })}
-              </ol>
-            </div>
           );
         })()}
         {workflow.starter_stack.length > 0 && (
@@ -185,10 +172,8 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
         )}
       </header>
 
-      <OfficialResources sources={workflow.sources} githubRepo={workflow.github_repo} hasCitations={!!(workflow.sources && workflow.sources.length > 0)} />
-
       <SectionCard title="Workflow Steps" subtitle="Sequential pipeline" badge={`${workflow.steps.length} steps`} id="steps" className="scroll-mt-24">
-        <WorkflowStepList steps={workflow.steps} resolvedLinks={resolvedLinks} workedExamples={workflow.worked_examples} />
+        <WorkflowStepList steps={stepsWithHighlightedCode} resolvedLinks={resolvedLinks} workedExamples={workflow.worked_examples} />
       </SectionCard>
 
       {workflow.worked_examples && workflow.worked_examples.length > 0 && (
@@ -205,13 +190,17 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                       <h3 className="text-xs font-semibold text-foreground uppercase tracking-tight">{example.name}</h3>
                       <p className="text-[10px] text-muted-foreground mt-0.5">{example.description}</p>
                     </div>
-                    {example.related_step && (
+                    {example.related_step ? (
                       <Link
                         href={`#step-${example.related_step}`}
                         className="shrink-0 text-[10px] font-medium text-primary hover:underline"
                       >
                         Used in Step {example.related_step}
                       </Link>
+                    ) : (
+                      <span className="shrink-0 text-[10px] font-medium text-muted-foreground">
+                        Full Pipeline Recipe
+                      </span>
                     )}
                   </div>
                 </div>
@@ -230,7 +219,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
                       <span className="text-[10px] font-semibold uppercase text-muted-foreground block mb-1">
                         Implementation Notes
                       </span>
-                      <Prose content={example.implementation_notes} className="text-muted-foreground" />
+                      <Prose content={linkFootnotes(example.implementation_notes)} className="text-muted-foreground" />
                     </div>
                   )}
                 </div>
@@ -512,6 +501,8 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
           </div>
         );
       })()}
+
+      <OfficialResources sources={workflow.sources} githubRepo={workflow.github_repo} />
 
       <RelatedContent items={relatedContent} />
     </ContentPageLayout>

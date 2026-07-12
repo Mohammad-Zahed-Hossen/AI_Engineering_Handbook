@@ -3,23 +3,25 @@
   "title": "LLM Application Serving",
   "name": "LLM Application Serving",
   "slug": "llm-application-serving",
-  "description": "A production LLM serving workflow with request validation, safety guardrails, streaming token generation, Redis session memory, and Prometheus/OpenTelemetry observability.",
+  "description": "A production serving pipeline for routing, validation, safety guardrails, streaming token generation, caching, and observability across large-scale LLM deployments.",
   "type": "pipeline",
   "category": "production-systems",
-  "overview": "This workflow defines a production LLM serving stack that validates requests, assembles prompts, enforces safety, routes to the right model backend, streams tokens, validates outputs, maintains session state, and emits operational telemetry for SLO-driven deployment. It is designed for low TTFT, high throughput, dynamic batching, prefix caching, and graceful degradation under overload, with vLLM as the primary serving engine and FastAPI as the stateless edge layer.[^1][^2]",
+  "overview": "This workflow defines a production serving pipeline for routing, validation, safety guardrails, streaming token generation, caching, and observability across large-scale LLM deployments. It establishes a multi-stage architecture where each stage (validation, routing, generation, caching) has explicit input/output contracts, tools, metrics, and failure modes to ensure reliable, high-throughput model serving while protecting quality and cost SLOs.[^1][^2]",
   "starter_stack": [
-    "PyTorch",
-    "Hugging Face Transformers",
     "FastAPI",
-    "Uvicorn",
     "Pydantic",
+    "Uvicorn",
+    "LangChain",
+    "Transformers",
+    "Guardrails AI",
+    "Presidio",
     "vLLM",
     "Redis",
-    "LangChain",
-    "OpenAI-compatible client/server interfaces",
-    "Prometheus",
     "OpenTelemetry",
-    "Grafana"
+    "Prometheus",
+    "Grafana",
+    "Kubernetes",
+    "Docker"
   ],
   "created_at": "2026-07-12",
   "updated_at": "2026-07-12",
@@ -36,59 +38,40 @@
   "sources": [
     "https://docs.vllm.ai/en/latest/examples/basic/online_serving/",
     "https://github.com/vllm-project/vllm/issues/230",
-    "https://opentelemetry.io/docs/compatibility/prometheus/",
-    "https://vllm.ai/blog/2026-01-31-streaming-realtime",
-    "https://arxiv.org/abs/2504.11704",
-    "https://arxiv.org/abs/2603.05413",
-    "https://ieeexplore.ieee.org/document/11325214/",
-    "https://docs.vllm.ai/projects/vllm-omni/en/latest/serving/video_stream_api/",
-    "https://ojs.aaai.org/index.php/ICWSM/article/view/14401",
-    "https://isjem.com/download/ai-powered-medical-scribe-system-real-time-clinical-documentation-using-large-language-models-and-automatic-speech-recognition/",
-    "https://journals.uran.ua/vestnikpgtu_tech/article/view/359778",
-    "https://dl.acm.org/doi/10.1145/3510003.3510158",
-    "http://portal.sinteza.singidunum.ac.rs/paper/1061",
-    "https://docs.vllm.ai/_/downloads/en/v0.6.2/pdf/",
-    "https://github.com/vllm-project/vllm/pull/13301",
-    "https://deepwiki.com/tenstorrent/vllm/4.3-streaming-output",
-    "https://docs.vllm.ai/en/v0.22.1/api/vllm/",
-    "https://docs.vllm.ai/en/latest/api/vllm/entrypoints/openai/responses/streaming_events/"
+    "https://dev.to/omnithium/llm-cost-optimization-for-agent-workflows-a-practical-guide-49c1",
+    "https://arxiv.org/html/2605.23929v1",
+    "https://www.c-sharpcorner.com/article/prompt-engineering-cost-speed-engineering-for-accepted-output-and-predicta/"
   ],
   "tags": [
     "llm-serving",
     "inference",
-    "streaming",
-    "deployment",
+    "fastapi",
+    "vllm",
     "production"
   ],
   "aliases": [
-    "llm-inference-pipeline",
-    "llm-serving-stack"
+    "llm-serving-pipeline",
+    "inference-gateway"
   ],
   "keywords": [
     "vllm",
-    "streaming inference",
-    "prompt routing",
     "fastapi",
-    "redis"
+    "streaming completion",
+    "prompt validation",
+    "observability"
   ],
   "search_tokens": [
     "llm serving",
-    "inference pipeline",
-    "production llm api",
-    "token streaming",
-    "model serving"
+    "vllm api",
+    "fastapi llm gateway",
+    "prompt formatting",
+    "stream completions"
   ],
   "domain": "llm",
   "difficulty": "advanced",
-  "engineering_area": "inference, serving, deployment",
+  "engineering_area": "optimization, inference, production-systems",
   "estimated_reading_time": 45,
-  "prerequisites": [
-    "Kubernetes",
-    "Python service design",
-    "GPU inference basics",
-    "Prometheus",
-    "distributed tracing"
-  ],
+  "prerequisites": [],
   "recommended_next": [
     "llm-routing-pattern",
     "streaming-response-pattern",
@@ -96,11 +79,7 @@
     "cuda-out-of-memory"
   ],
   "next_links": [
-    "vllm",
-    "transformers",
-    "fastapi",
-    "redis",
-    "opentelemetry-api"
+    "production-llm-cost-latency-optimization"
   ],
   "related_content": [
     {
@@ -316,7 +295,9 @@
         "Invalid schema producing downstream prompt corruption.",
         "Missing request IDs breaking traceability.",
         "Client disconnects not propagated to backend."
-      ]
+      ],
+      "code": "from fastapi import FastAPI\nfrom pydantic import BaseModel, Field\n\napp = FastAPI()\n\nclass ChatRequest(BaseModel):\n    request_id: str = Field(min_length=8)\n    prompt: str = Field(min_length=1)\n    stream: bool = False\n\n@app.post(\"/chat\")\nasync def chat(req: ChatRequest):\n    return {\"request_id\": req.request_id, \"accepted\": True}",
+      "language": "python"
     },
     {
       "step": 2,
@@ -342,7 +323,9 @@
         "Wrong tokenizer for the routed model.",
         "Non-deterministic template changes.",
         "Memory leakage across sessions."
-      ]
+      ],
+      "code": "from transformers import AutoTokenizer\nfrom langchain_core.prompts import ChatPromptTemplate\n\ntokenizer = AutoTokenizer.from_pretrained(\"mistralai/Mistral-7B-Instruct-v0.3\")\nprompt = ChatPromptTemplate.from_messages([\n    (\"system\", \"Answer concisely.\"),\n    (\"user\", \"{question}\")\n])\nmessages = prompt.format_messages(question=\"What is TTFT?\")\ntoken_count = len(tokenizer.apply_chat_template(messages, tokenize=True))",
+      "language": "python"
     },
     {
       "step": 3,
@@ -370,7 +353,9 @@
         "False negatives leaking sensitive content.",
         "Policy drift across versions.",
         "Output schema violations."
-      ]
+      ],
+      "code": "from pydantic import BaseModel\nfrom presidio_analyzer import AnalyzerEngine\n\nclass SafetyInput(BaseModel):\n    text: str\n\nanalyzer = AnalyzerEngine()\npayload = SafetyInput(text=\"Call me at 555-123-4567\")\nresults = analyzer.analyze(text=payload.text, language=\"en\")",
+      "language": "python"
     },
     {
       "step": 4,
@@ -404,7 +389,9 @@
         "Router inconsistency across replicas.",
         "Model capability mismatch.",
         "Fallback loops during overload."
-      ]
+      ],
+      "code": "def choose_model(complexity: int, budget_ms: int) -> str:\n    if complexity < 3 and budget_ms < 1000:\n        return \"small-model\"\n    return \"large-model\"\n\nmodel_id = choose_model(complexity=2, budget_ms=800)",
+      "language": "python"
     },
     {
       "step": 5,
@@ -432,7 +419,9 @@
         "Chunk reordering.",
         "Backpressure collapse.",
         "Cancel signals not honored."
-      ]
+      ],
+      "code": "from openai import OpenAI\n\nclient = OpenAI(base_url=\"http://localhost:8000/v1\", api_key=\"EMPTY\")\nstream = client.chat.completions.create(\n    model=\"your-model\",\n    messages=[{\"role\": \"user\", \"content\": \"Hello\"}],\n    stream=True,\n)\nfor event in stream:\n    print(event)",
+      "language": "python"
     },
     {
       "step": 6,
@@ -458,7 +447,9 @@
         "Schema drift.",
         "Unsafe content leakage.",
         "Partial stream finalization errors."
-      ]
+      ],
+      "code": "from pydantic import BaseModel\n\nclass Answer(BaseModel):\n    text: str\n    confidence: float\n\nraw = {\"text\": \"ok\", \"confidence\": 0.93}\nvalidated = Answer.model_validate(raw)",
+      "language": "python"
     },
     {
       "step": 7,
@@ -486,12 +477,14 @@
         "Session bleed across tenants.",
         "Cache poisoning.",
         "TTL misconfiguration."
-      ]
+      ],
+      "code": "import redis\n\nr = redis.Redis(host=\"localhost\", port=6379, decode_responses=True)\nr.setex(\"session:123\", 300, '{\"turns\": 4}')\nstate = r.get(\"session:123\")",
+      "language": "python"
     },
     {
       "step": 8,
       "name": "Observability, Monitoring & Production Operations",
-      "what": "Expose serving KPIs, traces, structured logs, and model-level counters so operators can debug queueing, decode stalls, cache failures, and rollout regressions. Prometheus and OpenTelemetry provide the core observability surface; Grafana consumes it for dashboards and alerting.[^5][^1]\n\n**Input Interface Contract**\n- Artifact: runtime telemetry and request lifecycle events.\n- Type: counters, histograms, traces, and logs.\n- Ownership: observability layer.\n- Persistence: time-series and trace backend.\n- Consumer: SRE, platform engineers, and autoscalers.\n\n**Output Interface Contract**\n- Artifact: alerts, dashboards, traces, and SLO reports.\n- Type: operational feedback.\n- Ownership: observability layer.\n- Persistence: time-series store and trace backend.\n- Consumer: incident response and scaling control loops.\n\n**Required Metadata**\n- Trace ID.\n- Span ID.\n- Model ID.\n- Queue time.\n- TTFT.\n- Tokens/sec.\n- Error class.\n- GPU utilization.\n\n**Pipeline Contract**\n- Instrument every stage with consistent request IDs.\n- Measure queue latency separately from model decode latency.\n- Export metrics that map directly to routing, batching, and scaling decisions.\n- Use tracing to reconstruct slow paths across cache, router, and backend layers.\n\n**Uses**\n- SLO monitoring.\n- Alerting.\n- Capacity planning.\n- Incident response.\n\n**Production Metrics**\n- Primary Metric: availability.\n- Expected Range: high four-nines or better depending on topology.\n- Alert Threshold: breach of latency, error-rate, or saturation SLOs.",
+      "what": "Expose serving KPIs, traces, structured logs, and model-level counters so operators can debug queueing, decode stalls, cache failures, and rollout regressions. Prometheus and OpenTelemetry provide the core observability surface; Grafana consumes it for dashboards and alerting.[^5][^1]\n\n**Input Interface Contract**\n- Artifact: runtime telemetry and request lifecycle events.\n- Type: counters, histograms, traces, and logs.\n- Ownership: observability layer.\n- Persistence: time-series and trace backend.\n- Consumer: SRE, platform engineers, and autoscalers.\n\n**Output Interface Contract**\n- Artifact: alerts, dashboards, traces, and SLO reports.\n- Type: operational feedback.\n- Ownership: observability layer.\n- Persistence: time-series store and trace backend.\n- Consumer: incident response and scaling control loops.\n\n**Required Metadata**\n- Trace ID.\n- Span ID.\n- Model ID.\n- Queue time.\n- TTFT.\n- Tokens/sec.\n- Error class.\n- GPU utilization.\n\n**Pipeline Contract**\n- Instrument every stage with consistent request IDs.\n- Make queue latency separately from model decode latency.\n- Export metrics that map directly to routing, batching, and scaling decisions.\n- Use tracing to reconstruct slow paths across cache, router, and backend layers.\n\n**Uses**\n- SLO monitoring.\n- Alerting.\n- Capacity planning.\n- Incident response.\n\n**Production Metrics**\n- Primary Metric: availability.\n- Expected Range: high four-nines or better depending on topology.\n- Alert Threshold: breach of latency, error-rate, or saturation SLOs.",
       "tools": [
         "Prometheus",
         "OpenTelemetry",
@@ -512,7 +505,9 @@
         "Misleading CPU-centric autoscaling.",
         "Metric cardinality explosions.",
         "Silent GPU saturation."
-      ]
+      ],
+      "code": "from prometheus_client import Counter, Histogram\n\nrequests = Counter(\"llm_requests_total\", \"Total LLM requests\")\nttft = Histogram(\"llm_ttft_seconds\", \"Time to first token\")\n\nrequests.inc()\nwith ttft.time():\n    pass",
+      "language": "python"
     }
   ],
   "common_failure_points": [

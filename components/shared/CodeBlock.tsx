@@ -8,12 +8,7 @@ interface CodeBlockProps {
   showLineNumbers?: boolean;
 }
 
-export async function CodeBlock({
-  code,
-  language = 'python',
-  filename,
-  showLineNumbers = false
-}: CodeBlockProps) {
+export async function highlightCodeSnippet(code: string, language: string = 'python') {
   const lines = code.split('\n');
   const MAX_COLLAPSED_LINES = 20;
   const shouldCollapse = lines.length > MAX_COLLAPSED_LINES;
@@ -46,6 +41,29 @@ export async function CodeBlock({
     collapsedHighlighted = truncateHighlightedHtml(fullHighlighted, MAX_COLLAPSED_LINES);
   }
 
+  return {
+    fullHighlighted,
+    collapsedHighlighted,
+    shouldCollapse,
+    linesCount: lines.length,
+    maxCollapsedLines: MAX_COLLAPSED_LINES
+  };
+}
+
+export async function CodeBlock({
+  code,
+  language = 'python',
+  filename,
+  showLineNumbers = false
+}: CodeBlockProps) {
+  const {
+    fullHighlighted,
+    collapsedHighlighted,
+    shouldCollapse,
+    linesCount,
+    maxCollapsedLines
+  } = await highlightCodeSnippet(code, language);
+
   return (
     <CodeBlockInteractive
       code={code}
@@ -55,8 +73,8 @@ export async function CodeBlock({
       fullHighlighted={fullHighlighted}
       collapsedHighlighted={collapsedHighlighted}
       shouldCollapse={shouldCollapse}
-      linesCount={lines.length}
-      maxCollapsedLines={MAX_COLLAPSED_LINES}
+      linesCount={linesCount}
+      maxCollapsedLines={maxCollapsedLines}
     />
   );
 }

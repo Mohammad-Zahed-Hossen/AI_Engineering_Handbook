@@ -18,6 +18,15 @@ export const WorkflowStepSchema = z.object({
     debug_guides: z.array(z.string()).default([]),
   }),
   failure_points: z.array(z.string()),
+  code: z.string().optional(),
+  language: z.string().optional(),
+  highlightedCodeData: z.object({
+    fullHighlighted: z.string(),
+    collapsedHighlighted: z.string(),
+    shouldCollapse: z.boolean(),
+    linesCount: z.number(),
+    maxCollapsedLines: z.number(),
+  }).optional(),
 });
 
 export const WorkedExampleSchema = z.object({

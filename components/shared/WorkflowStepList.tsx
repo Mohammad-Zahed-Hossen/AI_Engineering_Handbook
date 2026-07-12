@@ -6,8 +6,10 @@ import Link from 'next/link';
 import { WorkflowStep } from '@/types/workflow';
 import ContentTypeBadge from './ContentTypeBadge';
 import { parseLabeledClauses } from '@/lib/text/parseLabeledClauses';
+import { linkFootnotes } from '@/lib/text/linkFootnotes';
 import { Prose, ProseInline } from './Prose';
 import { BadgeRow } from './BadgeRow';
+import { CodeBlockInteractive } from './CodeBlockInteractive';
 
 interface WorkflowStepItemProps {
   s: WorkflowStep;
@@ -87,7 +89,23 @@ function WorkflowStepItem({
         className="px-4 pb-4 pt-1 space-y-3 border-t border-border [content-visibility:auto]"
         hidden={isOpen ? undefined : ('until-found' as unknown as boolean)}
       >
-        <Prose content={s.what} className="text-sm text-muted-foreground" />
+        <Prose content={linkFootnotes(s.what)} className="text-sm text-muted-foreground" />
+
+        {s.code && s.highlightedCodeData && (
+          <div className="rounded overflow-hidden text-xs my-2">
+            <CodeBlockInteractive
+              code={s.code}
+              language={s.language || 'python'}
+              filename={s.name}
+              showLineNumbers={false}
+              fullHighlighted={s.highlightedCodeData.fullHighlighted}
+              collapsedHighlighted={s.highlightedCodeData.collapsedHighlighted}
+              shouldCollapse={s.highlightedCodeData.shouldCollapse}
+              linesCount={s.highlightedCodeData.linesCount}
+              maxCollapsedLines={s.highlightedCodeData.maxCollapsedLines}
+            />
+          </div>
+        )}
 
         {hasUses && (
           <div className="flex flex-wrap gap-1.5 items-center text-xs">
@@ -100,7 +118,7 @@ function WorkflowStepItem({
           <span className="text-[10px] font-semibold uppercase text-muted-foreground block mb-1">
             Key Decision
           </span>
-          <Prose content={s.decision} className="text-muted-foreground" />
+          <Prose content={linkFootnotes(s.decision)} className="text-muted-foreground" />
         </div>
 
         {s.failure_points.length > 0 && (

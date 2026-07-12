@@ -19,10 +19,6 @@ interface OfficialResourcesProps {
    *  suppress the generic "Further Reading" fallback bucket here so the same kind
    *  of link doesn't appear twice on the page with two different levels of context. */
   hasLearningResources?: boolean;
-  /** When a Citations block is already rendering the sources above, suppress
-   *  Official Resources to avoid duplication. The Citations block links into
-   *  this section's anchors, so nothing is lost. */
-  hasCitations?: boolean;
 }
 
 interface ResourceCategoryProps {
@@ -99,10 +95,7 @@ function ResourceCategory({ icon, iconBg, title, urls, category, sources }: Reso
   );
 }
 
-export default function OfficialResources({ sources, githubRepo, hasLearningResources = false, hasCitations = false }: OfficialResourcesProps) {
-  // If Citations block is already showing the sources, suppress this section entirely
-  if (hasCitations) return null;
-  
+export default function OfficialResources({ sources, githubRepo, hasLearningResources = false }: OfficialResourcesProps) {
   const sourceUrls = sources.map(s => typeof s === 'string' ? s : s.url);
   const categorized = categorizeSources(sourceUrls);
   // If a dedicated Learning Resources section is already rendering curated educational
@@ -125,7 +118,7 @@ export default function OfficialResources({ sources, githubRepo, hasLearningReso
       <div className="px-4 py-3 border-b border-border bg-muted/30">
         <h2 className="text-sm font-semibold text-foreground flex items-center gap-2 font-sans">
           <BookOpen className="w-4 h-4 text-primary" />
-          Official Resources
+          Further Study
         </h2>
       </div>
       
