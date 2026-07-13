@@ -17,8 +17,13 @@ interface UseReadingSessionProps {
 export function useReadingSession({ href, name, type, category }: UseReadingSessionProps): void {
   const startTimeRef = useRef<number>(0);
   const maxScrollPercentRef = useRef<number>(0);
+  const mainElementRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
+    // Get the main scroll container element
+    const mainElement = document.getElementById('main-scroll');
+    mainElementRef.current = mainElement;
+
     // Record start time on mount
     startTimeRef.current = Date.now();
     maxScrollPercentRef.current = 0;
@@ -29,9 +34,11 @@ export function useReadingSession({ href, name, type, category }: UseReadingSess
       if (scrollTimeout) return;
       
       scrollTimeout = setTimeout(() => {
-        const scrollY = window.scrollY;
-        const scrollHeight = document.documentElement.scrollHeight;
-        const clientHeight = document.documentElement.clientHeight;
+        // Use the main scroll container if available, otherwise fall back to window
+        const scrollElement = mainElementRef.current || document.documentElement;
+        const scrollY = mainElementRef.current ? mainElementRef.current.scrollTop : window.scrollY;
+        const scrollHeight = scrollElement.scrollHeight;
+        const clientHeight = mainElementRef.current ? mainElementRef.current.clientHeight : window.innerHeight;
         
         if (scrollHeight > clientHeight) {
           const scrollPercent = (scrollY / (scrollHeight - clientHeight)) * 100;
@@ -44,8 +51,12 @@ export function useReadingSession({ href, name, type, category }: UseReadingSess
       }, 1000);
     };
 
-    // Add passive scroll listener
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Add scroll listener to the main scroll container (or window as fallback)
+    if (mainElement) {
+      mainElement.addEventListener('scroll', handleScroll, { passive: true });
+    } else {
+      window.addEventListener('scroll', handleScroll, { passive: true });
+    }
 
     // Handler for visibility change and beforeunload
     const handleSave = () => {
@@ -55,13 +66,14 @@ export function useReadingSession({ href, name, type, category }: UseReadingSess
       if (dwellMs >= QUALIFY_DWELL_MS && 
           maxScrollPercentRef.current >= QUALIFY_SCROLL_PCT && 
           maxScrollPercentRef.current < COMPLETED_SCROLL_PCT) {
+        const currentScrollY = mainElementRef.current ? mainElementRef.current.scrollTop : window.scrollY;
         saveContinueReading({
           href,
           name,
           type,
           category,
           timestamp: Date.now(),
-          scrollY: window.scrollY,
+          scrollY: currentScrollY,
           scrollPercent: maxScrollPercentRef.current,
           dwellMs,
         });
@@ -79,7 +91,11 @@ export function useReadingSession({ href, name, type, category }: UseReadingSess
 
     // Cleanup
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      if (mainElement) {
+        mainElement.removeEventListener('scroll', handleScroll);
+      } else {
+        window.removeEventListener('scroll', handleScroll);
+      }
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleSave);
       if (scrollTimeout) clearTimeout(scrollTimeout);

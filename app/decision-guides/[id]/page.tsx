@@ -8,6 +8,7 @@ import ExpandableText from '@/components/shared/ExpandableText';
 import { Prose } from '@/components/shared/Prose';
 import { Scale, ArrowRight, Link as LinkIcon } from 'lucide-react';
 import Link from 'next/link';
+import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 
 export async function generateStaticParams() {
   const ids = getAllDecisionGuideIds();
@@ -50,6 +51,7 @@ export default async function DecisionGuidePage({ params }: PageProps) {
 
   return (
     <ContentPageLayout breadcrumbs={breadcrumbs} toc={toc}>
+      <ReadingSessionTracker href={`/decision-guides/${decisionGuide.id}`} name={decisionGuide.title} type="decision_guide" category={decisionGuide.category} />
       {/* Header */}
       <div className="space-y-4">
         <h1 className="text-2xl font-semibold tracking-tight">{decisionGuide.title}</h1>

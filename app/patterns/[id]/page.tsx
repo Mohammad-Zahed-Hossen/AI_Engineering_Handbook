@@ -7,6 +7,7 @@ import ExpandableText from '@/components/shared/ExpandableText';
 import { Prose } from '@/components/shared/Prose';
 import { CodeBlock } from '@/components/shared/CodeBlock';
 import { Lightbulb, AlertTriangle, Code, Layers } from 'lucide-react';
+import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 
 export async function generateStaticParams() {
   const ids = getAllPatternIds();
@@ -49,6 +50,7 @@ export default async function PatternPage({ params }: PageProps) {
 
   return (
     <ContentPageLayout breadcrumbs={breadcrumbs} toc={toc}>
+      <ReadingSessionTracker href={`/patterns/${pattern.id}`} name={pattern.title} type="pattern" />
       {/* Header */}
       <div className="space-y-4">
         <h1 className="text-2xl font-semibold tracking-tight">{pattern.title}</h1>

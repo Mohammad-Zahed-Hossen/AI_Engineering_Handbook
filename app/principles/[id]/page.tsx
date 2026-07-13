@@ -6,6 +6,7 @@ import RelatedContent from '@/components/shared/RelatedContent';
 import ExpandableText from '@/components/shared/ExpandableText';
 import { Prose } from '@/components/shared/Prose';
 import { BookOpen, Brain, AlertTriangle, CheckCircle2, Link2 } from 'lucide-react';
+import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 
 export async function generateStaticParams() {
   const ids = getAllPrincipleIds();
@@ -48,6 +49,7 @@ export default async function PrinciplePage({ params }: PageProps) {
 
   return (
     <ContentPageLayout breadcrumbs={breadcrumbs} toc={toc}>
+      <ReadingSessionTracker href={`/principles/${principle.id}`} name={principle.title} type="principle" category={principle.category} />
       {/* Header */}
       <div className="space-y-4">
         <h1 className="text-2xl font-semibold tracking-tight">{principle.title}</h1>

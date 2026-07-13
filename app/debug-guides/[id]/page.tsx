@@ -7,6 +7,7 @@ import DebugSolutionList from '@/components/shared/DebugSolutionList';
 import ExpandableText from '@/components/shared/ExpandableText';
 import { Prose } from '@/components/shared/Prose';
 import { AlertTriangle, CheckCircle2, Activity, Shield } from 'lucide-react';
+import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 
 export async function generateStaticParams() {
   const ids = getAllDebugGuideIds();
@@ -50,6 +51,7 @@ export default async function DebugGuidePage({ params }: PageProps) {
 
   return (
     <ContentPageLayout breadcrumbs={breadcrumbs} toc={toc}>
+      <ReadingSessionTracker href={`/debug-guides/${debugGuide.id}`} name={debugGuide.title} type="debug_guide" category={debugGuide.category} />
       {/* Header */}
       <div className="space-y-4">
         <h1 className="text-2xl font-semibold tracking-tight">{debugGuide.title}</h1>
