@@ -134,8 +134,13 @@ export const BaseMetaSchema = z.object({
   confidence: ConfidenceLevelSchema.optional(),
   engineering_maturity: EngineeringMaturitySchema.optional(),
 
-  // ── Sources (Legacy field, kept for compatibility) ───────────────────
-  sources: z.array(z.string().url({ message: "Invalid source URL" })).min(1, { message: "At least one source is required" }),
+  // ── Sources ───────────────────────────────────────────────────────────
+  sources: z.array(
+    z.union([
+      z.string().url({ message: "Invalid source URL" }),
+      z.object({ title: z.string(), url: z.string().url({ message: "Invalid source URL" }) }),
+    ])
+  ).min(1, { message: "At least one source is required" }),
   github_repo: z
     .string()
     .url({ message: "Invalid GitHub repository URL" })
