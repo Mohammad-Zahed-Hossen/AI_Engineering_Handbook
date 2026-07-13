@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BaseMetaSchema, ContentRefSchema } from './base';
+import { BaseMetaSchema } from './base';
 
 /**
  * Decision Guide Schema
@@ -46,13 +46,13 @@ export const DecisionGuideSchema = BaseMetaSchema.extend({
   use_cases: z.array(z.string()).default([]),
   
   // Cross-references (typed relationships)
-  related_workflows: z.array(ContentRefSchema).default([]),
-  related_packages: z.array(ContentRefSchema).default([]),
-  related_models: z.array(ContentRefSchema).default([]),
+  related_workflows: z.array(z.string()).default([]),
+  related_packages: z.array(z.string()).default([]),
+  related_models: z.array(z.string()).default([]),
   related_model_subcategory: z.object({
     category: z.enum(['ml', 'dl', 'llm']),
     subcategory: z.string(),
   }).optional(),
-});
+}).omit({ related_content: true });
 
 export type DecisionGuide = z.infer<typeof DecisionGuideSchema>;

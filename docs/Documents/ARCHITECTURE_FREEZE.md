@@ -87,7 +87,8 @@ This document captures the architectural decisions made for AENS (AI Engineering
 ## Schemas
 
 **Schema Engine:** Zod  
-**Base Schema:** BaseMetaSchema (shared across all content types)  
+**Base Schema:** BaseMetaSchema (shared across eight content types: Package, Workflow, Cheatsheet, Pattern, Debug Guide, Decision Guide, Principle, Registry)  
+**ModelSchema Exception:** ModelSchema intentionally does not extend BaseMetaSchema. This schema predates the shared BaseMetaSchema architecture. A transform layer provides compatibility with the rest of the application. This is an intentional and documented permanent exception for historical compatibility. Refactoring would require migrating approximately 30 model resources, and the migration cost outweighs the architectural benefit. This is not considered architecture debt.  
 **Validation:** Required before commit (npm run validate)
 
 **Schema Evolution:** migrate-to-v2.ts script was executed for AENS v2 model schema migration. The Model schema was subsequently extended to support optional `quickstart` code blocks and `learning_resources` curated references. Schema versioning is defined in aens.config.json. In version 1.2, the visual presentation layer of the Model detail pages was refactored for premium UX (incorporating a semantic decision strip, separated explainability block, unified 2x2 tradeoffs grid, 3-column complexity specs sheet, side-by-side comparative hyperparameters layout, and VS alternatives cards).

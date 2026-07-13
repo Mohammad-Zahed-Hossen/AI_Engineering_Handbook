@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BaseMetaSchema, ContentRefSchema } from './base';
+import { BaseMetaSchema } from './base';
 
 export const WorkflowTypeSchema = z.enum(['pipeline', 'snippet']);
 export type WorkflowType = z.infer<typeof WorkflowTypeSchema>;
@@ -64,8 +64,8 @@ export const WorkflowSchema = BaseMetaSchema.extend({
   observability_notes: z.string().optional(), // Metrics, logging, tracing conventions for this workflow
   
   // Cross-references (typed relationships)
-  related_patterns: z.array(ContentRefSchema).default([]),
-  related_models: z.array(ContentRefSchema).default([]),
-  related_packages: z.array(ContentRefSchema).default([]),
-  related_debug_guides: z.array(ContentRefSchema).default([]),
-});
+  related_patterns: z.array(z.string()).default([]),
+  related_models: z.array(z.string()).default([]),
+  related_packages: z.array(z.string()).default([]),
+  related_debug_guides: z.array(z.string()).default([]),
+}).omit({ related_content: true });

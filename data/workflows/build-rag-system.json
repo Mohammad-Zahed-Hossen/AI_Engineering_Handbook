@@ -99,73 +99,6 @@
     "serve-vllm",
     "shard-vector-index"
   ],
-  "related_content": [
-    {
-      "id": "bert",
-      "type": "model",
-      "relationship_type": "uses"
-    },
-    {
-      "id": "pytorch",
-      "type": "package",
-      "relationship_type": "uses"
-    },
-    {
-      "id": "jina-embeddings-v3",
-      "type": "model",
-      "relationship_type": "uses"
-    },
-    {
-      "id": "nomic-embed-text-v1",
-      "type": "model",
-      "relationship_type": "uses"
-    },
-    {
-      "id": "cross-encoder-ms-marco",
-      "type": "model",
-      "relationship_type": "uses"
-    },
-    {
-      "id": "faiss-cpu",
-      "type": "package",
-      "relationship_type": "uses"
-    },
-    {
-      "id": "chonkie",
-      "type": "package",
-      "relationship_type": "uses"
-    },
-    {
-      "id": "sentence-transformers",
-      "type": "package",
-      "relationship_type": "uses"
-    },
-    {
-      "id": "vllm",
-      "type": "package",
-      "relationship_type": "uses"
-    },
-    {
-      "id": "index-corruption-debug",
-      "type": "debug_guide",
-      "relationship_type": "debugged_by"
-    },
-    {
-      "id": "reranker-latency-debug",
-      "type": "debug_guide",
-      "relationship_type": "debugged_by"
-    },
-    {
-      "id": "hybrid-search-rrf",
-      "type": "pattern",
-      "relationship_type": "uses"
-    },
-    {
-      "id": "late-chunking",
-      "type": "pattern",
-      "relationship_type": "uses"
-    }
-  ],
   "steps": [
     {
       "step": 1,
@@ -394,76 +327,24 @@
   "latency_notes": "Benefit: Targeted budget: 50–100ms embedding (per-query or cached), 80–200ms vector search, 100–300ms reranking, 500ms–2s generation (model dependent); use cached query embeddings and warmed vLLM pools.\nTrade-off: meeting aggressive budgets requires pre-warmed GPUs and higher cost.\nWhen not to use it: batch offline analytic retrieval.\nOperational impact: requires autoscaling policies tuned for tail-loads and warm pools.",
   "observability_notes": "Benefit: Track: per-stage latency percentiles, candidate counts, token budget violations, embedding_model_id alignment rate, index vs SQL record reconciliation, golden-query NDCG.\nTrade-off: more metrics to store and alert on.\nWhen not to use it: none — observability is required.\nOperational impact: enables fast detection of integration failures described above.",
   "related_patterns": [
-    {
-      "id": "hybrid-search-rrf",
-      "type": "pattern",
-      "relationship_type": "uses"
-    },
-    {
-      "id": "late-chunking",
-      "type": "pattern",
-      "relationship_type": "uses"
-    }
+    "hybrid-search-rrf",
+    "late-chunking",
+    "training-loop"
   ],
   "related_models": [
-    {
-      "id": "bert",
-      "type": "model",
-      "relationship_type": "uses"
-    },
-    {
-      "id": "jina-embeddings-v3",
-      "type": "model",
-      "relationship_type": "uses"
-    },
-    {
-      "id": "nomic-embed-text-v1",
-      "type": "model",
-      "relationship_type": "uses"
-    },
-    {
-      "id": "cross-encoder-ms-marco",
-      "type": "model",
-      "relationship_type": "uses"
-    }
+    "bert",
+    "jina-embeddings-v3",
+    "nomic-embed-text-v1",
+    "cross-encoder-ms-marco"
   ],
   "related_packages": [
-    {
-      "id": "pytorch",
-      "type": "package",
-      "relationship_type": "uses"
-    },
-    {
-      "id": "faiss-cpu",
-      "type": "package",
-      "relationship_type": "uses"
-    },
-    {
-      "id": "chonkie",
-      "type": "package",
-      "relationship_type": "uses"
-    },
-    {
-      "id": "sentence-transformers",
-      "type": "package",
-      "relationship_type": "uses"
-    },
-    {
-      "id": "vllm",
-      "type": "package",
-      "relationship_type": "uses"
-    }
+    "pytorch",
+    "faiss-cpu",
+    "chonkie",
+    "sentence-transformers",
+    "vllm"
   ],
   "related_debug_guides": [
-    {
-      "id": "index-corruption-debug",
-      "type": "debug_guide",
-      "relationship_type": "debugged_by"
-    },
-    {
-      "id": "reranker-latency-debug",
-      "type": "debug_guide",
-      "relationship_type": "debugged_by"
-    }
+    "cuda-out-of-memory"
   ]
 }

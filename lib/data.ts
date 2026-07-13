@@ -827,10 +827,10 @@ export const getRelatedContent = cache(function getRelatedContent(
       .map(candidate => ({ type: 'workflow', id: candidate.id } satisfies ContentRef));
 
     const typedRefs = [
-      ...(workflow.related_patterns || []),
-      ...(workflow.related_models || []),
-      ...(workflow.related_packages || []),
-      ...(workflow.related_debug_guides || []),
+      ...(workflow.related_patterns || []).map(id => ({ id, type: 'pattern' as const })),
+      ...(workflow.related_models || []).map(id => ({ id, type: 'model' as const })),
+      ...(workflow.related_packages || []).map(id => ({ id, type: 'package' as const })),
+      ...(workflow.related_debug_guides || []).map(id => ({ id, type: 'debug_guide' as const })),
     ];
 
     return uniqueExistingRefs([...typedRefs, ...sharedCategory, ...sharedTools], current).slice(0, 6);
@@ -847,26 +847,6 @@ export const getRelatedContent = cache(function getRelatedContent(
       : [];
 
     return uniqueExistingRefs([...packageRef, ...relatedPackages], current).slice(0, 6);
-  }
-
-  if (type === 'pattern') {
-    const pattern = getPattern(id);
-    return uniqueExistingRefs([...(pattern.related_content || [])], current).slice(0, 6);
-  }
-
-  if (type === 'debug_guide') {
-    const dg = getDebugGuide(id);
-    return uniqueExistingRefs([...(dg.related_content || [])], current).slice(0, 6);
-  }
-
-  if (type === 'decision_guide') {
-    const dg = getDecisionGuide(id);
-    return uniqueExistingRefs([...(dg.related_content || [])], current).slice(0, 6);
-  }
-
-  if (type === 'principle') {
-    const principle = getPrinciple(id);
-    return uniqueExistingRefs([...(principle.related_content || [])], current).slice(0, 6);
   }
 
   return [];

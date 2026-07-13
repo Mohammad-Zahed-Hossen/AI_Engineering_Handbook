@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BaseMetaSchema, ContentRefSchema } from './base';
+import { BaseMetaSchema } from './base';
 
 /**
  * Debug Guide Schema
@@ -60,11 +60,11 @@ export const DebugGuideSchema = BaseMetaSchema.extend({
   prevention: z.array(DebugPreventionSchema).min(1),
   
   // Cross-references (typed relationships)
-  related_packages: z.array(ContentRefSchema).default([]),
-  related_workflows: z.array(ContentRefSchema).default([]),
-  related_patterns: z.array(ContentRefSchema).default([]),
-  related_models: z.array(ContentRefSchema).default([]),
-  related_registry: z.array(ContentRefSchema).default([]),
-});
+  related_packages: z.array(z.string()).default([]),
+  related_workflows: z.array(z.string()).default([]),
+  related_patterns: z.array(z.string()).default([]),
+  related_models: z.array(z.string()).default([]),
+  related_registry: z.array(z.string()).default([]),
+}).omit({ related_content: true });
 
 export type DebugGuide = z.infer<typeof DebugGuideSchema>;

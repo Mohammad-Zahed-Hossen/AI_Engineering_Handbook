@@ -49,6 +49,18 @@ export const HyperParameterSchema = z.object({
   commonmistakes: z.array(z.string()),
 });
 
+/*
+ * ModelSchema intentionally does not extend BaseMetaSchema.
+ *
+ * This schema predates the shared BaseMetaSchema architecture.
+ * A transform layer (see .transform() below) provides compatibility with the rest of the application.
+ *
+ * Refactoring would require migrating approximately 30 model resources.
+ * The migration cost outweighs the architectural benefit.
+ *
+ * This is an intentional and documented permanent exception for historical compatibility.
+ * This is not considered architecture debt.
+ */
 export const ModelSchema = z.object({
   // Identity & Discovery
   id: z.string(),

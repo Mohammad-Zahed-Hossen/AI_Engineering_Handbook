@@ -46,6 +46,7 @@ export default async function PatternPage({ params }: PageProps) {
     ...pattern.related_models.map(id => ({ id, type: 'model' as const })),
     ...pattern.related_packages.map(id => ({ id, type: 'package' as const })),
     ...pattern.related_principles.map(id => ({ id, type: 'principle' as const })),
+    ...pattern.related_debug_guides.map(id => ({ id, type: 'debug_guide' as const })),
   ];
 
   return (

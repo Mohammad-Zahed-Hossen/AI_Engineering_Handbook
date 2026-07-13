@@ -66,11 +66,15 @@ export const PatternSchema = BaseMetaSchema.extend({
   implementation_notes: z.string().optional(), // Implementation guidance without library specifics
   examples: z.array(z.string()).default([]), // Language-agnostic examples
   
+  // Override category to enforce PatternCategorySchema
+  category: PatternCategorySchema.optional(),
+  
   // Cross-references (typed relationships)
   related_workflows: z.array(z.string()).default([]),
   related_models: z.array(z.string()).default([]),
   related_packages: z.array(z.string()).default([]),
   related_principles: z.array(z.string()).default([]),
-});
+  related_debug_guides: z.array(z.string()).default([]),
+}).omit({ related_content: true });
 
 export type Pattern = z.infer<typeof PatternSchema>;

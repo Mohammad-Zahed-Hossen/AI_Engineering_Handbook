@@ -42,6 +42,6 @@ export const PrincipleSchema = BaseMetaSchema.extend({
   referenced_by_patterns: z.array(z.string()).default([]),
   referenced_by_models: z.array(z.string()).default([]),
   referenced_by_workflows: z.array(z.string()).default([]),
-});
+}).omit({ related_content: true });
 
 export type Principle = z.infer<typeof PrincipleSchema>;

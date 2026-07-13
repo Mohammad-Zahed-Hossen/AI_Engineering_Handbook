@@ -389,6 +389,54 @@ for (const file of files) {
         });
       }
     }
+
+    // ── Architecture v3: Type-specific relationship fields ──
+    function collectStringRelationships(field: string, expectedType: string, relationshipType: string): void {
+      const ids = obj[field] as string[] | undefined;
+      if (Array.isArray(ids)) {
+        for (const id of ids) {
+          if (typeof id !== 'string') {
+            reportError(`Invalid ID in '${normalizedPath}' field '${field}': expected string, got ${typeof id}`);
+            continue;
+          }
+          refsToCheck.push({
+            sourceFile: normalizedPath,
+            ref: {
+              id,
+              type: expectedType,
+              relationship_type: relationshipType
+            }
+          });
+        }
+      }
+    }
+
+    if (type === 'pattern') {
+      collectStringRelationships('related_workflows', 'workflow', 'related_workflows');
+      collectStringRelationships('related_models', 'model', 'related_models');
+      collectStringRelationships('related_packages', 'package', 'related_packages');
+      collectStringRelationships('related_principles', 'principle', 'related_principles');
+      collectStringRelationships('related_debug_guides', 'debug_guide', 'related_debug_guides');
+    } else if (type === 'workflow') {
+      collectStringRelationships('related_patterns', 'pattern', 'related_patterns');
+      collectStringRelationships('related_models', 'model', 'related_models');
+      collectStringRelationships('related_packages', 'package', 'related_packages');
+      collectStringRelationships('related_debug_guides', 'debug_guide', 'related_debug_guides');
+    } else if (type === 'debug_guide') {
+      collectStringRelationships('related_workflows', 'workflow', 'related_workflows');
+      collectStringRelationships('related_patterns', 'pattern', 'related_patterns');
+      collectStringRelationships('related_models', 'model', 'related_models');
+      collectStringRelationships('related_packages', 'package', 'related_packages');
+      collectStringRelationships('related_registry', 'registry', 'related_registry');
+    } else if (type === 'decision_guide') {
+      collectStringRelationships('related_workflows', 'workflow', 'related_workflows');
+      collectStringRelationships('related_models', 'model', 'related_models');
+      collectStringRelationships('related_packages', 'package', 'related_packages');
+    } else if (type === 'principle') {
+      collectStringRelationships('referenced_by_patterns', 'pattern', 'referenced_by_patterns');
+      collectStringRelationships('referenced_by_models', 'model', 'referenced_by_models');
+      collectStringRelationships('referenced_by_workflows', 'workflow', 'referenced_by_workflows');
+    }
   }
 
   // ── Registry Files ───────────────────────────────────────
@@ -478,28 +526,71 @@ for (const check of refsToCheck) {
   relationshipMap.set(sourceKey, relationships);
 }
 
-// Check bidirectional consistency
+// Architecture v3 reciprocal field mappings
+// Note: Model and Package use legacy schemas (relatedcontent, alternatives) - skip reciprocal checks
+const reciprocalMappings: Record<string, { targetType: string; reciprocalField: string }[]> = {
+  'related_workflows': [
+    { targetType: 'workflow', reciprocalField: 'related_debug_guides' }  // from debug_guide
+  ],
+  'related_patterns': [
+    { targetType: 'pattern', reciprocalField: 'related_workflows' },  // from workflow
+    { targetType: 'pattern', reciprocalField: 'related_debug_guides' }  // from debug_guide
+  ],
+  'related_principles': [{ targetType: 'principle', reciprocalField: 'referenced_by_patterns' }],
+  'related_debug_guides': [
+    { targetType: 'debug_guide', reciprocalField: 'related_workflows' },  // from workflow
+    { targetType: 'debug_guide', reciprocalField: 'related_patterns' }  // from pattern
+  ],
+  'referenced_by_patterns': [{ targetType: 'pattern', reciprocalField: 'related_principles' }],
+  'related_registry': [], // No reciprocal expected for registry
+};
+
+// Check bidirectional consistency for Architecture v3 fields
 for (const [sourceKey, relationships] of relationshipMap.entries()) {
+  const sourceType = sourceKey.split(':')[0];
+  
   for (const rel of relationships) {
+    if (!rel.relationshipType) continue; // Skip legacy related_content without explicit type
+
     const targetKey = `${rel.targetType}:${rel.targetId}`;
     const targetRelationships = relationshipMap.get(targetKey);
 
     if (!targetRelationships) {
-      // Target exists (we checked earlier) but has no relationships back to source
+      // Target exists but has no relationships at all
       continue;
     }
 
-    // Check if target has a reciprocal relationship
+    // Determine expected reciprocal based on source type and relationship field
+    let expectedReciprocalField: string | undefined;
+    
+    if (sourceType === 'pattern' && rel.relationshipType === 'related_workflows') {
+      expectedReciprocalField = 'related_patterns';
+    } else if (sourceType === 'pattern' && rel.relationshipType === 'related_debug_guides') {
+      expectedReciprocalField = 'related_patterns';
+    } else if (sourceType === 'workflow' && rel.relationshipType === 'related_patterns') {
+      expectedReciprocalField = 'related_workflows';
+    } else if (sourceType === 'workflow' && rel.relationshipType === 'related_debug_guides') {
+      expectedReciprocalField = 'related_workflows';
+    } else if (sourceType === 'debug_guide' && rel.relationshipType === 'related_workflows') {
+      expectedReciprocalField = 'related_debug_guides';
+    } else if (sourceType === 'debug_guide' && rel.relationshipType === 'related_patterns') {
+      expectedReciprocalField = 'related_debug_guides';
+    } else if (sourceType === 'pattern' && rel.relationshipType === 'related_principles') {
+      expectedReciprocalField = 'referenced_by_patterns';
+    } else if (sourceType === 'principle' && rel.relationshipType === 'referenced_by_patterns') {
+      expectedReciprocalField = 'related_principles';
+    }
+
+    if (!expectedReciprocalField) continue; // Skip unmapped relationship types
+
+    // Check if target has the specific reciprocal relationship
     const hasReciprocal = targetRelationships.some(targetRel => {
       const targetSourceKey = `${targetRel.targetType}:${targetRel.targetId}`;
-      return targetSourceKey === sourceKey;
+      return targetSourceKey === sourceKey && targetRel.relationshipType === expectedReciprocalField;
     });
 
-    if (!hasReciprocal && rel.relationshipType) {
-      // Only error for explicit relationship types, not generic 'related_to'
-      if (rel.relationshipType !== 'related_to') {
-        reportError(`Relationship integrity violation: '${sourceKey}' → '${targetKey}' (type: '${rel.relationshipType}') has no reciprocal relationship. Bidirectional relationships are required.`);
-      }
+    if (!hasReciprocal) {
+      reportError(`Relationship integrity violation: '${sourceKey}' has '${rel.relationshipType}' → '${targetKey}', but '${targetKey}' does not have reciprocal '${expectedReciprocalField}' back to '${sourceKey}'. Bidirectional relationships are required for Architecture v3.`);
     }
   }
 }

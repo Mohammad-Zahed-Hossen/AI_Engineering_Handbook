@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { BaseMetaSchema } from './base';
 
 export const RegistryTaskSchema = z.enum([
   'embedding',
@@ -32,7 +31,14 @@ export const MissingModelRefSchema = z.object({
 export type MissingModelRef = z.infer<typeof MissingModelRefSchema>;
 
 // Link field supports both string paths and structured missing references
-export const RegistryModelSchema = BaseMetaSchema.extend({
+export const RegistryModelSchema = z.object({
+  // Core identification
+  id: z.string(),
+  title: z.string(),
+  slug: z.string(),
+  description: z.string(),
+  name: z.string(),
+  
   // Registry-specific fields
   task: RegistryTaskSchema,
   category: RegistryCategorySchema,
@@ -48,4 +54,13 @@ export const RegistryModelSchema = BaseMetaSchema.extend({
   
   // Reference to official resources
   official_resources: z.array(z.string().url()).default([]),
+  
+  // Metadata fields
+  created_at: z.string(),
+  updated_at: z.string(),
+  sources: z.array(z.string().url()).default([]),
+  tags: z.array(z.string()).default([]),
+  aliases: z.array(z.string()).default([]),
+  keywords: z.array(z.string()).default([]),
+  search_tokens: z.array(z.string()).default([]),
 });
