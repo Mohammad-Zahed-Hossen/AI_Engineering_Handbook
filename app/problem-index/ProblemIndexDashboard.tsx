@@ -103,17 +103,16 @@ export default function ProblemIndexDashboard({ taxonomy, workflowMap, decisionG
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(initialQuery);
 
-  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
-
-  // Load collapsed categories from localStorage after hydration
-  useEffect(() => {
+  // Lazy initial state: load collapsed categories from localStorage after hydration
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(() => {
     try {
       const stored = localStorage.getItem('problem_index_collapsed_categories');
       if (stored) {
-        setCollapsedCategories(new Set(JSON.parse(stored)));
+        return new Set(JSON.parse(stored));
       }
     } catch {}
-  }, []);
+    return new Set();
+  });
 
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [isFilterCollapsed, setIsFilterCollapsed] = useState(false);

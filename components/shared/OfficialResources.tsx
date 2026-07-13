@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { categorizeSources, parseResourceUrl, toTitleCase } from '@/lib/resources';
+import { categorizeSources, parseResourceUrl } from '@/lib/resources';
 import { 
   FileText, 
   BookOpen, 

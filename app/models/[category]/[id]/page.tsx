@@ -14,7 +14,7 @@ import LearningResources from '@/components/shared/LearningResources';
 import { Prose } from '@/components/shared/Prose';
 import RecommendedNextSection from '@/components/shared/RecommendedNextSection';
 import SectionCard from '@/components/shared/SectionCard';
-import { Terminal, AlertCircle, Check, AlertTriangle, ArrowUpCircle, ArrowDownCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, Check, AlertTriangle, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 
 export async function generateStaticParams() {
   const categories: ModelCategory[] = ['ml', 'dl', 'llm'];
