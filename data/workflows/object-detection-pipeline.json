@@ -1,0 +1,467 @@
+{
+  "id": "object-detection-pipeline",
+  "title": "Object Detection Pipeline",
+  "name": "Object Detection Pipeline",
+  "slug": "object-detection-pipeline",
+  "description": "Production object-detection pipeline that keeps annotation ingestion, preprocessing, architecture choice, training, NMS post-processing, mAP evaluation, serialization, and deployment traceable end to end.",
+  "type": "pipeline",
+  "category": "deep-learning",
+  "overview": "This workflow defines a production object-detection pipeline that keeps annotation ingestion, preprocessing, architecture choice, training, NMS post-processing, mAP evaluation, serialization, and deployment traceable end to end. It is organized to preserve reproducibility across dataset splits and transforms, maintain explicit lineage from annotations to deployable artifacts, and make latency, NMS overhead, and mAP trade-offs measurable in both cloud and edge settings.",
+  "starter_stack": [
+    "torch",
+    "torchvision",
+    "ultralytics",
+    "albumentations",
+    "opencv-python",
+    "pillow",
+    "numpy",
+    "pandas",
+    "scikit-learn",
+    "onnx"
+  ],
+  "created_at": "2026-07-13",
+  "updated_at": "2026-07-13",
+  "last_verified": "2026-07-13",
+  "review_frequency": "quarterly",
+  "verified_against": "1.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "sources": [
+    "https://www.youtube.com/watch?v=IfBT_Alo4jg",
+    "https://playbooks.com/skills/openclaw/skills/senior-computer-vision",
+    "https://www.youtube.com/watch?v=gVujINk3GuM"
+  ],
+  "tags": [
+    "object-detection",
+    "computer-vision",
+    "deep-learning",
+    "yolo",
+    "faster-rcnn"
+  ],
+  "aliases": [
+    "detection-pipeline",
+    "object-detection-workflow"
+  ],
+  "keywords": [
+    "object detection",
+    "YOLO",
+    "Faster R-CNN",
+    "NMS",
+    "mAP evaluation"
+  ],
+  "search_tokens": [
+    "object detection pipeline",
+    "YOLO training workflow",
+    "detection model deployment",
+    "NMS optimization",
+    "mAP evaluation pipeline"
+  ],
+  "domain": "deep-learning",
+  "difficulty": "advanced",
+  "engineering_area": "computer-vision, model-training, deployment",
+  "estimated_reading_time": 30,
+  "prerequisites": [
+    "PyTorch training loops",
+    "annotation formats",
+    "COCO evaluation basics",
+    "ONNX export",
+    "deployment fundamentals"
+  ],
+  "recommended_next": [
+    "instance-segmentation-pipeline",
+    "image-classification-pipeline",
+    "model-monitoring-workflow",
+    "inference-optimization-workflow"
+  ],
+  "next_links": [
+    "torch",
+    "torchvision",
+    "ultralytics",
+    "albumentations",
+    "opencv-python",
+    "pillow",
+    "onnx",
+    "tensorrt",
+    "pycocotools"
+  ],
+  "related_content": [
+    { "id": "yolov8", "type": "model", "relationship_type": "related_to" },
+    { "id": "yolov9", "type": "model", "relationship_type": "related_to" },
+    { "id": "faster-rcnn", "type": "model", "relationship_type": "related_to" },
+    { "id": "retinanet", "type": "model", "relationship_type": "related_to" },
+    { "id": "detr", "type": "model", "relationship_type": "related_to" },
+    { "id": "deformable-detr", "type": "model", "relationship_type": "related_to" },
+    { "id": "mask-rcnn", "type": "model", "relationship_type": "related_to" },
+    { "id": "cascade-rcnn", "type": "model", "relationship_type": "related_to" },
+    { "id": "ssd", "type": "model", "relationship_type": "related_to" },
+    { "id": "torch", "type": "package", "relationship_type": "related_to" },
+    { "id": "torchvision", "type": "package", "relationship_type": "related_to" },
+    { "id": "ultralytics", "type": "package", "relationship_type": "related_to" },
+    { "id": "albumentations", "type": "package", "relationship_type": "related_to" },
+    { "id": "opencv-python", "type": "package", "relationship_type": "related_to" },
+    { "id": "pillow", "type": "package", "relationship_type": "related_to" },
+    { "id": "onnx", "type": "package", "relationship_type": "related_to" },
+    { "id": "tensorrt", "type": "package", "relationship_type": "related_to" },
+    { "id": "optimum", "type": "package", "relationship_type": "related_to" },
+    { "id": "accelerate", "type": "package", "relationship_type": "related_to" },
+    { "id": "pycocotools", "type": "package", "relationship_type": "related_to" },
+    { "id": "object-detection", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "single-stage-detection", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "two-stage-detection", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "anchor-optimization", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "nms-tuning", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "model-quantization", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "distributed-training", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "inference-optimization", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "anchor-mismatch", "type": "debug_guide", "relationship_type": "related_to" },
+    { "id": "nms-failure", "type": "debug_guide", "relationship_type": "related_to" },
+    { "id": "class-imbalance", "type": "debug_guide", "relationship_type": "related_to" },
+    { "id": "small-object-detection", "type": "debug_guide", "relationship_type": "related_to" },
+    { "id": "bounding-box-regression", "type": "debug_guide", "relationship_type": "related_to" },
+    { "id": "quantization-collapse", "type": "debug_guide", "relationship_type": "related_to" },
+    { "id": "annotation-mismatch", "type": "debug_guide", "relationship_type": "related_to" }
+  ],
+  "related_models": [
+    { "id": "yolov8", "type": "model", "relationship_type": "related_to" },
+    { "id": "yolov9", "type": "model", "relationship_type": "related_to" },
+    { "id": "faster-rcnn", "type": "model", "relationship_type": "related_to" },
+    { "id": "retinanet", "type": "model", "relationship_type": "related_to" },
+    { "id": "detr", "type": "model", "relationship_type": "related_to" },
+    { "id": "deformable-detr", "type": "model", "relationship_type": "related_to" },
+    { "id": "mask-rcnn", "type": "model", "relationship_type": "related_to" },
+    { "id": "cascade-rcnn", "type": "model", "relationship_type": "related_to" },
+    { "id": "ssd", "type": "model", "relationship_type": "related_to" }
+  ],
+  "related_packages": [
+    { "id": "torch", "type": "package", "relationship_type": "related_to" },
+    { "id": "torchvision", "type": "package", "relationship_type": "related_to" },
+    { "id": "ultralytics", "type": "package", "relationship_type": "related_to" },
+    { "id": "albumentations", "type": "package", "relationship_type": "related_to" },
+    { "id": "opencv-python", "type": "package", "relationship_type": "related_to" },
+    { "id": "pillow", "type": "package", "relationship_type": "related_to" },
+    { "id": "onnx", "type": "package", "relationship_type": "related_to" },
+    { "id": "tensorrt", "type": "package", "relationship_type": "related_to" },
+    { "id": "optimum", "type": "package", "relationship_type": "related_to" },
+    { "id": "accelerate", "type": "package", "relationship_type": "related_to" },
+    { "id": "pycocotools", "type": "package", "relationship_type": "related_to" }
+  ],
+  "related_patterns": [
+    { "id": "object-detection", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "single-stage-detection", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "two-stage-detection", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "anchor-optimization", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "nms-tuning", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "model-quantization", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "distributed-training", "type": "pattern", "relationship_type": "related_to" },
+    { "id": "inference-optimization", "type": "pattern", "relationship_type": "related_to" }
+  ],
+  "related_debug_guides": [
+    { "id": "anchor-mismatch", "type": "debug_guide", "relationship_type": "related_to" },
+    { "id": "nms-failure", "type": "debug_guide", "relationship_type": "related_to" },
+    { "id": "class-imbalance", "type": "debug_guide", "relationship_type": "related_to" },
+    { "id": "small-object-detection", "type": "debug_guide", "relationship_type": "related_to" },
+    { "id": "bounding-box-regression", "type": "debug_guide", "relationship_type": "related_to" },
+    { "id": "quantization-collapse", "type": "debug_guide", "relationship_type": "related_to" },
+    { "id": "annotation-mismatch", "type": "debug_guide", "relationship_type": "related_to" }
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "name": "Data Ingestion & Annotation Management",
+      "what": "Standardize COCO, Pascal VOC, and YOLO annotations into a validated dataset contract with class-distribution tracking and reproducible splits.",
+      "tools": [
+        "pandas",
+        "opencv-python",
+        "pillow",
+        "pycocotools"
+      ],
+      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Annotation standardization | Convert everything to COCO | Keep source-native formats | COCO improves interoperability and evaluation; native formats reduce conversion cost but raise integration risk | Multi-source datasets | Annotation format mismatch |\n| Split strategy | Stratified train/val/test split | Random split only | Stratification preserves rare classes; random split is simpler but can skew tails | Long-tail detection data | Class imbalance collapse |\n| Validation gate | Reject malformed images and boxes | Accept all files and defer checks | Early validation reduces silent errors; permissive ingestion increases throughput but can propagate bad labels | Noisy annotation pipelines | Corrupt annotation propagation |\n| Class analysis | Track class and aspect-ratio histograms | Basic file counts only | Rich profiling exposes imbalance and scale bias; simple counts are faster but less actionable | Large heterogeneous corpora | Small-object detection failure |",
+      "uses": {
+        "packages": [
+          "pandas",
+          "opencv-python",
+          "pillow",
+          "pycocotools"
+        ],
+        "models": [],
+        "cheatsheets": [],
+        "patterns": [],
+        "debug_guides": []
+      },
+      "failure_points": [
+        "Missing or malformed boxes",
+        "Duplicate samples across splits",
+        "Class-name drift between sources",
+        "Hidden imbalance in rare objects"
+      ],
+      "language": "python",
+      "code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split\n\ndf = pd.read_csv(\"annotations.csv\")\ntrain_df, temp_df = train_test_split(df, test_size=0.3, stratify=df[\"class_id\"], random_state=42)\nval_df, test_df = train_test_split(temp_df, test_size=0.5, stratify=temp_df[\"class_id\"], random_state=42)"
+    },
+    {
+      "step": 2,
+      "name": "Image Preprocessing & Augmentation Strategy",
+      "what": "Define deterministic resizing, padding, normalization, and augmentation so image geometry and box coordinates remain aligned through training and serving.",
+      "tools": [
+        "albumentations",
+        "opencv-python",
+        "torchvision"
+      ],
+      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Resize policy | Letterbox/pad to fixed shape | Direct resize | Letterbox preserves aspect ratio for detection; direct resize is simpler but distorts boxes | Variable-resolution inputs | Bounding-box regression divergence |\n| Augmentation policy | Mosaic plus limited photometric transforms | Heavy mixup and aggressive spatial transforms | Mosaic improves small-object coverage; stronger augmentation broadens support but may distort semantics | Small or sparse datasets | Small object detection failure |\n| Normalization | Dataset-specific stats | ImageNet-style defaults | Dataset-specific normalization fits the target domain; default stats are easier but may mismatch camera characteristics | Non-natural imagery | Train-test distribution mismatch |\n| Transform parity | Explicit train/infer separation | Hidden duplicate preprocessing paths | Explicit parity reduces serving bugs; separate paths can optimize runtime but risk drift | Cloud/edge split deployment | Preprocessing mismatch |",
+      "uses": {
+        "packages": [
+          "albumentations",
+          "opencv-python",
+          "torchvision"
+        ],
+        "models": [],
+        "cheatsheets": [],
+        "patterns": [],
+        "debug_guides": []
+      },
+      "failure_points": [
+        "Box coordinates misaligned after transforms",
+        "Augmentation too strong for small targets",
+        "Channel-order mismatch",
+        "Inference preprocessing drift"
+      ],
+      "language": "python",
+      "code": "import albumentations as A\n\ntrain_aug = A.Compose([\n    A.LongestMaxSize(max_size=640),\n    A.PadIfNeeded(640, 640),\n    A.HorizontalFlip(p=0.5),\n    A.Normalize()\n])"
+    },
+    {
+      "step": 3,
+      "name": "Architecture Selection & Model Configuration",
+      "what": "Choose between single-stage and two-stage detectors, then configure backbone, feature pyramid, anchors, and head structure against latency and accuracy constraints.",
+      "tools": [
+        "ultralytics",
+        "torchvision",
+        "torch"
+      ],
+      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Detector family | YOLO-style single-stage model | Faster R-CNN or other two-stage detector | Single-stage models are faster; two-stage detectors can improve precision at higher latency | Offline or high-precision workloads | Latency mismatch |\n| Backbone choice | Pretrained backbone with known detection support | Custom backbone | Pretrained backbones converge faster; custom designs can better fit constraints but raise risk | Limited training budget | Underfitting |\n| FPN integration | Use pyramid features for multi-scale objects | No pyramid or custom neck | FPN improves multi-scale recall; simpler necks reduce compute | Dense scenes or small objects | Small-object detection failure |\n| Anchor strategy | Dataset-aware anchors or anchor-free where supported | Generic anchor settings | Data-aware anchors improve recall; generic settings simplify setup but can miss scale priors | Wide box-scale variance | Anchor mismatch |",
+      "uses": {
+        "packages": [
+          "ultralytics",
+          "torchvision",
+          "torch"
+        ],
+        "models": [],
+        "cheatsheets": [],
+        "patterns": [],
+        "debug_guides": []
+      },
+      "failure_points": [
+        "Anchor priors mismatched to data",
+        "Backbone too heavy for target latency",
+        "Poor support for tiny objects",
+        "Head shape mismatch with class count"
+      ],
+      "language": "python",
+      "code": "from ultralytics import YOLO\n\nmodel = YOLO(\"yolov8n.pt\")\nmodel.model.nc = 10"
+    },
+    {
+      "step": 4,
+      "name": "Training Loop & Loss Optimization",
+      "what": "Optimize classification, objectness, and localization losses with stable scheduling, mixed precision, and scalable distributed training.",
+      "tools": [
+        "torch",
+        "ultralytics",
+        "torchvision"
+      ],
+      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Loss composition | Standard classification + box + objectness losses | Custom reweighting or focal variants | Standard losses are robust; custom weighting can help imbalance but needs more tuning | Long-tail datasets | Class imbalance collapse |\n| Optimizer | AdamW or SGD with momentum | Custom optimizer choices | Standard optimizers are predictable; specialized choices may help but complicate tuning | Large training runs | Optimization instability |\n| LR schedule | Cosine or step decay | Fixed learning rate | Schedules improve convergence; fixed LR is simpler but less efficient | Long training horizons | Slow convergence |\n| Precision mode | Mixed precision when supported | Full precision only | Mixed precision improves throughput; full precision is safer but slower | Memory-bound training | Memory exhaustion |",
+      "uses": {
+        "packages": [
+          "torch",
+          "ultralytics",
+          "torchvision"
+        ],
+        "models": [],
+        "cheatsheets": [],
+        "patterns": [],
+        "debug_guides": []
+      },
+      "failure_points": [
+        "Box-regression divergence",
+        "Gradient explosion",
+        "Resume-state mismatch",
+        "Minority-class collapse"
+      ],
+      "language": "python",
+      "code": "import torch\n\ncriterion = torch.nn.BCEWithLogitsLoss()\noptimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)\nscaler = torch.cuda.amp.GradScaler(enabled=True)"
+    },
+    {
+      "step": 5,
+      "name": "Post-Processing: NMS, IoU Filtering & Confidence Thresholding",
+      "what": "Tune NMS, IoU thresholds, and confidence filtering so precision and recall remain balanced at deployment latency budgets.",
+      "tools": [
+        "torch",
+        "torchvision",
+        "scikit-learn"
+      ],
+      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| NMS algorithm | Standard NMS | Soft-NMS or class-aware variants | Standard NMS is fast and common; Soft-NMS can improve recall but adds compute | Crowded scenes | NMS threshold misconfiguration |\n| IoU threshold | Tune by validation slice | Fixed default threshold | Tuned thresholds improve balance; fixed defaults reduce complexity but may underperform | Multi-scale crowded datasets | Duplicate detections |\n| Confidence threshold | Calibrate per class | Single global threshold | Per-class thresholds improve tail performance; a global threshold is simpler but can hurt rare classes | Strong class imbalance | False positive inflation |\n| Batch strategy | Batched NMS for throughput | Per-image post-processing only | Batched NMS improves throughput; per-image processing is easier to debug but slower | High QPS serving | Post-processing bottleneck |",
+      "uses": {
+        "packages": [
+          "torch",
+          "torchvision",
+          "scikit-learn"
+        ],
+        "models": [],
+        "cheatsheets": [],
+        "patterns": [],
+        "debug_guides": []
+      },
+      "failure_points": [
+        "Over-suppression in crowded scenes",
+        "Duplicate detections from weak thresholds",
+        "Throughput loss from serial NMS",
+        "Class-specific precision collapse"
+      ],
+      "language": "python",
+      "code": "import torch\nfrom torchvision.ops import nms\n\nkeep = nms(boxes, scores, iou_threshold=0.5)\nfiltered_boxes = boxes[keep]\nfiltered_scores = scores[keep]"
+    },
+    {
+      "step": 6,
+      "name": "Evaluation, mAP Computation & Error Analysis",
+      "what": "Compute COCO-style metrics, per-class AP, and false-positive categories using serialized predictions that can be replayed exactly.",
+      "tools": [
+        "torch",
+        "scikit-learn",
+        "pycocotools"
+      ],
+      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Evaluation protocol | COCO-style mAP sweep | Single-threshold AP only | COCO sweep is more informative; single-threshold AP is simpler but incomplete | Benchmarking or release decisions | Misleading evaluation |\n| Error analysis | Per-class AP and FP categorization | Aggregate scores only | Rich analysis exposes weak classes; aggregate scores are faster but opaque | Many classes or safety-critical use | Hidden class failure |\n| Confusion analysis | Detection-level confusion and missed-object analysis | Classification-style aggregates only | Detection-level analysis matches the task; aggregate-only analysis obscures localization errors | Dense scenes | Localization blind spots |\n| Thresholding review | Compare operating points across IoU and confidence | Lock one default setting | Multi-threshold review improves tuning; single-point review is quicker but less robust | Production tuning | Threshold overfit |",
+      "uses": {
+        "packages": [
+          "torch",
+          "scikit-learn",
+          "pycocotools"
+        ],
+        "models": [],
+        "cheatsheets": [],
+        "patterns": [],
+        "debug_guides": []
+      },
+      "failure_points": [
+        "Wrong category mapping",
+        "Evaluation leakage from training predictions",
+        "Missed rare-class failures",
+        "Thresholds tuned to one dataset slice only"
+      ],
+      "language": "python",
+      "code": "from pycocotools.cocoeval import COCOeval\n\ncoco_eval = COCOeval(coco_gt, coco_dt, iouType=\"bbox\")\ncoco_eval.evaluate()\ncoco_eval.accumulate()\ncoco_eval.summarize()"
+    },
+    {
+      "step": 7,
+      "name": "Model Serialization & Versioning",
+      "what": "Persist checkpoints, metadata, and exportable graphs so every deployable artifact can be traced back to code, data, and training state.",
+      "tools": [
+        "torch",
+        "onnx",
+        "ultralytics"
+      ],
+      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Checkpoint policy | Best-metric plus periodic backups | Final checkpoint only | Periodic backups enable rollback; final-only is smaller but risky | Long or unstable runs | Checkpoint corruption |\n| Export format | ONNX for portability | Framework-native weights only | ONNX supports more runtimes; native weights are simpler but less portable | Multi-runtime serving | Deployment incompatibility |\n| Dynamic axes | Enable for variable input shapes | Fixed shapes only | Dynamic axes improve flexibility; fixed shapes can simplify optimization | Mixed-resolution deployment | Inference shape mismatch |\n| Metadata scope | Config, data version, metrics, seed | Filename-only tagging | Rich metadata improves auditability; minimal tagging is fragile | Regulated or shared platforms | Lost lineage |",
+      "uses": {
+        "packages": [
+          "torch",
+          "onnx",
+          "ultralytics"
+        ],
+        "models": [],
+        "cheatsheets": [],
+        "patterns": [],
+        "debug_guides": []
+      },
+      "failure_points": [
+        "Partial writes",
+        "Missing config hashes",
+        "Export graph mismatch",
+        "Version overwrite"
+      ],
+      "language": "python",
+      "code": "import torch\n\ntorch.save({\"state_dict\": model.state_dict(), \"meta\": {\"epoch\": 10}}, \"checkpoint.pt\")\ndummy = torch.randn(1, 3, 640, 640)\ntorch.onnx.export(model, dummy, \"model.onnx\", opset_version=17, dynamic_axes={\"images\": {0: \"batch\"}})"
+    },
+    {
+      "step": 8,
+      "name": "Inference Optimization & Deployment",
+      "what": "Optimize the exported detector for cloud or edge serving with quantization, TensorRT compilation, and shape-aware batch tuning.",
+      "tools": [
+        "onnx",
+        "tensorrt",
+        "torch",
+        "optimum"
+      ],
+      "decision": "| Field | Default | Alternative | Trade-off | Scale Trigger | Failure Prevented |\n| :-- | :-- | :-- | :-- | :-- | :-- |\n| Quantization | FP16 or PTQ after validation | No quantization | Quantization reduces latency and size; full precision preserves accuracy but costs more | Edge or high-QPS serving | Quantization mAP collapse |\n| Shape policy | Dynamic shapes where needed | Static shapes only | Dynamic shapes increase flexibility; static shapes can be faster and simpler | Mixed deployment hardware | Batch-size mismatch |\n| Engine target | TensorRT on NVIDIA GPUs | ONNX runtime only | TensorRT improves throughput; ONNX-only is more portable | Jetson or datacenter NVIDIA targets | Deployment inefficiency |\n| Batch tuning | Hardware-specific batch sizes | One batch size everywhere | Hardware tuning improves throughput; global settings are easier but suboptimal | Diverse serving fleet | Latency regression |",
+      "uses": {
+        "packages": [
+          "onnx",
+          "tensorrt",
+          "torch",
+          "optimum"
+        ],
+        "models": [],
+        "cheatsheets": [],
+        "patterns": [],
+        "debug_guides": []
+      },
+      "failure_points": [
+        "Export incompatibility",
+        "Accuracy loss after quantization",
+        "Shape mismatch at serving time",
+        "Engine build failure"
+      ],
+      "language": "python",
+      "code": "import torch\n\ndummy = torch.randn(1, 3, 640, 640)\ntorch.onnx.export(model, dummy, \"deploy.onnx\", opset_version=17, input_names=[\"images\"], output_names=[\"detections\"])"
+    }
+  ],
+  "common_failure_points": [
+    "Anchor Mismatch\n* Origin: Data ingestion and model configuration.\n* Trigger: Anchor priors or anchor-free assumptions do not match object scale and aspect-ratio statistics.\n* Immediate Symptom: Low recall on specific object sizes, especially small or elongated targets.\n* Downstream Propagation: Training stalls, validation AP plateaus, and post-processing thresholds become unstable.\n* Why Debugging is Difficult: The model may still improve on easy classes, masking the anchor failure.\n* Recommended Detection Method: Compare box-size histograms against anchor coverage and per-scale AP.\n* Recovery Strategy: Recompute anchors, switch detector family, or move to a more suitable neck/backbone.",
+    "NMS Threshold Misconfiguration\n* Origin: Post-processing.\n* Trigger: IoU or confidence thresholds are tuned on one slice and reused elsewhere.\n* Immediate Symptom: Duplicate detections or over-suppressed crowded objects.\n* Downstream Propagation: Precision drops or recall collapses in production.\n* Why Debugging is Difficult: The model can look correct before post-processing, then fail only after NMS.\n* Recommended Detection Method: Evaluate mAP and per-class FP counts across multiple threshold settings.\n* Recovery Strategy: Retune thresholds, use Soft-NMS when appropriate, and align validation with deployment settings.",
+    "Bounding Box Regression Divergence\n* Origin: Training loop and loss optimization.\n* Trigger: Box loss weights, learning rate, or augmentation strength destabilize localization learning.\n* Immediate Symptom: Boxes drift, explode, or fail to converge.\n* Downstream Propagation: mAP@0.5:0.95 degrades more sharply than mAP@0.5.\n* Why Debugging is Difficult: Classification confidence may still look healthy while localization fails.\n* Recommended Detection Method: Track box-loss curves and inspect localization error distributions.\n* Recovery Strategy: Reduce LR, rebalance loss terms, and soften augmentation.",
+    "Quantization mAP Collapse\n* Origin: Inference optimization.\n* Trigger: INT8 or aggressive FP16 conversion without calibration validation.\n* Immediate Symptom: Latency improves, but mAP drops beyond acceptable bounds.\n* Downstream Propagation: Deployment appears healthy while detection quality regresses.\n* Why Debugging is Difficult: Conversion artifacts often appear only after engine compilation.\n* Recommended Detection Method: Compare pre/post-quantization mAP and per-class AP on the same validation set.\n* Recovery Strategy: Use calibration data representative of deployment traffic or fall back to higher precision.",
+    "Memory Exhaustion\n* Origin: Training and inference scaling.\n* Trigger: Image resolution, batch size, or detector complexity exceeds GPU capacity.\n* Immediate Symptom: OOM errors, stalled workers, or silent throughput collapse.\n* Downstream Propagation: Training becomes unstable and deployment batch sizes shrink unpredictably.\n* Why Debugging is Difficult: The memory issue can emerge only on specific batches or after augmentation.\n* Recommended Detection Method: Profile peak memory by stage and monitor batch-level variance.\n* Recovery Strategy: Lower batch size, enable mixed precision, reduce image size, or simplify the model."
+  ],
+  "evaluation_checks": [
+    "mAP@0.5 improves against the baseline.",
+    "mAP@0.5:0.95 remains stable or improves.",
+    "mAP@0.75 does not regress materially.",
+    "Per-class AP remains balanced across frequent and rare classes.",
+    "Precision@K is acceptable for the target use case.",
+    "Recall@K remains high for safety-critical or inventory-sensitive targets.",
+    "F1-Score remains stable across operating thresholds.",
+    "Training time to target mAP is within budget.",
+    "Inference latency meets the deployment SLA.",
+    "Model size stays within storage and edge limits.",
+    "Throughput stays above the serving target.",
+    "NMS overhead remains a small fraction of end-to-end latency."
+  ],
+  "worked_examples": [
+    {
+      "name": "Autonomous Vehicle Perception Pipeline",
+      "description": "This pipeline fine-tunes a YOLO-style detector for traffic participants, then validates TensorRT export on an NVIDIA Jetson-class target with strict latency and NMS budgets. The practical objective is stable small-object recall under camera motion, occlusion, and varying illumination.",
+      "language": "python",
+      "code": "import torch\nfrom ultralytics import YOLO\nfrom torchvision.ops import nms\nimport albumentations as A\nfrom pycocotools.coco import COCO\n\ncoco = COCO(\"traffic_train.json\")\naug = A.Compose([A.LongestMaxSize(640), A.PadIfNeeded(640, 640), A.Normalize()])\nmodel = YOLO(\"yolov8m.pt\")\nx = torch.randn(1, 3, 640, 640)\npred = model.model(x)\nkeep = nms(torch.tensor([[10, 10, 100, 100]], dtype=torch.float32), torch.tensor([0.9]), 0.5)",
+      "implementation_notes": "Use anchor-aware tuning or anchor-free settings only after verifying scale priors in the dataset. Validate TensorRT export with the same confidence and IoU thresholds used during model selection."
+    },
+    {
+      "name": "Retail Inventory Detection at Scale",
+      "description": "This pipeline trains a Faster R-CNN-style detector for shelf monitoring, then uses COCO-style evaluation and quantized deployment for real-time stock analytics. The central trade-off is higher precision on dense shelves versus the compute cost of two-stage inference.",
+      "language": "python",
+      "code": "import torch\nfrom torchvision.models.detection import fasterrcnn_resnet50_fpn\nfrom torchvision.ops import batched_nms\nfrom pycocotools.cocoeval import COCOeval\n\nmodel = fasterrcnn_resnet50_fpn(weights=\"DEFAULT\", num_classes=20)\nimages = [torch.randn(3, 800, 800)]\noutputs = model(images)\nkeep = batched_nms(outputs[0][\"boxes\"], outputs[0][\"scores\"], outputs[0][\"labels\"], 0.5)\ncoco_eval = COCOeval(coco_gt, coco_dt, iouType=\"bbox\")",
+      "implementation_notes": "Use FPN for scale variation and tune batch size around post-processing overhead rather than only model forward time. Compare FP32 and FP16 export paths before choosing a production engine."
+    },
+    {
+      "name": "Aerial Surveillance Object Detection",
+      "description": "This pipeline uses multi-scale detection for aerial vehicles and rotated or densely packed targets, then validates per-class AP under COCO-style evaluation. The main engineering risk is that standard thresholds and preprocessing often underperform on extreme object scale variance.",
+      "language": "python",
+      "code": "import pandas as pd\nimport torch\nfrom ultralytics import YOLO\nfrom sklearn.metrics import precision_score\n\ndf = pd.read_csv(\"aerial_annotations.csv\")\nmodel = YOLO(\"yolov8l.pt\")\nbatch = torch.randn(2, 3, 1024, 1024)\nresult = model.model(batch)\ny_true = [1, 0, 1, 1]\ny_pred = [1, 0, 0, 1]\np = precision_score(y_true, y_pred)",
+      "implementation_notes": "Multi-scale inference helps when target size varies sharply across altitude or sensor resolution. Treat rotated boxes and coordinate conventions as part of the dataset contract, not as a late-stage serving detail."
+    }
+  ],
+  "production_notes": "PyTorch plus Ultralytics plus ONNX plus TensorRT gives a practical path from model development to deployable detection engines. The benefit is a clear separation between training, export, and runtime optimization. The trade-off is that each conversion boundary adds validation overhead. Do not bypass export checks because operator or shape mismatches are common in detection models. The operational impact is lower risk after a validated engine is promoted.",
+  "scaling_notes": "Distributed training, multi-GPU data parallelism, mixed precision, and batch inference optimization improve throughput for large detection corpora. The benefit is faster convergence and better utilization of expensive hardware. The trade-off is more complicated failure handling and checkpoint coordination. Do not add distributed complexity before the single-node baseline is stable. The operational impact is higher GPU efficiency once the training path is mature.",
+  "cost_notes": "Compute budget allocation, checkpoint retention, model compression, and augmentation pipeline caching reduce repeated experiment cost. The benefit is lower overall compute spend. The trade-off is greater artifact management overhead. Do not compress or cache blindly if it hides correctness problems. The operational impact is faster iteration with controlled spend.",
+  "latency_notes": "Inference latency, NMS overhead, throughput, preprocessing time, and model loading time define whether the detector is production-viable. The benefit is a measurable serving envelope. The trade-off is that latency tuning can narrow architecture options. Do not optimize for latency before meeting the target mAP floor. The operational impact is a more predictable service profile.",
+  "observability_notes": "Training metrics, validation mAP curves, per-class AP tracking, deployment health, and latency monitoring expose silent regressions early. The benefit is faster detection of quality decay. The trade-off is more logging and evaluation cost. Do not rely on aggregate mAP alone because class-specific failures can still pass release gates. The operational impact is better rollback and retraining decisions."
+}

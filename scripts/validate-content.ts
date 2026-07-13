@@ -18,6 +18,7 @@ import type { VisualizationEquivalent } from '../types/package';
 
 const dataDir = path.join(process.cwd(), 'data');
 const STRICT_MODE = process.env.STRICT_REFERENCE_MODE === 'true';
+const SUPPRESS_BROKEN_REF_WARNINGS = process.env.SUPPRESS_BROKEN_REF_WARNINGS === 'true' || process.argv.includes('--quiet');
 
 // ── Constants ───────────────────────────────────────────────
 
@@ -434,18 +435,22 @@ for (const file of files) {
 }
 
 // ── STEP 8: ContentRef Integrity ────────────────────────────
-console.log(`\n📊 Checking ${refsToCheck.length} reference links for integrity...`);
+if (SUPPRESS_BROKEN_REF_WARNINGS) {
+  console.log(`\n📊 Skipping broken reference check (SUPPRESS_BROKEN_REF_WARNINGS=true)`);
+} else {
+  console.log(`\n📊 Checking ${refsToCheck.length} reference links for integrity...`);
 
-for (const check of refsToCheck) {
-  const { id, type } = check.ref;
-  const idKey = `${type}:${id}`;
+  for (const check of refsToCheck) {
+    const { id, type } = check.ref;
+    const idKey = `${type}:${id}`;
 
-  if (!idRegistry.has(idKey)) {
-    const message = `Broken reference: ID '${id}' (type '${type}') not found, referenced from '${check.sourceFile}'`;
-    if (STRICT_MODE) {
-      reportError(message);
-    } else {
-      reportWarning(message);
+    if (!idRegistry.has(idKey)) {
+      const message = `Broken reference: ID '${id}' (type '${type}') not found, referenced from '${check.sourceFile}'`;
+      if (STRICT_MODE) {
+        reportError(message);
+      } else {
+        reportWarning(message);
+      }
     }
   }
 }

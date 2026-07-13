@@ -10,7 +10,7 @@ import QuickSetupSection from '@/components/shared/QuickSetupSection';
 import RelatedContent from '@/components/shared/RelatedContent';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 import ExpandableText from '@/components/shared/ExpandableText';
-import { ProseClient } from '@/components/shared/Prose';
+import { Prose } from '@/components/shared/Prose';
 
 export async function generateStaticParams() {
   return getAllPackageIds().map((id) => ({ id }));
@@ -87,7 +87,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
 
       <section id="summary" className="scroll-mt-24">
         <ExpandableText cacheKey={`pkg-summary-${pkg.id}`} fadeClass="from-background to-transparent">
-          <ProseClient content={pkg.summary} className="content-prose text-sm text-muted-foreground" />
+          <Prose content={pkg.summary} className="content-prose text-sm text-muted-foreground" />
         </ExpandableText>
       </section>
 

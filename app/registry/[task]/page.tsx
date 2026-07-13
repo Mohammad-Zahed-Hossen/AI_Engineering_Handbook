@@ -54,7 +54,7 @@ export default async function RegistryTaskPage({ params }: PageProps) {
     >
       <div className="space-y-6">
         {/* Registry Header */}
-        <div className="bg-card text-card-foreground border border-border p-5 rounded-lg shadow-sm select-none">
+        <div className="bg-card text-card-foreground border border-border p-5 rounded-lg select-none">
           <div className="flex items-center gap-3">
             <h1 className="text-xl font-bold tracking-tight text-foreground font-sans">
               {titles[validTask] || `${validTask} Registry`}
@@ -111,7 +111,7 @@ export default async function RegistryTaskPage({ params }: PageProps) {
         </div>
 
         {/* Desktop Table View */}
-        <div className="hidden md:block bg-card text-card-foreground border border-border rounded-lg shadow-sm overflow-hidden">
+        <div className="hidden md:block bg-card text-card-foreground border border-border rounded-lg overflow-hidden">
           <div className="px-4 py-3 border-b border-border bg-muted/30 select-none">
             <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider font-sans">
               {validTask.toUpperCase()} MODEL CHECKPOINTS

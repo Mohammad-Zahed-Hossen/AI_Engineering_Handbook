@@ -59,10 +59,18 @@ export async function Prose({ content, className }: ProseProps) {
         rehypePlugins={[rehypeKatex]}
         components={{
           table: ({ children }) => (
-            <div className="overflow-x-auto">
-              <table>{children}</table>
+            <div className="overflow-x-auto rounded-lg border border-border">
+              <table className="w-full text-left border-collapse text-xs">{children}</table>
             </div>
           ),
+          thead: ({ children }) => (
+            <thead className="bg-muted/40 font-semibold text-foreground border-b border-border">{children}</thead>
+          ),
+          tbody: ({ children }) => (
+            <tbody className="divide-y divide-border">{children}</tbody>
+          ),
+          th: ({ children }) => <th className="p-3">{children}</th>,
+          td: ({ children }) => <td className="p-3 text-muted-foreground">{children}</td>,
           pre: async ({ children }) => {
             // ReactMarkdown passes the code element as children
             // We need to extract the code text and language from the code element
@@ -119,10 +127,18 @@ export function ProseClient({ content, className }: ProseProps) {
         rehypePlugins={[rehypeKatex]}
         components={{
           table: ({ children }) => (
-            <div className="overflow-x-auto">
-              <table>{children}</table>
+            <div className="overflow-x-auto rounded-lg border border-border">
+              <table className="w-full text-left border-collapse text-xs">{children}</table>
             </div>
           ),
+          thead: ({ children }) => (
+            <thead className="bg-muted/40 font-semibold text-foreground border-b border-border">{children}</thead>
+          ),
+          tbody: ({ children }) => (
+            <tbody className="divide-y divide-border">{children}</tbody>
+          ),
+          th: ({ children }) => <th className="p-3">{children}</th>,
+          td: ({ children }) => <td className="p-3 text-muted-foreground">{children}</td>,
           pre: ({ children }) => {
             // For client components, render code blocks without syntax highlighting
             const child = children as React.ReactElement & { props?: { children?: string; className?: string } };
