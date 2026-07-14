@@ -1,0 +1,231 @@
+{
+  "id": "prompt-caching",
+  "title": "Prompt Caching",
+  "slug": "prompt-caching",
+  "description": "An inference optimization pattern that reuses precomputed prefix state so repeated prompt prefixes do not pay the full prefill cost on every request.",
+  "name": "Prompt Caching",
+  "concept": "The core mechanism is to cache the key-value tensors produced during prefill for a prompt prefix, then reuse that cached prefix state when a later request shares the same leading tokens. On a cache hit, the engine skips recomputing the shared prefix and appends only the new tokens, so the model processes only the delta instead of the entire prompt. For a full request with prompt length N, prefill attention still has quadratic dependence in the amount of attention work, while cache hits reduce the incremental work to the new-token suffix length M plus lookup overhead for the reused prefix state. In practice, this shifts serving cost from repeated compute over identical prefixes to mostly retrieval and incremental decode, which is especially valuable when many requests share system prompts, templates, or retrieved documents. A useful sizing model is that cached prefix bytes scale linearly with prefix length but multiplicatively with layer count, head count, head dimension, and precision choice, so long shared prefixes can quickly consume HBM even when they save latency. The hardware bottleneck shifts from repeated prefill compute to a mix of cached-state memory bandwidth and incremental-token compute, which roofline analysis predicts as a better trade if the reuse rate is high. Cache management is a first-class systems problem: engines need exact or partial prefix matching, reference counting for in-flight requests, and eviction policies such as LRU or LFU to prevent prefix storage from crowding out active batches.",
+  "applicability": "Use Prompt Caching when many requests share an identical or highly overlapping prefix, such as system prompts, few-shot templates, fixed RAG context documents, or repeated API instruction blocks. It is especially effective in multi-turn chat serving and batched inference because the same prefix often appears across many sessions, making TTFT savings compound at scale. Avoid it when prompts are almost always unique, when prefixes are so short that lookup overhead dominates, or when GPU memory is tight enough that prefix storage reduces usable batch capacity. It is also a weak fit for single-shot inference flows with no repetition, because the cache hit rate will be too low to amortize the memory and bookkeeping cost. Prompt Caching composes naturally with KV Cache, PagedAttention, continuous batching, quantized KV storage, and speculative decoding.",
+  "decision_summary": {
+    "when_to_use": [
+      "Multi-turn LLM serving repeats the same system prompt or instruction prefix across sessions.",
+      "Batched inference includes many requests with a shared document or template prefix.",
+      "RAG pipelines repeatedly prepend the same retrieved context or policy text.",
+      "TTFT is dominated by repeated prefill work rather than decode time."
+    ],
+    "dont_use": [
+      "Most prompts are unique and prefix reuse is rare.",
+      "Prefixes are too short to justify cache lookup and retention overhead.",
+      "HBM is so constrained that caching prefixes would reduce batch capacity too much.",
+      "The serving flow is single-shot with no meaningful prefix repetition."
+    ],
+    "tradeoff": "TTFT ↓, Memory Overhead ↑, System Complexity ↑, Cache Hit Rate Dependency ↑"
+  },
+  "pattern_snapshot": {
+    "primary_goal": "Time-To-First-Token Reduction for Shared Prefixes",
+    "primary_constraint": "Prefix Cache Capacity Bound",
+    "effective_batch": "Not Directly Affected",
+    "typical_usage": "Multi-Turn LLM API Serving and Shared-Context Batched Inference"
+  },
+  "tradeoffs": [
+    {
+      "dimension": "Memory",
+      "effect": "↑",
+      "description": "Shared prefixes must be retained as cached KV state, which grows with prefix length, layers, and heads."
+    },
+    {
+      "dimension": "Compute",
+      "effect": "↓",
+      "description": "Repeated prefill computation is eliminated on cache hits, so only new tokens need processing."
+    },
+    {
+      "dimension": "Latency",
+      "effect": "↓",
+      "description": "TTFT improves because the system skips redundant prefix work and starts decoding sooner."
+    },
+    {
+      "dimension": "Bandwidth",
+      "effect": "↑ / ↓",
+      "description": "Prefix retrieval adds read traffic, but total HBM traffic falls because prefix recomputation is avoided."
+    },
+    {
+      "dimension": "Complexity",
+      "effect": "↑",
+      "description": "Cache indexing, eviction, reference counting, and partial-prefix handling increase system complexity."
+    }
+  ],
+  "decision_flow": [
+    {
+      "question": "Do many requests share the same leading tokens?",
+      "if_yes": "Go to Step 2: Check prefill vs decode latency",
+      "if_no": "Use a simpler serving path"
+    },
+    {
+      "question": "Is TTFT dominated by prefill rather than decode?",
+      "if_yes": "Go to Step 3: Check HBM capacity bounds",
+      "if_no": "Optimize other bottlenecks first"
+    },
+    {
+      "question": "Can the HBM budget hold the expected prefix working set?",
+      "if_yes": "Keep hot prefixes resident",
+      "if_no": "Add eviction, quantization, or tiered storage"
+    }
+  ],
+  "system_interactions": [
+    {
+      "interacts_with": "KV Cache / Attention State Store",
+      "condition": "Multiple requests reuse the same prefix state.",
+      "effect": "Prefix KV tensors can be shared instead of duplicated, reducing prefill cost and improving TTFT."
+    },
+    {
+      "interacts_with": "PagedAttention / Block-Table Memory Manager",
+      "condition": "Prefixes are stored in fixed-size blocks rather than monolithic buffers.",
+      "effect": "Sharing and eviction become copy-on-write friendly, but block-table management overhead increases."
+    },
+    {
+      "interacts_with": "Continuous Batching / Dynamic Request Scheduler",
+      "condition": "The server mixes new and cached requests in the same batch.",
+      "effect": "Higher reuse rate and better GPU utilization, but scheduling must respect cache residency and request ordering."
+    },
+    {
+      "interacts_with": "Tensor Parallelism / Distributed Inference",
+      "condition": "Prefix state is sharded across ranks.",
+      "effect": "Cache hits require synchronized shard availability, otherwise reuse becomes incomplete or inconsistent."
+    },
+    {
+      "interacts_with": "Speculative Decoding / Draft Model",
+      "condition": "Prefix is reused and only later tokens need acceleration.",
+      "effect": "Prompt caching reduces prefill cost while speculative decoding reduces remaining decode latency, giving multiplicative serving gains."
+    },
+    {
+      "interacts_with": "Memory Allocator / CUDA Graphs",
+      "condition": "Prefix cache entries are created and evicted frequently.",
+      "effect": "Fragmentation and allocation churn can reduce throughput unless allocation is pooled and graph shapes remain stable."
+    },
+    {
+      "interacts_with": "Request Router / Load Balancer",
+      "condition": "Requests with identical prefixes arrive on different workers.",
+      "effect": "Hit rate drops unless routing is prefix-aware or cache state is replicated across workers."
+    }
+  ],
+  "anti_patterns": [
+    {
+      "wrong": "Caching every prompt prefix without measuring reuse.",
+      "impact": "Memory fills with cold entries, reducing batch capacity and increasing eviction churn.",
+      "fix": "Cache only prefixes with sufficient hit rate and add TTL or popularity thresholds."
+    },
+    {
+      "wrong": "Treating partial prefix overlap as if it were exact reuse.",
+      "impact": "Attention masks and position IDs can become incorrect, producing wrong outputs.",
+      "fix": "Require exact block identity or verify overlap semantics before reuse."
+    },
+    {
+      "wrong": "Ignoring reference counting for shared KV blocks.",
+      "impact": "Eviction can free memory still in use by active requests, causing crashes or silent corruption.",
+      "fix": "Tie every cached block to lifecycle-managed ownership and only evict when counts reach zero."
+    },
+    {
+      "wrong": "Using a cache layout that fragments badly under variable-length prefixes.",
+      "impact": "Memory waste rises and lookup overhead can erase latency gains.",
+      "fix": "Use block-based layouts, coalescing policies, and compaction-aware allocators."
+    },
+    {
+      "wrong": "Over-quantizing prefix cache state without validating quality.",
+      "impact": "Retrieval becomes cheaper but attention accuracy may drift, especially for long prefixes.",
+      "fix": "Validate FP8/INT8/INT4 compression on target workloads and keep critical tiers at higher precision."
+    }
+  ],
+  "implementation_notes": "Prefer pre-allocated prefix cache pools when reuse patterns are stable, and dynamic allocation when prefix popularity changes rapidly or workload mix is unpredictable. Reference counting is required for shared prefixes across concurrent requests so eviction cannot free a block still used by in-flight inference. Store prefix KV state contiguously when possible, but block-interleaved layouts are often better for PagedAttention-style sharing because they reduce copy cost and support partial reuse. Head-contiguous layouts can simplify vectorized access, while layer-contiguous layouts can improve locality for per-layer reuse; fragmentation rises when prefixes vary widely in length. Prefix lookup can use trie-based exact matching for deterministic prefix reuse, radix trees for common subsequences, or hash-based block IDs for sub-prefix sharing. During generation, the engine must map tokens to blocks dynamically and reconstruct the attention mask so cached tokens and new tokens attend correctly without accidental leakage across partial matches. Eviction policy should combine LRU or LFU with TTL-based expiry when prompts age out naturally, plus watermark-based emergency eviction when memory pressure spikes. In distributed inference, tensor-parallel ranks should populate identical prefix shards, and pipeline-parallel stages need explicit handoff of prefix state so cache hits remain consistent end-to-end. Common failures include reference-count leaks, prefix-hash collisions, eviction races, wrong position IDs after cache hits, and incorrect masking for partial-prefix matches. These bugs are often hard to detect because they may improve latency while silently degrading answer quality or corrupting attention semantics.",
+  "examples": [
+    "def infer_with_prompt_cache(request_tokens, cache):\n    prefix_len = longest_cached_prefix(request_tokens, cache)\n    prefix_state = cache.get(request_tokens[:prefix_len])\n\n    if prefix_state is None:\n        prefix_len = 0\n        prefix_state = empty_state()\n\n    shared_tokens = request_tokens[:prefix_len]\n    new_tokens = request_tokens[prefix_len:]\n\n    state = prefix_state\n    if prefix_len == 0:\n        state = prefill(shared_tokens, state)\n\n    for t in new_tokens:\n        state = append_token_state(state, t)\n        state = update_kv_cache(state, t)\n\n    logits = decode_next(state)\n    cache.insert(request_tokens, state)\n    return logits"
+  ],
+  "variations": [
+    {
+      "name": "Exact Prefix Matching (Trie-Based Cache)",
+      "description": "A trie over token IDs stores cached KV state at nodes so exact shared prefixes can be retrieved in deterministic time.",
+      "use_when": "Prompts are highly templated and exact prefix reuse is common.",
+      "benefit": "Zero false positives and straightforward reference counting per node.",
+      "tradeoff": "No benefit for near-matches, and trie metadata adds pointer overhead."
+    },
+    {
+      "name": "Block-Level Prefix Sharing (RadixAttention / PagedAttention-Style)",
+      "description": "Physical KV blocks are shared through a radix tree or block hash table so overlapping prefixes can reuse sub-prompt segments.",
+      "use_when": "Many concurrent sessions share partial prefixes or branch from the same conversation.",
+      "benefit": "Avoids physical duplication and supports copy-on-write sharing at block granularity.",
+      "tradeoff": "Block-table lookups and memory management become more complex, and granularity choices affect fragmentation."
+    },
+    {
+      "name": "Hierarchical Multi-Tier Prefix Cache (L1 SRAM / L2 HBM / L3 Host)",
+      "description": "Hot prefixes live in the fastest tier, warm prefixes in HBM, and cold prefixes in host memory or disk with promotion and demotion logic.",
+      "use_when": "Prefix working sets exceed GPU memory or fleet-level reuse is very uneven.",
+      "benefit": "Extends cacheable capacity far beyond a single GPU and keeps hot items near compute.",
+      "tradeoff": "Tier promotion can saturate PCIe bandwidth and add large miss latency."
+    }
+  ],
+  "category": "prompt_caching",
+  "domain": "llm",
+  "difficulty": "advanced",
+  "engineering_area": "inference",
+  "estimated_reading_time": 25,
+  "prerequisites": [
+    "transformer"
+  ],
+  "recommended_next": [
+    "kv-cache"
+  ],
+  "created_at": "2026-07-14",
+  "updated_at": "2026-07-14",
+  "last_verified": "2026-07-14",
+  "review_frequency": "annually",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "sources": [
+    "https://arxiv.org/abs/2409.15097",
+    "https://arxiv.org/abs/2306.01160"
+  ],
+  "tags": [
+    "llm",
+    "inference",
+    "prompt-caching",
+    "prefix-caching",
+    "memory-optimization",
+    "latency"
+  ],
+  "aliases": [
+    "prompt-caching-pattern",
+    "prefix-caching"
+  ],
+  "keywords": [
+    "prompt caching",
+    "prefix caching",
+    "radix attention",
+    "context reuse",
+    "vllm"
+  ],
+  "search_tokens": [
+    "prompt caching architecture",
+    "prefix cache hit rate",
+    "paged attention prefix share",
+    "radixattention prefill bypass"
+  ],
+  "related_workflows": [
+    "llm-application-serving",
+    "production-llm-cost-latency-optimization"
+  ],
+  "related_models": [
+    "bert"
+  ],
+  "related_packages": [
+    "pytorch"
+  ],
+  "related_principles": [
+    "single-source-of-truth"
+  ],
+  "related_debug_guides": []
+}

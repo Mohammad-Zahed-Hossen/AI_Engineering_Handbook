@@ -311,7 +311,23 @@ for (const file of files) {
         reportWarning(`Cheatsheet '${normalizedPath}' has entries count (${cs.entries.length}) exceeding maximum budget of ${sizeBudgets.cheatsheet_max_entries}`);
       }
     } else if (type === 'pattern') {
-      const pattern = obj as { concept?: string; applicability?: string; examples?: string[]; lifecycle?: string; stability?: string; difficulty?: string; domain?: string; engineering_area?: string };
+      const pattern = obj as { 
+        concept?: string; 
+        applicability?: string; 
+        examples?: string[]; 
+        lifecycle?: string; 
+        stability?: string; 
+        difficulty?: string; 
+        domain?: string; 
+        engineering_area?: string;
+        decision_summary?: unknown;
+        tradeoffs?: unknown[];
+        decision_flow?: unknown[];
+        anti_patterns?: unknown[];
+        implementation_notes?: string;
+        system_interactions?: unknown[];
+        sources?: string[];
+      };
       if (!pattern.concept) {
         reportError(`Pattern '${normalizedPath}' is missing 'concept' field`);
       }
@@ -349,6 +365,44 @@ for (const file of files) {
         }
         if (!pattern.engineering_area) {
           reportWarning(`Pattern '${normalizedPath}' is stable/production-ready but is missing 'engineering_area' metadata badge.`);
+        }
+      }
+      // Production-quality pattern warnings
+      if (isStableOrProd) {
+        if (!pattern.decision_summary) {
+          reportWarning(`Pattern '${normalizedPath}' is stable/production-ready but is missing 'decision_summary' field.`);
+        }
+        if (!pattern.tradeoffs || !Array.isArray(pattern.tradeoffs) || pattern.tradeoffs.length === 0) {
+          reportWarning(`Pattern '${normalizedPath}' is stable/production-ready but is missing 'tradeoffs' field.`);
+        } else if (pattern.tradeoffs.length < 3) {
+          reportWarning(`Pattern '${normalizedPath}' has fewer than 3 tradeoff dimensions (${pattern.tradeoffs.length}).`);
+        }
+        if (!pattern.decision_flow || !Array.isArray(pattern.decision_flow) || pattern.decision_flow.length === 0) {
+          reportWarning(`Pattern '${normalizedPath}' is stable/production-ready but is missing 'decision_flow' field.`);
+        } else if (pattern.decision_flow.length < 2) {
+          reportWarning(`Pattern '${normalizedPath}' decision flow has fewer than 2 steps (${pattern.decision_flow.length}).`);
+        }
+        if (!pattern.examples || !Array.isArray(pattern.examples) || pattern.examples.length < 1) {
+          reportWarning(`Pattern '${normalizedPath}' is stable/production-ready but has fewer than 1 implementation example.`);
+        }
+        if (!pattern.anti_patterns || !Array.isArray(pattern.anti_patterns) || pattern.anti_patterns.length === 0) {
+          reportWarning(`Pattern '${normalizedPath}' is stable/production-ready but is missing 'anti_patterns' field.`);
+        } else {
+          // Check for legacy string format in anti_patterns
+          pattern.anti_patterns.forEach((antiPattern, idx) => {
+            if (typeof antiPattern === 'string') {
+              reportWarning(`Pattern '${normalizedPath}' anti_pattern ${idx + 1} uses legacy string format. Use structured object format with 'wrong', 'impact', 'fix' fields.`);
+            }
+          });
+        }
+        if (!pattern.implementation_notes) {
+          reportWarning(`Pattern '${normalizedPath}' is stable/production-ready but is missing 'implementation_notes' field.`);
+        }
+        if (!pattern.system_interactions || !Array.isArray(pattern.system_interactions) || pattern.system_interactions.length === 0) {
+          reportWarning(`Pattern '${normalizedPath}' is stable/production-ready but is missing 'system_interactions' field.`);
+        }
+        if (!pattern.sources || !Array.isArray(pattern.sources) || pattern.sources.length === 0) {
+          reportWarning(`Pattern '${normalizedPath}' is stable/production-ready but is missing 'sources' (references) field.`);
         }
       }
     } else if (type === 'debug_guide') {
@@ -656,25 +710,6 @@ for (const check of refsToCheck) {
   });
   relationshipMap.set(sourceKey, relationships);
 }
-
-// Architecture v3 reciprocal field mappings
-// Note: Model and Package use legacy schemas (relatedcontent, alternatives) - skip reciprocal checks
-const reciprocalMappings: Record<string, { targetType: string; reciprocalField: string }[]> = {
-  'related_workflows': [
-    { targetType: 'workflow', reciprocalField: 'related_debug_guides' }  // from debug_guide
-  ],
-  'related_patterns': [
-    { targetType: 'pattern', reciprocalField: 'related_workflows' },  // from workflow
-    { targetType: 'pattern', reciprocalField: 'related_debug_guides' }  // from debug_guide
-  ],
-  'related_principles': [{ targetType: 'principle', reciprocalField: 'referenced_by_patterns' }],
-  'related_debug_guides': [
-    { targetType: 'debug_guide', reciprocalField: 'related_workflows' },  // from workflow
-    { targetType: 'debug_guide', reciprocalField: 'related_patterns' }  // from pattern
-  ],
-  'referenced_by_patterns': [{ targetType: 'pattern', reciprocalField: 'related_principles' }],
-  'related_registry': [], // No reciprocal expected for registry
-};
 
 // Check bidirectional consistency for Architecture v3 fields
 for (const [sourceKey, relationships] of relationshipMap.entries()) {

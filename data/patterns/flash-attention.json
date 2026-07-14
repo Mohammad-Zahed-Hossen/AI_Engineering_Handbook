@@ -1,0 +1,230 @@
+{
+  "id": "flash-attention",
+  "title": "FlashAttention",
+  "slug": "flash-attention",
+  "description": "An exact attention algorithm and fused GPU kernel design that computes attention without materializing the full N x N score matrix in HBM, instead using tiled SRAM-resident blocks and online softmax to keep intermediate state on-chip.",
+  "name": "FlashAttention",
+  "concept": "FlashAttention tiles Q, K, and V into blocks that fit in SRAM/shared memory, fuses the QK^T, softmax, and PV steps into one kernel, and computes softmax with running max and running normalization terms so the full attention matrix never needs to be stored in HBM. This preserves exact attention while reducing HBM traffic from quadratic-sized temporary movement to an O(N x d)-style working footprint per head, which is the main reason it is effective for long-context transformers. The baseline attention path is dominated by quadratic temporary storage and HBM round-trips for the score matrix, so wall-clock time is often limited by bandwidth rather than math throughput. FlashAttention keeps the same O(N^2) FLOPs, but the HBM footprint becomes linear in sequence length for the working set, and the SRAM bandwidth advantage is decisive because on-chip memory is orders of magnitude faster than HBM. A useful traffic model is proportional to batch size × heads × sequence length × head dimension × precision bytes, with block size determining how much of Q/K/V can be streamed through shared memory at once. In practice, this means FlashAttention replaces the N × N score materialization cost with tiled load/store traffic, while the KV-cache layout in decoding must still be arranged so blocks can be read efficiently without excessive stride penalties. The hardware bottleneck shifts from HBM bandwidth to fused-kernel compute and SRAM capacity, which is exactly where roofline-style analysis predicts gains from higher arithmetic intensity. By reusing each loaded Q/K/V tile for more FLOPs before eviction, FlashAttention saturates Tensor Cores more effectively and reduces idle cycles waiting on memory. Tile size is the main tuning knob: too small and kernel-launch overhead and bookkeeping dominate; too large and shared memory overflows or register pressure destroys occupancy. The best-performing kernels also integrate causal masking directly into tile logic, avoid explicit mask tensors, and handle dropout in backward by regenerating the same mask rather than storing it.",
+  "applicability": "Use FlashAttention when attention is the latency or memory bottleneck, especially for long-context transformer training and inference on modern NVIDIA GPUs with substantial shared memory. It is particularly valuable for autoregressive decoding with causal masking and for workloads where standard attention becomes bandwidth-bound before compute-bound. Avoid it for very short sequences where the fused-kernel overhead may outweigh the benefit, on CPU-only systems without equivalent shared-memory tiling, or on hardware that lacks the on-chip memory primitives the algorithm depends on. It is also a poor fit when you need the full attention matrix for analysis, visualization, or specialized post-processing that depends on explicit materialization. It composes well with KV-cache systems, especially paged or block-table layouts that keep decoded keys and values accessible in contiguous blocks. It also benefits from FP16/BF16 tensor-core execution, integrates with causal masking and RoPE/ALiBi-style position encodings, and can coexist with block-sparse or local attention variants when approximate structure is acceptable.",
+  "decision_summary": {
+    "when_to_use": [
+      "Long-context attention dominates latency or memory use.",
+      "Training or inference runs on modern GPUs with shared-memory tiling support.",
+      "Autoregressive decoding uses causal masking and large KV caches.",
+      "HBM bandwidth is the limiting resource rather than raw FLOPs."
+    ],
+    "dont_use": [
+      "Sequences are short enough that fusion overhead outweighs the gains.",
+      "Execution target is CPU-only or lacks efficient shared-memory kernels.",
+      "The workflow requires explicit full attention matrices.",
+      "Hardware or compiler stack cannot sustain the required fused-kernel occupancy."
+    ],
+    "tradeoff": "HBM Traffic ↓, Throughput ↑, SRAM Pressure ↑, Kernel Complexity ↑"
+  },
+  "pattern_snapshot": {
+    "primary_goal": "Attention Memory-Bandwidth Elimination and Throughput Maximization",
+    "primary_constraint": "SRAM Capacity and Block Size Tuning",
+    "effective_batch": "Not Directly Affected",
+    "typical_usage": "Long-Context Transformer Training and Inference on NVIDIA Ampere/Hopper GPUs"
+  },
+  "tradeoffs": [
+    {
+      "dimension": "Memory",
+      "effect": "↓",
+      "description": "The full N x N score matrix is not materialized in HBM, so temporary storage drops sharply."
+    },
+    {
+      "dimension": "Compute",
+      "effect": "↑",
+      "description": "The kernel performs more fused work and may recompute or serialize some softmax bookkeeping."
+    },
+    {
+      "dimension": "Latency",
+      "effect": "↓ / ↑",
+      "description": "End-to-end latency usually improves for long sequences, but can worsen on short sequences because kernel overhead becomes visible."
+    },
+    {
+      "dimension": "Bandwidth",
+      "effect": "↓",
+      "description": "HBM traffic drops because tiles are streamed through SRAM and reused before eviction."
+    },
+    {
+      "dimension": "Complexity",
+      "effect": "↑",
+      "description": "Correct tiling, masking, and online normalization require careful kernel design and numerical validation."
+    }
+  ],
+  "decision_flow": [
+    {
+      "question": "Is attention bandwidth-bound or memory-bound?",
+      "if_yes": "Go to Step 2: Check GPU shared memory/SRAM capacity",
+      "if_no": "A simpler attention path may be sufficient"
+    },
+    {
+      "question": "Does the target GPU have enough shared memory/SRAM for efficient tiling?",
+      "if_yes": "Go to Step 3: Check attention matrix materialization requirement",
+      "if_no": "Expect reduced benefit or kernel fallback"
+    },
+    {
+      "question": "Do you need exact attention without full matrix materialization?",
+      "if_yes": "FlashAttention fits",
+      "if_no": "Consider sparse, approximate, or analysis-oriented implementations"
+    }
+  ],
+  "system_interactions": [
+    {
+      "interacts_with": "KV Cache / PagedAttention Block Tables",
+      "condition": "Autoregressive decoding with long-lived key/value history.",
+      "effect": "Block-table layouts can preserve efficient memory access, while poor layout increases stride cost and reduces the benefit of tiled kernels."
+    },
+    {
+      "interacts_with": "Tensor Cores / GPU MMA Units",
+      "condition": "Head dimension and tile sizes align with MMA-friendly shapes.",
+      "effect": "Occupancy and arithmetic intensity improve, making the kernel compute-efficient instead of memory-stalled."
+    },
+    {
+      "interacts_with": "Causal Masking / Autoregressive Attention",
+      "condition": "Upper-triangular masking is required.",
+      "effect": "Mask logic can be fused into tile skipping, avoiding explicit mask allocation and reducing HBM traffic."
+    },
+    {
+      "interacts_with": "Position Encoding / RoPE or ALiBi",
+      "condition": "Positional transforms are applied before or inside attention.",
+      "effect": "These encodings must be integrated without breaking tile locality or numerical equivalence."
+    },
+    {
+      "interacts_with": "Mixed Precision / FP16-BF16 Tensor Core",
+      "condition": "The attention path runs in reduced precision.",
+      "effect": "Throughput improves, but softmax stability and accumulation order need validation."
+    },
+    {
+      "interacts_with": "Distributed Training / Sequence Parallelism",
+      "condition": "Sequences exceed single-device practical limits.",
+      "effect": "Sequence-parallel variants can extend FlashAttention across devices, but communication overhead becomes a first-class concern."
+    },
+    {
+      "interacts_with": "CUDA Graphs / Kernel Launch Capture",
+      "condition": "The runtime captures static execution graphs.",
+      "effect": "Stable tile shapes and static launch parameters help; highly dynamic shapes can reduce graph-capture effectiveness."
+    }
+  ],
+  "anti_patterns": [
+    {
+      "wrong": "Using FlashAttention for very short sequences just because it is 'faster'.",
+      "impact": "Kernel-launch and fusion overhead can erase the gain and may make throughput worse.",
+      "fix": "Use a simpler attention path when sequence length is too small to amortize the fused kernel."
+    },
+    {
+      "wrong": "Choosing a block size that does not fit shared memory comfortably.",
+      "impact": "The kernel may overflow SRAM, lose occupancy, or fail to launch efficiently.",
+      "fix": "Tune block size to architecture-specific shared-memory limits and head dimension."
+    },
+    {
+      "wrong": "Ignoring layout constraints for Q/K/V and KV cache.",
+      "impact": "Non-contiguous strides can destroy coalescing and reduce the bandwidth savings that FlashAttention depends on.",
+      "fix": "Keep attention tensors contiguous or use layouts specifically designed for the fused kernel."
+    },
+    {
+      "wrong": "Materializing masks or attention scores inside the kernel path.",
+      "impact": "This reintroduces the HBM traffic FlashAttention is designed to eliminate.",
+      "fix": "Fuse masking and online normalization into the tile loop."
+    },
+    {
+      "wrong": "Regenerating dropout or softmax state inconsistently in backward.",
+      "impact": "Gradient mismatch can appear even when the forward pass seems correct.",
+      "fix": "Make backward recomputation deterministic and preserve the necessary random state."
+    }
+  ],
+  "implementation_notes": "Tile size should be chosen to fit the GPU’s shared-memory budget while keeping enough work per block to sustain occupancy; square tiles are common, but row/column tiling may fit irregular sequence lengths better. Head dimensions should align with warp-friendly and Tensor-Core-friendly boundaries, otherwise the kernel may fall back to less efficient SIMT execution. Memory layout matters: contiguous Q/K/V layouts are preferred because non-standard strides increase load inefficiency and can negate some SRAM reuse gains. Interleaved or split-head layouts can work, but only if the kernel’s access pattern still coalesces well enough to keep tile loads efficient. Online softmax must track a running maximum and rescaled exponential sum so each tile contributes exactly to the final normalized result without storing intermediate scores. The correction term must be numerically stable in FP16/BF16 settings, and FP32 accumulator buffers are often used for the softmax state to avoid drift across long sequences. Causal masking should be fused as tile-level skipping rather than explicit triangular tensor creation, especially for non-power-of-two lengths and batched variable-length inference. Backward kernels often recompute attention weights rather than store them, and dropout masks must be regenerated consistently to preserve gradient correctness. For very long contexts, head-parallelism across warps and sequence-parallel ring attention are the main scaling extensions, but they add communication cost and scheduling complexity. Tensor-parallel all-gather boundaries should be placed so they do not break the fused attention pipeline or force unnecessary synchronization. Common failures include block sizes that exceed SRAM capacity, incorrect online-softmax accumulation, causal-mask boundary errors on irregular lengths, head-dimension mismatches that trigger slower paths, and dropout-mask mismatch in backward. These are correctness and performance failures, not just optimization issues, because they can silently degrade results or crash kernels.",
+  "examples": [
+    "def flash_attention_forward(Q, K, V, causal=False):\n    N = len(Q)\n    d = len(Q[0])\n    B = choose_block_size(N, d)\n    O = zeros(N, d)\n\n    for i0 in range(0, N, B):\n        i1 = min(i0 + B, N)\n        Qi = load_tile(Q, i0, i1)\n\n        m = fill(-inf, i1 - i0)\n        l = zeros(i1 - i0)\n        acc = zeros(i1 - i0, d)\n\n        for j0 in range(0, N, B):\n            j1 = min(j0 + B, N)\n            if causal and j0 > i1 - 1:\n                continue\n\n            Kj = load_tile(K, j0, j1)\n            Vj = load_tile(V, j0, j1)\n\n            S = Qi @ transpose(Kj)\n            if causal:\n                S = apply_causal_mask(S, i0, i1, j0, j1)\n\n            m_new = rowwise_max(m, rowwise_max(S))\n            exp_scale = exp(m - m_new)\n            P = exp(S - m_new)\n            l_new = l * exp_scale + rowwise_sum(P)\n            acc = acc * expand(exp_scale, d) + P @ Vj\n\n            m = m_new\n            l = l_new\n\n        O[i0:i1] = acc / expand(l, d)\n\n    return O"
+  ],
+  "variations": [
+    {
+      "name": "FlashAttention-2 (Algorithmic Optimizations)",
+      "description": "Improves work partitioning across warps and thread blocks, reduces non-matmul overhead, and increases parallelism over the sequence dimension.",
+      "use_when": "Maximum throughput is needed on A100/H100-class GPUs and the first-generation kernel leaves Tensor Cores underutilized.",
+      "benefit": "Higher occupancy and lower softmax serialization can materially improve speed, especially at larger head dimensions.",
+      "tradeoff": "Custom-kernel complexity rises, and reordering can slightly change numerical behavior."
+    },
+    {
+      "name": "FlashAttention with Variable-Length Sequences",
+      "description": "Uses cumulative sequence lengths and block tables so ragged batches can be processed without padding overhead.",
+      "use_when": "Serving or training batches contain highly variable sequence lengths and padding waste would otherwise be large.",
+      "benefit": "Avoids wasted compute on padded tokens and improves batching efficiency.",
+      "tradeoff": "Load balancing becomes harder and launch configuration becomes batch-dependent."
+    },
+    {
+      "name": "Ring Attention / Sequence-Parallel FlashAttention",
+      "description": "Distributes KV blocks across devices in a ring so attention can scale beyond a single device’s memory limits.",
+      "use_when": "Contexts are so long that even O(N) working footprints are too large for one GPU.",
+      "benefit": "Maintains exact attention while extending capacity across a cluster.",
+      "tradeoff": "Communication overhead and scheduling complexity increase substantially."
+    }
+  ],
+  "domain": "deep-learning",
+  "difficulty": "advanced",
+  "engineering_area": "optimization",
+  "estimated_reading_time": 25,
+  "prerequisites": [
+    "transformer"
+  ],
+  "recommended_next": [
+    "speculative-decoding"
+  ],
+  "created_at": "2026-07-14",
+  "updated_at": "2026-07-14",
+  "last_verified": "2026-07-14",
+  "review_frequency": "annually",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "sources": [
+    "https://www.21medien.de/en/library/gradient-checkpointing",
+    "https://www.vldb.org/pvldb/vol18/p1551-guan.pdf"
+  ],
+  "tags": [
+    "deep-learning",
+    "optimization",
+    "flash-attention",
+    "attention",
+    "inference",
+    "training"
+  ],
+  "aliases": [
+    "flashattention",
+    "fused-attention"
+  ],
+  "keywords": [
+    "flash attention",
+    "tiled attention",
+    "fused attention kernel",
+    "sram caching",
+    "online softmax"
+  ],
+  "search_tokens": [
+    "flash attention forward",
+    "fused attention gpu",
+    "online softmax algorithm",
+    "sram shared memory attention"
+  ],
+  "related_workflows": [
+    "llm-application-serving",
+    "production-llm-cost-latency-optimization"
+  ],
+  "related_models": [
+    "bert"
+  ],
+  "related_packages": [
+    "pytorch"
+  ],
+  "related_principles": [
+    "single-source-of-truth"
+  ],
+  "related_debug_guides": []
+}

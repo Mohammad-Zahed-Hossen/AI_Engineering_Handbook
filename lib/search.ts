@@ -199,7 +199,29 @@ export const buildSearchIndex = cache(function buildSearchIndex(): SearchResult[
 
   // Index patterns with enriched search fields
   getAllPatterns().forEach(p => {
-    const proseText = combineText(p.description, p.concept, p.applicability);
+    const decisionSummaryText = combineText(
+      ...(p.decision_summary?.when_to_use || []),
+      ...(p.decision_summary?.dont_use || []),
+      p.decision_summary?.tradeoff
+    );
+    
+    const antiPatternsText = (p.anti_patterns || []).map(entry => {
+      if (typeof entry === 'string') {
+        return entry;
+      }
+      return `${entry.wrong} ${entry.impact} ${entry.fix}`;
+    }).join(' ');
+    
+    const tradeoffsText = (p.tradeoffs || []).map(t => `${t.dimension} ${t.effect}`).join(' ');
+    
+    const proseText = combineText(
+      p.description,
+      p.concept,
+      p.applicability,
+      decisionSummaryText,
+      antiPatternsText,
+      tradeoffsText
+    );
     const keywords = extractKeywordsFromProse(proseText);
     results.push({
       type: 'pattern',

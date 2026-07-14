@@ -4,21 +4,161 @@
   "slug": "training-loop",
   "description": "Standard neural network training loop pattern detailing backward optimization.",
   "name": "Training Loop",
-  "concept": "The training loop is a fundamental pattern in deep learning where a model iteratively processes inputs, computes error, calculates gradients, and updates its weights.",
-  "applicability": "Applies when training any parametric machine learning model using gradient descent, such as multi-layer perceptrons, convolutional networks, or transformers.",
-  "anti_patterns": [
-    "Forgetting to zero the gradients between steps, leading to gradient accumulation across batches and training divergence.",
-    "Leaving the model in evaluation mode (model.eval()) during training, which disables dropout and batch normalization updates.",
-    "Performing gradient updates without scaling under mixed-precision operations, resulting in underflow issues."
+  "concept": "The training loop is a fundamental pattern in deep learning where a model iteratively processes inputs, computes error, calculates gradients, and updates its weights. At its core, the training loop implements gradient descent optimization: the model processes a batch of data through forward propagation, computes a loss function measuring prediction error, performs backpropagation to calculate parameter gradients, and applies an optimizer update to adjust weights toward lower loss. This cycle repeats across epochs until convergence or a stopping criterion is met. The pattern is framework-agnostic but requires careful management of device placement, gradient state, and training mode toggling to ensure correct optimization dynamics.",
+  "applicability": "Use the Training Loop pattern when training any parametric machine learning model using gradient descent, including multi-layer perceptrons, convolutional networks, transformers, or recurrent architectures. It is the foundation of supervised learning and applies to classification, regression, generation, and other learning tasks. The pattern is essential when you need to iteratively improve model performance through data-driven optimization. Avoid using a manual training loop when using high-level APIs that abstract training (e.g., model.fit() in Keras, Trainer in Hugging Face) unless you require custom training logic, specialized optimization schedules, or integration with complex data pipelines that standard trainers cannot handle.",
+  "decision_summary": {
+    "when_to_use": [
+      "Training parametric models with gradient descent",
+      "Custom training logic required",
+      "Need fine-grained control over optimization",
+      "Integrating with complex data pipelines",
+      "Research and experimentation"
+    ],
+    "dont_use": [
+      "Simple training with standard APIs available",
+      "Using high-level trainers (Keras fit, HuggingFace Trainer)",
+      "No custom optimization requirements",
+      "Rapid prototyping without optimization needs"
+    ],
+    "tradeoff": "Control ↑, Complexity ↑, Boilerplate ↑"
+  },
+  "pattern_snapshot": {
+    "primary_goal": "Model Optimization",
+    "primary_constraint": "Compute Resources",
+    "effective_batch": "Batch Size",
+    "typical_usage": "Supervised Learning"
+  },
+  "tradeoffs": [
+    {
+      "dimension": "Control",
+      "effect": "↑↑↑"
+    },
+    {
+      "dimension": "Complexity",
+      "effect": "↑↑"
+    },
+    {
+      "dimension": "Boilerplate",
+      "effect": "↑↑"
+    },
+    {
+      "dimension": "Flexibility",
+      "effect": "↑↑↑"
+    },
+    {
+      "dimension": "Debuggability",
+      "effect": "↑↑"
+    },
+    {
+      "dimension": "Development Speed",
+      "effect": "↓"
+    }
   ],
-  "implementation_notes": "A training loop contains three main steps per batch: forward pass, backward pass, and parameter update. Ensure that your loss function, optimizer, and model are aligned on the same device (CPU or GPU) before execution. Use gradient clipping to stabilize training for recurrent networks or deep transformers.",
+  "decision_flow": [
+    {
+      "question": "Need custom training logic?",
+      "if_yes": "Implement manual training loop",
+      "if_no": "Use high-level trainer API"
+    },
+    {
+      "question": "Require fine-grained optimization control?",
+      "if_yes": "Manual training loop with custom optimizer",
+      "if_no": "Standard trainer with scheduler"
+    },
+    {
+      "question": "Complex data pipeline integration?",
+      "if_yes": "Custom loop with manual batching",
+      "if_no": "Standard trainer with DataLoader"
+    }
+  ],
+  "system_interactions": [
+    {
+      "interacts_with": "BatchNorm and Dropout layers",
+      "condition": "When model contains stochastic layers that behave differently in training vs evaluation mode",
+      "effect": "Failure to toggle model.train() disables gradient updates to batch statistics and dropout, causing degraded performance and incorrect learning dynamics"
+    },
+    {
+      "interacts_with": "Gradient accumulation",
+      "condition": "When using gradient accumulation to simulate larger batch sizes",
+      "effect": "Training loop must manage accumulation counter and delay optimizer updates, otherwise gradient semantics break and training diverges"
+    },
+    {
+      "interacts_with": "Mixed precision training",
+      "condition": "When using FP16 or BF16 for memory efficiency",
+      "effect": "Loss scaling must be applied before backward pass and gradients unscaled before optimizer update, otherwise numerical underflow occurs and gradients vanish"
+    },
+    {
+      "interacts_with": "Learning rate schedulers",
+      "condition": "When using schedulers that depend on step count or epoch",
+      "effect": "Scheduler must advance at optimizer update boundary, not every micro-batch, otherwise warmup and decay schedules misalign with actual optimization steps"
+    }
+  ],
+  "anti_patterns": [
+    {
+      "wrong": "Forgetting to zero gradients between steps",
+      "impact": "Gradients accumulate across batches instead of being reset, causing gradient explosion and training divergence",
+      "fix": "Call optimizer.zero_grad() or model.zero_grad() at the start of each iteration before backward pass"
+    },
+    {
+      "wrong": "Leaving model in evaluation mode during training",
+      "impact": "BatchNorm uses running statistics instead of batch statistics, dropout is disabled, and model trains with incorrect behavior",
+      "fix": "Call model.train() before training loop and model.eval() only during validation or inference"
+    },
+    {
+      "wrong": "Performing gradient updates without loss scaling in mixed precision",
+      "impact": "Gradients underflow to zero in FP16, preventing any meaningful parameter updates",
+      "fix": "Use loss scaler (GradScaler) to scale loss before backward pass and unscale gradients before optimizer update"
+    },
+    {
+      "wrong": "Updating scheduler on every micro-batch with gradient accumulation",
+      "impact": "Scheduler advances too frequently relative to actual optimizer updates, breaking warmup and decay schedules",
+      "fix": "Advance scheduler only at the optimizer update boundary, not every micro-batch"
+    },
+    {
+      "wrong": "Not checking model and data device alignment",
+      "impact": "Runtime errors when model and data are on different devices (CPU vs GPU), or silent performance degradation from unnecessary transfers",
+      "fix": "Ensure model, data, and optimizer are on the same device using .to(device) and verify with device checks"
+    }
+  ],
+  "implementation_notes": "The training loop implementation requires careful state management across three phases per iteration: forward pass, backward pass, and optimizer update. Before the loop begins, ensure the model is in training mode (model.train()), the optimizer is initialized with model parameters, and all components (model, data, optimizer) are on the same device. Each iteration should: (1) zero gradients to prevent accumulation, (2) move batch data to the correct device, (3) compute forward pass to get predictions, (4) compute loss against targets, (5) perform backward pass to calculate gradients, (6) optionally clip gradients for stability, (7) apply optimizer update, and (8) optionally advance learning rate scheduler. For validation, switch to evaluation mode (model.eval()), disable gradient computation (torch.no_grad()), and use separate metrics without backpropagation. When using gradient accumulation, maintain a counter and only perform optimizer updates when the counter reaches the accumulation steps. In mixed precision training, wrap the backward pass in a loss scaler context and unscale gradients before clipping. Always include exception handling for data loading errors and implement checkpointing to save training state periodically.",
   "examples": [
-    "for epoch in training_epochs:\n    for batch in dataloader:\n        # 1. Compute predictions and loss\n        predictions = model(batch.features)\n        loss = compute_loss(predictions, batch.targets)\n        \n        # 2. Compute gradients\n        gradients = compute_gradients(loss)\n        \n        # 3. Update parameters\n        update_weights(model.parameters, gradients)"
+    "initialize model_parameters\ninitialize optimizer_state\ninitialize scheduler_state\nset device = gpu if available else cpu\nmove model to device\n\nmodel.train()\n\nfor each training_epoch:\n    for each batch in dataloader:\n        # 1. Move data to device\n        features = move_to_device(batch.features, device)\n        targets = move_to_device(batch.targets, device)\n        \n        # 2. Zero gradients\n        optimizer.zero_grad()\n        \n        # 3. Forward pass\n        predictions = model(features)\n        loss = compute_loss(predictions, targets)\n        \n        # 4. Backward pass\n        loss.backward()\n        \n        # 5. Optional gradient clipping\n        if use_gradient_clipping:\n            clip_gradients(model.parameters, max_norm)\n        \n        # 6. Optimizer update\n        optimizer.step()\n        \n        # 7. Scheduler update\n        scheduler.step()\n\n    # Validation phase\n    model.eval()\n    disable_gradient_computation:\n        for each batch in validation_dataloader:\n            features = move_to_device(batch.features, device)\n            targets = move_to_device(batch.targets, device)\n            predictions = model(features)\n            validation_loss = compute_loss(predictions, targets)\n            track_validation_metrics(validation_loss)\n    \n    model.train()",
+    "initialize model_state\ninitialize optimizer_state\ninitialize scheduler_state\ninitialize gradient_scaler\nset accumulation_steps = K\nset micro_batch_counter = 0\n\nmodel.train()\n\nfor each training_epoch:\n    for each micro_batch in dataloader:\n        features = move_to_device(micro_batch.features, device)\n        targets = move_to_device(micro_batch.targets, device)\n        \n        optimizer.zero_grad()\n        \n        with mixed_precision_context:\n            predictions = model(features)\n            loss = compute_loss(predictions, targets)\n            normalized_loss = loss / accumulation_steps\n        \n        gradient_scaler.scale(normalized_loss).backward()\n        \n        micro_batch_counter = micro_batch_counter + 1\n        \n        if micro_batch_counter < accumulation_steps:\n            continue\n        \n        gradient_scaler.unscale(optimizer)\n        clip_gradients(model.parameters, max_norm)\n        gradient_scaler.step(optimizer)\n        gradient_scaler.update()\n        scheduler.step()\n        \n        micro_batch_counter = 0"
+  ],
+  "variations": [
+    {
+      "name": "Validation loop integration",
+      "description": "This variation includes periodic validation phases within the training loop to monitor generalization performance and enable early stopping.",
+      "use_when": "Need to track validation metrics during training, implement early stopping, or select best checkpoint",
+      "benefit": "Enables model selection based on validation performance and prevents overfitting",
+      "tradeoff": "Adds computational overhead from forward passes on validation data"
+    },
+    {
+      "name": "Gradient accumulation loop",
+      "description": "This variation accumulates gradients across multiple micro-batches before performing an optimizer update to simulate larger batch sizes.",
+      "use_when": "GPU memory is limited but larger effective batch size is desired for training stability",
+      "benefit": "Enables larger effective batch sizes without exceeding memory constraints",
+      "tradeoff": "Increases training time per epoch and requires careful management of update boundaries"
+    }
   ],
   "created_at": "2026-07-03",
-  "updated_at": "2026-07-03",
+  "updated_at": "2026-07-14",
+  "last_verified": "2026-07-14",
+  "review_frequency": "annually",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
   "sources": [
-    "https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html#train-the-network"
+    "https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html#train-the-network",
+    "https://www.deeplearningbook.org/contents/optimization.html",
+    "https://arxiv.org/abs/1511.02543",
+    "https://arxiv.org/abs/1710.06477",
+    "https://pytorch.org/docs/stable/optim.html"
   ],
   "tags": [
     "deep-learning",
@@ -33,12 +173,16 @@
     "training-loop",
     "gradient-descent",
     "backpropagation",
-    "pytorch"
+    "optimizer",
+    "epoch",
+    "batch"
   ],
   "search_tokens": [
     "training-loop",
     "epoch-loop",
-    "backprop"
+    "backprop",
+    "optimizer-step",
+    "gradient-update"
   ],
   "category": "training_loop",
   "domain": "deep-learning",
@@ -46,21 +190,11 @@
   "engineering_area": "modeling",
   "estimated_reading_time": 25,
   "prerequisites": [
-    "pytorch"
+    "gradient-accumulation"
   ],
   "recommended_next": [
-    "bert"
+    "gradient-accumulation"
   ],
-  "last_verified": "2026-07-03",
-  "review_frequency": "annually",
-  "verified_against": "2.5.1",
-  "compatible_versions": [],
-  "breaking_changes": [],
-  "canonical_status": "canonical",
-  "lifecycle": "stable",
-  "stability": "stable",
-  "confidence": "production_proven",
-  "engineering_maturity": "production_ready",
   "related_workflows": [
     "build-rag-system",
     "llm-application-serving"

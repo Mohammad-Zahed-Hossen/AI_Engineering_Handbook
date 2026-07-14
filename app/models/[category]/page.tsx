@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getAllModels, getModelCategories } from '@/lib/data';
 import { ModelCategory } from '@/types/model';
-import { ModelListFilter } from '@/components/shared/FilterBar';
+import { ModelListFilter } from '@/components/shared/ModelListFilter';
 import { validateModelCategory } from '@/lib/route-params';
 
 /**

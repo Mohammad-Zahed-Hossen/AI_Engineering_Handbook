@@ -1,0 +1,239 @@
+{
+  "id": "gradient-checkpointing",
+  "title": "Gradient Checkpointing",
+  "slug": "gradient-checkpointing",
+  "description": "Reduces training memory by storing only selected boundary activations during the forward pass and recomputing the discarded activations during backpropagation.",
+  "name": "Gradient Checkpointing",
+  "concept": "The mechanism partitions the forward pass into segments, keeps only segment boundary inputs, and discards intermediate activations inside each segment; during backward propagation, the discarded operations are recomputed on demand so gradients can be formed from regenerated activations. This trades extra forward computation for substantially lower activation memory, which is why checkpointing is often described as a memory-for-compute exchange rather than a pure optimization. In standard training, activation memory grows roughly with the number of stored intermediates across layers and sequence positions, so long-context transformers can become VRAM-bound before parameter memory does. With checkpointing, memory can drop toward O(K) checkpoints or the classic square-root regime for optimal spacing on homogeneous networks, while recomputation overhead typically adds about 20–33% extra forward work for common single-level schemes and can approach about 50% under more aggressive nested checkpointing. A practical sizing model is: activation memory ≈ batch size × sequence length × hidden dimension × precision bytes × stored layers or checkpoints, with attention-heavy layers often dominating the footprint. For homogeneous stacks, optimal checkpoint spacing gives the well-known square-root memory law, while heterogeneous architectures usually benefit from selective checkpointing because the largest savings come from the most activation-heavy blocks. Checkpointing shifts the bottleneck away from VRAM capacity and toward recomputation FLOPs plus memory bandwidth for reloading weights during the second forward pass. Roofline-style reasoning captures the trade-off: once activations no longer dominate, training becomes more compute-intensive, but repeated reads of parameters and inputs can still expose bandwidth limits. Because recomputation repeats arithmetic with the same weights, it can improve tensor-core utilization by reducing idle time caused by memory stalls, even while increasing total wall-clock training time. The arithmetic intensity of the recompute phase is typically higher than a single memory-stressed forward pass, but the end-to-end system may still slow down because the extra FLOPs outweigh the memory savings in latency-sensitive settings. Checkpoint segment sizing is architecture dependent: uniform block partitioning works well for transformer stacks, while convolutional or hybrid models often need memory-proportional segments to avoid placing boundaries where activation sizes spike. Boundary management matters because fragmenting segments too aggressively increases kernel-launch overhead, while storing boundaries on CPU memory can reduce VRAM pressure at the cost of host-device transfer and synchronization complexity.",
+  "applicability": "Use gradient checkpointing when activation memory exceeds parameter memory, when training long-sequence transformers, or when fine-tuning large models on constrained GPUs. It is also valuable in pipeline-parallel or stage-constrained systems where each stage must fit into a tight per-device memory budget. Avoid it when the model already fits comfortably in memory without activation pressure, when latency is more important than memory savings, or when abundant HBM makes recomputation unnecessary. It is also a poor fit for deterministic inference paths, because the whole point of checkpointing is to trade extra compute during training for lower memory use. It interacts strongly with mixed precision because FP16/BF16 recomputation can amplify numerical sensitivity in some layers, while FP32 recomputation may be safer but more expensive. It also combines with distributed data parallel, FSDP, pipeline parallelism, and CPU offloading, where the effective memory budget depends on how activations, parameters, and optimizer state are partitioned across ranks and stages.",
+  "decision_summary": {
+    "when_to_use": [
+      "Activation memory is the dominant VRAM bottleneck.",
+      "Training long-context transformers or very deep networks.",
+      "Fine-tuning large models on limited-memory GPUs.",
+      "Pipeline or stage budgets are too small for full activation retention."
+    ],
+    "dont_use": [
+      "The model already fits comfortably in memory without activation pressure.",
+      "Wall-clock latency is the primary objective.",
+      "Inference workloads where recomputation has no benefit.",
+      "Hardware has enough HBM that memory is not the limiting factor."
+    ],
+    "tradeoff": "Memory ↓, Compute ↑, Training Time ↑, VRAM Capacity ↑"
+  },
+  "pattern_snapshot": {
+    "primary_goal": "Activation Memory Footprint Reduction",
+    "primary_constraint": "Recomputation Compute Budget",
+    "effective_batch": "Not Directly Affected",
+    "typical_usage": "Large Transformer Model Training on Memory-Constrained GPUs"
+  },
+  "tradeoffs": [
+    {
+      "dimension": "Memory",
+      "effect": "↓",
+      "description": "Fewer activations are retained, so peak VRAM use drops sharply."
+    },
+    {
+      "dimension": "Compute",
+      "effect": "↑",
+      "description": "Backward pass requires recomputing discarded forward activations."
+    },
+    {
+      "dimension": "Latency",
+      "effect": "↑",
+      "description": "More FLOPs and extra synchronization increase end-to-end training time."
+    },
+    {
+      "dimension": "Bandwidth",
+      "effect": "↑",
+      "description": "Re-reading weights, inputs, and boundary activations increases memory traffic."
+    },
+    {
+      "dimension": "Complexity",
+      "effect": "↑",
+      "description": "Segmentation, RNG-state handling, and checkpoint restoration make implementation more intricate."
+    }
+  ],
+  "decision_flow": [
+    {
+      "question": "Is activation memory the main source of VRAM pressure?",
+      "if_yes": "Go to Step 2: Check numerical stability",
+      "if_no": "Prefer simpler training without recomputation"
+    },
+    {
+      "question": "Are the targeted segments numerically stable under recomputation?",
+      "if_yes": "Go to Step 3: Check wall-clock cost acceptance",
+      "if_no": "Widen precision, reduce segment size, or checkpoint only selected layers"
+    },
+    {
+      "question": "Is wall-clock cost acceptable after recomputation overhead is added?",
+      "if_yes": "Keep checkpointing",
+      "if_no": "Combine with sharding or offloading, or reduce checkpoint depth"
+    }
+  ],
+  "system_interactions": [
+    {
+      "interacts_with": "Mixed Precision Training / FP16-BF16 Recomputation",
+      "condition": "Recomputation is performed in reduced precision for speed and memory efficiency.",
+      "effect": "Memory savings remain, but sensitive layers may accumulate more numerical error and require FP32 islands or selective precision escalation."
+    },
+    {
+      "interacts_with": "Distributed Data Parallel / Activation Memory Per Rank",
+      "condition": "Multiple ranks each hold their own activation slices.",
+      "effect": "Per-rank activation savings can be decisive for fitting the model, but checkpoint boundaries must be consistent so recomputation remains synchronized."
+    },
+    {
+      "interacts_with": "Pipeline Parallelism / Per-Stage Memory Budget",
+      "condition": "Each pipeline stage has a strict memory ceiling.",
+      "effect": "Stage-aligned checkpointing reduces per-stage activation storage and can make otherwise infeasible partitions trainable."
+    },
+    {
+      "interacts_with": "FSDP / Sharded Parameters and Optimizer State",
+      "condition": "Parameters and optimizer state are already sharded across devices.",
+      "effect": "Activation checkpointing complements sharding by attacking the remaining major memory term, but the combined recomputation and gather overhead can raise wall-clock time."
+    },
+    {
+      "interacts_with": "CUDA Graphs / Kernel Launch Optimization",
+      "condition": "The runtime relies on captured static execution graphs.",
+      "effect": "Excessive segmentation can break graph simplicity and raise launch overhead, reducing some of the performance benefit."
+    },
+    {
+      "interacts_with": "CPU Offloading / Boundary Activation Staging",
+      "condition": "VRAM is still insufficient after pure checkpointing.",
+      "effect": "Boundary activations can be staged to host memory, lowering HBM pressure but adding PCIe/NVLink traffic and prefetch coordination."
+    },
+    {
+      "interacts_with": "Compilation / JIT Fusion and Recomputation Graphs",
+      "condition": "The training graph is compiled or fused.",
+      "effect": "Checkpoint boundaries influence fusion opportunities and can either help memory planning or fragment the compiled graph into less efficient pieces."
+    }
+  ],
+  "anti_patterns": [
+    {
+      "wrong": "Checkpointing the entire network indiscriminately.",
+      "impact": "The recomputation penalty can become unnecessarily large, turning a memory fix into a major training-time regression.",
+      "fix": "Profile activation sizes and checkpoint only the highest-memory segments first."
+    },
+    {
+      "wrong": "Forgetting to preserve RNG state across checkpointed recomputation.",
+      "impact": "Dropout and stochastic layers will not reproduce the same forward path, which silently breaks gradient equivalence.",
+      "fix": "Save and restore RNG state at segment boundaries."
+    },
+    {
+      "wrong": "Placing boundaries around in-place operations or normalization-heavy transitions.",
+      "impact": "Boundary inputs can be destroyed or recomputation noise can be amplified, causing unstable training.",
+      "fix": "Place boundaries on clean, reusable tensor states and avoid in-place mutation inside checkpointed regions."
+    },
+    {
+      "wrong": "Over-segmenting into too many tiny checkpoint regions.",
+      "impact": "Kernel-launch overhead and graph fragmentation can dominate the memory savings, increasing latency without proportional benefit.",
+      "fix": "Use coarse segments first, then refine only where profiling shows a clear memory bottleneck."
+    },
+    {
+      "wrong": "Offloading boundaries to CPU without coordinated backward prefetching.",
+      "impact": "Backward can stall on host-device transfers, and in the worst case the training loop can deadlock on synchronization.",
+      "fix": "Use asynchronous prefetch and double-buffering for host-staged checkpoints."
+    }
+  ],
+  "implementation_notes": "Checkpoint segmentation should be chosen by architecture shape, not by layer count alone; homogeneous transformer blocks can use near-uniform spacing, while heterogeneous stacks often need selective placement around the largest activation producers. The square-root rule is a useful baseline for uniform networks, but practical systems usually tune segment size to the memory profile of each block. Boundary activations are usually kept only until backward consumes them, and they may be stored in VRAM or pinned host memory depending on the memory budget. The allocator should treat checkpointed tensors as short-lived and avoid fragmentation at repeated segment boundaries, because allocator churn can erode the theoretical gain. Deterministic recomputation requires preserving RNG state for dropout and any stochastic augmentation inside the checkpointed region. If the recomputed path does not recreate the same masks or stochastic choices, gradient equivalence is broken and training can silently diverge. Recomputation granularity is a major design choice: full-segment checkpointing gives the simplest control flow, while op-level or nested checkpointing can squeeze out more memory at the cost of kernel-launch overhead and debugging complexity. Nested schemes are powerful for extremely deep networks, but their recomputation cost grows quickly and can become super-linear in practice. In distributed execution, all ranks should checkpoint the same logical segments and restore the same boundary states so gradient computation stays aligned. Pipeline-parallel systems benefit because stage boundaries often align naturally with checkpoint segments, whereas tensor-parallel systems must respect all-reduce timing so recomputation does not desynchronize collective operations. Precision choices matter because recomputation in reduced precision can slightly alter accumulation order and error propagation, especially in normalization-heavy or reduction-heavy blocks. For sensitive sections, some systems recompute in FP32 while keeping the rest in FP16/BF16 to balance stability and efficiency. Common failures include checkpointing in-place operations that overwrite boundary inputs, forgetting to save RNG state, placing boundaries around normalization layers that amplify recomputation noise, over-segmenting so kernel launches dominate, and deadlocking when CPU offload waits on backward synchronization. Treat these as memory-safety and correctness issues, not just performance bugs.",
+  "examples": [
+    "def forward_block(x, block, rng_state):\n    y = x\n    for op in block:\n        y = op(y, rng_state)\n    return y\n\ndef checkpointed_forward_backward(x, blocks, loss_fn, target, segment_size):\n    saved_inputs = []\n    segment_outputs = []\n    rng_states = []\n\n    y = x\n    for i in range(0, len(blocks), segment_size):\n        rng_states.append(capture_rng_state())\n        saved_inputs.append(y)\n        y = forward_block(y, blocks[i:i + segment_size], current_rng_state())\n        segment_outputs.append(y)\n\n    loss = loss_fn(y, target)\n    grad = loss_gradient(loss)\n\n    for s in reversed(range(len(segment_outputs))):\n        restore_rng_state(rng_states[s])\n        x_seg = saved_inputs[s]\n        y_seg = forward_block(x_seg, blocks[s * segment_size:(s + 1) * segment_size], current_rng_state())\n        grad = backward_block(y_seg, grad, blocks[s * segment_size:(s + 1) * segment_size])\n\n    return loss, grad"
+  ],
+  "variations": [
+    {
+      "name": "Selective Activation Checkpointing (Layer-Targeted)",
+      "description": "Only high-memory layers, such as attention blocks, are checkpointed while low-memory layers remain in standard forward mode.",
+      "use_when": "Per-layer memory is heterogeneous and full checkpointing would add too much recomputation.",
+      "benefit": "Captures most of the memory savings with less recompute cost.",
+      "tradeoff": "Requires profiling and more complicated segment design."
+    },
+    {
+      "name": "CPU Offloading of Checkpoint Boundaries",
+      "description": "Boundary activations are copied to pinned host memory and prefetched back during backward.",
+      "use_when": "Pure checkpointing is not enough to fit the model, but full recomputation is too expensive.",
+      "benefit": "Further lowers VRAM use without recomputing every discarded operation.",
+      "tradeoff": "Adds PCIe/NVLink bandwidth pressure and synchronization complexity."
+    },
+    {
+      "name": "Nested / Recursive Gradient Checkpointing",
+      "description": "Checkpointing is applied recursively inside already checkpointed regions, creating hierarchical memory reduction.",
+      "use_when": "Very deep models or extremely long sequences still do not fit with single-level checkpointing.",
+      "benefit": "Pushes memory usage down further than flat checkpointing alone.",
+      "tradeoff": "Recomputation and kernel-launch overhead increase sharply, and correctness becomes harder to reason about."
+    }
+  ],
+  "category": "checkpointing",
+  "domain": "deep-learning",
+  "difficulty": "advanced",
+  "engineering_area": "optimization",
+  "estimated_reading_time": 25,
+  "prerequisites": [
+    "training-loop"
+  ],
+  "recommended_next": [
+    "gradient-accumulation"
+  ],
+  "created_at": "2026-07-14",
+  "updated_at": "2026-07-14",
+  "last_verified": "2026-07-14",
+  "review_frequency": "annually",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "sources": [
+    "https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5",
+    "https://arxiv.org/abs/2106.15853",
+    "https://arxiv.org/html/2602.04774v2",
+    "https://arxiv.org/pdf/2602.04774.pdf",
+    "https://www.vldb.org/pvldb/vol18/p1551-guan.pdf",
+    "https://arxiv.org/html/2601.07830v1",
+    "https://dl.acm.org/doi/10.1016/j.neucom.2023.127028",
+    "https://arxiv.org/abs/2402.02513",
+    "https://openreview.net/pdf?id=1JPfHljXL4"
+  ],
+  "tags": [
+    "deep-learning",
+    "optimization",
+    "gradient-checkpointing",
+    "activation-checkpointing",
+    "training"
+  ],
+  "aliases": [
+    "activation-checkpointing",
+    "recomputation-pattern"
+  ],
+  "keywords": [
+    "gradient checkpointing",
+    "activation checkpointing",
+    "recomputation",
+    "transformer training",
+    "memory optimization"
+  ],
+  "search_tokens": [
+    "gradient checkpointing",
+    "activation checkpointing pytorch",
+    "reduce activation memory",
+    "recomputation trade off"
+  ],
+  "related_workflows": [
+    "full-fine-tuning-a-pretrained-transformer",
+    "fine-tune-an-llm-with-lora-qlora"
+  ],
+  "related_models": [
+    "bert"
+  ],
+  "related_packages": [
+    "pytorch"
+  ],
+  "related_principles": [
+    "single-source-of-truth"
+  ],
+  "related_debug_guides": [
+    "cuda-out-of-memory"
+  ]
+}

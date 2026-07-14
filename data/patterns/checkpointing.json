@@ -1,0 +1,249 @@
+{
+  "id": "checkpointing",
+  "title": "Checkpointing & Resume Training",
+  "slug": "checkpointing-resume-training",
+  "description": "Periodically persisting the full training state so a long-running job can continue after interruption with minimal loss of progress.",
+  "name": "Checkpointing & Resume Training",
+  "concept": "The core mechanism is atomic serialization of model parameters, optimizer state, RNG state, dataloader position, scheduler state, and training metadata to durable storage, followed by deterministic restoration of the exact loop state on restart. In large-scale training, checkpointing is not just a backup feature; it is a fault-tolerance control plane for preserving work already paid for in GPU time, network coordination, and data pipeline progress. Checkpoint size typically scales with model parameters plus optimizer and auxiliary state, so the storage burden rises faster than the raw model size alone. For Adam-class optimizers, the optimizer state often dominates because momentum and variance buffers can add roughly 2x to 4x model-size overhead, and sharded checkpointing reduces per-rank footprint by partitioning that state across ranks instead of materializing it centrally. The time complexity of checkpointing is dominated by serialization and I/O rather than arithmetic, so the system moves from compute-bound training into storage-bound write windows during save operations. On the Roofline view, steady-state training sits near the compute roof during forward/backward execution, but checkpoint flushes drop to the storage bandwidth roof, where throughput is limited by NVMe, network filesystems, or object-store latency rather than FLOPs. I/O intensity is controlled by checkpoint frequency and backend bandwidth: frequent saves raise resilience but reduce effective training throughput because every save adds bytes written per unit of useful compute. Local NVMe can absorb bursts far better than networked storage, while object stores introduce higher latency and more staging complexity; this is why asynchronous staging and double-buffering are common in production systems. Storage hierarchy matters because checkpointing also creates memory-pressure and fragmentation risks while state dictionaries are collated in host memory before write-out. The practical analog is paging: a training job can remain compute-efficient until the serialization window forces large transient buffers, write amplification, or stalled flushes that turn the storage path into the system bottleneck.",
+  "applicability": "Use checkpointing when run duration approaches or exceeds the expected failure interval of the cluster, when jobs span many nodes, or when the environment is preemptible and interruption is normal rather than exceptional. It is also essential when experiments need rollback to the best-known state, when hyperparameter sweeps must survive partial progress loss, or when training needs to be resumed across maintenance windows and queue evictions. Avoid it when the total training time is very short relative to serialization cost, when the pipeline is inference-only, or when storage budget and retention policies are too tight to support repeated full-state persistence. It is also a poor fit for simple prototyping where restart-from-scratch is acceptable and reproducibility is controlled by full data and code reruns instead of saved state. Checkpointing interacts strongly with distributed data parallelism, FSDP-style sharding, gradient accumulation recovery, learning-rate scheduler state, dataloader sampler position, and experiment tracking systems. In production, these are not optional attachments; they are part of the same resumable contract, because a checkpoint that restores weights but not sampler state or scheduler phase is only partially correct.",
+  "decision_summary": {
+    "when_to_use": [
+      "Training runs are long enough that hardware failures or preemptions are a realistic cost driver.",
+      "Distributed or multi-node jobs would lose substantial GPU time if interrupted without recovery state.",
+      "The environment uses spot or preemptible instances with expected interruptions.",
+      "You need best-checkpoint rollback for iterative experimentation or model selection."
+    ],
+    "dont_use": [
+      "The run is short enough that checkpoint overhead dominates total wall time.",
+      "The workload is inference-only and does not require resumable training state.",
+      "Storage capacity or retention policy cannot support repeated state snapshots.",
+      "Reproducibility is simpler to achieve by rerunning from scratch than by preserving intermediate state."
+    ],
+    "tradeoff": "Reliability ↑, Storage Overhead ↑, Throughput ↓, Complexity ↑"
+  },
+  "pattern_snapshot": {
+    "primary_goal": "Training State Durability and Fault Recovery",
+    "primary_constraint": "Storage I/O Bandwidth and Capacity",
+    "effective_batch": "Not Directly Affected",
+    "typical_usage": "Large-Scale Distributed Deep Learning Training Runs"
+  },
+  "tradeoffs": [
+    {
+      "dimension": "Memory",
+      "effect": "↑",
+      "description": "Checkpointing often requires transient host buffers, staging copies, and sometimes double-buffering before write completion."
+    },
+    {
+      "dimension": "Compute",
+      "effect": "↓",
+      "description": "Save windows divert resources away from training and can reduce effective throughput during serialization and sync points."
+    },
+    {
+      "dimension": "Latency",
+      "effect": "↑",
+      "description": "Restart latency decreases availability impact after failures, but each checkpoint adds pause or background completion latency depending on strategy."
+    },
+    {
+      "dimension": "Bandwidth",
+      "effect": "↑",
+      "description": "Checkpoints create large burst writes, with optimizer state often dominating total bytes transferred."
+    },
+    {
+      "dimension": "Complexity",
+      "effect": "↑",
+      "description": "Resume correctness requires coordination of weights, optimizer, RNG, scheduler, sampler, and distributed rank state."
+    }
+  ],
+  "decision_flow": [
+    {
+      "question": "Is the job long-lived or interruption-prone enough that lost work is expensive?",
+      "if_yes": "Go to Step 2: Check storage bandwidth and capacity",
+      "if_no": "Prefer simpler restart-from-scratch execution"
+    },
+    {
+      "question": "Does the checkpoint artifact fit comfortably within storage bandwidth and retention limits?",
+      "if_yes": "Go to Step 3: Determine continuation requirements",
+      "if_no": "Reduce frequency, shard state, or switch to delta-based persistence"
+    },
+    {
+      "question": "Do you need exact or near-exact continuation of learning dynamics?",
+      "if_yes": "Restore optimizer, RNG, scheduler, and sampler state",
+      "if_no": "Model-weights-only recovery may be acceptable for coarse recovery"
+    }
+  ],
+  "system_interactions": [
+    {
+      "interacts_with": "Distributed Training / FSDP Sharded State",
+      "condition": "Model and optimizer state exceed single-rank host memory.",
+      "effect": "Sharded checkpointing eliminates rank-0 aggregation bottlenecks and reduces per-rank storage pressure."
+    },
+    {
+      "interacts_with": "Preemptible Instance / Spot VM Scheduler",
+      "condition": "Nodes can be reclaimed without notice.",
+      "effect": "Frequent durable checkpoints materially reduce lost GPU hours and enable safe interruption recovery."
+    },
+    {
+      "interacts_with": "Learning Rate Scheduler / Training State",
+      "condition": "Resume occurs mid-epoch or mid-curriculum.",
+      "effect": "Incorrect scheduler restoration changes optimization dynamics and can degrade final convergence."
+    },
+    {
+      "interacts_with": "DataLoader / Sampler State",
+      "condition": "Deterministic data order matters across restarts.",
+      "effect": "Sampler misalignment can repeat or skip samples, harming reproducibility and training efficiency."
+    },
+    {
+      "interacts_with": "Optimizer State Sharding / 8-bit Optimizers",
+      "condition": "Optimizer state is compressed or partitioned.",
+      "effect": "Recovery logic must restore the same compression/sharding semantics or the optimizer trajectory changes."
+    },
+    {
+      "interacts_with": "Storage Backend / Object Store (S3/GCS)",
+      "condition": "Checkpoints are written to eventually consistent or high-latency storage.",
+      "effect": "Asynchronous propagation can expose stale reads unless manifest and atomic publish semantics are used."
+    },
+    {
+      "interacts_with": "Training Monitoring / Experiment Tracker",
+      "condition": "Best-checkpoint selection and run lineage are required.",
+      "effect": "Tracker metadata becomes part of the recovery contract for model selection and auditability."
+    }
+  ],
+  "anti_patterns": [
+    {
+      "wrong": "Saving only model weights and assuming the run can resume faithfully.",
+      "impact": "Optimizer momentum, scheduler phase, and sampler state are lost, which changes convergence and can repeat or skip data.",
+      "fix": "Persist the full training state, including optimizer, scheduler, RNG, and dataloader progress."
+    },
+    {
+      "wrong": "Writing checkpoints in place without atomic publish semantics.",
+      "impact": "Interrupted writes can produce corrupt artifacts that look valid enough to fail late during restore.",
+      "fix": "Write to a temporary path, validate, then atomically rename or publish."
+    },
+    {
+      "wrong": "Centralizing all shards on rank 0 for very large distributed jobs.",
+      "impact": "Rank 0 becomes a memory and I/O bottleneck, and checkpointing can fail even if training itself fits distributed memory.",
+      "fix": "Use sharded checkpointing and per-rank persistence for large-scale systems."
+    },
+    {
+      "wrong": "Ignoring dataloader and sampler state on resume.",
+      "impact": "The training sequence changes across restart boundaries, undermining determinism and evaluation comparability.",
+      "fix": "Save and restore sampler epoch, shuffle seed, cursor position, and batch progress."
+    },
+    {
+      "wrong": "Assuming object storage visibility is immediate after upload.",
+      "impact": "New checkpoints can appear stale or partially visible to readers, causing resume from old state or missing shards.",
+      "fix": "Use a manifest-based publish protocol and only expose a checkpoint after all parts are verified."
+    }
+  ],
+  "implementation_notes": "Checkpoint granularity should match failure cost and model scale: full-state checkpoints provide the strongest resume fidelity, model-weights-only checkpoints are cheaper but weaker, sharded-rank-specific checkpoints scale better for very large models, and differential checkpoints reduce storage by storing deltas against a base artifact. In production, the common design choice is full-state for correctness-critical runs and sharded state for models that cannot be consolidated on a single host. Atomicity is usually implemented by writing to a temporary path, validating checksums or manifests, and then performing an atomic rename or publish step so incomplete artifacts are never treated as valid checkpoints. In distributed settings, all ranks must either coordinate on a barrier before publish or write into a manifest that only becomes discoverable after every shard is present and verified. Storage layout should be versioned and self-describing, with a directory hierarchy, checkpoint step naming, manifest files, checksum validation, and retention rules that preserve a small set of best, latest, and periodic recovery points. This avoids silent breakage when model code changes, because the manifest can encode schema version, world size, shard mapping, and any migration rules needed on restore. Asynchronous checkpointing usually relies on background serialization threads, double-buffering, and local NVMe staging before an eventual network or object-store push. The engineering risk is memory pressure during handoff, because the old and new buffers may coexist briefly, and a node failure before upload completion can lose the newest checkpoint. Distributed checkpointing strategies differ mainly in where aggregation occurs: rank-0 aggregation is simpler but can create memory blowups and serialization bottlenecks, while all-ranks writing sharded blobs scales better but requires stronger metadata coordination and shard-index consistency. Resume mechanics must also reconstruct RNG streams, dataloader epoch/shuffle state, optimizer momentum buffers, and global step counters exactly enough to preserve the intended learning trajectory. Common failure modes include partial writes from OOM during state collation, quota exhaustion, key mismatches after model refactors, rank desynchronization at the checkpoint boundary, and stale reads from eventually consistent stores. The operational fix is to treat checkpointing as a protocol with validation and observability, not as a simple file dump.",
+  "examples": [
+    "def save_checkpoint(step, model, optimizer, scheduler, dataloader_state, rng_state, storage):\n    state = {\n        \"step\": step,\n        \"model\": model.parameters(),\n        \"optimizer\": optimizer.state(),\n        \"scheduler\": scheduler.state(),\n        \"dataloader\": dataloader_state,\n        \"rng\": rng_state,\n    }\n    tmp_path = storage.temp_path(step)\n    manifest = build_manifest(state)\n    serialized = serialize(state)\n\n    write_file(tmp_path, serialized)\n    write_file(tmp_path + \".manifest\", manifest)\n    validate_checksum(tmp_path, manifest[\"checksum\"])\n    atomic_publish(tmp_path, storage.final_path(step))\n    return storage.final_path(step)\n\ndef resume_checkpoint(path, model, optimizer, scheduler, dataloader):\n    manifest = read_manifest(path + \".manifest\")\n    state = deserialize(read_file(path))\n    assert checksum(state) == manifest[\"checksum\"]\n\n    model.load_parameters(state[\"model\"])\n    optimizer.load_state(state[\"optimizer\"])\n    scheduler.load_state(state[\"scheduler\"])\n    dataloader.load_state(state[\"dataloader\"])\n    restore_rng(state[\"rng\"])\n\n    return state[\"step\"]\n\ndef training_loop(start_step, num_steps, checkpoint_interval, model, optimizer, scheduler, dataloader, storage):\n    step = start_step\n    while step < num_steps:\n        batch = dataloader.next_batch()\n        loss = train_step(model, optimizer, scheduler, batch)\n        step = step + 1\n\n        if step % checkpoint_interval == 0:\n            save_checkpoint(step, model, optimizer, scheduler, dataloader.state(), rng_state(), storage)\n    return step"
+  ],
+  "variations": [
+    {
+      "name": "Synchronous Full-State Checkpointing",
+      "description": "Blocking checkpoint writes where all training compute halts until the entire model state, optimizer state, and RNG seeds are serialized to durable storage.",
+      "use_when": "Simplicity is preferred, checkpoint frequency is low, and storage bandwidth exceeds serialization throughput.",
+      "benefit": "Guaranteed consistency; no background memory pressure; deterministic timing; simplest implementation and debugging.",
+      "tradeoff": "Full training throughput degradation during checkpoint windows; large memory spikes during state collation; unsuitable for high-frequency checkpointing."
+    },
+    {
+      "name": "Asynchronous Checkpointing with Local Staging",
+      "description": "Non-blocking checkpoints where training continues on the GPU while a background CPU thread serializes the previous step's state to local NVMe, then asynchronously pushes to network or object storage.",
+      "use_when": "High-frequency checkpointing is required on large models where synchronous I/O would dominate wall time.",
+      "benefit": "Minimizes GPU idle time; amortizes storage latency across multiple steps; enables high checkpoint frequency for fault tolerance.",
+      "tradeoff": "Requires double memory buffering, risks losing the latest checkpoint before async push completes, and increases system complexity."
+    },
+    {
+      "name": "Sharded Checkpointing (FSDP-Style Distributed State)",
+      "description": "Per-rank checkpoint writes where each distributed training rank persists only its local shard of model parameters and optimizer states, eliminating the rank-0 aggregation bottleneck.",
+      "use_when": "Training very large models with FSDP or similar tensor-sharded parallelism where a single rank cannot hold the full state in host memory.",
+      "benefit": "Scales checkpoint I/O with rank count; eliminates memory explosion on rank 0; enables checkpointing models too large for a single node.",
+      "tradeoff": "Resume requires the exact distributed sharding plan; portability is limited; metadata manifests become more complex."
+    }
+  ],
+  "category": "checkpointing",
+  "domain": "deep-learning",
+  "difficulty": "intermediate",
+  "engineering_area": "modeling",
+  "estimated_reading_time": 25,
+  "prerequisites": [
+    "training-loop"
+  ],
+  "recommended_next": [
+    "mixed-precision"
+  ],
+  "created_at": "2026-07-14",
+  "updated_at": "2026-07-14",
+  "last_verified": "2026-07-14",
+  "review_frequency": "annually",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "sources": [
+    "https://ieeexplore.ieee.org/document/10877275/",
+    "https://ieeexplore.ieee.org/document/11265451/",
+    "https://ieeexplore.ieee.org/document/11127251/",
+    "https://www.jisem-journal.com/index.php/journal/article/view/14385",
+    "https://reference-global.com/article/10.2478/mspe-2026-0025",
+    "https://theamericanjournals.com/index.php/tajiir/article/view/7481/6820",
+    "https://www.jisem-journal.com/download/62_Research_Paper.pdf",
+    "http://spms.fink.rs/doc/2025/S7-3.html",
+    "https://zenvanriel.com/ai-engineer-blog/common-ai-engineer-mistakes-that-break-production-systems/",
+    "https://dev.to/dishant_sethi/ai-agents-in-production-7-architecture-mistakes-that-sink-your-system-bfc",
+    "https://sukruyusufkaya.com/en/blog/pocden-productiona-ai-engineering-surecinde-en-sik-yapilan-12-mimari-hata",
+    "https://www.linkedin.com/posts/ksheer-sagar-vijay-kumar-0186757_ai-agents-in-production-where-most-systems-activity-7443458550313627648-vnlY",
+    "https://www.ssslab.cn/assets/papers/2025-dai-CoMP.pdf",
+    "https://www.journalwjaets.com/sites/default/files/fulltext_pdf/WJAETS-2025-0197.pdf",
+    "https://dev.to/krunal_groovy/5-architecture-mistakes we-made-building-200-production-ai-systems-48j0",
+    "https://thinkingml.com/blogs/blog-prod-steeling",
+    "https://medium.com/data-science/how-not-to-do-mlops-96244a21c35e",
+    "https://www.elowit.com/blog/why-ai-projects-fail-in-production"
+  ],
+  "tags": [
+    "deep-learning",
+    "optimization",
+    "checkpointing",
+    "fault-tolerance",
+    "training"
+  ],
+  "aliases": [
+    "resumable-training",
+    "checkpoint-restore"
+  ],
+  "keywords": [
+    "checkpointing",
+    "resume training",
+    "fault recovery",
+    "fsdp checkpointing",
+    "pytorch"
+  ],
+  "search_tokens": [
+    "checkpointing resume training",
+    "resumable deep learning",
+    "fault tolerance training",
+    "save model state"
+  ],
+  "related_workflows": [
+    "full-fine-tuning-a-pretrained-transformer",
+    "deep-learning-experiment-lifecycle",
+    "agentic-tool-use-system"
+  ],
+  "related_models": [
+    "bert"
+  ],
+  "related_packages": [
+    "pytorch"
+  ],
+  "related_principles": [
+    "single-source-of-truth"
+  ],
+  "related_debug_guides": [
+    "cuda-out-of-memory"
+  ]
+}

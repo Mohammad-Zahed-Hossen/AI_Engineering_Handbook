@@ -87,6 +87,13 @@ export const TradeoffDimensionSchema = z.object({
 });
 export type TradeoffDimension = z.infer<typeof TradeoffDimensionSchema>;
 
+export const SystemInteractionSchema = z.object({
+  interacts_with: z.string(),
+  condition: z.string(),
+  effect: z.string(),
+});
+export type SystemInteraction = z.infer<typeof SystemInteractionSchema>;
+
 export const PatternSchema = BaseMetaSchema.extend({
   // Pattern-specific fields
   concept: z.string(), // The core engineering concept
@@ -113,6 +120,8 @@ export const PatternSchema = BaseMetaSchema.extend({
   tradeoffs: z.array(TradeoffDimensionSchema).default([]),
   
   decision_flow: z.array(DecisionFlowStepSchema).default([]),
+  
+  system_interactions: z.array(SystemInteractionSchema).default([]),
   
   // Override category to enforce PatternCategorySchema
   category: PatternCategorySchema.optional(),

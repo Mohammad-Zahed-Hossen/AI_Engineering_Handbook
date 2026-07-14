@@ -69,6 +69,18 @@
       "if_no": "Tune accumulation steps"
     }
   ],
+  "system_interactions": [
+    {
+      "interacts_with": "Architecture bottlenecks",
+      "condition": "When real bottleneck is parameter memory, optimizer-state memory, or poorly chosen parallelization strategy",
+      "effect": "GA reduces peak activation use but leaves main bottleneck untouched, resulting in lower throughput without solving scaling limit"
+    },
+    {
+      "interacts_with": "BatchNorm and stochastic regularization layers",
+      "condition": "When batch-dependent statistics or stochastic regularization are sensitive to batch boundaries",
+      "effect": "Model trains with systematically different activation distributions than intended, hurting convergence, calibration, or final accuracy"
+    }
+  ],
   "anti_patterns": [
     {
       "wrong": "Clip every micro-batch independently",
@@ -85,8 +97,16 @@
       "impact": "Silent divergence from intended optimization path when BatchNorm/dropout depend on micro-batch boundaries",
       "fix": "Treat equivalence as approximate unless training stack is explicitly designed for it"
     },
-    "Using GA to compensate for an architecture bottleneck: Teams sometimes reach for GA when the real issue is parameter memory, optimizer-state memory, or a poorly chosen parallelization strategy. In that case, GA can reduce peak activation use but leave the main bottleneck untouched, resulting in lower throughput without solving the scaling limit. A better answer may be mixed precision, checkpointing, sharding, pipeline parallelism, or a smaller true batch with retuned optimizer settings.",
-    "Ignoring BatchNorm and stochastic-layer behavior: GA is sometimes introduced without auditing layer behavior across micro-batches. If batch-dependent statistics or stochastic regularization are sensitive to batch boundaries, the model can train with systematically different activation distributions than intended. This can hurt convergence, calibration, or final accuracy, especially when the micro-batch is very small relative to the full effective batch."
+    {
+      "wrong": "Using GA to compensate for an architecture bottleneck",
+      "impact": "GA can reduce peak activation use but leave the main bottleneck (parameter memory, optimizer-state memory, or poorly chosen parallelization strategy) untouched, resulting in lower throughput without solving the scaling limit",
+      "fix": "Use mixed precision, checkpointing, sharding, pipeline parallelism, or a smaller true batch with retuned optimizer settings instead"
+    },
+    {
+      "wrong": "Ignoring BatchNorm and stochastic-layer behavior",
+      "impact": "When batch-dependent statistics or stochastic regularization are sensitive to batch boundaries, the model trains with systematically different activation distributions than intended, hurting convergence, calibration, or final accuracy",
+      "fix": "Audit layer behavior across micro-batches before introducing GA, especially when micro-batch is very small relative to the full effective batch"
+    }
   ],
   "implementation_notes": "The core implementation is a counter-driven control flow: accumulate gradients for K micro-batches, apply loss normalization so the total contribution matches the intended effective batch semantics, optionally clip after accumulation, then perform one optimizer update and reset gradient buffers. The update boundary must be treated as the only point at which optimizer state, learning-rate scheduling, and distributed synchronization advance, otherwise the system will silently train with a different effective algorithm than intended. Loss normalization is a frequent failure point. If each micro-batch loss is averaged independently and then summed again, the final gradient scale can drift; the intended normalization should reflect either the number of accumulation steps or, in token-based tasks, the actual number of supervised items. Gradient clipping should usually occur after accumulation and before the delayed update. In distributed systems, synchronization strategy is critical.",
   "examples": [

@@ -1,0 +1,245 @@
+{
+  "id": "kv-cache",
+  "title": "KV Cache",
+  "slug": "kv-cache",
+  "description": "A decoding-time memory structure that stores attention keys and values from prior tokens so an autoregressive model can reuse them instead of recomputing them at every step.",
+  "name": "KV Cache",
+  "concept": "KV Cache works by separating the expensive prefill phase from the incremental decode phase: the model computes and stores key/value states once during prefill, then appends one token's K/V per layer at each decode step and reuses all previous states for attention over the growing context. For a sequence length N, standard self-attention processes the growing prefix repeatedly, giving quadratic scaling in sequence length for full attention computation and memory traffic, while cached decoding reduces the per-token attention work to operating on the new query against stored K/V history. The storage footprint for a decoder-only model is approximately L x B x T x H x D x 2 x p, where L is layers, B batch size, T cached tokens, H KV heads, D head dimension, and p bytes per element; the factor of 2 accounts for both keys and values. The hardware bottleneck shifts because decode-time computation per token becomes small relative to the data movement needed to read cached K/V from GPU memory, so the limiting factor is often HBM bandwidth rather than FLOPs. Caching lowers arithmetic intensity because each step performs fewer FLOPs per byte transferred, which pushes execution toward the memory-bandwidth ceiling and makes SRAM-to-HBM traffic the dominant performance determinant.",
+  "applicability": "Use KV Cache when serving autoregressive decoders with moderate to long contexts, especially when latency and throughput matter and repeated prefix computation would otherwise dominate cost. It is especially valuable for batched inference, long-context generation, and workloads where many requests share similar prefix lengths or decoding continues for many steps. Avoid KV Cache when sequences are extremely short, the model is non-autoregressive, or the system is fundamentally compute-dominated rather than memory-dominated. It can also be the wrong trade if VRAM is so constrained that the extra memory footprint forces smaller batch sizes or earlier eviction and the resulting throughput loss outweighs the latency savings. KV Cache is commonly paired with PagedAttention or vLLM-style virtual memory management when variable-length requests would otherwise fragment GPU memory. It also interacts well with FlashAttention-style IO-aware kernels, quantized KV cache, and MQA/GQA, which reduce bandwidth pressure or shrink the cached footprint without changing the core reuse pattern.",
+  "decision_summary": {
+    "when_to_use": [
+      "Long-context autoregressive decoding where prefix reuse is substantial.",
+      "Serving workloads with tight per-token latency targets.",
+      "High-concurrency batching where recomputation would waste GPU time.",
+      "Models whose decode path is memory-bandwidth-limited rather than compute-limited."
+    ],
+    "dont_use": [
+      "Very short sequences where caching overhead is not amortized.",
+      "Non-autoregressive generation systems that do not reuse a growing prefix.",
+      "Models or deployments with severe VRAM pressure where cache residency limits batch size.",
+      "Cases where another architecture removes the need for incremental attention state."
+    ],
+    "tradeoff": "Latency ↓, Memory Overhead ↑, Bandwidth Pressure ↑, System Complexity ↑"
+  },
+  "pattern_snapshot": {
+    "primary_goal": "Inference Latency Minimization",
+    "primary_constraint": "VRAM Capacity Bound",
+    "effective_batch": "Context Length × Batch Size",
+    "typical_usage": "Autoregressive Decoder LLM Inference Serving"
+  },
+  "tradeoffs": [
+    {
+      "dimension": "Memory",
+      "effect": "↑",
+      "description": "Stores keys and values for every cached token across layers, increasing VRAM use linearly with context and batch size."
+    },
+    {
+      "dimension": "Compute",
+      "effect": "↓",
+      "description": "Avoids recomputing past attention projections at each decode step, lowering per-token FLOPs."
+    },
+    {
+      "dimension": "Latency",
+      "effect": "↓",
+      "description": "Reuse of cached states reduces decode-time work and improves token generation latency."
+    },
+    {
+      "dimension": "Bandwidth",
+      "effect": "↑",
+      "description": "Cached decoding becomes dominated by reading K/V from HBM, which raises memory traffic pressure."
+    },
+    {
+      "dimension": "Complexity",
+      "effect": "↑",
+      "description": "Requires cache allocation, indexing, eviction, fragmentation control, and distributed synchronization logic."
+    }
+  ],
+  "decision_flow": [
+    {
+      "question": "Is the model generating tokens autoregressively over a growing prefix?",
+      "if_yes": "Go to Step 2: Check decode latency/throughput requirements",
+      "if_no": "Skip KV Cache and optimize the model or kernel path instead"
+    },
+    {
+      "question": "Is decode latency or throughput a primary production requirement?",
+      "if_yes": "Go to Step 3: Check VRAM fragmentation and concurrency limits",
+      "if_no": "Prefer simpler memory management"
+    },
+    {
+      "question": "Is VRAM fragmentation or capacity limiting concurrency?",
+      "if_yes": "Add paging, quantization, or MQA/GQA",
+      "if_no": "Keep a straightforward contiguous cache design"
+    }
+  ],
+  "system_interactions": [
+    {
+      "interacts_with": "Paged Memory Management / vLLM",
+      "condition": "Variable-length, high-concurrency serving with many live requests.",
+      "effect": "Reduces fragmentation and allows near-zero wasted KV memory through block-based paging."
+    },
+    {
+      "interacts_with": "FlashAttention / IO-Aware Kernels",
+      "condition": "Decode or long-context attention is limited by HBM traffic.",
+      "effect": "Lowers off-chip memory movement and improves IO efficiency, especially when attention kernel design is bandwidth-sensitive."
+    },
+    {
+      "interacts_with": "MQA / GQA",
+      "condition": "KV footprint is the dominant VRAM constraint.",
+      "effect": "Shares K/V heads across query heads, shrinking cache size and raising effective concurrency."
+    },
+    {
+      "interacts_with": "Continuous Batching / Request Scheduling",
+      "condition": "Many requests arrive with different prefix lengths and decode lengths.",
+      "effect": "Improves utilization, but only if cache management avoids fragmentation and per-request bookkeeping overhead."
+    }
+  ],
+  "anti_patterns": [
+    {
+      "wrong": "Recomputing the entire prefix attention state at every decode step instead of appending to cache.",
+      "impact": "Restores quadratic-style redundant work and destroys latency gains.",
+      "fix": "Persist per-layer K/V state and update only the new token position."
+    },
+    {
+      "wrong": "Using a contiguous cache allocator for highly variable workloads without fragmentation control.",
+      "impact": "Wastes VRAM, lowers batch size, and can trigger avoidable OOMs.",
+      "fix": "Use paging or block tables when request lengths vary widely."
+    },
+    {
+      "wrong": "Ignoring cache precision and assuming full-precision KV always fits the serving budget.",
+      "impact": "Bandwidth and capacity blow up as context length grows, reducing concurrency.",
+      "fix": "Evaluate quantized KV cache, MQA/GQA, or shorter retention policies when memory is the bottleneck."
+    },
+    {
+      "wrong": "Letting position and mask indices drift between prefill and decode.",
+      "impact": "Produces corrupted attention alignment and hard-to-debug generation errors.",
+      "fix": "Make cache length, position IDs, and masks derive from one canonical sequence counter."
+    },
+    {
+      "wrong": "Treating KV cache as a pure optimization and not a distributed systems object.",
+      "impact": "Causes synchronization bugs in tensor-parallel or pipeline-parallel serving.",
+      "fix": "Define explicit ownership, sharding, and handoff rules for every rank and stage."
+    }
+  ],
+  "implementation_notes": "Use static pre-allocation when request shapes are bounded and latency predictability matters, but prefer dynamic paging when sequence lengths vary widely or concurrency is high. A common layout is block-contiguous storage with per-request indirection tables because it balances locality with flexible growth, while layer-contiguous layouts simplify indexing and head-contiguous layouts can help kernel coalescing depending on the attention implementation. During decoding, append each new token’s K/V at the current sequence position and advance a per-request cache length counter; never rebuild the entire prefix cache on each step because that negates the main benefit. Batch padding must be masked carefully so the cache length reflects real tokens, and position encoding logic must remain consistent across prefill and decode phases to avoid token misalignment. In distributed inference, tensor-parallel shards usually split head or projection work, so cache writes must be partitioned consistently with the attention heads owned by each rank; pipeline parallelism requires stage-local cache ownership and strict handoff of the running sequence state between stages. Mixed precision and quantized KV cache can lower bandwidth and capacity cost, but dequantization overhead and numerical error can reduce quality if scaling factors are poorly chosen. Common failure modes include off-by-one cache offsets, stale block-table pointers, out-of-bounds appends, silent fragmentation leaks, and inconsistent cache lengths after beam expansion or request cancellation. Treat these as memory-safety and correctness issues, not just performance bugs.",
+  "examples": [
+    "def decode_step(x_t, q_proj, k_proj, v_proj, cache, layer_state, mask, pos):\n    q = q_proj(x_t)\n    k_new = k_proj(x_t)\n    v_new = v_proj(x_t)\n\n    cache.keys[layer_state][pos] = k_new\n    cache.values[layer_state][pos] = v_new\n    cache.lengths[layer_state] = pos + 1\n\n    k_hist = cache.keys[layer_state][:pos + 1]\n    v_hist = cache.values[layer_state][:pos + 1]\n\n    scores = (q @ transpose(k_hist)) / sqrt(dim(q))\n    scores = scores + mask[:pos + 1]\n    weights = softmax(scores)\n    y = weights @ v_hist\n\n    return y, cache"
+  ],
+  "variations": [
+    {
+      "name": "Multi-Query Attention (MQA) & Grouped-Query Attention (GQA)",
+      "description": "Share key/value heads across multiple query heads to reduce the number of distinct cached K/V tensors.",
+      "use_when": "Memory capacity is the primary constraint.",
+      "benefit": "Decreases KV cache memory footprint by 8x for MQA or 4x for GQA in common configurations.",
+      "tradeoff": "Slight drop in modeling capacity or task performance compared with full multi-head attention."
+    },
+    {
+      "name": "PagedAttention (Virtual Memory KV Caching)",
+      "description": "Store KV cache in fixed-size blocks with an indirection table so physical memory does not need to remain contiguous.",
+      "use_when": "High concurrency serving with dynamic sequence lengths.",
+      "benefit": "Eliminates physical memory fragmentation and allows dynamic batch size scaling.",
+      "tradeoff": "Increases lookup overhead and runtime memory-management complexity."
+    },
+    {
+      "name": "Quantized KV Cache",
+      "description": "Compress key and value tensors using lower-precision formats such as FP8 or integer quantization.",
+      "use_when": "Memory bandwidth dominates inference and raw capacity limits concurrency.",
+      "benefit": "Increases batch concurrency and reduces HBM bandwidth pressure; stronger compression can enable longer contexts within the same VRAM budget.",
+      "tradeoff": "Slight quality degradation; lower precision usually needs scaling factors and adds dequantization work in the attention kernel."
+    }
+  ],
+  "category": "kv_cache",
+  "domain": "llm",
+  "difficulty": "advanced",
+  "engineering_area": "inference",
+  "estimated_reading_time": 25,
+  "prerequisites": [
+    "transformer"
+  ],
+  "recommended_next": [
+    "speculative-decoding"
+  ],
+  "created_at": "2026-07-14",
+  "updated_at": "2026-07-14",
+  "last_verified": "2026-07-14",
+  "review_frequency": "quarterly",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "sources": [
+    "http://www.proceedings.com/068431-1189.html",
+    "https://arxiv.org/abs/2309.06180",
+    "https://arxiv.org/abs/2205.14135",
+    "https://arxiv.org/pdf/2405.12981.pdf",
+    "https://link.springer.com/10.1007/s11227-024-05890-8",
+    "https://developers.redhat.com/articles/2025/07/24/how-pagedattention-resolves-memory-waste-llm-systems",
+    "https://docs.vllm.ai/en/latest/features/quantization/quantized_kvcache/",
+    "https://huggingface.co/docs/transformers/en/paged_attention",
+    "https://arxiv.org/pdf/2410.03111.pdf",
+    "https://arxiv.org/pdf/2405.04437.pdf",
+    "https://arxiv.org/pdf/2409.15012.pdf",
+    "http://arxiv.org/pdf/2310.01801.pdf",
+    "https://arxiv.org/html/2411.06680v1",
+    "https://arxiv.org/pdf/2412.05496.pdf",
+    "https://arxiv.org/pdf/2606.09864.pdf",
+    "https://arxiv.org/html/2406.09297v2",
+    "https://arxiv.org/pdf/2305.13245.pdf",
+    "https://arxiv.org/html/2606.03458v1",
+    "https://arxiv.org/pdf/2506.07311.pdf",
+    "https://arxiv.org/pdf/2603.04427.pdf",
+    "https://arxiv.org/html/2503.09579v3",
+    "https://arxiv.org/abs/2603.05451",
+    "https://dl.acm.org/doi/10.1145/3742872.3757072",
+    "https://ieeexplore.ieee.org/document/11565905/",
+    "https://ijaibdcms.org/index.php/ijaibdcms/article/view/598/",
+    "https://arxiv.org/abs/2602.09721",
+    "https://arxiv.org/abs/2604.02110",
+    "https://yobitel.com/knowledge-base/paged-attention",
+    "https://www.cs.toronto.edu/~cmaddis/courses/csc2541_w25/presentations/ng_tang_pagedattention.pdf",
+    "https://llmsystem.github.io/llmsystem2025spring/assets/files/llmsys-22-vLLM_woosuk_kwon-1f34697dbb1a1fb5b798daf6eff14b67.pdf",
+    "https://datasciencedojo.com/blog/understanding-paged-attention/"
+  ],
+  "tags": [
+    "llm",
+    "inference",
+    "memory",
+    "latency",
+    "optimization"
+  ],
+  "aliases": [
+    "key-value-cache",
+    "paged-attention"
+  ],
+  "keywords": [
+    "kv cache",
+    "paged attention",
+    "vllm",
+    "grouped query attention",
+    "multi query attention"
+  ],
+  "search_tokens": [
+    "kv cache optimization",
+    "pagedattention memory",
+    "autoregressive decode cache"
+  ],
+  "related_workflows": [
+    "llm-application-serving",
+    "production-llm-cost-latency-optimization"
+  ],
+  "related_models": [
+    "bert"
+  ],
+  "related_packages": [
+    "pytorch"
+  ],
+  "related_principles": [
+    "single-source-of-truth"
+  ],
+  "related_debug_guides": [
+    "cuda-out-of-memory"
+  ]
+}

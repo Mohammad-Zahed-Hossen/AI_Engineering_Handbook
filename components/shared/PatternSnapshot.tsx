@@ -1,4 +1,4 @@
-import { Target, AlertCircle, Layers, Cpu } from 'lucide-react';
+import { Target, AlertCircle, Layers, Cpu, LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PatternSnapshotProps {
@@ -25,7 +25,7 @@ export default function PatternSnapshot({
     primaryConstraint ? { icon: AlertCircle, label: 'Primary Constraint', value: primaryConstraint } : null,
     effectiveBatch ? { icon: Layers, label: 'Effective Batch', value: effectiveBatch } : null,
     typicalUsage ? { icon: Cpu, label: 'Typical Usage', value: typicalUsage } : null,
-  ].filter((item): item is { icon: any; label: string; value: string } => item !== null);
+  ].filter((item): item is { icon: LucideIcon; label: string; value: string } => item !== null);
 
   return (
     <div className={cn('rounded-lg border border-border bg-card p-4', className)}>

@@ -8,13 +8,19 @@ interface CodeBlockProps {
   showLineNumbers?: boolean;
 }
 
-export async function highlightCodeSnippet(code: string, language: string = 'python') {
+export async function highlightCodeSnippet(code: string, language: string = 'text') {
   const lines = code.split('\n');
-  const MAX_COLLAPSED_LINES = 20;
+  const MAX_COLLAPSED_LINES = 30;
   const shouldCollapse = lines.length > MAX_COLLAPSED_LINES;
+  
+  // For text/plain, don't collapse
+  const isPlainText = language === 'text' || language === 'plain';
+  const shouldActuallyCollapse = shouldCollapse && !isPlainText;
 
-  let fullHighlighted = '';
-  let collapsedHighlighted = '';
+  let fullHighlightedDark = '';
+  let fullHighlightedLight = '';
+  let collapsedHighlightedDark = '';
+  let collapsedHighlightedLight = '';
 
   const normalizeLang = (lang: string) => {
     const l = lang.toLowerCase();
@@ -25,26 +31,39 @@ export async function highlightCodeSnippet(code: string, language: string = 'pyt
 
   const highlightedLang = normalizeLang(language);
 
-  // Generate full highlighted HTML once
+  // Generate full highlighted HTML for both themes
   try {
-    fullHighlighted = await codeToHtml(code, {
+    fullHighlightedDark = await codeToHtml(code, {
       lang: highlightedLang,
       theme: 'github-dark',
     });
   } catch (err) {
-    console.error('Shiki highlighting error (full):', err);
-    fullHighlighted = `<pre><code>${escapeHtml(code)}</code></pre>`;
+    console.error('Shiki highlighting error (dark):', err);
+    fullHighlightedDark = `<pre><code>${escapeHtml(code)}</code></pre>`;
+  }
+
+  try {
+    fullHighlightedLight = await codeToHtml(code, {
+      lang: highlightedLang,
+      theme: 'github-light',
+    });
+  } catch (err) {
+    console.error('Shiki highlighting error (light):', err);
+    fullHighlightedLight = `<pre><code>${escapeHtml(code)}</code></pre>`;
   }
 
   // Generate collapsed view by truncating the already-highlighted HTML
   if (shouldCollapse) {
-    collapsedHighlighted = truncateHighlightedHtml(fullHighlighted, MAX_COLLAPSED_LINES);
+    collapsedHighlightedDark = truncateHighlightedHtml(fullHighlightedDark, MAX_COLLAPSED_LINES);
+    collapsedHighlightedLight = truncateHighlightedHtml(fullHighlightedLight, MAX_COLLAPSED_LINES);
   }
 
   return {
-    fullHighlighted,
-    collapsedHighlighted,
-    shouldCollapse,
+    fullHighlightedDark,
+    fullHighlightedLight,
+    collapsedHighlightedDark,
+    collapsedHighlightedLight,
+    shouldCollapse: shouldActuallyCollapse,
     linesCount: lines.length,
     maxCollapsedLines: MAX_COLLAPSED_LINES
   };
@@ -57,8 +76,10 @@ export async function CodeBlock({
   showLineNumbers = false
 }: CodeBlockProps) {
   const {
-    fullHighlighted,
-    collapsedHighlighted,
+    fullHighlightedDark,
+    fullHighlightedLight,
+    collapsedHighlightedDark,
+    collapsedHighlightedLight,
     shouldCollapse,
     linesCount,
     maxCollapsedLines
@@ -70,8 +91,10 @@ export async function CodeBlock({
       language={language}
       filename={filename}
       showLineNumbers={showLineNumbers}
-      fullHighlighted={fullHighlighted}
-      collapsedHighlighted={collapsedHighlighted}
+      fullHighlightedDark={fullHighlightedDark}
+      fullHighlightedLight={fullHighlightedLight}
+      collapsedHighlightedDark={collapsedHighlightedDark}
+      collapsedHighlightedLight={collapsedHighlightedLight}
       shouldCollapse={shouldCollapse}
       linesCount={linesCount}
       maxCollapsedLines={maxCollapsedLines}

@@ -41,7 +41,7 @@ export default function DecisionSummary({
       {dontUse.length > 0 && (
         <div className="space-y-2">
           <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">
-            Don't Use
+            Don&apos;t Use
           </h3>
           <ul className="space-y-1">
             {dontUse.map((item, idx) => (

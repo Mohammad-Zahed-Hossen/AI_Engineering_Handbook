@@ -858,6 +858,7 @@ export const getRelatedContent = cache(function getRelatedContent(
       ...(pattern.related_packages || []).map(id => ({ id, type: 'package' as const, relationship_type: 'related_packages' })),
       ...(pattern.related_principles || []).map(id => ({ id, type: 'principle' as const, relationship_type: 'related_principles' })),
       ...(pattern.related_debug_guides || []).map(id => ({ id, type: 'debug_guide' as const, relationship_type: 'related_debug_guides' })),
+      ...((pattern as { related_patterns?: string[] }).related_patterns || []).map((id: string) => ({ id, type: 'pattern' as const, relationship_type: 'related_patterns' })),
     ];
     return uniqueExistingRefs(typedRefs, current).slice(0, 6);
   }
