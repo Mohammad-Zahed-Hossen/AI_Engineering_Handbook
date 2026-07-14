@@ -6,7 +6,7 @@ import RelatedContent from '@/components/shared/RelatedContent';
 import ExpandableText from '@/components/shared/ExpandableText';
 import { Prose } from '@/components/shared/Prose';
 import { CodeBlock } from '@/components/shared/CodeBlock';
-import { Lightbulb, AlertTriangle, Code, Layers, ArrowLeft, ArrowRight, ChevronDown, ChevronRight } from 'lucide-react';
+import { Lightbulb, AlertTriangle, Code, Layers, ArrowLeft, ArrowRight } from 'lucide-react';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 import DecisionSummary from '@/components/shared/DecisionSummary';
 import PatternSnapshot from '@/components/shared/PatternSnapshot';

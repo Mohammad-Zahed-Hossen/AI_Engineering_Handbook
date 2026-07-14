@@ -21,8 +21,10 @@ export const WorkflowStepSchema = z.object({
   code: z.string().optional(),
   language: z.string().optional(),
   highlightedCodeData: z.object({
-    fullHighlighted: z.string(),
-    collapsedHighlighted: z.string(),
+    fullHighlightedDark: z.string(),
+    fullHighlightedLight: z.string(),
+    collapsedHighlightedDark: z.string(),
+    collapsedHighlightedLight: z.string(),
     shouldCollapse: z.boolean(),
     linesCount: z.number(),
     maxCollapsedLines: z.number(),

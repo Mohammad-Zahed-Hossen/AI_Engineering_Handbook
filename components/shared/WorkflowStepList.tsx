@@ -97,8 +97,10 @@ function WorkflowStepItem({
               language={s.language || 'python'}
               filename={s.name}
               showLineNumbers={false}
-              fullHighlighted={s.highlightedCodeData.fullHighlighted}
-              collapsedHighlighted={s.highlightedCodeData.collapsedHighlighted}
+              fullHighlightedDark={s.highlightedCodeData.fullHighlightedDark}
+              fullHighlightedLight={s.highlightedCodeData.fullHighlightedLight}
+              collapsedHighlightedDark={s.highlightedCodeData.collapsedHighlightedDark}
+              collapsedHighlightedLight={s.highlightedCodeData.collapsedHighlightedLight}
               shouldCollapse={s.highlightedCodeData.shouldCollapse}
               linesCount={s.highlightedCodeData.linesCount}
               maxCollapsedLines={s.highlightedCodeData.maxCollapsedLines}

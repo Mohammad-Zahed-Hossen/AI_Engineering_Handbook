@@ -2,7 +2,7 @@
 
 import { useState, useRef, useLayoutEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Check, Copy, Terminal, ChevronDown, WrapText, Sun, Moon, Code2, FileCode, Cpu, Database, Globe } from 'lucide-react';
+import { Check, Copy, Terminal, ChevronDown, WrapText, Sun, Moon, Code2, FileCode, Database, Globe } from 'lucide-react';
 
 interface CodeBlockInteractiveProps {
   code: string;
@@ -38,12 +38,6 @@ export function CodeBlockInteractive({
   const [wrapped, setWrapped] = useState<boolean | null>(null);
   const [isDarkTheme, setIsDarkTheme] = useState(true);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
-
-  // Get theme from localStorage or system preference
-  const [isMounted, setIsMounted] = useState(false);
-  useLayoutEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   // Language icon mapping
   const getLanguageIcon = (lang: string) => {
