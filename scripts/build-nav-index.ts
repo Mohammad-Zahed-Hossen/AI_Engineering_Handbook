@@ -45,6 +45,7 @@ function buildNavIndex(
       };
       if (options.versionField && data.version) entry.version = data.version;
       if (options.category) entry.category = options.category;
+      else if (data.category) entry.category = data.category;
       return entry;
     });
 }

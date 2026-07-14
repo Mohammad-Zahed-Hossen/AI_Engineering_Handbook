@@ -199,16 +199,19 @@ export const buildSearchIndex = cache(function buildSearchIndex(): SearchResult[
 
   // Index patterns with enriched search fields
   getAllPatterns().forEach(p => {
-    const keywords = extractKeywordsFromProse(p.description || '');
+    const proseText = combineText(p.description, p.concept, p.applicability);
+    const keywords = extractKeywordsFromProse(proseText);
     results.push({
       type: 'pattern',
       id: p.id,
       name: p.title || p.id,
       title: p.title,
       summary: p.description,
+      concept: p.concept,
+      applicability: p.applicability,
+      category: p.category,
       href: `/patterns/${p.id}`,
       updated_at: p.updated_at,
-      // Phase 7 additions
       keywords: keywords.length > 0 ? keywords : undefined,
       tags: p.tags,
       aliases: p.aliases,

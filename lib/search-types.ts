@@ -14,6 +14,8 @@ export type SearchResult = {
   fn_package_id?: string;
   // Phase 1 additions - optional fields for deep indexing
   mental_trigger?: string;
+  concept?: string;
+  applicability?: string;
   code_context?: string;
   code_tokens?: string[];
   keywords?: string[];
@@ -34,6 +36,8 @@ export function createFuse(data: SearchResult[]) {
       { name: 'name', weight: 0.20 },
       { name: 'title', weight: 0.20 },
       { name: 'mental_trigger', weight: 0.15 },
+      { name: 'concept', weight: 0.15 },
+      { name: 'applicability', weight: 0.15 },
       { name: 'keywords', weight: 0.12 },
       { name: 'search_tokens', weight: 0.12 },
       { name: 'tags', weight: 0.10 },

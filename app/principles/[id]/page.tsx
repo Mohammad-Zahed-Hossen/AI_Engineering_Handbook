@@ -42,9 +42,9 @@ export default async function PrinciplePage({ params }: PageProps) {
 
   // Combine all related content
   const allRelatedContent = [
-    ...principle.referenced_by_patterns.map(id => ({ id, type: 'pattern' as const })),
-    ...principle.referenced_by_models.map(id => ({ id, type: 'model' as const })),
-    ...principle.referenced_by_workflows.map(id => ({ id, type: 'workflow' as const })),
+    ...principle.referenced_by_patterns.map(id => ({ id, type: 'pattern' as const, relationship_type: 'referenced_by_patterns' })),
+    ...principle.referenced_by_models.map(id => ({ id, type: 'model' as const, relationship_type: 'referenced_by_models' })),
+    ...principle.referenced_by_workflows.map(id => ({ id, type: 'workflow' as const, relationship_type: 'referenced_by_workflows' })),
   ];
 
   return (

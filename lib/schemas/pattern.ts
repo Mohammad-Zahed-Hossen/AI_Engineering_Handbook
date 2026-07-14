@@ -58,13 +58,61 @@ export const PatternCategorySchema = z.enum([
 ]);
 export type PatternCategory = z.infer<typeof PatternCategorySchema>;
 
+export const VariationSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  use_when: z.string().optional(),
+  benefit: z.string().optional(),
+  tradeoff: z.string().optional(),
+});
+export type Variation = z.infer<typeof VariationSchema>;
+
+export const AntiPatternSchema = z.object({
+  wrong: z.string(),
+  impact: z.string(),
+  fix: z.string(),
+});
+export type AntiPattern = z.infer<typeof AntiPatternSchema>;
+
+export const DecisionFlowStepSchema = z.object({
+  question: z.string(),
+  if_yes: z.string(),
+  if_no: z.string(),
+});
+export type DecisionFlowStep = z.infer<typeof DecisionFlowStepSchema>;
+
+export const TradeoffDimensionSchema = z.object({
+  dimension: z.string(),
+  effect: z.string(),
+});
+export type TradeoffDimension = z.infer<typeof TradeoffDimensionSchema>;
+
 export const PatternSchema = BaseMetaSchema.extend({
   // Pattern-specific fields
   concept: z.string(), // The core engineering concept
   applicability: z.string(), // When this pattern applies
-  anti_patterns: z.array(z.string()).default([]), // Common mistakes to avoid
+  anti_patterns: z.array(z.union([z.string(), AntiPatternSchema])).default([]), // Common mistakes to avoid
   implementation_notes: z.string().optional(), // Implementation guidance without library specifics
   examples: z.array(z.string()).default([]), // Language-agnostic examples
+  variations: z.array(VariationSchema).default([]), // Named variations of this pattern
+  
+  // Decision support fields
+  decision_summary: z.object({
+    when_to_use: z.array(z.string()).default([]),
+    dont_use: z.array(z.string()).default([]),
+    tradeoff: z.string().optional(),
+  }).optional(),
+  
+  pattern_snapshot: z.object({
+    primary_goal: z.string().optional(),
+    primary_constraint: z.string().optional(),
+    effective_batch: z.string().optional(),
+    typical_usage: z.string().optional(),
+  }).optional(),
+  
+  tradeoffs: z.array(TradeoffDimensionSchema).default([]),
+  
+  decision_flow: z.array(DecisionFlowStepSchema).default([]),
   
   // Override category to enforce PatternCategorySchema
   category: PatternCategorySchema.optional(),

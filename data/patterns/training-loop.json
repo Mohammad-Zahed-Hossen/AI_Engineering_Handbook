@@ -13,7 +13,7 @@
   ],
   "implementation_notes": "A training loop contains three main steps per batch: forward pass, backward pass, and parameter update. Ensure that your loss function, optimizer, and model are aligned on the same device (CPU or GPU) before execution. Use gradient clipping to stabilize training for recurrent networks or deep transformers.",
   "examples": [
-    "for epoch in range(num_epochs):\n    model.train()\n    for inputs, labels in dataloader:\n      inputs, labels = inputs.to(device), labels.to(device)\n      optimizer.zero_grad()\n      outputs = model(inputs)\n      loss = criterion(outputs, labels)\n      loss.backward()\n      optimizer.step()"
+    "for epoch in training_epochs:\n    for batch in dataloader:\n        # 1. Compute predictions and loss\n        predictions = model(batch.features)\n        loss = compute_loss(predictions, batch.targets)\n        \n        # 2. Compute gradients\n        gradients = compute_gradients(loss)\n        \n        # 3. Update parameters\n        update_weights(model.parameters, gradients)"
   ],
   "created_at": "2026-07-03",
   "updated_at": "2026-07-03",
@@ -40,6 +40,7 @@
     "epoch-loop",
     "backprop"
   ],
+  "category": "training_loop",
   "domain": "deep-learning",
   "difficulty": "intermediate",
   "engineering_area": "modeling",

@@ -42,11 +42,11 @@ export default async function DebugGuidePage({ params }: PageProps) {
 
   // Combine all related content
   const allRelatedContent = [
-    ...debugGuide.related_packages.map(id => ({ id, type: 'package' as const })),
-    ...debugGuide.related_workflows.map(id => ({ id, type: 'workflow' as const })),
-    ...debugGuide.related_patterns.map(id => ({ id, type: 'pattern' as const })),
-    ...debugGuide.related_models.map(id => ({ id, type: 'model' as const })),
-    ...debugGuide.related_registry.map(id => ({ id, type: 'registry' as const })),
+    ...debugGuide.related_packages.map(id => ({ id, type: 'package' as const, relationship_type: 'related_packages' })),
+    ...debugGuide.related_workflows.map(id => ({ id, type: 'workflow' as const, relationship_type: 'related_workflows' })),
+    ...debugGuide.related_patterns.map(id => ({ id, type: 'pattern' as const, relationship_type: 'related_patterns' })),
+    ...debugGuide.related_models.map(id => ({ id, type: 'model' as const, relationship_type: 'related_models' })),
+    ...debugGuide.related_registry.map(id => ({ id, type: 'registry' as const, relationship_type: 'related_registry' })),
   ];
 
   return (

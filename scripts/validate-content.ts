@@ -20,6 +20,26 @@ const dataDir = path.join(process.cwd(), 'data');
 const STRICT_MODE = process.env.STRICT_REFERENCE_MODE === 'true';
 const SUPPRESS_BROKEN_REF_WARNINGS = process.env.SUPPRESS_BROKEN_REF_WARNINGS === 'true' || process.argv.includes('--quiet');
 
+// Load config limits & rules
+const configPath = path.join(process.cwd(), 'aens.config.json');
+const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+const sizeBudgets = config.size_budgets;
+const validationRules = config.validation_rules;
+
+// Load tags & aliases registries
+const registeredTagsPath = path.join(process.cwd(), 'data', 'registered-tags.json');
+const registeredAliasesPath = path.join(process.cwd(), 'data', 'registered-aliases.json');
+
+let registeredTags = new Set<string>();
+let registeredAliases = new Set<string>();
+
+if (fs.existsSync(registeredTagsPath)) {
+  registeredTags = new Set(JSON.parse(fs.readFileSync(registeredTagsPath, 'utf-8')));
+}
+if (fs.existsSync(registeredAliasesPath)) {
+  registeredAliases = new Set(JSON.parse(fs.readFileSync(registeredAliasesPath, 'utf-8')));
+}
+
 // ── Constants ───────────────────────────────────────────────
 
 const SLUG_REGEX = /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/;
@@ -266,10 +286,16 @@ for (const file of files) {
       if (!Array.isArray(pkg.tasks) || pkg.tasks.length < 1) {
         reportError(`Package '${normalizedPath}' has fewer than 1 tasks (${pkg.tasks?.length ?? 0})`);
       }
+      if (Array.isArray(pkg.tasks) && pkg.tasks.length > sizeBudgets.package_max_common_tasks) {
+        reportWarning(`Package '${normalizedPath}' has tasks count (${pkg.tasks.length}) exceeding maximum budget of ${sizeBudgets.package_max_common_tasks}`);
+      }
     } else if (type === 'workflow') {
       const wf = obj as { steps?: unknown[]; category?: string };
       if (!Array.isArray(wf.steps) || wf.steps.length < 3) {
         reportError(`Workflow '${normalizedPath}' has fewer than 3 steps (${wf.steps?.length ?? 0})`);
+      }
+      if (Array.isArray(wf.steps) && wf.steps.length > sizeBudgets.workflow_max_steps) {
+        reportWarning(`Workflow '${normalizedPath}' has steps count (${wf.steps.length}) exceeding maximum budget of ${sizeBudgets.workflow_max_steps}`);
       }
       if (!wf.category) {
         reportError(`Workflow '${normalizedPath}' is missing required 'category' field`);
@@ -281,13 +307,49 @@ for (const file of files) {
       if (!Array.isArray(cs.entries) || cs.entries.length < 1) {
         reportError(`Cheatsheet '${normalizedPath}' has fewer than 1 entries (${cs.entries?.length ?? 0})`);
       }
+      if (Array.isArray(cs.entries) && cs.entries.length > sizeBudgets.cheatsheet_max_entries) {
+        reportWarning(`Cheatsheet '${normalizedPath}' has entries count (${cs.entries.length}) exceeding maximum budget of ${sizeBudgets.cheatsheet_max_entries}`);
+      }
     } else if (type === 'pattern') {
-      const pattern = obj as { concept?: string; applicability?: string };
+      const pattern = obj as { concept?: string; applicability?: string; examples?: string[]; lifecycle?: string; stability?: string; difficulty?: string; domain?: string; engineering_area?: string };
       if (!pattern.concept) {
         reportError(`Pattern '${normalizedPath}' is missing 'concept' field`);
       }
       if (!pattern.applicability) {
         reportError(`Pattern '${normalizedPath}' is missing 'applicability' field`);
+      }
+      // Examples contract checks
+      if (Array.isArray(pattern.examples)) {
+        const frameworkPatterns = [
+          /import\s+/,
+          /require\s*\(/,
+          /\.to\(\s*device\s*\)/,
+          /optimizer\./,
+          /nn\.Module/,
+          /tf\.keras/,
+          /sklearn\./,
+        ];
+        pattern.examples.forEach((example, idx) => {
+          for (const regex of frameworkPatterns) {
+            if (regex.test(example)) {
+              reportWarning(`Pattern '${normalizedPath}' example ${idx + 1} contains framework-specific code matching pattern ${regex.toString()}. Patterns must contain only implementation-independent pseudocode.`);
+              break;
+            }
+          }
+        });
+      }
+      // Metadata warnings for stable patterns
+      const isStableOrProd = pattern.lifecycle === 'stable' || pattern.stability === 'stable';
+      if (isStableOrProd) {
+        if (!pattern.difficulty) {
+          reportWarning(`Pattern '${normalizedPath}' is stable/production-ready but is missing 'difficulty' metadata badge.`);
+        }
+        if (!pattern.domain) {
+          reportWarning(`Pattern '${normalizedPath}' is stable/production-ready but is missing 'domain' metadata badge.`);
+        }
+        if (!pattern.engineering_area) {
+          reportWarning(`Pattern '${normalizedPath}' is stable/production-ready but is missing 'engineering_area' metadata badge.`);
+        }
       }
     } else if (type === 'debug_guide') {
       const dg = obj as { symptoms?: unknown[]; root_causes?: unknown[]; solutions?: unknown[] };
@@ -313,6 +375,74 @@ for (const file of files) {
       if (!principle.statement) {
         reportError(`Principle '${normalizedPath}' is missing 'statement' field`);
       }
+    }
+
+    // Enforce registered tags/aliases (validation_rules from aens.config.json)
+    if (!validationRules.allow_unregistered_tags && Array.isArray(obj.tags)) {
+      for (const tag of obj.tags) {
+        if (typeof tag === 'string' && !registeredTags.has(tag)) {
+          reportError(`Unregistered tag '${tag}' found in '${normalizedPath}'. Add it to 'data/registered-tags.json' or allow unregistered tags in config.`);
+        }
+      }
+    }
+    if (!validationRules.allow_unregistered_aliases && Array.isArray(obj.aliases)) {
+      for (const alias of obj.aliases) {
+        if (typeof alias === 'string' && !registeredAliases.has(alias)) {
+          reportError(`Unregistered alias '${alias}' found in '${normalizedPath}'. Add it to 'data/registered-aliases.json' or allow unregistered aliases in config.`);
+        }
+      }
+    }
+
+    // Validate relationship budgets and duplicate relationships
+    const relationshipFields = [
+      'related_workflows',
+      'related_models',
+      'related_packages',
+      'related_principles',
+      'related_debug_guides',
+      'related_patterns',
+      'related_registry',
+      'referenced_by_patterns',
+      'referenced_by_models',
+      'referenced_by_workflows',
+      'alternatives',
+      'related_content',
+      'relatedcontent'
+    ];
+    let totalRelationshipsCount = 0;
+    for (const field of relationshipFields) {
+      const rels = obj[field];
+      if (Array.isArray(rels)) {
+        const relCount = rels.length;
+        totalRelationshipsCount += relCount;
+        
+        // Check per-type budget
+        if (relCount > sizeBudgets.max_relationships_per_type) {
+          reportWarning(`Resource '${normalizedPath}' field '${field}' has ${relCount} relationships, exceeding max_relationships_per_type budget of ${sizeBudgets.max_relationships_per_type}`);
+        }
+        
+        // Check duplicate relationships
+        const seen = new Set<string>();
+        rels.forEach((rel, idx) => {
+          let idStr = '';
+          if (typeof rel === 'string') {
+            idStr = rel;
+          } else if (typeof rel === 'object' && rel !== null) {
+            const r = rel as { id?: string; type?: string };
+            if (r.id) idStr = `${r.type || ''}:${r.id}`;
+          }
+          if (idStr) {
+            if (seen.has(idStr)) {
+              reportError(`Duplicate relationship to '${idStr}' in '${normalizedPath}' field '${field}' at index ${idx}`);
+            } else {
+              seen.add(idStr);
+            }
+          }
+        });
+      }
+    }
+    if (totalRelationshipsCount > sizeBudgets.max_total_relationships) {
+      reportWarning(`Resource '${normalizedPath}' has ${totalRelationshipsCount} total relationships, exceeding max_total_relationships budget of ${sizeBudgets.max_total_relationships}`);
     }
 
     // ── STEP 7: Duplicate Detection ─────────────────────────
@@ -505,6 +635,7 @@ if (SUPPRESS_BROKEN_REF_WARNINGS) {
 
 // ── STEP 8.5: Bidirectional Relationship Validation ─────────
 console.log(`\n📊 Checking bidirectional relationship consistency...`);
+console.log(`ℹ️ [Info] Relationship integrity not checked for related_models/related_packages — documented exception, see ARCHITECTURE_FREEZE.md`);
 
 // Build a map of all relationships: "sourceType:sourceId" -> Array of { targetType, targetId, relationshipType }
 const relationshipMap = new Map<string, Array<{ targetType: string; targetId: string; relationshipType?: string }>>();

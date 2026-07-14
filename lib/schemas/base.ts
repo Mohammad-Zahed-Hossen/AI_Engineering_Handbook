@@ -82,7 +82,7 @@ export const ContentRefSchema = z.object({
     'decision_guide',
     'principle',
   ]),
-  relationship_type: RelationshipTypeSchema.optional(),
+  relationship_type: z.string().optional(),
 });
 export type ContentRef = z.infer<typeof ContentRefSchema>;
 

@@ -1,0 +1,201 @@
+{
+  "id": "gradient-accumulation",
+  "title": "Gradient Accumulation",
+  "slug": "gradient-accumulation",
+  "description": "Simulates a larger effective batch size by summing gradients across multiple micro-batches before performing an optimizer update.",
+  "name": "Gradient Accumulation",
+  "concept": "At the engineering level, gradient accumulation decouples gradient computation from parameter update frequency: the model processes several micro-batches, accumulates their gradients in memory, and only then performs one optimizer update. If the micro-batch loss is normalized correctly, the accumulated gradient can approximate the gradient of a larger batch, but this equivalence is exact only for deterministic components and fixed training-state assumptions; it breaks when batch-dependent layers, stochastic regularizers, or stateful optimizer dynamics depend on update cadence rather than sample count. Micro-batching lowers peak activation memory, enabling larger models or longer sequences under fixed VRAM, while delayed updates reduce optimizer-step frequency and can reduce communication pressure in distributed settings. The effective batch size is the product of micro-batch size and accumulation steps, but the observed training dynamics are not always identical to a true large batch. From an optimization standpoint, accumulation usually lowers gradient noise relative to a smaller micro-batch, but it also lowers update frequency, which can slow adaptation and interact with schedulers, momentum buffers, and adaptive moments.",
+  "applicability": "Use Gradient Accumulation when the target batch, sequence length, or model footprint exceeds available GPU memory and you want to preserve a batch-oriented training regime without changing the model architecture. It is especially relevant when activation memory dominates, when data-parallel synchronization costs are acceptable at a lower update cadence, or when you need a quick production workaround before adopting deeper memory-saving patterns such as checkpointing, sharding, or pipeline parallelism. Avoid it when the system is already communication-bound, when the training stack depends heavily on batch-statistics behavior, or when training speed per token matters more than matching a nominal batch size. In distributed training, GA is most attractive when per-step synchronization is expensive relative to local computation, but it also delays gradient exchange and can increase staleness.",
+  "decision_summary": {
+    "when_to_use": [
+      "GPU memory bottleneck",
+      "Need larger effective batch size",
+      "LLM fine-tuning",
+      "Single GPU training"
+    ],
+    "dont_use": [
+      "Heavy BatchNorm dependency",
+      "Communication bottleneck",
+      "Need maximum update frequency"
+    ],
+    "tradeoff": "Memory ↓, Compute ↑, Update Frequency ↓"
+  },
+  "pattern_snapshot": {
+    "primary_goal": "Memory Optimization",
+    "primary_constraint": "Update Latency",
+    "effective_batch": "Micro Batch × Accumulation Steps",
+    "typical_usage": "LLM Training"
+  },
+  "tradeoffs": [
+    {
+      "dimension": "Memory",
+      "effect": "↓↓↓"
+    },
+    {
+      "dimension": "Compute",
+      "effect": "↑"
+    },
+    {
+      "dimension": "Communication",
+      "effect": "↓"
+    },
+    {
+      "dimension": "Convergence",
+      "effect": "Depends"
+    },
+    {
+      "dimension": "Throughput",
+      "effect": "Depends"
+    },
+    {
+      "dimension": "Complexity",
+      "effect": "Medium"
+    }
+  ],
+  "decision_flow": [
+    {
+      "question": "OOM during training?",
+      "if_yes": "Check if activation memory is the bottleneck",
+      "if_no": "Consider other patterns"
+    },
+    {
+      "question": "Can you reduce micro-batch size?",
+      "if_yes": "Try Gradient Accumulation",
+      "if_no": "Consider checkpointing or model parallelism"
+    },
+    {
+      "question": "Still OOM after GA?",
+      "if_yes": "Add Gradient Checkpointing",
+      "if_no": "Tune accumulation steps"
+    }
+  ],
+  "anti_patterns": [
+    {
+      "wrong": "Clip every micro-batch independently",
+      "impact": "Changes gradient direction and scale, creating inconsistent training dynamics",
+      "fix": "Clip only after the accumulated gradient is fully formed"
+    },
+    {
+      "wrong": "Update scheduler and optimizer state on every micro-batch",
+      "impact": "Breaks accumulation window semantics, changes effective decay and warmup assumptions",
+      "fix": "Advance scheduler and optimizer state only at the update boundary"
+    },
+    {
+      "wrong": "Treat GA as exact large-batch equivalence",
+      "impact": "Silent divergence from intended optimization path when BatchNorm/dropout depend on micro-batch boundaries",
+      "fix": "Treat equivalence as approximate unless training stack is explicitly designed for it"
+    },
+    "Using GA to compensate for an architecture bottleneck: Teams sometimes reach for GA when the real issue is parameter memory, optimizer-state memory, or a poorly chosen parallelization strategy. In that case, GA can reduce peak activation use but leave the main bottleneck untouched, resulting in lower throughput without solving the scaling limit. A better answer may be mixed precision, checkpointing, sharding, pipeline parallelism, or a smaller true batch with retuned optimizer settings.",
+    "Ignoring BatchNorm and stochastic-layer behavior: GA is sometimes introduced without auditing layer behavior across micro-batches. If batch-dependent statistics or stochastic regularization are sensitive to batch boundaries, the model can train with systematically different activation distributions than intended. This can hurt convergence, calibration, or final accuracy, especially when the micro-batch is very small relative to the full effective batch."
+  ],
+  "implementation_notes": "The core implementation is a counter-driven control flow: accumulate gradients for K micro-batches, apply loss normalization so the total contribution matches the intended effective batch semantics, optionally clip after accumulation, then perform one optimizer update and reset gradient buffers. The update boundary must be treated as the only point at which optimizer state, learning-rate scheduling, and distributed synchronization advance, otherwise the system will silently train with a different effective algorithm than intended. Loss normalization is a frequent failure point. If each micro-batch loss is averaged independently and then summed again, the final gradient scale can drift; the intended normalization should reflect either the number of accumulation steps or, in token-based tasks, the actual number of supervised items. Gradient clipping should usually occur after accumulation and before the delayed update. In distributed systems, synchronization strategy is critical.",
+  "examples": [
+    "initialize model_state\ninitialize optimizer_state\ninitialize scheduler_state\nset accumulation_steps = K\nset micro_batch_counter = 0\n\nfor each training_epoch:\n    for each micro_batch in training_data:\n        predictions = forward_pass(model_state, micro_batch)\n        loss = compute_loss(predictions, targets(micro_batch))\n        normalized_loss = loss / accumulation_steps\n        accumulate_gradients(model_state, normalized_loss)\n\n        micro_batch_counter = micro_batch_counter + 1\n\n        if micro_batch_counter < accumulation_steps:\n            continue\n\n        if use_gradient_clipping:\n            clip_accumulated_gradients(model_state)\n\n        apply_optimizer_update(model_state, optimizer_state)\n        advance_scheduler(scheduler_state)\n\n        reset_accumulated_gradients(model_state)\n        micro_batch_counter = 0\n\n    if micro_batch_counter > 0:\n        if use_gradient_clipping:\n            clip_accumulated_gradients(model_state)\n        apply_optimizer_update(model_state, optimizer_state)\n        advance_scheduler(scheduler_state)\n        reset_accumulated_gradients(model_state)\n        micro_batch_counter = 0"
+  ],
+  "variations": [
+    {
+      "name": "Token-normalized accumulation",
+      "description": "This variation normalizes each micro-batch by the number of supervised tokens or items instead of a fixed step count.",
+      "use_when": "Variable sequence lengths, padding patterns, or packed examples",
+      "benefit": "Correct token weighting across variable-length batches",
+      "tradeoff": "Slightly more bookkeeping to track token counts"
+    },
+    {
+      "name": "Distributed deferred synchronization",
+      "description": "Workers accumulate locally and synchronize only at the update boundary, rather than all-reducing every micro-batch.",
+      "use_when": "Bandwidth-constrained clusters with expensive per-step synchronization",
+      "benefit": "Reduces communication frequency and improves cost efficiency",
+      "tradeoff": "Increases burstiness and makes failure recovery more expensive"
+    },
+    {
+      "name": "GA with checkpointing",
+      "description": "This combines accumulation with activation recomputation so that memory savings come from both smaller retained activations and fewer optimizer updates.",
+      "use_when": "Very deep or long-context models where GA alone is insufficient",
+      "benefit": "Maximum memory savings from both techniques",
+      "tradeoff": "Increased compute overhead from activation recomputation"
+    }
+  ],
+  "category": "gradient_accumulation",
+  "domain": "deep-learning",
+  "difficulty": "intermediate",
+  "engineering_area": "optimization",
+  "estimated_reading_time": 25,
+  "prerequisites": [
+    "training-loop"
+  ],
+  "recommended_next": [
+    "mixed-precision"
+  ],
+  "created_at": "2026-07-14",
+  "updated_at": "2026-07-14",
+  "last_verified": "2026-07-14",
+  "review_frequency": "annually",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "sources": [
+    "https://github.com/Lightning-AI/pytorch-lightning/blob/master/docs/source-pytorch/common/gradient_accumulation.rst",
+    "https://huggingface.co/docs/transformers/grad_accumulation",
+    "https://www.semanticscholar.org/paper/3127973b8ca73c67c3ba207c4a2b59dba8e5d258",
+    "https://ieeexplore.ieee.org/document/10171567/",
+    "https://arxiv.org/abs/2507.07101",
+    "https://arxiv.org/abs/2406.13936",
+    "https://arxiv.org/abs/2412.21124",
+    "https://ieeexplore.ieee.org/document/10682850/",
+    "https://ieeexplore.ieee.org/document/10505158/",
+    "https://ieeexplore.ieee.org/document/11480500/",
+    "https://jhc.sjtu.edu.cn/~bjiang/papers/Huang_CCGrid2023_GA.pdf",
+    "https://ar5iv.labs.arxiv.org/html/2106.02679",
+    "https://arxiv.org/pdf/2305.19982.pdf",
+    "https://arxiv.org/pdf/1810.11787.pdf",
+    "https://arxiv.org/html/2507.07101v4",
+    "http://arxiv.org/pdf/2406.13936.pdf",
+    "https://proceedings.neurips.cc/paper_files/paper/2024/file/15ba84c1e19b0eb75f96922f5da0a021-Paper-Conference.pdf",
+    "https://medium.com/@mohamed_el_amine.bellebna/on-the-equivalence-between-large-batch-training-and-gradient-accumulation-tackling-the-popcorn-cf04f98b77e4"
+  ],
+  "tags": [
+    "deep-learning",
+    "optimization",
+    "gradient-accumulation",
+    "memory-optimization",
+    "training"
+  ],
+  "aliases": [
+    "gradient-accumulation-pattern",
+    "effective-batch-size"
+  ],
+  "keywords": [
+    "gradient accumulation",
+    "micro-batch",
+    "memory limit",
+    "effective batch size",
+    "pytorch"
+  ],
+  "search_tokens": [
+    "gradient accumulation",
+    "micro batching",
+    "simulate large batch",
+    "gradient summation"
+  ],
+  "related_workflows": [
+    "full-fine-tuning-a-pretrained-transformer",
+    "fine-tune-an-llm-with-lora-qlora"
+  ],
+  "related_models": [
+    "bert"
+  ],
+  "related_packages": [
+    "pytorch"
+  ],
+  "related_principles": [
+    "single-source-of-truth"
+  ],
+  "related_debug_guides": [
+    "cuda-out-of-memory"
+  ]
+}

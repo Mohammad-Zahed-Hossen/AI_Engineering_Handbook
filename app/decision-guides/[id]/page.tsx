@@ -44,9 +44,9 @@ export default async function DecisionGuidePage({ params }: PageProps) {
 
   // Combine all related content
   const allRelatedContent = [
-    ...decisionGuide.related_workflows.map(id => ({ id, type: 'workflow' as const })),
-    ...decisionGuide.related_packages.map(id => ({ id, type: 'package' as const })),
-    ...decisionGuide.related_models.map(id => ({ id, type: 'model' as const })),
+    ...decisionGuide.related_workflows.map(id => ({ id, type: 'workflow' as const, relationship_type: 'related_workflows' })),
+    ...decisionGuide.related_packages.map(id => ({ id, type: 'package' as const, relationship_type: 'related_packages' })),
+    ...decisionGuide.related_models.map(id => ({ id, type: 'model' as const, relationship_type: 'related_models' })),
   ];
 
   return (

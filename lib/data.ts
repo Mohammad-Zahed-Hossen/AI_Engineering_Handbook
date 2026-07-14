@@ -304,6 +304,7 @@ export interface NavItem {
   id: string;
   name: string;
   version?: string;
+  category?: string;
 }
 
 /**
@@ -847,6 +848,50 @@ export const getRelatedContent = cache(function getRelatedContent(
       : [];
 
     return uniqueExistingRefs([...packageRef, ...relatedPackages], current).slice(0, 6);
+  }
+
+  if (type === 'pattern') {
+    const pattern = getPattern(id);
+    const typedRefs = [
+      ...(pattern.related_workflows || []).map(id => ({ id, type: 'workflow' as const, relationship_type: 'related_workflows' })),
+      ...(pattern.related_models || []).map(id => ({ id, type: 'model' as const, relationship_type: 'related_models' })),
+      ...(pattern.related_packages || []).map(id => ({ id, type: 'package' as const, relationship_type: 'related_packages' })),
+      ...(pattern.related_principles || []).map(id => ({ id, type: 'principle' as const, relationship_type: 'related_principles' })),
+      ...(pattern.related_debug_guides || []).map(id => ({ id, type: 'debug_guide' as const, relationship_type: 'related_debug_guides' })),
+    ];
+    return uniqueExistingRefs(typedRefs, current).slice(0, 6);
+  }
+
+  if (type === 'debug_guide') {
+    const debugGuide = getDebugGuide(id);
+    const typedRefs = [
+      ...(debugGuide.related_packages || []).map(id => ({ id, type: 'package' as const, relationship_type: 'related_packages' })),
+      ...(debugGuide.related_workflows || []).map(id => ({ id, type: 'workflow' as const, relationship_type: 'related_workflows' })),
+      ...(debugGuide.related_patterns || []).map(id => ({ id, type: 'pattern' as const, relationship_type: 'related_patterns' })),
+      ...(debugGuide.related_models || []).map(id => ({ id, type: 'model' as const, relationship_type: 'related_models' })),
+      ...(debugGuide.related_registry || []).map(id => ({ id, type: 'registry' as const, relationship_type: 'related_registry' })),
+    ];
+    return uniqueExistingRefs(typedRefs, current).slice(0, 6);
+  }
+
+  if (type === 'decision_guide') {
+    const decisionGuide = getDecisionGuide(id);
+    const typedRefs = [
+      ...(decisionGuide.related_workflows || []).map(id => ({ id, type: 'workflow' as const, relationship_type: 'related_workflows' })),
+      ...(decisionGuide.related_packages || []).map(id => ({ id, type: 'package' as const, relationship_type: 'related_packages' })),
+      ...(decisionGuide.related_models || []).map(id => ({ id, type: 'model' as const, relationship_type: 'related_models' })),
+    ];
+    return uniqueExistingRefs(typedRefs, current).slice(0, 6);
+  }
+
+  if (type === 'principle') {
+    const principle = getPrinciple(id);
+    const typedRefs = [
+      ...(principle.referenced_by_patterns || []).map(id => ({ id, type: 'pattern' as const, relationship_type: 'referenced_by_patterns' })),
+      ...(principle.referenced_by_models || []).map(id => ({ id, type: 'model' as const, relationship_type: 'referenced_by_models' })),
+      ...(principle.referenced_by_workflows || []).map(id => ({ id, type: 'workflow' as const, relationship_type: 'referenced_by_workflows' })),
+    ];
+    return uniqueExistingRefs(typedRefs, current).slice(0, 6);
   }
 
   return [];
