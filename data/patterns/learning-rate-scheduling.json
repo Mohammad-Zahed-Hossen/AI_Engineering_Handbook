@@ -1,0 +1,219 @@
+{
+  "id": "learning-rate-scheduling",
+  "title": "Learning Rate Scheduling",
+  "slug": "learning-rate-scheduling",
+  "description": "Learning rate scheduling is the pattern of changing the optimizer step size over training time instead of keeping it constant. It solves the engineering problem of stabilizing early optimization, accelerating convergence, and improving final generalization in deep neural network training.",
+  "name": "Learning Rate Scheduling",
+  "concept": "The fundamental mechanism is a scalar or per-parameter-group multiplier that evolves with global training progress and modulates update magnitude without changing the update direction. Common regimes include warmup, decay, cyclic schedules, and plateau-driven adaptation, all of which change how aggressively the optimizer moves through parameter space across different training phases. The computational overhead of the schedule itself is negligible, typically O(1) per step, but the effect on wall-clock time can be large because a better schedule may reach the target loss in far fewer training steps. In practice, constant learning rates can be competitive in simple settings, but scheduled rates often reduce total optimization time by preventing early instability and late-stage stagnation. Scheduler state is usually tiny relative to model or optimizer state, but it still must be checkpointed for exact resume behavior. Scheduler size consists of global step counter, per-group configuration, and plateau history, which is negligible in bytes but essential for reproducibility and continuity. Learning rate scheduling is not a hardware bottleneck in the narrow sense; it is a convergence-rate multiplier that changes how many total FLOPs are needed to reach a useful model. Bad scheduling wastes compute by diverging early or crawling too slowly, which shifts the practical bottleneck from per-step throughput to total training duration. Arithmetic intensity is not directly altered by the scheduler implementation, but the LR value strongly affects gradient signal quality and the effective use of hardware FLOPs. An LR that is too high can cause instability and invalidate many expensive steps, while an LR that is too low underutilizes the training budget by requiring many extra updates to make progress. Warmup is especially important in deep transformer training, where early large updates can amplify variance and destabilize optimization. Linear warmup is the most common practical form, while decay schedules such as cosine, polynomial, and exponential help the optimizer transition from exploration to convergence; cyclic schedules can reintroduce higher rates to escape poor basins, and plateau detection adapts schedule changes to validation behavior.",
+  "applicability": "Use learning rate scheduling when training deep neural networks with SGD, Adam, or related optimizers, especially for transformer pretraining where warmup is effectively mandatory in common practice. It is also appropriate for fine-tuning, where decay helps reduce catastrophic forgetting, and for any training run long enough that schedule shape materially affects convergence and generalization. Avoid it for simple convex problems where constant step-size behavior is already well understood and near-optimal, for very short runs where warmup consumes too much of the budget, or for some online-learning settings where per-step adaptation is better handled by an adaptive method. It is also less relevant when a trust-region or second-order method replaces manual step-size control with its own curvature-aware logic. It interacts closely with gradient accumulation because the scheduler must be aligned to the effective update count rather than the microbatch count. It also depends on batch size scaling, weight decay policy, mixed precision stability, early stopping patience, and checkpoint resume state, because each of those changes the meaning or safety of the chosen learning-rate trajectory.",
+  "decision_summary": {
+    "when_to_use": [
+      "Training deep networks where early instability or late stagnation is likely.",
+      "Transformer pretraining or long fine-tuning runs where warmup and decay are standard practice.",
+      "Runs with a known training budget where a schedule can be matched to total steps.",
+      "Settings where resume correctness matters and scheduler state must persist across restarts."
+    ],
+    "dont_use": [
+      "Short runs where warmup or decay would consume most of the budget.",
+      "Convex or otherwise simple problems where constant LR is sufficient.",
+      "Online or nonstationary workloads that need per-step adaptive control instead of a fixed schedule.",
+      "Second-order or trust-region methods that already regulate step size internally."
+    ],
+    "tradeoff": "Convergence Speed ↑, Stability ↑, Generalization ↑, Hyperparameter Complexity ↑"
+  },
+  "pattern_snapshot": {
+    "primary_goal": "Convergence Rate Optimization and Training Stability",
+    "primary_constraint": "Hyperparameter Search Budget and Training Duration",
+    "effective_batch": "Not Directly Affected",
+    "typical_usage": "Deep Neural Network Training Across All Domains"
+  },
+  "tradeoffs": [
+    {
+      "dimension": "Memory",
+      "effect": "↑",
+      "description": "Scheduler state is small, but it must be tracked and checkpointed for faithful resume semantics."
+    },
+    {
+      "dimension": "Compute",
+      "effect": "↓",
+      "description": "The scheduler itself is cheap, but poor schedules can increase total steps needed to reach target quality."
+    },
+    {
+      "dimension": "Latency",
+      "effect": "↑",
+      "description": "Better schedules can reduce time-to-quality, while warmup and decay add phase-specific control overhead."
+    },
+    {
+      "dimension": "Bandwidth",
+      "effect": "↔",
+      "description": "The scheduler does not materially change model I/O, but it affects how much compute is wasted before convergence."
+    },
+    {
+      "dimension": "Complexity",
+      "effect": "↑",
+      "description": "Correct scheduling requires step accounting, resume persistence, and coordination with other training-state components."
+    }
+  ],
+  "decision_flow": [
+    {
+      "question": "Is the run long enough that optimization behavior materially affects final cost?",
+      "if_yes": "Go to Step 2: Check model sensitivity",
+      "if_no": "Constant LR may be acceptable."
+    },
+    {
+      "question": "Is the model sensitive to early instability, such as large transformer pretraining?",
+      "if_yes": "Go to Step 3: Check recovery needs",
+      "if_no": "Choose a simpler schedule or plateau-based adaptation."
+    },
+    {
+      "question": "Do you need exact recovery after interruption?",
+      "if_yes": "Checkpoint global step and scheduler state",
+      "if_no": "Schedule can be recomputed from scratch, but reproducibility weakens."
+    }
+  ],
+  "system_interactions": [
+    {
+      "interacts_with": "Optimizer / Gradient Update Engine",
+      "condition": "The optimizer exposes momentum, adaptive moments, or decoupled weight decay.",
+      "effect": "Learning-rate shape changes the stability and effective direction of parameter updates, especially for Adam-like methods."
+    },
+    {
+      "interacts_with": "Distributed Training / Global Step Counter",
+      "condition": "Multiple ranks perform synchronized updates or gradient accumulation.",
+      "effect": "All ranks must share the same effective step count or the schedule diverges across workers."
+    },
+    {
+      "interacts_with": "Gradient Accumulation / Effective Batch Size",
+      "condition": "Microbatches are accumulated before an optimizer update.",
+      "effect": "The scheduler must advance on optimizer steps, not microsteps, or the intended warmup and decay timing becomes incorrect."
+    },
+    {
+      "interacts_with": "Mixed Precision / Loss Scaling Engine",
+      "condition": "Training uses fp16/bf16 with dynamic loss scaling.",
+      "effect": "Overly aggressive LR can interact with numerical range limits and increase overflow or instability risk."
+    },
+    {
+      "interacts_with": "Early Stopping / Validation Loop",
+      "condition": "Validation metrics are noisy or plateau-based adaptation is used.",
+      "effect": "Patience and cooldown settings must be aligned with validation variance to avoid premature LR drops."
+    },
+    {
+      "interacts_with": "Checkpointing / Resume Training",
+      "condition": "Jobs resume after interruption or preemption.",
+      "effect": "Scheduler phase, global step, and cooldown history must be restored to preserve continuity."
+    },
+    {
+      "interacts_with": "Weight Decay / Regularization Controller",
+      "condition": "Decoupled weight decay or LR-dependent regularization is used.",
+      "effect": "The effective regularization strength changes with LR, so schedule design affects both optimization and implicit regularization."
+    }
+  ],
+  "anti_patterns": [
+    {
+      "wrong": "Treating learning rate as a constant because the optimizer already adapts",
+      "impact": "Adaptive optimizers still benefit from schedule shape; ignoring it can slow convergence and worsen final quality.",
+      "fix": "Use a schedule matched to model scale, training duration, and batch size."
+    },
+    {
+      "wrong": "Advancing the scheduler on every microbatch when using gradient accumulation",
+      "impact": "The effective warmup and decay happen too fast, producing an LR trajectory that is misaligned with actual updates.",
+      "fix": "Step the scheduler only when an optimizer update occurs."
+    },
+    {
+      "wrong": "Forgetting to save and restore scheduler state during checkpoint resume",
+      "impact": "The LR phase resets or drifts, causing training inconsistency and potentially unstable jumps after restart.",
+      "fix": "Store global step, cycle position, cooldown, and plateau history in the checkpoint."
+    },
+    {
+      "wrong": "Using a warmup that is too long for the available budget",
+      "impact": "The model spends too many steps in a deliberately underpowered regime and underuses compute.",
+      "fix": "Size warmup as a small fraction of total steps and validate against observed instability."
+    },
+    {
+      "wrong": "Applying plateau detection directly to noisy validation metrics without smoothing",
+      "impact": "LR can be reduced too early, freezing optimization before the model has actually plateaued.",
+      "fix": "Use moving averages, patience, cooldown, and minimum-delta thresholds."
+    }
+  ],
+  "implementation_notes": "Scheduler state policies should use a global update counter as the primary timeline, with epoch counters only as coarse metadata when the schedule is epoch-based. In gradient accumulation, the step counter must advance only when optimizer updates occur, and per-parameter-group schedules should be stored if groups intentionally use different rates. A practical schedule taxonomy includes piecewise constant, polynomial decay, cosine annealing, exponential decay, cyclic triangular, one-cycle, and warmup-decay compound schedules. Compound schedules are common because they separate early stabilization from late-stage refinement, especially in transformer training and large-scale pretraining. Warmup can be linear or exponential, and the main purpose is to suppress unstable early updates while activations, moments, and layer statistics are still adapting. Fixed-step warmup is easier to reason about, while proportional warmup scales with total training budget; both should be chosen with effective batch size in mind so that the real optimization cadence matches the intended design. Changing batch size usually requires LR rescaling, with linear and square-root scaling being the most common rules of thumb in large-batch training. Adaptive gradient clipping can further moderate step size when scaling laws become unstable, and gradient accumulation should be treated as part of the effective batch size rather than as free extra optimization steps. Distributed systems need exact agreement on scheduler phase, especially after resume or when workers can lag behind each other. A checkpoint should restore the step counter, scheduler phase, plateau history, and any restart-cycle metadata so all ranks realign to the same schedule boundary. Plateau detection typically uses moving-average windows, patience, cooldown, and minimum-delta thresholds to avoid reacting to noisy validation curves. A common failure mode is premature LR reduction on noisy metrics, which can lock the optimizer into a too-small step size before the model has actually converged. Common implementation failures include stepping the scheduler before the optimizer, desynchronizing step counters after resume, overflowing step counters in extremely long runs, coupling LR incorrectly with weight decay, and triggering plateau logic too early on noisy validation results. The safest engineering rule is to treat the scheduler as part of the training state machine, not as a cosmetic hyperparameter.",
+  "examples": [
+    "def train_step(state, batch):\n    if state[\"global_step\"] < state[\"warmup_steps\"]:\n        lr_scale = (state[\"global_step\"] + 1) / state[\"warmup_steps\"]\n    else:\n        progress = (state[\"global_step\"] - state[\"warmup_steps\"]) / max(1, state[\"total_steps\"] - state[\"warmup_steps\"])\n        lr_scale = 0.5 * (1.0 + cos(pi * min(1.0, progress)))\n\n    lr = state[\"base_lr\"] * lr_scale\n    gradients = backward(state[\"model\"], batch)\n    gradients = clip_gradients(gradients, state[\"max_grad_norm\"])\n\n    for i in range(len(state[\"model\"])):\n        state[\"velocity\"][i] = state[\"momentum\"] * state[\"velocity\"][i] + gradients[i]\n        state[\"model\"][i] = state[\"model\"][i] - lr * state[\"velocity\"][i]\n\n    state[\"global_step\"] = state[\"global_step\"] + 1\n    state[\"scheduler_state\"][\"last_lr\"] = lr\n    return state"
+  ],
+  "variations": [
+    {
+      "name": "Cosine Annealing with Warm Restarts (SGDR)",
+      "description": "Cosine annealing periodically resets the learning rate to a high value and then decays along a cosine curve, encouraging renewed exploration of the loss landscape.",
+      "use_when": "Training deep vision models or other tasks where monotonic decay plateaus too early and occasional exploration is beneficial.",
+      "benefit": "Can improve generalization by revisiting higher-learning-rate regions and escaping shallow basins.",
+      "tradeoff": "Requires restart-period tuning and checkpoint state must preserve cycle position, which makes debugging and resume more complex."
+    },
+    {
+      "name": "Linear Warmup + Cosine Decay (Transformer Standard)",
+      "description": "A small initial LR is linearly ramped during warmup and then decayed with a cosine curve over the remaining training budget, which is a common transformer pretraining pattern.",
+      "use_when": "Pretraining or fine-tuning transformers where early stability is critical and late-stage decay improves convergence.",
+      "benefit": "Reduces early divergence risk and provides a smooth descent toward convergence.",
+      "tradeoff": "Warmup ratio and minimum LR must be tuned carefully, and too much warmup can waste budget."
+    },
+    {
+      "name": "ReduceLROnPlateau (Adaptive Validation-Driven)",
+      "description": "The scheduler monitors validation loss and reduces LR when improvement stalls for a patience window.",
+      "use_when": "Training budgets are uncertain and validation is a reliable proxy for progress.",
+      "benefit": "Adapts automatically to the problem and often extracts extra performance in long runs.",
+      "tradeoff": "Noisy validation curves can trigger premature reductions, and evaluation overhead can be significant."
+    }
+  ],
+  "category": "learning_rate_scheduling",
+  "domain": "llm",
+  "difficulty": "advanced",
+  "engineering_area": "optimization",
+  "estimated_reading_time": 15,
+  "prerequisites": [
+    "training-loop"
+  ],
+  "recommended_next": [],
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "last_verified": "2026-07-15",
+  "review_frequency": "annually",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "sources": [
+    "https://ieeexplore.ieee.org/document/10172871/",
+    "https://mlip-cmu.github.io/f2024/slides/04_mistakes/mistakes.pdf"
+  ],
+  "tags": [
+    "learning-rate-scheduling",
+    "lr-scheduler"
+  ],
+  "aliases": [
+    "learning-rate-decay",
+    "learning-rate-schedule"
+  ],
+  "keywords": [
+    "learning rate scheduling",
+    "learning rate decay",
+    "cosine decay",
+    "linear warmup"
+  ],
+  "search_tokens": [
+    "learning rate decay schedule",
+    "transformer warmup steps",
+    "ReduceLROnPlateau patience",
+    "SGDR warm restart cosine"
+  ],
+  "related_workflows": [
+    "full-fine-tuning-a-pretrained-transformer"
+  ],
+  "related_models": [],
+  "related_packages": [
+    "pytorch"
+  ],
+  "related_principles": [],
+  "related_debug_guides": []
+}

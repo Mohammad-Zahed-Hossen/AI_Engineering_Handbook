@@ -1,0 +1,452 @@
+{
+  "id": "nan-loss-exploding-gradients",
+  "title": "NaN Loss / Exploding Gradients",
+  "slug": "nan-loss-exploding-gradients",
+  "description": "Troubleshooting and resolving numerical instability during training, including NaN loss and exploding gradients. This guide provides a structured debugging flow, investigation checklists, and mitigation strategies for stabilizing deep learning models.",
+  "name": "NaN Loss / Exploding Gradients",
+  "category": "training",
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "sources": [
+    "https://www.tensorflow.org/guide/mixed_precision",
+    "https://docs.pytorch.org/tutorials/recipes/recipes/amp_recipe.html",
+    "https://www.tensorflow.org/api_docs/python/tf/debugging/check_numerics",
+    "https://docs.pytorch.org/docs/stable/generated/torch.isnan.html",
+    "https://arxiv.org/abs/1905.11881",
+    "https://mitibmwatsonailab.mit.edu/research/blog/why-gradient-clipping-accelerates-training-for-neural-networks/",
+    "https://huggingface.co/papers/2305.01588"
+  ],
+  "tags": [
+    "training",
+    "debugging",
+    "nan",
+    "gradients",
+    "loss",
+    "stability"
+  ],
+  "aliases": [
+    "exploding-gradients",
+    "nan-loss",
+    "training-instability"
+  ],
+  "keywords": [
+    "pytorch",
+    "tensorflow",
+    "mixed-precision",
+    "gradient-clipping",
+    "learning-rate"
+  ],
+  "search_tokens": [
+    "nan loss",
+    "exploding gradients",
+    "training instability",
+    "gradient clipping"
+  ],
+  "domain": "deep-learning",
+  "difficulty": "advanced",
+  "engineering_area": "training",
+  "estimated_reading_time": 25,
+  "prerequisites": [
+    "pytorch",
+    "training-loop"
+  ],
+  "recommended_next": [
+    "cuda-out-of-memory"
+  ],
+  "last_verified": "2026-07-15",
+  "review_frequency": "quarterly",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "overview": {
+    "severity": "critical",
+    "frequency": "common",
+    "typical_stage": "any",
+    "estimated_fix_time": "30-120 min",
+    "production_impact": "severe"
+  },
+  "quick_identification": [
+    {
+      "check": "Loss becomes NaN or inf during training",
+      "description": "Monitor training logs for nan or inf values in loss."
+    },
+    {
+      "check": "Gradients contain NaN or inf values",
+      "description": "Inspect gradient tensors or apply gradient norm checks before the optimizer step; clipping utilities can also expose runaway norms."
+    },
+    {
+      "check": "Model weights become NaN after training",
+      "description": "Validate checkpoints or parameter tensors for non-finite values before save and after optimizer updates."
+    }
+  ],
+  "symptoms": [
+    {
+      "symptom": "NaN Loss",
+      "description": "Training loss suddenly becomes NaN or infinity, often after a few iterations.",
+      "error_message": "loss: nan or loss: inf in training logs.",
+      "where_appears": "Training loop, loss computation, optimizer step.",
+      "frequency": "always"
+    },
+    {
+      "symptom": "Exploding Gradients",
+      "description": "Gradient norms grow rapidly and eventually destabilize optimization.",
+      "error_message": "May not show an explicit error, but training diverges.",
+      "where_appears": "Backward pass, gradient computation.",
+      "frequency": "often"
+    },
+    {
+      "symptom": "Model Output Instability",
+      "description": "Model produces garbage or highly variable outputs.",
+      "error_message": "No explicit error, but outputs are nonsensical.",
+      "where_appears": "Inference, validation.",
+      "frequency": "sometimes"
+    }
+  ],
+  "root_causes": [
+    {
+      "cause": "Learning Rate Too High",
+      "probability": "high",
+      "explanation": "Oversized updates push parameters into regions where activations, loss terms, or optimizer state become numerically unstable; gradient clipping theory and practical guidance both treat uncontrolled step size as a major instability driver.",
+      "recognition_clues": [
+        "Loss spikes before becoming NaN.",
+        "Reducing learning rate by 10x restores stability.",
+        "Failure appears early and reproducibly across seeds."
+      ],
+      "typical_environment": "Training with large models, especially transformers."
+    },
+    {
+      "cause": "Mixed Precision Instability",
+      "probability": "high",
+      "explanation": "FP16/bfloat16 arithmetic can overflow or underflow intermediate values, and incorrect scaling or autocast usage can turn finite values into NaN/inf during forward or backward passes.",
+      "recognition_clues": [
+        "NaN appears only when AMP is enabled.",
+        "FP32 training is stable.",
+        "Loss scaling behavior changes the failure point."
+      ],
+      "typical_environment": "Mixed precision training with large batch sizes."
+    },
+    {
+      "cause": "Gradient Accumulation Issues",
+      "probability": "medium",
+      "explanation": "Accumulation bugs can effectively apply updates at the wrong scale, compound stale gradients, or skip required zeroing/unscaling steps, which amplifies instability over multiple microbatches.",
+      "recognition_clues": [
+        "NaN appears after multiple accumulation steps.",
+        "Loss scales with accumulation depth.",
+        "Manual single-step training is stable."
+      ],
+      "typical_environment": "Training loops with manual gradient accumulation."
+    },
+    {
+      "cause": "Data Contamination",
+      "probability": "medium",
+      "explanation": "Invalid or extreme input values can drive activations or loss terms out of range, especially when a specific batch contains NaN/inf, extreme outliers, or malformed labels.",
+      "recognition_clues": [
+        "NaN appears on specific batches.",
+        "Data inspection shows inf/nan values.",
+        "Validation loss is stable while training fails."
+      ],
+      "typical_environment": "New datasets, web-scraped data."
+    },
+    {
+      "cause": "Numerical Overflow in Loss Computation",
+      "probability": "low",
+      "explanation": "Loss implementations can overflow on extreme logits, invalid probabilities, or poorly bounded regression targets; framework numerics checks exist specifically to catch this class of failure.",
+      "recognition_clues": [
+        "NaN appears in a specific loss function.",
+        "Predictions become very large before NaN.",
+        "Rewriting the loss in a stable form removes the issue."
+      ],
+      "typical_environment": "Classification with extreme logits, regression with outliers."
+    }
+  ],
+  "investigation_checklist": [
+    {
+      "check": "Check learning rate value",
+      "description": "Verify the optimizer step size is appropriate for the model, batch size, and schedule."
+    },
+    {
+      "check": "Check gradient norms",
+      "description": "Log or inspect global gradient norm before the optimizer step to confirm runaway magnitudes."
+    },
+    {
+      "check": "Check mixed precision settings",
+      "description": "Verify autocast, loss scaling, and unscale-before-clip ordering are correct."
+    },
+    {
+      "check": "Check data for invalid values",
+      "description": "Inspect batches, labels, and masks for NaN/inf or extreme outliers."
+    },
+    {
+      "check": "Check loss function implementation",
+      "description": "Verify the loss is numerically stable under extreme logits, probabilities, or masks."
+    },
+    {
+      "check": "Check optimizer state",
+      "description": "Verify momentum, adaptive moments, and scaler state are not corrupted after a failed step."
+    }
+  ],
+  "diagnostic_commands": [
+    {
+      "purpose": "Check for NaN in loss",
+      "command": "if torch.isnan(loss): print('NaN detected')",
+      "expected_output": "NaN warning or printed message",
+      "interpretation": "NaN indicates numerical instability."
+    },
+    {
+      "purpose": "Check gradient norms",
+      "command": "total_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), float('inf'))",
+      "expected_output": "Gradient norm value.",
+      "interpretation": "Very large norms indicate exploding gradients; clipping infrastructure also gives a direct hook for mitigation."
+    },
+    {
+      "purpose": "Check for inf/nan in data",
+      "command": "print(torch.isinf(data).sum(), torch.isnan(data).sum())",
+      "expected_output": "Count of invalid values.",
+      "interpretation": "Any non-zero count indicates data issues."
+    }
+  ],
+  "diagnostic_tests": [
+    {
+      "purpose": "Learning rate sensitivity test",
+      "test": "Run training with 10x smaller learning rate.",
+      "command": "optimizer = AdamW(model.parameters(), lr=lr/10)",
+      "expected_result": "Stable loss with reduced learning rate.",
+      "interpretation": "If stable, the learning rate was likely too high.",
+      "next_action": "Reduce learning rate or use a warmup schedule."
+    },
+    {
+      "purpose": "Disable mixed precision",
+      "test": "Run training without automatic mixed precision.",
+      "command": "with torch.cuda.amp.autocast(enabled=False): ...",
+      "expected_result": "Stable loss in FP32.",
+      "interpretation": "If stable, AMP configuration needs adjustment.",
+      "next_action": "Adjust AMP settings or use loss scaling."
+    }
+  ],
+  "decision_tree": {
+    "question": "Does loss become NaN immediately?",
+    "yes": {
+      "question": "Is learning rate > 1e-3?",
+      "yes": {
+        "result": "Learning rate too high - reduce by 10x."
+      },
+      "no": {
+        "question": "Is AMP enabled?",
+        "yes": {
+          "result": "Mixed precision instability - disable or adjust."
+        },
+        "no": {
+          "result": "Check data for invalid values."
+        }
+      }
+    },
+    "no": {
+      "question": "Do gradient norms grow over time?",
+      "yes": {
+        "result": "Gradient accumulation issue - check implementation."
+      },
+      "no": {
+        "question": "Does NaN appear on specific batches?",
+        "yes": {
+          "result": "Data contamination - clean dataset."
+        },
+        "no": {
+          "result": "Loss function numerical overflow - add a stable formulation or clipping."
+        }
+      }
+    }
+  },
+  "solutions": [
+    {
+      "solution": "Reduce Learning Rate",
+      "quick_fix": "Halve the learning rate immediately.",
+      "permanent_fix": "Implement a learning-rate scheduler with warmup.",
+      "steps": [
+        "Locate optimizer learning rate initialization.",
+        "Reduce learning rate by a factor of 10.",
+        "Add gradient clipping to contain future spikes."
+      ],
+      "tradeoffs": [
+        "Slower convergence.",
+        "May require more epochs."
+      ],
+      "performance_impact": "Moderate slowdown from extra steps to convergence.",
+      "difficulty": "easy",
+      "works_for": [
+        "Transformer and large-model training.",
+        "Early-epoch instability."
+      ],
+      "verification": "Loss stabilizes and decreases normally."
+    },
+    {
+      "solution": "Enable Gradient Clipping",
+      "quick_fix": "Add gradient clipping with max_norm=1.0.",
+      "permanent_fix": "Tune clipping threshold against observed gradient distributions.",
+      "steps": [
+        "Add torch.nn.utils.clip_grad_norm_ before the optimizer step.",
+        "Set max_norm to 1.0 or 5.0.",
+        "Monitor gradient norms to tune the threshold."
+      ],
+      "tradeoffs": [
+        "May slow training slightly.",
+        "Can hide an underlying optimizer or data bug."
+      ],
+      "performance_impact": "Minimal overhead.",
+      "difficulty": "easy",
+      "works_for": [
+        "Unstable gradients in transformers and RNNs.",
+        "Long-sequence training."
+      ],
+      "verification": "Gradient norms remain below the clipping threshold and loss stops diverging."
+    },
+    {
+      "solution": "Fix Mixed Precision Configuration",
+      "quick_fix": "Disable AMP temporarily.",
+      "permanent_fix": "Use native AMP with proper scaling and unscale-before-clip ordering.",
+      "steps": [
+        "Enable torch.cuda.amp.GradScaler.",
+        "Scale loss before backward pass.",
+        "Unscale gradients before clipping."
+      ],
+      "tradeoffs": [
+        "More implementation complexity.",
+        "Slightly reduced throughput versus pure AMP."
+      ],
+      "performance_impact": "Small throughput reduction relative to unstable mixed-precision runs.",
+      "difficulty": "medium",
+      "works_for": [
+        "Mixed precision training.",
+        "Large batch training."
+      ],
+      "verification": "No NaN appears with AMP enabled, and loss-scaling behavior is stable."
+    }
+  ],
+  "verification_checklist": [
+    {
+      "check": "No NaN in loss values",
+      "description": "Training completes without numerical errors."
+    },
+    {
+      "check": "Gradient norms stable",
+      "description": "Gradient norms stay within reasonable bounds."
+    },
+    {
+      "check": "Model converges",
+      "description": "Loss decreases over epochs."
+    },
+    {
+      "check": "Validation metrics improve",
+      "description": "Model quality improves on the validation set."
+    }
+  ],
+  "prevention": [
+    {
+      "category": "development",
+      "practices": [
+        "Start with conservative learning rates.",
+        "Use gradient clipping by default.",
+        "Profile loss values before scaling to full training."
+      ]
+    },
+    {
+      "category": "production",
+      "practices": [
+        "Set up alerts for NaN/inf in training metrics.",
+        "Use learning-rate schedulers with warmup and decay.",
+        "Implement automatic restart or job fail-fast on numerical instability."
+      ]
+    },
+    {
+      "category": "monitoring",
+      "practices": [
+        "Log gradient norms every step.",
+        "Track loss distribution over time.",
+        "Stop or quarantine runs on first non-finite value."
+      ]
+    },
+    {
+      "category": "coding_habits",
+      "practices": [
+        "Always check for NaN in custom loss functions.",
+        "Use numerically stable primitives for softmax, log, and ratio computations.",
+        "Add gradient checks in training loops."
+      ]
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "NaN always means the model is broken",
+      "reality": "It is often caused by learning rate, AMP, data, or loss formulation issues rather than architecture."
+    },
+    {
+      "misconception": "Gradient clipping always fixes exploding gradients",
+      "reality": "It reduces damage but does not remove the underlying root cause."
+    },
+    {
+      "misconception": "Lower learning rate always helps",
+      "reality": "Too low can cause slow convergence or optimization stagnation."
+    }
+  ],
+  "false_positive_cases": [
+    {
+      "case": "Loss plateau, not NaN",
+      "why_it_looks_similar": "Training appears stuck.",
+      "how_to_distinguish": "Loss remains finite but does not decrease."
+    },
+    {
+      "case": "Validation loss increase",
+      "why_it_looks_similar": "Model appears to diverge.",
+      "how_to_distinguish": "Training loss is stable, validation is increasing."
+    },
+    {
+      "case": "Logging error",
+      "why_it_looks_similar": "NaN appears in logs.",
+      "how_to_distinguish": "Actual loss values are valid; logging format is wrong."
+    }
+  ],
+  "escalation_paths": [
+    {
+      "path": "Learning Rate Range Test",
+      "when_to_use": "Need to find a stable operating range fast.",
+      "tradeoffs": [
+        "Requires an additional training run.",
+        "May not generalize across batch sizes."
+      ]
+    },
+    {
+      "path": "Advanced Optimizers (Lion, Sophia)",
+      "when_to_use": "Standard optimizers remain unstable after basic fixes.",
+      "tradeoffs": [
+        "Less battle-tested in every workload.",
+        "Requires re-tuning hyperparameters."
+      ]
+    },
+    {
+      "path": "Distributed Training with Gradient Averaging",
+      "when_to_use": "Single-GPU training remains unstable and scale-out diagnosis is needed.",
+      "tradeoffs": [
+        "Adds infrastructure complexity.",
+        "Introduces network and synchronization overhead."
+      ]
+    }
+  ],
+  "related_packages": [
+    "pytorch"
+  ],
+  "related_workflows": [
+    "fine-tune-an-llm-with-lora-qlora",
+    "full-fine-tuning-a-pretrained-transformer"
+  ],
+  "related_patterns": [
+    "gradient-accumulation",
+    "mixed-precision",
+    "training-loop"
+  ],
+  "related_models": [],
+  "related_registry": []
+}

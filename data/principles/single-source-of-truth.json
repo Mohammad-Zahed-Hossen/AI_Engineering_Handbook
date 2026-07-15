@@ -2,16 +2,113 @@
   "id": "single-source-of-truth",
   "title": "Single Source of Truth",
   "slug": "single-source-of-truth",
-  "description": "Every piece of knowledge or configuration has exactly one owner.",
+  "description": "Every piece of knowledge or configuration has exactly one owner. This principle prevents data drift, reduces maintenance burden, and ensures system consistency across AI engineering workflows.",
   "name": "Single Source of Truth",
   "category": "systems",
-  "statement": "The Single Source of Truth (SSOT) is the practice of structuring information models and associated data schemas such that every data element is mastered (owned) in exactly one place.",
-  "intuition": "Duplicate copies of data or code naturally diverge over time. To maintain system integrity and ease maintenance, designate a single authoritative source for every piece of information, and reference it everywhere else.",
+  "statement": "The Single Source of Truth (SSOT) is the practice of structuring information models and associated data schemas such that every data element is mastered (owned) in exactly one place. All other references to that data must point to the master source rather than maintaining independent copies.",
+  "intuition": "Duplicate copies of data or code naturally diverge over time. When you have multiple versions of the same information, they will eventually become inconsistent. This divergence creates bugs, confusion, and maintenance overhead. By designating one authoritative source and referencing it everywhere else, you eliminate the possibility of drift and ensure that updates propagate consistently throughout your system.",
   "implications": [
     "No duplicated model definitions or schema classes.",
     "System parameters are declared in centralized configs and imported by components.",
     "Easier maintenance and updates as adjustments only need to be applied to the master source."
   ],
+  "engineering_consequences": [
+    {
+      "title": "Maintenance Impact",
+      "explanation": "Changes to configuration, schema, or business rules only require updates in one location. This reduces the risk of missing a duplicate during refactoring and eliminates the need to synchronize multiple sources."
+    },
+    {
+      "title": "Scalability Impact",
+      "explanation": "As systems grow, the cost of maintaining duplicated information grows quadratically. SSOT ensures linear scaling of maintenance effort regardless of system size."
+    },
+    {
+      "title": "Reliability Impact",
+      "explanation": "Eliminates race conditions and consistency bugs that arise when multiple components maintain their own view of the same data. All components see the same values at all times."
+    },
+    {
+      "title": "Operational Impact",
+      "explanation": "Debugging becomes simpler because there is only one place to check for the correct value. Auditing and compliance verification can focus on the master source."
+    }
+  ],
+  "common_violations": [
+    {
+      "violation": "Duplicated configuration across services",
+      "symptoms": "Configuration changes in one service don't reflect in others. Services behave inconsistently in production. Debugging reveals mismatched settings.",
+      "why_it_happens": "Teams copy configuration files to avoid dependency management. Initial development is faster without shared libraries, but creates long-term maintenance debt."
+    },
+    {
+      "violation": "Multiple tokenizer definitions",
+      "symptoms": "Training and inference produce different tokenizations. Model outputs don't match expected format. Subtle bugs in text processing pipelines.",
+      "why_it_happens": "Different teams implement tokenization independently. Libraries evolve at different rates. No centralized tokenization service is established."
+    },
+    {
+      "violation": "Duplicated feature engineering logic",
+      "symptoms": "Training and serving pipelines produce different features. Model performance degrades in production. Feature values differ between environments.",
+      "why_it_happens": " Feature engineering is reimplemented for serving performance. No shared feature store exists. Teams optimize locally without considering global consistency."
+    },
+    {
+      "violation": "Scattered schema definitions",
+      "symptoms": "Database schema, API schema, and validation schema drift apart. Type errors in production. Documentation becomes outdated.",
+      "why_it_happens": "Different tools require different schema formats. No schema generation pipeline exists. Manual schema maintenance is error-prone."
+    }
+  ],
+  "appears_in": [
+    {
+      "domain": "Frontend",
+      "examples": ["React state management", "Redux store", "Vuex", "Recoil", "Zustand"]
+    },
+    {
+      "domain": "Backend",
+      "examples": ["Kubernetes manifests", "Docker Compose", "Consul", "etcd", "Redis configuration"]
+    },
+    {
+      "domain": "Data Engineering",
+      "examples": ["Feature stores", "Hydra configs", "DVC pipelines", "MLflow tracking"]
+    },
+    {
+      "domain": "Version Control",
+      "examples": ["Git", "Monorepos", "Single source repositories"]
+    }
+  ],
+  "mental_model": "```\n┌─────────────────────────────────────────────────────────────┐\n│                    Single Source of Truth                     │\n├─────────────────────────────────────────────────────────────┤\n│                                                             │\n│   ┌─────────────┐                                           │\n│   │   Master    │  ◄── Every component references this      │\n│   │   Source    │      single source, never copies it       │\n│   └──────┬──────┘                                           │\n│          │                                                  │\n│          ▼                                                  │\n│   ┌────────────────────────────────────┐                   │\n│   │         Reference Only             │                   │\n│   │  ┌──────────┐ ┌──────────┐ ┌─────┐ │                   │\n│   │  │ Component│ │ Component│ │Comp.│ │                   │\n│   │  │     A    │ │     B    │ │  C  │ │                   │\n│   │  └──────────┘ └──────────┘ └─────┘ │                   │\n│   └────────────────────────────────────┘                   │\n│                                                             │\n│  ❌ No duplication  ✅ No drift  ✅ Single update point     │\n└─────────────────────────────────────────────────────────────┘\n```",
+  "decision_checklist": [
+    "Who owns this data?",
+    "Can two components disagree on this value?",
+    "Is there duplication of this information?",
+    "Can this drift over time?",
+    "Where is the single source of truth for this?",
+    "Do all consumers reference the same source?"
+  ],
+  "misconceptions": [
+    {
+      "myth": "SSOT means one database for everything",
+      "reality": "SSOT is about ownership, not storage. Different data can have different sources. The key is that each piece of information has exactly one owner."
+    },
+    {
+      "myth": "SSOT hurts performance because of network calls",
+      "reality": "SSOT can be implemented with caching, replication, and local copies. The constraint is on the write path (one owner) not the read path (can be cached)."
+    },
+    {
+      "myth": "SSOT is only for configuration",
+      "reality": "SSOT applies to all information: schemas, feature definitions, model configurations, business rules, and even code logic. Any duplicated knowledge is a candidate for SSOT."
+    }
+  ],
+  "engineering_heuristic": "When multiple systems need the same information, reference it instead of copying it.",
+  "historical_origin": "The Single Source of Truth principle emerged from database design in the 1970s, where normalization eliminated redundant data. It was later adopted by software architecture (notably in Domain-Driven Design) and became fundamental to distributed systems design. In AI engineering, SSOT became critical as ML pipelines grew more complex and the gap between training and serving environments widened.\n\nThe principle gained prominence in the 2010s with the rise of microservices, where configuration sprawl became a major source of production incidents. Feature stores like Feast and Tecton institutionalized SSOT for machine learning features, recognizing that feature drift was a primary cause of model degradation.",
+  "tradeoffs": {
+    "benefits": [
+      "Eliminates data drift and inconsistency bugs",
+      "Reduces maintenance overhead for updates",
+      "Simplifies debugging and auditing",
+      "Ensures reproducible system behavior"
+    ],
+    "costs": [
+      "May introduce query latency for remote references",
+      "Creates potential single point of failure",
+      "Requires upfront investment in shared infrastructure",
+      "Can complicate local development workflows"
+    ]
+  },
   "limitations": [
     "May introduce query latencies if distant components must repeatedly query the central master rather than accessing cached local copies.",
     "Can create single points of failure if the source system becomes unavailable."
@@ -70,7 +167,8 @@
     "gradient-checkpointing",
     "flash-attention",
     "prompt-caching",
-    "streaming-inference"
+    "streaming-inference",
+    "batch-inference"
   ],
   "referenced_by_models": [
     "bert"

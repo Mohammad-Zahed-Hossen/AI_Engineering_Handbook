@@ -1,15 +1,50 @@
 {
   "id": "rag-vs-fine-tuning",
-  "title": "RAG vs Fine-tuning",
+  "title": "RAG vs Fine-Tuning",
   "slug": "rag-vs-fine-tuning",
-  "description": "Decision guide to help developers choose between Retrieval-Augmented Generation (RAG) and Fine-Tuning.",
-  "name": "RAG vs Fine-tuning",
+  "description": "RAG is the better default when knowledge changes often, provenance matters, or you need to ground answers in external sources without retraining. Fine-tuning is the better default when you need stable task specialization, output formatting, and lower inference latency, and you can afford labeled data and retraining cycles.",
+  "name": "RAG vs Fine-Tuning",
   "category": "llm",
-  "problem": "Choosing the optimal method for adapting a pre-trained large language model to proprietary or domain-specific knowledge bases.",
-  "created_at": "2026-07-03",
-  "updated_at": "2026-07-03",
+  "problem": "The engineering decision is whether to adapt a base LLM with retrieval-time grounding or with parameter updates, where the trade-off is between knowledge freshness, cost, latency, data requirements, and hallucination control. RAG optimizes for external knowledge access and provenance, while fine-tuning optimizes for internalized task behavior and compact serving.",
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
   "sources": [
-    "https://arxiv.org/abs/2312.10997"
+    "https://arxiv.org/abs/2005.11401",
+    "https://iclr.cc/virtual/2022/poster/6319",
+    "https://huggingface.co/docs/peft/en/index",
+    "https://huggingface.co/docs/peft/main/en/conceptual_guides/lora",
+    "https://huggingface.co/docs/transformers/en/peft",
+    "https://www.lotuswebtec.com/en/?view=article&id=3276",
+    "https://huggingface.co/docs/bitsandbytes/main/en/fsdp_qlora",
+    "https://huggingface.co/docs/trl/main/en/peft_integration",
+    "http://medrxiv.org/lookup/doi/10.1101/2020.06.03.20121467",
+    "http://proceedings-online.com/proceedings_series/article/artId/384.html",
+    "http://medrxiv.org/lookup/doi/10.1101/2024.03.14.24304293",
+    "https://www.tandfonline.com/doi/full/10.1080/17441692.2025.2484627",
+    "https://link.springer.com/10.1007/s10708-024-11226-z",
+    "https://www.aclweb.org/anthology/2021.bionlp-1.9",
+    "https://linkinghub.elsevier.com/retrieve/pii/S1998956326001072",
+    "https://hatohato.jp/ai/papers/detail/rag.php",
+    "https://dblp.org/rec/conf/nips/LewisPPPKGKLYR020.html",
+    "https://www.youngju.dev/blog/ai-papers/rag_retrieval_augmented_generation.en",
+    "https://proceedings.neurips.cc/paper_files/paper/2020/file/6b493230205f780e1bc26945df7481e5-Review.html",
+    "https://bibbase.org/network/publication/lewis-perez-piktus-petroni-karpukhin-goyal-kttler-lewis-etal-retrievalaugmentedgenerationforknowledgeintensivenlptasks-2020",
+    "https://papers.nips.cc/paper_files/paper/2020/file/6b493230205f780e1bc26945df7481e5-AuthorFeedback.pdf",
+    "https://www.textbookofusability.com/references/lewis2020rag.html",
+    "https://signals.gitdealflow.com/research-paper/lewis-2020-rag-retrieval-augmented-generation",
+    "https://arxiv.org/abs/2510.21885",
+    "https://arxiv.org/abs/2504.14117",
+    "https://arxiv.org/abs/2509.18942",
+    "https://arxiv.org/abs/2507.05386",
+    "https://linkinghub.elsevier.com/retrieve/pii/S0927025626001850",
+    "https://arxiv.org/abs/2506.00772",
+    "https://arxiv.org/abs/2603.04964",
+    "https://link.springer.com/10.1007/s12525-025-00806-7",
+    "https://openreview.net/pdf/cca070649ea28a6800c5b48fb08ec696ada41494.pdf",
+    "https://d197for5662m48.cloudfront.net/documents/publicationstatus/302660/preprint_pdf/4886f9349f385bd8bf684fd64c4236b1.pdf",
+    "https://github.com/huggingface/peft/blob/main/docs/source/developer_guides/lora.md",
+    "https://scispace.com/pdf/speciality-vs-generality-an-empirical-study-on-catastrophic-44oixzw2bg.pdf",
+    "https://dl.acm.org/doi/pdf/10.1109/TASLP.2024.3463395"
   ],
   "tags": [
     "llm",
@@ -27,19 +62,20 @@
     "trade-offs"
   ],
   "search_tokens": [
-    "rag-vs-ft",
-    "rag-vs-finetuning",
-    "model-adaptation"
+    "rag vs fine-tuning",
+    "rag vs ft",
+    "model adaptation RAG fine-tuning"
   ],
   "domain": "llm",
   "difficulty": "intermediate",
   "engineering_area": "modeling",
-  "estimated_reading_time": 35,
+  "estimated_reading_time": 20,
   "prerequisites": [
-    "build-rag-system"
+    "build-rag-system",
+    "fine-tuning"
   ],
   "recommended_next": [],
-  "last_verified": "2026-07-03",
+  "last_verified": "2026-07-15",
   "review_frequency": "quarterly",
   "verified_against": "2.5.1",
   "compatible_versions": [],
@@ -51,63 +87,151 @@
   "engineering_maturity": "production_ready",
   "evaluation_criteria": [
     {
-      "criterion": "Dynamic Knowledge Access",
-      "weight": 1,
-      "description": "How frequently the source information changes and whether the model must access updates in real time."
+      "criterion": "Knowledge Freshness",
+      "weight": 1.0,
+      "description": "Ability to incorporate new information without retraining."
+    },
+    {
+      "criterion": "Task Accuracy & Specialization",
+      "weight": 0.9,
+      "description": "Performance on domain-specific tasks and formatting."
+    },
+    {
+      "criterion": "Cost Structure",
+      "weight": 0.9,
+      "description": "Training versus inference cost dynamics."
+    },
+    {
+      "criterion": "Latency & Throughput",
+      "weight": 0.8,
+      "description": "End-to-end response time and request handling."
+    },
+    {
+      "criterion": "Data Requirements",
+      "weight": 0.7,
+      "description": "Volume and quality of required data."
     },
     {
       "criterion": "Hallucination Control",
-      "weight": 1,
-      "description": "The degree to which the system must guarantee strict factual alignment and citation trace."
-    },
-    {
-      "criterion": "Development and Compute Cost",
       "weight": 0.8,
-      "description": "Upfront and ongoing computational resources required to deploy and maintain the adaptation pipeline."
+      "description": "Factual grounding and source attribution."
     }
   ],
   "options": [
     {
-      "name": "Retrieval-Augmented Generation (RAG)",
-      "id": "build-rag-system",
+      "name": "RAG (Retrieval-Augmented Generation)",
+      "id": "rag",
       "strengths": [
-        "Dynamic updates: Ingesting new documents requires zero training run-time cost.",
-        "Auditability: Output response statements can be explicitly linked back to retrieved context document chunks."
+        "Dynamic knowledge updates without model retraining.",
+        "Source attribution and verifiability.",
+        "Reduced hallucination on factual queries.",
+        "Uses existing document corpora without labeling.",
+        "Cost-effective for large knowledge bases.",
+        "Modular retriever/generator design."
       ],
       "weaknesses": [
-        "Context window constraints: Retrieving multiple blocks consumes prompt space.",
-        "Relies heavily on search index performance."
+        "Retrieval latency adds to inference time.",
+        "Context window limits can truncate evidence.",
+        "Retrieval quality directly bounds output quality.",
+        "More moving parts than a single-model system.",
+        "Weak for reasoning patterns that must be internalized."
       ],
-      "best_for": "Applications with frequently changing external documents or data formats where factual grounding is critical.",
-      "avoid_when": "The primary objective is teaching the model structural styling, task rules, or adapting to highly structured programming languages."
+      "best_for": "Knowledge-intensive applications, dynamic domains, compliance-heavy industries, FAQ/chatbots.",
+      "avoid_when": "The task requires deeply internalized reasoning patterns or the latency budget cannot tolerate retrieval.",
+      "infrastructure_required": [
+        "Vector database or search index.",
+        "Embedding model serving.",
+        "Document chunking and indexing pipeline.",
+        "Optional reranker.",
+        "Base LLM API or deployment."
+      ],
+      "operational_cost": "Moderate.",
+      "maintenance_cost": "Moderate.",
+      "scaling_complexity": "high",
+      "failure_modes": [
+        "Retrieval failure causes ungrounded generation.",
+        "Context overflow loses critical passages.",
+        "Index staleness returns outdated information.",
+        "Poor chunking breaks semantic coherence."
+      ],
+      "hidden_costs": [
+        "Embedding inference at scale.",
+        "Vector storage and query costs.",
+        "Document preprocessing pipeline.",
+        "Continuous retrieval evaluation and tuning."
+      ]
     },
     {
-      "name": "Supervised Fine-Tuning (SFT)",
+      "name": "Fine-Tuning",
       "id": "fine-tuning",
       "strengths": [
-        "Custom style and tone adaptation: Excellent for adjusting task formatting.",
-        "Zero retrieval latency: The model stores parameters natively, saving database query steps."
+        "Internalizes task patterns, style, and reasoning.",
+        "Lower inference latency.",
+        "Simpler deployment with a single model endpoint.",
+        "Better structured output formatting and tone control.",
+        "Strong for classification and extraction tasks."
       ],
       "weaknesses": [
-        "Static knowledge: Updating training data requires rebuilding checkpoint runs.",
-        "High hallucination risk: Lacks direct citation verification capability."
+        "Static knowledge requires retraining to update.",
+        "Higher upfront training cost and time.",
+        "Risk of catastrophic forgetting.",
+        "Requires high-quality labeled training data.",
+        "No native source attribution.",
+        "Hallucination risk remains out of distribution."
       ],
-      "best_for": "Aligning tone, instructions, domain nomenclature, or optimizing latency by avoiding external retrieval pipelines.",
-      "avoid_when": "The proprietary knowledge base updates hourly or requires exact mathematical proof matching."
+      "best_for": "Task specialization, style adaptation, low-latency requirements, stable knowledge domains.",
+      "avoid_when": "Knowledge changes frequently, source attribution is required, or training data is scarce.",
+      "infrastructure_required": [
+        "GPU cluster or fine-tuning service.",
+        "Data curation and validation pipeline.",
+        "Model registry and version control.",
+        "Evaluation framework for forgetting detection.",
+        "Base checkpoint access."
+      ],
+      "operational_cost": "High upfront, low per-query.",
+      "maintenance_cost": "High.",
+      "scaling_complexity": "medium",
+      "failure_modes": [
+        "Catastrophic forgetting degrades general capabilities.",
+        "Overfitting to small datasets.",
+        "Training instability with aggressive learning rates.",
+        "Model version drift across iterations."
+      ],
+      "hidden_costs": [
+        "Training compute.",
+        "Data labeling and curation.",
+        "Hyperparameter search.",
+        "Evaluation for forgetting detection.",
+        "Model storage and versioning at scale."
+      ]
     }
   ],
   "comparison_table": {
-    "Retrieval Cost": "Low setup cost, variable per-token query costs.",
-    "Training Cost": "Zero model training cost.",
-    "Updating Frequency": "Near-instantaneous document upserts.",
-    "Task Specialization": "Limited by the pre-trained capability of the base model."
+    "Knowledge Update": "RAG: Minutes to re-index | Fine-Tuning: Hours to days to retrain",
+    "Source Attribution": "RAG: Native | Fine-Tuning: None",
+    "Hallucination Risk": "RAG: Lower when retrieval is good | Fine-Tuning: Higher for factual queries",
+    "Inference Latency": "RAG: Higher due to retrieval | Fine-Tuning: Lower with a single forward pass",
+    "Training Cost": "RAG: None beyond index maintenance | Fine-Tuning: High GPU and data cost",
+    "Data Requirements": "RAG: Unstructured documents | Fine-Tuning: Labeled task demonstrations",
+    "System Complexity": "RAG: High | Fine-Tuning: Medium",
+    "Task Specialization": "RAG: Limited | Fine-Tuning: Strong",
+    "Context Window Pressure": "RAG: High | Fine-Tuning: Standard",
+    "Catastrophic Forgetting": "RAG: N/A | Fine-Tuning: Present"
   },
-  "recommendations": "Use RAG by default for knowledge retrieval tasks. Complement with Fine-tuning when model style, format constraints, or specific task instructions need adjustment.",
+  "recommendations": "Choose RAG when knowledge freshness, provenance, and auditable grounding are the primary constraints. Choose fine-tuning when the main goal is to internalize a stable task format, style, or reasoning pattern and serve it with low latency. Use Depends when the system needs both dynamic facts and stable behavioral shaping, because many production LLM systems benefit from a hybrid architecture.",
   "use_cases": [
-    "Enterprise search engine over internal wikis (RAG)",
-    "Converting user prompts into specialized DSL codes (Fine-tuning)"
+    "Enterprise knowledge base chatbot: RAG for dynamic document grounding.",
+    "Code generation assistant: Fine-tuning for style and API pattern internalization.",
+    "Medical diagnosis support: RAG for up-to-date research citation.",
+    "Customer support ticket classification: Fine-tuning for structured output.",
+    "Legal document analysis: RAG for case law retrieval with attribution.",
+    "Creative writing assistant: Fine-tuning for tone and style adaptation.",
+    "Financial reporting Q&A: RAG for real-time data integration.",
+    "SQL query generation: Fine-tuning for schema-aware syntax patterns."
   ],
-  "related_workflows": [],
+  "related_workflows": [
+    "build-rag-system"
+  ],
   "related_packages": [
     "pytorch"
   ],
@@ -117,5 +241,244 @@
   "related_model_subcategory": {
     "category": "llm",
     "subcategory": "embedding_llm"
-  }
+  },
+  "default_recommendation": "RAG",
+  "one_sentence_summary": "RAG is the better default when knowledge changes often, provenance matters, or you need to ground answers in external sources without retraining; fine-tuning is the better default when you need stable task specialization, output formatting, and lower inference latency.",
+  "choose_when": "RAG: Knowledge changes daily or weekly, source attribution is mandatory, limited training data, compliance or regulated industry | Fine-Tuning: Low latency SLA, task requires specific output format or style, high query volume with stable knowledge.",
+  "avoid_when": "RAG: The task requires deeply internalized reasoning patterns or the latency budget cannot tolerate retrieval | Fine-Tuning: Knowledge changes frequently, source attribution is required, or training data is scarce.",
+  "hybrid_recommendation": "Use both when applications need dynamic knowledge access and task-specific reasoning patterns, fine-tuning the base model for task format, style, and reasoning patterns, while using RAG to inject dynamic factual knowledge at inference time.",
+  "assumptions": [
+    "You have access to a base LLM.",
+    "You have domain-specific data such as documents, Q&A pairs, or task demonstrations.",
+    "You have infrastructure for inference and optionally training.",
+    "Latency and cost constraints are known."
+  ],
+  "scope": "This guide compares RAG and fine-tuning for LLM adaptation. It covers knowledge integration, task performance, cost, and operational characteristics.",
+  "out_of_scope": [
+    "Prompt engineering as the sole adaptation method.",
+    "Model selection for the base LLM.",
+    "Full pretraining from scratch.",
+    "Multi-modal adaptation."
+  ],
+  "decision_matrix": [
+    {
+      "criterion": "Knowledge Freshness",
+      "importance": "critical",
+      "winner": "RAG",
+      "reason": "New documents can be indexed quickly without retraining."
+    },
+    {
+      "criterion": "Task Accuracy & Specialization",
+      "importance": "high",
+      "winner": "Fine-Tuning",
+      "reason": "Parameter updates better internalize formatting and domain-specific behavior."
+    },
+    {
+      "criterion": "Cost Structure",
+      "importance": "high",
+      "winner": "Depends",
+      "reason": "RAG is cheaper for dynamic, low-to-moderate query loads; fine-tuning amortizes better at high query volume."
+    },
+    {
+      "criterion": "Latency & Throughput",
+      "importance": "high",
+      "winner": "Fine-Tuning",
+      "reason": "Retrieval adds latency and another failure surface."
+    },
+    {
+      "criterion": "Data Requirements",
+      "importance": "medium",
+      "winner": "RAG",
+      "reason": "Documents are easier to source than large labeled datasets."
+    },
+    {
+      "criterion": "Hallucination Control",
+      "importance": "high",
+      "winner": "RAG",
+      "reason": "Grounded retrieval improves provenance and factuality for knowledge-heavy queries."
+    }
+  ],
+  "constraint_recommendations": [
+    {
+      "condition": "Knowledge changes daily or weekly",
+      "recommended_option": "RAG",
+      "reason": "Avoid continuous retraining."
+    },
+    {
+      "condition": "Source attribution is mandatory",
+      "recommended_option": "RAG",
+      "reason": "Retrieved documents provide provenance."
+    },
+    {
+      "condition": "Low latency SLA",
+      "recommended_option": "Fine-Tuning",
+      "reason": "Eliminates retrieval overhead."
+    },
+    {
+      "condition": "Limited training data",
+      "recommended_option": "RAG",
+      "reason": "Documents are easier to acquire than labels."
+    },
+    {
+      "condition": "Task requires specific output format or style",
+      "recommended_option": "Fine-Tuning",
+      "reason": "Internalizes formatting and tone."
+    },
+    {
+      "condition": "High query volume with stable knowledge",
+      "recommended_option": "Fine-Tuning",
+      "reason": "Retraining cost amortizes across many requests."
+    },
+    {
+      "condition": "Compliance or regulated industry",
+      "recommended_option": "RAG",
+      "reason": "Verifiable source attribution supports auditability."
+    },
+    {
+      "condition": "Complex multi-hop reasoning required",
+      "recommended_option": "Depends",
+      "reason": "RAG helps with external facts; fine-tuning helps with stable reasoning patterns."
+    }
+  ],
+  "tradeoff_analysis": [
+    {
+      "criterion": "Knowledge Freshness",
+      "ratings": {
+        "RAG": 5,
+        "Fine-Tuning": 1
+      }
+    },
+    {
+      "criterion": "Task Accuracy & Specialization",
+      "ratings": {
+        "RAG": 2,
+        "Fine-Tuning": 5
+      }
+    },
+    {
+      "criterion": "Cost Structure",
+      "ratings": {
+        "RAG": 4,
+        "Fine-Tuning": 3
+      }
+    },
+    {
+      "criterion": "Latency & Throughput",
+      "ratings": {
+        "RAG": 2,
+        "Fine-Tuning": 5
+      }
+    },
+    {
+      "criterion": "Data Requirements",
+      "ratings": {
+        "RAG": 4,
+        "Fine-Tuning": 2
+      }
+    },
+    {
+      "criterion": "Hallucination Control",
+      "ratings": {
+        "RAG": 5,
+        "Fine-Tuning": 2
+      }
+    }
+  ],
+  "common_mistakes": [
+    "Fine-tuning when RAG would suffice.",
+    "Using RAG without retrieval evaluation.",
+    "Ignoring context window limits in RAG.",
+    "Not monitoring for catastrophic forgetting in fine-tuning.",
+    "Assuming fine-tuned models have updated knowledge.",
+    "Chunking documents without semantic boundaries.",
+    "Fine-tuning on too small a dataset.",
+    "Not versioning retrieval indices alongside model versions."
+  ],
+  "decision_tree": [
+    {
+      "question": "Does your knowledge source change frequently or require source attribution?",
+      "yes_path": "RAG",
+      "no_path": "Next question"
+    },
+    {
+      "question": "Is the primary need task specialization, style, or low-latency inference?",
+      "yes_path": "Fine-Tuning",
+      "no_path": "Next question"
+    },
+    {
+      "question": "Do you have abundant labeled training data and stable knowledge?",
+      "yes_path": "Fine-Tuning",
+      "no_path": "RAG"
+    }
+  ],
+  "hybrid_strategy": {
+    "when_both_wins": "Use both when applications need dynamic knowledge access and task-specific reasoning patterns. In production, a fine-tuned base model can provide formatting and behavioral consistency while RAG injects current facts and evidence.",
+    "architecture_overview": "Fine-tune the base model for task format, style, and reasoning patterns. Use RAG to inject dynamic factual knowledge at inference time. The fine-tuned model can better exploit retrieved context and produce more structured outputs.",
+    "benefits": [
+      "Best of both: internalized patterns plus dynamic knowledge.",
+      "Reduced hallucination through grounding.",
+      "Better retrieval utilization from improved query understanding.",
+      "Flexible knowledge updates without full retraining."
+    ],
+    "costs": [
+      "Both training and retrieval infrastructure.",
+      "Higher per-query latency.",
+      "Increased system complexity.",
+      "Maintenance of both the training pipeline and retrieval index."
+    ],
+    "tradeoffs": [
+      "Higher total system complexity.",
+      "Latency budget must accommodate both steps.",
+      "Debugging requires isolating retrieval versus generation issues.",
+      "Cost optimization is harder with dual components."
+    ]
+  },
+  "migration_path": [
+    {
+      "step": "Start with",
+      "description": "RAG for rapid prototyping and knowledge grounding."
+    },
+    {
+      "step": "Evaluate",
+      "description": "Task performance gaps, latency requirements, and query volume."
+    },
+    {
+      "step": "Introduce",
+      "description": "Fine-tuning for task specialization if RAG alone is insufficient."
+    },
+    {
+      "step": "Combine",
+      "description": "Hybrid approach with fine-tuned model plus RAG augmentation."
+    },
+    {
+      "step": "Optimize",
+      "description": "Retrieval quality and model adaptation iteratively."
+    }
+  ],
+  "production_examples": [
+    {
+      "system": "OpenAI GPTs",
+      "why": "RAG with retrieval for knowledge grounding."
+    },
+    {
+      "system": "Anthropic Claude",
+      "why": "Fine-tuning for task alignment; RAG for document Q&A."
+    },
+    {
+      "system": "Microsoft Copilot",
+      "why": "Hybrid adaptation for coding patterns and codebase context."
+    },
+    {
+      "system": "Perplexity.ai",
+      "why": "RAG-native architecture with citation."
+    },
+    {
+      "system": "Hugging Face ChatUI",
+      "why": "RAG with document upload."
+    },
+    {
+      "system": "GitHub Copilot",
+      "why": "Fine-tuned for code and retrieval for repo context."
+    }
+  ]
 }

@@ -1,0 +1,476 @@
+{
+  "id": "kafka-vs-rabbitmq",
+  "title": "Kafka vs RabbitMQ",
+  "slug": "kafka-vs-rabbitmq",
+  "description": "Kafka is the stronger default for durable event streams, replayable pipelines, and high-throughput fan-out, while RabbitMQ is the stronger default for low-latency task delivery and routing-heavy workflows. The decision usually comes down to whether you want a log-centric backbone that prioritizes scale and retention or a queue-centric broker that prioritizes routing flexibility and simpler operational behavior.",
+  "name": "Kafka vs RabbitMQ",
+  "category": "infrastructure",
+  "problem": "The engineering decision is whether to choose Kafka’s distributed commit log or RabbitMQ’s message broker for production event-driven systems, where the real trade-off is throughput, durability, replay, latency, routing semantics, and operational overhead. Kafka was explicitly designed for high-volume log processing and low-latency consumption, while RabbitMQ is optimized around brokered queues, exchanges, and per-message delivery control.",
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "sources": [
+    "https://cs.uwaterloo.ca/~ssalihog/courses/papers/netdb11-final12.pdf",
+    "https://docs.openstack.org/developer/performance-docs/test_results/mq/rabbitmq/cmsm/index.html",
+    "https://kafka.apache.org/41/operations/kraft/",
+    "https://www.semanticscholar.org/paper/ea97f112c165e4da1062c30812a41afca4dab628",
+    "https://ieeexplore.ieee.org/document/10366422/",
+    "https://arxiv.org/abs/2309.04918",
+    "https://www.tandfonline.com/doi/full/10.1080/00051144.2019.1637175",
+    "https://easychair.org/publications/paper/LFCL",
+    "https://dl.acm.org/doi/10.14778/2824032.2824063",
+    "https://dl.acm.org/doi/10.1145/3573428.3573625",
+    "https://ieeexplore.ieee.org/document/8622415/",
+    "https://www.semanticscholar.org/paper/Kafka-:-a-Distributed-Messaging-System-for-Log-Kreps/ea97f112c165e4da1062c30812a41afca4dab628",
+    "https://netman.aiops.org/~peidan/ANM2016/BigDataSystems/ReadingLists/2011NetDB_Kafka_slides.pdf",
+    "https://www.odbms.org/2011/01/kafka-a-distributed-messaging-system-for-log-processing/",
+    "https://kafka.apache.org/community/books_and_papers/",
+    "https://eecs.csuohio.edu/~sschung/cis611/KafkaDistributedMessagingSystemforLogProcessing.pdf",
+    "https://zhenghe-md.github.io/blog/2020/03/15/Kafka-a-Distributed-Messaging-System-for-Log-Processing-2011/",
+    "https://pages.cs.wisc.edu/~akella/CS838/F16/papers.html"
+  ],
+  "tags": [
+    "kafka",
+    "rabbitmq",
+    "message-queue",
+    "event-streaming",
+    "messaging-infrastructure",
+    "throughput-vs-latency"
+  ],
+  "aliases": [
+    "kafka-vs-rabbitmq",
+    "message-broker-decision",
+    "stream-vs-queue"
+  ],
+  "keywords": [
+    "kafka",
+    "rabbitmq",
+    "amqp",
+    "event-driven",
+    "distributed-log"
+  ],
+  "search_tokens": [
+    "kafka vs rabbitmq",
+    "message queue vs event streaming",
+    "amqp vs distributed log",
+    "event driven architecture broker"
+  ],
+  "domain": "systems",
+  "difficulty": "intermediate",
+  "engineering_area": "infrastructure",
+  "estimated_reading_time": 20,
+  "prerequisites": [
+    "message-queue",
+    "event-streaming"
+  ],
+  "recommended_next": [
+    "llm-application-serving",
+    "ci-cd-for-ml-models"
+  ],
+  "last_verified": "2026-07-15",
+  "review_frequency": "quarterly",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "evaluation_criteria": [
+    {
+      "criterion": "Throughput & Scalability",
+      "weight": 1.0,
+      "description": "Messages per second and horizontal scaling capability."
+    },
+    {
+      "criterion": "Latency",
+      "weight": 0.9,
+      "description": "End-to-end message delivery latency."
+    },
+    {
+      "criterion": "Message Durability & Retention",
+      "weight": 0.9,
+      "description": "Persistence guarantees and log retention."
+    },
+    {
+      "criterion": "Routing Flexibility",
+      "weight": 0.7,
+      "description": "Message routing patterns and consumer semantics."
+    },
+    {
+      "criterion": "Operational Complexity",
+      "weight": 0.7,
+      "description": "Setup, maintenance, and operational burden."
+    },
+    {
+      "criterion": "Consumer Model",
+      "weight": 0.8,
+      "description": "Pull-based streaming versus push-based queueing."
+    }
+  ],
+  "options": [
+    {
+      "name": "Apache Kafka",
+      "id": "kafka",
+      "strengths": [
+        "Extremely high throughput.",
+        "Durable, persistent log with configurable retention.",
+        "Consumer group model enables replay and reprocessing.",
+        "Horizontal scalability via partition-based sharding.",
+        "Strong ordering guarantees within partitions.",
+        "Ecosystem integration."
+      ],
+      "weaknesses": [
+        "Higher latency due to batching and disk persistence.",
+        "Complex operational model.",
+        "No native complex routing.",
+        "Consumer lag management complexity.",
+        "JVM-based resource overhead."
+      ],
+      "best_for": "Event sourcing, stream processing, log aggregation, high-throughput pipelines, data replication.",
+      "avoid_when": "Sub-millisecond latency is required, complex routing logic is central, or the workload is simple task queueing.",
+      "infrastructure_required": [
+        "Kafka broker cluster.",
+        "ZooKeeper ensemble or KRaft quorum.",
+        "High-throughput SSD or NVMe storage.",
+        "Consumer client libraries and offset management."
+      ],
+      "operational_cost": "High.",
+      "maintenance_cost": "High.",
+      "scaling_complexity": "medium",
+      "failure_modes": [
+        "Partition leader imbalance causing hotspot brokers.",
+        "Consumer lag explosion during backpressure.",
+        "Disk exhaustion from unbounded retention.",
+        "ZooKeeper session timeout cascading failures."
+      ],
+      "hidden_costs": [
+        "Storage costs for long retention.",
+        "Network bandwidth for replication.",
+        "Consumer rebalancing storms.",
+        "JVM heap sizing and GC tuning."
+      ]
+    },
+    {
+      "name": "RabbitMQ",
+      "id": "rabbitmq",
+      "strengths": [
+        "Low latency with in-memory queueing.",
+        "Flexible routing via exchanges.",
+        "Mature operational tooling and management UI.",
+        "Per-message acknowledgment and dead-letter queues.",
+        "Multiple protocol support.",
+        "Simpler operational model for moderate scale."
+      ],
+      "weaknesses": [
+        "Lower throughput ceiling.",
+        "No native log replay.",
+        "Vertical scaling limits.",
+        "Memory pressure from queue buildup.",
+        "Less efficient for fan-out to many consumers."
+      ],
+      "best_for": "Task queueing, request-reply patterns, complex routing, moderate throughput, operational simplicity.",
+      "avoid_when": "Event replay is required, throughput exceeds roughly 100K messages/sec, or long-term retention is needed.",
+      "infrastructure_required": [
+        "RabbitMQ broker cluster.",
+        "Erlang/OTP runtime.",
+        "Management plugin for monitoring.",
+        "Client libraries for target languages."
+      ],
+      "operational_cost": "Low to moderate.",
+      "maintenance_cost": "Moderate.",
+      "scaling_complexity": "high",
+      "failure_modes": [
+        "Memory alarm blocking publishers during queue buildup.",
+        "Split-brain in mirrored queues without proper HA configuration.",
+        "Message loss with non-durable queues or transient messages.",
+        "Single-node throughput saturation."
+      ],
+      "hidden_costs": [
+        "Mirrored queue replication overhead.",
+        "Memory requirements for large queues.",
+        "Federation complexity for geographic distribution.",
+        "Plugin maintenance and version compatibility."
+      ]
+    }
+  ],
+  "comparison_table": {
+    "Architecture": "Kafka: Distributed commit log | RabbitMQ: Message broker with exchanges",
+    "Throughput": "Kafka: Very high at cluster scale | RabbitMQ: Lower ceiling per node",
+    "Latency": "Kafka: Higher, batch-dependent | RabbitMQ: Lower, often single-digit milliseconds",
+    "Message Retention": "Kafka: Configurable for long periods | RabbitMQ: Queue-length or TTL bounded",
+    "Replay Capability": "Kafka: Native | RabbitMQ: Not native",
+    "Routing": "Kafka: Topic-based and simple | RabbitMQ: Exchange-based and flexible",
+    "Scaling Model": "Kafka: Horizontal via partitions | RabbitMQ: Mostly vertical, federation for distribution",
+    "Ordering": "Kafka: Per-partition ordering | RabbitMQ: Per-queue FIFO",
+    "Delivery Semantics": "Kafka: At-least-once, exactly-once with transactions | RabbitMQ: At-most-once, at-least-once, exactly-once patterns",
+    "Protocol": "Kafka: Custom binary protocol | RabbitMQ: AMQP 0-9-1, MQTT, STOMP, HTTP",
+    "Operational Model": "Kafka: More complex | RabbitMQ: Simpler"
+  },
+  "recommendations": "Choose Kafka for event sourcing, stream processing, CDC pipelines, and any system that must retain and replay a large history of events. Choose RabbitMQ for task queues, request-reply workflows, and workloads where routing flexibility and short delivery paths matter more than replay. Use Depends when the workload mixes durable event retention with tightly controlled low-latency task delivery.",
+  "use_cases": [
+    "Event sourcing for microservices: Kafka for durable event log and replay.",
+    "Background job processing: RabbitMQ for task queues with acknowledgment and retry.",
+    "Real-time analytics pipeline: Kafka for high-throughput log ingestion.",
+    "Request-reply RPC over messaging: RabbitMQ with direct reply-to.",
+    "Model prediction streaming: Kafka for feature logs and prediction events.",
+    "Email or SMS notification queue: RabbitMQ for reliable delivery with dead-letter queues.",
+    "CDC replication: Kafka for durable change streams.",
+    "IoT telemetry ingestion: Kafka for high-volume ordered event streams."
+  ],
+  "related_workflows": [
+    "ci-cd-for-ml-models",
+    "llm-application-serving"
+  ],
+  "related_packages": [],
+  "related_models": [],
+  "default_recommendation": "Apache Kafka",
+  "one_sentence_summary": "Kafka is the stronger default for durable event streams, replayable pipelines, and high-throughput fan-out; RabbitMQ is the stronger default for low-latency task delivery and routing-heavy workflows.",
+  "choose_when": "Apache Kafka: Event sourcing or log aggregation, throughput above roughly 100K messages/sec, need to replay historical events, stream processing integration, or geographic distribution | RabbitMQ: Task queueing or job distribution, sub-10ms latency SLA, complex message routing, small team with limited ops capacity, or request-reply pattern.",
+  "avoid_when": "Apache Kafka: Sub-millisecond latency is required, complex routing logic is central, or the workload is simple task queueing | RabbitMQ: Event replay is required, throughput exceeds roughly 100K messages/sec, or long-term retention is needed.",
+  "hybrid_recommendation": "Use Kafka as the central event backbone for durable, high-throughput streams, and RabbitMQ for operational concerns such as task queues, alerts, retries, and request-reply patterns that benefit from low latency and flexible routing.",
+  "assumptions": [
+    "You have a distributed system requiring asynchronous message passing.",
+    "You have engineering resources to maintain messaging infrastructure.",
+    "Message volume, latency requirements, and retention policies are known or estimable.",
+    "You have existing infrastructure or the ability to provision new clusters."
+  ],
+  "scope": "This guide compares Kafka and RabbitMQ for messaging and event streaming. It covers throughput, latency, durability, routing, and operational characteristics.",
+  "out_of_scope": [
+    "Other messaging systems as primary comparison.",
+    "Specific cloud provider managed service comparisons.",
+    "Stream processing frameworks as primary topic.",
+    "Event sourcing pattern design."
+  ],
+  "decision_matrix": [
+    {
+      "criterion": "Throughput & Scalability",
+      "importance": "critical",
+      "winner": "Kafka",
+      "reason": "Kafka was built for high-volume log processing and scales through partitions across brokers."
+    },
+    {
+      "criterion": "Latency",
+      "importance": "high",
+      "winner": "RabbitMQ",
+      "reason": "RabbitMQ is optimized for brokered delivery and is commonly deployed for lower-latency queueing."
+    },
+    {
+      "criterion": "Message Durability & Retention",
+      "importance": "high",
+      "winner": "Kafka",
+      "reason": "Kafka’s retention model is log-based and explicitly supports replay and long retention windows."
+    },
+    {
+      "criterion": "Routing Flexibility",
+      "importance": "medium",
+      "winner": "RabbitMQ",
+      "reason": "Exchanges and bindings give RabbitMQ richer routing semantics than topic-centric streaming."
+    },
+    {
+      "criterion": "Operational Complexity",
+      "importance": "medium",
+      "winner": "RabbitMQ",
+      "reason": "RabbitMQ is usually simpler to run for moderate-scale queueing workloads."
+    },
+    {
+      "criterion": "Consumer Model",
+      "importance": "high",
+      "winner": "Depends",
+      "reason": "Kafka wins for replayable pull-based consumption; RabbitMQ wins for push-style work distribution and immediate acknowledgment flows."
+    }
+  ],
+  "constraint_recommendations": [
+    {
+      "condition": "Event sourcing or log aggregation",
+      "recommended_option": "Apache Kafka",
+      "reason": "Replay, retention, and ordering requirements dominate."
+    },
+    {
+      "condition": "Task queueing or job distribution",
+      "recommended_option": "RabbitMQ",
+      "reason": "Low-latency delivery, acknowledgments, and dead-letter handling fit the model."
+    },
+    {
+      "condition": "Throughput above roughly 100K messages/sec",
+      "recommended_option": "Apache Kafka",
+      "reason": "Partitioned horizontal scale is the safer path."
+    },
+    {
+      "condition": "Sub-10ms latency SLA",
+      "recommended_option": "RabbitMQ",
+      "reason": "Brokered queueing is better aligned to short delivery paths."
+    },
+    {
+      "condition": "Complex message routing",
+      "recommended_option": "RabbitMQ",
+      "reason": "Exchange-based routing is the native abstraction."
+    },
+    {
+      "condition": "Need to replay historical events",
+      "recommended_option": "Apache Kafka",
+      "reason": "Offset-based replay is a core Kafka property."
+    },
+    {
+      "condition": "Small team, limited ops capacity",
+      "recommended_option": "RabbitMQ",
+      "reason": "Lower operational burden usually wins early."
+    },
+    {
+      "condition": "Stream processing integration",
+      "recommended_option": "Apache Kafka",
+      "reason": "Kafka’s architecture is designed around durable streams."
+    },
+    {
+      "condition": "Request-reply pattern",
+      "recommended_option": "RabbitMQ",
+      "reason": "Broker semantics and correlation-oriented routing fit well."
+    },
+    {
+      "condition": "Geographic distribution",
+      "recommended_option": "Apache Kafka",
+      "reason": "Kafka’s distributed log and modern KRaft operational model are better aligned to large clusters."
+    }
+  ],
+  "tradeoff_analysis": [
+    {
+      "criterion": "Throughput & Scalability",
+      "ratings": {
+        "Apache Kafka": 5,
+        "RabbitMQ": 2
+      }
+    },
+    {
+      "criterion": "Latency",
+      "ratings": {
+        "Apache Kafka": 2,
+        "RabbitMQ": 5
+      }
+    },
+    {
+      "criterion": "Message Durability & Retention",
+      "ratings": {
+        "Apache Kafka": 5,
+        "RabbitMQ": 2
+      }
+    },
+    {
+      "criterion": "Routing Flexibility",
+      "ratings": {
+        "Apache Kafka": 2,
+        "RabbitMQ": 5
+      }
+    },
+    {
+      "criterion": "Operational Complexity",
+      "ratings": {
+        "Apache Kafka": 2,
+        "RabbitMQ": 4
+      }
+    },
+    {
+      "criterion": "Consumer Model",
+      "ratings": {
+        "Apache Kafka": 4,
+        "RabbitMQ": 3
+      }
+    }
+  ],
+  "common_mistakes": [
+    "Using Kafka as a simple task queue.",
+    "Using RabbitMQ for event sourcing.",
+    "Ignoring partition strategy in Kafka and creating hot partitions.",
+    "Not configuring publisher confirms in RabbitMQ.",
+    "Underestimating Kafka operational complexity.",
+    "Using non-durable queues in RabbitMQ for critical messages.",
+    "Not monitoring consumer lag in Kafka.",
+    "Assuming RabbitMQ scales horizontally like Kafka."
+  ],
+  "decision_tree": [
+    {
+      "question": "Do you need to replay or reprocess historical messages?",
+      "yes_path": "Apache Kafka",
+      "no_path": "Next question"
+    },
+    {
+      "question": "Is sub-10ms latency or complex routing a hard requirement?",
+      "yes_path": "RabbitMQ",
+      "no_path": "Next question"
+    },
+    {
+      "question": "Is throughput expected to exceed 100K messages/sec?",
+      "yes_path": "Apache Kafka",
+      "no_path": "RabbitMQ"
+    }
+  ],
+  "hybrid_strategy": {
+    "when_both_wins": "Use both when the system needs high-throughput event streaming and low-latency task queueing. Kafka can serve as the durable event backbone while RabbitMQ handles operational delivery paths that benefit from routing flexibility and quick acknowledgments.",
+    "architecture_overview": "Use Kafka as the central event backbone for durable, high-throughput streams. Use RabbitMQ for operational concerns such as task queues, alerts, retries, and request-reply patterns that benefit from low latency and flexible routing.",
+    "benefits": [
+      "Kafka handles massive event throughput and retention.",
+      "RabbitMQ handles operational tasks with low latency.",
+      "Separation of concerns between streaming and queueing.",
+      "Each system is optimized for its workload."
+    ],
+    "costs": [
+      "Dual infrastructure maintenance.",
+      "Two operational models to manage.",
+      "Potential for data duplication.",
+      "Increased system complexity."
+    ],
+    "tradeoffs": [
+      "Higher total infrastructure footprint.",
+      "Need for bridge or connector logic.",
+      "Two failure modes to monitor.",
+      "Team expertise required across both systems."
+    ]
+  },
+  "migration_path": [
+    {
+      "step": "Start with",
+      "description": "RabbitMQ for simple queueing and moderate throughput."
+    },
+    {
+      "step": "Evaluate",
+      "description": "Message volume growth, retention needs, and replay requirements."
+    },
+    {
+      "step": "Introduce",
+      "description": "Kafka alongside RabbitMQ for event streaming workloads."
+    },
+    {
+      "step": "Migrate",
+      "description": "High-throughput and retention-critical streams from RabbitMQ to Kafka."
+    },
+    {
+      "step": "Consolidate",
+      "description": "RabbitMQ for task queueing and Kafka for event log and streaming."
+    }
+  ],
+  "production_examples": [
+    {
+      "system": "LinkedIn",
+      "why": "Kafka for activity tracking, metrics, and stream processing."
+    },
+    {
+      "system": "Uber",
+      "why": "Kafka for event sourcing and real-time data pipelines."
+    },
+    {
+      "system": "Pivotal or VMware",
+      "why": "RabbitMQ for enterprise messaging and task queueing."
+    },
+    {
+      "system": "Netflix",
+      "why": "Kafka for stream processing and CDC; RabbitMQ for operational tasks."
+    },
+    {
+      "system": "Airbnb",
+      "why": "Kafka for event log and data replication."
+    },
+    {
+      "system": "Stripe",
+      "why": "RabbitMQ for reliable job processing and webhooks."
+    }
+  ]
+}

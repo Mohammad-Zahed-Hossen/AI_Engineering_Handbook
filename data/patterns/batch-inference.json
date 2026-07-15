@@ -1,0 +1,232 @@
+{
+  "id": "batch-inference",
+  "title": "Batch Inference",
+  "slug": "batch-inference",
+  "description": "Batch Inference groups multiple independent requests into a single model forward pass so the system can amortize fixed per-request overheads and keep accelerators busy. It is a core serving pattern for maximizing throughput and GPU utilization in production systems where running one request at a time is inefficient and expensive.",
+  "name": "Batch Inference",
+  "concept": "The fundamental mechanism is to collect independent inputs, pad or pack them into a batch, and execute one shared forward pass that reuses the same loaded weights across all samples while still producing independent outputs for each request. This reduces the amortized cost of kernel launch overhead and weight movement per request, which is why batching usually improves throughput even though it can increase per-request waiting time. From a complexity perspective, single-sample inference pays a fixed launch and scheduling overhead per request, while batched inference processes B samples together so the overhead is amortized across the batch. Throughput generally rises sub-linearly with B because compute and memory systems saturate, so the real objective is not \"largest batch possible\" but a throughput-latency Pareto point that satisfies the service SLA. Arithmetic intensity improves with batch size because the same model weights are reused across more inputs, increasing FLOPs per byte moved from memory. That is why batching often raises effective throughput even when the per-token math is unchanged: the system spends less time feeding weights and more time computing on accelerator cores. Batching dynamics matter as much as the math. Variable-length requests require padding, bucketing, or ragged representations to reduce wasted work, while queue timeout policies determine whether the system favors throughput or tail latency. The operational analog is virtual memory: request buffers are allocated, packed, and reclaimed under capacity pressure, and poor management produces fragmentation, tail amplification, and timeout cascades.",
+  "applicability": "Use Batch Inference when throughput matters more than per-request immediacy, such as offline scoring jobs, high-volume serving, or cost-optimized cloud deployment. It is especially effective when GPU utilization is low, request arrival is steady enough to form useful batches, or the model is large enough that fixed overheads are a meaningful fraction of total cost. Avoid it when the application is interactive and strict on first-response latency, when each request must start immediately, or when batch padding would waste too much VRAM and trigger OOM risk. It is also a poor fit for real-time streaming systems with hard per-request SLAs because waiting to fill a batch can violate latency budgets even if aggregate throughput improves. Batch Inference interacts strongly with KV Cache, continuous batching, tensor parallelism, quantization, and FlashAttention-style variable-length handling. In autoregressive decoding, batching often composes with KV reuse and continuous scheduling, but the memory and scheduling stack becomes more complex as concurrency, sequence length variance, and model size increase.",
+  "decision_summary": {
+    "when_to_use": [
+      "Offline inference or scoring workloads where throughput dominates latency.",
+      "High-volume serving with enough concurrent requests to form full or near-full batches.",
+      "GPU instances that are underutilized at batch size 1 and can absorb more parallel work.",
+      "Cost-sensitive deployments where better accelerator utilization lowers cost per sample."
+    ],
+    "dont_use": [
+      "Ultra-low-latency interactive serving with strict response-time SLAs.",
+      "Single-request or low-traffic systems where batches stay too small to amortize overhead.",
+      "Memory-constrained deployments where padding pushes the system into OOM territory.",
+      "Real-time streaming systems that cannot tolerate queue wait time."
+    ],
+    "tradeoff": "Throughput ↑, Latency ↑, Memory ↑, Complexity ↑"
+  },
+  "pattern_snapshot": {
+    "primary_goal": "Inference Throughput Maximization and GPU Utilization",
+    "primary_constraint": "VRAM Capacity and Per-Request Latency SLA",
+    "effective_batch": "Not Directly Affected",
+    "typical_usage": "Production Model Serving and Offline Inference Pipelines"
+  },
+  "tradeoffs": [
+    {
+      "dimension": "Memory",
+      "effect": "↑",
+      "description": "Larger batches require more activation storage, more padding space, and more KV cache capacity for autoregressive models."
+    },
+    {
+      "dimension": "Compute",
+      "effect": "↓ / saturating",
+      "description": "Compute efficiency improves with batch size until the accelerator reaches saturation, after which gains flatten."
+    },
+    {
+      "dimension": "Latency",
+      "effect": "↑",
+      "description": "Requests may wait in a queue to form larger batches, increasing tail latency."
+    },
+    {
+      "dimension": "Bandwidth",
+      "effect": "↓ relative cost per sample",
+      "description": "Weight-loading overhead is amortized across more inputs, improving arithmetic intensity and reducing bandwidth pressure per request."
+    },
+    {
+      "dimension": "Complexity",
+      "effect": "↑",
+      "description": "Scheduling, padding, timeout handling, and distributed batch consistency all add operational complexity."
+    }
+  ],
+  "decision_flow": [
+    {
+      "question": "Is throughput more important than immediate response time?",
+      "if_yes": "Go to Step 2: Check concurrent request volume",
+      "if_no": "Prefer immediate execution or smaller dynamic batches."
+    },
+    {
+      "question": "Can the workload produce enough concurrent requests to keep batches full?",
+      "if_yes": "Go to Step 3: Check VRAM budget safety",
+      "if_no": "Limit batch size and cap queue wait time."
+    },
+    {
+      "question": "Does the VRAM budget remain safe after padding and activation growth?",
+      "if_yes": "Keep the chosen batch policy",
+      "if_no": "Reduce batch size, bucket by length, or switch to ragged/packed execution."
+    }
+  ],
+  "system_interactions": [
+    {
+      "interacts_with": "KV Cache / Attention State Store",
+      "condition": "Autoregressive decoding with long output sequences.",
+      "effect": "Batch memory grows faster because each sample carries persistent attention state, reducing safe batch size."
+    },
+    {
+      "interacts_with": "Continuous Batching / Dynamic Request Scheduler",
+      "condition": "Requests arrive continuously and complete at different times.",
+      "effect": "Batch membership changes over time, improving utilization but increasing scheduler and mask complexity."
+    },
+    {
+      "interacts_with": "Tensor Parallelism / Distributed Inference",
+      "condition": "The model is sharded across multiple ranks.",
+      "effect": "All ranks must agree on batch shape and membership to avoid idle devices and deadlock-like coordination failures."
+    },
+    {
+      "interacts_with": "Request Queue / Load Balancer",
+      "condition": "Request arrival is bursty or SLA-tiered.",
+      "effect": "Queue discipline controls batch fullness versus latency, and poor policy can amplify tail delays."
+    },
+    {
+      "interacts_with": "CUDA Graphs / Kernel Launch Optimization",
+      "condition": "The same batch shapes repeat frequently.",
+      "effect": "Stable shapes can reduce launch overhead further, but shape variability limits graph reuse."
+    },
+    {
+      "interacts_with": "Memory Allocator / PagedAttention Block Manager",
+      "condition": "Variable-length requests are packed into shared buffers.",
+      "effect": "Fragmentation and padding waste increase unless the allocator uses block-aware reuse."
+    },
+    {
+      "interacts_with": "Model Compilation / JIT Fusion",
+      "condition": "Batch shapes are known or bounded.",
+      "effect": "Fusion and compilation can improve throughput, but compile-time specialization reduces flexibility."
+    }
+  ],
+  "anti_patterns": [
+    {
+      "wrong": "Oversizing batches without profiling",
+      "impact": "OOM risk, longer queue waits, and worse tail latency.",
+      "fix": "Profile real sequence lengths and cap batch size by worst-case VRAM usage."
+    },
+    {
+      "wrong": "Ignoring variable-length padding waste",
+      "impact": "Wasteful compute, lower effective throughput, and hidden memory pressure.",
+      "fix": "Bucket by length or use packed/ragged representations when supported."
+    },
+    {
+      "wrong": "Treating queue wait time as free",
+      "impact": "Tail latency explosion and SLA violations.",
+      "fix": "Enforce maximum wait times and dispatch partial batches."
+    },
+    {
+      "wrong": "Forgetting batch-shape consistency in distributed runs",
+      "impact": "Pipeline stalls, bubbles, or coordination failures.",
+      "fix": "Keep all ranks aligned on batch shape and scheduling."
+    },
+    {
+      "wrong": "Not masking correctly across samples",
+      "impact": "Cross-sample attention leakage and incorrect outputs.",
+      "fix": "Build per-sample masks and validate boundary isolation."
+    }
+  ],
+  "implementation_notes": "Use static batching when request volume is steady and the goal is predictable high throughput, and use dynamic batching when latency still matters but you want to avoid underfilled batches. Continuous batching is the more advanced option for autoregressive serving because it lets new requests join as others finish, but it requires more sophisticated state management. For variable-length inputs, sort or bucket by sequence length to reduce padding waste, and prefer power-of-two or near-homogeneous buckets when the traffic mix allows it. Left-padding or right-padding should be chosen to match the model’s attention semantics and kernel assumptions, because the wrong choice can waste memory or break autoregressive masking. Batch size selection should be done with VRAM profiling, not guesswork. Measure the throughput-latency frontier at realistic sequence lengths, then cap batch size based on the worst-case memory footprint rather than the average request. Queue management needs a maximum wait time, per-tier priorities, and starvation prevention for small requests behind large ones. Without this, batching can silently shift from a throughput optimization into a tail-latency and fairness problem that violates SLAs. In distributed inference, every rank must process the same batch size and aligned shapes, especially in pipeline-parallel systems where mismatched microbatches create bubbles or stalls. Mixed precision and quantization reduce per-sample memory, which increases feasible batch size, but the system must preserve numerical stability and avoid extra dequantization overhead becoming the new bottleneck. Common failures include underestimating padded memory, misconstructing attention masks so samples attend across boundaries, oversized batches that trigger timeout cascades, and queue leaks from dropped requests. These failures are production-critical because they often appear only under bursty load or long-tail sequence distributions.",
+  "examples": [
+    "def batched_forward(requests, model, max_batch_size, max_tokens):\n    batch = select_requests(requests, max_batch_size, max_tokens)\n    lengths = [len(r.tokens) for r in batch]\n    padded = pad_to_max_length([r.tokens for r in batch], max(lengths))\n    mask = build_attention_mask(lengths, max(lengths))\n\n    if memory_required(batch, model) > available_memory():\n        batch = shrink_batch(batch)\n        lengths = [len(r.tokens) for r in batch]\n        padded = pad_to_max_length([r.tokens for r in batch], max(lengths))\n        mask = build_attention_mask(lengths, max(lengths))\n\n    outputs = model.forward(padded, mask)\n\n    results = []\n    for i in range(len(batch)):\n        results.append(outputs[i, :lengths[i]])\n    return results"
+  ],
+  "variations": [
+    {
+      "name": "Static Batching (Fixed Batch Size)",
+      "description": "Requests are collected until a fixed batch size is reached, then dispatched together.",
+      "use_when": "Offline inference or steady traffic with throughput-first goals.",
+      "benefit": "Predictable memory use and simple scheduling.",
+      "tradeoff": "Queue delay can be high when arrival rates are low or bursty."
+    },
+    {
+      "name": "Dynamic Batching (Timeout-Based)",
+      "description": "Requests wait up to a maximum latency window and are dispatched as a partial batch if the timeout expires.",
+      "use_when": "Online serving needs a balance between throughput and latency.",
+      "benefit": "Better SLA control and less idle waiting under variable load.",
+      "tradeoff": "Requires careful tuning of timeout and max-batch settings."
+    },
+    {
+      "name": "Continuous Batching (Inflight Batching / Iteration-Level Scheduling)",
+      "description": "New requests can join a running batch as other requests finish, rather than waiting for the whole batch to complete.",
+      "use_when": "Autoregressive LLM serving has high concurrency and variable output lengths.",
+      "benefit": "Much higher GPU utilization than static batching for generative workloads.",
+      "tradeoff": "Memory management, scheduling, and mask handling become significantly more complex."
+    }
+  ],
+  "category": "batch_inference",
+  "domain": "llm",
+  "difficulty": "intermediate",
+  "engineering_area": "inference",
+  "estimated_reading_time": 15,
+  "prerequisites": [
+    "transformer"
+  ],
+  "recommended_next": [
+    "kv-cache"
+  ],
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "last_verified": "2026-07-15",
+  "review_frequency": "annually",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "sources": [
+    "https://arxiv.org/html/2407.09111v1",
+    "https://arxiv.org/html/2404.14294v3",
+    "https://arxiv.org/html/2408.03130v1"
+  ],
+  "tags": [
+    "batch-inference",
+    "inference",
+    "latency-optimization",
+    "throughput-vs-latency",
+    "gpu"
+  ],
+  "aliases": [
+    "batch-inference-pattern",
+    "continuous-batching",
+    "dynamic-batching"
+  ],
+  "keywords": [
+    "batch inference",
+    "continuous batching",
+    "dynamic batching",
+    "iteration-level scheduling"
+  ],
+  "search_tokens": [
+    "batch inference architecture",
+    "continuous batching optimization",
+    "dynamic batching tail latency",
+    "ragged attention packing"
+  ],
+  "related_workflows": [
+    "llm-application-serving",
+    "production-llm-cost-latency-optimization",
+    "model-deployment-batch-real-time"
+  ],
+  "related_models": [
+    "bert"
+  ],
+  "related_packages": [
+    "pytorch"
+  ],
+  "related_principles": [
+    "single-source-of-truth"
+  ],
+  "related_debug_guides": []
+}

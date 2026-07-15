@@ -5,8 +5,15 @@ import MetadataBadges from '@/components/shared/MetadataBadges';
 import RelatedContent from '@/components/shared/RelatedContent';
 import ExpandableText from '@/components/shared/ExpandableText';
 import { Prose } from '@/components/shared/Prose';
-import { BookOpen, Brain, AlertTriangle, CheckCircle2, Link2 } from 'lucide-react';
+import { BookOpen, Brain, AlertTriangle, CheckCircle2, Link2, Lightbulb, ClipboardList, BarChart3, History } from 'lucide-react';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
+import EngineeringConsequenceCard from '@/components/principles/EngineeringConsequenceCard';
+import ViolationWarningCard from '@/components/principles/ViolationWarningCard';
+import AppearsInGroup from '@/components/principles/AppearsInGroup';
+import MentalModelDisplay from '@/components/principles/MentalModelDisplay';
+import DecisionChecklist from '@/components/principles/DecisionChecklist';
+import MisconceptionRow from '@/components/principles/MisconceptionRow';
+import TradeoffComparison from '@/components/principles/TradeoffComparison';
 
 export async function generateStaticParams() {
   const ids = getAllPrincipleIds();
@@ -31,10 +38,20 @@ export default async function PrinciplePage({ params }: PageProps) {
     { label: principle.title },
   ];
 
+  // Build TOC - only include sections that have data
   const toc = [
     { id: 'statement', label: 'Statement' },
     { id: 'intuition', label: 'Intuition' },
     ...(principle.mathematical_formulation ? [{ id: 'mathematical-formulation', label: 'Mathematical Formulation' }] : []),
+    ...(principle.engineering_consequences && principle.engineering_consequences.length > 0 ? [{ id: 'engineering-consequences', label: 'Engineering Consequences' }] : []),
+    ...(principle.common_violations && principle.common_violations.length > 0 ? [{ id: 'common-violations', label: 'Common Violations' }] : []),
+    ...(principle.appears_in && principle.appears_in.length > 0 ? [{ id: 'appears-in', label: 'Appears In' }] : []),
+    ...(principle.mental_model ? [{ id: 'mental-model', label: 'Mental Model' }] : []),
+    ...(principle.tradeoffs ? [{ id: 'tradeoffs', label: 'Tradeoffs' }] : []),
+    ...(principle.decision_checklist && principle.decision_checklist.length > 0 ? [{ id: 'decision-checklist', label: 'Decision Checklist' }] : []),
+    ...(principle.misconceptions && principle.misconceptions.length > 0 ? [{ id: 'misconceptions', label: 'Misconceptions' }] : []),
+    ...(principle.engineering_heuristic ? [{ id: 'engineering-heuristic', label: 'Engineering Heuristic' }] : []),
+    ...(principle.historical_origin ? [{ id: 'historical-origin', label: 'Historical Origin' }] : []),
     ...(principle.implications && principle.implications.length > 0 ? [{ id: 'implications', label: 'Implications' }] : []),
     ...(principle.limitations && principle.limitations.length > 0 ? [{ id: 'limitations', label: 'Limitations' }] : []),
     ...(principle.related_concepts && principle.related_concepts.length > 0 ? [{ id: 'related-concepts', label: 'Related Concepts' }] : []),
@@ -96,7 +113,146 @@ export default async function PrinciplePage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Implications */}
+      {/* Engineering Consequences */}
+      {principle.engineering_consequences && principle.engineering_consequences.length > 0 && (
+        <section id="engineering-consequences" className="space-y-3 scroll-mt-24">
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+            Engineering Consequences
+          </h2>
+          <div className="space-y-2">
+            {principle.engineering_consequences.map((consequence, idx) => (
+              <EngineeringConsequenceCard
+                key={idx}
+                title={consequence.title}
+                explanation={consequence.explanation}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Common Violations */}
+      {principle.common_violations && principle.common_violations.length > 0 && (
+        <section id="common-violations" className="space-y-3 scroll-mt-24">
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-red-500" />
+            Common Violations
+          </h2>
+          <div className="space-y-2">
+            {principle.common_violations.map((violation, idx) => (
+              <ViolationWarningCard
+                key={idx}
+                violation={violation.violation}
+                symptoms={violation.symptoms}
+                whyItHappens={violation.why_it_happens}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Appears In */}
+      {principle.appears_in && principle.appears_in.length > 0 && (
+        <section id="appears-in" className="space-y-3 scroll-mt-24">
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <Link2 className="w-5 h-5 text-blue-500" />
+            Appears In
+          </h2>
+          <div className="space-y-2">
+            {principle.appears_in.map((appearance, idx) => (
+              <AppearsInGroup
+                key={idx}
+                domain={appearance.domain}
+                examples={appearance.examples}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Mental Model */}
+      {principle.mental_model && (
+        <section id="mental-model" className="space-y-3 scroll-mt-24">
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <Lightbulb className="w-5 h-5 text-purple-500" />
+            Mental Model
+          </h2>
+          <MentalModelDisplay content={principle.mental_model} />
+        </section>
+      )}
+
+      {/* Tradeoffs */}
+      {principle.tradeoffs && (
+        <section id="tradeoffs" className="space-y-3 scroll-mt-24">
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-muted-foreground" />
+            Tradeoffs
+          </h2>
+          <TradeoffComparison
+            benefits={principle.tradeoffs.benefits}
+            costs={principle.tradeoffs.costs}
+          />
+        </section>
+      )}
+
+      {/* Decision Checklist */}
+      {principle.decision_checklist && principle.decision_checklist.length > 0 && (
+        <section id="decision-checklist" className="space-y-3 scroll-mt-24">
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <ClipboardList className="w-5 h-5 text-blue-500" />
+            Decision Checklist
+          </h2>
+          <DecisionChecklist questions={principle.decision_checklist} />
+        </section>
+      )}
+
+      {/* Misconceptions */}
+      {principle.misconceptions && principle.misconceptions.length > 0 && (
+        <section id="misconceptions" className="space-y-3 scroll-mt-24">
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-amber-500" />
+            Misconceptions
+          </h2>
+          <div className="space-y-2">
+            {principle.misconceptions.map((misconception, idx) => (
+              <MisconceptionRow
+                key={idx}
+                myth={misconception.myth}
+                reality={misconception.reality}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Engineering Heuristic */}
+      {principle.engineering_heuristic && (
+        <section id="engineering-heuristic" className="space-y-3 scroll-mt-24">
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <Lightbulb className="w-5 h-5 text-amber-500" />
+            Engineering Heuristic
+          </h2>
+          <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+            <p className="text-sm text-muted-foreground italic">"{principle.engineering_heuristic}"</p>
+          </div>
+        </section>
+      )}
+
+      {/* Historical Origin */}
+      {principle.historical_origin && (
+        <section id="historical-origin" className="space-y-3 scroll-mt-24">
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <History className="w-5 h-5 text-muted-foreground" />
+            Historical Origin
+          </h2>
+          <div className="rounded-lg border border-border bg-card p-4">
+            <Prose content={principle.historical_origin} className="text-sm text-muted-foreground" />
+          </div>
+        </section>
+      )}
+
+      {/* Implications (Legacy) */}
       {principle.implications && principle.implications.length > 0 && (
         <section id="implications" className="space-y-3 scroll-mt-24">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">

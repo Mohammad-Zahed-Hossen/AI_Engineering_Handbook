@@ -1,0 +1,484 @@
+{
+  "id": "kubernetes-vs-docker-compose",
+  "title": "Kubernetes vs Docker Compose",
+  "slug": "kubernetes-vs-docker-compose",
+  "description": "Kubernetes is the stronger default when production workloads need multi-node resilience, autoscaling, and orchestration across failure domains, while Docker Compose is the stronger default when the deployment target is single-node, the operational budget is small, and development parity matters most. The decision is usually about whether you need a control plane that continuously reconciles desired state or a lightweight service graph on one host.",
+  "name": "Kubernetes vs Docker Compose",
+  "category": "infrastructure",
+  "problem": "The engineering decision is whether to deploy AI/ML serving, training, or data platform workloads on Kubernetes or Docker Compose, where the real trade-off is resilience and scale versus operational simplicity and minimal overhead. Kubernetes is designed for large-scale cluster management and continuous reconciliation, while Docker Compose is designed for declarative multi-container application execution on a single Docker engine.",
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "sources": [
+    "https://people.wikimedia.org/~jayme/k8s-docs/v1.16/blog/2015/04/borg-predecessor-to-kubernetes/",
+    "https://docs.docker.com/compose/intro/compose-application-model/",
+    "https://www.cncf.io/wp-content/uploads/2025/04/cncf_annual_survey24_031225a.pdf",
+    "https://docs.docker.com/compose/",
+    "https://arxiv.org/pdf/2307.12567.pdf",
+    "https://arxiv.org/pdf/2104.02423.pdf",
+    "http://arxiv.org/pdf/2401.17125.pdf",
+    "https://docs.docker.com/reference/compose-file/",
+    "https://www.cncf.io/lf-report-type/survey/",
+    "https://www.mdpi.com/2079-9292/13/2/285/pdf?version=1704708410",
+    "http://arxiv.org/pdf/2411.01336.pdf",
+    "http://arxiv.org/pdf/2311.02800.pdf",
+    "https://arxiv.org/pdf/1711.03204.pdf",
+    "https://www.youtube.com/watch?v=ujHdXF32-Rc",
+    "https://www.inf.ed.ac.uk/teaching/courses/exc/slides/Wilkes.pdf",
+    "https://openeverest.io/blog/5-hard-truths-cncf-survey-2025/",
+    "https://www.mimuw.edu.pl/~iwanicki/courses/ds/2017/presentations/group-1/15_Czaplicki.pdf"
+  ],
+  "tags": [
+    "kubernetes",
+    "docker-compose",
+    "containerization",
+    "orchestration",
+    "deployment-infrastructure",
+    "local-development-parity"
+  ],
+  "aliases": [
+    "k8s-vs-compose",
+    "container-orchestration-decision",
+    "local-vs-production-deployment"
+  ],
+  "keywords": [
+    "kubernetes",
+    "docker-compose",
+    "containerization",
+    "orchestration",
+    "k8s"
+  ],
+  "search_tokens": [
+    "kubernetes vs docker compose",
+    "k8s vs compose",
+    "container orchestration",
+    "local development vs production deployment"
+  ],
+  "domain": "systems",
+  "difficulty": "intermediate",
+  "engineering_area": "infrastructure",
+  "estimated_reading_time": 20,
+  "prerequisites": [
+    "containerization",
+    "orchestration"
+  ],
+  "recommended_next": [
+    "ci-cd-for-ml-models",
+    "llm-application-serving"
+  ],
+  "last_verified": "2026-07-15",
+  "review_frequency": "quarterly",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "evaluation_criteria": [
+    {
+      "criterion": "Scalability & Resilience",
+      "weight": 1.0,
+      "description": "Horizontal scaling, auto-healing, and fault tolerance."
+    },
+    {
+      "criterion": "Operational Complexity",
+      "weight": 0.9,
+      "description": "Setup, maintenance, and operational burden."
+    },
+    {
+      "criterion": "Resource Efficiency",
+      "weight": 0.8,
+      "description": "Control plane overhead and per-workload resource utilization."
+    },
+    {
+      "criterion": "Ecosystem & Tooling",
+      "weight": 0.7,
+      "description": "Helm charts, Operators, service mesh, and CI/CD integration."
+    },
+    {
+      "criterion": "Development Velocity",
+      "weight": 0.8,
+      "description": "Local development parity and deployment iteration speed."
+    },
+    {
+      "criterion": "Cost Structure",
+      "weight": 0.7,
+      "description": "Infrastructure, personnel, and managed service costs."
+    }
+  ],
+  "options": [
+    {
+      "name": "Kubernetes",
+      "id": "kubernetes",
+      "strengths": [
+        "Production-grade auto-healing, rolling updates, and rollback.",
+        "Horizontal pod autoscaling and cluster autoscaling.",
+        "Declarative state management with desired state reconciliation.",
+        "Rich ecosystem.",
+        "Multi-cloud and on-prem portability.",
+        "Advanced scheduling.",
+        "Network policies and secrets management."
+      ],
+      "weaknesses": [
+        "Extreme operational complexity.",
+        "Steep learning curve and significant platform engineering investment.",
+        "Control plane resource overhead.",
+        "Distributed failure debugging is difficult.",
+        "YAML boilerplate and configuration drift.",
+        "Version upgrade complexity and API deprecation."
+      ],
+      "best_for": "Multi-node production workloads, microservices, auto-scaling serving, complex stateful apps.",
+      "avoid_when": "Single-node deployments, small teams without platform engineers, or rapid prototyping.",
+      "infrastructure_required": [
+        "Control plane nodes or managed control plane.",
+        "Worker node pool with container runtime.",
+        "CNI plugin.",
+        "CSI for persistent volumes.",
+        "Ingress controller and load balancer."
+      ],
+      "operational_cost": "Very high.",
+      "maintenance_cost": "Very high.",
+      "scaling_complexity": "medium",
+      "failure_modes": [
+        "etcd quorum loss causing cluster unavailability.",
+        "CNI misconfiguration causing pod network isolation.",
+        "OOMKilled cascades from resource limit misconfiguration.",
+        "Control plane overload from excessive API server requests.",
+        "Image pull failures due to registry or secret issues."
+      ],
+      "hidden_costs": [
+        "Platform engineering team.",
+        "Managed Kubernetes service fees.",
+        "Monitoring stack.",
+        "Service mesh sidecar overhead.",
+        "etcd storage growth and backup infrastructure."
+      ]
+    },
+    {
+      "name": "Docker Compose",
+      "id": "docker-compose",
+      "strengths": [
+        "Extreme simplicity and minimal operational overhead.",
+        "Declarative YAML with intuitive service dependency graph.",
+        "Local development and production parity.",
+        "Negligible control plane overhead.",
+        "Rapid iteration and debugging.",
+        "Mature ecosystem and documentation.",
+        "Easy CI/CD integration for simple deployments."
+      ],
+      "weaknesses": [
+        "Single-node limitation.",
+        "No auto-healing or self-healing.",
+        "Manual failover and no built-in load balancing.",
+        "No rolling updates.",
+        "No resource scheduling or placement control.",
+        "Limited secrets management and network isolation."
+      ],
+      "best_for": "Local development, single-node production, prototypes, small teams, CI/CD pipelines.",
+      "avoid_when": "Multi-node scaling, high availability requirements, or production workloads requiring auto-healing.",
+      "infrastructure_required": [
+        "Single host with Docker Engine.",
+        "Docker Compose CLI.",
+        "Optional reverse proxy for multi-service routing.",
+        "Optional external volume for persistence."
+      ],
+      "operational_cost": "Very low.",
+      "maintenance_cost": "Low.",
+      "scaling_complexity": "high",
+      "failure_modes": [
+        "Single host failure causing total service outage.",
+        "No automatic restart on container crash unless configured.",
+        "Resource contention between services on shared host.",
+        "Storage volume corruption without distributed replication.",
+        "Manual intervention required for topology changes."
+      ],
+      "hidden_costs": [
+        "Migration friction when outgrowing single-node.",
+        "Manual backup and disaster recovery.",
+        "No built-in observability.",
+        "Downtime during updates and configuration changes."
+      ]
+    }
+  ],
+  "comparison_table": {
+    "Architecture": "Kubernetes: Distributed control plane plus workers | Docker Compose: Single-node Docker daemon",
+    "Scaling": "Kubernetes: Horizontal across pods and nodes | Docker Compose: Vertical only on one host",
+    "Auto-Healing": "Kubernetes: Native | Docker Compose: None by default",
+    "Rolling Updates": "Kubernetes: Native | Docker Compose: Manual recreation",
+    "Resource Overhead": "Kubernetes: Control plane and cluster services | Docker Compose: Negligible",
+    "Operational Team": "Kubernetes: Platform or SRE team | Docker Compose: Small generalist team",
+    "Multi-Cloud": "Kubernetes: Native portability | Docker Compose: Not applicable",
+    "Service Discovery": "Kubernetes: Cluster DNS and networking | Docker Compose: Docker network DNS",
+    "Storage": "Kubernetes: CSI plugins and dynamic provisioning | Docker Compose: Docker volumes and bind mounts",
+    "Networking": "Kubernetes: CNI plugins and policies | Docker Compose: Bridge networks and port mapping",
+    "Learning Curve": "Kubernetes: Steep | Docker Compose: Minimal",
+    "Local Development": "Kubernetes: Kind, minikube, or k3d | Docker Compose: Native docker compose up"
+  },
+  "recommendations": "Choose Kubernetes for production multi-node AI serving, training orchestration, and resilient data platform deployments. Choose Docker Compose for local development, single-node production, and early-stage systems where platform overhead is unjustified. Use Depends when the near-term need is rapid delivery, but the product roadmap likely crosses into multi-node availability or autoscaling.",
+  "use_cases": [
+    "Production model serving fleet: Kubernetes with HPA and GPU node pools.",
+    "Local LLM development environment: Docker Compose for rapid iteration.",
+    "Multi-tenant SaaS platform: Kubernetes with namespace isolation.",
+    "Data science notebook deployment: Docker Compose for single-user instances.",
+    "Real-time inference pipeline: Kubernetes with autoscaling.",
+    "CI/CD test environment: Docker Compose for ephemeral integration tests.",
+    "Edge device deployment: Docker Compose on single-board computers.",
+    "Training job orchestration: Kubernetes with batch schedulers and cluster autoscaling."
+  ],
+  "related_workflows": [
+    "ci-cd-for-ml-models",
+    "llm-application-serving"
+  ],
+  "related_packages": [],
+  "related_models": [],
+  "default_recommendation": "Kubernetes",
+  "one_sentence_summary": "Kubernetes is the stronger default when production workloads need multi-node resilience, autoscaling, and orchestration across failure domains; Docker Compose is the stronger default when the deployment target is single-node, the operational budget is small, and development parity matters most.",
+  "choose_when": "Kubernetes: Production multi-node serving, high availability requirement, complex microservices topology, GPU workload scheduling, or multi-cloud/hybrid deployment | Docker Compose: Single-node prototype or MVP, small team with < 5 engineers, local development environment, or budget-constrained startup.",
+  "avoid_when": "Kubernetes: Single-node deployments, small teams without platform engineers, or rapid prototyping | Docker Compose: Multi-node scaling, high availability requirements, or production workloads requiring auto-healing.",
+  "hybrid_recommendation": "Use Docker Compose for local development and CI/CD integration tests while production runs on Kubernetes, keeping Compose files as the developer-facing source of truth and maintaining Kubernetes manifests separately.",
+  "assumptions": [
+    "You have containerized applications such as model serving, training jobs, or data pipelines.",
+    "You have infrastructure resources such as cloud VMs, bare metal, or managed services.",
+    "You have engineering capacity for platform operations.",
+    "Deployment targets range from single-node to multi-cluster."
+  ],
+  "scope": "This guide compares Kubernetes and Docker Compose for container deployment. It covers orchestration, scaling, networking, storage, and operational characteristics.",
+  "out_of_scope": [
+    "Serverless deployment as the primary comparison.",
+    "Nomad, Swarm, or other orchestrators.",
+    "Specific cloud provider managed Kubernetes comparisons.",
+    "Bare-metal provisioning tools."
+  ],
+  "decision_matrix": [
+    {
+      "criterion": "Scalability & Resilience",
+      "importance": "critical",
+      "winner": "Kubernetes",
+      "reason": "Native horizontal scaling and auto-healing."
+    },
+    {
+      "criterion": "Operational Complexity",
+      "importance": "high",
+      "winner": "Docker Compose",
+      "reason": "Minimal setup and maintenance overhead."
+    },
+    {
+      "criterion": "Resource Efficiency",
+      "importance": "medium",
+      "winner": "Docker Compose",
+      "reason": "No control plane overhead."
+    },
+    {
+      "criterion": "Ecosystem & Tooling",
+      "importance": "medium",
+      "winner": "Kubernetes",
+      "reason": "Helm, Operators, service mesh, and mature cloud-native tooling."
+    },
+    {
+      "criterion": "Development Velocity",
+      "importance": "high",
+      "winner": "Docker Compose",
+      "reason": "Fast local iteration and parity with a single-node service graph."
+    },
+    {
+      "criterion": "Cost Structure",
+      "importance": "medium",
+      "winner": "Docker Compose",
+      "reason": "No platform team or managed cluster fees."
+    }
+  ],
+  "constraint_recommendations": [
+    {
+      "condition": "Production multi-node serving",
+      "recommended_option": "Kubernetes",
+      "reason": "Auto-scaling, resilience, and service mesh support."
+    },
+    {
+      "condition": "Single-node prototype or MVP",
+      "recommended_option": "Docker Compose",
+      "reason": "Minimal overhead and fastest iteration."
+    },
+    {
+      "condition": "Small team with fewer than 5 engineers",
+      "recommended_option": "Docker Compose",
+      "reason": "No dedicated platform engineering capacity."
+    },
+    {
+      "condition": "High availability requirement",
+      "recommended_option": "Kubernetes",
+      "reason": "Multi-node redundancy and auto-healing."
+    },
+    {
+      "condition": "Local development environment",
+      "recommended_option": "Docker Compose",
+      "reason": "Native simplicity and local parity."
+    },
+    {
+      "condition": "Complex microservices topology",
+      "recommended_option": "Kubernetes",
+      "reason": "Service discovery, ingress, and network policies."
+    },
+    {
+      "condition": "Budget-constrained startup",
+      "recommended_option": "Docker Compose",
+      "reason": "No managed Kubernetes fees or platform hires."
+    },
+    {
+      "condition": "GPU workload scheduling",
+      "recommended_option": "Kubernetes",
+      "reason": "Scheduler, device plugins, and node-pool placement control."
+    },
+    {
+      "condition": "Rapid CI/CD iteration",
+      "recommended_option": "Docker Compose",
+      "reason": "Faster build-deploy-test cycles."
+    },
+    {
+      "condition": "Multi-cloud or hybrid deployment",
+      "recommended_option": "Kubernetes",
+      "reason": "Portable manifests and consistent API surface."
+    }
+  ],
+  "tradeoff_analysis": [
+    {
+      "criterion": "Scalability & Resilience",
+      "ratings": {
+        "Kubernetes": 5,
+        "Docker Compose": 1
+      }
+    },
+    {
+      "criterion": "Operational Complexity",
+      "ratings": {
+        "Kubernetes": 1,
+        "Docker Compose": 5
+      }
+    },
+    {
+      "criterion": "Resource Efficiency",
+      "ratings": {
+        "Kubernetes": 2,
+        "Docker Compose": 5
+      }
+    },
+    {
+      "criterion": "Ecosystem & Tooling",
+      "ratings": {
+        "Kubernetes": 5,
+        "Docker Compose": 3
+      }
+    },
+    {
+      "criterion": "Development Velocity",
+      "ratings": {
+        "Kubernetes": 2,
+        "Docker Compose": 5
+      }
+    },
+    {
+      "criterion": "Cost Structure",
+      "ratings": {
+        "Kubernetes": 2,
+        "Docker Compose": 5
+      }
+    }
+  ],
+  "common_mistakes": [
+    "Using Kubernetes for single-node deployments.",
+    "Using Docker Compose for production multi-node workloads.",
+    "Underestimating Kubernetes operational complexity and team requirements.",
+    "Not planning the Docker Compose to Kubernetes migration path early.",
+    "Ignoring resource limits in Kubernetes and creating noisy-neighbor behavior.",
+    "Assuming Docker Compose production parity without volume and backup planning.",
+    "Over-engineering with service mesh before proving the need.",
+    "Not using managed Kubernetes to reduce control plane burden."
+  ],
+  "decision_tree": [
+    {
+      "question": "Do you need multi-node deployment or high availability?",
+      "yes_path": "Kubernetes",
+      "no_path": "Next question"
+    },
+    {
+      "question": "Do you have dedicated platform or SRE engineering capacity?",
+      "yes_path": "Next question",
+      "no_path": "Docker Compose or managed Kubernetes"
+    },
+    {
+      "question": "Is this for local development or single-node production?",
+      "yes_path": "Docker Compose",
+      "no_path": "Kubernetes"
+    }
+  ],
+  "hybrid_strategy": {
+    "when_both_wins": "Use Docker Compose for local development and CI/CD integration tests while production runs on Kubernetes. This is the common pattern when teams want developer ergonomics without sacrificing production resilience.",
+    "architecture_overview": "Use Docker Compose for local development and CI/CD integration tests. Use Kubernetes for staging and production environments. Keep Compose files as the developer-facing source of truth and generate or maintain Kubernetes manifests separately where needed.",
+    "benefits": [
+      "Fast local iteration with Docker Compose.",
+      "Production resilience with Kubernetes.",
+      "Shared service definitions for development workflows.",
+      "CI/CD can test against Compose before Kubernetes deployment."
+    ],
+    "costs": [
+      "Dual configuration maintenance.",
+      "Potential drift between development and production behavior.",
+      "Translation tooling limitations.",
+      "Teams must understand both systems."
+    ],
+    "tradeoffs": [
+      "Increased configuration complexity.",
+      "Risk of environment mismatch.",
+      "Additional tooling investment.",
+      "More onboarding surface area."
+    ]
+  },
+  "migration_path": [
+    {
+      "step": "Start with",
+      "description": "Docker Compose for development and initial production."
+    },
+    {
+      "step": "Evaluate",
+      "description": "Traffic growth, availability requirements, and team capacity."
+    },
+    {
+      "step": "Introduce",
+      "description": "Managed Kubernetes for production."
+    },
+    {
+      "step": "Migrate",
+      "description": "Services incrementally from Compose to Kubernetes."
+    },
+    {
+      "step": "Maintain",
+      "description": "Docker Compose for local development parity."
+    }
+  ],
+  "production_examples": [
+    {
+      "system": "Google",
+      "why": "Borg as the historical predecessor pattern for large-scale cluster management."
+    },
+    {
+      "system": "Spotify",
+      "why": "Kubernetes for microservices; Docker Compose for local development."
+    },
+    {
+      "system": "Airbnb",
+      "why": "Kubernetes for production serving infrastructure."
+    },
+    {
+      "system": "Stripe",
+      "why": "Custom orchestration; Docker Compose for development."
+    },
+    {
+      "system": "OpenAI",
+      "why": "Kubernetes for training and serving clusters."
+    },
+    {
+      "system": "Small startups",
+      "why": "Docker Compose on a single VPS for cost efficiency."
+    }
+  ]
+}

@@ -1,0 +1,225 @@
+{
+  "id": "distributed-data-parallel",
+  "title": "Distributed Data Parallel",
+  "slug": "distributed-data-parallel",
+  "description": "Distributed Data Parallel (DDP) replicates a model across multiple GPUs, splits each global batch across workers, and synchronizes gradients with all-reduce so every replica applies the same update as single-GPU training.",
+  "name": "Distributed Data Parallel",
+  "concept": "The fundamental mechanism is straightforward: each rank holds a full model replica, processes a different slice of the batch, computes forward and backward passes locally, and then participates in gradient all-reduce so parameter updates stay synchronized across replicas. This preserves the optimization semantics of single-device training while distributing the computation and memory pressure across workers. In idealized form, DDP improves wall-clock training time toward O(1/N) with N workers, but the actual scaling curve is limited by all-reduce communication, stragglers, and synchronization overhead. The communication cost grows with model size and gradient volume, so the real efficiency is typically captured by a compute-plus-communication model rather than by pure compute scaling alone. Per-rank memory is dominated by full model replication plus optimizer state and activations. Each rank stores the full parameter set, so memory does not shard with worker count unless a separate sharding strategy is used. For Adam-like optimizers, the optimizer state often multiplies parameter memory substantially, and local batch size increases activation memory linearly. DDP shifts the bottleneck from a single device's compute or memory capacity to distributed communication during gradient synchronization. Roofline-style reasoning applies because the system's limiting factor moves from arithmetic throughput on one GPU toward interconnect bandwidth and synchronization latency as the worker count grows. This is why a cluster with weak networking can fail to scale even if aggregate GPU compute is large. Gradient synchronization adds essentially zero arithmetic intensity: it is communication work rather than compute work. Overlap between backward computation and asynchronous all-reduce is therefore crucial, because bucketing gradients lets communication start before the entire backward pass finishes. Using lower-precision gradients such as FP16 reduces bandwidth demand, but it must be balanced against numerical stability and convergence behavior. Synchronization dynamics are often implemented with ring all-reduce, tree all-reduce, or hierarchical all-reduce depending on topology and scale. Bucketing provides a paging-like abstraction for gradient buffers, allowing the runtime to manage communication in chunks rather than as one monolithic transfer, while static graph execution can make communication patterns deterministic and easier to optimize. Intra-node NVLink and inter-node InfiniBand or Ethernet should be treated differently because topology strongly affects the optimal collective strategy.",
+  "applicability": "Use DDP when the model fits in a single GPU's memory but training is too slow on one device, or when you want to scale throughput by increasing data parallelism rather than changing the model architecture. It is especially suitable for large datasets, multi-GPU nodes with fast interconnects, and multi-node clusters where gradient synchronization can be overlapped effectively with backpropagation. Avoid DDP when the model itself exceeds single-GPU memory, because replication makes every rank hold the full model and optimizer state. It is also a poor choice when the interconnect is too slow, local batches are too small to amortize communication, or heterogeneous workers introduce stragglers that force the entire group to run at the pace of the slowest rank. DDP interacts strongly with mixed precision training, gradient accumulation, gradient checkpointing, learning-rate scheduling, and checkpointing. Mixed precision can reduce bandwidth pressure, gradient accumulation can raise effective batch size without increasing per-step communication frequency, checkpointing can cut activation memory, and learning-rate scaling must track the larger effective batch to preserve optimization behavior.",
+  "decision_summary": {
+    "when_to_use": [
+      "The model fits on one GPU, but single-device training is too slow.",
+      "The cluster has high-bandwidth, low-latency interconnects suitable for frequent all-reduce.",
+      "The global batch can be split across ranks without causing excessive gradient noise.",
+      "Backward computation is long enough to overlap meaningfully with communication."
+    ],
+    "dont_use": [
+      "The model exceeds single-GPU memory and needs parameter sharding instead.",
+      "Workers are heterogeneous or prone to straggling, because all ranks must synchronize every step.",
+      "Interconnect bandwidth is too low relative to gradient volume.",
+      "Local batches are so small that scaling efficiency and convergence degrade."
+    ],
+    "tradeoff": "Throughput ↑, Communication Overhead ↑, Memory per Rank →, Complexity ↑"
+  },
+  "pattern_snapshot": {
+    "primary_goal": "Training Throughput Linear Scaling with GPU Count",
+    "primary_constraint": "Interconnect Bandwidth and All-Reduce Latency",
+    "effective_batch": "Not Directly Affected",
+    "typical_usage": "Multi-GPU Multi-Node Data-Parallel Training for Models Fitting in Single-Device Memory"
+  },
+  "tradeoffs": [
+    {
+      "dimension": "Memory",
+      "effect": "↑",
+      "description": "Each rank holds a full model replica plus gradients and optimizer state, so per-rank memory does not shard away."
+    },
+    {
+      "dimension": "Compute",
+      "effect": "↓ per step, ↑ total system work",
+      "description": "Work is divided across workers, but total compute stays similar while synchronization adds overhead."
+    },
+    {
+      "dimension": "Latency",
+      "effect": "↓ wall-clock to target, ↑ synchronization sensitivity",
+      "description": "Training finishes sooner in aggregate, but each step becomes sensitive to collective latency and stragglers."
+    },
+    {
+      "dimension": "Bandwidth",
+      "effect": "↑",
+      "description": "Gradient all-reduce moves large tensors every step, making interconnect bandwidth a primary resource."
+    },
+    {
+      "dimension": "Complexity",
+      "effect": "↑",
+      "description": "Correct process-group setup, bucketing, deterministic ordering, and fault handling are required."
+    }
+  ],
+  "decision_flow": [
+    {
+      "question": "Does the model fit on a single GPU?",
+      "if_yes": "Go to Step 2: Check interconnect speed",
+      "if_no": "Use sharded (FSDP) or model-parallel training instead."
+    },
+    {
+      "question": "Is the interconnect fast enough to hide all-reduce under backward compute?",
+      "if_yes": "Go to Step 3: Check worker homogeneity",
+      "if_no": "Reduce gradient volume or change parallelism strategy."
+    },
+    {
+      "question": "Are all workers homogeneous and stable?",
+      "if_yes": "Proceed with synchronous DDP",
+      "if_no": "Address stragglers, timeouts, or scheduling imbalance before scaling out."
+    }
+  ],
+  "system_interactions": [
+    {
+      "interacts_with": "All-Reduce / Gradient Synchronization Engine",
+      "condition": "Every backward pass produces large gradient tensors.",
+      "effect": "Collective latency dominates scaling if the communication pattern cannot be overlapped or compressed."
+    },
+    {
+      "interacts_with": "Mixed Precision Training / FP16 Gradient Compression",
+      "condition": "Bandwidth is the limiting resource.",
+      "effect": "Lower-precision gradients reduce communication cost, but numerical stability and convergence must be preserved."
+    },
+    {
+      "interacts_with": "Gradient Accumulation / Effective Batch Scaling",
+      "condition": "Per-rank batches are too small for stable optimization.",
+      "effect": "Communication frequency drops while effective batch size rises, at the cost of more local memory and delayed synchronization."
+    },
+    {
+      "interacts_with": "Checkpointing / Distributed State Persistence",
+      "condition": "Training must survive preemption or node loss.",
+      "effect": "Optimizer state, model weights, and rank metadata must be saved consistently across all replicas."
+    },
+    {
+      "interacts_with": "Network Topology / NVLink-InfiniBand Hierarchy",
+      "condition": "Intra-node bandwidth is much higher than inter-node bandwidth.",
+      "effect": "Hierarchical all-reduce can reduce slow cross-node traffic and improve scaling efficiency."
+    },
+    {
+      "interacts_with": "Learning Rate Scheduling / Linear Scaling Law",
+      "condition": "Global batch size changes as worker count changes.",
+      "effect": "LR often needs to scale with effective batch size to preserve convergence behavior."
+    },
+    {
+      "interacts_with": "Gradient Checkpointing / Activation Memory",
+      "condition": "Activations are the dominant memory consumer.",
+      "effect": "Recomputing activations lowers memory pressure, enabling larger local batches or larger models."
+    }
+  ],
+  "anti_patterns": [
+    {
+      "wrong": "Ignoring interconnect limits",
+      "impact": "All-reduce dominates step time and expected speedup disappears.",
+      "fix": "Measure communication cost first and use topology-aware collectives."
+    },
+    {
+      "wrong": "Using tiny local batches",
+      "impact": "Gradient noise rises and synchronization overhead is poorly amortized.",
+      "fix": "Increase effective batch size with accumulation or reduce worker count."
+    },
+    {
+      "wrong": "Mismatched all-reduce ordering",
+      "impact": "Deadlocks or hard-to-debug desynchronization can occur.",
+      "fix": "Keep bucket order deterministic and rank behavior identical."
+    },
+    {
+      "wrong": "Scaling batch size without LR adjustment",
+      "impact": "Convergence can degrade or stall.",
+      "fix": "Couple batch scaling with a compatible learning-rate schedule."
+    },
+    {
+      "wrong": "Leaving stragglers unmanaged",
+      "impact": "The whole job runs at the speed of the slowest worker.",
+      "fix": "Monitor node health, isolate slow workers, and enforce failure thresholds."
+    }
+  ],
+  "implementation_notes": "Build the process-group topology around physical network layout rather than just logical rank count. Intra-node GPU links such as NVLink or PCIe should be grouped separately from inter-node fabric such as InfiniBand or Ethernet, and hierarchical collectives should exploit that asymmetry. This is especially important once the cluster spans multiple nodes, because the slowest link often determines step time. Use gradient bucketing to overlap communication with backward computation. Smaller buckets improve latency hiding but increase launch overhead, while larger buckets reduce overhead but delay the start of communication. Deterministic bucket order matters because inconsistent ordering can change communication timing and cause hard-to-debug deadlocks or performance regressions. Treat synchronization barriers as step-level invariants. Every rank must reach the same optimizer step, and asynchronous data loading or uneven work queues can create stragglers that stall the entire group. Timeout handling, rank health checks, and consistent batch accounting are therefore core reliability mechanisms rather than optional extras. Manage memory as a distributed state problem. Parameters, gradients, and optimizer state all live across ranks, and gradient accumulation increases peak memory during the forward-backward window even if communication frequency falls. Double-buffering or overly aggressive preallocation can trigger OOM, so allocator behavior and buffer lifetimes must be explicitly controlled. Distributed initialization must establish world size, rank assignment, and rendezvous reliably before training begins. TCP bootstrap, shared-file bootstrap, and environment-variable-based bootstrap each have different operational tradeoffs, but all must converge on the same process-group membership and failure semantics. Precision and compression choices should be evaluated in terms of bandwidth savings versus convergence stability, especially when moving from FP32 to FP16 or using stronger gradient compression schemes.",
+  "examples": [
+    "def ddp_step(rank, world_size, model, optimizer, batch, comm):\n    local_batch = split_batch(batch, rank, world_size)\n\n    outputs = model.forward(local_batch.inputs)\n    loss = compute_loss(outputs, local_batch.targets)\n\n    gradients = model.backward(loss)\n\n    buckets = make_gradient_buckets(gradients)\n    synced_gradients = empty_like(gradients)\n\n    for bucket in buckets:\n        reduced = comm.all_reduce(bucket)\n        synced_gradients[bucket.index] = reduced / world_size\n\n    model.load_gradients(synced_gradients)\n    optimizer.step()\n    optimizer.zero_grad()"
+  ],
+  "variations": [
+    {
+      "name": "PyTorch DDP with Bucketing and Overlap (Standard Implementation)",
+      "description": "Gradients are bucketed by size, all-reduce launches asynchronously as each bucket finishes backward computation, and the final bucket synchronizes before the optimizer step.",
+      "use_when": "Standard multi-GPU training on NVIDIA hardware where the model fits on one GPU and scaling efficiency matters.",
+      "benefit": "Near-linear scaling on many single-node configurations, with communication overlapped by compute.",
+      "tradeoff": "Bucket tuning matters, and stragglers can reduce efficiency."
+    },
+    {
+      "name": "Fully Sharded Data Parallel (FSDP)",
+      "description": "Model parameters, gradients, and optimizer states are sharded across ranks, with on-demand parameter gathering and gradient scattering during training.",
+      "use_when": "The model does not fit in single-GPU memory, or DDP's full replication is too expensive.",
+      "benefit": "Enables training of much larger models with lower per-rank memory.",
+      "tradeoff": "More communication, more complexity, and sometimes lower speed than DDP for models that already fit."
+    },
+    {
+      "name": "Hierarchical / Multi-Node DDP with Topology-Aware All-Reduce",
+      "description": "All-reduce is decomposed into intra-node and inter-node phases to exploit fast local GPU links and reduce slow cross-node traffic.",
+      "use_when": "Training across multiple physical nodes with a clear bandwidth gap between local and remote links.",
+      "benefit": "Better scaling across large clusters and improved utilization of NVLink-class topology.",
+      "tradeoff": "Requires topology-aware scheduling and is more sensitive to cluster heterogeneity."
+    }
+  ],
+  "category": "training_loop",
+  "domain": "llm",
+  "difficulty": "advanced",
+  "engineering_area": "distributed-training",
+  "estimated_reading_time": 20,
+  "prerequisites": [
+    "transformer"
+  ],
+  "recommended_next": [
+    "gradient-accumulation"
+  ],
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "last_verified": "2026-07-15",
+  "review_frequency": "annually",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "sources": [
+    "https://arxiv.org/pdf/2605.17879.pdf",
+    "https://wjarr.com/node/11270"
+  ],
+  "tags": [
+    "distributed-data-parallel",
+    "ddp",
+    "distributed-training",
+    "all-reduce"
+  ],
+  "aliases": [
+    "ddp-pattern",
+    "distributed-data-parallel-pattern",
+    "gradient-all-reduce"
+  ],
+  "keywords": [
+    "distributed data parallel",
+    "ddp",
+    "all-reduce",
+    "collective communication"
+  ],
+  "search_tokens": [
+    "distributed data parallel scaling",
+    "gradient bucketing all-reduce overlap",
+    "ring all-reduce network topology",
+    "FSDP parameter sharding"
+  ],
+  "related_workflows": [
+    "full-fine-tuning-a-pretrained-transformer"
+  ],
+  "related_models": [],
+  "related_packages": [
+    "pytorch",
+    "accelerate"
+  ],
+  "related_principles": [],
+  "related_debug_guides": []
+}

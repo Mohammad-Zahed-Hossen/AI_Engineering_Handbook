@@ -1,0 +1,463 @@
+{
+  "id": "batch-vs-online-inference",
+  "title": "Batch vs Online Inference",
+  "slug": "batch-vs-online-inference",
+  "description": "Batch inference is the right default when throughput, amortized compute cost, and predictable offline processing dominate, while online inference is the right default when user-facing latency SLAs and immediate responses dominate. The practical distinction is whether the system can tolerate queued, scheduled execution or must pay the overhead of always-on serving, autoscaling, and request isolation.",
+  "name": "Batch vs Online Inference",
+  "category": "deployment",
+  "problem": "The engineering decision is whether to standardize on batch inference for maximum throughput or online inference for minimal latency in production model serving. The trade-off is between resource efficiency and cost amortization on one side, and real-time responsiveness and user experience on the other.",
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "sources": [
+    "https://docs.mlcommons.org/inference/",
+    "https://mlcommons.org/2026/04/mlperf-inference-v6-0-results/",
+    "https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/user_guide/batcher.html",
+    "https://mlcommons.org/benchmarks/inference-edge/",
+    "https://www.nvidia.com/en-us/data-center/resources/mlperf-benchmarks/",
+    "https://ieeexplore.ieee.org/document/11382721/",
+    "https://www.semanticscholar.org/paper/75255f28322ed89110812641ad69a6bf5ab02978",
+    "https://ieeexplore.ieee.org/document/9969373/",
+    "https://ieeexplore.ieee.org/document/10403070/",
+    "https://ieeexplore.ieee.org/document/9286169/",
+    "https://www.semanticscholar.org/paper/26a990681e11ca5c8cd41904e6da09790a308f73",
+    "https://dl.acm.org/doi/10.1145/3799238",
+    "https://www.semanticscholar.org/paper/799a6c5d972d7b0c52f4ba388e8c2ac7703d4623",
+    "https://github.com/basetenlabs/triton-inference-server/blob/main/docs/user_guide/model_configuration.md",
+    "https://triton-inference-server.github.io/pytriton/0.2.4/binding_configuration/",
+    "https://docs.nvidia.com/deeplearning/triton-inference-server/archives/triton_inference_server_1120/triton-inference-server-guide/docs/optimization.html",
+    "https://mlcommons.org/2025/04/mlperf-inference-v5-0-results/",
+    "https://infohub.delltechnologies.com/en-us/p/mlperf-tm-inference-4-0-on-dell-poweredge-server-with-intel-r-5th-generation-xeon-r-cpu/"
+  ],
+  "tags": [
+    "batch-inference",
+    "online-inference",
+    "model-serving",
+    "inference-deployment",
+    "latency-optimization",
+    "high-throughput"
+  ],
+  "aliases": [
+    "batch-vs-online",
+    "inference-paradigm-decision",
+    "real-time-serving-decision"
+  ],
+  "keywords": [
+    "batch-inference",
+    "online-inference",
+    "model-serving",
+    "dynamic-batching",
+    "continuous-batching"
+  ],
+  "search_tokens": [
+    "batch vs online inference",
+    "offline inference vs online inference",
+    "model serving paradigms",
+    "real-time vs batch ml"
+  ],
+  "domain": "systems",
+  "difficulty": "intermediate",
+  "engineering_area": "inference",
+  "estimated_reading_time": 20,
+  "prerequisites": [
+    "model-serving",
+    "inference",
+    "systems"
+  ],
+  "recommended_next": [
+    "llm-serving",
+    "latency-optimization",
+    "model-deployment"
+  ],
+  "last_verified": "2026-07-15",
+  "review_frequency": "quarterly",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "evaluation_criteria": [
+    {
+      "criterion": "Latency SLA",
+      "weight": 1.0,
+      "description": "User-facing response time requirements."
+    },
+    {
+      "criterion": "Throughput Efficiency",
+      "weight": 0.9,
+      "description": "Requests processed per unit compute."
+    },
+    {
+      "criterion": "Cost Structure",
+      "weight": 0.9,
+      "description": "Capital and operational expenditure patterns."
+    },
+    {
+      "criterion": "Infrastructure Complexity",
+      "weight": 0.7,
+      "description": "Setup, maintenance, and operational burden."
+    },
+    {
+      "criterion": "Fault Isolation",
+      "weight": 0.6,
+      "description": "Impact scope of failures and retry semantics."
+    },
+    {
+      "criterion": "Scalability Pattern",
+      "weight": 0.7,
+      "description": "How each paradigm handles traffic growth."
+    }
+  ],
+  "options": [
+    {
+      "name": "Batch Inference",
+      "id": "batch-inference",
+      "strengths": [
+        "Maximum throughput through request amortization and GPU saturation.",
+        "Predictable compute scheduling and reserved capacity pricing.",
+        "Simpler failure handling with full-batch retry semantics.",
+        "Optimal for large-scale offline processing such as ETL and analytics.",
+        "No autoscaling cold-start latency."
+      ],
+      "weaknesses": [
+        "High latency is unacceptable for user-facing applications.",
+        "Resource waste if batch sizes are undersubscribed.",
+        "Queue backlog risk during traffic spikes.",
+        "No real-time feedback or interactive user experience."
+      ],
+      "best_for": "Offline analytics, recommendation system feature generation, nightly report generation, large-scale data processing, non-interactive ML pipelines.",
+      "avoid_when": "User-facing applications, real-time decision systems, or latency SLA below 1 second.",
+      "infrastructure_required": [
+        "Job scheduler such as Airflow, Kubeflow, or AWS Batch.",
+        "Object storage for input and output.",
+        "GPU or CPU cluster with reserved capacity.",
+        "Queue system for request accumulation."
+      ],
+      "operational_cost": "Low per-inference, but requires reserved capacity.",
+      "maintenance_cost": "Low.",
+      "scaling_complexity": "medium",
+      "failure_modes": [
+        "Partial batch failures requiring full reprocessing.",
+        "Queue overflow during peak accumulation.",
+        "Straggler tasks delaying entire batch completion."
+      ],
+      "hidden_costs": [
+        "Storage costs for queued requests and results.",
+        "Idle compute during low-traffic periods.",
+        "Data freshness staleness in downstream systems."
+      ]
+    },
+    {
+      "name": "Online Inference",
+      "id": "online-inference",
+      "strengths": [
+        "Real-time latency for user-facing applications.",
+        "Immediate feedback and interactive user experience.",
+        "Autoscaling elasticity for traffic variability.",
+        "Per-request isolation and granular error handling.",
+        "Dynamic batching and continuous batching for throughput optimization."
+      ],
+      "weaknesses": [
+        "Higher per-inference cost due to autoscaling overhead.",
+        "Cold-start latency during scale-up events.",
+        "Complex autoscaling, load balancing, and circuit breaker logic.",
+        "Resource fragmentation from variable request sizes.",
+        "Strict SLA pressure requiring overprovisioning."
+      ],
+      "best_for": "Real-time APIs, chatbots, recommendation serving, fraud detection, autonomous systems, interactive applications.",
+      "avoid_when": "Latency is flexible, request volume is predictable and large, or cost per inference must be minimized.",
+      "infrastructure_required": [
+        "Inference server such as Triton, TorchServe, TF Serving, or vLLM.",
+        "Load balancer and API gateway.",
+        "Autoscaling group or Kubernetes HPA/VPA.",
+        "Monitoring and alerting stack.",
+        "Connection pooling and keep-alive management."
+      ],
+      "operational_cost": "High.",
+      "maintenance_cost": "High.",
+      "scaling_complexity": "high",
+      "failure_modes": [
+        "Autoscaling lag causing request timeouts during traffic spikes.",
+        "Cold-start latency from scale-to-zero configurations.",
+        "Cascade failures from downstream dependency timeouts.",
+        "GPU memory exhaustion from concurrent large requests."
+      ],
+      "hidden_costs": [
+        "Overprovisioning for SLA headroom.",
+        "Load balancer and networking costs.",
+        "Autoscaling hysteresis and thrashing.",
+        "Connection management overhead."
+      ]
+    }
+  ],
+  "comparison_table": {
+    "Latency": "Batch: Minutes to hours | Online: Milliseconds to seconds",
+    "Throughput": "Batch: Very high through amortization | Online: Moderate per-request overhead",
+    "Cost per Inference": "Batch: Low with reserved capacity | Online: Higher with autoscaling overhead",
+    "User Experience": "Batch: Non-interactive | Online: Real-time and interactive",
+    "Resource Utilization": "Batch: High during scheduled runs | Online: Variable and demand-driven",
+    "Failure Scope": "Batch: Full batch retry | Online: Per-request retry and circuit break",
+    "Autoscaling": "Batch: Manual or scheduled | Online: Automatic or reactive",
+    "Infrastructure": "Batch: Scheduler, queue, and workers | Online: Load balancer, inference server, and autoscaler",
+    "Data Freshness": "Batch: Stale between runs | Online: Fresh and immediate",
+    "Operational Model": "Batch: Data engineering heavy | Online: SRE and platform engineering heavy"
+  },
+  "recommendations": "Choose batch inference for offline pipelines, feature generation, backfills, and large-scale evaluation jobs. Choose online inference for user-facing APIs, strict latency SLAs, fraud detection, and interactive systems. Use Depends when the workload has both predictable large-volume processing and meaningful freshness requirements.",
+  "use_cases": [
+    "Real-time recommendation API: Online inference with autoscaling.",
+    "Nightly user embedding generation: Batch inference with Spark.",
+    "Chatbot response generation: Online inference with continuous batching.",
+    "Fraud detection pipeline: Online inference for real-time scoring.",
+    "Monthly churn prediction: Batch inference for full customer base.",
+    "Image classification API: Online inference with dynamic batching.",
+    "Document embedding batch job: Batch inference for corpus indexing."
+  ],
+  "related_workflows": [
+    "llm-application-serving"
+  ],
+  "related_packages": [
+    "pytorch"
+  ],
+  "related_models": [],
+  "default_recommendation": "Batch Inference",
+  "one_sentence_summary": "Batch inference is the right default when throughput, amortized compute cost, and predictable offline processing dominate; online inference is the right default when user-facing latency SLAs and immediate responses dominate.",
+  "choose_when": "Batch Inference: Nightly ETL or feature generation, cost per inference is the primary constraint, or request volume is large with flexible latency | Online Inference: Latency SLA below 1 second, user-facing application, or traffic is highly variable.",
+  "avoid_when": "Batch Inference: User-facing applications, real-time decision systems, or latency SLA below 1 second | Online Inference: Latency is flexible, request volume is predictable and large, or cost per inference must be minimized.",
+  "hybrid_recommendation": "Use online inference for real-time API serving with autoscaling, and batch inference for nightly feature generation, model evaluation, and backfills.",
+  "assumptions": [
+    "You have a trained model ready for production deployment.",
+    "You have infrastructure resources, cloud or on-premise.",
+    "Request patterns and latency requirements are known or estimable.",
+    "Cost optimization is a consideration but not the sole driver."
+  ],
+  "scope": "This guide compares batch and online inference paradigms. It covers serving architecture, scheduling, autoscaling, and cost optimization.",
+  "out_of_scope": [
+    "Model training or fine-tuning decisions.",
+    "Specific cloud provider managed services unless paradigm-specific.",
+    "Model compression techniques as primary topics.",
+    "Edge-only deployment."
+  ],
+  "decision_matrix": [
+    {
+      "criterion": "Latency SLA",
+      "importance": "critical",
+      "winner": "Online",
+      "reason": "Real-time applications require immediate response."
+    },
+    {
+      "criterion": "Throughput Efficiency",
+      "importance": "high",
+      "winner": "Batch",
+      "reason": "Batch amortization increases utilization and throughput per unit compute."
+    },
+    {
+      "criterion": "Cost Structure",
+      "importance": "high",
+      "winner": "Batch",
+      "reason": "Reserved compute and amortization usually reduce per-inference cost."
+    },
+    {
+      "criterion": "Infrastructure Complexity",
+      "importance": "medium",
+      "winner": "Batch",
+      "reason": "Scheduling and queueing are simpler than full online autoscaling stacks."
+    },
+    {
+      "criterion": "Fault Isolation",
+      "importance": "medium",
+      "winner": "Online",
+      "reason": "Per-request failure scope is narrower than full-batch retry."
+    },
+    {
+      "criterion": "Scalability Pattern",
+      "importance": "medium",
+      "winner": "Depends",
+      "reason": "Batch fits predictable windows; online fits elastic, traffic-driven demand."
+    }
+  ],
+  "constraint_recommendations": [
+    {
+      "condition": "Latency SLA below 1 second",
+      "recommended_option": "Online Inference",
+      "reason": "Batch cannot satisfy real-time response constraints."
+    },
+    {
+      "condition": "User-facing application",
+      "recommended_option": "Online Inference",
+      "reason": "Interactive experience depends on immediate responses."
+    },
+    {
+      "condition": "Nightly ETL or feature generation",
+      "recommended_option": "Batch Inference",
+      "reason": "High-throughput scheduled runs are the natural fit."
+    },
+    {
+      "condition": "Cost per inference is the primary constraint",
+      "recommended_option": "Batch Inference",
+      "reason": "Amortized compute typically lowers unit cost."
+    },
+    {
+      "condition": "Traffic is highly variable and unpredictable",
+      "recommended_option": "Online Inference",
+      "reason": "Autoscaling better absorbs demand swings."
+    },
+    {
+      "condition": "Request volume above 10K/min with flexible latency",
+      "recommended_option": "Batch Inference",
+      "reason": "Queue-based amortization dominates when latency is flexible."
+    },
+    {
+      "condition": "Fraud detection or real-time decisioning",
+      "recommended_option": "Online Inference",
+      "reason": "Staleness is unacceptable in time-sensitive scoring."
+    },
+    {
+      "condition": "Model evaluation or A/B testing at scale",
+      "recommended_option": "Batch Inference",
+      "reason": "Large evaluation sets are more efficiently processed offline."
+    }
+  ],
+  "tradeoff_analysis": [
+    {
+      "criterion": "Latency SLA",
+      "ratings": {
+        "Batch Inference": 1,
+        "Online Inference": 5
+      }
+    },
+    {
+      "criterion": "Throughput Efficiency",
+      "ratings": {
+        "Batch Inference": 5,
+        "Online Inference": 3
+      }
+    },
+    {
+      "criterion": "Cost Structure",
+      "ratings": {
+        "Batch Inference": 5,
+        "Online Inference": 2
+      }
+    },
+    {
+      "criterion": "Infrastructure Complexity",
+      "ratings": {
+        "Batch Inference": 4,
+        "Online Inference": 2
+      }
+    },
+    {
+      "criterion": "Fault Isolation",
+      "ratings": {
+        "Batch Inference": 2,
+        "Online Inference": 4
+      }
+    },
+    {
+      "criterion": "Scalability Pattern",
+      "ratings": {
+        "Batch Inference": 3,
+        "Online Inference": 4
+      }
+    }
+  ],
+  "common_mistakes": [
+    "Forcing batch inference into user-facing applications due to cost concerns.",
+    "Using online inference for large-scale offline analytics without considering cost.",
+    "Ignoring cold-start latency in autoscaling configurations.",
+    "Underestimating queue backlog growth in batch systems.",
+    "Overprovisioning online inference without traffic-based autoscaling policies.",
+    "Not implementing circuit breakers in online serving.",
+    "Assuming batch inference is always cheaper.",
+    "Neglecting data freshness requirements when choosing batch over online."
+  ],
+  "decision_tree": [
+    {
+      "question": "Is your application user-facing or does it require real-time response?",
+      "yes_path": "Online Inference",
+      "no_path": "Next question"
+    },
+    {
+      "question": "Is your request volume predictable and above 10K requests per processing window?",
+      "yes_path": "Batch Inference",
+      "no_path": "Next question"
+    },
+    {
+      "question": "Is latency flexibility above 5 minutes acceptable?",
+      "yes_path": "Batch Inference",
+      "no_path": "Online Inference"
+    }
+  ],
+  "hybrid_strategy": {
+    "when_both_wins": "Use both when the system requires real-time serving for active users and batch processing for analytics, feature generation, or retraining. Many production stacks split online serving from offline pipelines rather than trying to force one paradigm to cover both.",
+    "architecture_overview": "Use online inference for real-time API serving with autoscaling, and batch inference for nightly feature generation, model evaluation, and backfills. Share the same model artifacts across both paths to reduce divergence.",
+    "benefits": [
+      "Real-time user experience through the online path.",
+      "Cost-efficient large-scale processing through the batch path.",
+      "Consistent model versions across both paths.",
+      "Reduced online load by precomputing batch features."
+    ],
+    "costs": [
+      "Dual infrastructure maintenance.",
+      "Data synchronization between online and batch stores.",
+      "Consistency management for model versions.",
+      "Two operational models, typically spanning SRE and data engineering."
+    ],
+    "tradeoffs": [
+      "Increased system complexity.",
+      "Potential model version drift.",
+      "Higher total infrastructure footprint.",
+      "Need for a feature store to bridge online and batch features."
+    ]
+  },
+  "migration_path": [
+    {
+      "step": "Start with",
+      "description": "Online inference for immediate user-facing requirements."
+    },
+    {
+      "step": "Evaluate",
+      "description": "Traffic patterns, latency requirements, and cost structure."
+    },
+    {
+      "step": "Introduce",
+      "description": "Batch inference for offline analytics and feature generation."
+    },
+    {
+      "step": "Integrate",
+      "description": "A feature store to unify online and batch feature access."
+    },
+    {
+      "step": "Optimize",
+      "description": "Right-size online autoscaling and batch scheduling independently."
+    }
+  ],
+  "production_examples": [
+    {
+      "system": "Netflix",
+      "why": "Batch inference for recommendation feature generation; online for real-time personalization."
+    },
+    {
+      "system": "Google Search",
+      "why": "Batch for index scoring; online for query-time ranking."
+    },
+    {
+      "system": "Uber",
+      "why": "Online inference for ETA and pricing; batch for fraud model retraining."
+    },
+    {
+      "system": "OpenAI API",
+      "why": "Online inference with continuous batching for LLM serving."
+    },
+    {
+      "system": "Stripe",
+      "why": "Online inference for fraud detection with strict latency SLAs."
+    },
+    {
+      "system": "Spotify",
+      "why": "Batch inference for playlist generation; online for real-time recommendations."
+    }
+  ]
+}

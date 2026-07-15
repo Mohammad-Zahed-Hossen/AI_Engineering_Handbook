@@ -1,0 +1,560 @@
+{
+  "id": "model-not-learning",
+  "title": "Model Not Learning (Loss Not Decreasing)",
+  "slug": "model-not-learning",
+  "description": "Troubleshooting and resolving flat loss curves or stagnant metrics during training. This guide details diagnostic checks, layer-wise gradient flow tests, activation saturation checks, and corrective actions.",
+  "name": "Model Not Learning (Loss Not Decreasing)",
+  "category": "training",
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "sources": [
+    "https://arxiv.org/abs/2406.09405",
+    "https://pytorch.org/ignite/generated/ignite.handlers.param_scheduler.create_lr_scheduler_with_warmup.html",
+    "https://arxiv.org/abs/1905.11881",
+    "https://arxiv.org/abs/2508.01483"
+  ],
+  "tags": [
+    "training",
+    "debugging",
+    "loss",
+    "stagnation",
+    "vanishing-gradients",
+    "dead-relu",
+    "learning-rate"
+  ],
+  "aliases": [
+    "loss-not-decreasing",
+    "model-not-learning",
+    "flat-loss",
+    "training-stagnation"
+  ],
+  "keywords": [
+    "pytorch",
+    "tensorflow",
+    "learning-rate",
+    "vanishing-gradients",
+    "dead-relu",
+    "batch-normalization",
+    "residual-connections"
+  ],
+  "search_tokens": [
+    "loss not decreasing",
+    "model not learning",
+    "flat loss curve",
+    "training plateau",
+    "vanishing gradient"
+  ],
+  "domain": "deep-learning",
+  "difficulty": "advanced",
+  "engineering_area": "training",
+  "estimated_reading_time": 25,
+  "prerequisites": [
+    "training-loop",
+    "backpropagation"
+  ],
+  "recommended_next": [
+    "nan-loss-exploding-gradients"
+  ],
+  "last_verified": "2026-07-15",
+  "review_frequency": "quarterly",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "overview": {
+    "severity": "high",
+    "frequency": "common",
+    "typical_stage": "training",
+    "estimated_fix_time": "45-180 min",
+    "production_impact": "high"
+  },
+  "quick_identification": [
+    {
+      "check": "Loss curve is flat across multiple epochs",
+      "description": "Monitor training logs for loss values that do not trend downward."
+    },
+    {
+      "check": "Validation metrics are static or random",
+      "description": "Accuracy, F1, or task metrics show no improvement over baseline."
+    },
+    {
+      "check": "Gradients are near zero",
+      "description": "Use gradient norm logging to detect vanishing gradient signals."
+    }
+  ],
+  "symptoms": [
+    {
+      "symptom": "Flat Loss Curve",
+      "description": "Training loss remains constant or oscillates around the same value for many epochs.",
+      "error_message": "No explicit error; loss values are stable but high.",
+      "where_appears": "Training loop, loss computation, optimizer step.",
+      "frequency": "always"
+    },
+    {
+      "symptom": "Uniform or Random Predictions",
+      "description": "Model outputs are identical across samples or statistically random.",
+      "error_message": "No explicit error; predictions lack discriminative power.",
+      "where_appears": "Inference, validation, prediction head.",
+      "frequency": "often"
+    },
+    {
+      "symptom": "Near-Zero Gradient Norms",
+      "description": "Gradient norms are extremely small, indicating no signal backpropagating.",
+      "error_message": "No explicit error; gradient inspection reveals vanishing values.",
+      "where_appears": "Backward pass, gradient computation.",
+      "frequency": "often"
+    }
+  ],
+  "root_causes": [
+    {
+      "cause": "Learning Rate Too Low",
+      "probability": "high",
+      "explanation": "Insufficient learning rate makes parameter updates too small to escape plateaus or overcome gradient noise; warmup and schedule design matter because learning-rate choice strongly affects early convergence.",
+      "recognition_clues": [
+        "Loss decreases by less than 0.001 per epoch.",
+        "Gradients are small but non-zero.",
+        "Increasing learning rate causes immediate loss reduction."
+      ],
+      "typical_environment": "Fine-tuning pretrained models, conservative hyperparameter choices."
+    },
+    {
+      "cause": "Vanishing Gradients",
+      "probability": "high",
+      "explanation": "Gradient signals decay through deep stacks, recurrent paths, or saturated nonlinearities, leaving early layers effectively untrained.",
+      "recognition_clues": [
+        "Later layers update normally; early layers have near-zero gradients.",
+        "Sigmoid/tanh-heavy deep networks show poor signal flow.",
+        "Residual structure or normalization is absent or misconfigured."
+      ],
+      "typical_environment": "Very deep networks, RNNs, architectures without residual connections."
+    },
+    {
+      "cause": "Dead ReLU / Saturated Activations",
+      "probability": "high",
+      "explanation": "ReLU units can become permanently inactive when inputs stay negative, especially after poor initialization or aggressive updates, which blocks useful gradient propagation.",
+      "recognition_clues": [
+        "Large percentage of neurons output zero consistently.",
+        "Loss flatlines after an initial decrease.",
+        "Replacing ReLU with LeakyReLU resumes learning."
+      ],
+      "typical_environment": "Networks with poor initialization, aggressive regularization, or unstable early training."
+    },
+    {
+      "cause": "Incorrect Loss Function",
+      "probability": "medium",
+      "explanation": "A mismatch between loss formulation and task can produce weak or misleading gradients, especially with custom reductions, label encoding errors, or framework migration mistakes.",
+      "recognition_clues": [
+        "Loss value is orders of magnitude wrong for the task.",
+        "Gradient direction contradicts expected behavior.",
+        "Switching loss function immediately changes loss trajectory."
+      ],
+      "typical_environment": "Multi-task learning, custom loss implementations, framework version migrations."
+    },
+    {
+      "cause": "Frozen or Untrained Layers",
+      "probability": "medium",
+      "explanation": "Layers may be inadvertently frozen or omitted from the optimizer, so only a subset of the model can adapt.",
+      "recognition_clues": [
+        "Only final layer weights change; backbone is static.",
+        "Loss decreases slightly then plateaus at a suboptimal value.",
+        "named_parameters() shows no gradient accumulation in intended layers."
+      ],
+      "typical_environment": "Transfer learning, feature extraction mode, partial fine-tuning pipelines."
+    },
+    {
+      "cause": "Data Pipeline Corruption",
+      "probability": "medium",
+      "explanation": "The model may be receiving constant batches, mislabeled examples, collapsed augmentation, or otherwise unlearnable signal, so optimization converges to a trivial baseline.",
+      "recognition_clues": [
+        "Training loss equals validation loss.",
+        "Data inspection reveals identical batches or shuffled labels.",
+        "Loss is stuck near random-guess baselines."
+      ],
+      "typical_environment": "Custom data loaders, distributed sampling bugs, augmentation pipelines that collapse variance."
+    },
+    {
+      "cause": "Gradient Accumulation Without Normalization",
+      "probability": "low",
+      "explanation": "If accumulated gradients are not normalized by accumulation steps, the effective update scale can become inconsistent and make optimization appear stalled or poorly tuned.",
+      "recognition_clues": [
+        "Loss improves with accumulation_steps=1 but flatlines with larger values.",
+        "Effective batch size is large but updates are tiny.",
+        "Loss scales with accumulation step count."
+      ],
+      "typical_environment": "Large-batch simulation via gradient accumulation, memory-constrained training."
+    }
+  ],
+  "investigation_checklist": [
+    {
+      "check": "Check learning rate value",
+      "description": "Verify learning rate is not orders of magnitude too small for the task."
+    },
+    {
+      "check": "Check gradient norms layer-by-layer",
+      "description": "Log gradient norms per layer to detect vanishing gradients."
+    },
+    {
+      "check": "Check activation outputs",
+      "description": "Inspect intermediate layer outputs for dead neurons or saturation."
+    },
+    {
+      "check": "Check loss function configuration",
+      "description": "Verify loss function matches task and reduction mode is correct."
+    },
+    {
+      "check": "Check parameter freezing status",
+      "description": "Verify all intended layers have requires_grad=True and are passed to optimizer."
+    },
+    {
+      "check": "Check data pipeline integrity",
+      "description": "Inspect batches for label correctness, variance, and shuffling."
+    },
+    {
+      "check": "Check gradient accumulation implementation",
+      "description": "Verify gradients are normalized by accumulation steps before optimizer step."
+    }
+  ],
+  "diagnostic_commands": [
+    {
+      "purpose": "Check layer-wise gradient norms",
+      "command": "for name, param in model.named_parameters(): if param.grad is not None: print(f'{name}: {param.grad.norm().item()}')",
+      "expected_output": "Gradient norms for each layer.",
+      "interpretation": "Early layers with norms near zero indicate vanishing gradients."
+    },
+    {
+      "purpose": "Check for dead ReLU neurons",
+      "command": "dead_ratio = (activation_output == 0).float().mean().item(); print(f'Dead neurons: {dead_ratio:.2%}')",
+      "expected_output": "Ratio of zero activations.",
+      "interpretation": "High ratios indicate a severe dead ReLU problem."
+    },
+    {
+      "purpose": "Verify optimizer parameter groups",
+      "command": "print(f'Optimizer params: {sum(p.numel() for group in optimizer.param_groups for p in group[\"params\"])}')",
+      "expected_output": "Parameter count match.",
+      "interpretation": "Mismatch indicates frozen layers or missing parameters."
+    },
+    {
+      "purpose": "Inspect data batch variance",
+      "command": "print(f'Labels: {labels.unique()}; Batch mean: {data.mean()}; Batch std: {data.std()}')",
+      "expected_output": "Multiple unique labels, non-zero variance.",
+      "interpretation": "Single label or zero variance indicates pipeline corruption."
+    }
+  ],
+  "diagnostic_tests": [
+    {
+      "purpose": "Learning rate range test",
+      "test": "Run training with learning rate increased by 10x and 100x for 10 steps each.",
+      "command": "optimizer = AdamW(model.parameters(), lr=lr*10)",
+      "expected_result": "Loss should decrease with higher learning rate until instability appears.",
+      "interpretation": "If loss remains flat across all rates, cause is not learning rate alone.",
+      "next_action": "If responsive to higher LR, implement LR warmup and scheduler."
+    },
+    {
+      "purpose": "Gradient flow verification",
+      "test": "Register backward hooks on each layer and log gradient norms.",
+      "command": "layer.register_full_backward_hook(lambda mod, grad_in, grad_out: print(f'{mod.__class__.__name__}: {grad_out[0].norm().item()}'))",
+      "expected_result": "Non-zero gradients in all layers.",
+      "interpretation": "Zero gradients in specific layers indicate vanishing gradients or blocked flow.",
+      "next_action": "Add residual connections, batch norm, or switch activation functions."
+    },
+    {
+      "purpose": "Data sanity check",
+      "test": "Overfit a single batch for 100 steps.",
+      "command": "for _ in range(100): loss = model(batch); loss.backward(); optimizer.step()",
+      "expected_result": "Loss should approach zero on a single batch.",
+      "interpretation": "If loss remains flat, model architecture or loss function is broken; if it overfits, the data pipeline is the issue.",
+      "next_action": "Fix architecture if the batch cannot overfit; fix data pipeline if it can."
+    }
+  ],
+  "decision_tree": {
+    "question": "Is loss completely flat (no change >1e-4 across epochs)?",
+    "yes": {
+      "question": "Are gradient norms near zero across all layers?",
+      "yes": {
+        "question": "Are you using ReLU activations?",
+        "yes": {
+          "result": "Dead ReLU / saturated activations — switch to LeakyReLU, check initialization."
+        },
+        "no": {
+          "result": "Vanishing gradients — add skip connections, batch norm, or use residual architecture."
+        }
+      },
+      "no": {
+        "question": "Is learning rate < 1e-6?",
+        "yes": {
+          "result": "Learning rate too low — increase by 10x and implement warmup."
+        },
+        "no": {
+          "result": "Does overfitting a single batch work?",
+          "yes": {
+            "result": "Data pipeline corruption — inspect labels, shuffling, augmentation."
+          },
+          "no": {
+            "result": "Incorrect loss function or frozen layers — verify loss-reduction mode and parameter freezing."
+          }
+        }
+      }
+    },
+    "no": {
+      "question": "Does loss decrease very slowly (<0.01 per epoch)?",
+      "yes": {
+        "result": "Learning rate too low or gradient accumulation not normalized — increase LR or divide accumulated gradients by step count."
+      },
+      "no": {
+        "result": "Model is learning normally but converging slowly — consider longer training or curriculum learning."
+      }
+    }
+  },
+  "solutions": [
+    {
+      "solution": "Increase Learning Rate with Warmup",
+      "quick_fix": "Multiply current learning rate by 10.",
+      "permanent_fix": "Implement linear warmup from 0 to target LR over the first 10% of steps, then decay.",
+      "steps": [
+        "Identify current learning rate in optimizer configuration.",
+        "Increase by a factor of 10 and run 10 steps to verify response.",
+        "Implement a warmup schedule followed by decay.",
+        "Monitor loss trajectory for sustained decrease."
+      ],
+      "tradeoffs": [
+        "Risk of transient instability during warmup.",
+        "Requires tuning warmup proportion for different batch sizes."
+      ],
+      "performance_impact": "No training slowdown; may require 5-10% more steps to converge.",
+      "difficulty": "easy",
+      "works_for": [
+        "Adaptive optimizers.",
+        "Fine-tuning scenarios with conservative initial LR."
+      ],
+      "verification": "Loss should show a consistent downward trend within 50 steps."
+    },
+    {
+      "solution": "Fix Vanishing Gradients",
+      "quick_fix": "Add normalization after linear or convolution layers.",
+      "permanent_fix": "Replace plain architecture with residual blocks; use activation functions with non-zero negative slope.",
+      "steps": [
+        "Inspect gradient norms layer-by-layer to identify where gradients vanish.",
+        "Insert batch normalization in affected layers.",
+        "Replace ReLU() with LeakyReLU() or GELU().",
+        "For deep networks, add residual skip connections every 2-3 layers."
+      ],
+      "tradeoffs": [
+        "Normalization adds runtime overhead.",
+        "Residual connections increase memory footprint slightly."
+      ],
+      "performance_impact": "Moderate compute and memory overhead.",
+      "difficulty": "medium",
+      "works_for": [
+        "Deep CNNs and transformers without normalization.",
+        "RNNs and LSTMs with long sequences.",
+        "Any network deeper than 10 layers."
+      ],
+      "verification": "Early-layer gradient norms should become comparable to later-layer norms."
+    },
+    {
+      "solution": "Resurrect Dead ReLU Neurons",
+      "quick_fix": "Replace ReLU with LeakyReLU or PReLU.",
+      "permanent_fix": "Use Kaiming/He initialization for layers preceding ReLU; add normalization to prevent distribution shift.",
+      "steps": [
+        "Measure dead neuron ratio per layer using forward hooks.",
+        "Replace ReLU() with LeakyReLU(negative_slope=0.01) in affected layers.",
+        "Reinitialize weights using a ReLU-appropriate scheme.",
+        "Add normalization before activation to stabilize input distributions."
+      ],
+      "tradeoffs": [
+        "Reinitialization may require restarting training from scratch.",
+        "Leaky activations slightly alter model behavior."
+      ],
+      "performance_impact": "Negligible.",
+      "difficulty": "easy",
+      "works_for": [
+        "ReLU networks showing a high dead-neuron ratio.",
+        "Architectures with poor weight initialization.",
+        "Training runs that flatline after initial decrease."
+      ],
+      "verification": "Dead neuron ratio should drop sharply within 100 steps."
+    },
+    {
+      "solution": "Correct Loss Function Configuration",
+      "quick_fix": "Verify loss function matches output activation and task type.",
+      "permanent_fix": "Use task-appropriate loss with correct reduction and label encoding.",
+      "steps": [
+        "Confirm classification uses a classification loss with integer labels.",
+        "Confirm regression uses a regression loss with float targets.",
+        "Verify reduction mode is correct to avoid scale-dependent gradients.",
+        "For multi-label tasks, use a loss intended for independent binary targets."
+      ],
+      "tradeoffs": [
+        "Changing the loss can require hyperparameter retuning.",
+        "Some stable formulations add compute overhead."
+      ],
+      "performance_impact": "None; correct loss often improves convergence speed.",
+      "difficulty": "easy",
+      "works_for": [
+        "Custom loss implementations.",
+        "Framework migrations with changed defaults.",
+        "Multi-task setups with mixed targets."
+      ],
+      "verification": "Loss should fall into the expected range for the task and begin decreasing reliably."
+    },
+    {
+      "solution": "Unfreeze Layers and Verify Optimizer Scope",
+      "quick_fix": "Pass all intended trainable parameters to the optimizer.",
+      "permanent_fix": "Implement staged unfreezing with discriminative learning rates.",
+      "steps": [
+        "List parameters with requires_grad=False.",
+        "Set intended layers to trainable.",
+        "Rebuild the optimizer with the full trainable parameter set.",
+        "For transfer learning, use lower LR for backbone and higher LR for head."
+      ],
+      "tradeoffs": [
+        "Full fine-tuning is more expensive and can cause forgetting.",
+        "Discriminative LR adds hyperparameter complexity."
+      ],
+      "performance_impact": "Full fine-tuning is slower per epoch than feature extraction.",
+      "difficulty": "easy",
+      "works_for": [
+        "Transfer learning pipelines stuck in feature-extraction mode.",
+        "Models where only the final layer updates.",
+        "Distributed training with incorrect parameter synchronization."
+      ],
+      "verification": "Intended trainable parameters should show non-zero gradient norms after backward pass."
+    }
+  ],
+  "verification_checklist": [
+    {
+      "check": "Loss decreases consistently across epochs",
+      "description": "Training loss shows a monotonic or oscillating downward trend."
+    },
+    {
+      "check": "Validation metrics improve",
+      "description": "Accuracy, F1, or task-specific metrics increase over time."
+    },
+    {
+      "check": "Gradient norms are non-zero in all layers",
+      "description": "No layer shows vanishing gradient signal."
+    },
+    {
+      "check": "Model overfits a single batch",
+      "description": "Architecture and loss function are capable of memorization."
+    },
+    {
+      "check": "Predictions are diverse across samples",
+      "description": "Output distribution is not uniform or constant."
+    }
+  ],
+  "prevention": [
+    {
+      "category": "development",
+      "practices": [
+        "Start with a learning-rate finder before full training.",
+        "Use normalization and residual connections in deep networks.",
+        "Initialize weights with task-appropriate schemes.",
+        "Overfit a single batch as a sanity check before scaling to the full dataset."
+      ]
+    },
+    {
+      "category": "production",
+      "practices": [
+        "Log gradient norms per layer as a standard training metric.",
+        "Implement automatic dead neuron detection alerts.",
+        "Use learning-rate warmup as default for jobs with unstable early optimization.",
+        "Version-control data preprocessing pipelines to detect corruption."
+      ]
+    },
+    {
+      "category": "monitoring",
+      "practices": [
+        "Track loss curvature to detect plateauing early.",
+        "Monitor the train/validation loss gap for optimization and data issues.",
+        "Alert when gradient norms fall below a floor for many consecutive steps.",
+        "Compare current curves against historical baselines for the same architecture."
+      ]
+    },
+    {
+      "category": "coding_habits",
+      "practices": [
+        "Always verify requires_grad status when loading pretrained weights.",
+        "Confirm all parameters are present in the optimizer state dict.",
+        "Implement data pipeline tests that verify label distribution and batch variance.",
+        "Add assertions for loss value ranges and gradient norm floors in training loops."
+      ]
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Flat loss always means the learning rate is too low",
+      "reality": "Vanishing gradients, dead neurons, frozen parameters, and data corruption are equally common causes."
+    },
+    {
+      "misconception": "More epochs will eventually fix a flat loss curve",
+      "reality": "If the model cannot learn in a short diagnostic run, more epochs usually just waste compute."
+    },
+    {
+      "misconception": "Pretrained models never need learning rate tuning",
+      "reality": "Fine-tuning requires careful LR selection; pretrained weights can mask data and optimizer issues."
+    }
+  ],
+  "false_positive_cases": [
+    {
+      "case": "Loss is flat but validation improves",
+      "why_it_looks_similar": "Training metric appears stagnant.",
+      "how_to_distinguish": "Validation metrics are improving; training loss may be noisy or regularized."
+    },
+    {
+      "case": "Loss decreases slowly due to large dataset",
+      "why_it_looks_similar": "Apparent stagnation in early epochs.",
+      "how_to_distinguish": "Loss decreases consistently but gradually."
+    },
+    {
+      "case": "Intentional regularization causing a higher loss floor",
+      "why_it_looks_similar": "Loss plateaus at non-zero value.",
+      "how_to_distinguish": "Label smoothing, heavy dropout, or mixup intentionally prevent zero training loss."
+    }
+  ],
+  "escalation_paths": [
+    {
+      "path": "Architecture Redesign",
+      "when_to_use": "Current architecture is fundamentally incapable of learning the task.",
+      "tradeoffs": [
+        "Requires significant engineering effort.",
+        "May invalidate previous hyperparameter tuning."
+      ]
+    },
+    {
+      "path": "Advanced Optimization (Second-Order Methods)",
+      "when_to_use": "First-order methods consistently fail to escape plateaus or saddle regions.",
+      "tradeoffs": [
+        "Memory requirements increase substantially.",
+        "Per-step compute cost increases."
+      ]
+    },
+    {
+      "path": "Curriculum Learning",
+      "when_to_use": "Task is inherently difficult; model may learn from simplified subtasks.",
+      "tradeoffs": [
+        "Requires manual curriculum design.",
+        "Training pipeline complexity increases."
+      ]
+    }
+  ],
+  "related_packages": [
+    "pytorch"
+  ],
+  "related_workflows": [
+    "fine-tune-an-llm-with-lora-qlora",
+    "full-fine-tuning-a-pretrained-transformer"
+  ],
+  "related_patterns": [
+    "gradient-accumulation",
+    "mixed-precision",
+    "training-loop",
+    "early-stopping"
+  ],
+  "related_models": [],
+  "related_registry": []
+}

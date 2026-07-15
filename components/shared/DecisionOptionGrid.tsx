@@ -1,11 +1,5 @@
-interface DecisionOption {
-  name: string;
-  id: string;
-  strengths: string[];
-  weaknesses: string[];
-  best_for: string;
-  avoid_when: string;
-}
+import { Server, Clock, Wrench, TrendingUp, AlertTriangle } from 'lucide-react';
+import { DecisionOption } from '@/types/decision-guide';
 
 interface DecisionOptionGridProps {
   options: DecisionOption[];
@@ -71,6 +65,69 @@ export default function DecisionOptionGrid({ options }: DecisionOptionGridProps)
                 {option.weaknesses.map((weakness, idx) => (
                   <li key={idx} className="text-xs text-muted-foreground pl-3 relative before:content-['✗'] before:absolute before:left-0 before:text-red-500">
                     {weakness}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Deep Dive Fields */}
+          {option.infrastructure_required && option.infrastructure_required.length > 0 && (
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1 mb-1">
+                <Server className="w-3 h-3" />
+                Infrastructure Required
+              </span>
+              <ul className="space-y-1">
+                {option.infrastructure_required.map((infra, idx) => (
+                  <li key={idx} className="text-xs text-muted-foreground pl-3 relative before:content-['•'] before:absolute before:left-0">
+                    {infra}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {option.operational_cost && (
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1 mb-1">
+                <Clock className="w-3 h-3" />
+                Operational Cost
+              </span>
+              <p className="text-xs text-muted-foreground">{option.operational_cost}</p>
+            </div>
+          )}
+
+          {option.maintenance_cost && (
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1 mb-1">
+                <Wrench className="w-3 h-3" />
+                Maintenance Cost
+              </span>
+              <p className="text-xs text-muted-foreground">{option.maintenance_cost}</p>
+            </div>
+          )}
+
+          {option.scaling_complexity && (
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1 mb-1">
+                <TrendingUp className="w-3 h-3" />
+                Scaling Complexity
+              </span>
+              <span className="text-xs text-muted-foreground">{option.scaling_complexity}</span>
+            </div>
+          )}
+
+          {option.failure_modes && option.failure_modes.length > 0 && (
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1 mb-1">
+                <AlertTriangle className="w-3 h-3" />
+                Failure Modes
+              </span>
+              <ul className="space-y-1">
+                {option.failure_modes.map((mode, idx) => (
+                  <li key={idx} className="text-xs text-muted-foreground pl-3 relative before:content-['•'] before:absolute before:left-0">
+                    {mode}
                   </li>
                 ))}
               </ul>

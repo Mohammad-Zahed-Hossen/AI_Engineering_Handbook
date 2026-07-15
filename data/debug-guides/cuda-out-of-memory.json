@@ -2,7 +2,7 @@
   "id": "cuda-out-of-memory",
   "title": "CUDA Out of Memory",
   "slug": "cuda-out-of-memory",
-  "description": "Troubleshooting and resolving CUDA Out of Memory (OOM) errors in PyTorch.",
+  "description": "Troubleshooting and resolving CUDA Out of Memory (OOM) errors in PyTorch. This guide provides a systematic approach to diagnosing, fixing, and preventing GPU memory exhaustion during training and inference.",
   "name": "CUDA Out of Memory",
   "category": "gpu",
   "created_at": "2026-07-03",
@@ -48,51 +48,335 @@
   "stability": "stable",
   "confidence": "production_proven",
   "engineering_maturity": "production_ready",
-  "symptoms": [
+  
+  "overview": {
+    "severity": "critical",
+    "frequency": "common",
+    "typical_stage": "any",
+    "estimated_fix_time": "15-60 min",
+    "production_impact": "severe"
+  },
+  
+  "quick_identification": [
     {
-      "symptom": "RuntimeError: CUDA out of memory. Tried to allocate...",
-      "description": "The program halts during the forward or backward pass with a PyTorch traceback stating CUDA OOM, indicating that total active allocations exceeded hardware GPU RAM capacity."
+      "check": "RuntimeError: CUDA out of memory. Tried to allocate X.X MiB",
+      "description": "PyTorch throws this error when GPU memory is exhausted"
+    },
+    {
+      "check": "Training crashes during forward or backward pass",
+      "description": "Especially with large models or batch sizes"
+    },
+    {
+      "check": "nvidia-smi shows 100% GPU memory utilization",
+      "description": "Memory is fully consumed before the error"
     }
   ],
+  
+  "symptoms": [
+    {
+      "symptom": "RuntimeError: CUDA out of memory. Tried to allocate X.X MiB",
+      "description": "The program halts during the forward or backward pass with a PyTorch traceback stating CUDA OOM, indicating that total active allocations exceeded hardware GPU RAM capacity.",
+      "error_message": "RuntimeError: CUDA out of memory. Tried to allocate 256.00 MiB (requested) on device 0 with 8.00 GiB total capacity. No available memory.",
+      "where_appears": "During model.forward() or loss.backward() calls",
+      "frequency": "always"
+    },
+    {
+      "symptom": "nvidia-smi shows 100% memory utilization",
+      "description": "GPU memory is fully consumed, leaving no headroom for new allocations.",
+      "where_appears": "nvidia-smi output, training logs",
+      "frequency": "always"
+    }
+  ],
+  
   "root_causes": [
     {
       "cause": "Batch size too large",
       "probability": "high",
-      "explanation": "Accumulating activation tensors for backpropagation exceeds the available memory capacity on the configured GPU hardware."
+      "explanation": "Accumulating activation tensors for backpropagation exceeds the available memory capacity on the configured GPU hardware.",
+      "recognition_clues": [
+        "OOM occurs immediately at the start of training",
+        "Reducing batch size resolves the issue",
+        "Model works with smaller inputs"
+      ],
+      "typical_environment": "Training with large models (LLMs, vision transformers) on consumer GPUs"
     },
     {
       "cause": "Gradient leak / Reference accumulation",
       "probability": "medium",
-      "explanation": "Storing training output tensors containing gradient tracking history in global variables or lists (e.g. logging history without calling loss.item()) prevents the garbage collector from freeing memory."
-    }
-  ],
-  "diagnosis": [
+      "explanation": "Storing training output tensors containing gradient tracking history in global variables or lists (e.g. logging history without calling loss.item()) prevents the garbage collector from freeing memory.",
+      "recognition_clues": [
+        "Memory grows gradually over epochs",
+        "torch.cuda.memory_summary() shows increasing allocations",
+        "gc.collect() temporarily frees memory"
+      ],
+      "typical_environment": "Training loops with improper tensor handling"
+    },
     {
-      "test": "Check isolated memory footprint",
-      "expected_result": "Active memory allocation values dropping when garbage collection is called.",
-      "how_to_perform": "Use print(torch.cuda.memory_summary(device=None, abbreviated=False)) directly before and after garbage collection runs."
+      "cause": "Memory fragmentation",
+      "probability": "medium",
+      "explanation": "Repeated allocation/deallocation creates fragmented free memory that cannot satisfy large contiguous requests.",
+      "recognition_clues": [
+        "OOM occurs after many iterations",
+        "Memory appears free but allocation fails",
+        "Restarting the process temporarily fixes it"
+      ],
+      "typical_environment": "Long-running training jobs with dynamic tensor sizes"
     }
   ],
+  
+  "investigation_checklist": [
+    {
+      "check": "Check GPU utilization with nvidia-smi",
+      "description": "Run nvidia-smi to see current memory usage"
+    },
+    {
+      "check": "Check memory allocation with torch.cuda.memory_summary()",
+      "description": "Print memory summary to see active allocations"
+    },
+    {
+      "check": "Check for gradient tracking in stored tensors",
+      "description": "Ensure loss.item() is called before storing values"
+    },
+    {
+      "check": "Check dataloader batch size",
+      "description": "Verify batch size is appropriate for model and GPU"
+    },
+    {
+      "check": "Check AMP (Automatic Mixed Precision) settings",
+      "description": "Verify if AMP is enabled and working correctly"
+    },
+    {
+      "check": "Check gradient checkpointing configuration",
+      "description": "Verify if model checkpointing is properly configured"
+    }
+  ],
+  
+  "diagnostic_commands": [
+    {
+      "purpose": "Check GPU memory usage in real-time",
+      "command": "nvidia-smi",
+      "expected_output": "GPU-Util and Memory-Usage columns show current consumption",
+      "interpretation": "If Memory-Usage is near 100%, OOM is imminent"
+    },
+    {
+      "purpose": "Get detailed PyTorch memory summary",
+      "command": "print(torch.cuda.memory_summary(device=None, abbreviated=False))",
+      "expected_output": "Detailed breakdown of active, reserved, and free memory",
+      "interpretation": "Look for large active allocations that aren't being freed"
+    },
+    {
+      "purpose": "Monitor GPU memory continuously",
+      "command": "watch -n 1 nvidia-smi",
+      "expected_output": "Updated GPU stats every second",
+      "interpretation": "Watch for memory growth patterns during training"
+    }
+  ],
+  
+  "diagnostic_tests": [
+    {
+      "purpose": "Check isolated memory footprint",
+      "test": "Run a single forward/backward pass and measure peak memory",
+      "command": "with torch.cuda.memory_stats() as stats: ...",
+      "expected_result": "Peak memory should be predictable and stable",
+      "interpretation": "Unstable or growing peak indicates memory leak",
+      "next_action": "If memory grows, check for gradient leaks"
+    },
+    {
+      "purpose": "Verify batch size impact",
+      "test": "Run training with batch_size=1 and measure memory",
+      "command": "dataloader = DataLoader(dataset, batch_size=1)",
+      "expected_result": "Memory usage should be significantly lower",
+      "interpretation": "If OOM disappears, batch size is the primary cause",
+      "next_action": "Reduce batch size or implement gradient accumulation"
+    }
+  ],
+  
+  "decision_tree": {
+    "question": "OOM occurs immediately at start?",
+    "yes": {
+      "result": "Batch size too large - reduce batch size or use gradient accumulation"
+    },
+    "no": {
+      "question": "Memory grows over time?",
+      "yes": {
+        "result": "Memory leak - check for gradient leaks or reference accumulation"
+      },
+      "no": {
+        "question": "OOM after many iterations?",
+        "yes": {
+          "result": "Memory fragmentation - restart process or use memory pool"
+        },
+        "no": {
+          "result": "Check model architecture or data loading for unexpected allocations"
+        }
+      }
+    }
+  },
+  
   "solutions": [
     {
       "solution": "Reduce training batch size",
+      "quick_fix": "Halve the batch size immediately",
+      "permanent_fix": "Implement gradient accumulation to maintain effective batch size",
       "steps": [
         "Locate dataloader batch_size initialization.",
         "Halve the batch size value (e.g., from 64 to 32).",
         "Enable gradient accumulation step adjustments to compensate for loss representation constraints."
       ],
+      "tradeoffs": [
+        "Smaller batches may reduce training stability",
+        "More iterations required to complete an epoch"
+      ],
+      "performance_impact": "May reduce throughput by 20-40% depending on model",
+      "difficulty": "easy",
+      "works_for": [
+        "All PyTorch models",
+        "Quick resolution in development"
+      ],
       "verification": "Rerun training execution loop. Verify that epochs complete without traceback warnings."
+    },
+    {
+      "solution": "Enable gradient checkpointing",
+      "quick_fix": "Add torch.utils.checkpoint to model forward pass",
+      "permanent_fix": "Configure model-level gradient checkpointing for all applicable layers",
+      "steps": [
+        "Import torch.utils.checkpoint",
+        "Wrap expensive operations in checkpoint function",
+        "Verify model outputs match between checkpointed and non-checkpointed versions"
+      ],
+      "tradeoffs": [
+        "Increases compute time by ~20%",
+        "Reduces memory by ~30-50%"
+      ],
+      "performance_impact": "Training will be ~20% slower but memory efficient",
+      "difficulty": "medium",
+      "works_for": [
+        "Transformer models",
+        "Deep CNNs",
+        "LLM fine-tuning"
+      ],
+      "verification": "Memory usage should drop significantly while maintaining model accuracy."
     }
   ],
+  
+  "verification_checklist": [
+    {
+      "check": "No OOM error during training",
+      "description": "Training completes without memory errors"
+    },
+    {
+      "check": "Memory stable across epochs",
+      "description": "Memory usage does not grow unboundedly"
+    },
+    {
+      "check": "Loss decreases normally",
+      "description": "Model still learns effectively after changes"
+    },
+    {
+      "check": "GPU utilization stable",
+      "description": "GPU is not idle due to CPU bottlenecks"
+    }
+  ],
+  
   "prevention": [
     {
-      "prevention": "Implement gradient checkpointing",
+      "category": "development",
       "practices": [
-        "Employ torch.utils.checkpoint during model configuration to discard intermediate activations and recalculate them during backward steps.",
-        "Regularly call torch.cuda.empty_cache() between validation cycles to flush fragmented blocks back to the GPU allocator."
+        "Start with small batch sizes and scale up gradually",
+        "Use torch.cuda.empty_cache() between experiments",
+        "Profile memory before scaling to full dataset"
+      ]
+    },
+    {
+      "category": "production",
+      "practices": [
+        "Set memory limits in training configuration",
+        "Implement early stopping on memory thresholds",
+        "Use memory-efficient optimizers (e.g., Adafactor)"
+      ]
+    },
+    {
+      "category": "monitoring",
+      "practices": [
+        "Log GPU memory usage per epoch",
+        "Set alerts for >90% memory utilization",
+        "Track memory growth trends over time"
+      ]
+    },
+    {
+      "category": "coding_habits",
+      "practices": [
+        "Always call .item() on scalar tensors before storing",
+        "Use context managers for temporary large allocations",
+        "Delete tensors explicitly when no longer needed"
       ]
     }
   ],
+  
+  "common_misconceptions": [
+    {
+      "misconception": "torch.cuda.empty_cache() frees allocated tensors",
+      "reality": "It only releases free memory back to the GPU allocator, not tensors still in use"
+    },
+    {
+      "misconception": "OOM always means the model is too large",
+      "reality": "Often caused by memory leaks or fragmentation, not model size"
+    }
+  ],
+  
+  "false_positive_cases": [
+    {
+      "case": "CPU OOM",
+      "why_it_looks_similar": "System runs out of RAM, not GPU memory",
+      "how_to_distinguish": "Check nvidia-smi - GPU memory will be low, system memory high"
+    },
+    {
+      "case": "Container memory limit",
+      "why_it_looks_similar": "Docker/container has memory limit lower than GPU capacity",
+      "how_to_distinguish": "Check container memory limit with docker inspect or kubectl describe"
+    },
+    {
+      "case": "CUDA driver failure",
+      "why_it_looks_similar": "Driver crash can manifest as OOM",
+      "how_to_distinguish": "Check dmesg and nvidia-smi - driver will show errors"
+    }
+  ],
+  
+  "escalation_paths": [
+    {
+      "path": "DeepSpeed ZeRO",
+      "when_to_use": "Model is too large for single GPU even with optimizations",
+      "tradeoffs": [
+        "Adds complexity to training setup",
+        "May require code modifications"
+      ]
+    },
+    {
+      "path": "FSDP (Fully Sharded Data Parallel)",
+      "when_to_use": "Multi-GPU training with large models",
+      "tradeoffs": [
+        "Requires PyTorch 2.0+",
+        "Network overhead for parameter sharding"
+      ]
+    },
+    {
+      "path": "Model Parallelism",
+      "when_to_use": "Single model larger than GPU memory",
+      "tradeoffs": [
+        "Significant code refactoring required",
+        "Communication overhead between GPUs"
+      ]
+    },
+    {
+      "path": "CPU Offloading",
+      "when_to_use": "No GPU memory available, must use CPU",
+      "tradeoffs": [
+        "10-100x slower training",
+        "May still run out of CPU memory"
+      ]
+    }
+  ],
+  
   "related_packages": [
     "pytorch"
   ],
