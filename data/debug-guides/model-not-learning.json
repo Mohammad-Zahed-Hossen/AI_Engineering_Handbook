@@ -68,9 +68,9 @@
   "overview": {
     "severity": "high",
     "frequency": "common",
-    "typical_stage": "training",
+    "typical_stage": "any",
     "estimated_fix_time": "45-180 min",
-    "production_impact": "high"
+    "production_impact": "severe"
   },
   "quick_identification": [
     {
@@ -277,16 +277,19 @@
       "yes": {
         "question": "Are you using ReLU activations?",
         "yes": {
-          "result": "Dead ReLU / saturated activations — switch to LeakyReLU, check initialization."
+          "result": "Dead ReLU / saturated activations — switch to LeakyReLU, check initialization.",
+          "solution_index": 2
         },
         "no": {
-          "result": "Vanishing gradients — add skip connections, batch norm, or use residual architecture."
+          "result": "Vanishing gradients — add skip connections, batch norm, or use residual architecture.",
+          "solution_index": 1
         }
       },
       "no": {
         "question": "Is learning rate < 1e-6?",
         "yes": {
-          "result": "Learning rate too low — increase by 10x and implement warmup."
+          "result": "Learning rate too low — increase by 10x and implement warmup.",
+          "solution_index": 0
         },
         "no": {
           "result": "Does overfitting a single batch work?",
@@ -294,7 +297,8 @@
             "result": "Data pipeline corruption — inspect labels, shuffling, augmentation."
           },
           "no": {
-            "result": "Incorrect loss function or frozen layers — verify loss-reduction mode and parameter freezing."
+            "result": "Incorrect loss function or frozen layers — verify loss-reduction mode and parameter freezing.",
+            "solution_index": 3
           }
         }
       }
@@ -302,7 +306,8 @@
     "no": {
       "question": "Does loss decrease very slowly (<0.01 per epoch)?",
       "yes": {
-        "result": "Learning rate too low or gradient accumulation not normalized — increase LR or divide accumulated gradients by step count."
+        "result": "Learning rate too low or gradient accumulation not normalized — increase LR or divide accumulated gradients by step count.",
+        "solution_index": 0
       },
       "no": {
         "result": "Model is learning normally but converging slowly — consider longer training or curriculum learning."

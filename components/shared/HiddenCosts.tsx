@@ -20,7 +20,7 @@ export default function HiddenCosts({ options }: HiddenCostsProps) {
       </h2>
       
       <div className="space-y-3">
-        {options.map((option, idx) => {
+        {options.map((option) => {
           if (!option.hidden_costs || option.hidden_costs.length === 0) return null;
           
           return (

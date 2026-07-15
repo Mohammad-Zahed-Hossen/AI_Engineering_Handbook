@@ -1,0 +1,224 @@
+{
+  "id": "separation-of-concerns",
+  "title": "Separation of Concerns",
+  "slug": "separation-of-concerns",
+  "description": "Separation of Concerns is the practice of assigning distinct engineering responsibilities to distinct modules so that each change is localized and each failure mode is easier to reason about.",
+  "name": "Separation of Concerns",
+  "category": "systems",
+  "statement": "Design each module around a single stable concern, and hide design decisions that are likely to change behind a narrow interface.",
+  "intuition": "The core intuition is that AI systems fail fastest when “what it does” and “how it does it” are mixed in the same code path. If representation, sequencing, metrics, persistence, and control flow all live together, every experiment becomes a system rewrite. When concerns are separated, the system can change one axis at a time without destabilizing the rest.",
+  "implications": [],
+  "engineering_consequences": [
+    {
+      "title": "Change locality",
+      "explanation": "Changes stay inside the owning module, which reduces the blast radius of new data formats, new model variants, or new evaluation logic."
+    },
+    {
+      "title": "Debuggability",
+      "explanation": "Failures are easier to isolate because symptoms map to a bounded responsibility instead of a tangled execution path."
+    },
+    {
+      "title": "Independent development",
+      "explanation": "Teams or agents can work on storage, training, inference, and metrics with fewer coordination dependencies."
+    },
+    {
+      "title": "Replaceability",
+      "explanation": "You can swap implementations inside a concern boundary, such as changing a tokenizer, retriever, or optimizer, without rewriting orchestration code."
+    },
+    {
+      "title": "Scalability of maintenance",
+      "explanation": "Long-lived AI systems remain tractable because architectural drift is constrained by ownership boundaries rather than spread across the codebase."
+    }
+  ],
+  "common_violations": [
+    {
+      "violation": "Data access, preprocessing, and model execution are embedded in one training script.",
+      "symptoms": "Small schema changes break training, evaluation logic duplicates preprocessing, and experiments require manual code edits in multiple places.",
+      "why_it_happens": "Fast prototypes often optimize for immediate execution rather than stable ownership boundaries."
+    },
+    {
+      "violation": "Logging, metrics, and checkpointing are hardcoded inside the model forward or loss computation.",
+      "symptoms": "Reusing the model outside one training loop becomes difficult, and observability changes require touching core model code.",
+      "why_it_happens": "Engineers treat instrumentation as “small enough” to inline, then later cannot separate it cleanly."
+    },
+    {
+      "violation": "Training orchestration and algorithmic logic are fused.",
+      "symptoms": "Scheduler changes, distributed execution changes, or evaluation frequency changes force edits in core model behavior.",
+      "why_it_happens": "The system is organized around execution order instead of stable responsibility boundaries."
+    },
+    {
+      "violation": "Evaluation code depends on private internals of the model or data pipeline.",
+      "symptoms": "Metrics break when internals change, and benchmark runs require synchronized edits across modules.",
+      "why_it_happens": "The interface between components was never designed as a contract; it emerged accidentally."
+    }
+  ],
+  "appears_in": [
+    {
+      "domain": "Training systems",
+      "examples": [
+        "training-loop orchestration",
+        "checkpointing",
+        "early stopping",
+        "gradient accumulation",
+        "mixed-precision handling"
+      ]
+    },
+    {
+      "domain": "Inference systems",
+      "examples": [
+        "batch inference",
+        "streaming inference",
+        "prompt caching",
+        "kv-cache management",
+        "flash-attention integration"
+      ]
+    },
+    {
+      "domain": "Retrieval systems",
+      "examples": [
+        "RAG pipelines",
+        "indexing",
+        "retrieval",
+        "reranking",
+        "answer synthesis"
+      ]
+    },
+    {
+      "domain": "Model packaging",
+      "examples": [
+        "model wrappers",
+        "adapters",
+        "serving layers for Llama, Mistral, and BERT-style systems"
+      ]
+    }
+  ],
+  "mental_model": "```mermaid\nflowchart LR\n  A[Data Concern] --> B[Interface]\n  C[Model Concern] --> B\n  D[Training Concern] --> B\n  E[Evaluation Concern] --> B\n  F[Logging Concern] --> B\n\n  B --> G[Orchestration]\n  B --> H[Persistence]\n  B --> I[Reporting]\n\n  style B fill:#eef,stroke:#446\n```",
+  "decision_checklist": [
+    "Does this module own one primary responsibility?",
+    "Can this concern change without requiring edits in unrelated modules?",
+    "Can tests for this concern run without the full system?",
+    "Does the interface hide volatile implementation details?",
+    "Would adding a new model, dataset, or metric require changes in more than one owner?",
+    "Can debugging be localized to a single concern boundary?"
+  ],
+  "misconceptions": [
+    {
+      "myth": "Separation of concerns means creating more files.",
+      "reality": "It means creating clearer ownership boundaries; file count is incidental."
+    },
+    {
+      "myth": "A clean call graph automatically means clean separation.",
+      "reality": "A call graph can still encode hidden coupling if module boundaries expose implementation decisions."
+    },
+    {
+      "myth": "Separation of concerns conflicts with performance.",
+      "reality": "Performance cost usually comes from the implementation of the boundary, not from the principle itself; Parnas explicitly notes that efficiency depends on implementation strategy."
+    },
+    {
+      "myth": "This is only a code organization style.",
+      "reality": "In AI systems it is an architectural discipline that governs change propagation, debugging scope, and lifecycle stability."
+    }
+  ],
+  "engineering_heuristic": "If a change feels “small” but touches many modules, the concern boundaries are wrong.",
+  "historical_origin": "The concept evolved through software engineering practice and is strongly associated with modularization and information hiding work, especially Parnas’s 1971–1972 research on decomposing systems by design decisions likely to change.",
+  "tradeoffs": {
+    "benefits": [
+      "Lower change propagation.",
+      "Easier debugging and testing.",
+      "Better modular reuse.",
+      "Cleaner ownership for teams and systems.",
+      "More stable long-term architecture."
+    ],
+    "costs": [
+      "More interface design work up front.",
+      "Potential performance overhead if boundaries are implemented naively.",
+      "More indirection in call paths.",
+      "Requires stronger discipline to avoid leaking implementation details."
+    ]
+  },
+  "limitations": [
+    "It is less useful for throwaway prototypes where speed of iteration dominates maintainability.",
+    "It can be counterproductive if boundaries are artificial and create excessive abstraction without reducing coupling.",
+    "It does not eliminate the need for coordination when a change genuinely spans multiple concerns.",
+    "It can be implemented poorly enough to add complexity without adding isolation."
+  ],
+  "related_concepts": [
+    "Information hiding",
+    "Modularization",
+    "Single source of truth",
+    "Encapsulation",
+    "Loose coupling",
+    "High cohesion",
+    "Interface segregation",
+    "Dependency inversion",
+    "Change locality"
+  ],
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "sources": [
+    "https://www.semanticscholar.org/paper/522d7d3e62103f24e347269c891bc5158115e1ed",
+    "https://www.scienceopen.com/document_file/af682c37-c3be-4f6e-8362-218b42d3bba2/ScienceOpen/001_Alencar.pdf",
+    "http://arxiv.org/pdf/2105.00534.pdf"
+  ],
+  "tags": [
+    "architecture",
+    "systems",
+    "design-principles",
+    "separation-of-concerns"
+  ],
+  "aliases": [
+    "soc",
+    "concern-separation"
+  ],
+  "keywords": [
+    "architecture",
+    "modularity",
+    "systems-design"
+  ],
+  "search_tokens": [
+    "separation of concerns",
+    "soc",
+    "system design"
+  ],
+  "domain": "systems",
+  "difficulty": "intermediate",
+  "engineering_area": "architecture",
+  "estimated_reading_time": 20,
+  "prerequisites": [],
+  "recommended_next": [
+    "single-source-of-truth",
+    "modularity"
+  ],
+  "last_verified": "2026-07-15",
+  "review_frequency": "annually",
+  "verified_against": "1.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "referenced_by_patterns": [
+    "training-loop",
+    "gradient-accumulation",
+    "kv-cache",
+    "mixed-precision",
+    "checkpointing",
+    "early-stopping",
+    "gradient-checkpointing",
+    "flash-attention",
+    "prompt-caching",
+    "streaming-inference",
+    "batch-inference"
+  ],
+  "referenced_by_models": [
+    "llama",
+    "mistral",
+    "bert"
+  ],
+  "referenced_by_workflows": [
+    "build-rag-system",
+    "fine-tune-an-llm-with-lora-qlora"
+  ]
+}

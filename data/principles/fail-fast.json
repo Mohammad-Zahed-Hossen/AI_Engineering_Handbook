@@ -1,0 +1,223 @@
+{
+  "id": "fail-fast",
+  "title": "Fail Fast",
+  "slug": "fail-fast",
+  "description": "Fail Fast is the principle of surfacing invalid assumptions, broken invariants, and misconfigured dependencies as early as possible in AI engineering pipelines.",
+  "name": "Fail Fast",
+  "category": "systems",
+  "statement": "Validate early, assert invariants immediately, and terminate execution as soon as the system detects a condition that makes the current run invalid.",
+  "intuition": "A pipeline that keeps running after it knows the input, configuration, or state is wrong is not being resilient; it is spending more money to produce a more confusing failure. Early termination preserves the evidence closest to the root cause, which makes debugging faster and prevents invalid intermediate state from contaminating later stages. In AI systems, that usually means catching schema drift, data corruption, shape mismatches, missing labels, incompatible checkpoints, or illegal hyperparameter combinations before they reach expensive compute.",
+  "implications": [],
+  "engineering_consequences": [
+    {
+      "title": "Smaller blast radius",
+      "explanation": "Failures are contained at the earliest stage that can prove the run is invalid, which prevents bad state from propagating into checkpoints, metrics, or deployment artifacts."
+    },
+    {
+      "title": "Faster root cause analysis",
+      "explanation": "The error occurs near the fault, so logs, stack traces, and input artifacts are more actionable than failures discovered after downstream fan-out."
+    },
+    {
+      "title": "Lower wasted compute",
+      "explanation": "Long GPU or distributed jobs stop before burning hours on work that cannot produce a valid result."
+    },
+    {
+      "title": "Cleaner operational contracts",
+      "explanation": "Precondition checks make interface expectations explicit, which reduces ambiguity between producers, orchestrators, and consumers."
+    },
+    {
+      "title": "Stronger pipeline correctness",
+      "explanation": "Early invariant checks expose silent corruption modes that would otherwise survive until evaluation or production traffic."
+    }
+  ],
+  "common_violations": [
+    {
+      "violation": "Validation happens only after training, evaluation, or export completes.",
+      "symptoms": "Jobs consume full budgets before failing, and the error message points to a late symptom rather than the original defect.",
+      "why_it_happens": "Teams optimize for throughput and forget that expensive stages should be gated by cheap correctness checks."
+    },
+    {
+      "violation": "Data and schema checks are deferred until model execution.",
+      "symptoms": "Hidden nulls, malformed records, or feature mismatches appear as obscure downstream exceptions or degraded metrics.",
+      "why_it_happens": "Input contracts are treated as “someone else’s problem” instead of a first-class boundary."
+    },
+    {
+      "violation": "Invariant violations are logged but execution continues.",
+      "symptoms": "The pipeline appears healthy until corrupted artifacts, unstable metrics, or partial outputs surface later.",
+      "why_it_happens": "Engineers mistake observability for enforcement and rely on logs where a hard stop is required."
+    },
+    {
+      "violation": "Retry logic masks deterministic configuration errors.",
+      "symptoms": "Retries repeat the same failure, incident duration increases, and the root cause is obscured by noise.",
+      "why_it_happens": "The system treats unrecoverable faults as transient operational flukes."
+    }
+  ],
+  "appears_in": [
+    {
+      "domain": "Data ingestion pipelines",
+      "examples": [
+        "schema validation",
+        "row-level sanity checks",
+        "rejection of malformed batches before feature generation"
+      ]
+    },
+    {
+      "domain": "Training workflows",
+      "examples": [
+        "shape assertions",
+        "label-space validation",
+        "checkpoint compatibility checks",
+        "dataset consistency checks before GPU launch"
+      ]
+    },
+    {
+      "domain": "Inference services",
+      "examples": [
+        "request validation",
+        "model-artifact compatibility checks",
+        "input normalization failures that should stop at the edge"
+      ]
+    },
+    {
+      "domain": "Orchestrated AI jobs",
+      "examples": [
+        "DAG tasks",
+        "scheduled backfills",
+        "distributed workers that should terminate immediately when prerequisites are absent or inconsistent"
+      ]
+    }
+  ],
+  "mental_model": "```mermaid\nflowchart LR\n  A[Input / config / state] --> B{Cheap validation}\n  B -- pass --> C[Expensive compute]\n  B -- fail --> D[Stop immediately]\n  C --> E[Artifacts / metrics / deploy]\n  D --> F[Actionable error near cause]\n```",
+  "decision_checklist": [
+    "Is there a cheap check that can prove the run is invalid before expensive work starts?",
+    "Will continuing after this error create misleading artifacts or state?",
+    "Is the failure deterministic rather than transient?",
+    "Does the current stage own the contract being violated?",
+    "Would a later failure make the root cause harder to isolate?",
+    "Is retry the correct response, or should the job terminate immediately?"
+  ],
+  "misconceptions": [
+    {
+      "myth": "Fail fast means making the system brittle.",
+      "reality": "It makes the system safer by preventing invalid execution from spreading into later stages."
+    },
+    {
+      "myth": "Logging an error is enough.",
+      "reality": "If the state is invalid, execution should stop; logs alone do not protect downstream systems."
+    },
+    {
+      "myth": "Early failure is only useful for developer ergonomics.",
+      "reality": "It materially reduces compute waste, incident duration, and corrupted artifact generation."
+    },
+    {
+      "myth": "All failures should be retried.",
+      "reality": "Deterministic validation failures should terminate immediately rather than be retried as if they were transient."
+    }
+  ],
+  "engineering_heuristic": "If a cheap check can prove the run is doomed, fail before the expensive stage starts.",
+  "historical_origin": "The concept evolved through software engineering practice, especially defensive programming, precondition enforcement, and operating discipline in distributed and batch systems where late failure is expensive.",
+  "tradeoffs": {
+    "benefits": [
+      "Earlier feedback loops.",
+      "Less wasted compute.",
+      "Easier debugging.",
+      "Reduced corruption of downstream outputs.",
+      "Clearer pipeline contracts."
+    ],
+    "costs": [
+      "More validation code and invariant definitions.",
+      "More up-front design effort for boundaries and checks.",
+      "Potential false positives if checks are overly strict.",
+      "Need to distinguish deterministic failures from transient ones."
+    ]
+  },
+  "limitations": [
+    "It is less useful when partial progress is valuable even if the full run cannot complete.",
+    "It can be counterproductive if validation is more expensive than the work it protects.",
+    "It should not replace graceful degradation for non-critical subcomponents.",
+    "It is not a substitute for retry handling on transient infrastructure failures."
+  ],
+  "related_concepts": [
+    "Defensive programming",
+    "Preconditions",
+    "Invariants",
+    "Input validation",
+    "Circuit breaker",
+    "Graceful degradation",
+    "Observability",
+    "Idempotency",
+    "Sanity checks",
+    "Early stopping"
+  ],
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "sources": [
+    "https://github.com/github/awesome-copilot/blob/main/instructions/ai-prompt-engineering-safety-best-practices.instructions.md",
+    "https://towardsdatascience.com/prompt-engineering-fails-quietly-prompt-regression-is-why/",
+    "https://www.youtube.com/watch?v=YA0Wq1rcs6U"
+  ],
+  "tags": [
+    "architecture",
+    "systems",
+    "design-principles",
+    "fail-fast"
+  ],
+  "aliases": [
+    "early-invariant-validation",
+    "pipeline-invariant-assertions",
+    "immediate-termination-pattern"
+  ],
+  "keywords": [
+    "fail-fast",
+    "validation",
+    "invariants",
+    "error-handling"
+  ],
+  "search_tokens": [
+    "fail fast",
+    "early validation",
+    "invariant check",
+    "assert"
+  ],
+  "domain": "systems",
+  "difficulty": "intermediate",
+  "engineering_area": "architecture",
+  "estimated_reading_time": 15,
+  "prerequisites": [],
+  "recommended_next": [
+    "single-source-of-truth",
+    "separation-of-concerns"
+  ],
+  "last_verified": "2026-07-15",
+  "review_frequency": "annually",
+  "verified_against": "1.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "referenced_by_patterns": [
+    "training-loop",
+    "gradient-accumulation",
+    "kv-cache",
+    "mixed-precision",
+    "checkpointing",
+    "early-stopping",
+    "gradient-checkpointing",
+    "flash-attention",
+    "prompt-caching",
+    "streaming-inference",
+    "batch-inference"
+  ],
+  "referenced_by_models": [
+    "llama",
+    "mistral",
+    "bert"
+  ],
+  "referenced_by_workflows": [
+    "build-rag-system",
+    "fine-tune-an-llm-with-lora-qlora"
+  ]
+}

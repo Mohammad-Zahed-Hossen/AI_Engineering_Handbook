@@ -21,6 +21,124 @@
       "provider": "Meta"
     },
     
+    "architecture": {
+      "architecture_type": "Transformer",
+      "transformer_type": "Decoder-only",
+      "attention_mechanism": "Grouped Query Attention",
+      "tokenizer": "SentencePiece",
+      "positional_encoding": "RoPE",
+      "mixture_of_experts": false,
+      "kv_cache": true,
+      "flash_attention": true,
+      "grouped_query_attention": true
+    },
+    
+    "specifications": {
+      "parameter_count": 70000,
+      "hidden_size": 8192,
+      "layers": 80,
+      "attention_heads": 128,
+      "vocab_size": 128000,
+      "training_tokens": 15000000000000,
+      "context_window": 128000,
+      "max_output_tokens": 32000
+    },
+    
+    "formats": {
+      "safetensors": true,
+      "gguf": true,
+      "awq": true,
+      "gptq": true,
+      "mlx": false,
+      "onnx": false,
+      "tensorrt": true
+    },
+    
+    "ecosystem": {
+      "transformers": { "supported": true },
+      "vllm": { "supported": true, "notes": "Recommended for production" },
+      "ollama": { "supported": true, "notes": "Community model" },
+      "llama_cpp": { "supported": true },
+      "mlx": { "supported": false },
+      "litellm": { "supported": true },
+      "openrouter": { "supported": true },
+      "lm_studio": { "supported": true },
+      "tensorrt_llm": { "supported": true }
+    },
+    
+    "references": [
+      {
+        "title": "Official Website",
+        "url": "https://llama.meta.com",
+        "category": "official",
+        "official": true,
+        "priority": 1
+      },
+      {
+        "title": "Hugging Face Model Card",
+        "url": "https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct",
+        "category": "documentation",
+        "official": true,
+        "priority": 2
+      },
+      {
+        "title": "Llama 3 Technical Report",
+        "url": "https://arxiv.org/abs/2410.18140",
+        "category": "papers",
+        "official": true,
+        "priority": 1
+      },
+      {
+        "title": "GitHub Repository",
+        "url": "https://github.com/meta-llama/llama3",
+        "category": "repositories",
+        "official": true,
+        "priority": 2
+      }
+    ],
+    
+    "related_models": [
+      { "id": "llama-3-1", "relationship": "predecessor" },
+      { "id": "llama-3-2", "relationship": "predecessor" },
+      { "id": "qwen-2-5", "relationship": "alternative" }
+    ],
+    
+    "timeline": [
+      { "version": "Llama 2", "release_date": "2023-07-18" },
+      { "version": "Llama 3", "release_date": "2024-04-18" },
+      { "version": "Llama 3.1", "release_date": "2024-07-23" },
+      { "version": "Llama 3.2", "release_date": "2024-10-17" },
+      { "version": "Llama 3.3", "release_date": "2024-10-17" }
+    ],
+    
+    "engineering_notes": {
+      "inference_notes": [
+        "Use vLLM for best production performance with continuous batching",
+        "GQA reduces KV cache memory by ~75% compared to standard MHA",
+        "Flash Attention 2 support significantly improves throughput"
+      ],
+      "deployment_notes": [
+        "Requires HuggingFace access request for official weights",
+        "GGUF quantizations available via Ollama for local deployment",
+        "TensorRT-LLM provides best NVIDIA GPU performance"
+      ],
+      "optimization_notes": [
+        "4-bit quantization (Q4_K_M) provides good quality/performance balance",
+        "Context window can be extended with RoPE scaling techniques",
+        "Speculative decoding can improve generation speed"
+      ],
+      "compatibility_notes": [
+        "Compatible with most modern inference frameworks",
+        "Requires recent PyTorch versions for Flash Attention 2",
+        "Some quantization formats may require specific hardware"
+      ],
+      "common_pitfalls": [
+        "Not using GQA-aware quantization can degrade performance",
+        "Ignoring context window limits may cause quality degradation",
+        "Using outdated quantization formats may have compatibility issues"
+      ]
+    },
+    
     "capabilities": {
       "instruction_tuned": true,
       "reasoning": true,

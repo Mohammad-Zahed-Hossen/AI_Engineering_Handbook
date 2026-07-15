@@ -97,11 +97,13 @@ export type DiagnosticTest = z.infer<typeof DiagnosticTestSchema>;
 
 // Use z.lazy for recursive types - define the type first, then the schema
 // Terminal nodes have only 'result', intermediate nodes have 'question'
+// solution_index links terminal nodes to corresponding solutions
 export type DebugDecisionTree = {
   question?: string;
   yes?: DebugDecisionTree;
   no?: DebugDecisionTree;
   result?: string;
+  solution_index?: number;
 };
 
 const createDebugDecisionTreeSchema = (): z.ZodType<DebugDecisionTree> =>
@@ -111,6 +113,7 @@ const createDebugDecisionTreeSchema = (): z.ZodType<DebugDecisionTree> =>
       yes: createDebugDecisionTreeSchema().optional(),
       no: createDebugDecisionTreeSchema().optional(),
       result: z.string().optional(),
+      solution_index: z.number().optional(),
     })
   );
 

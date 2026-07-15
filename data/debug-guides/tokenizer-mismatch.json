@@ -1,0 +1,569 @@
+{
+  "id": "tokenizer-mismatch",
+  "title": "Tokenizer ↔ Model Mismatch (Vocabulary / Special Tokens / Shape Errors)",
+  "slug": "tokenizer-mismatch",
+  "description": "Troubleshooting and resolving tokenizer-model mismatch failures, including vocabulary size mismatches, special token misalignments, and embedding dimension conflicts.",
+  "name": "Tokenizer ↔ Model Mismatch (Vocabulary / Special Tokens / Shape Errors)",
+  "category": "llm",
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "sources": [
+    "https://markaicode.com/handle-tokenization-errors-transformers/",
+    "https://github.com/huggingface/transformers/issues/17431",
+    "https://arxiv.org/pdf/2403.08688.pdf",
+    "https://hamel.dev/notes/llm/finetuning/tokenizer_gotchas.html"
+  ],
+  "tags": [
+    "llm",
+    "debugging",
+    "tokenizer",
+    "vocabulary",
+    "embedding",
+    "special-tokens",
+    "huggingface"
+  ],
+  "aliases": [
+    "tokenizer-mismatch",
+    "vocab-mismatch",
+    "special-token-error",
+    "embedding-shape-error"
+  ],
+  "keywords": [
+    "tokenizer",
+    "vocab_size",
+    "embedding",
+    "special_tokens",
+    "pad_token_id",
+    "eos_token_id",
+    "resize_token_embeddings",
+    "huggingface"
+  ],
+  "search_tokens": [
+    "tokenizer model mismatch",
+    "vocabulary size error",
+    "special token misalignment",
+    "embedding shape mismatch",
+    "tokenizer vocab size"
+  ],
+  "domain": "deep-learning",
+  "difficulty": "advanced",
+  "engineering_area": "llm",
+  "estimated_reading_time": 20,
+  "prerequisites": [
+    "transformers-basics",
+    "tokenization-concepts"
+  ],
+  "recommended_next": [
+    "nan-loss-exploding-gradients"
+  ],
+  "last_verified": "2026-07-15",
+  "review_frequency": "quarterly",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "overview": {
+    "severity": "high",
+    "frequency": "common",
+    "typical_stage": "any",
+    "estimated_fix_time": "30-120 min",
+    "production_impact": "severe"
+  },
+  "quick_identification": [
+    {
+      "check": "tokenizer.vocab_size differs from model.config.vocab_size",
+      "description": "Compare vocabulary sizes; mismatch indicates incompatible tokenizer-model pair."
+    },
+    {
+      "check": "Token IDs exceed model embedding dimensions",
+      "description": "max(tokenizer.encode(text)) >= model.get_input_embeddings().weight.shape[0]."
+    },
+    {
+      "check": "Special token IDs differ between tokenizer and model config",
+      "description": "Compare tokenizer.pad_token_id, bos_token_id, eos_token_id with model.config equivalents."
+    }
+  ],
+  "symptoms": [
+    {
+      "symptom": "IndexError / CUDA Device-Side Assert",
+      "description": "Forward pass crashes with index out of bounds in the embedding layer or a CUDA assert triggered by an invalid token ID.",
+      "error_message": "IndexError: index out of range in self or CUDA error: device-side assert triggered.",
+      "where_appears": "model(input_ids) forward pass, training step.",
+      "frequency": "always"
+    },
+    {
+      "symptom": "Embedding Shape Mismatch on Load",
+      "description": "Loading state dict fails because saved embedding weights have a different shape than the model's embedding layer.",
+      "error_message": "RuntimeError: Error(s) in loading state_dict: size mismatch for model.embed_tokens.weight.",
+      "where_appears": "model.load_state_dict(), checkpoint restoration.",
+      "frequency": "often"
+    },
+    {
+      "symptom": "Gibberish Generation Despite Correct Prompt",
+      "description": "Model generates coherent-looking but semantically wrong tokens; vocabulary mapping is shifted or corrupted.",
+      "error_message": "No explicit error; outputs are nonsensical.",
+      "where_appears": "model.generate(), inference pipeline.",
+      "frequency": "often"
+    },
+    {
+      "symptom": "Special Token Recognition Failure",
+      "description": "Model does not recognize <pad>, <s>, </s>, or other special tokens; they are treated as ordinary subwords.",
+      "error_message": "No explicit error; attention mask or generation length is wrong.",
+      "where_appears": "Padding, generation stopping, chat template formatting.",
+      "frequency": "sometimes"
+    }
+  ],
+  "root_causes": [
+    {
+      "cause": "Vocabulary Size Mismatch",
+      "probability": "high",
+      "explanation": "The tokenizer vocabulary was extended but the model embedding matrix was not resized, so token IDs map to non-existent embedding rows.",
+      "recognition_clues": [
+        "tokenizer.vocab_size > model.config.vocab_size.",
+        "Error occurs immediately on the first forward pass with tokenized input.",
+        "Mismatch appears after tokenizer.add_tokens() or tokenizer.add_special_tokens()."
+      ],
+      "typical_environment": "Fine-tuning with domain-specific vocabulary, multilingual model adaptation, code model training."
+    },
+    {
+      "cause": "Cross-Model Tokenizer Loading",
+      "probability": "high",
+      "explanation": "AutoTokenizer.from_pretrained() loads tokenizer from checkpoint A while AutoModel.from_pretrained() loads weights from checkpoint B, so vocabulary mappings differ.",
+      "recognition_clues": [
+        "Tokenizer and model are loaded from different paths or repo IDs.",
+        "tokenizer.name_or_path != model.name_or_path.",
+        "Generation quality degrades after checkpoint swap."
+      ],
+      "typical_environment": "Experiment tracking with mixed artifacts, manual checkpoint management, adapter or LoRA loading with base model mismatch."
+    },
+    {
+      "cause": "Special Token ID Misalignment",
+      "probability": "medium",
+      "explanation": "Tokenizer assigns different IDs to <pad>, <s>, </s>, or <unk> than the model expects, so the model reads the wrong embeddings for those positions.",
+      "recognition_clues": [
+        "tokenizer.pad_token_id != model.config.pad_token_id.",
+        "Generation does not stop at eos_token_id.",
+        "Padding is ignored because pad_token_id maps to a meaningful token in the model vocabulary."
+      ],
+      "typical_environment": "Chat model fine-tuning, custom chat templates, legacy model conversion."
+    },
+    {
+      "cause": "Embedding Matrix Not Resized After Tokenizer Extension",
+      "probability": "medium",
+      "explanation": "Adding tokens increases vocabulary size, but model.resize_token_embeddings() was not called, leaving the embedding matrix with the old dimensions.",
+      "recognition_clues": [
+        "tokenizer.vocab_size increased after add_tokens() but model.config.vocab_size did not.",
+        "Error appears only after tokenizer modification.",
+        "model.get_input_embeddings().weight.shape[0] < tokenizer.vocab_size."
+      ],
+      "typical_environment": "Continual pretraining, domain adaptation, instruction tuning with new special tokens."
+    },
+    {
+      "cause": "Legacy Tokenizer File with Updated Model",
+      "probability": "low",
+      "explanation": "An old tokenizer.json or vocab.txt is used with newer model weights, so vocabulary ordering or special-token handling diverges.",
+      "recognition_clues": [
+        "The model repo contains multiple tokenizer files.",
+        "Loading occurs from local paths instead of the Hub.",
+        "The model was converted between formats."
+      ],
+      "typical_environment": "Model format conversions, offline deployments with partial file copies, custom model merges."
+    },
+    {
+      "cause": "SentencePiece / BPE Vocabulary Alignment Error",
+      "probability": "low",
+      "explanation": "The underlying SentencePiece model file has different vocabulary than the tokenizer JSON config, so token conversion becomes non-idempotent.",
+      "recognition_clues": [
+        "sp_model.get_piece_size() differs from len(tokenizer.get_vocab()).",
+        "Decoding differs from re-encoding the same text.",
+        "convert_tokens_to_ids(convert_ids_to_tokens(id)) != id for some IDs."
+      ],
+      "typical_environment": "Custom SentencePiece training, vocabulary pruning, tokenizer merging from different sources."
+    }
+  ],
+  "investigation_checklist": [
+    {
+      "check": "Check vocabulary size alignment",
+      "description": "Verify tokenizer.vocab_size == model.config.vocab_size."
+    },
+    {
+      "check": "Check embedding matrix dimensions",
+      "description": "Verify model.get_input_embeddings().weight.shape[0] == tokenizer.vocab_size."
+    },
+    {
+      "check": "Check special token ID alignment",
+      "description": "Compare tokenizer.pad_token_id, bos_token_id, eos_token_id with model.config."
+    },
+    {
+      "check": "Check tokenizer and model source paths",
+      "description": "Verify both were loaded from the same checkpoint or compatible versions."
+    },
+    {
+      "check": "Check for tokenizer modifications without embedding resize",
+      "description": "Search code for add_tokens or add_special_tokens without resize_token_embeddings()."
+    },
+    {
+      "check": "Check SentencePiece model consistency",
+      "description": "For SPM tokenizers, verify sp_model vocabulary matches JSON config."
+    },
+    {
+      "check": "Check round-trip encoding and decoding",
+      "description": "Verify tokenizer.decode(tokenizer.encode(text)) == text for sample inputs."
+    }
+  ],
+  "diagnostic_commands": [
+    {
+      "purpose": "Verify vocabulary size alignment",
+      "command": "python -c \"from transformers import AutoTokenizer, AutoModel; t = AutoTokenizer.from_pretrained('model_name'); m = AutoModel.from_pretrained('model_name'); print(f'Tokenizer: {len(t)}, Model: {m.config.vocab_size}')\"",
+      "expected_output": "Equal numbers.",
+      "interpretation": "Mismatch indicates an incompatible tokenizer-model pair."
+    },
+    {
+      "purpose": "Check embedding matrix shape",
+      "command": "python -c \"import torch; print(f'Embedding rows: {model.get_input_embeddings().weight.shape[0]}')\"",
+      "expected_output": "Embedding rows: N where N >= max token ID.",
+      "interpretation": "If N < tokenizer vocab size, resize is needed."
+    },
+    {
+      "purpose": "Inspect special token IDs",
+      "command": "python -c \"print(f'Tokenizer pad: {tokenizer.pad_token_id}, Model pad: {model.config.pad_token_id}'); print(f'Tokenizer eos: {tokenizer.eos_token_id}, Model eos: {model.config.eos_token_id}')\"",
+      "expected_output": "Matching IDs for all special tokens.",
+      "interpretation": "Mismatch causes padding and generation boundary failures."
+    },
+    {
+      "purpose": "Test round-trip encoding",
+      "command": "python -c \"text = 'Hello world'; ids = tokenizer.encode(text); decoded = tokenizer.decode(ids); print(f'Round-trip: {text == decoded}'); print(f'Max ID: {max(ids)}, Vocab: {tokenizer.vocab_size}')\"",
+      "expected_output": "Round-trip: True, max ID less than vocab size.",
+      "interpretation": "False or out-of-bounds IDs indicate vocabulary corruption."
+    }
+  ],
+  "diagnostic_tests": [
+    {
+      "purpose": "Vocabulary intersection test",
+      "test": "Encode a sample corpus and check all IDs are within model embedding bounds.",
+      "command": "python -c \"ids = tokenizer.encode(corpus, add_special_tokens=False); max_id = max(ids); embed_size = model.get_input_embeddings().weight.shape[0]; print(f'Max ID: {max_id}, Embed size: {embed_size}, OK: {max_id < embed_size}')\"",
+      "expected_result": "OK: True.",
+      "interpretation": "False confirms vocabulary size mismatch.",
+      "next_action": "Resize embeddings or reload a matching tokenizer."
+    },
+    {
+      "purpose": "Special token consistency test",
+      "test": "Verify special tokens map to the same IDs in tokenizer and model.",
+      "command": "python -c \"for tok in ['<pad>', '<s>', '</s>', '<unk>']: tid = tokenizer.convert_tokens_to_ids(tok); mid = getattr(model.config, f'{tok.strip(\\\"<p>\\\")}_token_id', None); print(f'{tok}: tokenizer={tid}, model={mid}, match={tid==mid}')\"",
+      "expected_result": "All tokens match.",
+      "interpretation": "Mismatches indicate special token misalignment.",
+      "next_action": "Synchronize special token IDs or update model config."
+    },
+    {
+      "purpose": "Embedding initialization verification",
+      "test": "Check whether newly added tokens have valid embeddings.",
+      "command": "python -c \"emb = model.get_input_embeddings().weight; new_start = model.config.vocab_size - num_added; new_embs = emb[new_start:]; print(f'New embed mean: {new_embs.mean():.4f}, std: {new_embs.std():.4f}')\"",
+      "expected_result": "Non-zero mean and standard deviation indicating initialized embeddings.",
+      "interpretation": "Zero or NaN values indicate failed initialization.",
+      "next_action": "Reinitialize new embeddings or re-run resize with proper init."
+    }
+  ],
+  "decision_tree": {
+    "question": "Does tokenizer.vocab_size == model.config.vocab_size?",
+    "yes": {
+      "question": "Does forward pass crash with index error?",
+      "yes": {
+        "question": "Are token IDs from encoding within embedding bounds?",
+        "yes": {
+          "result": "SentencePiece or BPE alignment error — verify sp_model vs JSON config consistency."
+        },
+        "no": {
+          "result": "Hidden vocabulary extension — check for len(tokenizer) > tokenizer.vocab_size."
+        }
+      },
+      "no": {
+        "question": "Does generation produce gibberish?",
+        "yes": {
+          "question": "Do special token IDs match between tokenizer and model config?",
+          "yes": {
+            "result": "Legacy tokenizer file — verify tokenizer files match model revision."
+          },
+          "no": {
+            "result": "Special token misalignment — synchronize pad_token_id, eos_token_id, and bos_token_id."
+          }
+        },
+        "no": {
+          "result": "Model is functional; investigate other causes."
+        }
+      }
+    },
+    "no": {
+      "question": "Was tokenizer extended with add_tokens() or add_special_tokens()?",
+      "yes": {
+        "result": "Embedding matrix not resized — call model.resize_token_embeddings(len(tokenizer))."
+      },
+      "no": {
+        "result": "Cross-model tokenizer loading — reload tokenizer from the same checkpoint as model."
+      }
+    }
+  },
+  "solutions": [
+    {
+      "solution": "Resize Token Embeddings After Vocabulary Extension",
+      "quick_fix": "Call model.resize_token_embeddings(len(tokenizer)) immediately after adding tokens.",
+      "permanent_fix": "Wrap tokenizer extension in a utility that automatically resizes embeddings and initializes new tokens.",
+      "steps": [
+        "Identify added tokens: num_added = tokenizer.add_tokens(new_tokens).",
+        "Resize embeddings: model.resize_token_embeddings(len(tokenizer)).",
+        "Initialize new embeddings: model.get_input_embeddings().weight.data[-num_added:].normal_(mean=0.0, std=0.02).",
+        "Tie weights if applicable: model.tie_weights().",
+        "Verify: assert model.get_input_embeddings().weight.shape[0] == len(tokenizer)."
+      ],
+      "tradeoffs": [
+        "Increases model parameter count, with minor memory overhead.",
+        "New tokens start untrained and need sufficient training steps."
+      ],
+      "performance_impact": "Negligible; only increases embedding matrix size.",
+      "difficulty": "easy",
+      "works_for": [
+        "Domain-specific vocabulary additions.",
+        "Multilingual token extensions.",
+        "Special token additions for instruction tuning."
+      ],
+      "verification": "model.get_input_embeddings().weight.shape[0] == len(tokenizer)."
+    },
+    {
+      "solution": "Reload Matching Tokenizer and Model",
+      "quick_fix": "Load both tokenizer and model from the identical checkpoint path.",
+      "permanent_fix": "Use model cards and revision pinning to ensure tokenizer-model consistency.",
+      "steps": [
+        "Identify model checkpoint: model_name_or_path.",
+        "Load tokenizer from the same path: AutoTokenizer.from_pretrained(model_name_or_path).",
+        "Verify alignment: assert tokenizer.vocab_size == model.config.vocab_size.",
+        "For adapters or LoRA, ensure base model and tokenizer come from the same base checkpoint.",
+        "Pin revision with from_pretrained(..., revision=\"abc123\") for reproducibility."
+      ],
+      "tradeoffs": [
+        "May require re-downloading large tokenizer files.",
+        "Adapter training may need restart if the base model was wrong."
+      ],
+      "performance_impact": "None; corrects mapping without architectural change.",
+      "difficulty": "easy",
+      "works_for": [
+        "Mixed checkpoint artifacts.",
+        "Experiment tracking errors.",
+        "Manual checkpoint management mistakes."
+      ],
+      "verification": "tokenizer.name_or_path == model.name_or_path and vocab sizes match."
+    },
+    {
+      "solution": "Synchronize Special Token IDs",
+      "quick_fix": "Manually align special token IDs between tokenizer and model config.",
+      "permanent_fix": "Use tokenizer.save_pretrained() and model.config.save_pretrained() to persist synchronized state.",
+      "steps": [
+        "Inspect current IDs: tokenizer.pad_token_id, model.config.pad_token_id.",
+        "Set tokenizer to match model: tokenizer.pad_token_id = model.config.pad_token_id.",
+        "Or set model to match tokenizer: model.config.pad_token_id = tokenizer.pad_token_id.",
+        "Repeat for bos_token_id, eos_token_id, and unk_token_id.",
+        "Update generation config: model.generation_config.pad_token_id = tokenizer.pad_token_id.",
+        "Save synchronized configs."
+      ],
+      "tradeoffs": [
+        "Changing model config may affect downstream uses.",
+        "Some models have hardcoded special-token assumptions in the forward pass."
+      ],
+      "performance_impact": "None; metadata-only change.",
+      "difficulty": "easy",
+      "works_for": [
+        "Chat template mismatches.",
+        "Legacy model conversions.",
+        "Custom fine-tuning with changed special tokens."
+      ],
+      "verification": "All special token IDs match and generation stops correctly at eos_token_id."
+    },
+    {
+      "solution": "Reinitialize Tokenizer from Model Hub",
+      "quick_fix": "Delete local tokenizer cache and re-download from the Hugging Face Hub.",
+      "permanent_fix": "Use snapshot_download with explicit file filtering to ensure complete tokenizer files.",
+      "steps": [
+        "Clear cache: rm -rf ~/.cache/huggingface/hub/models--model-name.",
+        "Re-download: AutoTokenizer.from_pretrained(\"org/model\", force_download=True).",
+        "Verify file completeness: check for tokenizer.json, tokenizer_config.json, and special_tokens_map.json.",
+        "For SentencePiece, verify the .model` file exists and matches the JSON config.",
+        "Compare SHA with model card metadata if available."
+      ],
+      "tradeoffs": [
+        "Requires internet access and re-download time.",
+        "Cache clearing affects all models from the same namespace."
+      ],
+      "performance_impact": "None; one-time download cost.",
+      "difficulty": "easy",
+      "works_for": [
+        "Corrupted local tokenizer files.",
+        "Partial downloads.",
+        "Outdated cached tokenizer versions."
+      ],
+      "verification": "Round-trip encoding works and file hashes match the Hub."
+    },
+    {
+      "solution": "Merge Tokenizers with Vocabulary Alignment",
+      "quick_fix": "Use the tokenizers library to merge vocabularies with explicit ID mapping.",
+      "permanent_fix": "Train a new unified SentencePiece model on a combined corpus.",
+      "steps": [
+        "Extract vocabularies: vocab_a = tokenizer_a.get_vocab(), vocab_b = tokenizer_b.get_vocab().",
+        "Create a merged vocabulary with stable ID assignment.",
+        "Map old IDs to new IDs for both tokenizers.",
+        "Re-embed model weights using an ID mapping matrix.",
+        "Save the new tokenizer and remapped model weights."
+      ],
+      "tradeoffs": [
+        "Complex implementation; requires custom mapping logic.",
+        "May lose subword segmentation efficiency."
+      ],
+      "performance_impact": "None after one-time remapping.",
+      "difficulty": "hard",
+      "works_for": [
+        "Multi-model ensembles with a shared tokenizer.",
+        "Cross-lingual model merging.",
+        "Domain adaptation with incompatible base tokenizers."
+      ],
+      "verification": "Both original tokenizers produce valid IDs in the merged vocabulary."
+    }
+  ],
+  "verification_checklist": [
+    {
+      "check": "tokenizer.vocab_size == model.config.vocab_size",
+      "description": "Vocabulary sizes are aligned."
+    },
+    {
+      "check": "model.get_input_embeddings().weight.shape[0] == len(tokenizer)",
+      "description": "Embedding matrix accommodates all tokenizer tokens."
+    },
+    {
+      "check": "Special token IDs match between tokenizer and model config",
+      "description": "pad, bos, eos, unk IDs are synchronized."
+    },
+    {
+      "check": "Round-trip encoding and decoding is lossless",
+      "description": "tokenizer.decode(tokenizer.encode(text)) == text."
+    },
+    {
+      "check": "Forward pass succeeds without index errors",
+      "description": "Model can process tokenized inputs end to end."
+    },
+    {
+      "check": "Generation stops at the correct special token",
+      "description": "eos_token_id triggers proper sequence termination."
+    }
+  ],
+  "prevention": [
+    {
+      "category": "development",
+      "practices": [
+        "Always load tokenizer and model from the identical checkpoint path.",
+        "Wrap add_tokens() calls with automatic resize_token_embeddings() in training scripts.",
+        "Pin model revisions in production configs to prevent silent tokenizer updates.",
+        "Run a vocabulary alignment check as the first step in training startup."
+      ]
+    },
+    {
+      "category": "production",
+      "practices": [
+        "Validate tokenizer.vocab_size == model.config.vocab_size in CI/CD before deployment.",
+        "Version tokenizer files alongside model weights in the same artifact.",
+        "Use the transformers pipeline abstraction only when it preserves tokenizer-model pairing.",
+        "Log tokenizer and model checkpoint hashes at training start for audit."
+      ]
+    },
+    {
+      "category": "monitoring",
+      "practices": [
+        "Alert when len(tokenizer) != model.config.vocab_size in training jobs.",
+        "Track generation perplexity; sudden spikes can indicate vocabulary misalignment.",
+        "Monitor for device-side assert triggered errors as an early indicator.",
+        "Compare training loss curves against baselines; flat loss with high norm can suggest embedding issues."
+      ]
+    },
+    {
+      "category": "coding_habits",
+      "practices": [
+        "Never call tokenizer.add_tokens() without immediate model.resize_token_embeddings().",
+        "Always assert special token ID equality before starting the training loop.",
+        "Use tokenizer.encode(..., add_special_tokens=True) consistently with model expectations.",
+        "Save both tokenizer and model config after any special-token modification."
+      ]
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "tokenizer.vocab_size always equals len(tokenizer)",
+      "reality": "add_tokens() increases len(tokenizer) but not vocab_size; use len(tokenizer) for embedding resize."
+    },
+    {
+      "misconception": "AutoTokenizer and AutoModel from the same repo name guarantee compatibility",
+      "reality": "Different revisions, local caches, or adapter loading can silently mismatch; always verify vocab sizes."
+    },
+    {
+      "misconception": "Special tokens are just strings, so their IDs do not matter if the string is in vocabulary",
+      "reality": "Model forward pass and generation logic depend on specific ID values for padding, masking, and stopping criteria."
+    }
+  ],
+  "false_positive_cases": [
+    {
+      "case": "CUDA device-side assert from unrelated index error",
+      "why_it_looks_similar": "Same error message as tokenizer mismatch.",
+      "how_to_distinguish": "Check whether the error occurs in non-embedding layers and validate data-loader indices."
+    },
+    {
+      "case": "Intentional vocabulary pruning for efficiency",
+      "why_it_looks_similar": "tokenizer.vocab_size < original, and model may have larger embeddings.",
+      "how_to_distinguish": "Pruning is deliberate; embeddings were resized down or unused rows are masked."
+    },
+    {
+      "case": "Model using adaptive embeddings",
+      "why_it_looks_similar": "Embedding shape differs from vocabulary size.",
+      "how_to_distinguish": "The model config specifies tie_word_embeddings=False and uses adaptive or factorized embeddings."
+    }
+  ],
+  "escalation_paths": [
+    {
+      "path": "Retrain Tokenizer from Scratch",
+      "when_to_use": "Vocabulary corruption is irreparable; merging failed.",
+      "tradeoffs": [
+        "Requires a large corpus for training.",
+        "All existing checkpoints become incompatible."
+      ]
+    },
+    {
+      "path": "Convert to Byte-Fallback BPE",
+      "when_to_use": "Frequent out-of-vocabulary issues with the current tokenizer.",
+      "tradeoffs": [
+        "Increases sequence length.",
+        "May degrade performance on some languages."
+      ]
+    },
+    {
+      "path": "Contact Model Authors",
+      "when_to_use": "Suspected bug in the official model tokenizer pairing.",
+      "tradeoffs": [
+        "Requires a minimal reproducible example.",
+        "Response time varies by project."
+      ]
+    }
+  ],
+  "related_packages": [
+    "transformers",
+    "tokenizers",
+    "sentencepiece"
+  ],
+  "related_workflows": [
+    "fine-tune-an-llm-with-lora-qlora",
+    "llm-application-serving"
+  ],
+  "related_patterns": [
+    "mixed-precision",
+    "gradient-accumulation",
+    "training-loop"
+  ],
+  "related_models": [],
+  "related_registry": []
+}

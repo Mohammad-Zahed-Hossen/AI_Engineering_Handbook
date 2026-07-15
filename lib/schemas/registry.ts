@@ -40,7 +40,127 @@ export const IdentitySchema = z.object({
 });
 export type Identity = z.infer<typeof IdentitySchema>;
 
-// ── Capabilities Section ──────────────────────────────────────────
+// ── Architecture Section ──────────────────────────────────────────
+
+export const ArchitectureSchema = z.object({
+  architecture_type: z.string().optional(),
+  transformer_type: z.string().optional(),
+  attention_mechanism: z.string().optional(),
+  tokenizer: z.string().optional(),
+  positional_encoding: z.string().optional(),
+  mixture_of_experts: z.boolean().optional(),
+  kv_cache: z.boolean().optional(),
+  flash_attention: z.boolean().optional(),
+  grouped_query_attention: z.boolean().optional(),
+});
+export type Architecture = z.infer<typeof ArchitectureSchema>;
+
+// ── Model Specifications Section ───────────────────────────────────
+
+export const SpecificationsSchema = z.object({
+  parameter_count: z.number().optional(),
+  active_parameters: z.number().optional(),
+  hidden_size: z.number().optional(),
+  layers: z.number().optional(),
+  attention_heads: z.number().optional(),
+  vocab_size: z.number().optional(),
+  training_tokens: z.number().optional(),
+  context_window: z.number().optional(),
+  max_output_tokens: z.number().optional(),
+});
+export type Specifications = z.infer<typeof SpecificationsSchema>;
+
+// ── File Formats Section ───────────────────────────────────────────
+
+export const FormatsSchema = z.object({
+  safetensors: z.boolean().optional(),
+  gguf: z.boolean().optional(),
+  awq: z.boolean().optional(),
+  gptq: z.boolean().optional(),
+  exl2: z.boolean().optional(),
+  mlx: z.boolean().optional(),
+  onnx: z.boolean().optional(),
+  tensorrt: z.boolean().optional(),
+});
+export type Formats = z.infer<typeof FormatsSchema>;
+
+// ── Ecosystem Support Section ───────────────────────────────────────
+
+export const EcosystemSupportSchema = z.object({
+  supported: z.boolean(),
+  notes: z.string().optional(),
+});
+export type EcosystemSupport = z.infer<typeof EcosystemSupportSchema>;
+
+export const EcosystemSchema = z.object({
+  transformers: EcosystemSupportSchema.optional(),
+  vllm: EcosystemSupportSchema.optional(),
+  ollama: EcosystemSupportSchema.optional(),
+  llama_cpp: EcosystemSupportSchema.optional(),
+  mlx: EcosystemSupportSchema.optional(),
+  litellm: EcosystemSupportSchema.optional(),
+  openrouter: EcosystemSupportSchema.optional(),
+  lm_studio: EcosystemSupportSchema.optional(),
+  tensorrt_llm: EcosystemSupportSchema.optional(),
+});
+export type Ecosystem = z.infer<typeof EcosystemSchema>;
+
+// ── Reference System Section ───────────────────────────────────────
+
+export const ReferenceCategorySchema = z.enum([
+  'official',
+  'documentation',
+  'papers',
+  'benchmarks',
+  'deployment',
+  'repositories',
+  'fine_tuning',
+  'quantization',
+  'leaderboards',
+  'tutorials',
+  'community',
+]);
+export type ReferenceCategory = z.infer<typeof ReferenceCategorySchema>;
+
+export const ReferenceSchema = z.object({
+  title: z.string(),
+  url: z.string().url(),
+  category: ReferenceCategorySchema,
+  official: z.boolean().default(false),
+  priority: z.number().default(0),
+  description: z.string().optional(),
+});
+export type Reference = z.infer<typeof ReferenceSchema>;
+
+// ── Engineering Notes Section ─────────────────────────────────────
+
+export const EngineeringNotesSchema = z.object({
+  inference_notes: z.array(z.string()).default([]),
+  deployment_notes: z.array(z.string()).default([]),
+  optimization_notes: z.array(z.string()).default([]),
+  compatibility_notes: z.array(z.string()).default([]),
+  common_pitfalls: z.array(z.string()).default([]),
+});
+export type EngineeringNotes = z.infer<typeof EngineeringNotesSchema>;
+
+// ── Related Models Section ─────────────────────────────────────────
+
+export const RelatedModelSchema = z.object({
+  id: z.string(),
+  relationship: z.string(),
+});
+export type RelatedModel = z.infer<typeof RelatedModelSchema>;
+
+// ── Release Timeline Section ───────────────────────────────────────
+
+export const TimelineEntrySchema = z.object({
+  version: z.string(),
+  release_date: z.string(),
+  notes: z.string().optional(),
+});
+export type TimelineEntry = z.infer<typeof TimelineEntrySchema>;
+
+// ── Capabilities Section ───────────────────────────────────────────
 
 export const CapabilitiesSchema = z.object({
   instruction_tuned: z.boolean().optional(),
@@ -55,7 +175,7 @@ export const CapabilitiesSchema = z.object({
 });
 export type Capabilities = z.infer<typeof CapabilitiesSchema>;
 
-// ── Deployment Section ────────────────────────────────────────────
+// ── Deployment Section ──────────────────────────────────────────────
 
 export const DeploymentSchema = z.object({
   supported_runtimes: z.array(z.string()).default([]),
@@ -80,7 +200,7 @@ export const HardwareSchema = z.object({
 });
 export type Hardware = z.infer<typeof HardwareSchema>;
 
-// ── Downloads Section ───────────────────────────────────────────
+// ── Downloads Section ───────────────────────────────────────────────
 
 export const DownloadSchema = z.object({
   platform: z.string(),
@@ -90,7 +210,7 @@ export const DownloadSchema = z.object({
 });
 export type Download = z.infer<typeof DownloadSchema>;
 
-// ── Runtime Compatibility Section ─────────────────────────────────
+// ── Runtime Compatibility Section ───────────────────────────────────
 
 export const RuntimeCompatibilitySchema = z.object({
   runtime: z.string(),
@@ -100,7 +220,7 @@ export const RuntimeCompatibilitySchema = z.object({
 });
 export type RuntimeCompatibility = z.infer<typeof RuntimeCompatibilitySchema>;
 
-// ── Licensing Section ───────────────────────────────────────────
+// ── Licensing Section ───────────────────────────────────────────────
 
 export const LicenseSchema = z.object({
   name: z.string(),
@@ -112,7 +232,7 @@ export const LicenseSchema = z.object({
 });
 export type License = z.infer<typeof LicenseSchema>;
 
-// ── Status Section ──────────────────────────────────────────────
+// ── Status Section ─────────────────────────────────────────────────
 
 export const MaintenanceStatusSchema = z.enum([
   'production',
@@ -130,7 +250,7 @@ export const StatusSchema = z.object({
 });
 export type Status = z.infer<typeof StatusSchema>;
 
-// ── Engineering Snapshot Section ──────────────────────────────────
+// ── Engineering Snapshot Section ───────────────────────────────────
 
 export const EngineeringSnapshotSchema = z.object({
   best_for: z.array(z.string()).default([]),
@@ -141,7 +261,7 @@ export const EngineeringSnapshotSchema = z.object({
 });
 export type EngineeringSnapshot = z.infer<typeof EngineeringSnapshotSchema>;
 
-// ── Main Registry Model Schema ───────────────────────────────────
+// ── Main Registry Model Schema ─────────────────────────────────────
 
 // Link field supports both string paths and structured missing references
 export const RegistryModelSchema = z.object({
@@ -163,10 +283,34 @@ export const RegistryModelSchema = z.object({
   download_location: z.string().url().optional(),
   license: z.string().optional(),
   
-  // ── New Structured Metadata ───────────────────────────────────
+  // ── New Structured Metadata ───────────────────────────────────────
   
   // Identity
   identity: IdentitySchema.optional(),
+  
+  // Architecture
+  architecture: ArchitectureSchema.optional(),
+  
+  // Specifications
+  specifications: SpecificationsSchema.optional(),
+  
+  // File Formats
+  formats: FormatsSchema.optional(),
+  
+  // Ecosystem Support
+  ecosystem: EcosystemSchema.optional(),
+  
+  // References
+  references: z.array(ReferenceSchema).default([]),
+  
+  // Engineering Notes
+  engineering_notes: EngineeringNotesSchema.optional(),
+  
+  // Related Models
+  related_models: z.array(RelatedModelSchema).default([]),
+  
+  // Timeline
+  timeline: z.array(TimelineEntrySchema).default([]),
   
   // Capabilities
   capabilities: CapabilitiesSchema.optional(),

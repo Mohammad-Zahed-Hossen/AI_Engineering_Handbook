@@ -1,7 +1,6 @@
 'use client';
 
 import { RegistryModel } from '@/lib/schemas/registry';
-import { RegistryBadge } from './RegistryBadge';
 
 interface RegistryDashboardHeaderProps {
   models: RegistryModel[];

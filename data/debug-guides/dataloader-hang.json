@@ -1,0 +1,588 @@
+{
+  "id": "dataloader-hang",
+  "title": "DataLoader Problems (Deadlock, Hanging, Slow Loading, Worker Crashes)",
+  "slug": "dataloader-hang",
+  "description": "Troubleshooting and resolving PyTorch DataLoader failures, including worker deadlocks, hanging execution, slow data loading, and worker process crashes.",
+  "name": "DataLoader Problems (Deadlock, Hanging, Slow Loading, Worker Crashes)",
+  "category": "data",
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "sources": [
+    "https://docs.pytorch.org/docs/stable/data.html",
+    "https://docs.pytorch.org/docs/2.9/notes/multiprocessing.html",
+    "https://arxiv.org/pdf/2211.04908.pdf",
+    "http://arxiv.org/pdf/2209.13705.pdf",
+    "https://docs.pytorch.org/tutorials/beginner/data_loading_tutorial.html"
+  ],
+  "tags": [
+    "data",
+    "debugging",
+    "dataloader",
+    "multiprocessing",
+    "deadlock",
+    "performance",
+    "pytorch"
+  ],
+  "aliases": [
+    "dataloader-hang",
+    "worker-crash",
+    "slow-loading",
+    "shared-memory",
+    "deadlock"
+  ],
+  "keywords": [
+    "dataloader",
+    "num_workers",
+    "pin_memory",
+    "shared memory",
+    "fork",
+    "spawn",
+    "multiprocessing",
+    "deadlock"
+  ],
+  "search_tokens": [
+    "dataloader hanging",
+    "worker killed signal",
+    "slow batch loading",
+    "shared memory exhausted",
+    "num_workers crash"
+  ],
+  "domain": "deep-learning",
+  "difficulty": "advanced",
+  "engineering_area": "data",
+  "estimated_reading_time": 20,
+  "prerequisites": [
+    "pytorch-basics",
+    "multiprocessing"
+  ],
+  "recommended_next": [
+    "gpu-not-detected",
+    "nan-loss-exploding-gradients"
+  ],
+  "last_verified": "2026-07-15",
+  "review_frequency": "quarterly",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "overview": {
+    "severity": "high",
+    "frequency": "common",
+    "typical_stage": "any",
+    "estimated_fix_time": "30-120 min",
+    "production_impact": "severe"
+  },
+  "quick_identification": [
+    {
+      "check": "Training loop hangs at batch iteration",
+      "description": "next(iter(dataloader)) or for batch in dataloader never returns."
+    },
+    {
+      "check": "Worker processes crash with signal errors",
+      "description": "RuntimeError: DataLoader worker (pid X) is killed by signal: Killed or SIGSEGV."
+    },
+    {
+      "check": "Batch loading latency is >10x expected",
+      "description": "Time next(dataloader_iter) and compare to compute step time."
+    },
+    {
+      "check": "GPU utilization drops to 0% periodically",
+      "description": "nvidia-smi dmon shows GPU-Util cycling between high and idle states while workers fetch data."
+    }
+  ],
+  "symptoms": [
+    {
+      "symptom": "Training Hang / Deadlock",
+      "description": "Training freezes indefinitely at data loading with no forward progress and no explicit exception.",
+      "error_message": "No explicit error; the process appears stuck.",
+      "where_appears": "next(iter(dataloader)), enumerate(dataloader), worker initialization.",
+      "frequency": "often"
+    },
+    {
+      "symptom": "Worker Crash",
+      "description": "Worker processes terminate with segmentation fault or bus error.",
+      "error_message": "RuntimeError: DataLoader worker (pid X) is killed by signal: Segmentation fault or Bus error.",
+      "where_appears": "Worker spawn, batch collation, shared memory access.",
+      "frequency": "often"
+    },
+    {
+      "symptom": "Worker OOM Kill",
+      "description": "The OS OOM killer terminates worker processes due to excessive memory consumption.",
+      "error_message": "RuntimeError: DataLoader worker (pid X) is killed by signal: Killed.",
+      "where_appears": "Worker processes with large per-worker memory footprint.",
+      "frequency": "often"
+    },
+    {
+      "symptom": "Slow Batch Loading",
+      "description": "Batches load slowly despite fast storage, and the GPU sits idle between steps.",
+      "error_message": "No explicit error; training throughput is far below the compute-bound baseline.",
+      "where_appears": "Data loading pipeline, storage I/O, preprocessing.",
+      "frequency": "sometimes"
+    }
+  ],
+  "root_causes": [
+    {
+      "cause": "Insufficient Shared Memory (/dev/shm) in Containers",
+      "probability": "high",
+      "explanation": "Multi-worker DataLoader transfers batch data through shared memory, and container defaults can exhaust /dev/shm, causing hangs or worker kills.",
+      "recognition_clues": [
+        "df -h /dev/shm shows near-100% usage.",
+        "The issue appears only inside Docker or Kubernetes.",
+        "Increasing num_workers makes the problem worse.",
+        "The hang occurs at collation or worker transfer, not in __getitem__."
+      ],
+      "typical_environment": "Docker containers, Kubernetes pods, CI runners."
+    },
+    {
+      "cause": "Fork-Safe Violations in Dataset",
+      "probability": "high",
+      "explanation": "Forking after CUDA initialization, open file handles, or lock creation can deadlock or corrupt child workers; PyTorch documents platform-specific start-method behavior and recommends careful multiprocessing design.",
+      "recognition_clues": [
+        "The issue occurs only with num_workers > 0.",
+        "Switching to spawn or forkserver resolves it.",
+        "Dataset construction opens files, creates CUDA tensors, or initializes thread pools.",
+        "Worker logs mention CUDA initialization or serialization failures."
+      ],
+      "typical_environment": "Custom datasets with initialization side effects, GPU preprocessing, Linux multiprocessing workflows."
+    },
+    {
+      "cause": "Excessive num_workers Relative to CPU or Memory",
+      "probability": "high",
+      "explanation": "Too many workers increase context switching, memory replication, and I/O contention; PyTorch warns that worker processes can consume as much CPU memory as the parent process for Python objects they access.",
+      "recognition_clues": [
+        "htop shows all CPUs saturated and memory pressure rising with worker count.",
+        "Throughput improves at first, then plateaus or regresses as workers increase.",
+        "Swap usage or RSS growth tracks worker count."
+      ],
+      "typical_environment": "CPU-constrained instances, memory-limited containers, expensive preprocessing pipelines."
+    },
+    {
+      "cause": "Slow Storage or Network-Attached Filesystems",
+      "probability": "medium",
+      "explanation": "High-latency storage such as NFS, EFS, or S3-backed mounts throttles random reads across workers, making the input pipeline I/O-bound.",
+      "recognition_clues": [
+        "iostat -x 1 shows high await or near-saturated device utilization.",
+        "Copying data to local SSD removes the issue.",
+        "Worker traces spend time in read() or filesystem calls."
+      ],
+      "typical_environment": "Cloud NFS, object-storage mounts, HPC shared filesystems."
+    },
+    {
+      "cause": "Non-Picklable Dataset or Collate Function",
+      "probability": "medium",
+      "explanation": "Worker processes need serialized dataset and callback objects; lambdas, closures, open handles, or unpicklable third-party objects fail when workers are spawned.",
+      "recognition_clues": [
+        "AttributeError: Can't pickle local object or TypeError: cannot pickle.",
+        "num_workers=0 works, but num_workers>0 fails immediately.",
+        "Failure occurs during worker startup rather than sample fetching."
+      ],
+      "typical_environment": "Custom datasets, inline transforms, notebook-defined functions."
+    },
+    {
+      "cause": "Deadlock in Custom collate_fn or __getitem__",
+      "probability": "low",
+      "explanation": "Locks, database connections, or nested parallelism inside dataset or collation code can deadlock when multiple workers contend.",
+      "recognition_clues": [
+        "Hang occurs at the same batch index or data pattern.",
+        "Profilers show workers blocked on acquire or futex.",
+        "num_workers=0 works but multi-worker loading hangs."
+      ],
+      "typical_environment": "On-the-fly database access, locking augmentations, custom batch assembly."
+    },
+    {
+      "cause": "Distributed Training Stragglers",
+      "probability": "low",
+      "explanation": "In DDP, uneven dataset lengths or uneven per-rank work can create stragglers that stall collective synchronization and trigger timeouts.",
+      "recognition_clues": [
+        "NCCL timeout or elastic-agent worker death.",
+        "Some ranks finish early while others still iterate.",
+        "drop_last=False or imperfect sharding produces rank imbalance."
+      ],
+      "typical_environment": "Distributed training with custom sharding or uneven sample counts."
+    }
+  ],
+  "investigation_checklist": [
+    {
+      "check": "Check /dev/shm usage in containers",
+      "description": "Run df -h /dev/shm to verify shared memory availability."
+    },
+    {
+      "check": "Check worker spawn method",
+      "description": "Verify the multiprocessing start method and prefer safer methods when fork-safety is questionable."
+    },
+    {
+      "check": "Check num_workers versus CPU core count",
+      "description": "Verify num_workers does not exceed the host’s practical CPU budget."
+    },
+    {
+      "check": "Check storage I/O latency",
+      "description": "Use iostat or a read benchmark to measure bandwidth and tail latency."
+    },
+    {
+      "check": "Check dataset picklability",
+      "description": "Test pickle.dumps(dataset) or equivalent serialization of worker inputs."
+    },
+    {
+      "check": "Check for CUDA context in dataset",
+      "description": "Verify no CUDA calls occur in dataset initialization or sample retrieval."
+    },
+    {
+      "check": "Check distributed dataset length balance",
+      "description": "Verify ranks see comparable sample counts and epoch boundaries."
+    }
+  ],
+  "diagnostic_commands": [
+    {
+      "purpose": "Inspect shared memory usage",
+      "command": "df -h /dev/shm && ls -la /dev/shm/ | wc -l",
+      "expected_output": "Available space comfortably exceeds per-worker batch buffering needs.",
+      "interpretation": "Near-zero available space indicates shared memory exhaustion."
+    },
+    {
+      "purpose": "Check worker process state",
+      "command": "ps aux | grep \"DataLoader worker\" | grep -v grep && top -b -n1 | grep \"python\"",
+      "expected_output": "Active worker processes with moderate CPU and memory usage.",
+      "interpretation": "Missing processes indicate crashes; high CPU wait suggests I/O bottlenecks."
+    },
+    {
+      "purpose": "Profile DataLoader iteration time",
+      "command": "python -c \"import time; t0 = time.time(); batch = next(iter(dataloader)); print(f'Batch load time: {time.time()-t0:.2f}s')\"",
+      "expected_output": "Sub-second for light pipelines, and only a few seconds for heavy preprocessing.",
+      "interpretation": "Sustained >10s latency indicates storage or preprocessing bottlenecks."
+    },
+    {
+      "purpose": "Check for pickling and fork-safety issues",
+      "command": "python -c \"import pickle; ds = MyDataset(); pickle.dumps(ds)\"",
+      "expected_output": "No exception.",
+      "interpretation": "PicklingError indicates non-serializable dataset state; CUDA-related failures point to fork-safety violations."
+    }
+  ],
+  "diagnostic_tests": [
+    {
+      "purpose": "Shared memory isolation test",
+      "test": "Run the same job with larger container shared memory and compare behavior.",
+      "command": "docker run --shm-size=8g my-training-image",
+      "expected_result": "Hang or crash disappears with increased shared memory.",
+      "interpretation": "If fixed, /dev/shm exhaustion was the cause.",
+      "next_action": "Increase container shm allocation or mount host /dev/shm."
+    },
+    {
+      "purpose": "Spawn versus fork comparison",
+      "test": "Determine whether fork-safety violations are causing hangs or crashes.",
+      "command": "python -c \"import torch.multiprocessing as mp; mp.set_start_method('spawn'); dl = DataLoader(ds, num_workers=4); next(iter(dl))\"",
+      "expected_result": "Workers spawn successfully without CUDA or pickling errors.",
+      "interpretation": "If fixed, fork-safety was the issue.",
+      "next_action": "Refactor dataset to be fork-safe or use spawn permanently."
+    },
+    {
+      "purpose": "Worker count scaling test",
+      "test": "Find the worker count that maximizes throughput without oversubscription.",
+      "command": "for n in 0 2 4 8 16; do python benchmark.py --num_workers=$n; done",
+      "expected_result": "Throughput rises and then plateaus.",
+      "interpretation": "The peak identifies the practical worker budget; regression at higher counts indicates oversubscription.",
+      "next_action": "Set num_workers to the best observed value, then re-benchmark after preprocessing changes."
+    }
+  ],
+  "decision_tree": {
+    "question": "Does the hang or crash occur only with num_workers > 0?",
+    "no": {
+      "question": "Does it occur with num_workers=0 too?",
+      "yes": {
+        "result": "The issue is in __getitem__ or storage; profile sample retrieval and I/O latency."
+      },
+      "no": {
+        "result": "Intermittent race condition; inspect for locks or shared mutable state."
+      }
+    },
+    "yes": {
+      "question": "Is this running inside a container?",
+      "yes": {
+        "question": "Does df -h /dev/shm show low available space?",
+        "yes": {
+          "result": "Shared memory exhaustion; increase container shm or use a memory-backed mount."
+        },
+        "no": {
+          "question": "Does switching to spawn fix it?",
+          "yes": {
+            "result": "Fork-safety violation; refactor dataset or keep spawn."
+          },
+          "no": {
+            "result": "Check worker count oversubscription or storage I/O bottlenecks."
+          }
+        }
+      },
+      "no": {
+        "question": "Does pickle.dumps(dataset) fail?",
+        "yes": {
+          "result": "Non-picklable dataset; remove lambdas, closures, or unpicklable objects."
+        },
+        "no": {
+          "question": "Does htop show CPU saturation with high I/O wait?",
+          "yes": {
+            "result": "Storage bottleneck; cache data locally or reduce preprocessing."
+          },
+          "no": {
+            "question": "Are you using DDP with uneven dataset lengths?",
+            "yes": {
+              "result": "Distributed straggler; use balanced sharding and appropriate sampler settings."
+            },
+            "no": {
+              "result": "Custom deadlock in collate_fn or __getitem__; inspect with a profiler for lock contention."
+            }
+          }
+        }
+      }
+    }
+  },
+  "solutions": [
+    {
+      "solution": "Increase Container Shared Memory",
+      "quick_fix": "Add --shm-size=8g to the Docker run command.",
+      "permanent_fix": "Mount host /dev/shm or use a tmpfs-backed memory volume in Kubernetes.",
+      "steps": [
+        "Check current usage: df -h /dev/shm.",
+        "Estimate required capacity from batch size, worker count, and sample size.",
+        "Increase shm allocation in Docker or Kubernetes.",
+        "Re-run the pipeline and confirm stable worker behavior.",
+        "Verify that /dev/shm headroom remains under peak throughput."
+      ],
+      "tradeoffs": [
+        "Consumes host RAM and can compete with training memory.",
+        "Memory-backed volumes are constrained by pod or node limits."
+      ],
+      "performance_impact": "Eliminates shm-related hangs; no inherent training slowdown.",
+      "difficulty": "easy",
+      "works_for": [
+        "Containerized training.",
+        "Multi-worker DataLoader with pinned-memory transfer."
+      ],
+      "verification": "Training proceeds without worker crashes or deadlocks."
+    },
+    {
+      "solution": "Use Spawn Instead of Fork",
+      "quick_fix": "Set multiprocessing.set_start_method('spawn') at script entry.",
+      "permanent_fix": "Restructure the dataset so initialization is fork-safe and fully serializable.",
+      "steps": [
+        "Call set_start_method('spawn', force=True) before any worker creation.",
+        "Move file opens out of __init__ and into lazy code paths.",
+        "Remove CUDA calls from dataset code.",
+        "Validate serialization with pickle.dumps(dataset).",
+        "Keep __main__-guarded entry points so worker import does not rerun setup code."
+      ],
+      "tradeoffs": [
+        "Slower worker startup than fork.",
+        "Requires stricter serialization discipline."
+      ],
+      "performance_impact": "Slightly slower startup, but usually stable steady-state throughput.",
+      "difficulty": "easy",
+      "works_for": [
+        "CUDA-related worker crashes.",
+        "Datasets with open file descriptors in initialization.",
+        "Linux workflows that otherwise rely on fork."
+      ],
+      "verification": "Workers spawn without CUDA initialization or serialization failures."
+    },
+    {
+      "solution": "Tune num_workers and pin_memory",
+      "quick_fix": "Start with num_workers = cpu_count() // 2 and pin_memory = True for GPU training.",
+      "permanent_fix": "Benchmark and standardize on a worker count that matches CPU, RAM, and preprocessing cost.",
+      "steps": [
+        "Benchmark several worker counts.",
+        "Select the point where throughput stops improving.",
+        "Keep pin_memory=True when the output goes to CUDA devices.",
+        "Use persistent_workers=True for repeated epochs when worker startup is expensive.",
+        "Re-evaluate after preprocessing or storage changes."
+      ],
+      "tradeoffs": [
+        "Too many workers increase context switching and memory pressure.",
+        "Persistent workers increase baseline memory use."
+      ],
+      "performance_impact": "Often improves throughput substantially when the initial setting is suboptimal.",
+      "difficulty": "easy",
+      "works_for": [
+        "CPU-bound preprocessing.",
+        "General multi-worker pipelines.",
+        "GPU training with host-to-device transfer bottlenecks."
+      ],
+      "verification": "GPU utilization stays high and batch latency stays below compute time."
+    },
+    {
+      "solution": "Cache Data to Local NVMe",
+      "quick_fix": "Copy datasets to local SSD before training starts.",
+      "permanent_fix": "Add a staging layer that prefetches hot shards to local storage.",
+      "steps": [
+        "Confirm the bottleneck with iostat or a simple read benchmark.",
+        "Sync data to local NVMe or equivalent local disk.",
+        "Point the dataset path to the local copy.",
+        "For very large datasets, prefetch the next shard in the background.",
+        "Re-measure end-to-end throughput."
+      ],
+      "tradeoffs": [
+        "Requires local disk capacity.",
+        "Adds job startup time for staging."
+      ],
+      "performance_impact": "Can dramatically improve I/O-bound pipelines when network storage is the limit.",
+      "difficulty": "medium",
+      "works_for": [
+        "NFS, EFS, Filestore, and object-storage mounts."
+      ],
+      "verification": "iostat shows lower latency and throughput approaches local-disk baseline."
+    },
+    {
+      "solution": "Fix Picklability and Remove CUDA from Dataset",
+      "quick_fix": "Remove lambdas, nested functions, and CUDA tensors from dataset state.",
+      "permanent_fix": "Keep dataset __init__ minimal and serializable, with only safe Python objects.",
+      "steps": [
+        "Replace lambda transforms with module-level callables.",
+        "Move CUDA operations to the training loop.",
+        "Avoid storing unpicklable library objects in dataset state.",
+        "Re-test with pickle.dumps(dataset).",
+        "If needed, implement custom __getstate__ and __setstate__."
+      ],
+      "tradeoffs": [
+        "May require restructuring preprocessing code.",
+        "Some third-party objects are not safe to serialize."
+      ],
+      "performance_impact": "Usually neutral; may slightly increase code complexity.",
+      "difficulty": "medium",
+      "works_for": [
+        "Complex custom datasets.",
+        "Inline notebook code.",
+        "Any dataset failing serialization checks."
+      ],
+      "verification": "pickle.dumps(dataset) succeeds and workers start normally."
+    }
+  ],
+  "verification_checklist": [
+    {
+      "check": "DataLoader iteration completes without hangs",
+      "description": "for batch in dataloader runs to completion."
+    },
+    {
+      "check": "Worker processes remain stable",
+      "description": "No crashes or OOM kills during a full epoch."
+    },
+    {
+      "check": "GPU utilization is consistently high",
+      "description": "GPU idle time no longer dominates the training step."
+    },
+    {
+      "check": "Batch loading latency is within budget",
+      "description": "Input pipeline time stays below compute time per step."
+    },
+    {
+      "check": "Training throughput matches the expected maximum",
+      "description": "Samples per second is close to the compute-bound baseline."
+    }
+  ],
+  "prevention": [
+    {
+      "category": "development",
+      "practices": [
+        "Test datasets with num_workers > 0 before scaling to full training.",
+        "Keep dataset initialization minimal and serializable; defer I/O to worker-side paths.",
+        "Profile data loading independently from model training.",
+        "Use persistent_workers=True and prefetch_factor=2 where repeated epochs justify the memory cost."
+      ]
+    },
+    {
+      "category": "production",
+      "practices": [
+        "Provision enough shared memory for multi-worker loading in containers.",
+        "Treat num_workers as a tuned parameter, not a constant default.",
+        "Stage remote datasets to local disk when I/O latency dominates.",
+        "Set distributed timeout policies that reflect expected data-staging latency."
+      ]
+    },
+    {
+      "category": "monitoring",
+      "practices": [
+        "Log per-batch data loading time.",
+        "Alert on prolonged GPU starvation.",
+        "Monitor /dev/shm usage in containerized jobs.",
+        "Track worker crash rates and restart counts."
+      ]
+    },
+    {
+      "category": "coding_habits",
+      "practices": [
+        "Never call CUDA from dataset code.",
+        "Avoid lambdas and closures in dataset transforms.",
+        "Implement __getstate__ and __setstate__ for datasets with non-picklable state.",
+        "Keep custom collate_fn implementations free of hidden locks and blocking I/O."
+      ]
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "More num_workers always improves throughput",
+      "reality": "Throughput eventually regresses due to context switching, memory contention, and I/O saturation."
+    },
+    {
+      "misconception": "pin_memory=True causes hangs",
+      "reality": "Problems usually arise when pinned-memory loading combines with insufficient shared memory in containers."
+    },
+    {
+      "misconception": "fork is always faster and therefore always better",
+      "reality": "fork starts quickly but is fragile with CUDA and thread-using code; safer start methods can be the right tradeoff."
+    }
+  ],
+  "false_positive_cases": [
+    {
+      "case": "Intentional synchronization delay",
+      "why_it_looks_similar": "The job appears to hang during loading.",
+      "how_to_distinguish": "Code explicitly waits on barriers or sleeps; GPU idle time is expected."
+    },
+    {
+      "case": "torch.compile first-iteration overhead",
+      "why_it_looks_similar": "The first batch takes much longer than later batches.",
+      "how_to_distinguish": "The delay is in model execution, not the data pipeline."
+    },
+    {
+      "case": "Dynamic batching or bucketing",
+      "why_it_looks_similar": "Batch latency varies widely.",
+      "how_to_distinguish": "Latency correlates with sequence length or sample complexity, not worker failure."
+    }
+  ],
+  "escalation_paths": [
+    {
+      "path": "Implement custom data loading with Ray or DALI",
+      "when_to_use": "PyTorch DataLoader cannot meet throughput requirements.",
+      "tradeoffs": [
+        "Adds significant infrastructure complexity.",
+        "Requires rewriting preprocessing."
+      ]
+    },
+    {
+      "path": "Use WebDataset or IterableDataset for streaming",
+      "when_to_use": "The dataset is too large for local staging.",
+      "tradeoffs": [
+        "Requires format conversion.",
+        "Reduces random-access flexibility."
+      ]
+    },
+    {
+      "path": "Shard data and preprocess offline",
+      "when_to_use": "Preprocessing is the dominant bottleneck and can be amortized.",
+      "tradeoffs": [
+        "Requires extra storage for shards.",
+        "Reduces flexibility for augmentation changes."
+      ]
+    }
+  ],
+  "related_packages": [
+    "pytorch",
+    "torchvision"
+  ],
+  "related_workflows": [],
+  "related_patterns": [
+    "gradient-accumulation",
+    "mixed-precision"
+  ],
+  "related_models": [],
+  "related_registry": []
+}

@@ -1,0 +1,575 @@
+{
+  "id": "gpu-not-detected",
+  "title": "GPU Not Detected (CUDA / Driver / PyTorch Mismatch)",
+  "slug": "gpu-not-detected",
+  "description": "Troubleshooting and resolving framework failure to detect available GPUs. This guide provides a structured flow to resolve driver, CUDA toolkit, and PyTorch/TensorFlow binary version mismatches.",
+  "name": "GPU Not Detected (CUDA / Driver / PyTorch Mismatch)",
+  "category": "gpu",
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "sources": [
+    "https://docs.nvidia.com/deploy/pdf/CUDA_Compatibility.pdf",
+    "https://docs.nvidia.com/datacenter/tesla/drivers/cuda-toolkit-driver-and-architecture-matrix.html",
+    "https://www.tensorflow.org/guide/gpu",
+    "https://docs.nvidia.com/datacenter/tesla/drivers/supported-drivers-and-cuda-toolkit-versions.html",
+    "https://docs.nvidia.com/deeplearning/frameworks/support-matrix/index.html"
+  ],
+  "tags": [
+    "gpu",
+    "cuda",
+    "debugging",
+    "driver",
+    "pytorch",
+    "tensorflow",
+    "container",
+    "nvidia"
+  ],
+  "aliases": [
+    "gpu-not-detected",
+    "cuda-mismatch",
+    "driver-issue",
+    "pytorch-cuda",
+    "nvidia-smi"
+  ],
+  "keywords": [
+    "nvidia-smi",
+    "cuda",
+    "driver",
+    "cudatoolkit",
+    "cudnn",
+    "nvidia-container-toolkit",
+    "wsl2",
+    "gpu-passthrough"
+  ],
+  "search_tokens": [
+    "gpu not detected",
+    "cuda not available",
+    "torch cuda false",
+    "nvidia driver mismatch",
+    "container gpu"
+  ],
+  "domain": "deep-learning",
+  "difficulty": "advanced",
+  "engineering_area": "infrastructure",
+  "estimated_reading_time": 20,
+  "prerequisites": [
+    "linux-basics",
+    "docker-basics"
+  ],
+  "recommended_next": [
+    "cuda-out-of-memory"
+  ],
+  "last_verified": "2026-07-15",
+  "review_frequency": "quarterly",
+  "verified_against": "2.5.1",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "overview": {
+    "severity": "critical",
+    "frequency": "common",
+    "typical_stage": "development",
+    "estimated_fix_time": "15-90 min",
+    "production_impact": "severe"
+  },
+  "quick_identification": [
+    {
+      "check": "torch.cuda.is_available() returns False",
+      "description": "PyTorch cannot access any CUDA device."
+    },
+    {
+      "check": "nvidia-smi shows GPUs but framework reports none",
+      "description": "Hardware is visible to the driver but not to the ML framework."
+    },
+    {
+      "check": "Training falls back to CPU with device='cpu'",
+      "description": "Workload executes on CPU despite GPU hardware presence."
+    }
+  ],
+  "symptoms": [
+    {
+      "symptom": "Framework CUDA Unavailable",
+      "description": "torch.cuda.is_available() or tf.config.list_physical_devices('GPU') returns empty or False.",
+      "error_message": "No explicit error; silent fallback to CPU.",
+      "where_appears": "Training script initialization, device selection code.",
+      "frequency": "always"
+    },
+    {
+      "symptom": "nvidia-smi / Framework Mismatch",
+      "description": "nvidia-smi lists GPUs with a valid driver version, but the framework cannot see them.",
+      "error_message": "No explicit error; disconnect between system and framework visibility.",
+      "where_appears": "Environment setup, container runtime, virtual environment.",
+      "frequency": "often"
+    },
+    {
+      "symptom": "ImportError on CUDA Libraries",
+      "description": "Runtime fails with missing libcudart.so or libcuda.so shared libraries.",
+      "error_message": "ImportError: libcuda.so.1: cannot open shared object file: No such file or directory.",
+      "where_appears": "Import time, first CUDA operation.",
+      "frequency": "sometimes"
+    },
+    {
+      "symptom": "Wrong CUDA Version Error",
+      "description": "Framework reports CUDA version mismatch or incompatible runtime behavior.",
+      "error_message": "The NVIDIA driver on your system is too old or CUDA error: no kernel image is available.",
+      "where_appears": "Runtime, first GPU tensor operation.",
+      "frequency": "sometimes"
+    }
+  ],
+  "root_causes": [
+    {
+      "cause": "PyTorch/TensorFlow CUDA Version Mismatch",
+      "probability": "high",
+      "explanation": "The framework wheel was compiled against a different CUDA toolkit version than the runtime libraries available on the system, breaking binary compatibility at libcudart or related linkage points.",
+      "recognition_clues": [
+        "torch.version.cuda does not match the expected CUDA build.",
+        "nvidia-smi driver version and framework build metadata disagree.",
+        "The environment was installed via pip or conda without a pinned CUDA-specific package set."
+      ],
+      "typical_environment": "Conda environments, pip installs on shared clusters, manual PyPI installations."
+    },
+    {
+      "cause": "NVIDIA Driver Too Old for CUDA Toolkit",
+      "probability": "high",
+      "explanation": "The installed driver does not satisfy the minimum version required by the CUDA runtime expected by the framework, so the runtime cannot initialize GPU execution.",
+      "recognition_clues": [
+        "Driver version shown by nvidia-smi is below the documented minimum.",
+        "The error explicitly says the driver is too old.",
+        "The host uses a conservative OS repository driver package."
+      ],
+      "typical_environment": "Enterprise Linux distributions, long-running servers, VM images with stale drivers."
+    },
+    {
+      "cause": "Missing or Broken NVIDIA Container Runtime",
+      "probability": "medium",
+      "explanation": "Containerized workloads cannot see /dev/nvidia* devices unless the NVIDIA container runtime or equivalent GPU passthrough is configured, so the framework can only enumerate CPU devices.",
+      "recognition_clues": [
+        "nvidia-smi works on the host but not inside the container.",
+        "GPU flags were omitted from the container invocation.",
+        "The container runtime is plain runc rather than the NVIDIA-enabled path."
+      ],
+      "typical_environment": "Docker, Kubernetes, CI/CD runners, GPU-enabled container images."
+    },
+    {
+      "cause": "Missing cuDNN or CUDA Shared Libraries",
+      "probability": "medium",
+      "explanation": "The framework imports successfully but cannot load required runtime libraries, causing either explicit ImportError or silent fallback when the GPU backend cannot initialize.",
+      "recognition_clues": [
+        "ldd on framework libraries shows missing CUDA-related .so files.",
+        "TensorFlow reports no GPU devices despite a CUDA build.",
+        "Base images are minimal and omit runtime libraries."
+      ],
+      "typical_environment": "Stripped-down Docker images, custom CUDA installs, minimal OS images."
+    },
+    {
+      "cause": "WSL2 GPU Support Misconfigured",
+      "probability": "medium",
+      "explanation": "WSL2 depends on Windows-host driver support and a compatible userspace CUDA path; standard Linux driver assumptions do not apply cleanly.",
+      "recognition_clues": [
+        "GPU is visible on the Windows host but not inside WSL2.",
+        "WSL2 lacks the expected CUDA library path or kernel-facing support.",
+        "The installed driver is not WSL2-capable."
+      ],
+      "typical_environment": "Windows development workstations, WSL2-based ML workflows."
+    },
+    {
+      "cause": "Permission or Group Membership Issue",
+      "probability": "low",
+      "explanation": "The process cannot access /dev/nvidia* due to device permissions, so device enumeration fails even though the driver is present.",
+      "recognition_clues": [
+        "nvidia-smi works as root but fails as the user.",
+        "Device nodes have restrictive permissions.",
+        "The user is missing the expected device-access group."
+      ],
+      "typical_environment": "Shared servers, HPC clusters, restricted containers."
+    },
+    {
+      "cause": "PCIe Link or Power-State Failure",
+      "probability": "low",
+      "explanation": "The GPU exists at the driver layer but is not reliably initialized at the hardware link or power-management layer, so framework initialization fails after device discovery.",
+      "recognition_clues": [
+        "nvidia-smi shows error states, N/A fields, or intermittent device visibility.",
+        "Kernel logs show PCIe or NVIDIA initialization errors.",
+        "The issue appears after suspend/resume or chassis maintenance."
+      ],
+      "typical_environment": "Desktop workstations, systems after hardware changes, nodes with unstable power management."
+    }
+  ],
+  "investigation_checklist": [
+    {
+      "check": "Check nvidia-smi output on host",
+      "description": "Verify driver version, GPU visibility, and GPU memory state."
+    },
+    {
+      "check": "Check framework CUDA version",
+      "description": "Run torch.version.cuda or TensorFlow build metadata to identify the compiled CUDA target."
+    },
+    {
+      "check": "Check driver-CUDA compatibility matrix",
+      "description": "Compare driver version against NVIDIA-supported minimums for the target CUDA runtime."
+    },
+    {
+      "check": "Check container runtime configuration",
+      "description": "Verify GPU passthrough is enabled in Docker or Kubernetes."
+    },
+    {
+      "check": "Check shared library dependencies",
+      "description": "Use ldd on framework libraries to find missing CUDA or cuDNN dependencies."
+    },
+    {
+      "check": "Check user permissions on /dev/nvidia*",
+      "description": "Verify user has read/write access to GPU device files."
+    },
+    {
+      "check": "Check WSL2 driver compatibility",
+      "description": "Confirm WSL2-capable NVIDIA driver support on the Windows host."
+    }
+  ],
+  "diagnostic_commands": [
+    {
+      "purpose": "Verify PyTorch CUDA stack",
+      "command": "python -c \"import torch; print(f'CUDA available: {torch.cuda.is_available()}'); print(f'CUDA version: {torch.version.cuda}'); print(f'cuDNN: {torch.backends.cudnn.version()}')\"",
+      "expected_output": "CUDA available: True, matching CUDA version, non-None cuDNN version.",
+      "interpretation": "False or version mismatch indicates binary incompatibility."
+    },
+    {
+      "purpose": "Verify TensorFlow GPU stack",
+      "command": "python -c \"import tensorflow as tf; print(tf.config.list_physical_devices('GPU')); print(tf.test.is_built_with_cuda())\"",
+      "expected_output": "List of GPU devices, True for CUDA build.",
+      "interpretation": "Empty list or False indicates build or runtime issue."
+    },
+    {
+      "purpose": "Check library linkage",
+      "command": "ldd $(python -c \"import torch; import os; print(os.path.join(os.path.dirname(torch.__file__), 'lib', 'libtorch_python.so'))\") | grep \"not found\"",
+      "expected_output": "No not found entries.",
+      "interpretation": "Missing libraries indicate incomplete CUDA or cuDNN installation."
+    },
+    {
+      "purpose": "Inspect NVIDIA driver details",
+      "command": "cat /proc/driver/nvidia/version && lsmod | grep nvidia",
+      "expected_output": "Driver version string and NVIDIA kernel modules loaded.",
+      "interpretation": "Missing nvidia_uvm can prevent CUDA runtime initialization."
+    }
+  ],
+  "diagnostic_tests": [
+    {
+      "purpose": "CUDA compatibility matrix check",
+      "test": "Compare nvidia-smi driver version against NVIDIA compatibility tables.",
+      "command": "nvidia-smi | grep \"Driver Version\"",
+      "expected_result": "Driver version meets or exceeds the minimum required for the framework’s CUDA build.",
+      "interpretation": "If the driver is too old, upgrade the driver or reinstall the framework with a matching CUDA build.",
+      "next_action": "Install a newer NVIDIA driver or reinstall the framework with the correct CUDA channel."
+    },
+    {
+      "purpose": "Container GPU passthrough test",
+      "test": "Run nvidia-smi inside the container versus on the host.",
+      "command": "docker run --rm --gpus all nvidia/cuda:12.1-base nvidia-smi",
+      "expected_result": "Same output as host nvidia-smi.",
+      "interpretation": "Failure indicates missing container runtime configuration.",
+      "next_action": "Install nvidia-container-toolkit and restart the Docker daemon."
+    },
+    {
+      "purpose": "Minimal CUDA kernel launch test",
+      "test": "Run a minimal PyTorch tensor operation on GPU.",
+      "command": "python -c \"import torch; x = torch.randn(10, 10).cuda(); print(x @ x)\"",
+      "expected_result": "A 10x10 tensor prints without error.",
+      "interpretation": "A runtime error indicates driver, library, or hardware initialization failure.",
+      "next_action": "Check kernel logs for NVIDIA driver errors if this fails."
+    }
+  ],
+  "decision_tree": {
+    "question": "Does nvidia-smi work on the host?",
+    "yes": {
+      "question": "Does torch.cuda.is_available() return True?",
+      "yes": {
+        "question": "Does a minimal CUDA tensor operation succeed?",
+        "yes": {
+          "result": "GPU is functional; issue is in application code."
+        },
+        "no": {
+          "result": "Runtime CUDA error — check kernel logs and library linkage."
+        }
+      },
+      "no": {
+        "question": "Are you inside a container?",
+        "yes": {
+          "question": "Does docker run --gpus all nvidia/cuda:12.1-base nvidia-smi work?",
+          "yes": {
+            "result": "Container runtime is OK; framework CUDA version mismatch — reinstall the framework with matching CUDA."
+          },
+          "no": {
+            "result": "NVIDIA Container Toolkit is not installed or misconfigured."
+          }
+        },
+        "no": {
+          "question": "Does torch.version.cuda match system CUDA?",
+          "yes": {
+            "result": "Permission issue or missing cuDNN — check /dev/nvidia* permissions and missing libraries."
+          },
+          "no": {
+            "result": "Framework built for the wrong CUDA version — reinstall with the correct CUDA channel."
+          }
+        }
+      }
+    },
+    "no": {
+      "question": "Is this a physical server or VM?",
+      "yes": {
+        "result": "Hardware or driver installation issue — reinstall NVIDIA driver, check PCIe seating."
+      },
+      "no": {
+        "result": "GPU passthrough is not configured — enable PCI passthrough in the hypervisor."
+      }
+    }
+  },
+  "solutions": [
+    {
+      "solution": "Reinstall PyTorch with Correct CUDA Version",
+      "quick_fix": "Uninstall current PyTorch and reinstall with the matching CUDA index URL.",
+      "permanent_fix": "Pin CUDA version in environment specifications and use lockfiles.",
+      "steps": [
+        "Run python -c \"import torch; print(torch.version.cuda)\" to identify the expected CUDA build.",
+        "Run nvcc --version or nvidia-smi to identify system capability.",
+        "Uninstall current PyTorch packages.",
+        "Reinstall with the matching CUDA-specific index URL.",
+        "Verify torch.cuda.is_available()."
+      ],
+      "tradeoffs": [
+        "Requires package source alignment.",
+        "Can conflict with packages expecting a different PyTorch build."
+      ],
+      "performance_impact": "None; correct build enables GPU acceleration.",
+      "difficulty": "easy",
+      "works_for": [
+        "Pip-installed PyTorch environments with CUDA mismatch.",
+        "Conda environments where CUDA packages conflict."
+      ],
+      "verification": "torch.cuda.is_available() returns True and torch.version.cuda matches system capability."
+    },
+    {
+      "solution": "Upgrade NVIDIA Driver",
+      "quick_fix": "Install a driver version that satisfies the CUDA compatibility matrix.",
+      "permanent_fix": "Pin driver management in OS packaging or image build workflows.",
+      "steps": [
+        "Identify current driver with nvidia-smi.",
+        "Check the minimum supported driver for the target CUDA version.",
+        "Install a newer NVIDIA driver from the official repository.",
+        "Reboot and verify nvidia-smi."
+      ],
+      "tradeoffs": [
+        "Requires downtime.",
+        "New drivers can expose regressions on older GPUs."
+      ],
+      "performance_impact": "None; may improve stability on newer hardware.",
+      "difficulty": "medium",
+      "works_for": [
+        "Bare-metal servers with outdated drivers.",
+        "VMs with GPU passthrough but stale host drivers."
+      ],
+      "verification": "Driver version meets or exceeds the CUDA runtime minimum."
+    },
+    {
+      "solution": "Configure NVIDIA Container Toolkit",
+      "quick_fix": "Install nvidia-container-toolkit and restart Docker.",
+      "permanent_fix": "Configure the container runtime as the default GPU-aware runtime.",
+      "steps": [
+        "Install the NVIDIA container toolkit.",
+        "Configure Docker runtime integration.",
+        "Restart Docker.",
+        "Test GPU visibility inside a CUDA container.",
+        "For Kubernetes, verify the NVIDIA device plugin is running."
+      ],
+      "tradeoffs": [
+        "Adds runtime dependency.",
+        "Requires daemon restarts."
+      ],
+      "performance_impact": "None; enables passthrough.",
+      "difficulty": "medium",
+      "works_for": [
+        "Docker deployments.",
+        "Kubernetes clusters.",
+        "GPU-based CI runners."
+      ],
+      "verification": "Container nvidia-smi matches host output."
+    },
+    {
+      "solution": "Install Missing cuDNN / CUDA Libraries",
+      "quick_fix": "Install the missing runtime libraries or use a CUDA image that already includes them.",
+      "permanent_fix": "Use NVIDIA base images with validated CUDA and cuDNN stacks.",
+      "steps": [
+        "Identify missing library dependencies with ldd.",
+        "Install cuDNN or CUDA runtime packages.",
+        "Set LD_LIBRARY_PATH if needed.",
+        "Prefer base images that include the full runtime stack."
+      ],
+      "tradeoffs": [
+        "Increases image size.",
+        "Adds dependency management overhead."
+      ],
+      "performance_impact": "None; these libraries are required for GPU execution.",
+      "difficulty": "medium",
+      "works_for": [
+        "Minimal Docker images.",
+        "Custom CUDA installations.",
+        "Module-based HPC environments."
+      ],
+      "verification": "torch.backends.cudnn.version() or TensorFlow GPU listing succeeds."
+    },
+    {
+      "solution": "Fix WSL2 GPU Support",
+      "quick_fix": "Install a WSL2-capable NVIDIA driver on the Windows host.",
+      "permanent_fix": "Use native Linux for production GPU workloads.",
+      "steps": [
+        "Verify the host driver is WSL2-capable.",
+        "Confirm the WSL2 userspace library path is available.",
+        "Verify the CUDA library symlink if needed.",
+        "Test GPU detection from inside WSL2."
+      ],
+      "tradeoffs": [
+        "Best-effort environment rather than a production-grade target.",
+        "Typically slower than native Linux."
+      ],
+      "performance_impact": "Slight overhead relative to native Linux.",
+      "difficulty": "medium",
+      "works_for": [
+        "Windows development workstations.",
+        "Prototyping environments."
+      ],
+      "verification": "nvidia-smi and framework GPU detection work inside WSL2."
+    }
+  ],
+  "verification_checklist": [
+    {
+      "check": "torch.cuda.is_available() returns True",
+      "description": "PyTorch can enumerate CUDA devices."
+    },
+    {
+      "check": "nvidia-smi output matches inside and outside container",
+      "description": "Container runtime correctly passes through GPU devices."
+    },
+    {
+      "check": "Minimal CUDA kernel executes without error",
+      "description": "Runtime libraries are correctly linked and functional."
+    },
+    {
+      "check": "Framework CUDA version matches system capability",
+      "description": "No binary incompatibility between framework build and driver."
+    },
+    {
+      "check": "Training utilizes GPU memory and compute",
+      "description": "nvidia-smi shows GPU utilization during training."
+    }
+  ],
+  "prevention": [
+    {
+      "category": "development",
+      "practices": [
+        "Pin CUDA version in requirements.txt or environment.yml and use lockfiles.",
+        "Always specify the CUDA-specific PyTorch wheel index for pip installs.",
+        "Test GPU detection in CI before launching full training jobs.",
+        "Use NVIDIA CUDA base images for reproducible environments."
+      ]
+    },
+    {
+      "category": "production",
+      "practices": [
+        "Maintain a golden container image with a validated driver-CUDA-framework stack.",
+        "Pin NVIDIA driver versions in image or OS lifecycle management.",
+        "Run host and framework GPU preflight checks in job schedulers.",
+        "Document the CUDA compatibility matrix for each GPU node pool."
+      ]
+    },
+    {
+      "category": "monitoring",
+      "practices": [
+        "Alert when framework GPU detection is False on GPU-enabled nodes.",
+        "Track driver version drift across cluster nodes.",
+        "Monitor container runtime health on GPU worker nodes.",
+        "Log GPU utilization; zero utilization on GPU jobs indicates detection failure."
+      ]
+    },
+    {
+      "category": "coding_habits",
+      "practices": [
+        "Always assert GPU availability before moving models to GPU.",
+        "Use explicit device selection with logging rather than silent fallback.",
+        "Fail fast instead of silently training on CPU.",
+        "Add environment validation to training script entrypoints."
+      ]
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "nvidia-smi working means CUDA is fully functional",
+      "reality": "nvidia-smi uses a different code path than CUDA runtime; the driver can be present while the framework build remains incompatible."
+    },
+    {
+      "misconception": "Installing CUDA toolkit is required for PyTorch GPU support",
+      "reality": "PyTorch wheels often bundle the runtime they need; the problem is usually build/runtime mismatch, not a missing toolkit alone."
+    },
+    {
+      "misconception": "Latest driver always works with all CUDA versions",
+      "reality": "Compatibility is bounded by supported driver/toolkit matrices."
+    }
+  ],
+  "false_positive_cases": [
+    {
+      "case": "Intentional CPU fallback for debugging",
+      "why_it_looks_similar": "torch.cuda.is_available() is False or unused.",
+      "how_to_distinguish": "Code explicitly sets device='cpu'; CUDA_VISIBLE_DEVICES=\"\" is set."
+    },
+    {
+      "case": "Multi-GPU system where only some GPUs are allocated",
+      "why_it_looks_similar": "torch.cuda.device_count() is less than the physical count.",
+      "how_to_distinguish": "CUDA_VISIBLE_DEVICES is set to a subset; nvidia-smi shows all GPUs."
+    },
+    {
+      "case": "GPU is in exclusive-process mode and occupied by another process",
+      "why_it_looks_similar": "Framework cannot acquire GPU.",
+      "how_to_distinguish": "nvidia-smi shows GPU in use by another process."
+    }
+  ],
+  "escalation_paths": [
+    {
+      "path": "NVIDIA Developer Support",
+      "when_to_use": "Suspected hardware defect or driver bug.",
+      "tradeoffs": [
+        "Requires NVIDIA developer account.",
+        "Response time may be several business days."
+      ]
+    },
+    {
+      "path": "Framework Issue Tracker",
+      "when_to_use": "Confirmed framework CUDA binding bug after isolation.",
+      "tradeoffs": [
+        "Requires a minimal reproducible example.",
+        "Fix may not be available until a later release."
+      ]
+    },
+    {
+      "path": "Bare-Metal Reinstallation",
+      "when_to_use": "Environment is irreparably corrupted by mixed installs or broken symlinks.",
+      "tradeoffs": [
+        "Removes installed packages and configuration.",
+        "Time-intensive but yields a clean state."
+      ]
+    }
+  ],
+  "related_packages": [
+    "pytorch"
+  ],
+  "related_workflows": [
+    "fine-tune-an-llm-with-lora-qlora",
+    "full-fine-tuning-a-pretrained-transformer"
+  ],
+  "related_patterns": [
+    "mixed-precision",
+    "gradient-accumulation"
+  ],
+  "related_models": [],
+  "related_registry": []
+}

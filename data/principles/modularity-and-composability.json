@@ -1,0 +1,223 @@
+{
+  "id": "modularity-and-composability",
+  "title": "Modularity & Composability",
+  "slug": "modularity-and-composability",
+  "description": "Modularity & Composability is the principle that AI systems should be built from discrete, replaceable modules with well-defined interfaces so they can be combined into larger pipelines without cross-cutting rewrites.",
+  "name": "Modularity & Composability",
+  "category": "systems",
+  "statement": "Design AI systems as interchangeable modules with explicit boundaries so they can be composed into larger systems without exposing internal implementation details.",
+  "intuition": "A system becomes easier to evolve when each part has one clear responsibility and a narrow contract with its neighbors. In AI platforms, that means the retriever, ranker, scorer, trainer, evaluator, and serving layer should be independently understandable and swappable rather than merged into one execution blob. The practical payoff is not elegance; it is the ability to add, remove, or replace capabilities without destabilizing the rest of the stack.",
+  "implications": [],
+  "engineering_consequences": [
+    {
+      "title": "Change containment",
+      "explanation": "A new tokenizer, loss, metric, or serving backend should affect only the owner module and its interface, not the whole pipeline."
+    },
+    {
+      "title": "Composable pipelines",
+      "explanation": "Independent modules can be assembled into new workflows, which reduces the cost of trying new task variants or deployment shapes."
+    },
+    {
+      "title": "Local reasoning",
+      "explanation": "Debugging becomes tractable when failures can be attributed to a bounded component instead of a monolithic control path."
+    },
+    {
+      "title": "Test isolation",
+      "explanation": "Modules can be validated against contracts, making regression testing more precise and reducing accidental dependence on hidden state."
+    },
+    {
+      "title": "Lifecycle resilience",
+      "explanation": "Components evolve at different speeds, so modular boundaries prevent fast-moving parts from forcing rebuilds of stable parts."
+    }
+  ],
+  "common_violations": [
+    {
+      "violation": "One monolithic training script owns ingestion, preprocessing, model construction, optimization, evaluation, and persistence.",
+      "symptoms": "Small changes trigger unrelated failures, experiments require duplicated edits, and the script becomes the only execution path.",
+      "why_it_happens": "Prototypes are promoted to production without re-partitioning responsibilities."
+    },
+    {
+      "violation": "Modules expose internal data structures instead of stable interfaces.",
+      "symptoms": "Consumers depend on private fields, downstream breakage follows minor refactors, and integration code becomes brittle.",
+      "why_it_happens": "Teams optimize for immediate convenience rather than long-term substitutability."
+    },
+    {
+      "violation": "Composition logic is embedded inside core model or data code.",
+      "symptoms": "Reuse across tasks is awkward, and adding a new pipeline stage requires editing leaf modules.",
+      "why_it_happens": "Orchestration is treated as a side effect instead of a first-class responsibility."
+    },
+    {
+      "violation": "The same concern is reimplemented differently in each service or pipeline stage.",
+      "symptoms": "Drift in evaluation, inconsistent preprocessing, and repeated bug fixes across code paths.",
+      "why_it_happens": "There is no owned module for the concern, so each team recreates it locally."
+    }
+  ],
+  "appears_in": [
+    {
+      "domain": "Training systems",
+      "examples": [
+        "training-loop orchestration",
+        "gradient accumulation",
+        "checkpointing",
+        "early stopping",
+        "mixed-precision paths"
+      ]
+    },
+    {
+      "domain": "Inference systems",
+      "examples": [
+        "batch inference",
+        "streaming inference",
+        "prompt caching",
+        "kv-cache management"
+      ]
+    },
+    {
+      "domain": "Retrieval systems",
+      "examples": [
+        "RAG pipelines that compose retrieval, reranking, generation, and evaluation as replaceable stages"
+      ]
+    },
+    {
+      "domain": "Compiler and runtime stacks",
+      "examples": [
+        "MLIR-style lowering pipelines and tensor compiler components"
+      ]
+    }
+  ],
+  "mental_model": "```mermaid\nflowchart LR\n  A[Data Module] --> B[Contract]\n  C[Model Module] --> B\n  D[Training Module] --> B\n  E[Evaluation Module] --> B\n  F[Serving Module] --> B\n\n  B --> G[Composed Pipeline]\n  B --> H[Alternative Pipeline]\n  B --> I[Experiment Variant]\n```",
+  "decision_checklist": [
+    "Can this concern be implemented, tested, and replaced independently?",
+    "Does the interface expose only what downstream consumers actually need?",
+    "Can a new module be composed without editing unrelated internals?",
+    "Does the system allow alternative pipeline orderings or stage substitutions?",
+    "Would this boundary still make sense if the implementation changed completely?",
+    "Is orchestration separate from the logic of the stage it coordinates?"
+  ],
+  "misconceptions": [
+    {
+      "myth": "Modularity is just splitting code into smaller files.",
+      "reality": "File boundaries do nothing if interfaces still leak internals and changes still propagate across modules."
+    },
+    {
+      "myth": "Composability is automatic once modules exist.",
+      "reality": "Modules must be designed for stable contracts and predictable behavior under composition; otherwise they are merely isolated, not reusable."
+    },
+    {
+      "myth": "Modular systems are always slower.",
+      "reality": "Performance tradeoffs come from boundary implementation and data movement, not from the principle itself."
+    },
+    {
+      "myth": "One abstract framework is better than many modules.",
+      "reality": "Frameworks help only when they preserve clean ownership and do not collapse all concerns into a single extension point."
+    }
+  ],
+  "engineering_heuristic": "If a stage cannot be replaced without rewriting its neighbors, it is not modular enough.",
+  "historical_origin": "The concept evolved through software engineering practice and is strongly associated with modularization and information-hiding research that emphasized hiding volatile design decisions behind stable interfaces.",
+  "tradeoffs": {
+    "benefits": [
+      "Smaller blast radius for change.",
+      "Better reuse across tasks and pipelines.",
+      "Easier debugging and testing.",
+      "Safer experimentation with new components.",
+      "More maintainable long-lived systems."
+    ],
+    "costs": [
+      "More upfront interface design.",
+      "More indirection between orchestration and implementation.",
+      "Potential overhead if composition layers are inefficient.",
+      "Stronger governance required to keep contracts stable."
+    ]
+  },
+  "limitations": [
+    "It can be counterproductive in throwaway prototypes where speed matters more than longevity.",
+    "Over-modularization can create fragmentation, where boundaries multiply without real reuse.",
+    "Some tightly bound optimization paths may need local coupling for performance reasons.",
+    "A poor interface design can preserve modules while destroying composability."
+  ],
+  "related_concepts": [
+    "Separation of concerns",
+    "Information hiding",
+    "Encapsulation",
+    "Loose coupling",
+    "High cohesion",
+    "Single source of truth",
+    "Interface segregation",
+    "Dependency inversion",
+    "Plugin architecture"
+  ],
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "sources": [
+    "https://dl.acm.org/doi/10.1145/1408647.1408652",
+    "https://dl.acm.org/doi/10.1145/3609025.3609476",
+    "https://www.semanticscholar.org/paper/7505d6038f6b17547961fa1f9e6c4b048445a208"
+  ],
+  "tags": [
+    "architecture",
+    "systems",
+    "design-principles",
+    "modularity",
+    "composability"
+  ],
+  "aliases": [
+    "modular-design",
+    "component-composition",
+    "plug-and-play-architecture"
+  ],
+  "keywords": [
+    "architecture",
+    "modularity",
+    "composability",
+    "systems-design",
+    "component-based"
+  ],
+  "search_tokens": [
+    "modularity",
+    "composability",
+    "modular design",
+    "component composition",
+    "system design"
+  ],
+  "domain": "systems",
+  "difficulty": "intermediate",
+  "engineering_area": "architecture",
+  "estimated_reading_time": 20,
+  "prerequisites": [],
+  "recommended_next": [
+    "single-source-of-truth",
+    "separation-of-concerns"
+  ],
+  "last_verified": "2026-07-15",
+  "review_frequency": "annually",
+  "verified_against": "1.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "referenced_by_patterns": [
+    "training-loop",
+    "gradient-accumulation",
+    "kv-cache",
+    "mixed-precision",
+    "checkpointing",
+    "early-stopping",
+    "gradient-checkpointing",
+    "flash-attention",
+    "prompt-caching",
+    "streaming-inference",
+    "batch-inference"
+  ],
+  "referenced_by_models": [
+    "llama",
+    "mistral",
+    "bert"
+  ],
+  "referenced_by_workflows": [
+    "build-rag-system",
+    "fine-tune-an-llm-with-lora-qlora"
+  ]
+}

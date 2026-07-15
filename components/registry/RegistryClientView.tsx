@@ -11,10 +11,25 @@ interface RegistryClientViewProps {
   taskLabel: string;
 }
 
+// Priority order for filter chips
+const FILTER_PRIORITY: Record<string, number> = {
+  'Commercial': 1,
+  'Production': 2,
+  'Open Weight': 3,
+  'Instruction': 4,
+  'Reasoning': 5,
+  'Vision': 6,
+  'Multilingual': 7,
+  'Tool Calling': 8,
+  'Local': 9,
+  'Cloud': 10,
+  'Embedding': 11,
+};
+
 export default function RegistryClientView({ models, taskLabel }: RegistryClientViewProps) {
   const [activeFilter, setActiveFilter] = useState('All');
 
-  // Generate available filters from data
+  // Generate available filters from data - Priority 1 #3: Sort by priority
   const availableFilters = useMemo(() => {
     const filters = new Set<string>();
     
@@ -41,7 +56,12 @@ export default function RegistryClientView({ models, taskLabel }: RegistryClient
       if (m.task === 'embedding') filters.add('Embedding');
     });
 
-    return Array.from(filters);
+    // Sort filters by priority
+    return Array.from(filters).sort((a, b) => {
+      const priorityA = FILTER_PRIORITY[a] || 999;
+      const priorityB = FILTER_PRIORITY[b] || 999;
+      return priorityA - priorityB;
+    });
   }, [models]);
 
   // Filter models based on active filter
@@ -99,8 +119,17 @@ export default function RegistryClientView({ models, taskLabel }: RegistryClient
 
       {/* Registry Cards Grid */}
       {filteredModels.length === 0 ? (
-        <div className="p-8 text-center text-xs text-muted-foreground select-none">
-          No registry entries match the selected filter.
+        // Priority 2 #6: Improved empty state messaging
+        <div className="p-8 text-center text-xs text-muted-foreground select-none space-y-2">
+          <div>No registry entries match the selected filter.</div>
+          {activeFilter !== 'All' && (
+            <button
+              onClick={() => setActiveFilter('All')}
+              className="text-[10px] text-primary hover:underline font-medium"
+            >
+              Clear filter: {activeFilter}
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">

@@ -1,4 +1,14 @@
-📊 Starting content validation. Scanning 92 JSON files in D:\Project\ai-engineering-handbook\data...
+## Error Type
+Runtime ZodError
+
+## Error Message
+[
+  {
+    "code": "invalid_value",
+    "values": [
+      "development",
+      "testing",
+      "production",📊 Starting content validation. Scanning 104 JSON files in D:\Project\ai-engineering-handbook\data...
 
 ⚠️ Cheatsheet 'data/cheatsheets/matplotlib.json' has entries count (80) exceeding maximum budget of 60
 ⚠️ Cheatsheet 'data/cheatsheets/numpy.json' has entries count (80) exceeding maximum budget of 60
@@ -7,9 +17,7 @@
 ⚠️ Cheatsheet 'data/cheatsheets/plotly-go.json' has entries count (85) exceeding maximum budget of 60
 ⚠️ Cheatsheet 'data/cheatsheets/scikit-learn.json' has entries count (118) exceeding maximum budget of 60
 ⚠️ Cheatsheet 'data/cheatsheets/seaborn.json' has entries count (66) exceeding maximum budget of 60
-❌ Schema validation failed in 'data/decision-guides/postgresql-vs-vector-db.json'
-    - Field: options.1.scaling_complexity
-      Error: Invalid option: expected one of "low"|"medium"|"high"
+❌ Unregistered tag 'data' found in 'data/debug-guides/dataloader-hang.json'. Add it to 'data/registered-tags.json' or allow unregistered tags in config.
 ⚠️ Package 'data/packages/matplotlib.json' has tasks count (73) exceeding maximum budget of 15
 ⚠️ Package 'data/packages/numpy.json' has tasks count (79) exceeding maximum budget of 15
 ⚠️ Package 'data/packages/pandas.json' has tasks count (101) exceeding maximum budget of 15
@@ -18,27 +26,37 @@
 ⚠️ Package 'data/packages/scikit-learn.json' has tasks count (90) exceeding maximum budget of 15
 ⚠️ Package 'data/packages/seaborn.json' has tasks count (63) exceeding maximum budget of 15
 ⚠️ Pattern 'data/patterns/checkpointing.json' example 1 contains framework-specific code matching pattern /optimizer\./. Patterns must contain only implementation-independent pseudocode.
+⚠️ Pattern 'data/patterns/distributed-data-parallel.json' example 1 contains framework-specific code matching pattern /optimizer\./. Patterns must contain only implementation-independent pseudocode.
 ⚠️ Pattern 'data/patterns/mixed-precision.json' example 1 contains framework-specific code matching pattern /optimizer\./. Patterns must contain only implementation-independent pseudocode.
 ⚠️ Pattern 'data/patterns/training-loop.json' example 1 contains framework-specific code matching pattern /optimizer\./. Patterns must contain only implementation-independent pseudocode.
 ⚠️ Pattern 'data/patterns/training-loop.json' example 2 contains framework-specific code matching pattern /optimizer\./. Patterns must contain only implementation-independent pseudocode.
 ⚠️ Unknown file path 'data/registered-aliases.json' — no schema mapping
 ⚠️ Unknown file path 'data/registered-tags.json' — no schema mapping
 ⚠️ Resource 'data/workflows/ci-cd-for-ml-models.json' field 'related_content' has 24 relationships, exceeding max_relationships_per_type budget of 20
+⚠️ Resource 'data/workflows/fine-tune-an-llm-with-lora-qlora.json' field 'related_content' has 22 relationships, exceeding max_relationships_per_type budget of 20
+⚠️ Resource 'data/workflows/full-fine-tuning-a-pretrained-transformer.json' field 'related_content' has 23 relationships, exceeding max_relationships_per_type budget of 20
 ⚠️ Resource 'data/workflows/image-classification-pipeline.json' field 'related_content' has 31 relationships, exceeding max_relationships_per_type budget of 20
 ⚠️ Resource 'data/workflows/image-classification-pipeline.json' has 62 total relationships, exceeding max_total_relationships budget of 50
-⚠️ Resource 'data/workflows/llm-application-serving.json' field 'related_content' has 21 relationships, exceeding max_relationships_per_type budget of 20
+⚠️ Resource 'data/workflows/llm-application-serving.json' field 'related_content' has 22 relationships, exceeding max_relationships_per_type budget of 20
 ⚠️ Resource 'data/workflows/model-monitoring-observability.json' field 'related_content' has 23 relationships, exceeding max_relationships_per_type budget of 20
 ⚠️ Resource 'data/workflows/named-entity-recognition-pipeline.json' field 'related_content' has 33 relationships, exceeding max_relationships_per_type budget of 20
 ⚠️ Resource 'data/workflows/named-entity-recognition-pipeline.json' has 66 total relationships, exceeding max_total_relationships budget of 50
 ⚠️ Resource 'data/workflows/object-detection-pipeline.json' field 'related_content' has 35 relationships, exceeding max_relationships_per_type budget of 20
 ⚠️ Resource 'data/workflows/object-detection-pipeline.json' has 70 total relationships, exceeding max_total_relationships budget of 50
-⚠️ Resource 'data/workflows/production-llm-cost-latency-optimization.json' field 'related_content' has 22 relationships, exceeding max_relationships_per_type budget of 20
+⚠️ Resource 'data/workflows/production-llm-cost-latency-optimization.json' field 'related_content' has 23 relationships, exceeding max_relationships_per_type budget of 20
 ⚠️ Resource 'data/workflows/text-classification-pipeline-classical-encoder.json' field 'related_content' has 31 relationships, exceeding max_relationships_per_type budget of 20
 ⚠️ Resource 'data/workflows/text-classification-pipeline-classical-encoder.json' has 62 total relationships, exceeding max_total_relationships budget of 50
 ⚠️ Resource 'data/workflows/transfer-learning-for-vision.json' field 'related_content' has 31 relationships, exceeding max_relationships_per_type budget of 20
 ⚠️ Resource 'data/workflows/transfer-learning-for-vision.json' has 62 total relationships, exceeding max_total_relationships budget of 50
 
-📊 Checking 1262 reference links for integrity...
+📊 Checking 1358 reference links for integrity...
+⚠️ Broken reference: ID 'transformers' (type 'package') not found, referenced from 'data/debug-guides/checkpoint-load-error.json'
+⚠️ Broken reference: ID 'deepspeed' (type 'package') not found, referenced from 'data/debug-guides/checkpoint-load-error.json'
+⚠️ Broken reference: ID 'accelerate' (type 'package') not found, referenced from 'data/debug-guides/checkpoint-load-error.json'
+⚠️ Broken reference: ID 'torchvision' (type 'package') not found, referenced from 'data/debug-guides/dataloader-hang.json'
+⚠️ Broken reference: ID 'transformers' (type 'package') not found, referenced from 'data/debug-guides/tokenizer-mismatch.json'
+⚠️ Broken reference: ID 'tokenizers' (type 'package') not found, referenced from 'data/debug-guides/tokenizer-mismatch.json'
+⚠️ Broken reference: ID 'sentencepiece' (type 'package') not found, referenced from 'data/debug-guides/tokenizer-mismatch.json'
 ⚠️ Broken reference: ID 'peft' (type 'package') not found, referenced from 'data/decision-guides/lora-vs-qlora.json'
 ⚠️ Broken reference: ID 'trl' (type 'package') not found, referenced from 'data/decision-guides/lora-vs-qlora.json'
 ⚠️ Broken reference: ID 'transformers' (type 'package') not found, referenced from 'data/decision-guides/lora-vs-qlora.json'
@@ -63,6 +81,7 @@
 ⚠️ Broken reference: ID 'bagging-ensemble' (type 'pattern') not found, referenced from 'data/models/ml/random-forest.json'
 ⚠️ Broken reference: ID 'feature-subsampling' (type 'pattern') not found, referenced from 'data/models/ml/random-forest.json'
 ⚠️ Broken reference: ID 'tree-ensemble-selection' (type 'decision_guide') not found, referenced from 'data/models/ml/random-forest.json'
+⚠️ Broken reference: ID 'accelerate' (type 'package') not found, referenced from 'data/patterns/distributed-data-parallel.json'
 ⚠️ Broken reference: ID 'langgraph' (type 'package') not found, referenced from 'data/workflows/agentic-tool-use-system.json'
 ⚠️ Broken reference: ID 'langchain' (type 'package') not found, referenced from 'data/workflows/agentic-tool-use-system.json'
 ⚠️ Broken reference: ID 'transformers' (type 'package') not found, referenced from 'data/workflows/agentic-tool-use-system.json'
@@ -182,7 +201,6 @@
 ⚠️ Broken reference: ID 'model-registry' (type 'pattern') not found, referenced from 'data/workflows/deep-learning-experiment-lifecycle.json'
 ⚠️ Broken reference: ID 'checkpoint-management' (type 'pattern') not found, referenced from 'data/workflows/deep-learning-experiment-lifecycle.json'
 ⚠️ Broken reference: ID 'configuration-management' (type 'pattern') not found, referenced from 'data/workflows/deep-learning-experiment-lifecycle.json'
-⚠️ Broken reference: ID 'checkpoint-corruption' (type 'debug_guide') not found, referenced from 'data/workflows/deep-learning-experiment-lifecycle.json'
 ⚠️ Broken reference: ID 'experiment-drift' (type 'debug_guide') not found, referenced from 'data/workflows/deep-learning-experiment-lifecycle.json'
 ⚠️ Broken reference: ID 'artifact-lineage' (type 'debug_guide') not found, referenced from 'data/workflows/deep-learning-experiment-lifecycle.json'
 ⚠️ Broken reference: ID 'reproducibility-failure' (type 'debug_guide') not found, referenced from 'data/workflows/deep-learning-experiment-lifecycle.json'
@@ -196,7 +214,6 @@
 ⚠️ Broken reference: ID 'pytorch-lightning' (type 'package') not found, referenced from 'data/workflows/deep-learning-experiment-lifecycle.json'
 ⚠️ Broken reference: ID 'torchmetrics' (type 'package') not found, referenced from 'data/workflows/deep-learning-experiment-lifecycle.json'
 ⚠️ Broken reference: ID 'wandb' (type 'package') not found, referenced from 'data/workflows/deep-learning-experiment-lifecycle.json'
-⚠️ Broken reference: ID 'checkpoint-corruption' (type 'debug_guide') not found, referenced from 'data/workflows/deep-learning-experiment-lifecycle.json'
 ⚠️ Broken reference: ID 'experiment-drift' (type 'debug_guide') not found, referenced from 'data/workflows/deep-learning-experiment-lifecycle.json'
 ⚠️ Broken reference: ID 'artifact-lineage' (type 'debug_guide') not found, referenced from 'data/workflows/deep-learning-experiment-lifecycle.json'
 ⚠️ Broken reference: ID 'reproducibility-failure' (type 'debug_guide') not found, referenced from 'data/workflows/deep-learning-experiment-lifecycle.json'
@@ -242,8 +259,6 @@
 ⚠️ Broken reference: ID 'adapter-training' (type 'pattern') not found, referenced from 'data/workflows/fine-tune-an-llm-with-lora-qlora.json'
 ⚠️ Broken reference: ID 'instruction-tuning' (type 'pattern') not found, referenced from 'data/workflows/fine-tune-an-llm-with-lora-qlora.json'
 ⚠️ Broken reference: ID 'oom-training' (type 'debug_guide') not found, referenced from 'data/workflows/fine-tune-an-llm-with-lora-qlora.json'
-⚠️ Broken reference: ID 'tokenizer-mismatch' (type 'debug_guide') not found, referenced from 'data/workflows/fine-tune-an-llm-with-lora-qlora.json'
-⚠️ Broken reference: ID 'unstable-loss' (type 'debug_guide') not found, referenced from 'data/workflows/fine-tune-an-llm-with-lora-qlora.json'
 ⚠️ Broken reference: ID 'adapter-merge-failure' (type 'debug_guide') not found, referenced from 'data/workflows/fine-tune-an-llm-with-lora-qlora.json'
 ⚠️ Broken reference: ID 'parameter-efficient-fine-tuning' (type 'pattern') not found, referenced from 'data/workflows/fine-tune-an-llm-with-lora-qlora.json'
 ⚠️ Broken reference: ID 'qlora' (type 'pattern') not found, referenced from 'data/workflows/fine-tune-an-llm-with-lora-qlora.json'
@@ -255,8 +270,6 @@
 ⚠️ Broken reference: ID 'accelerate' (type 'package') not found, referenced from 'data/workflows/fine-tune-an-llm-with-lora-qlora.json'
 ⚠️ Broken reference: ID 'bitsandbytes' (type 'package') not found, referenced from 'data/workflows/fine-tune-an-llm-with-lora-qlora.json'
 ⚠️ Broken reference: ID 'oom-training' (type 'debug_guide') not found, referenced from 'data/workflows/fine-tune-an-llm-with-lora-qlora.json'
-⚠️ Broken reference: ID 'tokenizer-mismatch' (type 'debug_guide') not found, referenced from 'data/workflows/fine-tune-an-llm-with-lora-qlora.json'
-⚠️ Broken reference: ID 'unstable-loss' (type 'debug_guide') not found, referenced from 'data/workflows/fine-tune-an-llm-with-lora-qlora.json'
 ⚠️ Broken reference: ID 'adapter-merge-failure' (type 'debug_guide') not found, referenced from 'data/workflows/fine-tune-an-llm-with-lora-qlora.json'
 ⚠️ Broken reference: ID 'transformers' (type 'package') not found, referenced from 'data/workflows/full-fine-tuning-a-pretrained-transformer.json'
 ⚠️ Broken reference: ID 'accelerate' (type 'package') not found, referenced from 'data/workflows/full-fine-tuning-a-pretrained-transformer.json'
@@ -266,9 +279,7 @@
 ⚠️ Broken reference: ID 'distributed-training' (type 'pattern') not found, referenced from 'data/workflows/full-fine-tuning-a-pretrained-transformer.json'
 ⚠️ Broken reference: ID 'supervised-fine-tuning' (type 'pattern') not found, referenced from 'data/workflows/full-fine-tuning-a-pretrained-transformer.json'
 ⚠️ Broken reference: ID 'gpu-oom' (type 'debug_guide') not found, referenced from 'data/workflows/full-fine-tuning-a-pretrained-transformer.json'
-⚠️ Broken reference: ID 'unstable-loss' (type 'debug_guide') not found, referenced from 'data/workflows/full-fine-tuning-a-pretrained-transformer.json'
 ⚠️ Broken reference: ID 'optimizer-divergence' (type 'debug_guide') not found, referenced from 'data/workflows/full-fine-tuning-a-pretrained-transformer.json'
-⚠️ Broken reference: ID 'checkpoint-corruption' (type 'debug_guide') not found, referenced from 'data/workflows/full-fine-tuning-a-pretrained-transformer.json'
 ⚠️ Broken reference: ID 'distributed-training' (type 'pattern') not found, referenced from 'data/workflows/full-fine-tuning-a-pretrained-transformer.json'
 ⚠️ Broken reference: ID 'supervised-fine-tuning' (type 'pattern') not found, referenced from 'data/workflows/full-fine-tuning-a-pretrained-transformer.json'
 ⚠️ Broken reference: ID 'transformers' (type 'package') not found, referenced from 'data/workflows/full-fine-tuning-a-pretrained-transformer.json'
@@ -277,9 +288,7 @@
 ⚠️ Broken reference: ID 'deepspeed' (type 'package') not found, referenced from 'data/workflows/full-fine-tuning-a-pretrained-transformer.json'
 ⚠️ Broken reference: ID 'evaluate' (type 'package') not found, referenced from 'data/workflows/full-fine-tuning-a-pretrained-transformer.json'
 ⚠️ Broken reference: ID 'gpu-oom' (type 'debug_guide') not found, referenced from 'data/workflows/full-fine-tuning-a-pretrained-transformer.json'
-⚠️ Broken reference: ID 'unstable-loss' (type 'debug_guide') not found, referenced from 'data/workflows/full-fine-tuning-a-pretrained-transformer.json'
 ⚠️ Broken reference: ID 'optimizer-divergence' (type 'debug_guide') not found, referenced from 'data/workflows/full-fine-tuning-a-pretrained-transformer.json'
-⚠️ Broken reference: ID 'checkpoint-corruption' (type 'debug_guide') not found, referenced from 'data/workflows/full-fine-tuning-a-pretrained-transformer.json'
 ⚠️ Broken reference: ID 'xgboost' (type 'model') not found, referenced from 'data/workflows/hyperparameter-optimization-workflow.json'
 ⚠️ Broken reference: ID 'lightgbm' (type 'model') not found, referenced from 'data/workflows/hyperparameter-optimization-workflow.json'
 ⚠️ Broken reference: ID 'catboost' (type 'model') not found, referenced from 'data/workflows/hyperparameter-optimization-workflow.json'
@@ -386,7 +395,6 @@
 ⚠️ Broken reference: ID 'preference-dataset-errors' (type 'debug_guide') not found, referenced from 'data/workflows/instruction-tuning-rlhf-lite-dpo.json'
 ⚠️ Broken reference: ID 'policy-reference-divergence' (type 'debug_guide') not found, referenced from 'data/workflows/instruction-tuning-rlhf-lite-dpo.json'
 ⚠️ Broken reference: ID 'unstable-dpo-loss' (type 'debug_guide') not found, referenced from 'data/workflows/instruction-tuning-rlhf-lite-dpo.json'
-⚠️ Broken reference: ID 'checkpoint-corruption' (type 'debug_guide') not found, referenced from 'data/workflows/instruction-tuning-rlhf-lite-dpo.json'
 ⚠️ Broken reference: ID 'instruction-tuning' (type 'pattern') not found, referenced from 'data/workflows/instruction-tuning-rlhf-lite-dpo.json'
 ⚠️ Broken reference: ID 'direct-preference-optimization' (type 'pattern') not found, referenced from 'data/workflows/instruction-tuning-rlhf-lite-dpo.json'
 ⚠️ Broken reference: ID 'preference-learning' (type 'pattern') not found, referenced from 'data/workflows/instruction-tuning-rlhf-lite-dpo.json'
@@ -399,7 +407,6 @@
 ⚠️ Broken reference: ID 'preference-dataset-errors' (type 'debug_guide') not found, referenced from 'data/workflows/instruction-tuning-rlhf-lite-dpo.json'
 ⚠️ Broken reference: ID 'policy-reference-divergence' (type 'debug_guide') not found, referenced from 'data/workflows/instruction-tuning-rlhf-lite-dpo.json'
 ⚠️ Broken reference: ID 'unstable-dpo-loss' (type 'debug_guide') not found, referenced from 'data/workflows/instruction-tuning-rlhf-lite-dpo.json'
-⚠️ Broken reference: ID 'checkpoint-corruption' (type 'debug_guide') not found, referenced from 'data/workflows/instruction-tuning-rlhf-lite-dpo.json'
 ⚠️ Broken reference: ID 'vllm' (type 'package') not found, referenced from 'data/workflows/llm-application-serving.json'
 ⚠️ Broken reference: ID 'transformers' (type 'package') not found, referenced from 'data/workflows/llm-application-serving.json'
 ⚠️ Broken reference: ID 'fastapi' (type 'package') not found, referenced from 'data/workflows/llm-application-serving.json'
@@ -408,7 +415,6 @@
 ⚠️ Broken reference: ID 'api-gateway' (type 'pattern') not found, referenced from 'data/workflows/llm-application-serving.json'
 ⚠️ Broken reference: ID 'request-routing' (type 'pattern') not found, referenced from 'data/workflows/llm-application-serving.json'
 ⚠️ Broken reference: ID 'cache-aside' (type 'pattern') not found, referenced from 'data/workflows/llm-application-serving.json'
-⚠️ Broken reference: ID 'tokenizer-mismatch' (type 'debug_guide') not found, referenced from 'data/workflows/llm-application-serving.json'
 ⚠️ Broken reference: ID 'latency-debugging' (type 'debug_guide') not found, referenced from 'data/workflows/llm-application-serving.json'
 ⚠️ Broken reference: ID 'api-gateway' (type 'pattern') not found, referenced from 'data/workflows/llm-application-serving.json'
 ⚠️ Broken reference: ID 'request-routing' (type 'pattern') not found, referenced from 'data/workflows/llm-application-serving.json'
@@ -428,7 +434,6 @@
 ⚠️ Broken reference: ID 'docker' (type 'package') not found, referenced from 'data/workflows/model-deployment-batch-real-time.json'
 ⚠️ Broken reference: ID 'kubernetes' (type 'package') not found, referenced from 'data/workflows/model-deployment-batch-real-time.json'
 ⚠️ Broken reference: ID 'model-serving' (type 'pattern') not found, referenced from 'data/workflows/model-deployment-batch-real-time.json'
-⚠️ Broken reference: ID 'batch-inference' (type 'pattern') not found, referenced from 'data/workflows/model-deployment-batch-real-time.json'
 ⚠️ Broken reference: ID 'online-inference' (type 'pattern') not found, referenced from 'data/workflows/model-deployment-batch-real-time.json'
 ⚠️ Broken reference: ID 'deployment-automation' (type 'pattern') not found, referenced from 'data/workflows/model-deployment-batch-real-time.json'
 ⚠️ Broken reference: ID 'artifact-incompatibility' (type 'debug_guide') not found, referenced from 'data/workflows/model-deployment-batch-real-time.json'
@@ -436,7 +441,6 @@
 ⚠️ Broken reference: ID 'deployment-rollback' (type 'debug_guide') not found, referenced from 'data/workflows/model-deployment-batch-real-time.json'
 ⚠️ Broken reference: ID 'preprocessing-mismatch' (type 'debug_guide') not found, referenced from 'data/workflows/model-deployment-batch-real-time.json'
 ⚠️ Broken reference: ID 'model-serving' (type 'pattern') not found, referenced from 'data/workflows/model-deployment-batch-real-time.json'
-⚠️ Broken reference: ID 'batch-inference' (type 'pattern') not found, referenced from 'data/workflows/model-deployment-batch-real-time.json'
 ⚠️ Broken reference: ID 'online-inference' (type 'pattern') not found, referenced from 'data/workflows/model-deployment-batch-real-time.json'
 ⚠️ Broken reference: ID 'deployment-automation' (type 'pattern') not found, referenced from 'data/workflows/model-deployment-batch-real-time.json'
 ⚠️ Broken reference: ID 'xgboost' (type 'model') not found, referenced from 'data/workflows/model-deployment-batch-real-time.json'
@@ -897,8 +901,36 @@
 📊 Checking for double-escaped newlines (literal \n) in content fields...
 
 📊 Validation Summary
-   Files checked: 92
+   Files checked: 104
    Errors:        1
-   Warnings:      883
+   Warnings:      879
 
 ❌ Content validation failed with 1 error(s).
+
+      "any"
+    ],
+    "path": [
+      "overview",
+      "typical_stage"
+    ],
+    "message": "Invalid option: expected one of \"development\"|\"testing\"|\"production\"|\"any\""
+  }
+]
+
+
+    at getDebugGuide (lib\data.ts:437:27)
+    at <anonymous> (lib\data.ts:444:42)
+    at Array.map (<anonymous>:1:18)
+    at getAllDebugGuides (lib\data.ts:444:32)
+    at DebugGuidesPage (app\debug-guides\page.tsx:5:40)
+
+## Code Frame
+  435 |   }
+  436 |   const raw = readJSON<unknown>(filePath);
+> 437 |   return DebugGuideSchema.parse(raw);
+      |                           ^
+  438 | });
+  439 |
+  440 | /**
+
+Next.js version: 16.2.9 (Turbopack)

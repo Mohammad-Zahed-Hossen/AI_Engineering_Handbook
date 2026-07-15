@@ -14,18 +14,20 @@ export default function DecisionChecklist({
 }: DecisionChecklistProps) {
   return (
     <div className={cn(
-      "rounded-lg border border-border bg-card p-4",
+      "rounded-lg border-2 border-blue-500/30 bg-blue-500/10 overflow-hidden",
       className
     )}>
-      <div className="flex items-center gap-2 mb-3">
-        <ClipboardList className="w-4 h-4 text-blue-500" />
-        <h3 className="text-xs font-semibold text-foreground">Decision Checklist</h3>
+      <div className="px-4 py-2.5 border-b border-blue-500/30 bg-blue-500/20">
+        <div className="flex items-center gap-2">
+          <ClipboardList className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+          <h3 className="text-xs font-semibold text-foreground">Decision Checklist</h3>
+        </div>
       </div>
-      <ul className="space-y-2">
+      <ul className="p-4 space-y-2">
         {questions.map((question, idx) => (
           <li key={idx} className="flex items-start gap-2">
-            <span className="text-blue-500 mt-0.5">☑</span>
-            <span className="text-xs text-muted-foreground">{question}</span>
+            <span className="text-blue-500 mt-0.5 font-bold">☑</span>
+            <span className="text-xs text-foreground">{question}</span>
           </li>
         ))}
       </ul>

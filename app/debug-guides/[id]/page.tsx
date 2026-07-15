@@ -9,6 +9,7 @@ import DebugChecklist from '@/components/shared/DebugChecklist';
 import DiagnosticCommandList from '@/components/shared/DiagnosticCommandList';
 import DebugDecisionTree from '@/components/shared/DebugDecisionTree';
 import VerificationChecklist from '@/components/shared/VerificationChecklist';
+import QuickIdentificationChecklist from '@/components/shared/QuickIdentificationChecklist';
 import ExpandableText from '@/components/shared/ExpandableText';
 import { Prose } from '@/components/shared/Prose';
 import { AlertTriangle, CheckCircle2, Activity, Shield, Search, Terminal, TestTube, XCircle, ArrowUpCircle } from 'lucide-react';
@@ -63,6 +64,12 @@ export default async function DebugGuidePage({ params }: PageProps) {
     ...debugGuide.related_registry.map(id => ({ id, type: 'registry' as const, relationship_type: 'related_registry' })),
   ];
 
+  // Sort root causes by probability (high -> medium -> low)
+  const sortedRootCauses = [...debugGuide.root_causes].sort((a, b) => {
+    const order: Record<string, number> = { high: 0, medium: 1, low: 2 };
+    return (order[a.probability || 'medium'] || 1) - (order[b.probability || 'medium'] || 1);
+  });
+
   return (
     <ContentPageLayout breadcrumbs={breadcrumbs} toc={toc}>
       <ReadingSessionTracker href={`/debug-guides/${debugGuide.id}`} name={debugGuide.title} type="debug_guide" category={debugGuide.category} />
@@ -102,21 +109,7 @@ export default async function DebugGuidePage({ params }: PageProps) {
             <Search className="w-5 h-5 text-blue-500" />
             Quick Identification
           </h2>
-          <div className="space-y-2">
-            {debugGuide.quick_identification.map((item, idx) => (
-              <div key={idx} className="flex items-start gap-2">
-                <span className="shrink-0 w-4 h-4 flex items-center justify-center rounded border border-emerald-500/20 bg-emerald-500/5 text-emerald-600 text-[10px] font-bold mt-0.5">
-                  ✓
-                </span>
-                <div className="flex-1">
-                  <span className="text-sm text-foreground">{item.check}</span>
-                  {item.description && (
-                    <span className="block text-xs text-muted-foreground mt-0.5">{item.description}</span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          <QuickIdentificationChecklist items={debugGuide.quick_identification} guideId={debugGuide.id} />
           <p className="text-xs text-muted-foreground italic">If you see these signs, continue to diagnosis.</p>
         </section>
       )}
@@ -166,7 +159,7 @@ export default async function DebugGuidePage({ params }: PageProps) {
           Root Causes
         </h2>
         <div className="space-y-3">
-          {debugGuide.root_causes.map((cause, idx) => (
+          {sortedRootCauses.map((cause, idx) => (
             <div key={idx} className="rounded-lg border border-border bg-card p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">

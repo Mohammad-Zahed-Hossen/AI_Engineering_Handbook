@@ -39,14 +39,15 @@ export default async function PrinciplePage({ params }: PageProps) {
   ];
 
   // Build TOC - only include sections that have data
+  // Reordered: Mental Model moved before Engineering Consequences for better learning flow
   const toc = [
     { id: 'statement', label: 'Statement' },
     { id: 'intuition', label: 'Intuition' },
+    ...(principle.mental_model ? [{ id: 'mental-model', label: 'Mental Model' }] : []),
     ...(principle.mathematical_formulation ? [{ id: 'mathematical-formulation', label: 'Mathematical Formulation' }] : []),
     ...(principle.engineering_consequences && principle.engineering_consequences.length > 0 ? [{ id: 'engineering-consequences', label: 'Engineering Consequences' }] : []),
     ...(principle.common_violations && principle.common_violations.length > 0 ? [{ id: 'common-violations', label: 'Common Violations' }] : []),
     ...(principle.appears_in && principle.appears_in.length > 0 ? [{ id: 'appears-in', label: 'Appears In' }] : []),
-    ...(principle.mental_model ? [{ id: 'mental-model', label: 'Mental Model' }] : []),
     ...(principle.tradeoffs ? [{ id: 'tradeoffs', label: 'Tradeoffs' }] : []),
     ...(principle.decision_checklist && principle.decision_checklist.length > 0 ? [{ id: 'decision-checklist', label: 'Decision Checklist' }] : []),
     ...(principle.misconceptions && principle.misconceptions.length > 0 ? [{ id: 'misconceptions', label: 'Misconceptions' }] : []),
@@ -81,7 +82,7 @@ export default async function PrinciplePage({ params }: PageProps) {
         />
       </div>
 
-      {/* Statement */}
+      {/* Fundamentals Block */}
       <section id="statement" className="space-y-3 scroll-mt-24">
         <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
           <BookOpen className="w-5 h-5 text-blue-500" />
@@ -92,7 +93,6 @@ export default async function PrinciplePage({ params }: PageProps) {
         </ExpandableText>
       </section>
 
-      {/* Intuition */}
       <section id="intuition" className="space-y-3 scroll-mt-24">
         <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
           <Brain className="w-5 h-5 text-purple-500" />
@@ -103,7 +103,16 @@ export default async function PrinciplePage({ params }: PageProps) {
         </ExpandableText>
       </section>
 
-      {/* Mathematical Formulation */}
+      {principle.mental_model && (
+        <section id="mental-model" className="space-y-3 scroll-mt-24">
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <Lightbulb className="w-5 h-5 text-purple-500" />
+            Mental Model
+          </h2>
+          <MentalModelDisplay content={principle.mental_model} />
+        </section>
+      )}
+
       {principle.mathematical_formulation && (
         <section id="mathematical-formulation" className="space-y-3 scroll-mt-24">
           <h2 className="text-lg font-semibold text-foreground">Mathematical Formulation</h2>
@@ -113,9 +122,9 @@ export default async function PrinciplePage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Engineering Consequences */}
+      {/* Engineering Block */}
       {principle.engineering_consequences && principle.engineering_consequences.length > 0 && (
-        <section id="engineering-consequences" className="space-y-3 scroll-mt-24">
+        <section id="engineering-consequences" className="space-y-3 scroll-mt-24 pt-2 border-t border-border/50">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-emerald-500" />
             Engineering Consequences
@@ -132,7 +141,6 @@ export default async function PrinciplePage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Common Violations */}
       {principle.common_violations && principle.common_violations.length > 0 && (
         <section id="common-violations" className="space-y-3 scroll-mt-24">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
@@ -152,7 +160,6 @@ export default async function PrinciplePage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Appears In */}
       {principle.appears_in && principle.appears_in.length > 0 && (
         <section id="appears-in" className="space-y-3 scroll-mt-24">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
@@ -171,18 +178,6 @@ export default async function PrinciplePage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Mental Model */}
-      {principle.mental_model && (
-        <section id="mental-model" className="space-y-3 scroll-mt-24">
-          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <Lightbulb className="w-5 h-5 text-purple-500" />
-            Mental Model
-          </h2>
-          <MentalModelDisplay content={principle.mental_model} />
-        </section>
-      )}
-
-      {/* Tradeoffs */}
       {principle.tradeoffs && (
         <section id="tradeoffs" className="space-y-3 scroll-mt-24">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
@@ -196,9 +191,9 @@ export default async function PrinciplePage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Decision Checklist */}
+      {/* Application Block */}
       {principle.decision_checklist && principle.decision_checklist.length > 0 && (
-        <section id="decision-checklist" className="space-y-3 scroll-mt-24">
+        <section id="decision-checklist" className="space-y-3 scroll-mt-24 pt-2 border-t border-border/50">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
             <ClipboardList className="w-5 h-5 text-blue-500" />
             Decision Checklist
@@ -207,7 +202,6 @@ export default async function PrinciplePage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Misconceptions */}
       {principle.misconceptions && principle.misconceptions.length > 0 && (
         <section id="misconceptions" className="space-y-3 scroll-mt-24">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
@@ -226,22 +220,21 @@ export default async function PrinciplePage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Engineering Heuristic */}
       {principle.engineering_heuristic && (
         <section id="engineering-heuristic" className="space-y-3 scroll-mt-24">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
             <Lightbulb className="w-5 h-5 text-amber-500" />
             Engineering Heuristic
           </h2>
-          <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
-            <p className="text-sm text-muted-foreground italic">"{principle.engineering_heuristic}"</p>
+          <div className="rounded-lg border-2 border-amber-500/30 bg-amber-500/10 p-4">
+            <p className="text-sm text-foreground font-medium">&ldquo;{principle.engineering_heuristic}&rdquo;</p>
           </div>
         </section>
       )}
 
-      {/* Historical Origin */}
+      {/* Reference Block */}
       {principle.historical_origin && (
-        <section id="historical-origin" className="space-y-3 scroll-mt-24">
+        <section id="historical-origin" className="space-y-3 scroll-mt-24 pt-2 border-t border-border/50">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
             <History className="w-5 h-5 text-muted-foreground" />
             Historical Origin
@@ -252,7 +245,6 @@ export default async function PrinciplePage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Implications (Legacy) */}
       {principle.implications && principle.implications.length > 0 && (
         <section id="implications" className="space-y-3 scroll-mt-24">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
@@ -269,7 +261,6 @@ export default async function PrinciplePage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Limitations */}
       {principle.limitations && principle.limitations.length > 0 && (
         <section id="limitations" className="space-y-3 scroll-mt-24">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
@@ -286,7 +277,6 @@ export default async function PrinciplePage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Related Concepts */}
       {principle.related_concepts && principle.related_concepts.length > 0 && (
         <section id="related-concepts" className="space-y-3 scroll-mt-24">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">

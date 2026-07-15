@@ -1,0 +1,243 @@
+{
+  "id": "bayesian-inference",
+  "title": "Bayesian Inference",
+  "slug": "bayesian-inference",
+  "description": "Bayesian Inference is the principle of carrying uncertainty through the model rather than collapsing it into a single best parameter value.",
+  "name": "Bayesian Inference",
+  "category": "learning_theory",
+  "statement": "Represent unknowns as distributions, update beliefs with data, and use the posterior—not just a point estimate—to drive prediction, calibration, and decision-making.",
+  "intuition": "A point estimate says “this is the answer,” while Bayesian inference says “this is the current belief state, and it should change when new evidence arrives.” The engineering value is that the posterior makes uncertainty an explicit artifact that can be inspected, composed, and passed downstream instead of being lost at the model boundary. That matters whenever the cost of wrong confidence is high or when the input regime is too sparse, noisy, or shifted for a single parameter vector to be a trustworthy summary.",
+  "implications": [],
+  "engineering_consequences": [
+    {
+      "title": "Uncertainty propagation",
+      "explanation": "Posteriors allow predictive uncertainty to be carried into ranking, thresholding, and decision logic instead of freezing the model into a single deterministic output."
+    },
+    {
+      "title": "Calibration discipline",
+      "explanation": "Bayesian updating provides a structured way to distinguish confidence from evidence, which is essential for systems that need reliable probabilities rather than only accurate labels."
+    },
+    {
+      "title": "OOD sensitivity",
+      "explanation": "When the posterior is informative, uncertainty can increase under unfamiliar inputs, improving detection of regimes where the model has weak support."
+    },
+    {
+      "title": "Data efficiency",
+      "explanation": "Informative priors help stabilize inference in low-data or high-noise regimes, reducing the brittleness of purely point-estimate training."
+    },
+    {
+      "title": "Model comparison",
+      "explanation": "Posterior-aware workflows support principled comparison through marginal likelihood, predictive checks, and posterior predictive performance rather than relying on a single fit score."
+    }
+  ],
+  "common_violations": [
+    {
+      "violation": "A posterior is approximated or ignored, and the system exposes only point predictions.",
+      "symptoms": "Confidence scores stay high on ambiguous or unfamiliar inputs, and downstream services over-trust model outputs.",
+      "why_it_happens": "The pipeline is optimized for throughput or simplicity, so uncertainty is dropped at the interface boundary."
+    },
+    {
+      "violation": "Bayesian language is used, but the posterior is replaced by a heuristic uncertainty proxy.",
+      "symptoms": "“Uncertainty” looks plausible in demos but fails under stress tests, small sample settings, or distribution shift.",
+      "why_it_happens": "The team substitutes a convenience approximation for posterior inference without checking what uncertainty the approximation actually captures."
+    },
+    {
+      "violation": "Priors are chosen casually or not at all in low-data regimes.",
+      "symptoms": "Estimates are unstable across retrains, and small data changes produce large swings in predictions.",
+      "why_it_happens": "The prior is treated as optional decoration instead of part of the inference model."
+    },
+    {
+      "violation": "Posterior summaries are interpreted as if they were frequentist confidence intervals.",
+      "symptoms": "Decision thresholds are misread, and reported intervals are used as if they had the wrong coverage semantics.",
+      "why_it_happens": "The semantics of credible intervals and posterior probabilities are not kept distinct from point-estimation reporting."
+    }
+  ],
+  "appears_in": [
+    {
+      "domain": "Probabilistic modeling",
+      "examples": [
+        "Bayesian neural networks",
+        "probabilistic regression",
+        "latent-variable models where inference over parameters is part of the task"
+      ]
+    },
+    {
+      "domain": "Risk-sensitive decision systems",
+      "examples": [
+        "medical triage",
+        "autonomous systems",
+        "financial forecasting where calibrated uncertainty directly affects downstream actions"
+      ]
+    },
+    {
+      "domain": "Small-data or sparse-data learning",
+      "examples": [
+        "scientific modeling",
+        "remote sensing",
+        "industrial diagnostics where informative priors materially improve robustness"
+      ]
+    },
+    {
+      "domain": "Model monitoring and validation",
+      "examples": [
+        "uncertainty calibration checks",
+        "posterior predictive checks",
+        "Bayesian model comparison workflows"
+      ]
+    }
+  ],
+  "mental_model": "```mermaid\nflowchart LR\n  D[Data] --> U[Update rule]\n  P[Prior belief] --> U\n  U --> R[Posterior distribution]\n  R --> Y[Predictive distribution]\n  R --> C[Credible intervals]\n  R --> Q[Downstream decisions]\n  Q --> F[Feedback from new data]\n```",
+  "decision_checklist": [
+    "Do I need calibrated uncertainty rather than only point accuracy?",
+    "Is the data regime sparse, noisy, or shifted enough that a point estimate is not sufficient?",
+    "Do I have a meaningful prior or structural assumption to encode?",
+    "Will downstream consumers benefit from posterior predictive distributions instead of deterministic outputs?",
+    "Am I preserving uncertainty through the full pipeline rather than collapsing it at one interface?",
+    "Is the chosen approximation faithful to the posterior quantity I actually need?"
+  ],
+  "misconceptions": [
+    {
+      "myth": "Bayesian inference is only for academic models or small datasets.",
+      "reality": "It is most valuable whenever uncertainty must be explicit and decision consequences are asymmetric."
+    },
+    {
+      "myth": "A good point estimate makes posterior inference unnecessary.",
+      "reality": "Point estimates erase parameter uncertainty, which can be the dominant error source in low-data or shifted regimes."
+    },
+    {
+      "myth": "Any approximate Bayesian method gives reliable uncertainty.",
+      "reality": "Approximation quality varies, and some methods preserve predictive fit while distorting posterior uncertainty."
+    },
+    {
+      "myth": "Credible intervals and confidence intervals are interchangeable.",
+      "reality": "They have different meanings and should not be reported or consumed as if they were the same."
+    }
+  ],
+  "engineering_heuristic": "If the output will drive a decision, preserve the uncertainty that the decision depends on.",
+  "historical_origin": "The concept is well established in classical statistics through Bayes, Laplace, Jeffreys, and later modern computational statistics, then adapted into machine learning through probabilistic modeling, Bayesian decision theory, and approximate inference methods such as MCMC and variational inference.",
+  "tradeoffs": {
+    "benefits": [
+      "Explicit uncertainty quantification.",
+      "More robust behavior under limited data.",
+      "Principled incorporation of prior knowledge.",
+      "Better decision-making when uncertainty matters."
+    ],
+    "costs": [
+      "Higher computational and implementation complexity.",
+      "Approximate inference can be difficult to validate.",
+      "Posterior quality is sensitive to modeling and approximation choices.",
+      "Calibration and interpretability can degrade if the approximation is poor."
+    ]
+  },
+  "limitations": [
+    "It can be computationally expensive at modern model scales.",
+    "Approximate inference may distort uncertainty if not validated against the quantity of interest.",
+    "It is less useful when the decision problem does not depend on uncertainty.",
+    "It can be counterproductive when the prior overwhelms weak but real evidence in a badly specified model."
+  ],
+  "related_concepts": [
+    "Maximum likelihood estimation",
+    "Posterior distribution",
+    "Prior distribution",
+    "Credible interval",
+    "Bayesian neural network",
+    "MCMC",
+    "Variational inference",
+    "Bayesian updating",
+    "Marginal likelihood",
+    "Predictive distribution"
+  ],
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "sources": [
+    "https://muse.jhu.edu/article/877894",
+    "https://www.degruyterbrill.com/document/doi/10.1515/snde-2022-0055/html",
+    "https://ieeexplore.ieee.org/document/8695637/"
+  ],
+  "tags": [
+    "learning-theory",
+    "probabilistic-modeling",
+    "uncertainty-quantification",
+    "bayesian-methods",
+    "posterior-inference"
+  ],
+  "aliases": [
+    "bayesian-learning",
+    "posterior-estimation",
+    "bayesian-updating",
+    "credible-intervals",
+    "prior-posterior"
+  ],
+  "keywords": [
+    "bayesian",
+    "inference",
+    "posterior",
+    "prior",
+    "likelihood",
+    "uncertainty",
+    "epistemic",
+    "aleatoric",
+    "mcmc",
+    "variational-inference",
+    "bayesian-neural-network",
+    "conjugate-prior",
+    "marginal-likelihood"
+  ],
+  "search_tokens": [
+    "bayesian inference",
+    "posterior distribution",
+    "prior distribution",
+    "likelihood function",
+    "bayesian neural network",
+    "mcmc",
+    "variational inference",
+    "uncertainty quantification",
+    "epistemic uncertainty",
+    "credible interval",
+    "bayesian updating",
+    "conjugate prior"
+  ],
+  "domain": "learning_theory",
+  "difficulty": "advanced",
+  "engineering_area": "probabilistic_modeling",
+  "estimated_reading_time": 20,
+  "prerequisites": [],
+  "recommended_next": [
+    "maximum-likelihood-estimation",
+    "regularization",
+    "variational-inference",
+    "ensemble-methods"
+  ],
+  "last_verified": "2026-07-15",
+  "review_frequency": "annually",
+  "verified_against": "1.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "referenced_by_patterns": [
+    "training-loop",
+    "gradient-accumulation",
+    "kv-cache",
+    "mixed-precision",
+    "checkpointing",
+    "early-stopping",
+    "gradient-checkpointing",
+    "flash-attention",
+    "prompt-caching",
+    "streaming-inference",
+    "batch-inference"
+  ],
+  "referenced_by_models": [
+    "llama",
+    "mistral",
+    "bert"
+  ],
+  "referenced_by_workflows": [
+    "build-rag-system",
+    "fine-tune-an-llm-with-lora-qlora"
+  ]
+}
