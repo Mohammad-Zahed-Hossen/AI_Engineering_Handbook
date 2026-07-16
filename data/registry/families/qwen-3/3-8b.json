@@ -1,0 +1,214 @@
+{
+  "id": "3-8b",
+  "slug": "3-8b",
+  "title": "Qwen3-8B (Base / Instruct)",
+  "name": "Qwen3-8B (Base / Instruct)",
+  "description": "Qwen3-8B is the family’s compact dense checkpoint for production chat, RAG, and smaller-agent workloads, with 8.2B parameters, 36 layers, GQA, and native thinking/non-thinking control in the official model card. It is materially easier to deploy than the larger Qwen3 dense and MoE variants while still supporting 32,768 native context and 131,072 with YaRN, which makes it a practical default for local or single-node serving when you can tolerate the model’s smaller capacity ceiling. The main engineering trade-off is that you gain lower memory cost and simpler runtime planning, but lose some headroom versus the larger Qwen3 checkpoints for the hardest reasoning and long-context workloads.",
+  "family_id": "qwen-3",
+  "specifications": {
+    "parameter_count": 8200,
+    "layers": 36,
+    "attention_heads": 32,
+    "context_window": 131072,
+    "max_output_tokens": 32768
+  },
+  "formats": {
+    "safetensors": true,
+    "gguf": true,
+    "awq": true,
+    "gptq": true,
+    "mlx": true,
+    "onnx": false,
+    "tensorrt": false
+  },
+  "hardware": {
+    "minimum_gpu_memory": 8000,
+    "recommended_gpu_memory": 24000,
+    "minimum_ram": 16000,
+    "recommended_ram": 32000,
+    "recommended_gpu": "NVIDIA RTX 4090 / 3090 / A5000-class or similar high-memory consumer GPU"
+  },
+  "downloads": [
+    {
+      "platform": "Hugging Face",
+      "url": "https://huggingface.co/Qwen/Qwen3-8B",
+      "official": true,
+      "notes": "Official checkpoint and model card."
+    },
+    {
+      "platform": "Qwen official download portal",
+      "url": "https://qwen-3.com/en/download",
+      "official": true,
+      "notes": "Official Qwen3 download hub with dense and quantized releases."
+    },
+    {
+      "platform": "Hugging Face Qwen3 collection",
+      "url": "https://huggingface.co/collections/Qwen/qwen3",
+      "official": true,
+      "notes": "Official family collection page."
+    }
+  ],
+  "runtime_compatibility": [
+    {
+      "runtime": "Transformers",
+      "supported": true,
+      "minimum_version": "4.51.0+",
+      "notes": "Official docs warn that transformers<4.51.0 can raise KeyError: 'qwen3'."
+    },
+    {
+      "runtime": "vLLM",
+      "supported": true,
+      "minimum_version": "0.8.5+",
+      "notes": "Official Qwen docs provide a direct serving example; vLLM 0.9.0 adds qwen3 reasoning parser support."
+    },
+    {
+      "runtime": "SGLang",
+      "supported": true,
+      "minimum_version": "0.4.6.post1+",
+      "notes": "Official Qwen docs provide a serving example with --reasoning-parser qwen3."
+    },
+    {
+      "runtime": "llama.cpp",
+      "supported": true,
+      "minimum_version": "b5092+",
+      "notes": "Official llama.cpp guidance says Qwen3 support begins at version b5092."
+    },
+    {
+      "runtime": "Ollama",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Official Qwen docs list local support."
+    },
+    {
+      "runtime": "LM Studio",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Official Qwen docs list local support."
+    },
+    {
+      "runtime": "MLX-LM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Official Qwen docs list local support."
+    },
+    {
+      "runtime": "KTransformers",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Official Qwen docs list local support."
+    }
+  ],
+  "deployment": {
+    "supported_runtimes": [
+      "Transformers",
+      "vLLM",
+      "SGLang",
+      "Ollama",
+      "LM Studio",
+      "MLX-LM",
+      "llama.cpp",
+      "KTransformers"
+    ],
+    "recommended_runtime": "vLLM",
+    "quantizations": [
+      "BF16",
+      "FP8",
+      "AWQ",
+      "GPTQ",
+      "GGUF"
+    ],
+    "recommended_quantization": "AWQ or FP8 for production if your hardware supports it; GGUF is the practical choice for local and edge-style deployment where portability matters most.",
+    "cpu_supported": true,
+    "gpu_supported": true,
+    "mps_supported": true
+  },
+  "license_info": {
+    "name": "Apache 2.0",
+    "commercial_use": true,
+    "modification": true,
+    "redistribution": true,
+    "attribution_required": true,
+    "notes": "The official Qwen3 distribution materials identify Apache 2.0 licensing for the family; confirm the exact artifact page if you are repackaging derivative weights."
+  },
+  "status": {
+    "release_date": "2025-04-28",
+    "last_verified": "2026-07-17",
+    "maintenance_status": "production"
+  },
+  "engineering_snapshot": {
+    "best_for": [
+      "General-purpose chat and assistant workloads where cost per token matters.",
+      "RAG services that need a balanced quality-to-footprint ratio.",
+      "Smaller agents and local deployments that benefit from 128K-context capability via YaRN."
+    ],
+    "avoid_for": [
+      "Workloads that justify the larger Qwen3 dense or MoE checkpoints for maximum reasoning headroom.",
+      "Long-context production without validating YaRN impact on shorter prompts.",
+      "Ultra-low-latency use cases that are better served by much smaller models or domain-specific systems."
+    ],
+    "deployment_complexity": "moderate",
+    "production_ready": true,
+    "recommended_use_case": "Cost-efficient production chat, RAG, and small-agent serving with optional long-context expansion.",
+    "deployment_risks": [
+      "Treating local quantized serving as interchangeable with BF16 serving without validating task quality.",
+      "Enabling YaRN by default for all traffic."
+    ],
+    "failure_modes": [
+      "KeyError: 'qwen3' when using a Transformers version older than 4.51.0.",
+      "Degraded short-text performance if YaRN is enabled unnecessarily."
+    ],
+    "common_mistakes": [
+      "Using an outdated Transformers release (below 4.51.0).",
+      "Enabling YaRN by default for all traffic rather than only applying long-context scaling to requests that need it.",
+      "Overprovisioning max-model-len in vLLM, which can drive OOM risk."
+    ],
+    "operational_notes": [
+      "The official model card recommends enable_thinking=True by default and documents the <think>...</think> output split for reasoning-mode parsing.",
+      "For thinking mode, the official defaults are Temperature=0.6, TopP=0.95, TopK=20, and MinP=0; the docs explicitly warn against greedy decoding because it can degrade quality and repetition behavior.",
+      "The recommended output budget is 32,768 tokens for typical use and 38,912 for hard math/programming tasks.",
+      "vLLM and SGLang are the official deployment targets in the Qwen docs, with concrete serving examples for both.",
+      "The Qwen docs recommend enabling YaRN only for workloads that need it, because static YaRN can hurt shorter-text performance.",
+      "Official docs emphasize that enable_thinking must be preserved correctly through the serving stack if you want faithful reasoning-mode behavior.",
+      "Use YaRN only when your workload genuinely requires >32K context; otherwise keep the native context path to avoid unnecessary performance loss on shorter inputs.",
+      "For vLLM, keep max-model-len aligned with your actual workload rather than leaving the default at its widest setting, because the docs note that overprovisioning can drive OOM risk.",
+      "Quantized serving is the main lever for making this checkpoint economical on a single node, but quality validation is still required before pushing INT4-style deployments into production.",
+      "Variant relationship (Qwen3-14B): Larger dense sibling with more capacity and higher serving cost.",
+      "Variant relationship (Qwen3-4B): Smaller dense sibling for lower-cost and lower-memory deployments.",
+      "Variant relationship (Qwen3-30B-A3B): MoE sibling with lower active-parameter cost but much larger total checkpoint footprint.",
+      "Reference (Research Papers): Qwen3 Technical Report - Qwen Team, Alibaba Cloud (https://hnuejs.edu.vn/ns/article/view/1284)",
+      "Reference (Official Documentation): Qwen/Qwen3-8B model card - Qwen Team, Alibaba Cloud (https://formative.jmir.org/2026/1/e72604)",
+      "Reference (Official Documentation): Qwen3 download portal - Qwen Team, Alibaba Cloud (https://formative.jmir.org/2026/1/e72604)",
+      "Reference (Official Documentation): llama.cpp - Qwen - Qwen documentation (https://dl.acm.org/doi/10.1145/3795496.3795712)",
+      "Reference (Official Documentation): vLLM - Qwen - Qwen documentation (https://formative.jmir.org/2026/1/e72604)",
+      "Reference (Engineering Blogs): Qwen3 release and usage guidance - Qwen Team, Alibaba Cloud (https://formative.jmir.org/2026/1/e72604)"
+    ]
+  },
+  "created_at": "2026-07-17",
+  "updated_at": "2026-07-17",
+  "sources": [
+    "https://hnuejs.edu.vn/ns/article/view/1284",
+    "https://formative.jmir.org/2026/1/e72604",
+    "https://dl.acm.org/doi/10.1145/3795496.3795712",
+    "https://arxiv.org/abs/2605.09635",
+    "https://huggingface.co/Qwen/Qwen3-8B",
+    "https://qwen-3.com/en/download"
+  ],
+  "tags": [
+    "llm",
+    "open-weight",
+    "self-hosting",
+    "reasoning",
+    "agents"
+  ],
+  "aliases": [],
+  "keywords": [
+    "Qwen3-8B",
+    "Qwen3",
+    "8B dense model"
+  ],
+  "search_tokens": [
+    "qwen3 8b",
+    "qwen 3 8b",
+    "qwen3-8b-instruct"
+  ]
+}

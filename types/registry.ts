@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import {
-  MissingModelRefSchema,
-  IdentitySchema,
+  ModalitySchema,
   CapabilitiesSchema,
   DeploymentSchema,
   HardwareSchema,
@@ -23,10 +22,22 @@ import {
   TimelineEntrySchema,
   RegistryFamilySchema,
   RegistryVariantSchema,
+  PerformanceDimensionSchema,
+  DeploymentProfileSchema,
+  RuntimeMatrixEntrySchema,
+  EngineeringDecisionSchema,
+  RelatedResourceSchema,
 } from '@/lib/schemas/registry';
+import {
+  LifecycleStateSchema,
+  StabilityLevelSchema,
+  ConfidenceLevelSchema,
+  EngineeringMaturitySchema,
+  CanonicalStatusSchema,
+} from '@/lib/schemas/base';
 
-export type MissingModelRef = z.infer<typeof MissingModelRefSchema>;
-export type Identity = z.infer<typeof IdentitySchema>;
+export type Modality = z.infer<typeof ModalitySchema>;
+
 export type Capabilities = z.infer<typeof CapabilitiesSchema>;
 export type Deployment = z.infer<typeof DeploymentSchema>;
 export type Hardware = z.infer<typeof HardwareSchema>;
@@ -48,3 +59,17 @@ export type RelatedModel = z.infer<typeof RelatedModelSchema>;
 export type TimelineEntry = z.infer<typeof TimelineEntrySchema>;
 export type RegistryFamily = z.infer<typeof RegistryFamilySchema>;
 export type RegistryVariant = z.infer<typeof RegistryVariantSchema>;
+
+// New types for Engineering Decision Cards
+export type PerformanceDimension = z.infer<typeof PerformanceDimensionSchema>;
+export type DeploymentProfile = z.infer<typeof DeploymentProfileSchema>;
+export type RuntimeMatrixEntry = z.infer<typeof RuntimeMatrixEntrySchema>;
+export type EngineeringDecision = z.infer<typeof EngineeringDecisionSchema>;
+export type RelatedResource = z.infer<typeof RelatedResourceSchema>;
+
+// BaseMetaSchema types for Registry
+export type LifecycleState = z.infer<typeof LifecycleStateSchema>;
+export type StabilityLevel = z.infer<typeof StabilityLevelSchema>;
+export type ConfidenceLevel = z.infer<typeof ConfidenceLevelSchema>;
+export type EngineeringMaturity = z.infer<typeof EngineeringMaturitySchema>;
+export type CanonicalStatus = z.infer<typeof CanonicalStatusSchema>;

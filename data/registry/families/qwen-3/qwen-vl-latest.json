@@ -1,0 +1,206 @@
+{
+  "id": "qwen-vl-latest",
+  "slug": "qwen-vl-latest",
+  "title": "Qwen-VL (latest official, e.g., Qwen2-VL or Qwen-VL-Max)",
+  "name": "Qwen-VL (latest official, e.g., Qwen2-VL or Qwen-VL-Max)",
+  "description": "Qwen-VL latest is the current production multimodal choice in the Qwen family for image understanding, visual question answering, OCR, and multimodal agent workflows, with official cloud-side variants exposing up to 128K context for text+image workloads and 8K max output in the current Qwen-VL Max/Plus line. For self-hosted deployment, the relevant open-weight anchor is Qwen2-VL, which supports image and video inputs, arbitrary image resolution, and multimodal rotary position embedding, making it the practical model family for local and private multimodal serving. The engineering trade-off is that you gain strong visual reasoning and flexible multimodal input handling, but you pay meaningful token and memory overhead as image resolution and video duration increase.",
+  "family_id": "qwen-3",
+  "specifications": {
+    "context_window": 128000,
+    "max_output_tokens": 8000
+  },
+  "formats": {
+    "safetensors": true,
+    "gguf": false,
+    "awq": false,
+    "gptq": false,
+    "mlx": false,
+    "onnx": false,
+    "tensorrt": false
+  },
+  "hardware": {
+    "minimum_gpu_memory": 8000,
+    "recommended_gpu_memory": 24000,
+    "minimum_ram": 16000,
+    "recommended_ram": 32000,
+    "recommended_gpu": "NVIDIA RTX 4090 / A6000-class or similar high-memory GPU"
+  },
+  "downloads": [
+    {
+      "platform": "Qwen Cloud vision models",
+      "url": "https://docs.qwencloud.com/developer-guides/getting-started/vision-models",
+      "official": true,
+      "notes": "Official cloud catalog for current Qwen multimodal model IDs, including Qwen-VL Max/Plus and Qwen3-VL families."
+    },
+    {
+      "platform": "Hugging Face Qwen2-VL",
+      "url": "https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct",
+      "official": true,
+      "notes": "Official open-weight reference checkpoint for self-hosted multimodal serving."
+    },
+    {
+      "platform": "Qwen2-VL paper",
+      "url": "https://arxiv.org/abs/2409.12191",
+      "official": true,
+      "notes": "Official technical report for the open-weight reference family."
+    }
+  ],
+  "runtime_compatibility": [
+    {
+      "runtime": "Transformers",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "The Qwen2-VL model card states support is in latest Transformers and warns older versions may raise KeyError: 'qwen2_vl'."
+    },
+    {
+      "runtime": "vLLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "vLLM has dedicated Qwen-VL tokenizer/rendering/model support in current documentation."
+    },
+    {
+      "runtime": "SGLang",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Qwen Cloud documents Qwen3-VL families for hosted multimodal deployment; SGLang support is the official runtime path in the broader Qwen deployment ecosystem, but a minimum version was not verified for the latest Qwen-VL cloud aliases."
+    },
+    {
+      "runtime": "llama.cpp",
+      "supported": false,
+      "notes": "Not officially documented for the latest Qwen-VL cloud aliases in the reviewed sources."
+    },
+    {
+      "runtime": "Ollama",
+      "supported": false,
+      "notes": "Not officially documented for the latest Qwen-VL cloud aliases in the reviewed sources."
+    },
+    {
+      "runtime": "LM Studio",
+      "supported": false,
+      "notes": "Not officially documented for the latest Qwen-VL cloud aliases in the reviewed sources."
+    },
+    {
+      "runtime": "MLX-LM",
+      "supported": false,
+      "notes": "Not officially documented for the latest Qwen-VL cloud aliases in the reviewed sources."
+    }
+  ],
+  "deployment": {
+    "supported_runtimes": [
+      "Transformers",
+      "vLLM",
+      "SGLang"
+    ],
+    "recommended_runtime": "vLLM",
+    "quantizations": [
+      "BF16"
+    ],
+    "recommended_quantization": "Use BF16/half precision for fidelity when you can afford the footprint; use community-built quantizations only after validating OCR and visual-reasoning regression risk.",
+    "cpu_supported": true,
+    "gpu_supported": true,
+    "mps_supported": false
+  },
+  "license_info": {
+    "name": "Apache 2.0 / Custom cloud terms",
+    "commercial_use": true,
+    "modification": true,
+    "redistribution": true,
+    "attribution_required": true,
+    "notes": "The latest cloud-hosted Qwen-VL product aliases are service offerings rather than redistributable weights; the open-weight Qwen2-VL checkpoint is Apache 2.0 in the official model card."
+  },
+  "status": {
+    "release_date": "2024-10-03",
+    "last_verified": "2026-07-17",
+    "maintenance_status": "production"
+  },
+  "engineering_snapshot": {
+    "best_for": [
+      "Image understanding and OCR-heavy production workflows.",
+      "Visual question answering with multilingual documents and arbitrary image resolutions.",
+      "Multimodal agents that need image+text input and text output in one model path."
+    ],
+    "avoid_for": [
+      "Text-only workloads where a standard Qwen text model is cheaper and simpler.",
+      "Ultra-low-memory devices that cannot tolerate vision-token overhead.",
+      "Deployments that require a fully documented open-weight GGUF/TensorRT path for the latest cloud aliases."
+    ],
+    "deployment_complexity": "high",
+    "production_ready": true,
+    "recommended_use_case": "Production multimodal serving for image analysis, OCR, and visual reasoning, with Qwen Cloud for managed service and Qwen2-VL for self-hosted open-weight deployment.",
+    "deployment_risks": [
+      "Visual-token inflation, image preprocessing, and video handling overhead.",
+      "Expecting text-model deployment habits to transfer unchanged without planning KV-cache capacity."
+    ],
+    "failure_modes": [
+      "Older Transformers versions failing with KeyError: 'qwen2_vl' if pin is outdated.",
+      "Performance/memory degradation if max_pixels or min_pixels is not standardly capped."
+    ],
+    "common_mistakes": [
+      "Overusing high-resolution images globally which balloons token and KV-cache costs.",
+      "Assuming the latest cloud alias is redistributable."
+    ],
+    "operational_notes": [
+      "Qwen2-VL supports arbitrary image resolution and recommends tuning min_pixels and max_pixels to balance speed and memory usage.",
+      "The model card recommends enabling flash_attention_2 for better acceleration and memory savings, especially for multi-image and video scenarios.",
+      "Qwen Cloud documents that image cost scales with resolution and that higher-resolution inputs consume more tokens, which directly affects latency and KV-cache pressure.",
+      "The open-weight Qwen2-VL model uses a unified image/video processing pipeline and supports local-file, URL, and base64 image ingestion in the Hugging Face reference workflow.",
+      "For hosted production, Qwen Cloud exposes dedicated multimodal model IDs such as qwen-vl-max-latest and qwen-vl-plus-latest, which is the cleanest path when you want operational simplicity over weight ownership.",
+      "The latest Qwen Cloud multimodal catalog explicitly separates image/video and audio-capable families, so choose Qwen-VL only when you need text+vision rather than omni-modal input.",
+      "Cap image resolution aggressively unless the task truly depends on fine OCR detail, because Qwen Cloud notes token cost scales with pixel area.",
+      "Use min_pixels/max_pixels controls in the open-weight stack to standardize prompt cost and keep request latency predictable.",
+      "Prefer the smallest image set and shortest video duration that satisfy the task, since Qwen2-VL’s multimodal pipeline is sensitive to visual-token volume.",
+      "The Qwen2-VL model card warns that older Transformers versions can fail with KeyError: 'qwen2_vl', so pin a modern release before deployment.",
+      "vLLM has native Qwen-VL tokenizer and renderer support in its documentation, which is the clearest self-hosting path for the open-weight variant.",
+      "The latest Qwen Cloud multimodal catalog is broader than the open-weight Qwen2-VL line, so don’t assume cloud model IDs map directly to Hugging Face checkpoints.",
+      "Variant differentiation (Identity): the closest open-weight reference model card identifies Qwen2-VL-7B-Instruct as an 8B-parameter class model.",
+      "Variant differentiation (Specifications): Qwen2-VL itself is presented as a long-context multimodal model, but the exact open-weight context limit is not stated in the reviewed snippet.",
+      "Variant differentiation (File Formats): GGUF is not officially documented for the latest official Qwen-VL variant in the reviewed sources.",
+      "Variant differentiation (Hardware Requirements): this is the most deployable Qwen3 MoE checkpoint for cost-sensitive production, and hardware planning is mostly about whether you want quantized single-GPU service or BF16 multi-GPU service.",
+      "Variant differentiation (Downloads): use the Hugging Face model card for checkpoint-specific serving notes and the Qwen download portal for canonical distribution paths and quantized artifacts.",
+      "Variant differentiation (Runtime Compatibility): the runtime story is strongest for vLLM and SGLang because the official docs expose reasoning-mode controls directly, which matters for this instruct checkpoint’s behavior contract.",
+      "Variant differentiation (Deployment): the 30B-A3B instruct checkpoint is the best fit when you need reasoning-quality MoE behavior but want a materially smaller active-parameter budget than the flagship model.",
+      "Variant differentiation (License): license terms do not materially distinguish this variant from the rest of the family; deployment economics are the differentiator.",
+      "Variant differentiation (Status): this checkpoint is released as an active production model, not a research-only artifact, and remains part of the current Qwen3 deployment stack.",
+      "Variant relationship (Qwen2-VL-7B-Instruct): Open-weight reference checkpoint for self-hosted multimodal deployment.",
+      "Variant relationship (qwen-vl-max-latest): Current hosted cloud alias for high-end image+text serving.",
+      "Variant relationship (qwen3-vl-plus): Newer cloud-side multimodal family sibling with expanded context and feature set.",
+      "Reference (Research Papers): Qwen2-VL: Enhancing Vision-Language Model's Perception of the World at Any Resolution - Qwen Team, Alibaba Cloud (https://arxiv.org/pdf/2407.10759)",
+      "Reference (Research Papers): Qwen-VL: A Versatile Vision-Language Model for Understanding, Localization, Text Reading, and Beyond - Qwen Team, Alibaba Cloud (https://arxiv.org/pdf/2308.12966)",
+      "Reference (Official Documentation): Visual understanding models | Qwen Cloud (http://arxiv.org/pdf/2409.12191)",
+      "Reference (Official Documentation): Qwen/Qwen2-VL-7B-Instruct (https://arxiv.org/pdf/2407.10759)",
+      "Reference (Official Documentation): vLLM qwen_vl documentation (https://arxiv.org/pdf/2309.16609)",
+      "Reference (Official Documentation): Qwen2-VL transformers documentation (https://arxiv.org/pdf/2502.13923)",
+      "Reference (Engineering Blogs): Qwen Cloud visual understanding model guide - Alibaba Cloud / Qwen Team (http://arxiv.org/pdf/2409.12191)"
+    ]
+  },
+  "created_at": "2026-07-17",
+  "updated_at": "2026-07-17",
+  "sources": [
+    "http://arxiv.org/pdf/2409.12191.pdf",
+    "https://arxiv.org/pdf/2407.10759.pdf",
+    "https://arxiv.org/pdf/2309.16609.pdf",
+    "https://arxiv.org/pdf/2308.12966.pdf",
+    "https://arxiv.org/pdf/2502.13923.pdf",
+    "https://docs.qwencloud.com/developer-guides/getting-started/vision-models",
+    "https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct"
+  ],
+  "tags": [
+    "llm",
+    "open-weight",
+    "self-hosting",
+    "reasoning",
+    "agents",
+    "multimodal"
+  ],
+  "aliases": [],
+  "keywords": [
+    "Qwen-VL",
+    "Qwen",
+    "multimodal model"
+  ],
+  "search_tokens": [
+    "qwen-vl",
+    "qwen vl",
+    "qwen-vl-latest"
+  ]
+}

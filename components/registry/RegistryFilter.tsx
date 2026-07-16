@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { RegistryBadge } from './RegistryBadge';
-import { PARAMETER_RANGES, CONTEXT_RANGES, GPU_RANGES, SORT_OPTIONS } from '@/lib/registry-constants';
 
 interface RegistryFilterProps {
   onFilterChange: (filters: RegistryFilters) => void;
@@ -10,21 +9,18 @@ interface RegistryFilterProps {
 }
 
 export interface RegistryFilters {
-  minParams?: number;
-  maxParams?: number;
-  minContext?: number;
-  maxContext?: number;
-  minGpu?: number;
-  maxGpu?: number;
   productionReady?: boolean;
   commercialUse?: boolean;
   family?: string;
-  sort?: string;
+  modality?: string;
+  reasoning?: boolean;
+  vision?: boolean;
+  tool_calling?: boolean;
 }
 
 /**
  * Faceted search filter component for registry pages.
- * Allows filtering by parameters, context window, GPU memory, production status, and family.
+ * Allows filtering by production status, commercial use, and family.
  */
 export default function RegistryFilter({ onFilterChange, families }: RegistryFilterProps) {
   const [filters, setFilters] = useState<RegistryFilters>({});
@@ -44,27 +40,6 @@ export default function RegistryFilter({ onFilterChange, families }: RegistryFil
   const getActiveFilterLabels = () => {
     const labels: string[] = [];
     
-    if (filters.minParams || filters.maxParams) {
-      const range = PARAMETER_RANGES.find(r => 
-        r.min === filters.minParams && r.max === filters.maxParams
-      );
-      if (range) labels.push(`Params: ${range.label}`);
-    }
-    
-    if (filters.minContext || filters.maxContext) {
-      const range = CONTEXT_RANGES.find(r => 
-        r.min === filters.minContext && r.max === filters.maxContext
-      );
-      if (range) labels.push(`Context: ${range.label}`);
-    }
-    
-    if (filters.minGpu || filters.maxGpu) {
-      const range = GPU_RANGES.find(r => 
-        r.min === filters.minGpu && r.max === filters.maxGpu
-      );
-      if (range) labels.push(`GPU: ${range.label}`);
-    }
-    
     if (filters.productionReady !== undefined) {
       labels.push(`Production: ${filters.productionReady ? 'Yes' : 'No'}`);
     }
@@ -75,6 +50,22 @@ export default function RegistryFilter({ onFilterChange, families }: RegistryFil
     
     if (filters.family) {
       labels.push(`Family: ${filters.family}`);
+    }
+    
+    if (filters.modality) {
+      labels.push(`Modality: ${filters.modality}`);
+    }
+    
+    if (filters.reasoning !== undefined) {
+      labels.push(`Reasoning: ${filters.reasoning ? 'Yes' : 'No'}`);
+    }
+    
+    if (filters.vision !== undefined) {
+      labels.push(`Vision: ${filters.vision ? 'Yes' : 'No'}`);
+    }
+    
+    if (filters.tool_calling !== undefined) {
+      labels.push(`Tool Calling: ${filters.tool_calling ? 'Yes' : 'No'}`);
     }
     
     return labels;
@@ -102,100 +93,6 @@ export default function RegistryFilter({ onFilterChange, families }: RegistryFil
         </div>
       )}
 
-      {/* Filter Controls */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {/* Parameter Count Filter */}
-        <div className="space-y-1">
-          <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-            Parameters
-          </div>
-          <div className="flex flex-wrap gap-1">
-            {PARAMETER_RANGES.map(range => (
-              <button
-                key={range.label}
-                onClick={() => updateFilter('minParams', range.min)}
-                onClickCapture={() => updateFilter('maxParams', range.max)}
-                className={`text-[10px] px-2 py-0.5 rounded border font-mono transition-colors ${
-                  filters.minParams === range.min && filters.maxParams === range.max
-                    ? 'bg-primary/10 border-primary text-primary'
-                    : 'border-border hover:bg-muted/50'
-                }`}
-              >
-                {range.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Context Window Filter */}
-        <div className="space-y-1">
-          <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-            Context Window
-          </div>
-          <div className="flex flex-wrap gap-1">
-            {CONTEXT_RANGES.map(range => (
-              <button
-                key={range.label}
-                onClick={() => {
-                  updateFilter('minContext', range.min);
-                  updateFilter('maxContext', range.max);
-                }}
-                className={`text-[10px] px-2 py-0.5 rounded border font-mono transition-colors ${
-                  filters.minContext === range.min && filters.maxContext === range.max
-                    ? 'bg-primary/10 border-primary text-primary'
-                    : 'border-border hover:bg-muted/50'
-                }`}
-              >
-                {range.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* GPU Memory Filter */}
-        <div className="space-y-1">
-          <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-            Min GPU
-          </div>
-          <div className="flex flex-wrap gap-1">
-            {GPU_RANGES.map(range => (
-              <button
-                key={range.label}
-                onClick={() => {
-                  updateFilter('minGpu', range.min);
-                  updateFilter('maxGpu', range.max);
-                }}
-                className={`text-[10px] px-2 py-0.5 rounded border font-mono transition-colors ${
-                  filters.minGpu === range.min && filters.maxGpu === range.max
-                    ? 'bg-primary/10 border-primary text-primary'
-                    : 'border-border hover:bg-muted/50'
-                }`}
-              >
-                {range.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Sort Filter */}
-        <div className="space-y-1">
-          <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-            Sort By
-          </div>
-          <select
-            value={filters.sort || 'relevance'}
-            onChange={e => updateFilter('sort', e.target.value)}
-            className="text-[10px] px-2 py-1 rounded border border-border bg-background font-mono"
-          >
-            {SORT_OPTIONS.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
       {/* Status Filters */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
@@ -221,6 +118,67 @@ export default function RegistryFilter({ onFilterChange, families }: RegistryFil
         >
           Commercial Use
         </button>
+      </div>
+
+      {/* Modality Filter */}
+      <div className="space-y-1">
+        <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+          Modality
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {(['llm', 'embedding', 'reranker', 'vision', 'speech', 'multimodal'] as const).map(m => (
+            <button
+              key={m}
+              onClick={() => updateFilter('modality', m)}
+              className={`text-[10px] px-2 py-0.5 rounded border font-mono transition-colors ${
+                filters.modality === m
+                  ? 'bg-primary/10 border-primary text-primary'
+                  : 'border-border hover:bg-muted/50'
+              }`}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Capability Filters */}
+      <div className="space-y-1">
+        <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+          Capabilities
+        </div>
+        <div className="flex flex-wrap gap-1">
+          <button
+            onClick={() => updateFilter('reasoning', true)}
+            className={`text-[10px] px-2 py-0.5 rounded border font-mono transition-colors ${
+              filters.reasoning === true
+                ? 'bg-amber-500/10 border-amber-500 text-amber-600'
+                : 'border-border hover:bg-muted/50'
+            }`}
+          >
+            Reasoning
+          </button>
+          <button
+            onClick={() => updateFilter('vision', true)}
+            className={`text-[10px] px-2 py-0.5 rounded border font-mono transition-colors ${
+              filters.vision === true
+                ? 'bg-sky-500/10 border-sky-500 text-sky-600'
+                : 'border-border hover:bg-muted/50'
+            }`}
+          >
+            Vision
+          </button>
+          <button
+            onClick={() => updateFilter('tool_calling', true)}
+            className={`text-[10px] px-2 py-0.5 rounded border font-mono transition-colors ${
+              filters.tool_calling === true
+                ? 'bg-violet-500/10 border-violet-500 text-violet-600'
+                : 'border-border hover:bg-muted/50'
+            }`}
+          >
+            Tool Calling
+          </button>
+        </div>
       </div>
 
       {/* Family Filter */}

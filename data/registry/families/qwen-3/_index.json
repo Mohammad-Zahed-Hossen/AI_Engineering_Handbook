@@ -1,0 +1,430 @@
+{
+  "id": "qwen-3",
+  "slug": "qwen-3",
+  "title": "Qwen3 Family",
+  "name": "Qwen3 Family",
+  "description": "Qwen3 is Alibaba Cloud’s open-weight Qwen family for production LLM deployment, spanning dense and MoE variants with native thinking/non-thinking behavior, strong multilingual coverage, and a deployment posture designed for reasoning, coding, math, and agentic workloads.",
+  "provider": "Alibaba Cloud",
+  "modality": "llm",
+  "architecture": {
+    "architecture_type": "Decoder-only Transformer",
+    "transformer_type": "Decoder-only",
+    "attention_mechanism": "Grouped-Query Attention (GQA)",
+    "tokenizer": "Unknown",
+    "positional_encoding": "Not Published",
+    "kv_cache": true,
+    "mixture_of_experts": true,
+    "grouped_query_attention": true
+  },
+  "capabilities": {
+    "instruction_tuned": true,
+    "reasoning": true,
+    "vision": false,
+    "multilingual": true,
+    "tool_calling": true,
+    "function_calling": true,
+    "thinking_model": true,
+    "context_window": 128000
+  },
+  "formats": {
+    "safetensors": true,
+    "gguf": true,
+    "awq": true,
+    "gptq": true,
+    "mlx": true,
+    "onnx": false,
+    "tensorrt": true
+  },
+  "ecosystem": {
+    "transformers": {
+      "supported": true,
+      "notes": "Official docs recommend the latest Transformers, and the repo states `transformers>=4.51.0` for Qwen3 support."
+    },
+    "vllm": {
+      "supported": true,
+      "notes": "Official docs recommend vLLM for deployment; the repo provides Qwen3 serving examples and notes reasoning-mode handling."
+    },
+    "ollama": {
+      "supported": true,
+      "notes": "Official docs explicitly document local usage and recommend Ollama for Qwen3."
+    },
+    "llama_cpp": {
+      "supported": true,
+      "notes": "Official docs explicitly document local usage and recommend llama.cpp for Qwen3."
+    },
+    "mlx": {
+      "supported": true,
+      "notes": "Official docs say mlx-lm supports Qwen3 on Apple Silicon."
+    },
+    "litellm": {
+      "supported": false,
+      "notes": "Not officially documented in the reviewed Qwen3 sources."
+    },
+    "openrouter": {
+      "supported": false,
+      "notes": "Not officially documented in the reviewed Qwen3 sources."
+    },
+    "lm_studio": {
+      "supported": true,
+      "notes": "Official docs state Qwen3 is supported in LM Studio via GGUF files."
+    },
+    "tensorrt_llm": {
+      "supported": true,
+      "notes": "Official deployment guidance explicitly documents TensorRT-LLM support."
+    }
+  },
+  "references": [
+    {
+      "title": "Official Documentation - Qwen3 repository README",
+      "url": "https://github.com/QwenLM/Qwen3",
+      "category": "official",
+      "official": true,
+      "priority": 1,
+      "description": "Read this for the canonical deployment matrix, runtime support, licensing, and family-level release notes. Confirm supported runtimes, model families, and deployment-oriented constraints."
+    },
+    {
+      "title": "Model Card - Qwen3 blog release post",
+      "url": "https://qwenlm.github.io/blog/qwen3/",
+      "category": "documentation",
+      "official": true,
+      "priority": 2,
+      "description": "Read this for architecture tables, variant inventory, context windows, thinking-mode behavior, and multilingual scope. Extract family-wide architectural and operational characteristics."
+    },
+    {
+      "title": "Technical Report - Qwen3 Technical Report",
+      "url": "https://arxiv.org/abs/2505.09388",
+      "category": "papers",
+      "official": false,
+      "priority": 1,
+      "description": "Read this for the research rationale behind hybrid thinking, MoE efficiency, and multilingual/reasoning design. Validate the production trade-offs with primary research evidence."
+    },
+    {
+      "title": "Inference Framework - vLLM documentation",
+      "url": "https://docs.vllm.ai/",
+      "category": "documentation",
+      "official": false,
+      "priority": 2,
+      "description": "Read this when planning high-throughput serving and OpenAI-compatible deployment. Determine serving knobs, throughput constraints, and reasoning-mode support."
+    },
+    {
+      "title": "Repository - QwenLM/Qwen3",
+      "url": "https://github.com/QwenLM/Qwen3",
+      "category": "repositories",
+      "official": true,
+      "priority": 2,
+      "description": "Read this for checkpoints, examples, deployment commands, and licensing details. Reuse official examples for inference, serving, quantization, and local deployment."
+    }
+  ],
+  "engineering_notes": {
+    "inference_notes": [
+      "Thinking mode is a core capability, but it increases generation work and can materially raise latency and memory pressure; the official docs expose `enable_thinking`, `/think`, and `/no_think` controls for runtime steering.",
+      "MoE checkpoints are designed to reduce active parameter cost relative to total size, but the cluster still has to carry the total model and routing overhead.",
+      "The official docs call out reasoning-parser handling in vLLM and SGLang, and note that middleware which strips reasoning content can degrade multi-step tool use for thinking models."
+    ],
+    "deployment_notes": [
+      "Small dense variants are the practical starting point for single-node deployment; the official docs present 0.6B, 1.7B, 4B, 8B, 14B, and 32B as the dense family surface.",
+      "The 480B MoE class should be treated as a multi-GPU or cluster-scale deployment problem rather than a simple model-hosting task.",
+      "For production serving, the official guidance favors SGLang and vLLM, with OpenAI-compatible endpoints and reasoning-parser configuration included in the examples."
+    ],
+    "optimization_notes": [
+      "The official release emphasizes long-context scaling, with 32K for smaller dense models and 128K for larger dense/MoE variants in the original release table.",
+      "Quantization is part of the official deployment story through GPTQ, AWQ, and GGUF-style local distribution, which materially affects cost and footprint trade-offs.",
+      "For Apple Silicon and local workflows, MLX/llama.cpp/Ollama are the primary low-friction paths documented by the Qwen team."
+    ],
+    "compatibility_notes": [
+      "The official Qwen3 docs use `apply_chat_template` and `enable_thinking` in the prompt formatting path, so prompt-layer compatibility is part of the model contract.",
+      "Qwen3 supports tool use and agent workflows, and the repo recommends Qwen-Agent for structured integration with MCP and other tool systems.",
+      "The family is distributed through Hugging Face and ModelScope, and the official repository explicitly points users to those checkpoint collections."
+    ],
+    "common_pitfalls": [
+      "Treating thinking mode as \"free\" is a mistake; it increases compute and can balloon latency or memory if generation limits are not managed.",
+      "Stripping reasoning content in serving middleware can break the quality of multi-step tool use for thinking models, especially in vLLM and SGLang setups.",
+      "Assuming the 480B MoE tier is operationally similar to a dense 32B deployment will lead to underprovisioning and poor routing/load-balancing behavior.",
+      "Over-optimizing around a quantized local format without validating task quality can produce unacceptable reasoning regressions, especially on math and agentic workflows."
+    ]
+  },
+  "license_info": {
+    "name": "Apache 2.0 / Custom permissive license",
+    "commercial_use": true,
+    "modification": true,
+    "redistribution": true,
+    "attribution_required": true,
+    "notes": "Permissive open-weight license allowing commercial use, subject to provider-specific terms for large-scale deployments."
+  },
+  "status": {
+    "release_date": "2025-04-29",
+    "last_verified": "2026-07-16",
+    "maintenance_status": "production"
+  },
+  "engineering_snapshot": {
+    "best_for": [
+      "Reasoning-heavy production assistants where controllable thinking budget matters.",
+      "Multilingual enterprise chat and agent systems that need open-weight self-hosting.",
+      "Coding, math, and tool-using workloads that benefit from explicit reasoning mode support."
+    ],
+    "avoid_for": [
+      "Workloads that require vision input; this text-only family is not the right fit.",
+      "Teams that need a single small deployment target for the full 480B MoE tier; that tier is operationally heavy.",
+      "Cases where a strict, official maximum-output-token spec is required and cannot be inferred from serving configuration."
+    ],
+    "deployment_complexity": "high",
+    "production_ready": true,
+    "recommended_use_case": "Self-hosted or managed serving for reasoning-centric, multilingual LLM applications with explicit control over thinking vs non-thinking behavior.",
+    "deployment_risks": [
+      "Thinking-mode serving can increase token and memory consumption, so prompt routing and generation limits must be controlled deliberately.",
+      "The 480B MoE class is efficient on active parameters but still demands serious cluster planning, load balancing, and routing-aware observability."
+    ],
+    "failure_modes": [
+      "Stripping reasoning content in serving middleware can break the quality of multi-step tool use for thinking models.",
+      "Treating thinking mode as \"free\" can balloon latency or memory if generation limits are not managed."
+    ],
+    "hidden_costs": [
+      "Multi-GPU serving complexity and routing-aware operational overhead for MoE variants.",
+      "Additional compute costs associated with longer active generation paths in thinking mode."
+    ],
+    "scaling_issues": [
+      "MoE checkpoints require high-bandwidth GPU clusters for tensor parallelism and load balancing."
+    ]
+  },
+  "timeline": [
+    {
+      "version": "Qwen3",
+      "release_date": "2025-04-29",
+      "notes": "Initial Qwen3 release with dense and MoE open-weight models, hybrid thinking, multilingual coverage, and broad ecosystem support."
+    },
+    {
+      "version": "Qwen3-2507",
+      "release_date": "2025-07-01",
+      "notes": "Updated instruct/thinking variants with expanded long-context capability and improved reasoning/general behavior; included here only as a family evolution note, not as the target registry variant."
+    }
+  ],
+  "related_models": [
+    {
+      "id": "qwen-2-5",
+      "relationship": "Predecessor family and main migration baseline."
+    },
+    {
+      "id": "qwen-3-2507",
+      "relationship": "Later evolution of the same family with updated instruct/thinking variants and longer context capabilities."
+    },
+    {
+      "id": "qwen-3-coder",
+      "relationship": "Specialized adjacent family for coding-centric workflows."
+    },
+    {
+      "id": "qwen-3-vl",
+      "relationship": "Multimodal adjacent family for vision-language workloads."
+    },
+    {
+      "id": "qwen-3-omni",
+      "relationship": "Multimodal adjacent family spanning text, image, audio, and video."
+    },
+    {
+      "id": "deepseek",
+      "relationship": "Alternative reasoning-first family for comparison and deployment trade-offs."
+    }
+  ],
+  "engineering_decision": {
+    "choose_if": [
+      "You want an open-weight production LLM family that combines reasoning mode control, multilingual coverage, and practical support across major inference stacks."
+    ],
+    "avoid_if": [
+      "You need vision-native capabilities, or you cannot absorb the operational overhead of serving large MoE checkpoints across multiple GPUs."
+    ],
+    "watch_out_for": [
+      "Thinking-mode serving can increase token and memory consumption, so prompt routing and generation limits must be controlled deliberately.",
+      "SGLang and vLLM both document reasoning-parser caveats for Qwen3 thinking models when middleware strips reasoning content, which can hurt multi-step tool use.",
+      "The 480B MoE class is efficient on active parameters but still demands serious cluster planning, load balancing, and routing-aware observability."
+    ],
+    "best_deployment_scenario": "Use 8B/14B/32B for single-node or modest multi-GPU serving, and reserve MoE variants for high-scale deployments where throughput efficiency matters more than simplicity.",
+    "alternatives": [
+      "qwen2.5",
+      "deepseek",
+      "llama-3"
+    ],
+    "performance_dimensions": [
+      {
+        "dimension": "reasoning",
+        "rating": "excellent",
+        "notes": "Native thinking mode is a first-class design point for complex tasks."
+      },
+      {
+        "dimension": "multilingual",
+        "rating": "excellent",
+        "notes": "Officially documented 119-language coverage."
+      },
+      {
+        "dimension": "agent_workloads",
+        "rating": "good",
+        "notes": "Official docs emphasize agentic capability and Qwen-Agent integration."
+      },
+      {
+        "dimension": "self_hosting",
+        "rating": "good",
+        "notes": "Broad support across local and server runtimes, including GGUF and serving stacks."
+      },
+      {
+        "dimension": "memory_efficiency",
+        "rating": "good",
+        "notes": "Dense smaller sizes are practical; MoE variants are efficient on activated parameters but heavier operationally."
+      }
+    ],
+    "deployment_profiles": [
+      {
+        "profile": "Small edge deployment",
+        "recommended_variant": "0.6B or 1.7B",
+        "expected_experience": "Fast, low-footprint, limited but useful reasoning and multilingual coverage",
+        "notes": "Best when latency and RAM are the primary constraints."
+      },
+      {
+        "profile": "Medium server deployment",
+        "recommended_variant": "8B or 14B",
+        "expected_experience": "Balanced quality, 128K context, practical serving cost",
+        "notes": "Strong default for production serving without MoE complexity."
+      },
+      {
+        "profile": "Enterprise deployment",
+        "recommended_variant": "32B",
+        "expected_experience": "Higher quality for general enterprise chat, reasoning, and coding",
+        "notes": "Better fit when consistency matters more than small-footprint efficiency."
+      },
+      {
+        "profile": "Reasoning deployment",
+        "recommended_variant": "32B Thinking",
+        "expected_experience": "Strongest reasoning-oriented experience in the dense tier",
+        "notes": "Use when explicit thinking-mode behavior is desired."
+      },
+      {
+        "profile": "Coding deployment",
+        "recommended_variant": "32B or 32B Thinking",
+        "expected_experience": "Strong coding and agentic behavior with controllable reasoning",
+        "notes": "Select based on whether latency or answer depth matters more."
+      },
+      {
+        "profile": "Long-context deployment",
+        "recommended_variant": "8B, 14B, 32B, or MoE variants",
+        "expected_experience": "128K-class long-context workflows",
+        "notes": "Favor serving stacks with careful KV-cache planning."
+      }
+    ],
+    "runtime_matrix": [
+      {
+        "runtime": "Transformers",
+        "supports": ["basic_inference", "quantization"],
+        "official": true,
+        "priority": "recommended",
+        "notes": "Official repo gives the canonical Python loading pattern and requires a recent version."
+      },
+      {
+        "runtime": "vLLM",
+        "supports": ["continuous_batching", "tensor_parallelism"],
+        "official": true,
+        "priority": "recommended",
+        "notes": "Officially recommended for deployment; supports reasoning-parser configuration."
+      },
+      {
+        "runtime": "SGLang",
+        "supports": ["continuous_batching", "tensor_parallelism"],
+        "official": true,
+        "priority": "recommended",
+        "notes": "Officially recommended for deployment; useful for OpenAI-compatible serving."
+      },
+      {
+        "runtime": "llama.cpp",
+        "supports": ["gguf"],
+        "official": true,
+        "priority": "supported",
+        "notes": "Officially documented for local use; best with GGUF checkpoints."
+      },
+      {
+        "runtime": "Ollama",
+        "supports": ["local_serving"],
+        "official": true,
+        "priority": "supported",
+        "notes": "Officially documented for local use, but naming and context defaults need care."
+      },
+      {
+        "runtime": "LM Studio",
+        "supports": ["local_serving"],
+        "official": true,
+        "priority": "supported",
+        "notes": "Official docs say Qwen3 is already supported via GGUF files."
+      },
+      {
+        "runtime": "TensorRT-LLM",
+        "supports": ["tensorrt", "tensor_parallelism"],
+        "official": true,
+        "priority": "recommended",
+        "notes": "Official docs document support in the re-architected PyTorch backend for NVIDIA GPU serving."
+      },
+      {
+        "runtime": "MLX",
+        "supports": ["mlx"],
+        "official": true,
+        "priority": "supported",
+        "notes": "Apple Silicon support is documented via mlx-lm."
+      }
+    ]
+  },
+  "related_resources": [
+    {
+      "relationship": "recommended_for",
+      "resource_type": "workflow",
+      "resource_slug": "llm-application-serving",
+      "reason": "Production serving pipeline"
+    },
+    {
+      "relationship": "used_with",
+      "resource_type": "package",
+      "resource_slug": "pytorch",
+      "reason": "Primary model loading library"
+    },
+    {
+      "relationship": "used_with",
+      "resource_type": "pattern",
+      "resource_slug": "kv-cache",
+      "reason": "KV cache optimization"
+    },
+    {
+      "relationship": "used_with",
+      "resource_type": "pattern",
+      "resource_slug": "streaming-inference",
+      "reason": "Streaming token generation"
+    }
+  ],
+  "tags": [
+    "llm",
+    "models",
+    "open-weight",
+    "self-hosting",
+    "moe",
+    "reasoning",
+    "multilingual"
+  ],
+  "aliases": [
+    "Qwen3",
+    "Qwen LLM",
+    "Qwen3 Family"
+  ],
+  "keywords": [
+    "Qwen3",
+    "Qwen3 Family",
+    "Alibaba Qwen",
+    "open-weight LLM",
+    "reasoning model"
+  ],
+  "search_tokens": [
+    "qwen 3",
+    "qwen3 family",
+    "alibaba qwen",
+    "open-weight llm",
+    "reasoning model"
+  ],
+  "created_at": "2026-07-16",
+  "updated_at": "2026-07-16",
+  "sources": [
+    "https://github.com/QwenLM/Qwen3",
+    "https://qwenlm.github.io/blog/qwen3/",
+    "https://arxiv.org/abs/2505.09388"
+  ]
+}

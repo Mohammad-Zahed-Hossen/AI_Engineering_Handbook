@@ -1,19 +1,19 @@
 {
   "id": "deepseek",
-  "name": "DeepSeek",
-  "description": "The DeepSeek R1/V3 family are production-oriented, open-weight Mixture-of-Experts (MoE) LLMs engineered for high reasoning throughput and cost-efficient scaling.",
-  "provider": "DeepSeek",
-  "variants": ["r1-70b"],
+  "slug": "deepseek",
+  "title": "DeepSeek Family",
+  "name": "DeepSeek Family",
+  "description": "DeepSeek Family is a production-oriented LLM registry entry covering the V3.x, R1, distilled R1, and DeepSeek-Coder lines, with a strong emphasis on reasoning, agents, coding, and long-context workloads.",
+  "provider": "DeepSeek AI",
+  "modality": "llm",
   "architecture": {
-    "architecture_type": "Fine-grained Mixture-of-Experts (MoE) transformer variant (DeepSeekMoE)",
+    "architecture_type": "Decoder-only Transformer with MoE and MLA for the V3.x and R1-class family",
     "transformer_type": "Decoder-only",
-    "attention_mechanism": "Multi-head Latent Attention (MLA) / Multi-head Attention",
-    "tokenizer": "Byte-level BPE",
-    "positional_encoding": "RoPE",
-    "mixture_of_experts": true,
+    "attention_mechanism": "Multi-Head Latent Attention; DeepSeek-V3 uses MLA and DeepSeekMoE, with 671B total parameters and 37B activated per token in the technical report. R1 inherits the reasoning-oriented family design and the distilled R1 line is dense rather than MoE.",
+    "tokenizer": "Unknown",
+    "positional_encoding": "RoPE is not explicitly confirmed in the cited family sources here; Not Published in the retrieved official materials.",
     "kv_cache": true,
-    "flash_attention": true,
-    "grouped_query_attention": false
+    "mixture_of_experts": true
   },
   "capabilities": {
     "instruction_tuned": true,
@@ -23,114 +23,137 @@
     "tool_calling": true,
     "function_calling": true,
     "thinking_model": true,
-    "context_window": 128000
+    "context_window": 164000,
+    "max_output_tokens": 8000
   },
   "formats": {
     "safetensors": true,
     "gguf": true,
     "awq": true,
-    "gptq": true,
-    "exl2": true,
-    "mlx": true,
-    "onnx": true,
-    "tensorrt": true
+    "gptq": true
   },
   "ecosystem": {
     "transformers": {
       "supported": true,
-      "notes": "Official Hugging Face model cards and repos host models and Transformers integration notes."
+      "notes": "Official and community model artifacts are distributed through Hugging Face-compatible checkpoints for the released family members."
     },
     "vllm": {
       "supported": true,
-      "notes": "Community and vLLM maintainers added compatibility notes for MoE and V3 family."
+      "notes": "vLLM documents DeepSeek-specific renderers/support paths for the family, indicating active inference support."
     },
     "ollama": {
       "supported": true,
-      "notes": "Community runtimes and Ollama model adapters support DeepSeek distills."
+      "notes": "Community-supported model availability exists for distilled and quantized variants; official confirmation not retrieved here."
     },
     "llama_cpp": {
       "supported": true,
-      "notes": "Distilled smaller checkpoints converted for llama.cpp (GGUF/GPTQ) are present in community repositories."
+      "notes": "Community conversion and local deployment are widely used for smaller/distilled checkpoints; official confirmation not retrieved here."
     },
     "mlx": {
-      "supported": true,
-      "notes": "Community-backed tooling exists; not primary distribution route."
+      "supported": false,
+      "notes": "Not Published."
     },
     "litellm": {
       "supported": true,
-      "notes": "Experimental integrations reported by community for MoE-compatible inference."
+      "notes": "Commonly used as an API shim for hosted DeepSeek-compatible endpoints; official confirmation not retrieved here."
     },
     "openrouter": {
       "supported": true,
-      "notes": "Router integrations show support for DeepSeek distills via hosted deployments."
+      "notes": "Hosted routing availability is commonly provided for DeepSeek-family models; official confirmation not retrieved here."
     },
     "lm_studio": {
       "supported": true,
-      "notes": "Community model importers in LM Studio accept DeepSeek distills and V3 checkpoints."
+      "notes": "Community deployment support exists for local quantized variants; official confirmation not retrieved here."
     },
     "tensorrt_llm": {
       "supported": true,
-      "notes": "TensorRT-LLM patterns for large MoE models documented experimentally."
+      "notes": "Community deployment support exists for compatible checkpoints; official confirmation not retrieved here."
     }
   },
   "references": [
     {
-      "title": "DeepSeek-V3 Technical Report",
-      "url": "https://arxiv.org/pdf/2412.19437.pdf",
+      "title": "Official Documentation",
+      "url": "https://api-docs.deepseek.com/updates/",
       "category": "official",
       "official": true,
       "priority": 1,
-      "description": "Primary architecture and training specification for V3 (MoE design, MLA, token counts)."
+      "description": "Why Read: Confirms current model naming, API compatibility, and release behavior across DeepSeek-family endpoints. Outcome: Understand current hosted model surface and API-level deployment constraints. Time: 10 minutes. Confidence: Official."
     },
     {
-      "title": "DeepSeek-R1 Technical Report",
+      "title": "Model Card",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-deepseek-deepseek-v3-2.html",
+      "category": "documentation",
+      "official": true,
+      "priority": 2,
+      "description": "Why Read: Provides the hosted model-card view for V3.2, including context and output limits. Outcome: Extract deployment-relevant runtime parameters for the latest chat variant. Time: 10 minutes. Confidence: Official."
+    },
+    {
+      "title": "Technical Report (DeepSeek-V3)",
+      "url": "https://arxiv.org/pdf/2412.19437.pdf",
+      "category": "papers",
+      "official": false,
+      "priority": 1,
+      "description": "Why Read: The primary source for the MoE + MLA architecture and activated-parameter profile. Outcome: Learn the family’s core efficiency design and inference implications. Time: 20 minutes. Confidence: Research."
+    },
+    {
+      "title": "Technical Report (DeepSeek-R1)",
       "url": "https://arxiv.org/pdf/2501.12948.pdf",
       "category": "papers",
-      "official": true,
-      "priority": 1,
-      "description": "Primary source for R1 training regime (RL-first, R1-Zero, R1) and distillation strategy."
-    },
-    {
-      "title": "Hugging Face model hub (DeepSeek-R1)",
-      "url": "https://huggingface.co/deepseek-ai/DeepSeek-R1",
-      "category": "documentation",
-      "official": true,
+      "official": false,
       "priority": 2,
-      "description": "Official model cards and checkpoint downloads for R1 family and distills."
+      "description": "Why Read: The primary source for the reasoning line, including the distilled R1 releases. Outcome: Understand reasoning-oriented training and distillation strategy. Time: 20 minutes. Confidence: Research."
     },
     {
-      "title": "Community technical summary (Graphcore Research mirror)",
-      "url": "https://graphcore-research.github.io/deepseek/",
+      "title": "Technical Report (DeepSeek-Coder)",
+      "url": "https://arxiv.org/pdf/2401.14196.pdf",
+      "category": "papers",
+      "official": false,
+      "priority": 3,
+      "description": "Why Read: The primary source for the coder family’s code-centric design and scale. Outcome: Understand the coding-oriented checkpoint line and its deployment fit. Time: 15 minutes. Confidence: Research."
+    },
+    {
+      "title": "Inference Framework",
+      "url": "https://docs.vllm.ai/en/latest/api/vllm/renderers/deepseek_v4/",
+      "category": "documentation",
+      "official": false,
+      "priority": 3,
+      "description": "Why Read: Confirms ecosystem-level inference support for DeepSeek-family architectures. Outcome: Validate runtime compatibility and serving integration paths. Time: 10 minutes. Confidence: Community."
+    },
+    {
+      "title": "Repository",
+      "url": "https://github.com/deepseek-ai/DeepSeek-R1",
       "category": "repositories",
       "official": true,
-      "priority": 2,
-      "description": "Engineering-focused summary of training efficiency, implementation notes."
-    },
-    {
-      "title": "D-Central model profile",
-      "url": "https://d-central.tech/ai/model/deepseek-r1/",
-      "category": "documentation",
-      "official": true,
-      "priority": 2,
-      "description": "Consolidated variant list and community maintenance notes."
+      "priority": 4,
+      "description": "Why Read: Useful for official release artifacts and family-relevant implementation notes. Outcome: Locate open checkpoints, usage notes, and release context. Time: 10 minutes. Confidence: Official."
     }
   ],
   "engineering_notes": {
     "inference_notes": [
-      "MoE activation sparsity reduces per-token FLOPs but requires expert routing and reliable load-balancing; DeepSeek implements loss-free load balancing and MLA to compress KV state, which materially reduces KV cache overhead on inference."
+      "MLA materially reduces KV-cache pressure compared with conventional attention, which improves long-context feasibility and helps preserve throughput under higher sequence lengths.",
+      "MoE routing means total parameter count is a poor proxy for per-token compute; active parameters per token are the more relevant serving metric.",
+      "Thinking-mode paths should be treated as a separate latency tier because reasoning tokens increase response time and budget consumption."
     ],
     "deployment_notes": [
-      "For V3, use MoE-aware sharding and high-throughput interconnects (NVLink/NCCL) along with runtimes such as vLLM or vendor-optimized TensorRT pipelines; distills are the recommended path for simpler deployments."
+      "Frontier V3.x and R1-class deployments are better suited to multi-GPU or managed hosted setups, while distilled R1 checkpoints are the practical choice when single-node or local serving matters.",
+      "Hosted API and self-hosted checkpoints are both viable, but API-backed deployments reduce serving complexity while sacrificing direct control over routing and quantization choices.",
+      "Use reasoning gating in production so the model only enters thinking mode for tasks that justify the extra compute."
     ],
     "optimization_notes": [
-      "Mixed precision (FP8/FP16) micro-scaling and Multi-Token Prediction (MTP) speculative decoding were used in training to improve throughput; evaluate FP8/FP16 inference carefully against reasoning quality regressions."
+      "Quantization is most attractive on distilled dense checkpoints because the operational compromise is easier to manage than on frontier MoE models; community analysis shows the family is frequently deployed with 4-bit variants in practice.",
+      "For long-context use, prioritize KV-cache compression effects from MLA before chasing larger batch sizes.",
+      "Distillation is a valid deployment strategy when the main objective is to reduce serving cost while retaining a usable subset of R1 behavior."
     ],
     "compatibility_notes": [
-      "Distills convert well to GGUF/GPTQ for llama.cpp and other lightweight runtimes; full V3 requires MoE-supported runtimes and may need custom integration work for MLA and expert routing."
+      "Hosted DeepSeek API compatibility is designed to align with OpenAI/Anthropic-style interfaces, which lowers integration friction for agents and SDKs.",
+      "The family’s reasoning surfaces are not all identical: R1 emphasizes explicit thinking, while V3.1/V3.2 introduce hybrid chat behavior with agent-oriented positioning.",
+      "Context limits and output caps vary by hosted surface and version, so deployment code should not assume one universal limit across the family."
     ],
     "common_pitfalls": [
-      "Pitfall: Treating V3 like a dense model — mitigation: provision MoE-aware runtime, test load balancing and routing across shards before production rollout.",
-      "Pitfall: Quantizing R1 without RL-quality validation — mitigation: run reasoning benchmarks post-quantization to validate chain-of-thought and correctness."
+      "Enabling thinking mode indiscriminately increases latency and cost; mitigate by routing only hard tasks into reasoning mode.",
+      "Treating total parameter count as the serving cost is misleading for MoE models; use activated-parameter and context-length metrics instead.",
+      "Over-quantizing reasoning checkpoints can erode answer quality on hard math and code tasks; validate on domain-specific evals before production rollout.",
+      "Assuming every variant shares the same context window or output cap will cause deployment bugs; verify limits per specific hosted endpoint."
     ]
   },
   "license_info": {
@@ -143,71 +166,331 @@
   },
   "status": {
     "release_date": "2024-12-26",
-    "last_verified": "2026-07-15",
+    "last_verified": "2026-07-17",
     "maintenance_status": "production"
   },
   "engineering_snapshot": {
     "best_for": [
-      "High-quality reasoning and chain-of-thought agent systems where cost-per-query must be reduced via MoE activations.",
-      "Research and open-weight deployments that require reproducible RL-based reasoning models.",
-      "Self-hosted inference with MoE-aware runtimes (vLLM) to balance throughput and cost."
+      "Reasoning-heavy agent systems that benefit from explicit thinking mode and tool use.",
+      "Code generation and code intelligence workloads, especially when compared against general-purpose chat models.",
+      "Self-hosted or hybrid deployments that need strong capability per active token and long-context efficiency."
     ],
     "avoid_for": [
-      "Simple, low-complexity deployments where MoE orchestration overhead outweighs activation savings. Use dense distills instead.",
-      "Strict latency SLOs on single-GPU commodity hardware for large V3 checkpoints without aggressive quantization or sharding strategies.",
-      "Environments that cannot accept open-weight licenses or require vendor-locked support."
+      "Tiny-memory deployments that cannot tolerate large-model or multi-GPU serving overhead for frontier variants.",
+      "Workloads that require fully specified tokenizer/format behavior from official sources when the deployment chain has not been validated.",
+      "Teams that need only a simple, small, non-reasoning chat model and would not benefit from thinking-mode overhead."
     ],
     "deployment_complexity": "high",
     "production_ready": true,
-    "recommended_use_case": "Use R1 distills (14B–70B) for most production reasoning workloads; reserve full V3 for workloads that require maximal open-weight capacity."
+    "recommended_use_case": "Use V3.2 or V3.1 for hosted agent/chat systems, R1 or R1-0528 for deliberate reasoning pipelines, and distilled R1 or DeepSeek-Coder for cost-constrained self-hosted deployments.",
+    "deployment_risks": [
+      "Thinking-mode variants increase latency and token consumption relative to non-thinking chat paths, so the serving policy must control when reasoning is enabled.",
+      "MoE routing makes capacity planning sensitive to active-parameter behavior rather than total parameter count alone.",
+      "Distilled R1 models are dense and more practical for single-GPU serving, but they are not the same operational profile as frontier MoE variants.",
+      "Long-context deployment should be treated as a memory-capacity problem first and a model-quality problem second because KV-cache savings from MLA materially affect feasible batch size and throughput."
+    ],
+    "failure_modes": [
+      "Expert routing imbalance under high concurrency or routing failure.",
+      "Memory exhaustion/OOM when processing long context sequences if KV-cache limits are not capped."
+    ],
+    "hidden_costs": [
+      "High-speed interconnect network infrastructure (NVLink/NCCL) for multi-GPU MoE variant scaling.",
+      "Custom runtime integration effort for MLA support in non-standard runtimes."
+    ],
+    "scaling_issues": [
+      "Expert routing imbalance and MoE-aware sharding bottlenecks at extreme concurrency scales."
+    ]
   },
-  "related_models": [
-    {
-      "id": "deepseek-v3",
-      "relationship": "parent"
-    },
-    {
-      "id": "deepseek-r1",
-      "relationship": "variant"
-    },
-    {
-      "id": "llama-3",
-      "relationship": "alternative"
-    }
-  ],
   "timeline": [
     {
+      "version": "DeepSeek-Coder",
+      "release_date": "2024-01-26",
+      "notes": "Code-intelligence family introduced with 1.3B to 33B checkpoints."
+    },
+    {
+      "version": "DeepSeek-V2",
+      "release_date": "2024-06-19",
+      "notes": "Established the MLA + DeepSeekMoE efficiency direction."
+    },
+    {
       "version": "DeepSeek-V3",
-      "release_date": "2024-12-26",
-      "notes": "V3 technical report and checkpoint publication; MoE/MLA architecture described."
+      "release_date": "2025-02-18",
+      "notes": "Reported 671B total parameters and 37B active per token."
     },
     {
       "version": "DeepSeek-R1",
       "release_date": "2025-01-22",
-      "notes": "R1 family introduced with RL-first training and R1-Zero experiments."
+      "notes": "Introduced reasoning-focused RL training and distillation line."
     },
     {
-      "version": "Distills",
-      "release_date": "2025-01-22",
-      "notes": "Official distills (1.5B–70B) and community quantized conversions."
+      "version": "DeepSeek-R1-0528",
+      "release_date": "2025-05-28",
+      "notes": "Official incremental reasoning release."
+    },
+    {
+      "version": "DeepSeek-V3.1",
+      "release_date": "2025-08-21",
+      "notes": "Agent-era positioning with hybrid thinking / non-thinking behavior."
+    },
+    {
+      "version": "DeepSeek-V3.2",
+      "release_date": "2025-12-01",
+      "notes": "Hosted model-card release date on Bedrock."
     }
   ],
-  "created_at": "2026-07-15",
-  "updated_at": "2026-07-15",
+  "related_models": [
+    {
+      "id": "deepseek-v2",
+      "relationship": "Related Models: Prior efficiency baseline for MLA and sparse MoE design."
+    },
+    {
+      "id": "deepseek-v3",
+      "relationship": "Related Models: Core frontier MoE/MLA family member."
+    },
+    {
+      "id": "deepseek-r1",
+      "relationship": "Related Models: Reasoning-first family member with explicit thinking behavior."
+    },
+    {
+      "id": "deepseek-r1-distill",
+      "relationship": "Related Models: Dense reasoning distillations for smaller-scale deployment."
+    },
+    {
+      "id": "deepseek-coder-v2",
+      "relationship": "Related Models: Coding-specialized predecessor for code intelligence."
+    },
+    {
+      "id": "qwen-3",
+      "relationship": "Alternative Models: Qwen3 for broadly comparable open-weight reasoning/coding deployment trade-offs."
+    },
+    {
+      "id": "llama-3",
+      "relationship": "Alternative Models: Llama 3.x for ecosystem breadth, and hosted frontier reasoning APIs when operational simplicity matters."
+    }
+  ],
+  "engineering_decision": {
+    "choose_if": [
+      "You need a reasoning-first or agent-first LLM with explicit thinking-mode behavior, strong code and math performance, and a deployment path that can exploit sparse computation efficiency."
+    ],
+    "avoid_if": [
+      "You need a fully transparent, small-footprint model with minimal serving complexity and no special handling for reasoning overhead or MoE routing."
+    ],
+    "watch_out_for": [
+      "Thinking-mode variants increase latency and token consumption relative to non-thinking chat paths, so the serving policy must control when reasoning is enabled.",
+      "MoE routing makes capacity planning sensitive to active-parameter behavior rather than total parameter count alone.",
+      "Distilled R1 models are dense and more practical for single-GPU serving, but they are not the same operational profile as frontier MoE variants.",
+      "Long-context deployment should be treated as a memory-capacity problem first and a model-quality problem second because KV-cache savings from MLA materially affect feasible batch size and throughput."
+    ],
+    "best_deployment_scenario": "Deploy V3.2/V3.1 on a managed hosted endpoint for agentic chat, or deploy R1/R1-0528 behind a selective reasoning gate when the application needs multi-step deliberation and can tolerate additional latency.",
+    "alternatives": [
+      "Qwen3",
+      "Llama 3.x"
+    ],
+    "performance_dimensions": [
+      {
+        "dimension": "reasoning",
+        "rating": "excellent",
+        "notes": "R1 is explicitly a reasoning model and V3.2 is positioned for reasoning-first agent use."
+      },
+      {
+        "dimension": "coding",
+        "rating": "excellent",
+        "notes": "DeepSeek-Coder and the broader family target code intelligence and coding tasks directly."
+      },
+      {
+        "dimension": "memory_efficiency",
+        "rating": "good",
+        "notes": "MLA reduces KV-cache burden, improving feasible long-context serving."
+      },
+      {
+        "dimension": "throughput_efficiency",
+        "rating": "good",
+        "notes": "Sparse MoE activation means only a fraction of total parameters are active per token."
+      },
+      {
+        "dimension": "deployment_simplicity",
+        "rating": "fair",
+        "notes": "Frontier variants need careful runtime and hardware planning; distilled variants are simpler but less capable."
+      },
+      {
+        "dimension": "tool_agent_fit",
+        "rating": "excellent",
+        "notes": "Official positioning emphasizes agent-era and tool-friendly behavior in newer releases."
+      }
+    ],
+    "deployment_profiles": [
+      {
+        "profile": "Small edge deployment",
+        "recommended_variant": "R1 Distill 7B or 8B",
+        "expected_experience": "Usable reasoning with tight memory budgets",
+        "notes": "Best fit when local inference is mandatory and quality trade-offs are acceptable."
+      },
+      {
+        "profile": "Medium server deployment",
+        "recommended_variant": "R1 Distill 14B or 32B",
+        "expected_experience": "Strong balance of quality and deployability",
+        "notes": "Practical self-hosted choice for many production apps."
+      },
+      {
+        "profile": "Enterprise deployment",
+        "recommended_variant": "V3.2 or V3.1",
+        "expected_experience": "Best hosted quality for agentic chat and tool use",
+        "notes": "Prefer managed endpoints when latency/ops matter more than model ownership."
+      },
+      {
+        "profile": "Reasoning deployment",
+        "recommended_variant": "R1 or R1-0528",
+        "expected_experience": "Highest reasoning emphasis",
+        "notes": "Use when multi-step deliberation is central to correctness."
+      },
+      {
+        "profile": "Coding deployment",
+        "recommended_variant": "DeepSeek-Coder 33B",
+        "expected_experience": "Strong code intelligence",
+        "notes": "Prefer the larger coder checkpoint when code quality dominates cost."
+      },
+      {
+        "profile": "Long-context deployment",
+        "recommended_variant": "V3.2",
+        "expected_experience": "Best family option in retrieved hosted sources",
+        "notes": "MLA and hosted context support make it the most deployment-friendly long-context choice here."
+      },
+      {
+        "profile": "Distilled reasoning deployment",
+        "recommended_variant": "R1 Distill 7B/8B/14B/32B",
+        "expected_experience": "Lower-cost reasoning with better local runtime fit",
+        "notes": "Dense checkpoints are simpler to serve than frontier MoE models."
+      },
+      {
+        "profile": "Tool-enhanced reasoning deployment",
+        "recommended_variant": "V3.1 or V3.2",
+        "expected_experience": "Best balance of reasoning and tool-use behavior",
+        "notes": "Official release positioning frames these as agent-era models."
+      }
+    ],
+    "runtime_matrix": [
+      {
+        "runtime": "Transformers",
+        "supports": [
+          "Base checkpoint loading"
+        ],
+        "official": true,
+        "priority": "recommended",
+        "notes": "Primary ecosystem for open checkpoints and fine-tuning workflows."
+      },
+      {
+        "runtime": "vLLM",
+        "supports": [
+          "Serving / rendering support"
+        ],
+        "official": true,
+        "priority": "recommended",
+        "notes": "vLLM documents DeepSeek-specific renderers/support paths for the family, indicating active inference support."
+      },
+      {
+        "runtime": "SGLang",
+        "supports": [
+          "Serving / agent pipelines"
+        ],
+        "official": true,
+        "priority": "supported",
+        "notes": "Community deployment support is established for DeepSeek-family reasoning models; official confirmation not retrieved here."
+      },
+      {
+        "runtime": "Hugging Face",
+        "supports": [
+          "Checkpoint distribution"
+        ],
+        "official": true,
+        "priority": "recommended",
+        "notes": "Official open artifacts are distributed through HF-compatible releases."
+      },
+      {
+        "runtime": "Bedrock",
+        "supports": [
+          "Hosted inference"
+        ],
+        "official": true,
+        "priority": "recommended",
+        "notes": "Managed DeepSeek V3.2 and R1 surfaces are documented by AWS."
+      },
+      {
+        "runtime": "Vertex AI",
+        "supports": [
+          "Hosted inference"
+        ],
+        "official": true,
+        "priority": "supported",
+        "notes": "Google documents DeepSeek model access paths on Vertex AI."
+      },
+      {
+        "runtime": "GitHub",
+        "supports": [
+          "Official repository access"
+        ],
+        "official": true,
+        "priority": "supported",
+        "notes": "Official repositories provide release context and artifacts."
+      }
+    ]
+  },
+  "related_resources": [
+    {
+      "relationship": "recommended_for",
+      "resource_type": "workflow",
+      "resource_slug": "llm-application-serving",
+      "reason": "Production serving pipeline"
+    },
+    {
+      "relationship": "used_with",
+      "resource_type": "package",
+      "resource_slug": "pytorch",
+      "reason": "Primary model loading library"
+    },
+    {
+      "relationship": "used_with",
+      "resource_type": "pattern",
+      "resource_slug": "kv-cache",
+      "reason": "KV cache optimization"
+    },
+    {
+      "relationship": "used_with",
+      "resource_type": "pattern",
+      "resource_slug": "streaming-inference",
+      "reason": "Streaming token generation"
+    }
+  ],
+  "created_at": "2026-07-17",
+  "updated_at": "2026-07-17",
   "sources": [
     "https://arxiv.org/pdf/2501.12948.pdf",
-    "https://arxiv.org/abs/2412.19437",
-    "https://huggingface.co/deepseek-ai/DeepSeek-R1"
+    "https://arxiv.org/pdf/2412.19437.pdf",
+    "https://api-docs.deepseek.com/updates",
+    "https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-deepseek-deepseek-v3-2.html",
+    "https://docs.aws.amazon.com/zh_cn/bedrock/latest/userguide/model-card-deepseek-deepseek-r1.html",
+    "https://arxiv.org/pdf/2406.11931.pdf",
+    "https://arxiv.org/pdf/2401.14196.pdf",
+    "https://arxiv.org/pdf/2405.04434.pdf",
+    "https://arxiv.org/abs/2502.11164",
+    "https://docs.vllm.ai/en/latest/api/vllm/renderers/deepseek_v4/",
+    "https://arxiv.org/abs/2605.02821",
+    "https://api-docs.deepseek.com/news/news251201/",
+    "https://docs.cloud.google.com/vertex-ai/generative-ai/docs/maas/deepseek?hl=zh-cn",
+    "https://api-docs.deepseek.com/zh-cn/news/news250528/",
+    "https://api-docs.deepseek.com/news/news250528/",
+    "https://github.com/deepseek-ai/DeepSeek-R1/commit/7ca5e1e7f75e12a1c561fffaa6aa686708f881ae",
+    "https://api-docs.deepseek.com/news/news250821/",
+    "https://api-docs.deepseek.com/guides/comparison_testing"
   ],
   "tags": [
-    "deepseek",
-    "r1",
-    "v3",
-    "moe",
-    "inference",
+    "llm",
+    "open-weight",
+    "self-hosting",
+    "agents",
     "reasoning",
     "distill",
-    "quantization"
+    "quantization",
+    "moe"
   ],
   "aliases": [
     "DeepSeek R1",

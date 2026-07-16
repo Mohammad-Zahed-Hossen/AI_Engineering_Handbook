@@ -1,0 +1,172 @@
+{
+  "id": "3-1-405b-instruct",
+  "slug": "llama-3.1-405b-instruct",
+  "title": "Llama 3.1 405B Instruct",
+  "name": "Llama 3.1 405B Instruct",
+  "description": "Llama 3.1 405B Instruct is the largest production-targeted checkpoint in the Llama 3.1 family and is aimed at high-budget reasoning, synthetic data generation, and long-context workloads where maximum open-weight capability matters more than serving efficiency.",
+  "family_id": "llama-3",
+  "specifications": {
+    "parameter_count": 405000,
+    "vocab_size": 128000,
+    "context_window": 128000
+  },
+  "formats": {
+    "safetensors": true,
+    "gguf": true,
+    "awq": true,
+    "gptq": true,
+    "mlx": true,
+    "onnx": true,
+    "tensorrt": true
+  },
+  "hardware": {
+    "minimum_gpu_memory": 640000,
+    "recommended_gpu_memory": 640000,
+    "minimum_ram": 128000,
+    "recommended_ram": 256000,
+    "recommended_gpu": "NVIDIA H100/A100-class multi-GPU servers"
+  },
+  "downloads": [
+    {
+      "platform": "Hugging Face model card",
+      "url": "https://huggingface.co/meta-llama/Llama-3.1-405B-Instruct",
+      "official": true,
+      "notes": "Official model checkpoint and license entry point."
+    }
+  ],
+  "runtime_compatibility": [
+    {
+      "runtime": "Hugging Face Transformers",
+      "supported": true,
+      "minimum_version": "4.43.0+",
+      "notes": "Official model card and community artifacts show Transformers-based loading paths, typically with accelerated sharded loading."
+    },
+    {
+      "runtime": "vLLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Meta’s release materials and community examples show vLLM as a first-class deployment path for 405B."
+    },
+    {
+      "runtime": "TensorRT-LLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Recommended for high-end GPU inference after conversion; runtime version not specified in official model card."
+    },
+    {
+      "runtime": "llama.cpp",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Community builds exist, but practical use is mainly for compressed or experimental deployments."
+    },
+    {
+      "runtime": "SGLang",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Community support exists for serving large Llama-family models; verify exact release compatibility in the runtime docs."
+    }
+  ],
+  "deployment": {
+    "supported_runtimes": [
+      "Transformers",
+      "vLLM",
+      "TensorRT-LLM",
+      "llama.cpp",
+      "SGLang"
+    ],
+    "recommended_runtime": "vLLM",
+    "quantizations": [
+      "BF16",
+      "FP8",
+      "INT8",
+      "INT4",
+      "AWQ",
+      "GPTQ"
+    ],
+    "recommended_quantization": "Use BF16 or FP8 if you are prioritizing fidelity and can afford memory; use quantized deployments only when the memory reduction is the difference between deployable and not deployable, and validate on your target tasks first.",
+    "cpu_supported": true,
+    "gpu_supported": true,
+    "mps_supported": false
+  },
+  "license_info": {
+    "name": "Llama 3.1 Community License",
+    "commercial_use": true,
+    "modification": true,
+    "redistribution": true,
+    "attribution_required": true,
+    "notes": "The model card’s license governs redistribution, commercial terms, and required notices; verify exact obligations before external release or product embedding."
+  },
+  "status": {
+    "release_date": "2024-07-23",
+    "last_verified": "2026-07-17",
+    "maintenance_status": "production"
+  },
+  "engineering_snapshot": {
+    "best_for": [
+      "High-budget reasoning systems where quality improvements justify multi-GPU cost.",
+      "Synthetic data generation pipelines where top-tier open-weight capability is valuable.",
+      "Long-context research or analysis workloads that can amortize expensive inference across higher-value tasks."
+    ],
+    "avoid_for": [
+      "Cost-sensitive production chat where 8B or 70B are sufficient.",
+      "Edge, mobile, or CPU-first serving.",
+      "Teams that cannot operate sharded multi-GPU inference reliably."
+    ],
+    "deployment_complexity": "high",
+    "production_ready": true,
+    "recommended_use_case": "datacenter-scale inference for premium reasoning and synthetic-data generation where open-weight control is more important than serving cost.",
+    "deployment_risks": [
+      "Underestimating memory headroom for 128K context, batching, and KV cache.",
+      "Operational complexity of orchestrating sharded multi-GPU inference reliably."
+    ],
+    "failure_modes": [
+      "Out-of-memory (OOM) errors during long-context or high-concurrency requests.",
+      "Severe latency spikes if interconnect bandwidth and tensor parallelism are not properly tuned."
+    ],
+    "common_mistakes": [
+      "Sizing memory calculations purely on base checkpoint size rather than factoring in KV cache memory at scale.",
+      "Failing to validate task quality on quantized configurations before production rollout."
+    ],
+    "operational_notes": [
+      "Meta’s release positions 405B as the largest Llama 3.1 model with 128K context, which means inference must account for very large KV-cache and tensor-parallel memory pressure.",
+      "Community and official ecosystem examples show 405B being deployed through sharded GPU serving and conversion-based workflows; multi-GPU topology, interconnect, and checkpoint format are first-order concerns.",
+      "FP8 and other quantized paths exist in the community ecosystem and can make the difference between feasible and infeasible deployment, but quality validation is mandatory because the model’s value proposition is its upper-end capability.",
+      "Use the official tokenizer and model-card prompt format; any tokenizer or chat-template mismatch is amplified at 405B scale because small systematic errors become expensive across large deployments.",
+      "Variant differentiation (Identity): 405B is the family’s ceiling on capability and cost; it is the variant to choose only when the quality uplift is worth datacenter-scale inference overhead.",
+      "Variant differentiation (File Formats): 405B is frequently distributed and consumed through quantized or specialized serving artifacts because the base checkpoint is too large for straightforward deployment in most environments.",
+      "Variant differentiation (Hardware Requirements): 405B is not a “single node, single GPU” model; hardware selection is the dominant design decision, and any production plan starts with interconnect, memory bandwidth, and shard strategy.",
+      "Variant differentiation (Downloads): use the official model card as the source of truth for downloads and any checksum/artifact metadata.",
+      "Variant differentiation (Runtime Compatibility): 405B is runtime-sensitive; the main compatibility issue is not whether a runtime loads the model, but whether it can keep throughput and memory stable at scale.",
+      "Variant differentiation (Deployment): deployment decisions are dominated by cluster architecture and quantization policy; the model itself is less of an issue than the serving substrate.",
+      "Variant differentiation (License): because 405B is likely to be used in high-value commercial systems, license review is a launch-blocking task rather than a paperwork detail.",
+      "Variant differentiation (Status): this is a released production checkpoint, not a temporary research artifact; operational risk comes from scale, not from model maturity.",
+      "Variant differentiation (Engineering Snapshot): 405B is the “quality-first” choice in the family; the engineering question is almost always whether the additional capability will actually monetize or materially improve downstream outcomes.",
+      "Variant differentiation (Engineering Notes): 405B’s operational complexity is not optional overhead — it is inherent to the model’s size and must be treated as part of the selection decision itself."
+    ]
+  },
+  "created_at": "2026-07-17",
+  "updated_at": "2026-07-17",
+  "sources": [
+    "https://arxiv.org/pdf/2408.11857",
+    "https://arxiv.org/pdf/2503.04378",
+    "https://arxiv.org/html/2501.18578",
+    "https://huggingface.co/meta-llama/Llama-3.1-405B-Instruct"
+  ],
+  "tags": [
+    "llm",
+    "open-weight",
+    "self-hosting",
+    "agents",
+    "tool-use"
+  ],
+  "aliases": [],
+  "keywords": [
+    "Llama 3.1 405B Instruct",
+    "Llama 3.1",
+    "405B model"
+  ],
+  "search_tokens": [
+    "llama 3.1 405b",
+    "llama 3.1 405b instruct"
+  ]
+}

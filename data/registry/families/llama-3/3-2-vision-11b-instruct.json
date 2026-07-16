@@ -1,0 +1,179 @@
+{
+  "id": "3-2-vision-11b-instruct",
+  "slug": "llama-3.2-vision-11b-instruct",
+  "title": "Llama 3.2-Vision 11B Instruct",
+  "name": "Llama 3.2-Vision 11B Instruct",
+  "description": "Llama 3.2-Vision 11B Instruct is Meta’s production multimodal checkpoint for image understanding, document analysis, captioning, and assistant-style question answering over image+text inputs.",
+  "family_id": "llama-3",
+  "size_mb": 22000,
+  "specifications": {
+    "parameter_count": 11000,
+    "context_window": 128000
+  },
+  "formats": {
+    "safetensors": true,
+    "gguf": true,
+    "awq": true,
+    "gptq": true,
+    "mlx": true,
+    "onnx": true,
+    "tensorrt": true
+  },
+  "hardware": {
+    "minimum_gpu_memory": 24000,
+    "recommended_gpu_memory": 40000,
+    "minimum_ram": 16000,
+    "recommended_ram": 32000,
+    "recommended_gpu": "NVIDIA L40S/A100-class GPUs"
+  },
+  "downloads": [
+    {
+      "platform": "Hugging Face model card",
+      "url": "https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct",
+      "official": true,
+      "notes": "Official checkpoint and license entry point."
+    },
+    {
+      "platform": "Meta Llama downloads",
+      "url": "https://ai.meta.com/resources/models-and-libraries/llama-downloads/",
+      "official": true,
+      "notes": "Official Meta access/download path."
+    }
+  ],
+  "runtime_compatibility": [
+    {
+      "runtime": "Hugging Face Transformers",
+      "supported": true,
+      "minimum_version": "4.45.0+",
+      "notes": "Official model card shows Transformers usage for image+text input."
+    },
+    {
+      "runtime": "torchchat / ExecuTorch",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Meta release materials position these as official local/on-device paths for Llama 3.2."
+    },
+    {
+      "runtime": "Ollama",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Meta release blog lists single-node distribution via Ollama."
+    },
+    {
+      "runtime": "vLLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Community support exists; verify current multimodal compatibility against runtime docs."
+    },
+    {
+      "runtime": "TensorRT-LLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Supported through ecosystem conversion workflows for NVIDIA deployments."
+    }
+  ],
+  "deployment": {
+    "supported_runtimes": [
+      "Transformers",
+      "torchchat / ExecuTorch",
+      "Ollama",
+      "vLLM",
+      "TensorRT-LLM"
+    ],
+    "recommended_runtime": "Transformers",
+    "quantizations": [
+      "BF16",
+      "INT8",
+      "INT4",
+      "AWQ",
+      "GPTQ"
+    ],
+    "recommended_quantization": "Use BF16 for production image understanding when possible; use quantization only when memory budget is the gating constraint and you have validated image tasks on your workload.",
+    "cpu_supported": true,
+    "gpu_supported": true,
+    "mps_supported": false
+  },
+  "license_info": {
+    "name": "Llama 3.2 Community License",
+    "commercial_use": true,
+    "modification": true,
+    "redistribution": true,
+    "attribution_required": true,
+    "notes": "The license governs multimodal use, redistribution, required attribution, and the commercial threshold; the model card also notes an EU restriction for multimodal models."
+  },
+  "status": {
+    "release_date": "2024-09-25",
+    "last_verified": "2026-07-17",
+    "maintenance_status": "production"
+  },
+  "engineering_snapshot": {
+    "best_for": [
+      "Document understanding workflows with charts, tables, and layout-heavy images.",
+      "Visual question answering and captioning services.",
+      "Multimodal assistants that need image+text input and text output in production."
+    ],
+    "avoid_for": [
+      "Text-only chat where a smaller Llama text checkpoint will meet quality needs.",
+      "Ultra-low-memory edge devices that cannot handle a vision adapter and image tokens.",
+      "High-throughput pipelines that do not need image understanding and would pay unnecessary multimodal overhead."
+    ],
+    "deployment_complexity": "high",
+    "production_ready": true,
+    "recommended_use_case": "production multimodal inference for image understanding and document-centric assistants.",
+    "deployment_risks": [
+      "Multimodal serving overhead including image preprocessing, adapter execution, and image-token memory.",
+      "Degraded accuracy or compatibility issues under aggressive quantization without validation."
+    ],
+    "failure_modes": [
+      "Tokenization/adapter mismatch in runtimes that lack proper multimodal support.",
+      "Silent quality regression or OOM failures when processing complex or multi-image documents."
+    ],
+    "common_mistakes": [
+      "Attempting multi-image or unsupported multilingual image workflows without systematic validation.",
+      "Sizing memory allocation purely based on text-only footprint without planning for vision-token memory inflation."
+    ],
+    "operational_notes": [
+      "The model uses a separately trained vision adapter with cross-attention into the base Llama 3.1 language model, so image-token handling is part of the inference cost model and not an optional feature.",
+      "Meta positions 11B Vision for local, on-prem, cloud, and on-device distributions through Llama Stack, ExecuTorch, and partner ecosystems, which means deployment planning should include both accelerator choice and adapter-compatible runtime selection.",
+      "The release notes recommend device-specific distribution paths and note BF16 weights; quantized variants were discussed as future work, so compression should be treated as an optimization layer rather than the baseline deployment mode.",
+      "The model card documents image+text prompting with Transformers 4.45.0+, and the release blog notes that only English is officially supported for image+text applications, which affects international deployment scope.",
+      "Variant differentiation (Identity): this variant is the family’s mid-size vision checkpoint, optimized for image reasoning and doc-style workflows, while remaining substantially easier to serve than 90B.",
+      "Variant differentiation (File Formats): because this is a vision-language model, format support is less universal than text-only Llama checkpoints and often depends on runtime-specific multimodal adapters.",
+      "Variant differentiation (Hardware Requirements): 11B vision sits in the “serious single-node multimodal” band — far more feasible than 90B, but still expensive enough that image token handling and KV cache planning matter.",
+      "Variant differentiation (Downloads): the official Hugging Face repo is the practical distribution point, while Meta’s download page governs access and licensing.",
+      "Variant differentiation (Runtime Compatibility): this variant requires a runtime that handles both the language model and the vision adapter path; “text-only compatible” is not sufficient.",
+      "Variant differentiation (Deployment): multimodal serving introduces image preprocessing, adapter execution, and image-token memory overhead, so deployment risk is higher than for text-only checkpoints of similar size.",
+      "Variant differentiation (License): because this is multimodal, the license has extra deployment implications beyond the text-only family, especially for geographic and product distribution policy.",
+      "Variant differentiation (Status): this is a released production checkpoint with explicit multimodal support, not an experimental adapter demo.",
+      "Variant differentiation (Engineering Snapshot): the main decision is not just model size but whether you need a vision stack at all; if yes, 11B is the family’s most practical quality/feasibility balance.",
+      "Variant differentiation (Engineering Notes): 11B Vision is the first Llama 3.2 tier where multimodal correctness is a core product risk, so input policy and runtime validation matter as much as raw model selection."
+    ]
+  },
+  "created_at": "2026-07-17",
+  "updated_at": "2026-07-17",
+  "sources": [
+    "https://ecios.org/DOIx.php?id=10.4055/cios25183",
+    "https://ieeexplore.ieee.org/document/11084278/",
+    "https://ieeexplore.ieee.org/document/11240166/",
+    "https://arxiv.org/abs/2504.14098",
+    "http://ijsrcseit.com/home/article/view/CSEIT25111238",
+    "https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct"
+  ],
+  "tags": [
+    "llm",
+    "open-weight",
+    "self-hosting",
+    "agents",
+    "multimodal"
+  ],
+  "aliases": [],
+  "keywords": [
+    "Llama 3.2-Vision 11B Instruct",
+    "Llama 3.2",
+    "11B model"
+  ],
+  "search_tokens": [
+    "llama 3.2 vision 11b",
+    "llama 3.2-vision 11b instruct"
+  ]
+}

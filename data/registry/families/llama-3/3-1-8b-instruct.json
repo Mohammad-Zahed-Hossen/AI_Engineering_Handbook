@@ -1,0 +1,171 @@
+{
+  "id": "3-1-8b-instruct",
+  "slug": "llama-3.1-8b-instruct",
+  "title": "Llama 3.1 8B Instruct",
+  "name": "Llama 3.1 8B Instruct",
+  "description": "Llama 3.1 8B Instruct is an instruction-tuned 8B-parameter member of the Llama 3 family designed for production single-GPU deployments, multilingual chat, RAG, and agent workloads where a balance of quality and cost is required.",
+  "family_id": "llama-3",
+  "specifications": {
+    "parameter_count": 8000,
+    "vocab_size": 128000,
+    "context_window": 128000
+  },
+  "formats": {
+    "safetensors": true,
+    "gguf": true,
+    "awq": true,
+    "gptq": true,
+    "mlx": true,
+    "onnx": true,
+    "tensorrt": true
+  },
+  "hardware": {
+    "minimum_gpu_memory": 32000,
+    "recommended_gpu_memory": 80000,
+    "minimum_ram": 32000,
+    "recommended_ram": 64000,
+    "recommended_gpu": "NVIDIA A5000/A10/A100-class"
+  },
+  "downloads": [
+    {
+      "platform": "Hugging Face model card",
+      "url": "https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct",
+      "official": true,
+      "notes": "Official model card and access point for weights and tokenizer; authoritative source for checkpoints and license."
+    }
+  ],
+  "runtime_compatibility": [
+    {
+      "runtime": "Hugging Face Transformers",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Loading and fine-tuning supported; heavy for large context without optimized kernels. Official model card points to integration examples."
+    },
+    {
+      "runtime": "vLLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Recommended for high-throughput single-GPU/cluster inference and long-context workloads; community docs include Llama 3 guidance."
+    },
+    {
+      "runtime": "llama.cpp",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Community GGUF builds enable CPU/edge inference for 8B with quantization (AWQ/GGUF); use quantized artifacts for performance."
+    },
+    {
+      "runtime": "TensorRT-LLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Vendor conversion required for GPU-optimized inference; recommended for high-throughput production GPU deployments."
+    },
+    {
+      "runtime": "LM Studio / Ollama",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Developer runtimes with community support; suitable for local testing and packaging."
+    }
+  ],
+  "deployment": {
+    "supported_runtimes": [
+      "Transformers",
+      "vLLM",
+      "llama.cpp",
+      "TensorRT-LLM",
+      "LM Studio / Ollama"
+    ],
+    "recommended_runtime": "vLLM",
+    "quantizations": [
+      "INT8",
+      "INT4",
+      "AWQ",
+      "GPTQ"
+    ],
+    "recommended_quantization": "AWQ or GPTQ (8-bit or 4-bit variants) validated on held-out tasks to balance memory reduction and instruction-following fidelity; prefer AWQ/GPTQ community pipelines with evaluation against development tasks before production rollout.",
+    "cpu_supported": true,
+    "gpu_supported": true,
+    "mps_supported": false
+  },
+  "license_info": {
+    "name": "Llama 3.1 Community License",
+    "commercial_use": true,
+    "modification": true,
+    "redistribution": true,
+    "attribution_required": true,
+    "notes": "Licensing and permitted uses are authoritative on the official model card; do not deploy for uses outside allowed license terms."
+  },
+  "status": {
+    "release_date": "2024-07-23",
+    "last_verified": "2026-07-17",
+    "maintenance_status": "production"
+  },
+  "engineering_snapshot": {
+    "best_for": [
+      "Instruction-following chat and agent backends for mid-scale production (single-GPU) with moderate throughput requirements.",
+      "RAG systems where a moderately-sized dense model is preferable for cost-quality trade-offs.",
+      "On-premise self-hosting where data control and fine-tuning matter and 8B footprint fits infra constraints."
+    ],
+    "avoid_for": [
+      "Highest-quality multi-turn reasoning where 70B+ variants demonstrably outperform on edge-case reasoning tasks.",
+      "Extremely latency-sensitive microservices with sub-10ms SLOs.",
+      "Workloads that mandate vendor-hosted SLA-only models or have incompatible licensing constraints."
+    ],
+    "deployment_complexity": "moderate",
+    "production_ready": true,
+    "recommended_use_case": "Cost-conscious production chat/agent deployments requiring instruction-following, multilingual coverage, and ability to run on single high-memory GPU or quantized CPU for edge.",
+    "deployment_risks": [
+      "Quantization-induced silent quality regressions on instruction-following or code generation tasks.",
+      "Out-of-memory (OOM) or high latency spikes when running 128K context workloads on resource-constrained GPUs."
+    ],
+    "failure_modes": [
+      "Severe quality/latency degradation if context window is not aggressively capped or properly sharded.",
+      "Tokenization and encoding issues from using incorrect or non-standard tokenizers."
+    ],
+    "common_mistakes": [
+      "Over-relying on community quantized artifacts without systematic task-level validation.",
+      "Attempting large-context inference without FlashAttention or vLLM-optimized memory kernels."
+    ],
+    "operational_notes": [
+      "GQA reduces inference memory and compute for this family’s 8B variant relative to naive attention implementations — ensure runtime supports or emulates GQA-efficient kernels for best performance.",
+      "Quantized GGUF/AWQ/GPTQ builds reduce GPU/CPU memory but require task-specific validation; measure instruction-following fidelity and code generation quality before production rollout.",
+      "Single-GPU deployment is realistic with FP16 or INT8/GPTQ quantization on modern consumer/professional GPUs; for high-throughput or long-context (128K) use vLLM with multi-GPU or high-memory GPU instances.",
+      "Use vLLM or TensorRT-LLM conversions to leverage FlashAttention/optimized GPU kernels for throughput gains. For CPU/edge, use llama.cpp GGUF quantized artifacts with AWQ/GPTQ. Monitor latency-vs-quality trade-offs after quantization.",
+      "Use the official 128K tokenizer artifact from the model card to avoid tokenization mismatch; tokenizer/vocab mismatch causes encoding and downstream fidelity issues.",
+      "Prompting format: follow the instruction templates documented in model card discussions to match instruction-tuned behavior.",
+      "Variant differentiation (Identity): Parameter count (8B) is the primary differentiator vs. 3.1-70B/405B — this variant targets single-GPU or light multi-GPU serving with lower infra cost while preserving instruction-tuned behavior; many lower-level spec fields are available only in official model card artifacts and should be sourced per-deployment.",
+      "Variant differentiation (File Formats): 8B instruct variant has the broadest community availability of quantized/edge formats relative to larger variants; prefer official safetensors for conversion to GGUF/GPTQ/AWQ to preserve fidelity.",
+      "Variant differentiation (Hardware Requirements): Compared with 70B/405B, the 8B instruct variant is realistically deployable on a single high-memory GPU with quantization, enabling lower infra complexity and cost for production chat/agent services.",
+      "Variant differentiation (Downloads): Use the official Hugging Face model card as the canonical download and metadata source for this variant; community mirrors exist but validate checksums against the official card.",
+      "Variant differentiation (Runtime Compatibility): 3.1-8B instruct is supported by the widest set of runtimes with mature community conversion paths; preferred production runtimes are vLLM for server-side throughput and llama.cpp/GGUF for edge/CPU use.",
+      "Variant differentiation (Deployment): 8B instruct is the most pragmatic variant for single-GPU production or CPU-deployed quantized instances; choose quantization level based on quality validation and latency targets.",
+      "Variant differentiation (License): Always consult the model card before commercial deployment—license terms can differ between base, instruct, and safety variants.",
+      "Variant differentiation (Status): production (officially published instruct checkpoint intended for deployment)."
+    ]
+  },
+  "created_at": "2026-07-17",
+  "updated_at": "2026-07-17",
+  "sources": [
+    "https://www.semanticscholar.org/paper/03b5ba9608842ea5bfd62f52c6c2bf676420fd9f",
+    "https://arxiv.org/abs/2508.01059",
+    "https://arxiv.org/abs/2603.29206",
+    "https://www.semanticscholar.org/paper/69d0f037983aa3f3cc4af6d875eb1cd4c34e27c4",
+    "https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct"
+  ],
+  "tags": [
+    "llm",
+    "open-weight",
+    "self-hosting",
+    "agents",
+    "tool-use"
+  ],
+  "aliases": [],
+  "keywords": [
+    "Llama 3.1 8B Instruct",
+    "Llama 3.1",
+    "8B model"
+  ],
+  "search_tokens": [
+    "llama 3.1 8b",
+    "llama 3.1 8b instruct"
+  ]
+}

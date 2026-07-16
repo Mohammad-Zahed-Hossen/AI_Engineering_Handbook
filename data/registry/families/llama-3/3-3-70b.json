@@ -1,8 +1,10 @@
 {
   "id": "3-3-70b",
-  "family_id": "llama-3",
+  "slug": "3-3-70b",
+  "title": "Llama 3.3 70B",
   "name": "Llama 3.3 70B",
   "description": "Llama 3.3 is a state-of-the-art open-weights large language model developed by Meta.",
+  "family_id": "llama-3",
   "size_mb": 140000,
   "specifications": {
     "parameter_count": 70000,
@@ -118,7 +120,23 @@
     "avoid_for": ["resource-constrained environments", "vision tasks"],
     "deployment_complexity": "moderate",
     "production_ready": true,
-    "recommended_use_case": "Production LLM deployment with vLLM or Llama.cpp"
+    "recommended_use_case": "Production LLM deployment with vLLM or Llama.cpp",
+    "deployment_risks": [
+      "KV cache memory grows with 128K context window",
+      "Tensor parallelism required for multi-GPU deployment"
+    ],
+    "failure_modes": [
+      "Out-of-memory with full context and batch size",
+      "Tokenizer mismatch with older Llama variants"
+    ],
+    "hidden_costs": [
+      "80GB GPU recommended for full quality",
+      "Quantization tuning for production quality"
+    ],
+    "scaling_issues": [
+      "Tensor parallelism for multi-GPU serving",
+      "KV cache management at high concurrency"
+    ]
   },
   "deployment": {
     "supported_runtimes": ["vLLM", "Transformers", "Llama.cpp", "Ollama", "TensorRT-LLM"],

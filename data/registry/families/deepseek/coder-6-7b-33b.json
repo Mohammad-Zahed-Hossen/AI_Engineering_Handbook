@@ -1,0 +1,171 @@
+{
+  "id": "coder-6-7b-33b",
+  "slug": "deepseek-coder-6-7b-33b",
+  "title": "DeepSeek-Coder 6.7B / 33B",
+  "name": "DeepSeek-Coder 6.7B / 33B",
+  "description": "DeepSeek-Coder 6.7B / 33B is the code-specialized branch of the DeepSeek family and is the variant to choose when code completion, infill, repository-aware generation, and code-adjacent reasoning need to be productionized rather than treated as a general chat problem.",
+  "family_id": "deepseek",
+  "specifications": {
+    "context_window": 16000
+  },
+  "formats": {
+    "safetensors": true,
+    "gguf": false,
+    "awq": false,
+    "gptq": false,
+    "mlx": false,
+    "onnx": false,
+    "tensorrt": false
+  },
+  "hardware": {
+    "recommended_gpu": "For the 33B variant, community guidance strongly favors high-memory GPUs or multi-GPU serving; for 6.7B, a smaller single-GPU footprint is workable with quantization."
+  },
+  "downloads": [
+    {
+      "platform": "Hugging Face",
+      "url": "https://huggingface.co/deepseek-ai/deepseek-coder-6.7b-base",
+      "official": true,
+      "notes": "Official base checkpoint for the 6.7B code model."
+    },
+    {
+      "platform": "DeepSeek GitHub",
+      "url": "https://github.com/deepseek-ai/DeepSeek-Coder",
+      "official": true,
+      "notes": "Official repository referenced by the model card and paper."
+    },
+    {
+      "platform": "DeepSeek-Coder paper",
+      "url": "https://arxiv.org/pdf/2401.14196.pdf",
+      "official": true,
+      "notes": "Official technical report for the 6.7B/33B family."
+    }
+  ],
+  "runtime_compatibility": [
+    {
+      "runtime": "vLLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "vLLM’s recipe index includes DeepSeek-Coder family support as part of its DeepSeek model coverage."
+    },
+    {
+      "runtime": "Hugging Face Transformers",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "The official Hugging Face model card demonstrates AutoTokenizer and AutoModelForCausalLM usage."
+    },
+    {
+      "runtime": "SGLang",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Canonical serving stack for code LLMs, but no minimum version was published in the retrieved official sources."
+    },
+    {
+      "runtime": "llama.cpp",
+      "supported": false,
+      "minimum_version": "Latest stable",
+      "notes": "No official compatibility statement was retrieved."
+    },
+    {
+      "runtime": "TensorRT-LLM",
+      "supported": false,
+      "minimum_version": "Latest stable",
+      "notes": "No official compatibility statement was retrieved."
+    }
+  ],
+  "deployment": {
+    "supported_runtimes": [
+      "Transformers",
+      "vLLM",
+      "SGLang"
+    ],
+    "recommended_runtime": "vLLM",
+    "quantizations": [
+      "FP16",
+      "BF16"
+    ],
+    "recommended_quantization": "BF16 for the 33B model when fidelity is the priority; use lower-bit quantization for 6.7B when latency and cost matter more than maximum code quality.",
+    "cpu_supported": false,
+    "gpu_supported": true,
+    "mps_supported": false
+  },
+  "license_info": {
+    "name": "MIT License for code; Model License applies to weights",
+    "commercial_use": true,
+    "modification": true,
+    "redistribution": true,
+    "attribution_required": true,
+    "notes": "The official paper and model card both state permissive usage, including commercial use, for DeepSeek-Coder models."
+  },
+  "status": {
+    "release_date": "2024-01-26",
+    "last_verified": "2026-07-17",
+    "maintenance_status": "research"
+  },
+  "engineering_snapshot": {
+    "best_for": [
+      "Code completion and code infill in developer tools.",
+      "Repository-aware generation where 16K context is enough for local file neighborhoods.",
+      "Code-heavy workflows that need better quality than general-purpose chat models at the same size class."
+    ],
+    "avoid_for": [
+      "Non-code workloads where a general chat model would be more cost-efficient.",
+      "Very long repository contexts that exceed the model’s reliable 16K operating range.",
+      "Small deployment targets that cannot absorb the 33B memory footprint without heavy quantization or multi-GPU partitioning."
+    ],
+    "deployment_complexity": "moderate",
+    "production_ready": true,
+    "recommended_use_case": "Use the 6.7B variant for cost-sensitive code assistants and the 33B variant when code quality justifies a much larger inference footprint.",
+    "deployment_risks": [
+      "Memory sharding issues and latency overhead when partitioning the 33B variant on multi-GPU hardware.",
+      "Incorrect infill parser behavior in downstream IDE extensions if the token formatting template is custom-coded incorrectly."
+    ],
+    "failure_modes": [
+      "OOM failures under concurrent long-context queries for the 33B variant.",
+      "Broken Fill-In-the-Middle formatting parser causing text generation loop."
+    ],
+    "common_mistakes": [
+      "Treating 33B as a drop-in replacement for 6.7B without resizing the deployment footprint usually causes memory pressure and throughput collapse.",
+      "Running inference in native FP16/BF16 on low-memory servers without using a quantized format for 6.7B."
+    ],
+    "operational_notes": [
+      "The model was trained with Fill-In-the-Middle and next-token prediction, so serving should preserve infill-aware prompting and not collapse the model into plain left-to-right completion only.",
+      "The 33B model uses grouped-query attention with group size 8, which is the main architectural difference that matters for serving efficiency and memory behavior relative to the 6.7B variant.",
+      "The paper recommends FIM-aware prompting and notes that CoT-style prompting can improve difficult coding tasks, especially for instruction-tuned variants, so prompt policy has material quality impact.",
+      "The official model card shows standard Hugging Face loading with trust_remote_code=True, so production integration should assume custom model code rather than a generic, architecture-agnostic loader path.",
+      "Variant differentiation (Identity): DeepSeek-Coder 6.7B / 33B is the code-specialized branch of the DeepSeek family and is the variant to choose when code completion, infill, repository-aware generation, and code-adjacent reasoning need to be productionized rather than treated as a general chat problem.",
+      "Variant differentiation (File Formats): Safetensors format is officially published, while GGUF/AWQ/GPTQ and Apple Silicon MLX/ONNX formats are Not Published in official checkpoints.",
+      "Variant differentiation (Hardware Requirements): 6.7B is comfortable on single-GPU in 4-bit/8-bit forms, while 33B requires multi-GPU layouts or high-memory nodes.",
+      "Variant differentiation (Downloads): official checkpoints include Hugging Face base checkpoints, the main GitHub repository, and the technical paper.",
+      "Variant differentiation (Runtime Compatibility): vLLM recipes index DeepSeek-Coder families directly, while edge llama.cpp support has no official compatibility statement.",
+      "Variant differentiation (Deployment): 33B uses Grouped-Query Attention (GQA) for memory savings, whereas 6.7B relies on standard attention.",
+      "Variant differentiation (License): MIT License applies to the code repository, while weights are subject to the model card license terms.",
+      "Variant differentiation (Status): research maintenance status."
+    ]
+  },
+  "created_at": "2026-07-17",
+  "updated_at": "2026-07-17",
+  "sources": [
+    "https://arxiv.org/pdf/2401.14196.pdf",
+    "https://huggingface.co/deepseek-ai/deepseek-coder-6.7b-base",
+    "https://docs.vllm.ai/projects/recipes/en/stable/",
+    "https://github.com/deepseek-ai/DeepSeek-Coder"
+  ],
+  "tags": [
+    "llm",
+    "open-weight",
+    "self-hosting",
+    "agents",
+    "reasoning",
+    "coding"
+  ],
+  "aliases": [],
+  "keywords": [
+    "DeepSeek-Coder",
+    "DeepSeek",
+    "coder-6.7b-33b model"
+  ],
+  "search_tokens": [
+    "deepseek coder 6.7b",
+    "deepseek coder 33b"
+  ]
+}

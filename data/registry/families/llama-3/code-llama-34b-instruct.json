@@ -1,0 +1,183 @@
+{
+  "id": "code-llama-34b-instruct",
+  "slug": "code-llama-34b-instruct",
+  "title": "Code Llama 34B Instruct",
+  "name": "Code Llama 34B Instruct",
+  "description": "Code Llama 34B Instruct is Meta’s instruction-tuned code model for production code completion, refactoring, and code-aware chat, with the capacity to handle larger code contexts than the 7B/13B tiers while retaining the Code Llama family’s code-specialized training.",
+  "family_id": "llama-3",
+  "size_mb": 34000,
+  "specifications": {
+    "parameter_count": 34000,
+    "hidden_size": 8192,
+    "layers": 48,
+    "attention_heads": 64,
+    "vocab_size": 32000,
+    "training_tokens": 500000,
+    "context_window": 100000
+  },
+  "formats": {
+    "safetensors": true,
+    "gguf": true,
+    "awq": true,
+    "gptq": true,
+    "mlx": true,
+    "onnx": true,
+    "tensorrt": true
+  },
+  "hardware": {
+    "minimum_gpu_memory": 48000,
+    "recommended_gpu_memory": 64000,
+    "minimum_ram": 32000,
+    "recommended_ram": 64000,
+    "recommended_gpu": "NVIDIA A100/L40S/H100-class GPUs"
+  },
+  "downloads": [
+    {
+      "platform": "Hugging Face model card",
+      "url": "https://huggingface.co/codellama/CodeLlama-34b-Instruct-hf",
+      "official": false,
+      "notes": "Community mirror of the Meta checkpoint; useful for artifact access but not the official organization page."
+    },
+    {
+      "platform": "Meta Llama downloads",
+      "url": "https://ai.meta.com/resources/models-and-libraries/llama-downloads/",
+      "official": true,
+      "notes": "Official Meta license and download entry point for Code Llama."
+    }
+  ],
+  "runtime_compatibility": [
+    {
+      "runtime": "Hugging Face Transformers",
+      "supported": true,
+      "minimum_version": "4.32.0+",
+      "notes": "The mirrored model card shows transformers usage and the config snapshot references 4.32.0.dev0."
+    },
+    {
+      "runtime": "vLLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Community support exists for Code Llama-family serving; confirm current template and quantization support in runtime docs."
+    },
+    {
+      "runtime": "llama.cpp",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Community support exists through conversion/quantization workflows."
+    },
+    {
+      "runtime": "SGLang",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Community serving support exists; verify current compatibility against runtime docs."
+    },
+    {
+      "runtime": "TensorRT-LLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Supported through ecosystem conversion workflows."
+    }
+  ],
+  "deployment": {
+    "supported_runtimes": [
+      "Transformers",
+      "vLLM",
+      "llama.cpp",
+      "SGLang",
+      "TensorRT-LLM"
+    ],
+    "recommended_runtime": "vLLM",
+    "quantizations": [
+      "BF16",
+      "INT8",
+      "INT4",
+      "AWQ",
+      "GPTQ"
+    ],
+    "recommended_quantization": "Use BF16 when code quality and infilling fidelity matter most; use INT4/AWQ or GPTQ only when memory pressure is the gating factor and you have validated code-generation regressions on your target workloads.",
+    "cpu_supported": true,
+    "gpu_supported": true,
+    "mps_supported": false
+  },
+  "license_info": {
+    "name": "Code Llama Custom Commercial License / Llama 2-derived Community License",
+    "commercial_use": true,
+    "modification": true,
+    "redistribution": true,
+    "attribution_required": true,
+    "notes": "Meta’s blog states Code Llama is released under the same community license as Llama 2, and the model card points to the Meta license page for full terms."
+  },
+  "status": {
+    "release_date": "2023-08-24",
+    "last_verified": "2026-07-17",
+    "maintenance_status": "legacy"
+  },
+  "engineering_snapshot": {
+    "best_for": [
+      "Code completion and infilling in IDE or editor-integrated services.",
+      "Code-aware chat for refactoring, debugging, and explanation workflows.",
+      "Internal developer tooling where code specialization matters more than open-ended general chat quality."
+    ],
+    "avoid_for": [
+      "Non-code general-purpose chat, where a newer instruct model is a better fit.",
+      "Ultra-low-latency autocomplete on single small GPUs.",
+      "Deployments that require broad multilingual or general-reasoning strength over code specialization."
+    ],
+    "deployment_complexity": "high",
+    "production_ready": true,
+    "recommended_use_case": "production code assistant serving where the code-specialized training signal is worth the multi-GPU memory and latency cost.",
+    "deployment_risks": [
+      "Ecosystem drift on runtime APIs and dependencies due to model's legacy status.",
+      "Quantization-induced silent code accuracy or syntax generation quality regressions."
+    ],
+    "failure_modes": [
+      "Deploying the 34B variant as if it were a latency-first autocomplete model, causing bad user experience.",
+      "Long-context code-infilling syntax errors when context threshold limits are exceeded."
+    ],
+    "common_mistakes": [
+      "Failing to use specialized code-specific prompt/stop behavior, resulting in infinite loops or hallucinated code blocks.",
+      "Deploying to consumer GPUs without sharding or interconnect bandwidth sizing, causing bottlenecked latency."
+    ],
+    "operational_notes": [
+      "Meta states Code Llama 34B is trained on 500B code/code-related tokens and supports stable generations with up to 100K tokens of context, which makes long-context codebase-assisted workflows the natural inference target.",
+      "The release blog explicitly says 34B and 70B “return the best results,” but smaller sizes are faster for low-latency use cases, so 34B should be selected when code quality is the first-order requirement.",
+      "Use quantization only after validating code-specific regressions, because code completion and infilling tasks are more sensitive to small distribution shifts than general chat.",
+      "The model is documented as using text-only input and text-only output in the mirrored model card, so integrations should not expect multimodal behavior or image handling.",
+      "Variant differentiation (Identity): the 34B tier is the upper practical quality tier in the original Code Llama family before the 70B jump, so it is the family’s balance point for production code workloads that need more capability than 13B but cannot justify 70B cost.",
+      "Variant differentiation (File Formats): Code Llama 34B is often consumed through quantized artifacts because the raw BF16 checkpoint is too large for many single-node deployments.",
+      "Variant differentiation (Hardware Requirements): 34B is the point where code quality improvements typically require a step up from single-consumer-GPU deployments into datacenter-style memory planning.",
+      "Variant differentiation (Downloads): the Hugging Face repo is a community mirror, while Meta’s download page is the official access path and license source of record.",
+      "Variant differentiation (Runtime Compatibility): the runtime question is mostly about throughput and memory behavior for long code contexts, not about whether the model can be loaded at all.",
+      "Variant differentiation (Deployment): Code Llama 34B is meaningfully better suited to code generation than general-purpose Llama siblings, so the serving stack should be chosen around code-specific prompt/stop behavior and long-context memory use.",
+      "Variant differentiation (License): code assistants often ship inside commercial development tools, so license review is a launch requirement, not an afterthought.",
+      "Variant differentiation (Status): this is an older but still deployable code-specialized release; the main risk is ecosystem drift rather than model immaturity.",
+      "Variant differentiation (Engineering Snapshot): the main question is not capability in the abstract, but whether the code specialization materially improves developer productivity enough to justify the serving footprint.",
+      "Variant differentiation (Engineering Notes): 34B is the Code Llama family’s quality-biased production tier, and the right deployment pattern is usually a tiered system rather than a single universal model."
+    ]
+  },
+  "created_at": "2026-07-17",
+  "updated_at": "2026-07-17",
+  "sources": [
+    "https://arxiv.org/pdf/2308.12950.pdf",
+    "https://arxiv.org/pdf/2308.12950.pdf",
+    "https://arxiv.org/pdf/2404.01226.pdf",
+    "https://arxiv.org/pdf/2308.12950.pdf",
+    "https://arxiv.org/pdf/2308.12950.pdf"
+  ],
+  "tags": [
+    "llm",
+    "open-weight",
+    "self-hosting",
+    "agents",
+    "coding"
+  ],
+  "aliases": [],
+  "keywords": [
+    "Code Llama 34B Instruct",
+    "Code Llama",
+    "34B model"
+  ],
+  "search_tokens": [
+    "code llama 34b",
+    "code llama 34b instruct"
+  ]
+}

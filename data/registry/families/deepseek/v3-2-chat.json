@@ -1,0 +1,170 @@
+{
+  "id": "v3-2-chat",
+  "slug": "deepseek-v3-2-chat",
+  "title": "DeepSeek-V3.2 (Chat)",
+  "name": "DeepSeek-V3.2 (Chat)",
+  "description": "DeepSeek-V3.2 (Chat) is the family’s production chat variant and the first DeepSeek-V3.2 release to integrate thinking directly into tool-use while still supporting non-thinking chat paths.",
+  "family_id": "deepseek",
+  "specifications": {
+    "parameter_count": 685000,
+    "context_window": 128000
+  },
+  "formats": {
+    "safetensors": true,
+    "gguf": false,
+    "awq": false,
+    "gptq": false,
+    "mlx": false,
+    "onnx": false,
+    "tensorrt": false
+  },
+  "hardware": {
+    "recommended_gpu": "NVIDIA H100/H200/B200-class accelerators"
+  },
+  "downloads": [
+    {
+      "platform": "Hugging Face",
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-V3.2",
+      "official": true,
+      "notes": "Official open-weight checkpoint and model card."
+    },
+    {
+      "platform": "DeepSeek API Docs",
+      "url": "https://api-docs.deepseek.com/news/news251201/",
+      "official": true,
+      "notes": "Official release note with links to the open-source model release."
+    }
+  ],
+  "runtime_compatibility": [
+    {
+      "runtime": "vLLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "vLLM documents DeepSeek-V3.2 usage recipes and DeepSeek-specific tokenizer/tool-call handling."
+    },
+    {
+      "runtime": "Hugging Face Transformers",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "The official model card shows Hugging Face/Transformers loading and encoding examples."
+    },
+    {
+      "runtime": "SGLang",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Common serving path for agentic LLM deployment; official minimum version not published."
+    },
+    {
+      "runtime": "llama.cpp",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Commonly used for quantized community deployment; official minimum version not published."
+    },
+    {
+      "runtime": "TensorRT-LLM",
+      "supported": false,
+      "minimum_version": "Latest stable",
+      "notes": "No official compatibility statement was retrieved."
+    }
+  ],
+  "deployment": {
+    "supported_runtimes": [
+      "Transformers",
+      "vLLM",
+      "SGLang",
+      "llama.cpp"
+    ],
+    "recommended_runtime": "vLLM",
+    "quantizations": [
+      "BF16",
+      "F8_E4M3",
+      "F32"
+    ],
+    "recommended_quantization": "BF16 for highest fidelity, or FP8/F8_E4M3 when the deployment stack and hardware support it, because the official card lists those tensor types directly.",
+    "cpu_supported": false,
+    "gpu_supported": true,
+    "mps_supported": false
+  },
+  "license_info": {
+    "name": "MIT License",
+    "commercial_use": true,
+    "modification": true,
+    "redistribution": true,
+    "attribution_required": true,
+    "notes": "The official repository and model weights are licensed under MIT; separate downstream hosting terms may still apply on third-party platforms."
+  },
+  "status": {
+    "release_date": "2025-12-01",
+    "last_verified": "2026-07-17",
+    "maintenance_status": "production"
+  },
+  "engineering_snapshot": {
+    "best_for": [
+      "General production chat with reasoning-aware behavior.",
+      "Tool-using agents that need thinking in tool-use.",
+      "Self-hosted high-capacity deployments that can absorb frontier-model memory and serving cost."
+    ],
+    "avoid_for": [
+      "Single-GPU or low-memory deployments of the full checkpoint.",
+      "Workloads that require officially published hidden size, layer count, or training token counts before approval.",
+      "Environments that cannot support the model’s long-context memory and throughput demands."
+    ],
+    "deployment_complexity": "high",
+    "production_ready": true,
+    "recommended_use_case": "Use as the primary DeepSeek chat endpoint when you need one model to cover chat, mixed reasoning, and tool-using agents with official open-weight availability.",
+    "deployment_risks": [
+      "Interconnect and Expert Parallel network layout scaling bottlenecks on standard cluster nodes.",
+      "Context window parsing latency and state overhead when mixing thinking and non-thinking chat templates."
+    ],
+    "failure_modes": [
+      "Tokenizer mismatch and tool-call template formatting errors if custom encoding helpers are ignored.",
+      "OutOfMemory (OOM) failures under high concurrency without proper KV-cache sharding."
+    ],
+    "common_mistakes": [
+      "Treating V3.2 as a drop-in generic chat model, bypassing the custom prompt/encoding paths.",
+      "Attempting single-GPU serving without planning high-speed interconnect and sharded tensor parallelism."
+    ],
+    "operational_notes": [
+      "DeepSeek-V3.2 introduces “thinking in tool-use,” so production inference must handle both reasoning and non-reasoning paths instead of treating the model as a plain chat checkpoint.",
+      "The official release positions V3.2 as the balanced daily-driver model, while the API-only Speciale variant is reserved for deeper reasoning; this makes V3.2 the operational default for production chat + agent systems.",
+      "Use BF16 or FP8-capable infrastructure when possible, since the official checkpoint exposes BF16 and F8_E4M3 tensor types and the community recipes emphasize sparse-attention efficiency for long-context serving.",
+      "The official model card includes custom encoding helpers rather than a Jinja chat template, so integration code should follow the provided encoding/parse utilities instead of assuming a standard template path.",
+      "Variant differentiation (Identity): DeepSeek-V3.2 (Chat) is the family’s production chat variant and the first DeepSeek-V3.2 release to integrate thinking directly into tool-use while still supporting non-thinking chat paths.",
+      "Variant differentiation (File Formats): Safetensors format is officially published, while GGUF/AWQ/GPTQ and Apple Silicon MLX/ONNX formats are Not Published in official checkpoints.",
+      "Variant differentiation (Hardware Requirements): Community serving profiles target H100/H200/B200-class servers as the baseline for the full checkpoint.",
+      "Variant differentiation (Downloads): Canonical download paths include official Hugging Face repositories and DeepSeek release announcements.",
+      "Variant differentiation (Runtime Compatibility): vLLM recipes explicitly document DeepSeek-specific tool-call and tokenization paths, whereas edge llama.cpp features community conversions.",
+      "Variant differentiation (Deployment): integration of thinking mode directly into tool-use workflows sets V3.2 apart from earlier text-only or reasoning-only siblings.",
+      "Variant differentiation (License): MIT License allows very broad open-source utilization including modification, redistribution, and commercial deployment without active constraints.",
+      "Variant differentiation (Status): officially released production checkpoint targeted at robust structured reasoning."
+    ]
+  },
+  "created_at": "2026-07-17",
+  "updated_at": "2026-07-17",
+  "sources": [
+    "https://docs.vllm.ai/projects/recipes/en/latest/DeepSeek/DeepSeek-V3_2.html",
+    "https://api-docs.deepseek.com/news/news251201/",
+    "https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-deepseek-deepseek-v3-2.html",
+    "https://developers.redhat.com/articles/2025/10/03/deepseek-v32-exp-vllm-day-0-sparse-attention-long-context-inference",
+    "https://huggingface.co/deepseek-ai/DeepSeek-V3.2/resolve/main/assets/paper.pdf",
+    "https://vllm.ai/blog/2025-09-29-deepseek-v3-2",
+    "https://chat-deep.ai/guide/deepseek-with-vllm/"
+  ],
+  "tags": [
+    "llm",
+    "open-weight",
+    "self-hosting",
+    "agents",
+    "reasoning"
+  ],
+  "aliases": [],
+  "keywords": [
+    "DeepSeek-V3.2",
+    "DeepSeek",
+    "v3.2-chat model"
+  ],
+  "search_tokens": [
+    "deepseek v3.2",
+    "deepseek-v3.2"
+  ]
+}

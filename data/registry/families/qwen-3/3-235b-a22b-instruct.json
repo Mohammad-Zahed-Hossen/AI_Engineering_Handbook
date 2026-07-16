@@ -1,0 +1,224 @@
+{
+  "id": "3-235b-a22b-instruct",
+  "slug": "3-235b-a22b-instruct",
+  "title": "Qwen3-235B-A22B (Instruct)",
+  "name": "Qwen3-235B-A22B (Instruct)",
+  "description": "Qwen3-235B-A22B (Instruct) is the flagship sparse MoE production variant in the Qwen3 family, designed for hard reasoning, long-context chat, code, math, and complex tool-using agents with a strong emphasis on thinking/non-thinking control. It is operationally much heavier than dense mid-tier Qwen3 models, but its 235B total / 22B active design is the core deployment advantage when quality needs justify multi-GPU inference and MoE routing overhead. For production, the main decision is not whether it can run, but whether your serving stack, memory budget, and latency envelope can absorb a 128K-context MoE model with explicit reasoning behavior.",
+  "family_id": "qwen-3",
+  "specifications": {
+    "parameter_count": 235000,
+    "active_parameters": 22000,
+    "layers": 94,
+    "attention_heads": 64,
+    "context_window": 131072,
+    "max_output_tokens": 32768
+  },
+  "formats": {
+    "safetensors": true,
+    "gguf": true,
+    "awq": true,
+    "gptq": true,
+    "mlx": true,
+    "onnx": false,
+    "tensorrt": true
+  },
+  "hardware": {
+    "minimum_gpu_memory": 80000,
+    "recommended_gpu_memory": 320000,
+    "minimum_ram": 128000,
+    "recommended_ram": 256000,
+    "recommended_gpu": "NVIDIA H100/H200-class or equivalent multi-GPU infrastructure"
+  },
+  "downloads": [
+    {
+      "platform": "Hugging Face",
+      "url": "https://huggingface.co/Qwen/Qwen3-235B-A22B",
+      "official": true,
+      "notes": "Official model card and checkpoint page for the instruct checkpoint."
+    },
+    {
+      "platform": "Qwen official download portal",
+      "url": "https://qwen-3.com/en/download",
+      "official": true,
+      "notes": "Official Qwen download page with family download links and quantization pointers."
+    },
+    {
+      "platform": "Qwen collection",
+      "url": "https://huggingface.co/collections/Qwen/qwen3",
+      "official": true,
+      "notes": "Official family collection page linking dense and MoE checkpoints."
+    }
+  ],
+  "runtime_compatibility": [
+    {
+      "runtime": "Transformers",
+      "supported": true,
+      "minimum_version": "4.51.0+",
+      "notes": "Official model card says Qwen3-MoE support is in latest Transformers and warns that versions below 4.51.0 can raise KeyError: 'qwen3_moe'."
+    },
+    {
+      "runtime": "vLLM",
+      "supported": true,
+      "minimum_version": "0.8.5+",
+      "notes": "Official model card explicitly recommends vLLM and gives a serving command with --enable-reasoning and --reasoning-parser deepseek_r1."
+    },
+    {
+      "runtime": "SGLang",
+      "supported": true,
+      "minimum_version": "0.4.6.post1+",
+      "notes": "Official model card explicitly recommends SGLang and shows --reasoning-parser qwen3 plus tensor-parallel deployment."
+    },
+    {
+      "runtime": "llama.cpp",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Official release materials and downstream ecosystem guidance support local GGUF serving; exact minimum version is not specified."
+    },
+    {
+      "runtime": "Ollama",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Official release materials say Ollama support is available for local use."
+    },
+    {
+      "runtime": "LM Studio",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Official release materials say LM Studio supports Qwen3 local use."
+    },
+    {
+      "runtime": "MLX-LM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Official release materials mention MLX-LM support for local use."
+    },
+    {
+      "runtime": "TensorRT-LLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Supported through deployment ecosystem guidance, but the official model card does not publish a minimum version."
+    }
+  ],
+  "deployment": {
+    "supported_runtimes": [
+      "Transformers",
+      "vLLM",
+      "SGLang",
+      "Ollama",
+      "LM Studio",
+      "MLX-LM",
+      "llama.cpp",
+      "TensorRT-LLM"
+    ],
+    "recommended_runtime": "vLLM",
+    "quantizations": [
+      "BF16",
+      "AWQ",
+      "GPTQ",
+      "GGUF"
+    ],
+    "recommended_quantization": "BF16 for maximum fidelity if you can afford the memory footprint; AWQ or GPTQ for production cost reduction when you have validated that reasoning quality remains acceptable.",
+    "cpu_supported": true,
+    "gpu_supported": true,
+    "mps_supported": true
+  },
+  "license_info": {
+    "name": "Apache 2.0",
+    "commercial_use": true,
+    "modification": true,
+    "redistribution": true,
+    "attribution_required": true,
+    "notes": "The official Qwen3 release/download pages identify Apache 2.0 licensing for the released family artifacts; verify the exact checkpoint card for any derivative or repackaged copy."
+  },
+  "status": {
+    "release_date": "2025-04-28",
+    "last_verified": "2026-07-17",
+    "maintenance_status": "production"
+  },
+  "engineering_snapshot": {
+    "best_for": [
+      "Hard reasoning workloads where quality matters enough to justify MoE serving cost.",
+      "Complex tool-using agents that benefit from native thinking mode and explicit reasoning parser support.",
+      "High-end chat and long-context enterprise deployments with 128K-class workflows."
+    ],
+    "avoid_for": [
+      "Small single-GPU deployments where latency and memory are tight.",
+      "Teams that cannot operate multi-GPU MoE infrastructure or long-context KV-cache-heavy workloads.",
+      "Cases where a dense 7B–32B model already meets quality requirements at much lower cost."
+    ],
+    "deployment_complexity": "high",
+    "production_ready": true,
+    "recommended_use_case": "Cluster-scale reasoning and agent serving with explicit thinking-mode control and long-context support.",
+    "deployment_risks": [
+      "Underprovisioning memory for BF16 MoE serving. Plan for multi-GPU sharding from day one; treating it like a large dense checkpoint is a common failure mode in practice.",
+      "Enabling long-context scaling globally when most requests are short."
+    ],
+    "failure_modes": [
+      "KeyError: 'qwen3_moe' when using a Transformers version older than 4.51.0.",
+      "Degraded short-text performance if YaRN is enabled unnecessarily."
+    ],
+    "common_mistakes": [
+      "Using a Transformers version older than 4.51.0.",
+      "Treating Qwen3-235B-A22B like a large dense checkpoint rather than planning for multi-GPU sharding and MoE routing overhead."
+    ],
+    "operational_notes": [
+      "The official model card recommends enable_thinking=True by default and documents separate thinking and non-thinking modes; for thinking mode, it recommends Temperature=0.6, TopP=0.95, TopK=20, MinP=0, and warns against greedy decoding because it can degrade quality and induce repetition.",
+      "The model card also recommends max_new_tokens=32768 for standard use and up to 38912 for especially hard math/programming benchmarks, which is a strong signal that output-length policy is part of the serving contract for this model.",
+      "MoE routing plus long-context KV cache makes this variant materially more sensitive to batching and memory policy than dense family members.",
+      "The official model card recommends vLLM and SGLang deployments, including explicit example commands with reasoning parsers; use those paths if you need production OpenAI-compatible serving with thinking-mode fidelity.",
+      "For long contexts, the official guidance recommends YaRN and notes that static YaRN can hurt shorter-text performance, so only enable it when the workload actually needs >32K context.",
+      "Use YaRN only when the application needs long-context inference; the model card warns that it can degrade short-text performance if enabled unnecessarily.",
+      "Use quantization only after task validation, because the model’s main value is reasoning quality and aggressive compression can reduce that advantage.",
+      "For serving efficiency, preserve the model’s separate thinking/non-thinking behavior rather than flattening it into one generic chat path.",
+      "Variant differentiation (Identity): the 235B/22B architecture places this model at the top of the family’s quality-cost curve, with deployment characteristics that are fundamentally closer to cluster-scale serving than to single-node inference.",
+      "Variant differentiation (Specifications): the 235B A22B instruct model is the only clearly documented Qwen3 text MoE checkpoint in the reviewed sources with 94 layers, 128 experts, 8 active experts, and GQA split of 64 Q / 4 KV, which makes it the most operationally distinct Qwen3 family member for large-scale reasoning deployment.",
+      "Variant differentiation (File Formats): unlike dense variants, this checkpoint is commonly served in BF16 plus quantized export forms, and those quantized paths are essential if you want to avoid full-cluster BF16 memory pressure.",
+      "Variant differentiation (Hardware Requirements): hardware is the defining difference for this variant — it is not a “big single GPU” model, and most deployment mistakes come from underestimating the memory needed for MoE routing plus 128K-context KV cache.",
+      "Variant differentiation (Downloads): use the Hugging Face model card as the canonical source for checkpoint-specific specs, and the Qwen official download portal when you need the family’s supported distribution paths and quantized artifacts.",
+      "Variant differentiation (Runtime Compatibility): this checkpoint’s documented runtime support is strongest in Transformers, vLLM, and SGLang; the model card also shows exact switching behavior for thinking mode, which matters more here than for smaller Qwen3 variants.",
+      "Variant differentiation (Deployment): the instruct MoE checkpoint is best treated as a service-tier model, not a local development model; the recommended deployment path is multi-GPU serving with explicit reasoning controls preserved end to end.",
+      "Variant differentiation (License): the license posture is straightforward and not the reason to choose or reject this variant; deployment feasibility is the real gating factor.",
+      "Variant differentiation (Status): the hosted service lifecycle is active, and the checkpoint remains positioned as a production-grade flagship MoE model rather than a research-only release.",
+      "Variant relationship (Qwen3-30B-A3B): Smaller MoE sibling with lower active-parameter cost and easier deployment footprint.",
+      "Variant relationship (Qwen3-32B): Dense large-model alternative with simpler serving characteristics but lower top-end reasoning capacity than the flagship MoE checkpoint.",
+      "Variant relationship (DeepSeek-R1): Alternative reasoning-first family for comparison when choosing a flagship reasoning model.",
+      "Reference (Research Papers): Qwen3 Technical Report - Qwen Team, Alibaba Cloud (https://arxiv.org/abs/2511.21631)",
+      "Reference (Research Papers): Qwen3-235B-A22B model card / checkpoint page - Qwen Team, Alibaba Cloud (https://arxiv.org/abs/2507.09104)",
+      "Reference (Official Documentation): Qwen3-235B-A22B Hugging Face model card (https://huggingface.co/Qwen/Qwen3-235B-A22B)",
+      "Reference (Official Documentation): Qwen3 download portal (https://qwen-3.com/en/download)",
+      "Reference (Official Documentation): Amazon Bedrock model card for Qwen3 235B A22B 2507 (https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-qwen-qwen3-235b-a22b-2507.html)",
+      "Reference (Engineering Blogs): Qwen3 official release and usage guidance - Qwen Team, Alibaba Cloud (https://arxiv.org/abs/2507.09104)"
+    ]
+  },
+  "created_at": "2026-07-17",
+  "updated_at": "2026-07-17",
+  "sources": [
+    "https://arxiv.org/abs/2511.21631",
+    "https://arxiv.org/abs/2507.09104",
+    "https://arxiv.org/abs/2505.08311",
+    "https://arxiv.org/abs/2505.14464",
+    "https://arxiv.org/abs/2603.18567",
+    "https://huggingface.co/Qwen/Qwen3-235B-A22B",
+    "https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-qwen-qwen3-235b-a22b-2507.html",
+    "https://qwen-3.com/en/download"
+  ],
+  "tags": [
+    "llm",
+    "open-weight",
+    "self-hosting",
+    "moe",
+    "reasoning",
+    "agents"
+  ],
+  "aliases": [],
+  "keywords": [
+    "Qwen3-235B-A22B (Instruct)",
+    "Qwen3",
+    "235B MoE model"
+  ],
+  "search_tokens": [
+    "qwen3 235b",
+    "qwen 3 235b",
+    "qwen3-235b-a22b-instruct"
+  ]
+}

@@ -1,0 +1,174 @@
+{
+  "id": "r1-0528",
+  "slug": "deepseek-r1-0528",
+  "title": "DeepSeek-R1-0528",
+  "name": "DeepSeek-R1-0528",
+  "description": "DeepSeek-R1-0528 is the updated R1 reasoning checkpoint and the variant to choose when you need stronger tool calling, lower hallucination risk, and production reasoning behavior rather than the more balanced chat orientation of V3.1/V3.2.",
+  "family_id": "deepseek",
+  "specifications": {
+    "parameter_count": 685000,
+    "context_window": 128000
+  },
+  "formats": {
+    "safetensors": true,
+    "gguf": false,
+    "awq": false,
+    "gptq": false,
+    "mlx": false,
+    "onnx": false,
+    "tensorrt": false
+  },
+  "hardware": {
+    "recommended_gpu": "8xH200 with FP8 and 4xB200 with FP4"
+  },
+  "downloads": [
+    {
+      "platform": "Hugging Face",
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-R1-0528",
+      "official": true,
+      "notes": "Official open-source weights and model card."
+    },
+    {
+      "platform": "DeepSeek API Docs",
+      "url": "https://api-docs.deepseek.com/news/news250528/",
+      "official": true,
+      "notes": "Official release note with open-source weights link and behavior changes."
+    },
+    {
+      "platform": "Google Cloud Vertex AI",
+      "url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/maas/deepseek/r1-0528",
+      "official": true,
+      "notes": "Official hosted model listing for the 0528 variant."
+    }
+  ],
+  "runtime_compatibility": [
+    {
+      "runtime": "vLLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Official vLLM recipes document serving DeepSeek-R1-0528 with tensor-parallel and expert-parallel configurations."
+    },
+    {
+      "runtime": "Hugging Face Transformers",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Official model page provides standard HF loading path and model card metadata."
+    },
+    {
+      "runtime": "SGLang",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Part of the canonical deployment stack, but no minimum version was published in retrieved official sources."
+    },
+    {
+      "runtime": "llama.cpp",
+      "supported": false,
+      "minimum_version": "Latest stable",
+      "notes": "No official compatibility statement was retrieved."
+    },
+    {
+      "runtime": "TensorRT-LLM",
+      "supported": false,
+      "minimum_version": "Latest stable",
+      "notes": "No official compatibility statement was retrieved."
+    }
+  ],
+  "deployment": {
+    "supported_runtimes": [
+      "Transformers",
+      "vLLM",
+      "SGLang"
+    ],
+    "recommended_runtime": "vLLM",
+    "quantizations": [
+      "BF16",
+      "F8_E4M3",
+      "F32"
+    ],
+    "recommended_quantization": "F8_E4M3 for hardware that supports it, or BF16 when you want the safer default, because both are officially exposed and the community serving recipes explicitly optimize around FP8/FP4 hardware paths.",
+    "cpu_supported": false,
+    "gpu_supported": true,
+    "mps_supported": false
+  },
+  "license_info": {
+    "name": "MIT License",
+    "commercial_use": true,
+    "modification": true,
+    "redistribution": true,
+    "attribution_required": true,
+    "notes": "The official repository states the code and DeepSeek-R1 series weights are under MIT and allow commercial use and distillation."
+  },
+  "status": {
+    "release_date": "2025-05-28",
+    "last_verified": "2026-07-17",
+    "maintenance_status": "production"
+  },
+  "engineering_snapshot": {
+    "best_for": [
+      "Reasoning-first agent pipelines that benefit from explicit thinking behavior.",
+      "Function-calling and JSON-output workflows where structured outputs matter.",
+      "Code, math, and multi-step logic tasks where reasoning depth matters more than chat latency."
+    ],
+    "avoid_for": [
+      "Single-GPU full-checkpoint deployments.",
+      "Generic chat use cases where you do not need explicit reasoning or tool behavior.",
+      "Workloads that cannot afford the latency and token overhead of reasoning-heavy inference."
+    ],
+    "deployment_complexity": "high",
+    "production_ready": true,
+    "recommended_use_case": "Use when the application needs a reasoning-centric endpoint with improved function calling and structured-output behavior, and the infrastructure can support frontier-scale MoE serving.",
+    "deployment_risks": [
+      "Underestimating multi-GPU orchestration latency or load-balancing routing issues under expert-parallel scaling.",
+      "Memory limits during extreme context window usage in native precision without low-precision FP8/FP4 serving templates."
+    ],
+    "failure_modes": [
+      "Failing to validate reasoning output template parsers, leading to broken JSON parsing and failed structured calls.",
+      "OutOfMemory (OOM) faults on multi-GPU nodes when scaling Expert Parallel scheduling concurrently without active KV-cache sharding."
+    ],
+    "common_mistakes": [
+      "Treating R1-0528 like a plain chat model, which can break structured outputs or reasoning routing.",
+      "Serving the full model in native BF16 without planning hardware expert alignment and FP8/FP4 scaling pathways."
+    ],
+    "operational_notes": [
+      "The release notes say R1-0528 improves reasoning depth and supports JSON output plus function calling, so inference policy should preserve the thinking-mode contract rather than stripping it away.",
+      "The official vLLM recipes show this checkpoint as a multi-GPU Expert Parallel deployment, which means scheduling, shard placement, and all-reduce behavior are central to capacity planning.",
+      "The community serving guidance emphasizes FP8 and FP4 paths on modern GPUs, so deployment performance is best when the hardware stack matches the model’s native low-precision path.",
+      "The model page says the tokenizer configuration matches the R1-0528 family conventions and that system prompts are now supported, which changes integration behavior relative to older R1 usage patterns.",
+      "Variant differentiation (Identity): DeepSeek-R1-0528 is the updated R1 reasoning checkpoint and the variant to choose when you need stronger tool calling, lower hallucination risk, and production reasoning behavior rather than the more balanced chat orientation of V3.1/V3.2.",
+      "Variant differentiation (File Formats): GGUF/AWQ/GPTQ and Apple Silicon MLX/ONNX formats are Not Published in retrieved resources, indicating server-centric GPU focus.",
+      "Variant differentiation (Hardware Requirements): vLLM recipes highlight 8xH200 FP8 and 4xB200 FP4 serving profiles with 4- or 8-GPU Expert Parallel configurations as the realistic baseline.",
+      "Variant differentiation (Downloads): canonical downloads are official Hugging Face checkpoints, DeepSeek release announcements, and Google Vertex AI MaaS listings.",
+      "Variant differentiation (Runtime Compatibility): vLLM recipes explicitly document expert-parallel recipes, while general CPU edge engines (llama.cpp) have no published statements.",
+      "Variant differentiation (Deployment): FP8/FP4 low-precision paths are officially optimized in serving recipes, which makes selection of native-quantized variants a first-order deployment concern.",
+      "Variant differentiation (License): MIT License allows very broad open-source utilization including modification, redistribution, and commercial deployment without active constraints.",
+      "Variant differentiation (Status): officially released production checkpoint targeted at robust structured reasoning."
+    ]
+  },
+  "created_at": "2026-07-17",
+  "updated_at": "2026-07-17",
+  "sources": [
+    "https://huggingface.co/deepseek-ai/DeepSeek-R1-0528",
+    "https://api-docs.deepseek.com/news/news250528/",
+    "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/maas/deepseek/r1-0528",
+    "https://docs.vllm.ai/projects/recipes/en/latest/DeepSeek/DeepSeek-V3.html",
+    "https://arxiv.org/pdf/2501.12948.pdf",
+    "https://developers.redhat.com/articles/2025/03/19/how-we-optimized-vllm-deepseek-r1"
+  ],
+  "tags": [
+    "llm",
+    "open-weight",
+    "self-hosting",
+    "agents",
+    "reasoning"
+  ],
+  "aliases": [],
+  "keywords": [
+    "DeepSeek-R1-0528",
+    "DeepSeek",
+    "r1-0528 model"
+  ],
+  "search_tokens": [
+    "deepseek r1 0528",
+    "deepseek-r1-0528"
+  ]
+}

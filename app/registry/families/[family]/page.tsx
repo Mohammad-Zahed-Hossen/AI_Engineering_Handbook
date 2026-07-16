@@ -3,6 +3,12 @@ import { getAllRegistryFamilyIds, getRegistryFamily, getRegistryVariantsByFamily
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import VariantCard from '@/components/registry/VariantCard';
 import VariantComparisonTable from '@/components/registry/VariantComparisonTable';
+import EngineeringDecisionCards from '@/components/registry/EngineeringDecisionCards';
+import PerformanceDimensions from '@/components/registry/PerformanceDimensions';
+import DeploymentProfiles from '@/components/registry/DeploymentProfiles';
+import RuntimeDecisionCard from '@/components/registry/RuntimeDecisionCard';
+import EngineeringContinuation from '@/components/registry/EngineeringContinuation';
+import QuickLinksCard from '@/components/registry/QuickLinksCard';
 
 /**
  * Pre-generates family params for static rendering.
@@ -64,6 +70,31 @@ export default async function RegistryFamilyPage({ params }: PageProps) {
           )}
         </div>
 
+        {/* Engineering Decision Cards */}
+        <EngineeringDecisionCards family={familyData} />
+
+        {/* Performance Dimensions */}
+        {familyData.engineering_decision?.performance_dimensions && (
+          <PerformanceDimensions dimensions={familyData.engineering_decision.performance_dimensions} />
+        )}
+
+        {/* Deployment Profiles */}
+        {familyData.engineering_decision?.deployment_profiles && (
+          <DeploymentProfiles profiles={familyData.engineering_decision.deployment_profiles} />
+        )}
+
+        {/* Runtime Decision - Answers: Why this runtime? When not to use it? */}
+        {familyData.engineering_decision?.runtime_matrix && (
+          <RuntimeDecisionCard 
+            runtimeMatrix={familyData.engineering_decision.runtime_matrix}
+          />
+        )}
+
+        {/* Engineering Continuation - Answers: What should I do next? */}
+        {familyData.related_resources && familyData.related_resources.length > 0 && (
+          <EngineeringContinuation resources={familyData.related_resources} />
+        )}
+
         {/* Variants Section */}
         {variants.length > 0 ? (
           <div className="space-y-4">
@@ -88,45 +119,10 @@ export default async function RegistryFamilyPage({ params }: PageProps) {
           </div>
         )}
 
-        {/* Quick Links */}
-        {familyData.references.length > 0 && (
-          <div className="space-y-2">
-            <h2 className="text-lg font-semibold text-foreground">Quick Links</h2>
-            <div className="flex flex-col gap-1">
-              {familyData.references.slice(0, 5).map((ref, idx) => (
-                <a
-                  key={idx}
-                  href={ref.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-primary hover:underline"
-                >
-                  {ref.title}
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Family References */}
-        {familyData.references.length > 5 && (
-          <div className="space-y-2">
-            <h2 className="text-lg font-semibold text-foreground">All References</h2>
-            <div className="flex flex-col gap-1">
-              {familyData.references.slice(5).map((ref, idx) => (
-                <a
-                  key={idx}
-                  href={ref.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-primary hover:underline"
-                >
-                  {ref.title}
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Quick Links - Downloads, Documentation */}
+        <QuickLinksCard
+          references={familyData.references}
+        />
       </div>
     </ContentPageLayout>
   );

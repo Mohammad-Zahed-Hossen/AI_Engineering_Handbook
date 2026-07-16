@@ -1,0 +1,177 @@
+{
+  "id": "r1-reasoner",
+  "slug": "deepseek-r1-reasoner",
+  "title": "DeepSeek-R1 (Reasoner)",
+  "name": "DeepSeek-R1 (Reasoner)",
+  "description": "DeepSeek-R1 is the reasoning-first checkpoint in the DeepSeek family and is the variant to choose when chain-of-thought quality, math, and tool-augmented reasoning matter more than chat-style latency or generality.",
+  "family_id": "deepseek",
+  "specifications": {
+    "parameter_count": 671000,
+    "active_parameters": 37000,
+    "context_window": 128000
+  },
+  "formats": {
+    "safetensors": true,
+    "gguf": false,
+    "awq": false,
+    "gptq": false,
+    "mlx": false,
+    "onnx": false,
+    "tensorrt": false
+  },
+  "hardware": {
+    "recommended_gpu": "NVIDIA H200- and B200-class accelerators"
+  },
+  "downloads": [
+    {
+      "platform": "Hugging Face",
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-R1",
+      "official": true,
+      "notes": "Official base reasoning checkpoint and model card."
+    },
+    {
+      "platform": "Hugging Face R1-0528",
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-R1-0528",
+      "official": true,
+      "notes": "Official updated reasoning checkpoint used as the 0528 release target."
+    },
+    {
+      "platform": "DeepSeek API Docs",
+      "url": "https://api-docs.deepseek.com/news/news250120",
+      "official": true,
+      "notes": "Official release note for the R1 family launch and license update."
+    }
+  ],
+  "runtime_compatibility": [
+    {
+      "runtime": "vLLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Official recipes document DeepSeek-R1 serving on multi-GPU FP8/FP4 setups."
+    },
+    {
+      "runtime": "Hugging Face Transformers",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Official model card provides standard Hugging Face loading metadata."
+    },
+    {
+      "runtime": "SGLang",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Part of the canonical deployment stack, but no minimum version was published in retrieved official sources."
+    },
+    {
+      "runtime": "llama.cpp",
+      "supported": false,
+      "minimum_version": "Latest stable",
+      "notes": "No official compatibility statement was retrieved."
+    },
+    {
+      "runtime": "TensorRT-LLM",
+      "supported": false,
+      "minimum_version": "Latest stable",
+      "notes": "No official compatibility statement was retrieved."
+    }
+  ],
+  "deployment": {
+    "supported_runtimes": [
+      "Transformers",
+      "vLLM",
+      "SGLang"
+    ],
+    "recommended_runtime": "vLLM",
+    "quantizations": [
+      "BF16",
+      "F8_E4M3",
+      "F32"
+    ],
+    "recommended_quantization": "F8_E4M3 when the hardware supports it, because the official page surfaces FP8 tensors and the vLLM recipes are written around FP8/FP4 deployment efficiency.",
+    "cpu_supported": false,
+    "gpu_supported": true,
+    "mps_supported": false
+  },
+  "license_info": {
+    "name": "MIT License",
+    "commercial_use": true,
+    "modification": true,
+    "redistribution": true,
+    "attribution_required": true,
+    "notes": "The official DeepSeek release states the code and model weights are released under MIT, with commercial use and distillation allowed."
+  },
+  "status": {
+    "release_date": "2025-01-20",
+    "last_verified": "2026-07-17",
+    "maintenance_status": "production"
+  },
+  "engineering_snapshot": {
+    "best_for": [
+      "Math-heavy and multi-step reasoning workloads.",
+      "Tool-rich agent pipelines that need explicit thinking behavior.",
+      "Research-grade analysis where reasoning quality matters more than raw chat throughput."
+    ],
+    "avoid_for": [
+      "Single-GPU full-checkpoint deployment.",
+      "High-volume chat-only workloads that do not need reasoning traces.",
+      "Latency-sensitive systems that cannot absorb reasoning-token overhead."
+    ],
+    "deployment_complexity": "high",
+    "production_ready": true,
+    "recommended_use_case": "Use as the primary reasoning endpoint when you need the strongest DeepSeek thinking behavior and can support frontier-scale multi-GPU inference.",
+    "deployment_risks": [
+      "High latency and computation costs per query due to extensive reasoning token traces.",
+      "Scheduling bottlenecks andExpert Parallel sharding complexity in multi-node clusters under high concurrency."
+    ],
+    "failure_modes": [
+      "Expert routing imbalance during peak load on distributed clusters, causing latency spikes.",
+      "OutOfMemory (OOM) failures under long-context multi-step code generation."
+    ],
+    "common_mistakes": [
+      "Using the model as a general chat substitute, causing unnecessary reasoning overhead and cost.",
+      "Deploying in native BF16 without planning low-precision FP8/FP4 serving pathways."
+    ],
+    "operational_notes": [
+      "DeepSeek-R1 is explicitly a reasoning model, so serving policy should preserve thinking-mode behavior rather than collapsing it into plain chat output.",
+      "The vLLM recipe shows verified FP8 and FP4 deployments with expert parallelism, which means shard placement and GPU topology are central to capacity planning.",
+      "FP8 on H200 or FP4 on B200 is the documented performance path, making low-precision serving hardware a primary optimization lever rather than an optional tweak.",
+      "The model family is exposed through Hugging Face and DeepSeek’s API surfaces, so integration should target the official tokenizer/model-card contract rather than ad hoc prompt formatting.",
+      "Variant differentiation (Identity): DeepSeek-R1 is the reasoning-first checkpoint in the DeepSeek family and is the variant to choose when chain-of-thought quality, math, and tool-augmented reasoning matter more than chat-style latency or generality.",
+      "Variant differentiation (File Formats): Safetensors format is officially published, while GGUF/AWQ/GPTQ and Apple Silicon MLX/ONNX formats are Not Published in official checkpoints.",
+      "Variant differentiation (Hardware Requirements): Minimum serving configurations require 8xH200 for FP8 or 4xB200 for FP4 as verified baseline.",
+      "Variant differentiation (Downloads): Canonical download paths cover the base reasoning checkpoint, the 0528 updated variant, and the official launch notes.",
+      "Variant differentiation (Runtime Compatibility): vLLM recipes explicitly cover multi-GPU FP8/FP4 setups, whereas llama.cpp is undocumented.",
+      "Variant differentiation (Deployment): vLLM recipes provide concrete expert-parallel and quantized paths, prioritizing GPU throughput over edge portability.",
+      "Variant differentiation (License): MIT License allows very broad open-source utilization including modification, redistribution, and commercial deployment without active constraints.",
+      "Variant differentiation (Status): officially released production checkpoint targeted at robust structured reasoning."
+    ]
+  },
+  "created_at": "2026-07-17",
+  "updated_at": "2026-07-17",
+  "sources": [
+    "https://huggingface.co/deepseek-ai/DeepSeek-R1",
+    "https://recipes.vllm.ai/deepseek-ai/DeepSeek-R1",
+    "https://recipes.vllm.ai/deepseek-ai",
+    "https://huggingface.co/deepseek-ai/DeepSeek-R1-0528",
+    "https://api-docs.deepseek.com/news/news250120",
+    "https://arxiv.org/pdf/2501.12948.pdf",
+    "https://developers.redhat.com/articles/2025/03/19/how-we-optimized-vllm-deepseek-r1",
+    "https://api-docs.deepseek.com/news/news250528/"
+  ],
+  "tags": [
+    "llm",
+    "open-weight",
+    "self-hosting",
+    "agents",
+    "reasoning"
+  ],
+  "aliases": [],
+  "keywords": [
+    "DeepSeek-R1",
+    "DeepSeek",
+    "r1-reasoner model"
+  ],
+  "search_tokens": [
+    "deepseek r1",
+    "deepseek-r1"
+  ]
+}

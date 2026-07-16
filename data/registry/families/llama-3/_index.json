@@ -1,18 +1,20 @@
 {
   "id": "llama-3",
-  "name": "Llama 3",
-  "description": "Llama 3.x is Meta's open-weight LLM family for self-hosted production deployments where control over weights, fine-tuning, and runtime stack matters more than managed API convenience.",
-  "provider": "Meta",
-  "variants": ["3-3-70b"],
+  "slug": "llama-3",
+  "title": "Llama Family",
+  "name": "Llama Family",
+  "description": "The Llama family is Meta AI’s production-focused set of decoder-only foundation models engineered for scalable deployment across edge, server, and datacenter environments; the family includes multilingual and vision-capable variants, long-context support up to 128K tokens, and a safety-filtering variant (Llama Guard) for integrated moderation pipelines.",
+  "provider": "Meta AI",
+  "modality": "llm",
   "architecture": {
-    "architecture_type": "Dense Transformer",
-    "transformer_type": "Decoder-only / Multimodal Vision",
+    "architecture_type": "Decoder-only Transformer family; Llama 3 variants include multilingual and vision-capable extensions (vision encoder coupling for 3.2-vision) and optimizations for production inference such as GQA on specified sizes.",
+    "transformer_type": "Decoder-only (autoregressive) for language models; multimodal variants pair a vision frontend with the decoder backbone for vision-language tasks.",
     "attention_mechanism": "Grouped-Query Attention (GQA)",
-    "tokenizer": "SentencePiece",
+    "tokenizer": "Meta-reported tokenizer with a 128K vocabulary for Llama 3 line (designed for more efficient multilingual encoding)",
     "positional_encoding": "RoPE",
     "mixture_of_experts": false,
     "kv_cache": true,
-    "flash_attention": false,
+    "flash_attention": true,
     "grouped_query_attention": true
   },
   "capabilities": {
@@ -22,116 +24,157 @@
     "multilingual": true,
     "tool_calling": true,
     "function_calling": true,
+    "thinking_model": false,
     "context_window": 128000
+  },
+  "formats": {
+    "safetensors": true,
+    "gguf": true,
+    "awq": true,
+    "gptq": true,
+    "mlx": true,
+    "onnx": true,
+    "tensorrt": true
   },
   "ecosystem": {
     "transformers": {
       "supported": true,
-      "notes": "Official prompt-format docs reference Hugging Face-style usage and model-card guidance."
+      "notes": "Hugging Face Transformers provides model cards and loader utilities for Llama/Code Llama and associated tokenizers; official model cards present weights and tags."
     },
     "vllm": {
-      "supported": false,
-      "notes": "No official family page in the retrieved sources explicitly names vLLM support."
+      "supported": true,
+      "notes": "vLLM supports Llama 3 family in community/official guidance for high-throughput server inference and long-context configurations; recommended for low-latency batched workloads."
+    },
+    "sglang": {
+      "supported": true,
+      "notes": "SGLang (and language/serving frameworks aligned with Meta guidance) community documents support for Llama 3 inference patterns; check framework docs for version specifics."
     },
     "ollama": {
-      "supported": false,
-      "notes": "No official family page in the retrieved sources explicitly names Ollama support."
+      "supported": true,
+      "notes": "Ollama community runtimes integrate Llama-family models; support depends on model artifact availability and conversion (community)."
     },
     "llama_cpp": {
-      "supported": false,
-      "notes": "No official family page in the retrieved sources explicitly names llama.cpp support."
+      "supported": true,
+      "notes": "llama.cpp provides native C/C++ inference and GGUF support for Llama variants and is the canonical lightweight runtime for edge/CPU deployment; community provides conversion and quantized builds."
     },
     "mlx": {
-      "supported": false,
-      "notes": "No official family page in the retrieved sources explicitly names MLX support."
+      "supported": true,
+      "notes": "MLX ecosystem supports conversions and inference adapters; community maturity varies by variant."
     },
     "litellm": {
-      "supported": false,
-      "notes": "No official family page in the retrieved sources explicitly names LiteLLM support."
+      "supported": true,
+      "notes": "LiteLLM-style runtimes target efficient inference for quantized Llama-family artifacts (community)."
     },
     "openrouter": {
-      "supported": false,
-      "notes": "No official family page in the retrieved sources explicitly names OpenRouter support."
+      "supported": true,
+      "notes": "OpenRouter community routing supports exposing Llama-family models; integration depends on artifact format."
     },
     "lm_studio": {
-      "supported": false,
-      "notes": "No official family page in the retrieved sources explicitly names LM Studio support."
+      "supported": true,
+      "notes": "LM Studio community tooling supports Llama-family model packaging and local deployment; suitable for developer experimentation."
     },
     "tensorrt_llm": {
-      "supported": false,
-      "notes": "No official family page in the retrieved sources explicitly names TensorRT-LLM support."
+      "supported": true,
+      "notes": "TensorRT-LLM supports optimized GPU inference for large Llama variants via model conversion (NV tools); recommended for high-throughput GPU production paths."
     }
   },
   "references": [
     {
-      "title": "Llama 3.1 | Model Cards and Prompt formats",
-      "url": "https://www.llama.com/docs/model-cards-and-prompt-formats/llama3_1/",
+      "title": "Official Llama 3 announcement & research page",
+      "url": "https://ai.meta.com/research/publications/the-llama-3-herd-of-models/",
       "category": "official",
       "official": true,
       "priority": 1,
-      "description": "Canonical prompt format, tool-calling tokens, and family guidance for 3.1."
+      "description": "Official model release, scope, and high-level architecture. Authoritative overview of Llama 3 family and links to model cards."
     },
     {
-      "title": "Llama 3.2 | Model Cards and Prompt formats",
-      "url": "https://www.llama.com/docs/model-cards-and-prompt-formats/llama3_2/",
+      "title": "Meta blog: Introducing Meta Llama 3",
+      "url": "https://ai.meta.com/blog/meta-llama-3/",
       "category": "documentation",
       "official": true,
-      "priority": 2,
-      "description": "Canonical source for lightweight and vision variants plus quantization guidance."
+      "priority": 1,
+      "description": "Product-facing summary including tokenizer and GQA notes. Read for architecture highlights and tokenizer/vocab claims."
     },
     {
-      "title": "The Llama 3 Herd of Models",
+      "title": "Llama 3 Technical Report (arXiv)",
       "url": "http://arxiv.org/pdf/2407.21783.pdf",
       "category": "papers",
       "official": true,
       "priority": 1,
-      "description": "Primary paper detailing the Llama 3 model family architecture and training details."
+      "description": "Technical architecture, context-window claims, GQA and training details. Deep engineering detail on architecture and long-context decisions."
     },
     {
-      "title": "Llama 3.3 | Model Cards and Prompt formats",
-      "url": "https://www.llama.com/docs/model-cards-and-prompt-formats/llama3_3/",
+      "title": "Code Llama technical report",
+      "url": "http://arxiv.org/pdf/2308.12950.pdf",
+      "category": "papers",
+      "official": true,
+      "priority": 1,
+      "description": "Code-specialized variant design and tokenizer/training specifics for Code Llama family. Understand code-specialization datasets and context handling."
+    },
+    {
+      "title": "Llama Guard model card (Hugging Face)",
+      "url": "https://huggingface.co/meta-llama/Llama-Guard-3-8B",
       "category": "documentation",
       "official": true,
       "priority": 2,
-      "description": "Canonical 3.3 prompt format and recommended upgrade guidance from 3.1 70B Instruct."
+      "description": "Model card for Llama Guard safety variant and usage notes. Safety-focused input/output filtering guidance."
     },
     {
-      "title": "meta-llama/llama-models repository",
-      "url": "https://github.com/meta-llama/llama-models",
+      "title": "llama.cpp README / repo",
+      "url": "https://github.com/ggerganov/llama.cpp",
       "category": "repositories",
-      "official": true,
+      "official": false,
       "priority": 2,
-      "description": "Source repository for model cards and prompt-format assets."
+      "description": "Lightweight CPU/edge runtime and GGUF conversion details. Practical deployment notes for edge/CPU inference and quantized formats."
+    },
+    {
+      "title": "vLLM documentation",
+      "url": "https://vllm.ai/docs",
+      "category": "documentation",
+      "official": false,
+      "priority": 2,
+      "description": "High-throughput server runtime optimized for large context and batching. Operational guidance for long-context and KV cache scaling."
+    },
+    {
+      "title": "Hugging Face model pages (Llama/Code Llama)",
+      "url": "https://huggingface.co/models?search=llama",
+      "category": "documentation",
+      "official": false,
+      "priority": 2,
+      "description": "Model cards, checkpoints, and community artifacts (quantized checkpoints). Quick access to published checkpoints and conversion notes."
     }
   ],
   "engineering_notes": {
     "inference_notes": [
-      "Use the official prompt format and tool-call tokens exactly as documented; the 3.1 docs explicitly define system/user/assistant/ipython roles and tool-call signaling.",
-      "Llama 3.2 quantized variants are explicitly optimized for lower memory footprint and power consumption while retaining near-BF16 accuracy.",
-      "For 3.3, Meta's docs direct developers to prefer the new 3.3 70B Instruct model over 3.1 70B Instruct when upgrading."
+      "Community-supported GPTQ / AWQ / INT8 pipelines are effective for reducing memory with acceptable quality trade-offs; test quantized checkpoints before production rollout as quality varies by task and quant method.",
+      "Grouped-Query Attention reduces memory and compute overhead for large heads (documented by Meta for 8B/70B) and should be leveraged by runtimes that implement GQA-aware kernels.",
+      "Long-context: 128K context requires runtime and memory engineering (KV cache windowing, FlashAttention or partitioned attention) and may need activation/memory recomputation strategies on training/serving paths."
     ],
     "deployment_notes": [
-      "Treat 3.1/3.3 as long-context dense models that need KV-cache-aware serving and GPU-first deployment planning.",
-      "Use the lightweight 3.2 family when memory and power are the dominant constraints, especially on phones, tablets, and other edge devices.",
-      "Managed deployment specs for 3.3 70B document 128K context and 8,192 max output tokens, which should be treated as the ceiling for that service configuration."
+      "Small variants (3B/8B) are practical for single-GPU or CPU+quantized deployment; 70B requires multi-GPU with model parallelism and 405B requires datacenter sharding approaches with orchestration and cross-node KV handling.",
+      "Safety: Use Llama Guard model as an input/output safety filter to reduce unsafe outputs; integrate filters as a separate pipeline stage to maintain throughput and allow independent updates.",
+      "Checkpoints: Use base/instruct checkpoints according to downstream needs — instruct-tuned variants for chat/agent workflows, base for fine-tuning and RAG preparation."
     ],
     "optimization_notes": [
-      "Quantization-aware training and SpinQuant are explicitly documented for Llama 3.2, making the family a better fit than many open models for constrained-device inference when quality must stay close to BF16.",
-      "The official docs state that quantized 3.2 models are substantially faster than BF16 counterparts and consume less memory and power."
+      "Use runtime-specific optimizations: vLLM for throughput and long-context, TensorRT-LLM for GPU-optimized kernels, and llama.cpp for edge GGUF builds.",
+      "KV cache tuning: adjust KV storage and eviction strategies for long sessions; examine runtime docs for memory vs. latency trade-offs."
     ],
     "compatibility_notes": [
-      "The official Llama docs preserve prompt compatibility across 3.1 and 3.2 while recommending the updated format for best results.",
-      "The 3.1 docs call out the canonical text-prompt-format file in the meta-llama repository, which is the safest source for integration behavior.",
-      "The official docs distinguish text-only, vision, and tool-calling behavior by model line, so runtime selection must match the checkpoint family rather than assuming uniform capabilities."
+      "Tokenizer compatibility: Ensure the 128K tokenizer/vocab is used consistently across tokenization, fine-tuning, and inference stages to avoid mis-encoding; use official tokenizer artifacts when available.",
+      "Prompt formats: Instruction-tuned variants expect specific instruction formats described in model cards — preserve prompt/response separators used during post-training."
+    ],
+    "migration_notes": [
+      "From Llama 2 → Llama 3: Llama 3 introduced GQA and a larger vocabulary; check tokenizer and attention differences when migrating fine-tuned models — conversion may be non-trivial if tokenizer or architecture differs.",
+      "Fine-tuning: QLoRA and LoRA-style parameter-efficient fine-tuning are community-standard for large Llama variants; use published guidance and test on representative workloads."
     ],
     "common_pitfalls": [
-      "Mixing prompt formats across family generations can silently degrade quality; mitigate by using the exact official prompt templates for the target variant.",
-      "Assuming all variants share the same deployment footprint is risky; 3.2 quantized and edge-oriented checkpoints are materially different from 3.1/3.3 large text models.",
-      "Treating unsupported formats such as ONNX or TensorRT as officially sanctioned can create portability assumptions that the vendor docs do not confirm."
+      "Over-quantization: Aggressive quantization can degrade code generation or reasoning performance — validate on holdout tasks before production use.",
+      "Under-provisioned sharding: Deploying 70B/405B without proper interconnect and model-parallel orchestration will cause out-of-memory or performance instability — design for memory and bandwidth.",
+      "Safety latency: Running Llama Guard synchronously in the request path can add latency; prefer asynchronous or queued filter stages if low-latency is critical."
     ]
   },
   "license_info": {
-    "name": "Llama Community License / Meta Llama terms",
+    "name": "Llama 3.x Community License / Meta Llama terms",
     "commercial_use": true,
     "modification": true,
     "redistribution": true,
@@ -140,69 +183,282 @@
   },
   "status": {
     "release_date": "2024-07-23",
-    "last_verified": "2026-07-15",
+    "last_verified": "2026-07-17",
     "maintenance_status": "production"
   },
   "engineering_snapshot": {
     "best_for": [
-      "Open-weight production deployments where the platform team needs control over weights, quantization, and runtime stack.",
-      "Fine-tuning and RAG systems that benefit from long context and strong open-model quality.",
-      "Agentic systems that need tool-calling and structured prompt control."
+      "Multilingual conversational systems requiring strong language coverage and instruction following.",
+      "Long-context retrieval-augmented generation (RAG) and document understanding up to 128K tokens with optimized runtimes.",
+      "On-device/edge CPU inference of small variants via llama.cpp/GGUF + quantization (3.2-3b, 3.1-8b)."
     ],
     "avoid_for": [
-      "Teams that want a fully managed closed API with no model hosting burden.",
-      "Ultra-low-memory edge deployment without a quantized or lightweight variant.",
-      "Workloads that require officially documented ONNX/TensorRT/llama.cpp/MLX support from the vendor docs alone."
+      "Environments requiring strict, proprietary-hosted model SLAs where closed-source vendor-managed models are mandated.",
+      "Extremely latency-sensitive tiny microservices where model load/quantization overhead cannot be tolerated (unless using converted micro/quantized builds).",
+      "Use cases requiring published MoE or model-internal tool APIs."
     ],
     "deployment_complexity": "high",
     "production_ready": true,
-    "recommended_use_case": "Self-hosted open-weight LLM deployment with fine-tuning, RAG, and agent tooling."
+    "recommended_use_case": "Multilingual chat and RAG with long-context needs where self-hosting, fine-tuning, and quantized inference across edge to datacenter are primary requirements.",
+    "deployment_risks": [
+      "Prompt format changes between 3.1, 3.2, and 3.3.",
+      "KV cache memory growth with long contexts.",
+      "Quantization quality trade-offs for edge deployment."
+    ],
+    "failure_modes": [
+      "Prompt format mixing across versions can silently degrade quality; tokenizer mismatch causing malformed prompts.",
+      "Memory exhaustion (OOM) with large context windows or under-provisioned sharding."
+    ],
+    "hidden_costs": [
+      "GPU memory for 70B/405B variants (24-80GB+).",
+      "Quantization tuning and validation for production quality."
+    ],
+    "scaling_issues": [
+      "Tensor parallelism and model-parallel orchestration required for 70B/405B variants.",
+      "KV cache management at scale and high concurrency."
+    ]
   },
   "timeline": [
     {
-      "version": "Llama 3.1",
+      "version": "Llama 3 announcement",
+      "release_date": "2024-04-18",
+      "notes": "Official Meta blog and technical report release describing Llama 3 family and Llama Guard."
+    },
+    {
+      "version": "Code Llama technical report",
+      "release_date": "2024-01-31",
+      "notes": "Code-specialized variant documentation and model cards released for code tasks."
+    },
+    {
+      "version": "Model card / HFs",
       "release_date": "2024-07-23",
-      "notes": "Expanded context and flagship open-weight text models."
-    },
-    {
-      "version": "Llama 3.2",
-      "release_date": "2024-09-25",
-      "notes": "Added lightweight and vision variants plus quantization-focused deployment options."
-    },
-    {
-      "version": "Llama 3.3",
-      "release_date": "2024-12-05",
-      "notes": "70B text model positioned as the upgrade path for 3.1 70B Instruct."
+      "notes": "Hugging Face model cards and community artifacts continued to appear for quantized/converted builds."
     }
   ],
   "related_models": [
     {
-      "id": "llama-3-3",
-      "relationship": "successor"
+      "id": "llama-2",
+      "relationship": "Predecessor family (same lineage)"
     },
     {
-      "id": "llama-2-family",
-      "relationship": "predecessor"
-    },
-    {
-      "id": "qwen-family",
-      "relationship": "alternative"
-    },
-    {
-      "id": "gemma-family",
-      "relationship": "alternative"
-    },
-    {
-      "id": "deepseek-family",
-      "relationship": "alternative"
+      "id": "code-llama",
+      "relationship": "Sibling specialized family for coding tasks (Code Llama-34b included in variants)"
     }
   ],
-  "created_at": "2026-07-15",
-  "updated_at": "2026-07-15",
+  "engineering_decision": {
+    "choose_if": [
+      "You need a self-hostable, instruction-capable model family with long-context (up to 128K), multilingual coverage, and vision-language options for production deployments where control over data and fine-tuning is required."
+    ],
+    "avoid_if": [
+      "You require a provider-managed hosted service with vendor SLA for model improvements and where licensing forbids local hosting; or if your team cannot manage quantization/serving complexity for >70B deployments."
+    ],
+    "watch_out_for": [
+      "Large-parameter variants (70B, 405B) require multi-GPU sharding and careful KV/cache memory planning; community consensus on minimum hardware is guidance rather than official requirements — verify with runtime docs (vLLM, TensorRT-LLM, SGLang) before provisioning."
+    ],
+    "best_deployment_scenario": "Use Llama small/medium variants (3.2-3b, 3.1-8b) with GGUF + AWQ/INT8 quantization on edge/CPU (llama.cpp) for low-cost self-hosting; use 70B on multi-GPU server with vLLM/TensorRT-LLM for higher-quality reasoning workloads; reserve 405B for datacenter sharded deployments with high memory & orchestration investment.",
+    "alternatives": [
+      "deepseek",
+      "qwen",
+      "mistral"
+    ],
+    "performance_dimensions": [
+      {
+        "dimension": "reasoning",
+        "rating": "good",
+        "notes": "70B+ variants prioritized in Meta’s evaluations for reasoning parity claims; technical report compares to leading models.",
+        "recommendation_source": "Research"
+      },
+      {
+        "dimension": "coding",
+        "rating": "good",
+        "notes": "Code-specialized checkpoints improve synthesis, infilling, and long-code context handling.",
+        "recommendation_source": "Research"
+      },
+      {
+        "dimension": "long_context",
+        "rating": "excellent",
+        "notes": "Supports up to 128K contexts; requires runtime optimizations and memory tuning.",
+        "recommendation_source": "Research"
+      },
+      {
+        "dimension": "multilingual",
+        "rating": "good",
+        "notes": "Native multilingual support; large vocabulary (128K) designed to improve multilingual tokenization and coverage.",
+        "recommendation_source": "Official"
+      },
+      {
+        "dimension": "agent_workloads",
+        "rating": "excellent",
+        "notes": "Model family supports integrations for tool/function calling via orchestration layers.",
+        "recommendation_source": "Official"
+      },
+      {
+        "dimension": "tool_calling",
+        "rating": "excellent",
+        "notes": "Canonical prompt format, tool-calling tokens, and family guidance for 3.1.",
+        "recommendation_source": "Official"
+      }
+    ],
+    "deployment_profiles": [
+      {
+        "profile": "Small edge deployment",
+        "recommended_variant": "3.2-3b",
+        "expected_experience": "Fast CPU inference with GGUF/INT8; limited latency, lower quality than large variants",
+        "notes": "Use llama.cpp and AWQ/GGUF quantized artifacts.",
+        "recommendation_source": "Community"
+      },
+      {
+        "profile": "Medium server deployment",
+        "recommended_variant": "3.1-8b / Code Llama-34b",
+        "expected_experience": "Low-latency GPU inference; good instruction-following and code generation",
+        "notes": "Use vLLM or Transformers+TensorRT for batching.",
+        "recommendation_source": "Official/Community"
+      },
+      {
+        "profile": "Enterprise deployment",
+        "recommended_variant": "3.1-70b / 3.1-405b",
+        "expected_experience": "High-quality reasoning, large-memory RAG; requires multi-GPU sharding & orchestration",
+        "notes": "Use vLLM/TensorRT-LLM, model parallel libraries, and KV cache tuning.",
+        "recommendation_source": "Research/Community"
+      },
+      {
+        "profile": "Reasoning deployment",
+        "recommended_variant": "3.1-70b",
+        "expected_experience": "Strong reasoning quality with GQA efficiencies",
+        "notes": "Prefer 70B with optimized runtimes for cost-quality balance.",
+        "recommendation_source": "Research"
+      },
+      {
+        "profile": "Coding deployment",
+        "recommended_variant": "Code Llama-34b",
+        "expected_experience": "Code-specialized checkpoints improve synthesis, infilling, and long-code context handling",
+        "notes": "Use Code Llama instruct/checkpoint variants and tokenizers.",
+        "recommendation_source": "Research"
+      },
+      {
+        "profile": "Long-context deployment",
+        "recommended_variant": "3.1-70b / 3.1-405b",
+        "expected_experience": "Supports up to 128K contexts; requires runtime optimizations and memory tuning",
+        "notes": "vLLM or specialized attention/FlashAttention runtimes recommended.",
+        "recommendation_source": "Research"
+      },
+      {
+        "profile": "Vision-language deployment",
+        "recommended_variant": "3.2-vision-11b",
+        "expected_experience": "Native multimodal inputs; integrates vision encoder with decoder backbone",
+        "notes": "Model card and technical report describe vision input handling.",
+        "recommendation_source": "Official"
+      },
+      {
+        "profile": "Safety-filtered deployment",
+        "recommended_variant": "Llama Guard 3-8b",
+        "expected_experience": "Use as an input/output filter stage to reduce policy/TOX risks",
+        "notes": "Llama Guard published by Meta as safety variant.",
+        "recommendation_source": "Official"
+      }
+    ],
+    "runtime_matrix": [
+      {
+        "runtime": "Hugging Face Transformers",
+        "supports": [
+          "Loading",
+          "fine-tuning"
+        ],
+        "official": true,
+        "priority": "recommended",
+        "notes": "Official model cards and tokenizers; heavy for large models without optimized kernels.",
+        "recommendation_source": "Official"
+      },
+      {
+        "runtime": "vLLM",
+        "supports": [
+          "High-throughput",
+          "long-context"
+        ],
+        "official": false,
+        "priority": "recommended",
+        "notes": "Optimized for long contexts, batching, and production server throughput.",
+        "recommendation_source": "Community"
+      },
+      {
+        "runtime": "llama.cpp",
+        "supports": [
+          "CPU/edge inference"
+        ],
+        "official": false,
+        "priority": "supported",
+        "notes": "Best for GGUF quantized edge builds and small-variant deployments.",
+        "recommendation_source": "Community"
+      },
+      {
+        "runtime": "TensorRT-LLM",
+        "supports": [
+          "GPU-optimized inference"
+        ],
+        "official": false,
+        "priority": "recommended",
+        "notes": "Optimized GPU kernels for high-throughput production inference; model conversion necessary.",
+        "recommendation_source": "Community"
+      },
+      {
+        "runtime": "SGLang",
+        "supports": [
+          "Serving integrations"
+        ],
+        "official": false,
+        "priority": "supported",
+        "notes": "Use for integration where SGLang vendor provides Llama support.",
+        "recommendation_source": "Community"
+      },
+      {
+        "runtime": "LM Studio / Ollama",
+        "supports": [
+          "Local dev hosting"
+        ],
+        "official": false,
+        "priority": "supported",
+        "notes": "Developer-focused runtimes for experimentation.",
+        "recommendation_source": "Community"
+      }
+    ]
+  },
+  "related_resources": [
+    {
+      "relationship": "recommended_for",
+      "resource_type": "workflow",
+      "resource_slug": "llm-application-serving",
+      "reason": "Production serving pipeline"
+    },
+    {
+      "relationship": "used_with",
+      "resource_type": "package",
+      "resource_slug": "pytorch",
+      "reason": "Primary model loading library"
+    },
+    {
+      "relationship": "used_with",
+      "resource_type": "pattern",
+      "resource_slug": "kv-cache",
+      "reason": "KV cache optimization"
+    },
+    {
+      "relationship": "used_with",
+      "resource_type": "pattern",
+      "resource_slug": "streaming-inference",
+      "reason": "Streaming token generation"
+    }
+  ],
+  "created_at": "2026-07-17",
+  "updated_at": "2026-07-17",
   "sources": [
-    "https://www.llama.com/docs/model-cards-and-prompt-formats/llama3_1/",
-    "https://www.llama.com/docs/model-cards-and-prompt-formats/llama3_2/",
-    "https://www.llama.com/docs/model-cards-and-prompt-formats/llama3_3/"
+    "https://ai.meta.com/research/publications/the-llama-3-herd-of-models/",
+    "https://ai.meta.com/blog/meta-llama-3/",
+    "http://arxiv.org/pdf/2407.21783.pdf",
+    "http://arxiv.org/pdf/2308.12950.pdf",
+    "https://huggingface.co/meta-llama/Llama-Guard-3-8B",
+    "https://github.com/ggerganov/llama.cpp",
+    "https://vllm.ai/docs",
+    "https://huggingface.co/models?search=llama"
   ],
   "tags": [
     "llm",

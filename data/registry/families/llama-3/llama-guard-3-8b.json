@@ -1,0 +1,179 @@
+{
+  "id": "llama-guard-3-8b",
+  "slug": "llama-guard-3-8b",
+  "title": "Llama Guard 3 8B",
+  "name": "Llama Guard 3 8B",
+  "description": "Llama Guard 3 8B is Meta’s 8B safety-classification checkpoint for moderating LLM inputs and outputs, with explicit support for multilingual policy enforcement and tool-call abuse detection.",
+  "family_id": "llama-3",
+  "size_mb": 8192,
+  "specifications": {
+    "parameter_count": 8000,
+    "context_window": 8000
+  },
+  "formats": {
+    "safetensors": true,
+    "gguf": true,
+    "awq": true,
+    "gptq": true,
+    "mlx": true,
+    "onnx": true,
+    "tensorrt": true
+  },
+  "hardware": {
+    "minimum_gpu_memory": 16000,
+    "recommended_gpu_memory": 24000,
+    "minimum_ram": 8000,
+    "recommended_ram": 16000,
+    "recommended_gpu": "NVIDIA T4/L4/A10/A100-class GPUs"
+  },
+  "downloads": [
+    {
+      "platform": "Hugging Face model card",
+      "url": "https://huggingface.co/meta-llama/Llama-Guard-3-8B",
+      "official": true,
+      "notes": "Official checkpoint and license entry point."
+    },
+    {
+      "platform": "Meta Llama downloads",
+      "url": "https://ai.meta.com/resources/models-and-libraries/llama-downloads/",
+      "official": true,
+      "notes": "Official Meta access/download path."
+    }
+  ],
+  "runtime_compatibility": [
+    {
+      "runtime": "Hugging Face Transformers",
+      "supported": true,
+      "minimum_version": "4.43+",
+      "notes": "Official model card says the model is directly usable with Transformers and is supported since version 4.43."
+    },
+    {
+      "runtime": "vLLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Community/official ecosystem support exists; confirm guard-model chat templating and scoring path in your runtime docs."
+    },
+    {
+      "runtime": "llama.cpp",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Community support exists for local/quantized deployment; verify exact chat-template behavior before use."
+    },
+    {
+      "runtime": "SGLang",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Community serving support exists; verify current compatibility against runtime docs."
+    },
+    {
+      "runtime": "TensorRT-LLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Ecosystem conversion path exists for NVIDIA deployments."
+    }
+  ],
+  "deployment": {
+    "supported_runtimes": [
+      "Transformers",
+      "vLLM",
+      "llama.cpp",
+      "SGLang",
+      "TensorRT-LLM"
+    ],
+    "recommended_runtime": "Transformers",
+    "quantizations": [
+      "BF16",
+      "INT8",
+      "INT4",
+      "AWQ",
+      "GPTQ"
+    ],
+    "recommended_quantization": "Use BF16 when moderation latency budget is acceptable and you want maximum fidelity; use INT8 when reducing service footprint matters and you can validate that false-positive behavior remains acceptable.",
+    "cpu_supported": true,
+    "gpu_supported": true,
+    "mps_supported": false
+  },
+  "license_info": {
+    "name": "Llama 3.1 Community License",
+    "commercial_use": true,
+    "modification": true,
+    "redistribution": true,
+    "attribution_required": true,
+    "notes": "The 700M MAU commercial threshold applies, and redistributed copies must include the required attribution and the license text."
+  },
+  "status": {
+    "release_date": "2024-07-23",
+    "last_verified": "2026-07-17",
+    "maintenance_status": "production"
+  },
+  "engineering_snapshot": {
+    "best_for": [
+      "LLM input moderation in production chat systems.",
+      "Response filtering and policy enforcement for assistant outputs.",
+      "Tool-call and code-interpreter abuse screening in agent pipelines."
+    ],
+    "avoid_for": [
+      "Open-ended assistant generation.",
+      "Single-point safety dependency without fallback policy logic.",
+      "Highly specialized domains that require always-current external facts for correctness-sensitive categories."
+    ],
+    "deployment_complexity": "moderate",
+    "production_ready": true,
+    "recommended_use_case": "inline safety moderation and guardrail enforcement around Llama and other LLM services.",
+    "deployment_risks": [
+      "Lower false-positive control than a bespoke policy stack in some safety categories.",
+      "Generative post-processing complexity when translating text output to deterministic moderation actions."
+    ],
+    "failure_modes": [
+      "Mismatched prompting format or template causing incorrect safety classification outputs.",
+      "Failing to configure custom templates or tokenizers correctly in specialized mobile runtime engines."
+    ],
+    "common_mistakes": [
+      "Assuming the guard model is a true classifier rather than a generative model, leading to naive output parsing.",
+      "Treating safety classification as a single-point safety dependency without fallback policy logic."
+    ],
+    "operational_notes": [
+      "The model is an LLM that emits a safety decision and category labels; the model card notes that classifier scores can be derived from the first token probability, which makes calibration and thresholding the central inference concern.",
+      "Meta recommends deploying Llama Guard 3 together with Llama 3.1, which makes colocation and shared serving infrastructure the natural deployment pattern for production moderation.",
+      "Meta’s quantized INT8 release is explicitly intended to reduce deployment cost while keeping behavior close to the BF16 checkpoint, so INT8 is the first compression step to consider when moderation capacity is the constraint.",
+      "The model card states support in Transformers since 4.43, which is the safest reference path for correctness-sensitive moderation workflows.",
+      "Variant differentiation (Identity): compared with the general-purpose Llama 3.1 8B, this variant is specialized for safety classification, hazard labeling, and moderation decisions, not open-ended generation.",
+      "Variant differentiation (File Formats): this checkpoint is often used in inference chains, so format choice matters less for raw throughput than for latency and deployment footprint inside moderation services.",
+      "Variant differentiation (Hardware Requirements): the guard model is small enough to colocate with many production systems, which is operationally important because moderation latency often sits on the request critical path.",
+      "Variant differentiation (Downloads): the official Hugging Face repo is the canonical artifact, while Meta’s download page is the access-control and license gateway.",
+      "Variant differentiation (Runtime Compatibility): because the model outputs safety labels rather than free-form assistant responses, runtime compatibility is mostly about preserving prompt-template fidelity and decoding the first-token safety signal correctly.",
+      "Variant differentiation (Deployment): this model is intended to be deployed alongside other Llama systems, so the best runtime is usually the one that minimizes cross-model operational friction rather than the one that maximizes standalone benchmark throughput.",
+      "Variant differentiation (License): because guardrails are usually embedded in customer-facing systems, license obligations should be treated as part of the safety architecture, not just legal review.",
+      "Variant differentiation (Status): this is a released production safety checkpoint, not a research artifact, and Meta explicitly positions it for use with Llama 3.1 systems.",
+      "Variant differentiation (Engineering Snapshot): the core question is not “is it a good model?” but “is it a good control point?” — for most production stacks, the answer is yes if the model is used as one layer in a broader moderation system.",
+      "Variant differentiation (Engineering Notes): Llama Guard 3’s quality is only useful if the post-processing layer correctly turns generative output into deterministic moderation decisions."
+    ]
+  },
+  "created_at": "2026-07-17",
+  "updated_at": "2026-07-17",
+  "sources": [
+    "https://arxiv.org/pdf/2312.06674.pdf",
+    "https://arxiv.org/html/2406.16330v1",
+    "http://arxiv.org/pdf/2407.21783.pdf",
+    "https://arxiv.org/pdf/2406.12793.pdf",
+    "http://arxiv.org/pdf/2411.10414.pdf",
+    "https://huggingface.co/meta-llama/Llama-Guard-3-8B"
+  ],
+  "tags": [
+    "llm",
+    "open-weight",
+    "self-hosting",
+    "agents",
+    "moderation"
+  ],
+  "aliases": [],
+  "keywords": [
+    "Llama Guard 3 8B",
+    "Llama Guard 3",
+    "8B safety"
+  ],
+  "search_tokens": [
+    "llama guard 3 8b",
+    "llama guard 3"
+  ]
+}

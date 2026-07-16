@@ -35,6 +35,16 @@ export type SearchResult = {
   min_gpu_memory?: number;
   production_ready?: boolean;
   commercial_use?: boolean;
+  modality?: 'llm' | 'embedding' | 'reranker' | 'vision' | 'speech' | 'multimodal';
+  capabilities?: {
+    instruction_tuned?: boolean;
+    reasoning?: boolean;
+    vision?: boolean;
+    multilingual?: boolean;
+    tool_calling?: boolean;
+    function_calling?: boolean;
+    thinking_model?: boolean;
+  };
 };
 
 export function createFuse(data: SearchResult[]) {

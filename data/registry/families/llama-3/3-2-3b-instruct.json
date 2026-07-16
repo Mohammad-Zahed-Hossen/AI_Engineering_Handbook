@@ -1,0 +1,179 @@
+{
+  "id": "3-2-3b-instruct",
+  "slug": "llama-3.2-3b-instruct",
+  "title": "Llama 3.2 3B Instruct",
+  "name": "Llama 3.2 3B Instruct",
+  "description": "Llama 3.2 3B Instruct is Meta’s lightweight instruction-tuned text model for edge and on-device deployment, with 128K context, multilingual support, and a design target centered on latency-sensitive assistants and small agents.",
+  "family_id": "llama-3",
+  "size_mb": 3210,
+  "specifications": {
+    "parameter_count": 3210,
+    "context_window": 128000
+  },
+  "formats": {
+    "safetensors": true,
+    "gguf": true,
+    "awq": true,
+    "gptq": true,
+    "mlx": true,
+    "onnx": true,
+    "tensorrt": true
+  },
+  "hardware": {
+    "minimum_gpu_memory": 8000,
+    "recommended_gpu_memory": 16000,
+    "minimum_ram": 8000,
+    "recommended_ram": 16000,
+    "recommended_gpu": "Consumer GPUs such as RTX 3060/4060-class or Apple Silicon/Mobile NPUs"
+  },
+  "downloads": [
+    {
+      "platform": "Hugging Face model card",
+      "url": "https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct",
+      "official": true,
+      "notes": "Official checkpoint and license entry point."
+    },
+    {
+      "platform": "Meta Llama downloads",
+      "url": "https://ai.meta.com/resources/models-and-libraries/llama-downloads/",
+      "official": true,
+      "notes": "Official Meta download/access path."
+    }
+  ],
+  "runtime_compatibility": [
+    {
+      "runtime": "Hugging Face Transformers",
+      "supported": true,
+      "minimum_version": "4.43.0+",
+      "notes": "Official model card explicitly documents Transformers loading and generation usage."
+    },
+    {
+      "runtime": "llama.cpp",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Community-supported for local and quantized deployment; common for edge and desktop use."
+    },
+    {
+      "runtime": "vLLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Community/official ecosystem support for GPU serving; useful when you want batching on small GPU nodes."
+    },
+    {
+      "runtime": "SGLang",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Community serving support exists; verify current compatibility against runtime docs."
+    },
+    {
+      "runtime": "TensorRT-LLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Supported through ecosystem conversion/serving workflows for NVIDIA deployments."
+    }
+  ],
+  "deployment": {
+    "supported_runtimes": [
+      "Transformers",
+      "llama.cpp",
+      "vLLM",
+      "SGLang",
+      "TensorRT-LLM"
+    ],
+    "recommended_runtime": "llama.cpp",
+    "quantizations": [
+      "BF16",
+      "INT8",
+      "INT4",
+      "AWQ",
+      "GPTQ"
+    ],
+    "recommended_quantization": "Use BF16 when quality matters and device memory allows it; use the official/partner quantized paths when shipping to constrained devices because Meta explicitly designed 3B for such environments.",
+    "cpu_supported": true,
+    "gpu_supported": true,
+    "mps_supported": true
+  },
+  "license_info": {
+    "name": "Llama 3.2 Community License",
+    "commercial_use": true,
+    "modification": true,
+    "redistribution": true,
+    "attribution_required": true,
+    "notes": "Meta requires acceptance of the community license and adherence to the acceptable-use policy; distribution obligations and the 700M MAU commercial threshold apply."
+  },
+  "status": {
+    "release_date": "2024-09-25",
+    "last_verified": "2026-07-17",
+    "maintenance_status": "production"
+  },
+  "engineering_snapshot": {
+    "best_for": [
+      "On-device or edge assistants with strong privacy requirements.",
+      "Latency-sensitive chat and rewriting workloads on constrained hardware.",
+      "Lightweight agentic retrieval and summarization systems where local execution matters."
+    ],
+    "avoid_for": [
+      "Premium reasoning workloads that require the strongest possible model quality.",
+      "Heavy multi-step tool use where 70B/405B quality is worth the added cost.",
+      "Deployments that cannot tolerate quantization-induced quality loss on narrow tasks."
+    ],
+    "deployment_complexity": "moderate",
+    "production_ready": true,
+    "recommended_use_case": "local or edge production assistants that need multilingual coverage, 128K context, and low-latency inference.",
+    "deployment_risks": [
+      "Quantization-induced quality loss on narrow or complex tasks.",
+      "Memory footprint exceeding target edge device physical RAM ceilings."
+    ],
+    "failure_modes": [
+      "Failing to validate the exact target runtime, tokenizer/template, and quantization on the actual device class before rollout.",
+      "OutOfMemory (OOM) faults on constrained edge devices when processing large context prompts."
+    ],
+    "common_mistakes": [
+      "Treating 3B like a shrunken server model instead of an edge-first model, neglecting device-level performance validation.",
+      "Failing to configure custom templates or tokenizers correctly in specialized mobile runtime engines."
+    ],
+    "operational_notes": [
+      "Meta explicitly states that the 1B/3B models are designed for constrained environments and that the released weights are BF16, with quantized variants intended for faster on-device inference.",
+      "The model card and release blog both point to edge/mobile deployments and on-device partner enablement, so device-specific runtime validation is a core launch task rather than an optimization afterthought.",
+      "Quantized deployment is central to the 3B value proposition; Meta’s release describes 4-bit groupwise weight quantization and 8-bit activation handling for on-device inference paths.",
+      "Transformers 4.43.0+ is the documented server-side path in the model card, while the release materials also emphasize ExecuTorch and partner runtimes for device deployment.",
+      "Variant differentiation (Identity): the 3B tier is the family’s lowest-friction production entry point for on-device and edge workloads, and Meta explicitly positions it for multilingual dialogue, summarization, rewriting, and agentic retrieval on constrained hardware.",
+      "Variant differentiation (File Formats): unlike the 70B/405B tiers, 3B is routinely converted into compact on-device formats, so format choice has a first-order impact on whether you can ship to mobile/edge at all.",
+      "Variant differentiation (Hardware Requirements): 3B is the first Llama 3.2 tier where edge deployment is a primary design goal rather than a compressed fallback, so memory planning is about fitting within device constraints more than maximizing throughput.",
+      "Variant differentiation (Downloads): the Hugging Face checkpoint is the canonical serving artifact, while Meta’s download page is the access-control and license gateway.",
+      "Variant differentiation (Runtime Compatibility): 3B has broad runtime flexibility because it sits at the boundary between server and device deployment, so your runtime choice should follow the target device class first.",
+      "Variant differentiation (Deployment): 3B is uniquely sensitive to quantization policy because quantization is often the difference between “fits on device” and “does not ship,” which is not usually true for the larger Llama variants.",
+      "Variant differentiation (License): because 3B is likely to be embedded in shipped products, the license requirements affect product packaging and attribution workflows directly.",
+      "Variant differentiation (Status): 3B is a released, production-intent checkpoint optimized for practical deployment, not a research-only model.",
+      "Variant differentiation (Engineering Snapshot): this is the family’s “deploy everywhere” variant, and its main value proposition is not absolute capability but the best balance of capability, footprint, and device reach.",
+      "Variant differentiation (Engineering Notes): 3B’s engineering center of gravity is portability, not peak quality, so deployment correctness depends heavily on choosing the right runtime and compression regime."
+    ]
+  },
+  "created_at": "2026-07-17",
+  "updated_at": "2026-07-17",
+  "sources": [
+    "https://arxiv.org/pdf/2302.13971",
+    "https://arxiv.org/pdf/2411.17713",
+    "https://arxiv.org/pdf/2308.12950",
+    "http://arxiv.org/pdf/2407.21783.pdf",
+    "http://arxiv.org/pdf/2406.08478.pdf",
+    "https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct"
+  ],
+  "tags": [
+    "llm",
+    "open-weight",
+    "self-hosting",
+    "agents",
+    "on-device"
+  ],
+  "aliases": [],
+  "keywords": [
+    "Llama 3.2 3B Instruct",
+    "Llama 3.2",
+    "3B model"
+  ],
+  "search_tokens": [
+    "llama 3.2 3b",
+    "llama 3.2 3b instruct"
+  ]
+}

@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RegistryBadge } from './RegistryBadge';
@@ -7,13 +5,15 @@ import { RegistryFamily } from '@/types/registry';
 
 interface FamilyCardProps {
   family: RegistryFamily;
+  variantCount: number;
 }
 
 /**
  * Card component for displaying a model family in the registry grid.
  * Shows family name, provider, description, variant count, and production status.
+ * Note: Variant count is passed as prop to avoid server/client boundary issues.
  */
-export default function FamilyCard({ family }: FamilyCardProps) {
+export default function FamilyCard({ family, variantCount }: FamilyCardProps) {
   return (
     <Link
       href={`/registry/families/${family.id}`}
@@ -34,7 +34,7 @@ export default function FamilyCard({ family }: FamilyCardProps) {
           </p>
           <div className="flex items-center gap-2 text-[10px]">
             <span className="text-muted-foreground">Variants:</span>
-            <span className="font-mono text-foreground">{family.variants.length}</span>
+            <span className="font-mono text-foreground">{variantCount}</span>
             {family.engineering_snapshot?.production_ready && (
               <span className="text-emerald-600">●</span>
             )}

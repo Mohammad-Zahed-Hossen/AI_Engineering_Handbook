@@ -1,0 +1,169 @@
+{
+  "id": "3-1-70b-instruct",
+  "slug": "llama-3.1-70b-instruct",
+  "title": "Llama 3.1 70B Instruct",
+  "name": "Llama 3.1 70B Instruct",
+  "description": "Llama 3.1 70B Instruct is Meta’s high-capacity instruction-tuned deployment variant for production chat, complex agents, and reasoning-heavy workloads where quality gains justify multi-GPU serving cost.",
+  "family_id": "llama-3",
+  "specifications": {
+    "parameter_count": 70000,
+    "vocab_size": 128000,
+    "context_window": 128000
+  },
+  "formats": {
+    "safetensors": true,
+    "gguf": true,
+    "awq": true,
+    "gptq": true,
+    "mlx": true,
+    "onnx": true,
+    "tensorrt": true
+  },
+  "hardware": {
+    "minimum_gpu_memory": 80000,
+    "recommended_gpu_memory": 128000,
+    "minimum_ram": 64000,
+    "recommended_ram": 128000,
+    "recommended_gpu": "NVIDIA A100/H100-class"
+  },
+  "downloads": [
+    {
+      "platform": "Hugging Face model card",
+      "url": "https://huggingface.co/meta-llama/Llama-3.1-70B-Instruct",
+      "official": true,
+      "notes": "Official checkpoint and license entry point for this variant."
+    }
+  ],
+  "runtime_compatibility": [
+    {
+      "runtime": "Hugging Face Transformers",
+      "supported": true,
+      "minimum_version": "4.43.0+",
+      "notes": "Official model card includes Transformers usage and recommends BF16 loading for the checkpoint."
+    },
+    {
+      "runtime": "vLLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Official Meta blog says the release was supported with vLLM day one; preferred for production batching and long-context serving."
+    },
+    {
+      "runtime": "TensorRT-LLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Meta blog states support from day one through NVIDIA/TensorRT ecosystem; requires conversion for deployment."
+    },
+    {
+      "runtime": "llama.cpp",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Community-supported for quantized local deployment, but not the primary fit for 70B production."
+    },
+    {
+      "runtime": "SGLang",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Community/runtime support exists for Llama 3.1-family serving."
+    }
+  ],
+  "deployment": {
+    "supported_runtimes": [
+      "Transformers",
+      "vLLM",
+      "TensorRT-LLM",
+      "llama.cpp",
+      "SGLang"
+    ],
+    "recommended_runtime": "vLLM",
+    "quantizations": [
+      "BF16",
+      "INT8",
+      "INT4",
+      "AWQ",
+      "GPTQ"
+    ],
+    "recommended_quantization": "BF16 for maximum fidelity when you can afford the memory budget; use 8-bit or AWQ/GPTQ only when memory pressure or cost forces compression and you have validated quality on your task set.",
+    "cpu_supported": true,
+    "gpu_supported": true,
+    "mps_supported": false
+  },
+  "license_info": {
+    "name": "Llama 3.1 Community License",
+    "commercial_use": true,
+    "modification": true,
+    "redistribution": true,
+    "attribution_required": true,
+    "notes": "The model card states the license terms explicitly, including the attribution notice, Built with Llama display requirement for redistributed materials or products, and the 700M monthly active user threshold for additional commercial terms."
+  },
+  "status": {
+    "release_date": "2024-07-23",
+    "last_verified": "2026-07-17",
+    "maintenance_status": "production"
+  },
+  "engineering_snapshot": {
+    "best_for": [
+      "High-end reasoning and complex agent workflows where quality matters enough to justify multi-GPU serving.",
+      "Production chat with strong tool use and multilingual capability under 128K context.",
+      "RAG systems where answer quality and instruction-following are more important than lowest possible inference cost."
+    ],
+    "avoid_for": [
+      "Budget-constrained single-GPU deployments where 8B or 8B-quantized models are sufficient.",
+      "Tiny edge devices and CPU-first deployments that cannot absorb 70B memory or latency overhead.",
+      "Workloads that require minimal ops complexity; multi-GPU orchestration becomes the dominant cost."
+    ],
+    "deployment_complexity": "high",
+    "production_ready": true,
+    "recommended_use_case": "multi-GPU production inference for high-quality chat, tool-using agents, and long-context reasoning with controlled serving cost.",
+    "deployment_risks": [
+      "Underprovisioning GPU memory, especially when sizing for context length, batching, and KV cache headroom.",
+      "Quantization-induced quality degradation on reasoning and agent task performance."
+    ],
+    "failure_modes": [
+      "Out-of-memory (OOM) errors during long-context or high-concurrency requests.",
+      "Severe latency spikes if model sharding and tensor parallelism are not properly tuned."
+    ],
+    "common_mistakes": [
+      "Sizing memory calculations purely on base checkpoint size rather than factoring in KV cache memory at scale.",
+      "Deploying to consumer/prosumer GPUs without systematic benchmark validation."
+    ],
+    "operational_notes": [
+      "Meta states the 70B checkpoint is available in BF16 and can be loaded in Transformers with BF16 dtype; the model card also demonstrates 8-bit and 4-bit loading, which is the main route to reducing memory footprint when BF16 is too expensive.",
+      "The release materials explicitly position Llama 3.1 for production inference and note support from vLLM, TensorRT, and PyTorch day one; for 70B, this implies multi-GPU or high-memory GPU deployment rather than casual local hosting.",
+      "Use quantization only after task-specific validation, because the 70B model’s main value is fidelity; aggressive compression can erase the very quality gains that justify the higher-capacity variant.",
+      "Use the official tokenizer and chat formatting from the model card; prompt-template mismatch is more costly on 70B because the model is typically used in high-stakes agent and reasoning pipelines.",
+      "Variant differentiation (Identity): this variant is the family’s quality-oriented 70B tier, so its main deployment advantage over 8B is stronger reasoning and tool-use performance, while its main trade-off is multi-GPU memory and serving cost.",
+      "Variant differentiation (File Formats): compared with 8B, 70B is more often consumed through optimized server runtimes and quantized formats; CPU/edge deployment is technically possible in compressed forms but is usually the wrong cost/latency point for production.",
+      "Variant differentiation (Hardware Requirements): the 70B tier changes deployment economics materially versus 8B — it usually moves you from single-GPU simplicity to multi-GPU orchestration, which is the central operational cost of choosing this variant.",
+      "Variant differentiation (Downloads): the official Hugging Face page is the authoritative distribution point; use it as the source of truth for model access, weights, and license text.",
+      "Variant differentiation (Runtime Compatibility): 70B is best treated as a server runtime model, not a local-dev-first model; the runtime decision is mostly about throughput and memory management, not mere compatibility.",
+      "Variant differentiation (Deployment): 70B is the family point where BF16 fidelity begins to compete with very real serving cost, so the primary engineering choice is whether to pay for multi-GPU BF16 or accept quantization risk to reduce footprint.",
+      "Variant differentiation (License): licensing is broadly permissive relative to many closed models, but the redistribution and large-scale commercial terms are operationally relevant and must be checked before launch.",
+      "Variant differentiation (Status): this is a released production checkpoint, not a research-only artifact; treat it as a stable deployment target with ongoing ecosystem support rather than a one-off benchmark model."
+    ]
+  },
+  "created_at": "2026-07-17",
+  "updated_at": "2026-07-17",
+  "sources": [
+    "https://arxiv.org/html/2406.14971v1",
+    "https://arxiv.org/pdf/2503.04378",
+    "http://arxiv.org/pdf/2401.09646v1.pdf",
+    "https://huggingface.co/meta-llama/Llama-3.1-70B-Instruct"
+  ],
+  "tags": [
+    "llm",
+    "open-weight",
+    "self-hosting",
+    "agents",
+    "tool-use"
+  ],
+  "aliases": [],
+  "keywords": [
+    "Llama 3.1 70B Instruct",
+    "Llama 3.1",
+    "70B model"
+  ],
+  "search_tokens": [
+    "llama 3.1 70b",
+    "llama 3.1 70b instruct"
+  ]
+}

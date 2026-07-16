@@ -1,106 +1,91 @@
-import { buildSearchEngine, buildSearchIndex } from '@/lib/search';
-import { PARAMETER_RANGES, CONTEXT_RANGES, GPU_RANGES } from '@/lib/registry-constants';
-import { paginate, DEFAULT_PAGE_SIZES } from '@/lib/pagination';
+import { NextRequest, NextResponse } from 'next/server';
+import { getAllRegistryFamilies, getRegistryVariantsByFamily } from '@/lib/data';
 
 /**
- * API endpoint for registry search with faceted filtering and pagination.
- * Supports filtering by: parameter_count, context_window, min_gpu_memory, production_ready, commercial_use, family
+ * API route for registry search with faceted filtering.
+ * Supports filtering by production status, commercial use, family, modality, and capabilities.
  */
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const query = searchParams.get('q') || '';
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams;
+  
   const page = parseInt(searchParams.get('page') || '1', 10);
-  const pageSize = parseInt(searchParams.get('page_size') || String(DEFAULT_PAGE_SIZES.search), 10);
+  const pageSize = parseInt(searchParams.get('page_size') || '12', 10);
   
-  // Faceted filter parameters
-  const minParams = searchParams.get('min_params');
-  const maxParams = searchParams.get('max_params');
-  const minContext = searchParams.get('min_context');
-  const maxContext = searchParams.get('max_context');
-  const minGpu = searchParams.get('min_gpu');
-  const maxGpu = searchParams.get('max_gpu');
-  const productionReady = searchParams.get('production_ready');
-  const commercialUse = searchParams.get('commercial_use');
-  const family = searchParams.get('family');
-  const sort = searchParams.get('sort') || 'relevance';
-
-  // Get all registry entries from search index
-  const index = buildSearchIndex();
-  const registryEntries = index.filter(e => e.type === 'registry');
+  // Get all registry families
+  const allFamilies = getAllRegistryFamilies();
   
-  // Apply faceted filters
-  let filtered = registryEntries.filter(entry => {
-    if (minParams && entry.parameter_count && entry.parameter_count < parseInt(minParams)) return false;
-    if (maxParams && entry.parameter_count && entry.parameter_count > parseInt(maxParams)) return false;
-    if (minContext && entry.context_window && entry.context_window < parseInt(minContext)) return false;
-    if (maxContext && entry.context_window && entry.context_window > parseInt(maxContext)) return false;
-    if (minGpu && entry.min_gpu_memory && entry.min_gpu_memory < parseInt(minGpu)) return false;
-    if (maxGpu && entry.min_gpu_memory && entry.min_gpu_memory > parseInt(maxGpu)) return false;
-    if (productionReady === 'true' && entry.production_ready !== true) return false;
-    if (productionReady === 'false' && entry.production_ready !== false) return false;
-    if (commercialUse === 'true' && entry.commercial_use !== true) return false;
-    if (commercialUse === 'false' && entry.commercial_use !== false) return false;
-    if (family && entry.family !== family) return false;
+  // Apply filters
+  const filteredFamilies = allFamilies.filter((family) => {
+    // Production ready filter
+    if (searchParams.get('production_ready') === 'true') {
+      if (family.engineering_snapshot?.production_ready !== true) {
+        return false;
+      }
+    }
+    
+    // Commercial use filter
+    if (searchParams.get('commercial_use') === 'true') {
+      if (family.license_info?.commercial_use !== true) {
+        return false;
+      }
+    }
+    
+    // Family filter
+    if (searchParams.get('family')) {
+      if (family.id !== searchParams.get('family')) {
+        return false;
+      }
+    }
+    
+    // Modality filter
+    if (searchParams.get('modality')) {
+      if (family.modality !== searchParams.get('modality')) {
+        return false;
+      }
+    }
+    
+    // Capability filters
+    if (searchParams.get('reasoning') === 'true') {
+      if (family.capabilities?.reasoning !== true) {
+        return false;
+      }
+    }
+    
+    if (searchParams.get('vision') === 'true') {
+      if (family.capabilities?.vision !== true) {
+        return false;
+      }
+    }
+    
+    if (searchParams.get('tool_calling') === 'true') {
+      if (family.capabilities?.tool_calling !== true) {
+        return false;
+      }
+    }
+    
     return true;
   });
+  
+// Calculate pagination
+  const total = filteredFamilies.length;
+  const totalPages = Math.ceil(total / pageSize);
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedFamilies = filteredFamilies.slice(startIndex, endIndex);
 
-  // Apply search query
-  if (query) {
-    const engine = buildSearchEngine();
-    const searchResults = engine.search(query, filtered.length);
-    const searchIds = new Set(searchResults.map(r => r.id));
-    filtered = filtered.filter(e => searchIds.has(e.id));
-  }
+  // Add variant count to each family
+  const familiesWithVariantCount = paginatedFamilies.map(family => ({
+    ...family,
+    variant_count: getRegistryVariantsByFamily(family.id).length,
+  }));
 
-  // Apply sorting
-  filtered = [...filtered].sort((a, b) => {
-    switch (sort) {
-      case 'params_asc':
-        return (a.parameter_count || 0) - (b.parameter_count || 0);
-      case 'params_desc':
-        return (b.parameter_count || 0) - (a.parameter_count || 0);
-      case 'size_asc':
-        return (a.min_gpu_memory || 0) - (b.min_gpu_memory || 0);
-      case 'size_desc':
-        return (b.min_gpu_memory || 0) - (a.min_gpu_memory || 0);
-      case 'name_asc':
-        return a.name.localeCompare(b.name);
-      case 'name_desc':
-        return b.name.localeCompare(a.name);
-      default:
-        return 0; // Keep original order (relevance)
-    }
-  });
-
-  // Apply pagination
-  const pagination = paginate(filtered, page, pageSize);
-
-  return Response.json({
-    query,
+  return NextResponse.json({
+    results: familiesWithVariantCount,
+    total,
+    totalPages,
+    hasNext: page < totalPages,
+    hasPrev: page > 1,
     page,
     pageSize,
-    total: pagination.total,
-    totalPages: pagination.totalPages,
-    hasNext: pagination.hasNext,
-    hasPrev: pagination.hasPrev,
-    results: pagination.items,
-  });
-}
-
-/**
- * Get available filter values for faceted search.
- */
-export async function POST() {
-  const index = buildSearchIndex();
-  const registryEntries = index.filter(e => e.type === 'registry');
-
-  // Extract unique values for filters
-  const families = [...new Set(registryEntries.map(e => e.family).filter(Boolean))];
-
-  return Response.json({
-    families,
-    parameterRanges: PARAMETER_RANGES,
-    contextRanges: CONTEXT_RANGES,
-    gpuRanges: GPU_RANGES,
   });
 }

@@ -1,0 +1,178 @@
+{
+  "id": "r1-distill",
+  "slug": "deepseek-r1-distill",
+  "title": "DeepSeek-R1 Distill 7B / 8B / 14B / 32B",
+  "name": "DeepSeek-R1 Distill 7B / 8B / 14B / 32B",
+  "description": "DeepSeek-R1 Distill 7B / 8B / 14B / 32B is the distilled reasoning line for teams that want R1-style chain-of-thought behavior without the full 671B MoE serving footprint.",
+  "family_id": "deepseek",
+  "specifications": {
+    "context_window": 32768,
+    "max_output_tokens": 32768
+  },
+  "formats": {
+    "safetensors": true,
+    "gguf": false,
+    "awq": false,
+    "gptq": false,
+    "mlx": false,
+    "onnx": false,
+    "tensorrt": false
+  },
+  "hardware": {
+    "recommended_gpu": "For the 32B variant, community guidance favors high-memory GPUs or multi-GPU configurations served with tensor parallelism; 7B/8B fit easily on commodity single-GPU cards."
+  },
+  "downloads": [
+    {
+      "platform": "Hugging Face",
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",
+      "official": true,
+      "notes": "Official 7B distilled checkpoint."
+    },
+    {
+      "platform": "Hugging Face",
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-8B",
+      "official": true,
+      "notes": "Official 8B distilled checkpoint."
+    },
+    {
+      "platform": "Hugging Face",
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B",
+      "official": true,
+      "notes": "Official 14B distilled checkpoint."
+    },
+    {
+      "platform": "Hugging Face",
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+      "official": true,
+      "notes": "Official 32B distilled checkpoint."
+    }
+  ],
+  "runtime_compatibility": [
+    {
+      "runtime": "vLLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "The official release documents a vLLM serving command for the distilled models."
+    },
+    {
+      "runtime": "SGLang",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "The official release documents an SGLang serving command for the distilled models."
+    },
+    {
+      "runtime": "Hugging Face Transformers",
+      "supported": false,
+      "minimum_version": "Latest stable",
+      "notes": "The release states the distilled models can be used like Qwen or Llama models, but it does not explicitly publish a Transformers compatibility matrix."
+    },
+    {
+      "runtime": "llama.cpp",
+      "supported": false,
+      "minimum_version": "Latest stable",
+      "notes": "No official compatibility statement was retrieved."
+    },
+    {
+      "runtime": "TensorRT-LLM",
+      "supported": false,
+      "minimum_version": "Latest stable",
+      "notes": "No official compatibility statement was retrieved."
+    }
+  ],
+  "deployment": {
+    "supported_runtimes": [
+      "vLLM",
+      "SGLang"
+    ],
+    "recommended_runtime": "vLLM",
+    "quantizations": [
+      "FP16",
+      "BF16"
+    ],
+    "recommended_quantization": "BF16 for the 14B/32B variants when reasoning fidelity is the priority, and lower-bit quantization for 7B/8B when cost and latency dominate.",
+    "cpu_supported": false,
+    "gpu_supported": true,
+    "mps_supported": false
+  },
+  "license_info": {
+    "name": "MIT License / Base-model Licenses",
+    "commercial_use": true,
+    "modification": true,
+    "redistribution": true,
+    "attribution_required": true,
+    "notes": "The official release permits commercial use, modifications, and distillation, while noting that Qwen-derived checkpoints inherit Apache 2.0 lineage and Llama-derived checkpoints inherit Llama licenses."
+  },
+  "status": {
+    "release_date": "2025-01-20",
+    "last_verified": "2026-07-17",
+    "maintenance_status": "production"
+  },
+  "engineering_snapshot": {
+    "best_for": [
+      "Production reasoning endpoints that need much lower footprint than the full R1 model.",
+      "Cost-sensitive agent workflows where explicit reasoning is still valuable.",
+      "Local or edge-adjacent deployments for code, math, and logic tasks, especially in 7B/8B form factors."
+    ],
+    "avoid_for": [
+      "Systems that require the full frontier MoE capacity of DeepSeek-R1.",
+      "Workloads that cannot tolerate long generation traces or higher token budgets from reasoning.",
+      "Ultra-low-latency chat tasks where reasoning overhead is unnecessary."
+    ],
+    "deployment_complexity": "moderate",
+    "production_ready": true,
+    "recommended_use_case": "Use the 7B/8B variants for cost-efficient reasoning in small deployments, and the 14B/32B variants when you need better reasoning quality and can pay the extra memory and latency cost.",
+    "deployment_risks": [
+      "Malformed reasoning traces if prompting is not configured according to the teacher model requirements.",
+      "Extra latency and token budget consumption on reasoning traces that don't terminate cleanly."
+    ],
+    "failure_modes": [
+      "Failing to parse the output format correctly if the <think> tag formatting contract is breached.",
+      "High memory fragmentation during batch serving of the 32B variant under large sequence sizes."
+    ],
+    "common_mistakes": [
+      "Treating these distills as plain chat checkpoints, which can reduce reasoning quality or trigger malformed reasoning traces.",
+      "Applying custom system prompts which can break the distilled reasoning alignment."
+    ],
+    "operational_notes": [
+      "The official usage recommendations warn against adding a system prompt and advise placing all instructions in the user prompt, which is a deployment-critical difference from many standard chat models.",
+      "The release recommends enforcing a leading <think>\\n to keep the model in reasoning mode, which directly affects routing, prompt templates, and output parsing in production.",
+      "For math tasks, the official recommendation is to request step-by-step reasoning and a boxed final answer, which improves reliability for structured reasoning workloads.",
+      "The distilled models are meant to be used like Qwen or Llama models, but the release explicitly says the local run settings and tokenizer/config should follow DeepSeek’s recommended settings rather than generic base-model defaults.",
+      "Variant differentiation (Identity): DeepSeek-R1 Distill 7B / 8B / 14B / 32B is the distilled reasoning line for teams that want R1-style chain-of-thought behavior without the full 671B MoE serving footprint.",
+      "Variant differentiation (File Formats): Safetensors format is officially published, while GGUF/AWQ/GPTQ and Apple Silicon MLX/ONNX formats are Not Published in official checkpoints.",
+      "Variant differentiation (Hardware Requirements): 7B/8B fit easily on commodity single-GPU cards, while 32B requires high-memory or multi-GPU environments.",
+      "Variant differentiation (Downloads): official checkpoints include Hugging Face distills for 7B, 8B, 14B, and 32B sizes.",
+      "Variant differentiation (Runtime Compatibility): vLLM and SGLang commands are explicitly documented in official release instructions, whereas llama.cpp is undocumented.",
+      "Variant differentiation (Deployment): base-model licensing applies to distilled variants (Apache 2.0 for Qwen, Llama License for Llama-derived), separate from the repository license.",
+      "Variant differentiation (License): permissive weights allow distillation and commercial use.",
+      "Variant differentiation (Status): officially released production checkpoint targeted at robust structured reasoning."
+    ]
+  },
+  "created_at": "2026-07-17",
+  "updated_at": "2026-07-17",
+  "sources": [
+    "https://api-docs.deepseek.com/news/news250120",
+    "https://arxiv.org/pdf/2501.12948.pdf",
+    "https://deepseek-r1.com/deepseek-r1-distill-models/",
+    "https://recipes.vllm.ai/deepseek-ai",
+    "https://deepwiki.com/deepseek-ai/DeepSeek-R1/3.1-model-access"
+  ],
+  "tags": [
+    "llm",
+    "open-weight",
+    "self-hosting",
+    "agents",
+    "reasoning",
+    "distill"
+  ],
+  "aliases": [],
+  "keywords": [
+    "DeepSeek-R1-Distill",
+    "DeepSeek",
+    "r1-distill model"
+  ],
+  "search_tokens": [
+    "deepseek r1 distill",
+    "deepseek-r1-distill-qwen-32b"
+  ]
+}

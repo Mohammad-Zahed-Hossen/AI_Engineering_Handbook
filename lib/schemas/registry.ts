@@ -1,22 +1,5 @@
 import { z } from 'zod';
-
-// Structured missing model reference for graph completeness
-export const MissingModelRefSchema = z.object({
-  type: z.literal('missing'),
-  id: z.string(),
-  reason: z.string().optional(),
-});
-export type MissingModelRef = z.infer<typeof MissingModelRefSchema>;
-
-// ── Identity Section ──────────────────────────────────────────────
-
-export const IdentitySchema = z.object({
-  family: z.string().optional(),
-  variant: z.string().optional(),
-  checkpoint: z.string().optional(),
-  provider: z.string().optional(),
-});
-export type Identity = z.infer<typeof IdentitySchema>;
+import { BaseMetaSchema } from './base';
 
 // ── Architecture Section ──────────────────────────────────────────
 
@@ -236,18 +219,91 @@ export const EngineeringSnapshotSchema = z.object({
   deployment_complexity: z.string().optional(),
   production_ready: z.boolean().optional(),
   recommended_use_case: z.string().optional(),
+  // Actionable deployment knowledge
+  deployment_risks: z.array(z.string()).default([]),
+  operational_notes: z.array(z.string()).default([]),
+  failure_modes: z.array(z.string()).default([]),
+  hidden_costs: z.array(z.string()).default([]),
+  scaling_issues: z.array(z.string()).default([]),
+  common_mistakes: z.array(z.string()).default([]),
+  cold_start_issues: z.array(z.string()).default([]),
+  inference_bottlenecks: z.array(z.string()).default([]),
+  memory_bottlenecks: z.array(z.string()).default([]),
+  long_context_tradeoffs: z.array(z.string()).default([]),
 });
 export type EngineeringSnapshot = z.infer<typeof EngineeringSnapshotSchema>;
+
+// ── Engineering Decision Cards Section ───────────────────────────────
+
+export const PerformanceDimensionSchema = z.object({
+  dimension: z.string(),
+  rating: z.enum(['excellent', 'good', 'fair', 'poor']),
+  notes: z.string().optional(),
+});
+export type PerformanceDimension = z.infer<typeof PerformanceDimensionSchema>;
+
+export const DeploymentProfileSchema = z.object({
+  profile: z.string(),
+  recommended_variant: z.string(),
+  expected_experience: z.string().optional(),
+  notes: z.string().optional(),
+});
+export type DeploymentProfile = z.infer<typeof DeploymentProfileSchema>;
+
+export const RuntimeMatrixEntrySchema = z.object({
+  runtime: z.string(),
+  supports: z.array(z.string()).default([]),
+  official: z.boolean().default(false),
+  priority: z.enum(['recommended', 'supported', 'community', 'experimental']).default('supported'),
+  notes: z.string().optional(),
+});
+export type RuntimeMatrixEntry = z.infer<typeof RuntimeMatrixEntrySchema>;
+
+export const EngineeringDecisionSchema = z.object({
+  choose_if: z.array(z.string()).default([]),
+  avoid_if: z.array(z.string()).default([]),
+  watch_out_for: z.array(z.string()).default([]),
+  best_deployment_scenario: z.string().optional(),
+  alternatives: z.array(z.string()).default([]),
+  performance_dimensions: z.array(PerformanceDimensionSchema).default([]),
+  deployment_profiles: z.array(DeploymentProfileSchema).default([]),
+  runtime_matrix: z.array(RuntimeMatrixEntrySchema).default([]),
+});
+export type EngineeringDecision = z.infer<typeof EngineeringDecisionSchema>;
+
+// ── Related Resource Section ───────────────────────────────────────
+
+export const RelatedResourceSchema = z.object({
+  relationship: z.enum(['recommended_for', 'required_for', 'alternative_to', 'used_with', 'see_also']),
+  resource_type: z.enum(['workflow', 'pattern', 'package', 'decision_guide', 'debug_guide', 'principle']),
+  resource_slug: z.string(),
+  reason: z.string().optional(),
+});
+export type RelatedResource = z.infer<typeof RelatedResourceSchema>;
+
+// ── Modality Schema ─────────────────────────────────────────────────────
+
+// Modality classification for model families
+// This field is required to distinguish LLMs from embeddings, vision, speech, etc.
+export const ModalitySchema = z.enum([
+  'llm',
+  'embedding',
+  'reranker',
+  'vision',
+  'speech',
+  'multimodal',
+]);
+export type Modality = z.infer<typeof ModalitySchema>;
 
 // ── Registry Family Schema ───────────────────────────────────────────
 
 // Family-level schema for model families (e.g., Llama 3, DeepSeek)
-export const RegistryFamilySchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  description: z.string(),
+// Extended from BaseMetaSchema for AENS v2 compliance
+// Note: variants array removed - use getRegistryVariantIds() to derive from filesystem
+export const RegistryFamilySchema = BaseMetaSchema.extend({
+  // Registry-specific fields
   provider: z.string(),
-  variants: z.array(z.string()).default([]),
+  modality: ModalitySchema,
   // Family-level metadata (shared across variants)
   architecture: ArchitectureSchema.optional(),
   capabilities: CapabilitiesSchema.optional(),
@@ -260,28 +316,24 @@ export const RegistryFamilySchema = z.object({
   engineering_snapshot: EngineeringSnapshotSchema.optional(),
   timeline: z.array(TimelineEntrySchema).default([]),
   related_models: z.array(RelatedModelSchema).default([]),
-  // Metadata fields
-  created_at: z.string(),
-  updated_at: z.string(),
-  sources: z.array(z.string().url()).default([]),
-  tags: z.array(z.string()).default([]),
-  aliases: z.array(z.string()).default([]),
-  keywords: z.array(z.string()).default([]),
-  search_tokens: z.array(z.string()).default([]),
-});
+  // Engineering Decision Cards (Phase 1)
+  engineering_decision: EngineeringDecisionSchema.optional(),
+  // Related AENS Resources (Phase 1)
+  related_resources: z.array(RelatedResourceSchema).default([]),
+}).omit({ related_content: true });
 
 export type RegistryFamily = z.infer<typeof RegistryFamilySchema>;
 
 // ── Registry Variant Schema ────────────────────────────────────────
 
 // Variant-level schema for individual model variants
-export const RegistryVariantSchema = z.object({
-  id: z.string(),
+// Extended from BaseMetaSchema for AENS v2 compliance
+// Note: size_mb is optional for API-only/closed-weight models
+export const RegistryVariantSchema = BaseMetaSchema.extend({
+  // Registry-specific fields
   family_id: z.string(),
-  name: z.string(),
-  description: z.string(),
   // Variant-specific metadata
-  size_mb: z.number(),
+  size_mb: z.number().optional(),
   specifications: SpecificationsSchema.optional(),
   hardware: HardwareSchema.optional(),
   deployment: DeploymentSchema.optional(),
@@ -293,14 +345,7 @@ export const RegistryVariantSchema = z.object({
   license_info: LicenseSchema.optional(),
   status: StatusSchema.optional(),
   engineering_snapshot: EngineeringSnapshotSchema.optional(),
-  // Metadata fields
-  created_at: z.string(),
-  updated_at: z.string(),
-  sources: z.array(z.string().url()).default([]),
-  tags: z.array(z.string()).default([]),
-  aliases: z.array(z.string()).default([]),
-  keywords: z.array(z.string()).default([]),
-  search_tokens: z.array(z.string()).default([]),
-});
+  formats: FormatsSchema.optional(),
+}).omit({ related_content: true });
 
 export type RegistryVariant = z.infer<typeof RegistryVariantSchema>;

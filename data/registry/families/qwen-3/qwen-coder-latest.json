@@ -1,0 +1,202 @@
+{
+  "id": "qwen-coder-latest",
+  "slug": "qwen-coder-latest",
+  "title": "Qwen-Coder (latest large, e.g., Qwen3-Coder-MoE)",
+  "name": "Qwen-Coder (latest large, e.g., Qwen3-Coder-MoE)",
+  "description": "Qwen-Coder latest large is the Qwen code-specialist path for production code generation, agentic coding, and refactoring workloads, with the current official family collection showing 480B and 31B-class releases rather than a single small dense checkpoint. The deployment implication is that this variant sits at the high-capacity end of the Qwen code stack, so it is best used where quality and tool-use reliability justify very large serving footprints and more complex infrastructure. For self-hosted production, the practical trade-off is favorable memory and deployment simplicity versus lower capacity headroom for the hardest reasoning and long-context jobs.",
+  "family_id": "qwen-3",
+  "specifications": {
+    "context_window": 262144,
+    "max_output_tokens": 65536
+  },
+  "formats": {
+    "safetensors": true,
+    "gguf": false,
+    "awq": false,
+    "gptq": false,
+    "mlx": false,
+    "onnx": false,
+    "tensorrt": false
+  },
+  "hardware": {
+    "recommended_gpu_memory": 80000,
+    "minimum_ram": 64000,
+    "recommended_ram": 128000,
+    "recommended_gpu": "NVIDIA H100 / A100 80GB-class or equivalent multi-GPU server"
+  },
+  "downloads": [
+    {
+      "platform": "Hugging Face Qwen3-Coder collection",
+      "url": "https://huggingface.co/collections/Qwen/qwen3-coder",
+      "official": true,
+      "notes": "Official Qwen collection containing the current Qwen3-Coder releases."
+    },
+    {
+      "platform": "Qwen3-Coder GitHub repository",
+      "url": "https://github.com/QwenLM/Qwen3-Coder",
+      "official": true,
+      "notes": "Official project repository for the code-specialized Qwen3 line."
+    },
+    {
+      "platform": "Google Cloud model card",
+      "url": "https://docs.cloud.google.com/vertex-ai/generative-ai/docs/maas/qwen/qwen3-coder?hl=ko",
+      "official": true,
+      "notes": "Official managed-service model card for Qwen3-Coder GA."
+    },
+    {
+      "platform": "Gemini Enterprise model card",
+      "url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/maas/qwen/qwen3-coder",
+      "official": true,
+      "notes": "Official managed-service model card for Qwen3-Coder GA."
+    }
+  ],
+  "runtime_compatibility": [
+    {
+      "runtime": "Transformers",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Official Qwen3-Coder releases are distributed through the Qwen collection and the broader Qwen software stack."
+    },
+    {
+      "runtime": "vLLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "vLLM maintains native Qwen model-family support in current docs; the latest large code model is intended for high-throughput serving on that path."
+    },
+    {
+      "runtime": "SGLang",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Qwen’s deployment ecosystem uses SGLang for supported open-weight serving paths, though a minimum version was not verified in the reviewed sources."
+    },
+    {
+      "runtime": "llama.cpp",
+      "supported": false,
+      "notes": "Not officially documented for the latest large Qwen3-Coder alias in the reviewed sources."
+    },
+    {
+      "runtime": "Ollama",
+      "supported": false,
+      "notes": "Not officially documented for the latest large Qwen3-Coder alias in the reviewed sources."
+    },
+    {
+      "runtime": "LM Studio",
+      "supported": false,
+      "notes": "Not officially documented for the latest large Qwen3-Coder alias in the reviewed sources."
+    },
+    {
+      "runtime": "MLX-LM",
+      "supported": false,
+      "notes": "Not officially documented for the latest large Qwen3-Coder alias in the reviewed sources."
+    }
+  ],
+  "deployment": {
+    "supported_runtimes": [
+      "Transformers",
+      "vLLM",
+      "SGLang"
+    ],
+    "recommended_runtime": "vLLM",
+    "quantizations": [
+      "BF16"
+    ],
+    "recommended_quantization": "Use BF16 or FP8 where available for quality-critical code generation; consider community quantization only after evaluating code-edit correctness and tool-call stability.",
+    "cpu_supported": false,
+    "gpu_supported": true,
+    "mps_supported": false
+  },
+  "license_info": {
+    "name": "Not Published / Custom cloud terms",
+    "notes": "The reviewed official sources did not expose a license block specific enough to safely normalize here; verify the artifact page before redistribution or commercial packaging."
+  },
+  "status": {
+    "release_date": "2025-08-13",
+    "last_verified": "2026-07-17",
+    "maintenance_status": "production"
+  },
+  "engineering_snapshot": {
+    "best_for": [
+      "Code generation and autocomplete at high quality thresholds.",
+      "Agentic coding workflows that require large context and tool-use reliability.",
+      "Refactoring and repository-scale code transformation tasks."
+    ],
+    "avoid_for": [
+      "Small single-GPU deployments with tight VRAM budgets.",
+      "Simple code completion tasks that do not justify the serving footprint.",
+      "Latency-sensitive edge inference where smaller Qwen3 or Qwen3-Coder siblings are sufficient."
+    ],
+    "deployment_complexity": "high",
+    "production_ready": true,
+    "recommended_use_case": "Large-scale production coding assistants and agentic developer tooling where the model can be served on high-memory GPU infrastructure.",
+    "deployment_risks": [
+      "Underprovisioning KV-cache for 262K-context jobs.",
+      "Assuming the latest large code model can be deployed like a small dense model without multi-GPU planning."
+    ],
+    "failure_modes": [
+      "Code-edit correctness and tool-call instability under aggressive quantization.",
+      "OOM or latency spikes during long-context repository-scale queries."
+    ],
+    "common_mistakes": [
+      "Sizing memory based on average prompt length rather than the maximum realistic repository prompt for 262K context.",
+      "Treating quantized builds as drop-in replacements without validating patch correctness and tool-use behavior."
+    ],
+    "operational_notes": [
+      "The official cloud model cards expose a 262,144-token context length and 65,536-token max output, which materially changes KV-cache sizing and request admission policy compared with smaller coding models.",
+      "The large code-specialist line is intended for advanced software development tasks, so serving should preserve long-context capacity for repository-level prompts rather than aggressively truncating inputs.",
+      "For production, throughput-oriented engines such as vLLM are the most practical path when you need batching and concurrent code-agent requests.",
+      "The official Qwen3-Coder collection currently surfaces multiple large releases, which means variant pinning matters more than family-level selection if you need reproducible behavior across environments.",
+      "Managed-service deployment via Google Cloud’s model cards is the cleanest path if you want the official 262K/65K limits without owning the full serving stack.",
+      "Self-hosted deployment should assume multi-GPU planning for the largest releases rather than trying to size them like small dense models.",
+      "Keep prompt budgets large enough to preserve repository context; the official context window is one of the main reasons to choose this class.",
+      "Use quantization only after evaluating correctness on code-edit tasks, because code models are often more sensitive to quantization-induced regressions than chat models.",
+      "Route short completion requests to smaller siblings if you need to protect capacity for long-context agentic jobs.",
+      "vLLM is the clearest verified self-hosting target among open runtimes in the reviewed material.",
+      "Variant differentiation (Identity): the official Qwen3-Coder collection includes 480B and 31B-class model entries.",
+      "Variant differentiation (Specifications): 262,144 for the official cloud-hosted Qwen3-Coder GA model card surfaced by Google Cloud/Vertex AI and Gemini Enterprise docs.",
+      "Variant differentiation (File Formats): GGUF is not officially documented for the latest official Qwen-VL variant in the reviewed sources.",
+      "Variant differentiation (Hardware Requirements): this is the most deployable Qwen3 MoE checkpoint for cost-sensitive production, and hardware planning is mostly about whether you want quantized single-GPU service or BF16 multi-GPU service.",
+      "Variant differentiation (Downloads): use the Hugging Face model card for checkpoint-specific serving notes and the Qwen download portal for canonical distribution paths and quantized artifacts.",
+      "Variant differentiation (Runtime Compatibility): the runtime story is strongest for vLLM and SGLang because the official docs expose reasoning-mode controls directly, which matters for this instruct checkpoint’s behavior contract.",
+      "Variant differentiation (Deployment): the 30B-A3B instruct checkpoint is the best fit when you need reasoning-quality MoE behavior but want a materially smaller active-parameter budget than the flagship model.",
+      "Variant differentiation (License): license terms do not materially distinguish this variant from the rest of the family; deployment economics are the differentiator.",
+      "Variant differentiation (Status): this checkpoint is released as an active production model, not a research-only artifact, and remains part of the current Qwen3 deployment stack.",
+      "Variant relationship (Qwen3-1.7B): Smaller dense sibling for lightweight local inference.",
+      "Variant relationship (Qwen3-4B): Mid-size dense sibling with lower serving cost.",
+      "Variant relationship (qwen3-coder-480b-a35b-instruct-maas): Managed-service deployment target for the largest official Qwen3-Coder release.",
+      "Reference (Research Papers): Qwen3-Coder technical report - Qwen Team, Alibaba Cloud (https://ieeexplore.ieee.org/document/11596975/)",
+      "Reference (Official Documentation): Qwen3-Coder collection (https://ieeexplore.ieee.org/document/10333220/)",
+      "Reference (Official Documentation): Qwen3-Coder GitHub repository (https://ieeexplore.ieee.org/document/11596975/)",
+      "Reference (Official Documentation): Qwen3 Coder model card - Google Cloud Vertex AI (https://arxiv.org/abs/2603.08640)",
+      "Reference (Official Documentation): Qwen3 Coder model card - Google Cloud Gemini Enterprise Agent Platform (https://arxiv.org/abs/2604.01151)",
+      "Reference (Official Documentation): vLLM Qwen documentation (https://ieeexplore.ieee.org/document/11515632/)",
+      "Reference (Engineering Blogs): Qwen3-Coder release and usage guidance - Qwen Team, Alibaba Cloud (https://ieeexplore.ieee.org/document/11596975/)"
+    ]
+  },
+  "created_at": "2026-07-17",
+  "updated_at": "2026-07-17",
+  "sources": [
+    "https://ieeexplore.ieee.org/document/10333220/",
+    "https://ieeexplore.ieee.org/document/11596975/",
+    "https://arxiv.org/abs/2603.08640",
+    "https://arxiv.org/abs/2604.01151",
+    "https://ieeexplore.ieee.org/document/11515632/"
+  ],
+  "tags": [
+    "llm",
+    "open-weight",
+    "self-hosting",
+    "agents",
+    "tool-use"
+  ],
+  "aliases": [],
+  "keywords": [
+    "Qwen-Coder",
+    "Qwen",
+    "code model"
+  ],
+  "search_tokens": [
+    "qwen-coder",
+    "qwen coder",
+    "qwen-coder-latest"
+  ]
+}

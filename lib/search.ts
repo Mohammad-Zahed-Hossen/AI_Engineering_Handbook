@@ -148,23 +148,25 @@ export const buildSearchIndex = cache(function buildSearchIndex(): SearchResult[
     const familyKeywords = extractKeywordsFromProse(family.description || '');
     const allKeywords = [...new Set([...familyKeywords, ...family.keywords || [], ...family.aliases || []])];
     
-    results.push({
-      type: 'registry',
-      id: family.id,
-      name: family.name,
-      summary: family.description,
-      href: `/registry/families/${family.id}`,
-      updated_at: family.updated_at,
-      category: 'families',
-      // Phase 5 additions - structured fields for faceted search
-      keywords: allKeywords.length > 0 ? allKeywords : undefined,
-      tags: family.tags,
-      aliases: family.aliases,
-      search_tokens: family.search_tokens,
-      // Additional structured fields
-      production_ready: family.engineering_snapshot?.production_ready,
-      commercial_use: family.license_info?.commercial_use,
-    });
+     results.push({
+       type: 'registry',
+       id: family.id,
+       name: family.name,
+       summary: family.description,
+       href: `/registry/families/${family.id}`,
+       updated_at: family.updated_at,
+       category: 'families',
+       // Phase 5 additions - structured fields for faceted search
+       keywords: allKeywords.length > 0 ? allKeywords : undefined,
+       tags: family.tags,
+       aliases: family.aliases,
+       search_tokens: family.search_tokens,
+       // Additional structured fields
+       production_ready: family.engineering_snapshot?.production_ready,
+       commercial_use: family.license_info?.commercial_use,
+       modality: family.modality,
+       capabilities: family.capabilities,
+     });
 
     // Index variants
     const variants = getRegistryVariantsByFamily(family.id);
@@ -192,6 +194,8 @@ export const buildSearchIndex = cache(function buildSearchIndex(): SearchResult[
         min_gpu_memory: variant.hardware?.minimum_gpu_memory,
         production_ready: variant.engineering_snapshot?.production_ready,
         commercial_use: variant.license_info?.commercial_use,
+        modality: family.modality,
+        capabilities: variant.capabilities || family.capabilities,
       });
     });
   });

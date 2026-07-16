@@ -1,8 +1,10 @@
 {
   "id": "r1-70b",
-  "family_id": "deepseek",
+  "slug": "r1-70b",
+  "title": "DeepSeek-R1 70B",
   "name": "DeepSeek-R1 70B",
   "description": "DeepSeek-R1 is a state-of-the-art open-weight reasoning model with RL-first training methodology.",
+  "family_id": "deepseek",
   "size_mb": 140000,
   "specifications": {
     "parameter_count": 70000,
@@ -103,7 +105,23 @@
     "avoid_for": ["resource-constrained environments", "vision tasks"],
     "deployment_complexity": "moderate",
     "production_ready": true,
-    "recommended_use_case": "Production LLM deployment with vLLM or Llama.cpp"
+    "recommended_use_case": "Production LLM deployment with vLLM or Llama.cpp",
+    "deployment_risks": [
+      "MoE routing failures can cause silent performance degradation",
+      "KV cache memory grows non-linearly with long context"
+    ],
+    "failure_modes": [
+      "Expert routing imbalance under high concurrency",
+      "Memory exhaustion during long-context generation"
+    ],
+    "hidden_costs": [
+      "NVLink/NCCL networking for multi-GPU MoE serving",
+      "Quantization quality validation for reasoning tasks"
+    ],
+    "scaling_issues": [
+      "Tensor parallelism required for optimal performance",
+      "Load balancing becomes critical at scale"
+    ]
   },
   "deployment": {
     "supported_runtimes": ["vLLM", "Transformers", "Llama.cpp", "Ollama", "TensorRT-LLM"],

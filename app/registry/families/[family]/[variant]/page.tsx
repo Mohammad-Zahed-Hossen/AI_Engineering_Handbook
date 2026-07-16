@@ -1,9 +1,12 @@
 import { notFound } from 'next/navigation';
 import { getAllRegistryFamilyIds, getRegistryFamily, getRegistryVariantIds, getRegistryVariant } from '@/lib/data';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
-import { RegistryBadge, LicenseBadge, RuntimeBadge, QuantizationBadge, ContextBadge } from '@/components/registry/RegistryBadge';
-import { ExternalLink, Check, X } from 'lucide-react';
-import { formatSize, formatParameterCount, formatContextWindow, formatMemory } from '@/lib/format-registry';
+import { RegistryBadge, LicenseBadge, ContextBadge } from '@/components/registry/RegistryBadge';
+import { Check, X } from 'lucide-react';
+import { formatSize, formatParameterCount, formatContextWindow } from '@/lib/format-registry';
+import DeploymentSummaryCard from '@/components/registry/DeploymentSummaryCard';
+import QuickLinksCard from '@/components/registry/QuickLinksCard';
+import EngineeringContinuation from '@/components/registry/EngineeringContinuation';
 
 /**
  * Pre-generates variant params for static rendering.
@@ -58,16 +61,6 @@ export default async function RegistryVariantPage({ params }: PageProps) {
   // Get context window
   const contextWindow = variantData.specifications?.context_window || capabilities?.context_window;
 
-  // Get hardware requirements
-  const minGpu = variantData.hardware?.minimum_gpu_memory;
-  const recGpu = variantData.hardware?.recommended_gpu_memory;
-  const minRam = variantData.hardware?.minimum_ram;
-
-  // Get deployment info
-  const recommendedRuntime = variantData.deployment?.recommended_runtime;
-  const quantizations = variantData.deployment?.quantizations || [];
-  const productionReady = engineeringSnapshot?.production_ready;
-
   return (
     <ContentPageLayout
       breadcrumbs={[
@@ -88,8 +81,8 @@ export default async function RegistryVariantPage({ params }: PageProps) {
               <RegistryBadge variant="info" size="xs" className="font-mono">
                 {familyData.provider}
               </RegistryBadge>
-              {productionReady !== undefined && (
-                productionReady ? (
+              {engineeringSnapshot?.production_ready !== undefined && (
+                engineeringSnapshot.production_ready ? (
                   <RegistryBadge variant="success" size="xs" className="font-mono">
                     <Check className="h-2.5 w-2.5" />
                     Production
@@ -157,114 +150,13 @@ export default async function RegistryVariantPage({ params }: PageProps) {
           </div>
         )}
 
-        {/* Hardware Requirements */}
-        {(minGpu || recGpu || minRam) && (
-          <div className="space-y-2">
-            <h2 className="text-sm font-semibold text-foreground">Hardware Requirements</h2>
-            <div className="flex flex-wrap items-center gap-1.5">
-              {minGpu && (
-                <RegistryBadge variant="outline" size="xs" className="font-mono">
-                  Min: {formatMemory(minGpu)} GPU
-                </RegistryBadge>
-              )}
-              {recGpu && (
-                <RegistryBadge variant="outline" size="xs" className="font-mono">
-                  Rec: {formatMemory(recGpu)} GPU
-                </RegistryBadge>
-              )}
-              {minRam && (
-                <RegistryBadge variant="outline" size="xs" className="font-mono">
-                  RAM: {formatMemory(minRam)}
-                </RegistryBadge>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Deployment Options */}
-        {recommendedRuntime && (
-          <div className="space-y-2">
-            <h2 className="text-sm font-semibold text-foreground">Deployment</h2>
-            <div className="space-y-2">
-              <div className="text-xs">
-                <span className="text-muted-foreground">Recommended Runtime:</span>{' '}
-                <RuntimeBadge runtime={recommendedRuntime} />
-              </div>
-              {quantizations.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1">
-                  <span className="text-xs text-muted-foreground">Quantizations:</span>
-                  {quantizations.slice(0, 6).map((q) => (
-                    <QuantizationBadge key={q} quantization={q} />
-                  ))}
-                  {quantizations.length > 6 && (
-                    <span className="text-[10px] text-muted-foreground">+{quantizations.length - 6}</span>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Downloads */}
-        {variantData.downloads.length > 0 && (
-          <div className="space-y-2">
-            <h2 className="text-sm font-semibold text-foreground">Download Links</h2>
-            <div className="flex flex-wrap gap-1.5">
-              {variantData.downloads.map((dl, idx) => (
-                <a
-                  key={idx}
-                  href={dl.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded border border-border bg-secondary text-secondary-foreground hover:bg-muted transition-colors"
-                >
-                  {dl.platform}
-                  {dl.official && <span className="text-emerald-600">●</span>}
-                  <ExternalLink className="h-2.5 w-2.5" />
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Engineering Snapshot */}
-        {engineeringSnapshot && (
-          <div className="space-y-2">
-            <h2 className="text-sm font-semibold text-foreground">Engineering Notes</h2>
-            <div className="space-y-2">
-              {engineeringSnapshot.best_for.length > 0 && (
-                <div>
-                  <span className="text-xs text-muted-foreground">Best for:</span>
-                  <div className="flex flex-wrap items-center gap-1 mt-1">
-                    {engineeringSnapshot.best_for.map((use) => (
-                      <RegistryBadge key={use} variant="outline" size="xs" className="font-mono">
-                        {use}
-                      </RegistryBadge>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {engineeringSnapshot.avoid_for.length > 0 && (
-                <div>
-                  <span className="text-xs text-muted-foreground">Avoid for:</span>
-                  <div className="flex flex-wrap items-center gap-1 mt-1">
-                    {engineeringSnapshot.avoid_for.map((use) => (
-                      <RegistryBadge key={use} variant="outline" size="xs" className="font-mono">
-                        {use}
-                      </RegistryBadge>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {engineeringSnapshot.deployment_complexity && (
-                <div className="text-xs">
-                  <span className="text-muted-foreground">Complexity:</span>{' '}
-                  <span className="text-foreground font-mono">{engineeringSnapshot.deployment_complexity}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        {/* Deployment Summary - Merged hardware, deployment, and engineering knowledge */}
+        <DeploymentSummaryCard
+          hardware={variantData.hardware}
+          deployment={variantData.deployment}
+          engineeringSnapshot={engineeringSnapshot}
+          formats={variantData.formats || familyData.formats}
+        />
 
         {/* Related Models */}
         {familyData.related_models.length > 0 && (
@@ -279,6 +171,17 @@ export default async function RegistryVariantPage({ params }: PageProps) {
             </div>
           </div>
         )}
+
+        {/* Engineering Continuation - Answers: What should I do next? */}
+        {familyData.related_resources && familyData.related_resources.length > 0 && (
+          <EngineeringContinuation resources={familyData.related_resources} />
+        )}
+
+        {/* Quick Links - Downloads and Documentation */}
+        <QuickLinksCard
+          downloads={variantData.downloads}
+          references={familyData.references}
+        />
       </div>
     </ContentPageLayout>
   );

@@ -1,0 +1,176 @@
+{
+  "id": "v3-1-chat-hybrid",
+  "slug": "deepseek-v3-1-chat-hybrid",
+  "title": "DeepSeek-V3.1 (Chat/Hybrid)",
+  "name": "DeepSeek-V3.1 (Chat/Hybrid)",
+  "description": "DeepSeek-V3.1 (Chat/Hybrid) is the family’s operationally flexible variant: one checkpoint with both thinking and non-thinking modes, plus stronger tool calling and agent behavior than the prior V3 generation.",
+  "family_id": "deepseek",
+  "specifications": {
+    "parameter_count": 671000,
+    "active_parameters": 37000,
+    "training_tokens": 840000,
+    "context_window": 128000
+  },
+  "formats": {
+    "safetensors": true,
+    "gguf": false,
+    "awq": false,
+    "gptq": false,
+    "mlx": false,
+    "onnx": false,
+    "tensorrt": false
+  },
+  "hardware": {
+    "recommended_gpu": "8xH200 or H20 GPUs (141GB × 8)"
+  },
+  "downloads": [
+    {
+      "platform": "Hugging Face",
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-V3.1",
+      "official": true,
+      "notes": "Official open-source weights and model card."
+    },
+    {
+      "platform": "Hugging Face Base",
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-V3.1-Base",
+      "official": true,
+      "notes": "Official base checkpoint referenced by the release note."
+    },
+    {
+      "platform": "DeepSeek API Docs",
+      "url": "https://api-docs.deepseek.com/news/news250821/",
+      "official": true,
+      "notes": "Official release note describing hybrid mode, tool calling, and model updates."
+    }
+  ],
+  "runtime_compatibility": [
+    {
+      "runtime": "vLLM",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Official vLLM recipe documents dynamic think/non-think switching, tool calling, and a multi-GPU serving configuration."
+    },
+    {
+      "runtime": "Hugging Face Transformers",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Official model card shows Transformers loading and chat-template usage."
+    },
+    {
+      "runtime": "SGLang",
+      "supported": true,
+      "minimum_version": "Latest stable",
+      "notes": "Supported in the canonical deployment stack, but a minimum version was not published in retrieved sources."
+    },
+    {
+      "runtime": "llama.cpp",
+      "supported": false,
+      "minimum_version": "Latest stable",
+      "notes": "No official compatibility statement was retrieved."
+    },
+    {
+      "runtime": "TensorRT-LLM",
+      "supported": false,
+      "minimum_version": "Latest stable",
+      "notes": "No official compatibility statement was retrieved."
+    }
+  ],
+  "deployment": {
+    "supported_runtimes": [
+      "Transformers",
+      "vLLM",
+      "SGLang"
+    ],
+    "recommended_runtime": "vLLM",
+    "quantizations": [
+      "BF16",
+      "F8_E4M3",
+      "F32"
+    ],
+    "recommended_quantization": "BF16 for safest fidelity, or F8_E4M3 when the serving stack supports it, because both are officially surfaced and the model is trained with FP8-aware scaling.",
+    "cpu_supported": false,
+    "gpu_supported": true,
+    "mps_supported": false
+  },
+  "license_info": {
+    "name": "MIT License",
+    "commercial_use": true,
+    "modification": true,
+    "redistribution": true,
+    "attribution_required": true,
+    "notes": "The official repository and weights are under MIT; downstream hosting terms may still differ on third-party platforms."
+  },
+  "status": {
+    "release_date": "2025-08-21",
+    "last_verified": "2026-07-17",
+    "maintenance_status": "production"
+  },
+  "engineering_snapshot": {
+    "best_for": [
+      "Production chat systems that need both standard and reasoning paths in one variant.",
+      "Agent workloads with tool use and multi-step search or code tasks.",
+      "Mixed-quality/performance deployments where you want better price-performance than a reasoning-only model for routine traffic."
+    ],
+    "avoid_for": [
+      "Single-GPU full-checkpoint serving.",
+      "Environments that require fully published internal dimensions before approval.",
+      "Workloads that need a pure reasoning-only model and can tolerate less chat flexibility."
+    ],
+    "deployment_complexity": "high",
+    "production_ready": true,
+    "recommended_use_case": "Use as the default DeepSeek deployment when the application needs both chat latency and selective thinking-mode capability without moving to a reasoning-only endpoint.",
+    "deployment_risks": [
+      "Multi-node serving interconnect bottlenecks due to frontier-scale MoE model parameters.",
+      "State alignment issues when switching context dynamics between thinking and non-thinking modes under high concurrency."
+    ],
+    "failure_modes": [
+      "Tokenizer/chat template parsing mismatch when serving V3.1 with legacy V3 configurations.",
+      "Expert Parallel scheduling imbalance or network all-reduce bottlenecks on cluster topologies."
+    ],
+    "common_mistakes": [
+      "Treating V3.1 as a generic chat model, bypassing the think/non-think template controls.",
+      "Attempting single-GPU serving without planning high-speed interconnect and sharded tensor parallelism."
+    ],
+    "operational_notes": [
+      "V3.1’s main operational difference is mode switching: the same model supports both thinking and non-thinking behavior, and vLLM exposes that as a per-request toggle.",
+      "The official vLLM recipe recommends an 8xH200 or H20 multi-GPU serving setup, which makes the full checkpoint a multi-node or high-end single-node deployment problem rather than a workstation model.",
+      "The model card states training with UE8M0 FP8 scale data format on weights and activations, which makes FP8-capable serving infrastructure especially relevant.",
+      "DeepSeek V3.1 uses an updated tokenizer and chat template; the official release note explicitly points to the tokenizer config, so integrations should not assume the V3 template is drop-in identical.",
+      "Variant differentiation (Identity): DeepSeek-V3.1 (Chat/Hybrid) is the family’s operationally flexible variant: one checkpoint with both thinking and non-thinking modes, plus stronger tool calling and agent behavior than the prior V3 generation.",
+      "Variant differentiation (File Formats): GGUF/AWQ/GPTQ and Apple Silicon MLX/ONNX formats are Not Published in retrieved resources, indicating server-centric GPU focus.",
+      "Variant differentiation (Hardware Requirements): vLLM’s official recipe shows serving on 8xH200 or H20 GPUs (141GB × 8) as the baseline for the full checkpoint.",
+      "Variant differentiation (Downloads): canonical downloads are Hugging Face checkpoints for V3.1 base and instruct weights, alongside API updates.",
+      "Variant differentiation (Runtime Compatibility): vLLM recipes explicitly support dynamic think/non-think toggles, whereas edge runtimes (llama.cpp) are undocumented.",
+      "Variant differentiation (Deployment): hybrid think/non-think serving gives V3.1 flexible deployment latency options relative to reasoning-only variants like R1-0528.",
+      "Variant differentiation (License): MIT License allows very broad open-source utilization including modification, redistribution, and commercial deployment without active constraints.",
+      "Variant differentiation (Status): officially released production checkpoint targeted at robust structured reasoning."
+    ]
+  },
+  "created_at": "2026-07-17",
+  "updated_at": "2026-07-17",
+  "sources": [
+    "https://huggingface.co/deepseek-ai/DeepSeek-V3.1-Base",
+    "https://api-docs.deepseek.com/news/news250821/",
+    "https://docs.vllm.ai/projects/recipes/en/latest/DeepSeek/DeepSeek-V3_1.html",
+    "https://arxiv.org/pdf/2412.19437.pdf",
+    "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/maas/deepseek/deepseek-v31",
+    "https://x.com/vllm_project/status/1958580047658491947"
+  ],
+  "tags": [
+    "llm",
+    "open-weight",
+    "self-hosting",
+    "agents",
+    "reasoning"
+  ],
+  "aliases": [],
+  "keywords": [
+    "DeepSeek-V3.1",
+    "DeepSeek",
+    "v3.1-chat-hybrid model"
+  ],
+  "search_tokens": [
+    "deepseek v3.1",
+    "deepseek-v3.1"
+  ]
+}
