@@ -1,0 +1,234 @@
+{
+  "id": "information-bottleneck",
+  "title": "Information Bottleneck",
+  "slug": "information-bottleneck",
+  "description": "Information Bottleneck is the principle of forcing intermediate representations to retain only the information that is predictive for the task while discarding irrelevant input detail.",
+  "name": "Information Bottleneck",
+  "category": "learning_theory",
+  "statement": "Learn representations by minimizing irrelevant input information while preserving the information needed to predict the target, and treat representation quality as a compression–sufficiency problem rather than a pure accuracy problem.",
+  "intuition": "The useful representation is not the richest one, but the smallest one that still supports the task. If a layer keeps every input detail, it becomes a storage device for noise; if it compresses blindly, it loses signal needed for prediction. The engineering value of the principle is that it gives a criterion for whether a hidden layer is doing useful work: it should drop nuisance variation while preserving task-relevant structure that survives transfer to new data.",
+  "implications": [],
+  "engineering_consequences": [
+    {
+      "title": "Representation quality control",
+      "explanation": "The principle separates useful compression from accidental feature collapse, which helps distinguish robust abstractions from memorization-heavy encodings."
+    },
+    {
+      "title": "Generalization behavior",
+      "explanation": "Compression of irrelevant variation tends to improve out-of-sample behavior when the learned code is aligned with the predictive structure of the task."
+    },
+    {
+      "title": "Transfer learning utility",
+      "explanation": "Bottlenecked representations are often more reusable because they retain shared task signal rather than dataset-specific noise."
+    },
+    {
+      "title": "Debuggability of internal layers",
+      "explanation": "The information profile of a layer can reveal whether it is serving as a semantic abstraction or merely relaying raw input detail."
+    },
+    {
+      "title": "Architectural tuning signal",
+      "explanation": "The principle informs where capacity should be reduced or preserved, especially in layered networks whose intermediate states are intentionally hierarchical."
+    }
+  ],
+  "common_violations": [
+    {
+      "violation": "Intermediate layers preserve too much raw input detail.",
+      "symptoms": "Internal activations remain highly input-specific, transfer performance is weak, and validation behavior tracks training noise too closely.",
+      "why_it_happens": "The model is optimized only for end-task loss, so no pressure exists to discard nuisance information."
+    },
+    {
+      "violation": "Compression is applied too aggressively or too early.",
+      "symptoms": "Accuracy drops sharply, downstream tasks fail to recover useful features, and the representation becomes brittle.",
+      "why_it_happens": "The bottleneck removes information before the network has formed a sufficiently predictive abstraction."
+    },
+    {
+      "violation": "Information-theoretic claims are made from noisy or intractable estimates of mutual information.",
+      "symptoms": "Reported “compression phases” vary wildly across runs or fail to reproduce under small implementation changes.",
+      "why_it_happens": "Estimation error dominates the measured information quantities, especially in high-dimensional deep networks."
+    },
+    {
+      "violation": "The bottleneck is treated as a universal explanation for all generalization behavior.",
+      "symptoms": "The same interpretation is applied to architectures and regimes where the measured information dynamics are not reliable.",
+      "why_it_happens": "The principle is overextended beyond the regimes where its theoretical or empirical support is strongest."
+    }
+  ],
+  "appears_in": [
+    {
+      "domain": "Deep feedforward networks",
+      "examples": [
+        "layered classifiers where intermediate abstractions are expected to become more task-specific with depth"
+      ]
+    },
+    {
+      "domain": "Representation learning",
+      "examples": [
+        "learned embeddings",
+        "latent-variable encoders",
+        "compressed feature maps used for downstream prediction"
+      ]
+    },
+    {
+      "domain": "Self-supervised learning",
+      "examples": [
+        "contrastive or masked-prediction objectives where preserving task-relevant structure under augmentation matters"
+      ]
+    },
+    {
+      "domain": "Transfer and multitask systems",
+      "examples": [
+        "shared backbones whose intermediate representations must remain compact enough to generalize across tasks"
+      ]
+    }
+  ],
+  "mental_model": "```mermaid\nflowchart LR\n  A[Input X] --> B[Intermediate representation T]\n  B --> C[Prediction Y]\n  A -.irrelevant detail.-> D[Discard]\n  B --> E[Keep task-relevant signal]\n  E --> C\n```",
+  "decision_checklist": [
+    "Does this layer reduce irrelevant input variation without destroying target-relevant signal?",
+    "Is the representation reusable outside the training set or single task?",
+    "Are compression and predictive sufficiency both being evaluated, not just loss?",
+    "Is the layer acting as an abstraction boundary rather than a high-fidelity relay?",
+    "Are information estimates trustworthy enough to interpret as design signals?",
+    "Does the architecture need a bottleneck at this stage, or only after sufficient feature formation?"
+  ],
+  "misconceptions": [
+    {
+      "myth": "More information in a representation is always better.",
+      "reality": "Extra information often means extra nuisance variation, which harms generalization and transfer."
+    },
+    {
+      "myth": "The bottleneck should always be as tight as possible.",
+      "reality": "Over-compression can remove the signal needed for prediction."
+    },
+    {
+      "myth": "A low training loss implies the representation is good.",
+      "reality": "The model can fit the task while still encoding brittle, non-transferable features."
+    },
+    {
+      "myth": "Information bottleneck is only a theory, not an engineering tool.",
+      "reality": "It provides a practical criterion for representation design, layer analysis, and compression tradeoffs in deep systems."
+    }
+  ],
+  "engineering_heuristic": "Compress what the task does not need, preserve what the downstream decision depends on.",
+  "historical_origin": "The concept is well established in information theory and learning, formalized by Tishby, Pereira, and Bialek as a variational principle and later adapted to deep learning analysis through layered mutual-information views and generalization studies.",
+  "tradeoffs": {
+    "benefits": [
+      "Better generalization through nuisance suppression.",
+      "More reusable and interpretable representations.",
+      "A principled way to reason about layer capacity and abstraction.",
+      "Potentially improved transfer learning behavior."
+    ],
+    "costs": [
+      "Mutual-information estimation is difficult in high-dimensional networks.",
+      "Excessive compression can destroy predictive features.",
+      "The principle can be hard to validate empirically in real training pipelines.",
+      "Different architectures may exhibit information dynamics that are hard to compare directly."
+    ]
+  },
+  "limitations": [
+    "It is difficult to apply cleanly when information estimates are too noisy to trust.",
+    "It may be misleading in architectures where standard compression phases do not appear.",
+    "It is less useful when the task requires preserving rich input detail rather than abstraction.",
+    "It can be counterproductive if used as a rigid rule instead of a design lens."
+  ],
+  "related_concepts": [
+    "Mutual information",
+    "Minimal sufficient statistic",
+    "Representation learning",
+    "Generalization",
+    "Variational inference",
+    "Autoencoders",
+    "Self-supervised learning",
+    "Compression–prediction tradeoff",
+    "Deep layer abstraction",
+    "Relevance and sufficiency"
+  ],
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "sources": [
+    "https://ieeexplore.ieee.org/document/11457969/",
+    "https://link.springer.com/10.1007/978-3-030-45442-5_61",
+    "https://www.semanticscholar.org/paper/9cda61384bb873852acd3030b714c8eb24d5e5df"
+  ],
+  "tags": [
+    "learning-theory",
+    "information-theory",
+    "representation-learning",
+    "deep-learning",
+    "generalization"
+  ],
+  "aliases": [
+    "ib-principle",
+    "information-compression",
+    "predictive-compression",
+    "tishby-bottleneck",
+    "relevance-compression"
+  ],
+  "keywords": [
+    "information-bottleneck",
+    "mutual-information",
+    "compression",
+    "prediction",
+    "representation",
+    "sufficiency",
+    "minimality",
+    "deep-learning",
+    "generalization",
+    "ib-lagrange",
+    "tradeoff"
+  ],
+  "search_tokens": [
+    "information bottleneck",
+    "information bottleneck principle",
+    "tishby",
+    "mutual information",
+    "representation compression",
+    "predictive sufficiency",
+    "deep learning generalization",
+    "ib tradeoff",
+    "compression prediction tradeoff",
+    "relevant information",
+    "minimal sufficient statistic"
+  ],
+  "domain": "learning_theory",
+  "difficulty": "advanced",
+  "engineering_area": "representation_learning",
+  "estimated_reading_time": 20,
+  "prerequisites": [],
+  "recommended_next": [
+    "maximum-likelihood-estimation",
+    "variational-inference",
+    "autoencoders",
+    "self-supervised-learning"
+  ],
+  "last_verified": "2026-07-15",
+  "review_frequency": "annually",
+  "verified_against": "1.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "referenced_by_patterns": [
+    "training-loop",
+    "gradient-accumulation",
+    "kv-cache",
+    "mixed-precision",
+    "checkpointing",
+    "early-stopping",
+    "gradient-checkpointing",
+    "flash-attention",
+    "prompt-caching",
+    "streaming-inference",
+    "batch-inference"
+  ],
+  "referenced_by_models": [
+    "llama",
+    "mistral",
+    "bert"
+  ],
+  "referenced_by_workflows": [
+    "build-rag-system",
+    "fine-tune-an-llm-with-lora-qlora"
+  ]
+}

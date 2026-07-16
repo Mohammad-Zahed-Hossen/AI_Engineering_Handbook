@@ -1,0 +1,227 @@
+{
+  "id": "gradient-descent",
+  "title": "Gradient Descent",
+  "slug": "gradient-descent",
+  "description": "Gradient Descent is the baseline optimization principle that turns loss minimization into an iterative control problem over step size, curvature, and stochastic noise.",
+  "name": "Gradient Descent",
+  "category": "optimization",
+  "statement": "Choose and tune gradient-based updates so that optimization makes consistent progress on the training objective without destabilizing parameter dynamics or wasting compute.",
+  "intuition": "Gradient descent is less about “following the slope” than about controlling how aggressively the system reacts to local error signals. If steps are too large, the optimizer overshoots and oscillates; if too small, training stalls; if the gradient signal is too noisy, updates chase sampling artifacts instead of structure. The engineering task is to make the update rule compatible with the geometry of the loss surface and the statistics of the training regime.",
+  "implications": [],
+  "engineering_consequences": [
+    {
+      "title": "Convergence behavior",
+      "explanation": "Step size and schedule shape whether training reaches a useful basin or diverges before learning stabilizes."
+    },
+    {
+      "title": "Optimization stability",
+      "explanation": "Poorly scaled gradients, curvature mismatch, or noisy batches can cause oscillation, exploding updates, or stalled progress."
+    },
+    {
+      "title": "Training efficiency",
+      "explanation": "The optimizer governs how many steps and how much compute are required to reach acceptable loss, which directly affects iteration speed and deployment cost."
+    },
+    {
+      "title": "Distributed robustness",
+      "explanation": "In large-scale or stochastic settings, the optimizer must tolerate batch variability, asynchrony, and approximate gradients without losing progress."
+    },
+    {
+      "title": "Hyperparameter sensitivity",
+      "explanation": "Learning rate, momentum, batching strategy, and schedules can dominate outcomes, so tuning strategy is part of system design rather than a secondary detail."
+    }
+  ],
+  "common_violations": [
+    {
+      "violation": "A single default learning rate is reused across models, datasets, and batch sizes.",
+      "symptoms": "Some runs diverge immediately, others crawl, and successful settings do not transfer between experiments.",
+      "why_it_happens": "Optimization is treated as an implementation detail instead of a regime-dependent control problem."
+    },
+    {
+      "violation": "Gradient noise from small batches or distributed updates is ignored.",
+      "symptoms": "Loss curves are jagged, validation results are unstable, and repeated runs with the same code produce materially different outcomes.",
+      "why_it_happens": "Engineers assume stochasticity is harmless rather than a factor that changes effective update dynamics."
+    },
+    {
+      "violation": "Curvature and conditioning are ignored when selecting the optimizer.",
+      "symptoms": "Training appears stuck even though gradients are nonzero, or progress varies wildly across layers and parameter groups.",
+      "why_it_happens": "The loss surface is treated as locally uniform when it is not."
+    },
+    {
+      "violation": "Learning rate schedules are bolted on after instability appears.",
+      "symptoms": "Late-stage training oscillates, checkpoint quality varies sharply, and the final model depends on accidental stopping time.",
+      "why_it_happens": "Schedule design is deferred until after core optimization dynamics have already been misconfigured."
+    }
+  ],
+  "appears_in": [
+    {
+      "domain": "Supervised model training",
+      "examples": [
+        "neural network training",
+        "regression fitting",
+        "classifier optimization where convergence determines whether the model is usable"
+      ]
+    },
+    {
+      "domain": "Large-scale deep learning",
+      "examples": [
+        "LLM pretraining",
+        "fine-tuning",
+        "distributed data-parallel training where stochasticity and scale change optimizer behavior"
+      ]
+    },
+    {
+      "domain": "Federated and decentralized learning",
+      "examples": [
+        "local SGD",
+        "parameter-server training, where data heterogeneity and update delays alter convergence properties"
+      ]
+    },
+    {
+      "domain": "Online and streaming learning",
+      "examples": [
+        "continual updates from arriving data, where the optimizer must remain stable under nonstationary input"
+      ]
+    }
+  ],
+  "mental_model": "```mermaid\nflowchart LR\n  A[Loss surface geometry] --> B[Gradient signal]\n  C[Batch statistics] --> B\n  D[Learning rate / schedule] --> E[Parameter update]\n  B --> E\n  E --> F[Progress]\n  E --> G[Instability]\n  F --> H[Convergence]\n  G --> I[Divergence or stall]\n```",
+  "decision_checklist": [
+    "Is the learning rate compatible with the scale and conditioning of the gradients?",
+    "Does the batch size produce gradients that are informative rather than excessively noisy?",
+    "Is the optimizer choice appropriate for the loss landscape and model scale?",
+    "Are schedule transitions aligned with known convergence phases?",
+    "Do repeated runs show stable optimization behavior under the same configuration?",
+    "Is the observed failure mode due to optimization dynamics rather than model capacity?"
+  ],
+  "misconceptions": [
+    {
+      "myth": "Gradient descent is just a mechanical update rule.",
+      "reality": "Its practical behavior depends on geometry, stochasticity, and schedule design, so it is a system-level optimization choice."
+    },
+    {
+      "myth": "If loss decreases on the first few steps, the optimizer is correctly configured.",
+      "reality": "Early progress can hide later instability, slow asymptotics, or poor basin selection."
+    },
+    {
+      "myth": "Bigger batches always improve optimization.",
+      "reality": "Batch changes alter gradient noise and effective step dynamics; “better” depends on the regime."
+    },
+    {
+      "myth": "Adaptive optimizers remove the need to reason about convergence.",
+      "reality": "They change the update geometry, but they do not eliminate the need to tune scale, schedule, and stopping criteria."
+    }
+  ],
+  "engineering_heuristic": "If training is unstable, fix the optimizer regime before blaming the model architecture.",
+  "historical_origin": "The concept evolved from classical optimization and stochastic approximation, then became central to machine learning through empirical risk minimization, backpropagation, and large-scale stochastic training. Its modern engineering interpretation is shaped by stochastic optimization research and by the practical behavior of deep networks under non-convex, noisy objectives.",
+  "tradeoffs": {
+    "benefits": [
+      "Simple and widely applicable optimization backbone.",
+      "Efficient incremental progress on large parameter spaces.",
+      "Compatible with stochastic and distributed training.",
+      "Supports many derivative algorithms and schedules."
+    ],
+    "costs": [
+      "Sensitive to learning rate and schedule design.",
+      "Can be slow or unstable on ill-conditioned landscapes.",
+      "Requires careful tuning across models and data regimes.",
+      "May need additional mechanisms to handle noise, curvature, or nonconvexity."
+    ]
+  },
+  "limitations": [
+    "It is less effective when gradients are uninformative, biased, or numerically unstable.",
+    "It can be counterproductive when the loss landscape requires stronger curvature information than first-order updates provide.",
+    "It does not guarantee global optimality in non-convex problems.",
+    "It can underperform if the training pipeline cannot supply sufficiently consistent gradient estimates."
+  ],
+  "related_concepts": [
+    "Stochastic gradient descent",
+    "Learning rate scheduling",
+    "Momentum",
+    "Adaptive optimizers",
+    "Second-order methods",
+    "Backpropagation",
+    "Convergence analysis",
+    "Gradient clipping",
+    "Stochastic approximation"
+  ],
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "sources": [
+    "https://link.springer.com/10.1007/s11356-021-14264-z",
+    "https://www.semanticscholar.org/paper/3e6da1517c593108cc3f1c0b858b3ad7fbbf85dc",
+    "https://www.semanticscholar.org/paper/bac5fe148139d8269705646c2e67ae167acc22e6"
+  ],
+  "tags": [
+    "optimization",
+    "learning-theory",
+    "ml-fundamentals",
+    "gradient-descent",
+    "convergence"
+  ],
+  "aliases": [
+    "gradient-based-optimization",
+    "steepest-descent",
+    "backpropagation-optimizer"
+  ],
+  "keywords": [
+    "gradient",
+    "descent",
+    "optimization",
+    "convergence",
+    "learning-rate",
+    "loss-landscape",
+    "saddle-point",
+    "local-minima"
+  ],
+  "search_tokens": [
+    "gradient descent",
+    "stochastic gradient descent",
+    "sgd",
+    "learning rate",
+    "convergence",
+    "loss landscape",
+    "optimization algorithm"
+  ],
+  "domain": "optimization",
+  "difficulty": "intermediate",
+  "engineering_area": "training",
+  "estimated_reading_time": 20,
+  "prerequisites": [],
+  "recommended_next": [
+    "learning-rate-scheduling",
+    "momentum",
+    "adam-optimizer",
+    "second-order-methods"
+  ],
+  "last_verified": "2026-07-15",
+  "review_frequency": "annually",
+  "verified_against": "1.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "referenced_by_patterns": [
+    "training-loop",
+    "gradient-accumulation",
+    "kv-cache",
+    "mixed-precision",
+    "checkpointing",
+    "early-stopping",
+    "gradient-checkpointing",
+    "flash-attention",
+    "prompt-caching",
+    "streaming-inference",
+    "batch-inference"
+  ],
+  "referenced_by_models": [
+    "llama",
+    "mistral",
+    "bert"
+  ],
+  "referenced_by_workflows": [
+    "build-rag-system",
+    "fine-tune-an-llm-with-lora-qlora"
+  ]
+}

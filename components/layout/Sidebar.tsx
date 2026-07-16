@@ -40,22 +40,12 @@ function applyItemLimit<T extends { id: string }>(
   return { visible, truncated: true, total: items.length };
 }
 
-const REGISTRY_TASK_LABELS: Record<string, string> = {
-  embedding: 'Embeddings',
-  reranker: 'Rerankers',
-  vision: 'Vision',
-  speech: 'Speech',
-  llm: 'LLMs',
-  multimodal: 'Multimodal',
-  ocr: 'OCR',
-};
-
 interface SidebarProps {
   packages: NavItem[];
   mlModels: NavItem[];
   dlModels: NavItem[];
   llmModels: NavItem[];
-  registryTasks: string[];
+  registry: NavItem[];
   workflows: NavItem[];
   cheatsheets: NavItem[];
   patterns: NavItem[];
@@ -69,7 +59,7 @@ export default function Sidebar({
   mlModels,
   dlModels,
   llmModels,
-  registryTasks,
+  registry,
   workflows,
   cheatsheets,
   patterns,
@@ -95,22 +85,6 @@ export default function Sidebar({
     if (pathname.startsWith('/principles/') && parts[1]) return parts[1];
     return null;
   };
-
-  function applyItemLimitForStrings(
-    items: string[],
-    activeId: string | null,
-    max: number
-  ): { visible: string[]; truncated: boolean; total: number } {
-    if (items.length <= max) {
-      return { visible: items, truncated: false, total: items.length };
-    }
-    const activeIndex = items.findIndex(item => item === activeId);
-    let visible = items.slice(0, max);
-    if (activeIndex >= max) {
-      visible = [...items.slice(0, max - 1), items[activeIndex]];
-    }
-    return { visible, truncated: true, total: items.length };
-  }
 
   useEffect(() => {
     if (!sidebarRef.current) return;
@@ -429,34 +403,38 @@ export default function Sidebar({
           </>
         )}
 
-        {/* Model Registries */}
-        {renderSectionHeader('Registries', registryTasks.length, 'registry', '/registry')}
+        {/* Model Registry */}
+        {renderSectionHeader('Model Registry', registry.length, 'registry', '/registry')}
         {expanded === 'registry' && (
           <ul className="space-y-0.5">
-            {(() => {
-              const { visible, truncated, total } = applyItemLimitForStrings(registryTasks, getActiveId(pathname), MAX_VISIBLE_ITEMS);
-              return (
-                <>
-                  {visible.map((task) => (
-                    <li key={task}>
-                      <Link href={`/registry/${task}`} className={linkClass(`/registry/${task}`)}>
-                        {REGISTRY_TASK_LABELS[task] ?? task}
-                      </Link>
-                    </li>
-                  ))}
-                  {truncated && (
-                    <li>
-                      <Link
-                        href="/registry"
-                        className="block py-1 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
-                      >
-                        See all {total} →
-                      </Link>
-                    </li>
-                  )}
-                </>
-              );
-            })()}
+            {registry.length >= ALPHA_GROUP_THRESHOLD ? (
+              renderGroupedItems(registry, getActiveId(pathname), (r) => `/registry/families/${r.id}`, linkClass)
+            ) : (
+              (() => {
+                const { visible, truncated, total } = applyItemLimit(registry, getActiveId(pathname), MAX_VISIBLE_ITEMS);
+                return (
+                  <>
+                    {visible.map((r) => (
+                      <li key={r.id}>
+                        <Link href={`/registry/families/${r.id}`} className={linkClass(`/registry/families/${r.id}`)}>
+                          {r.name}
+                        </Link>
+                      </li>
+                    ))}
+                    {truncated && (
+                      <li>
+                        <Link
+                          href="/registry"
+                          className="block py-1 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                        >
+                          See all {total} →
+                        </Link>
+                      </li>
+                    )}
+                  </>
+                );
+              })()
+            )}
           </ul>
         )}
 

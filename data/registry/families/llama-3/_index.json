@@ -1,0 +1,248 @@
+{
+  "id": "llama-3",
+  "name": "Llama 3",
+  "description": "Llama 3.x is Meta's open-weight LLM family for self-hosted production deployments where control over weights, fine-tuning, and runtime stack matters more than managed API convenience.",
+  "provider": "Meta",
+  "variants": ["3-3-70b"],
+  "architecture": {
+    "architecture_type": "Dense Transformer",
+    "transformer_type": "Decoder-only / Multimodal Vision",
+    "attention_mechanism": "Grouped-Query Attention (GQA)",
+    "tokenizer": "SentencePiece",
+    "positional_encoding": "RoPE",
+    "mixture_of_experts": false,
+    "kv_cache": true,
+    "flash_attention": false,
+    "grouped_query_attention": true
+  },
+  "capabilities": {
+    "instruction_tuned": true,
+    "reasoning": true,
+    "vision": true,
+    "multilingual": true,
+    "tool_calling": true,
+    "function_calling": true,
+    "context_window": 128000
+  },
+  "ecosystem": {
+    "transformers": {
+      "supported": true,
+      "notes": "Official prompt-format docs reference Hugging Face-style usage and model-card guidance."
+    },
+    "vllm": {
+      "supported": false,
+      "notes": "No official family page in the retrieved sources explicitly names vLLM support."
+    },
+    "ollama": {
+      "supported": false,
+      "notes": "No official family page in the retrieved sources explicitly names Ollama support."
+    },
+    "llama_cpp": {
+      "supported": false,
+      "notes": "No official family page in the retrieved sources explicitly names llama.cpp support."
+    },
+    "mlx": {
+      "supported": false,
+      "notes": "No official family page in the retrieved sources explicitly names MLX support."
+    },
+    "litellm": {
+      "supported": false,
+      "notes": "No official family page in the retrieved sources explicitly names LiteLLM support."
+    },
+    "openrouter": {
+      "supported": false,
+      "notes": "No official family page in the retrieved sources explicitly names OpenRouter support."
+    },
+    "lm_studio": {
+      "supported": false,
+      "notes": "No official family page in the retrieved sources explicitly names LM Studio support."
+    },
+    "tensorrt_llm": {
+      "supported": false,
+      "notes": "No official family page in the retrieved sources explicitly names TensorRT-LLM support."
+    }
+  },
+  "references": [
+    {
+      "title": "Llama 3.1 | Model Cards and Prompt formats",
+      "url": "https://www.llama.com/docs/model-cards-and-prompt-formats/llama3_1/",
+      "category": "official",
+      "official": true,
+      "priority": 1,
+      "description": "Canonical prompt format, tool-calling tokens, and family guidance for 3.1."
+    },
+    {
+      "title": "Llama 3.2 | Model Cards and Prompt formats",
+      "url": "https://www.llama.com/docs/model-cards-and-prompt-formats/llama3_2/",
+      "category": "documentation",
+      "official": true,
+      "priority": 2,
+      "description": "Canonical source for lightweight and vision variants plus quantization guidance."
+    },
+    {
+      "title": "The Llama 3 Herd of Models",
+      "url": "http://arxiv.org/pdf/2407.21783.pdf",
+      "category": "papers",
+      "official": true,
+      "priority": 1,
+      "description": "Primary paper detailing the Llama 3 model family architecture and training details."
+    },
+    {
+      "title": "Llama 3.3 | Model Cards and Prompt formats",
+      "url": "https://www.llama.com/docs/model-cards-and-prompt-formats/llama3_3/",
+      "category": "documentation",
+      "official": true,
+      "priority": 2,
+      "description": "Canonical 3.3 prompt format and recommended upgrade guidance from 3.1 70B Instruct."
+    },
+    {
+      "title": "meta-llama/llama-models repository",
+      "url": "https://github.com/meta-llama/llama-models",
+      "category": "repositories",
+      "official": true,
+      "priority": 2,
+      "description": "Source repository for model cards and prompt-format assets."
+    }
+  ],
+  "engineering_notes": {
+    "inference_notes": [
+      "Use the official prompt format and tool-call tokens exactly as documented; the 3.1 docs explicitly define system/user/assistant/ipython roles and tool-call signaling.",
+      "Llama 3.2 quantized variants are explicitly optimized for lower memory footprint and power consumption while retaining near-BF16 accuracy.",
+      "For 3.3, Meta's docs direct developers to prefer the new 3.3 70B Instruct model over 3.1 70B Instruct when upgrading."
+    ],
+    "deployment_notes": [
+      "Treat 3.1/3.3 as long-context dense models that need KV-cache-aware serving and GPU-first deployment planning.",
+      "Use the lightweight 3.2 family when memory and power are the dominant constraints, especially on phones, tablets, and other edge devices.",
+      "Managed deployment specs for 3.3 70B document 128K context and 8,192 max output tokens, which should be treated as the ceiling for that service configuration."
+    ],
+    "optimization_notes": [
+      "Quantization-aware training and SpinQuant are explicitly documented for Llama 3.2, making the family a better fit than many open models for constrained-device inference when quality must stay close to BF16.",
+      "The official docs state that quantized 3.2 models are substantially faster than BF16 counterparts and consume less memory and power."
+    ],
+    "compatibility_notes": [
+      "The official Llama docs preserve prompt compatibility across 3.1 and 3.2 while recommending the updated format for best results.",
+      "The 3.1 docs call out the canonical text-prompt-format file in the meta-llama repository, which is the safest source for integration behavior.",
+      "The official docs distinguish text-only, vision, and tool-calling behavior by model line, so runtime selection must match the checkpoint family rather than assuming uniform capabilities."
+    ],
+    "common_pitfalls": [
+      "Mixing prompt formats across family generations can silently degrade quality; mitigate by using the exact official prompt templates for the target variant.",
+      "Assuming all variants share the same deployment footprint is risky; 3.2 quantized and edge-oriented checkpoints are materially different from 3.1/3.3 large text models.",
+      "Treating unsupported formats such as ONNX or TensorRT as officially sanctioned can create portability assumptions that the vendor docs do not confirm."
+    ]
+  },
+  "license_info": {
+    "name": "Llama Community License / Meta Llama terms",
+    "commercial_use": true,
+    "modification": true,
+    "redistribution": true,
+    "attribution_required": true,
+    "notes": "Rights and restrictions are governed by the official Llama license terms associated with the model release."
+  },
+  "status": {
+    "release_date": "2024-07-23",
+    "last_verified": "2026-07-15",
+    "maintenance_status": "production"
+  },
+  "engineering_snapshot": {
+    "best_for": [
+      "Open-weight production deployments where the platform team needs control over weights, quantization, and runtime stack.",
+      "Fine-tuning and RAG systems that benefit from long context and strong open-model quality.",
+      "Agentic systems that need tool-calling and structured prompt control."
+    ],
+    "avoid_for": [
+      "Teams that want a fully managed closed API with no model hosting burden.",
+      "Ultra-low-memory edge deployment without a quantized or lightweight variant.",
+      "Workloads that require officially documented ONNX/TensorRT/llama.cpp/MLX support from the vendor docs alone."
+    ],
+    "deployment_complexity": "high",
+    "production_ready": true,
+    "recommended_use_case": "Self-hosted open-weight LLM deployment with fine-tuning, RAG, and agent tooling."
+  },
+  "timeline": [
+    {
+      "version": "Llama 3.1",
+      "release_date": "2024-07-23",
+      "notes": "Expanded context and flagship open-weight text models."
+    },
+    {
+      "version": "Llama 3.2",
+      "release_date": "2024-09-25",
+      "notes": "Added lightweight and vision variants plus quantization-focused deployment options."
+    },
+    {
+      "version": "Llama 3.3",
+      "release_date": "2024-12-05",
+      "notes": "70B text model positioned as the upgrade path for 3.1 70B Instruct."
+    }
+  ],
+  "related_models": [
+    {
+      "id": "llama-3-3",
+      "relationship": "successor"
+    },
+    {
+      "id": "llama-2-family",
+      "relationship": "predecessor"
+    },
+    {
+      "id": "qwen-family",
+      "relationship": "alternative"
+    },
+    {
+      "id": "gemma-family",
+      "relationship": "alternative"
+    },
+    {
+      "id": "deepseek-family",
+      "relationship": "alternative"
+    }
+  ],
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "sources": [
+    "https://www.llama.com/docs/model-cards-and-prompt-formats/llama3_1/",
+    "https://www.llama.com/docs/model-cards-and-prompt-formats/llama3_2/",
+    "https://www.llama.com/docs/model-cards-and-prompt-formats/llama3_3/"
+  ],
+  "tags": [
+    "llm",
+    "models",
+    "meta",
+    "llama",
+    "open-weight",
+    "self-hosting",
+    "fine-tuning",
+    "rag",
+    "agents",
+    "decoder-only"
+  ],
+  "aliases": [
+    "Meta Llama 3.x",
+    "Llama 3 Family",
+    "Llama 3.1",
+    "Llama 3.2",
+    "Llama 3.3"
+  ],
+  "keywords": [
+    "Llama 3",
+    "Llama 3.1",
+    "Llama 3.2",
+    "Llama 3.3",
+    "Meta Llama",
+    "open-weight LLM",
+    "self-hosted LLM",
+    "instruction tuning",
+    "long context",
+    "GQA"
+  ],
+  "search_tokens": [
+    "llama 3.x family",
+    "llama 3.1",
+    "llama 3.2",
+    "llama 3.3",
+    "meta llama",
+    "open-weight llm",
+    "self-hosted llm",
+    "rag agents"
+  ]
+}

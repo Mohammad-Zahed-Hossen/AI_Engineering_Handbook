@@ -1,0 +1,231 @@
+{
+  "id": "regularization",
+  "title": "Regularization",
+  "slug": "regularization",
+  "description": "Regularization is the principle of constraining model flexibility so that training captures stable signal rather than memorizing noise.",
+  "name": "Regularization",
+  "category": "learning_theory",
+  "statement": "Apply an explicit complexity constraint, penalty, or stochastic training intervention when the unconstrained model class is too flexible for the available data, the deployment regime, or the required calibration properties.",
+  "intuition": "Regularization is the mechanism that forces a model to prefer simpler explanations when the data do not justify extra freedom. The engineering point is not “make the model small,” but “make the inductive bias match the reliability of the evidence.” When the data are scarce, noisy, or highly correlated, unconstrained fitting often amplifies variance; when the penalty is too strong, it can suppress useful structure and create underfitting. The useful regime is the one where constraints reduce memorization faster than they erase signal.",
+  "implications": [],
+  "engineering_consequences": [
+    {
+      "title": "Generalization control",
+      "explanation": "Regularization directly affects the gap between training and validation performance, which determines whether the system is learning task structure or memorizing sample-specific artifacts."
+    },
+    {
+      "title": "Parameter stability",
+      "explanation": "Shrinkage and penalties reduce sensitivity to small perturbations in the data, which improves reproducibility across resamples and training runs."
+    },
+    {
+      "title": "Model selection leverage",
+      "explanation": "Regularization provides a tunable complexity axis, enabling tradeoffs among accuracy, sparsity, interpretability, and calibration."
+    },
+    {
+      "title": "Deployment robustness",
+      "explanation": "Models constrained during training tend to degrade more gracefully under modest distribution shift because they rely less on brittle high-variance features."
+    },
+    {
+      "title": "Optimization interaction",
+      "explanation": "Some regularizers alter the effective optimization path as much as the final hypothesis class, so the training recipe is part of the regularization strategy rather than a separate concern."
+    }
+  ],
+  "common_violations": [
+    {
+      "violation": "Regularization is treated as a fixed default rather than a task-dependent control.",
+      "symptoms": "Some models underfit, others overfit, and the same penalty strength behaves inconsistently across datasets or scales.",
+      "why_it_happens": "The inductive bias required by the data regime is not assessed before selecting the constraint."
+    },
+    {
+      "violation": "Weight decay is used interchangeably with every other form of regularization without checking whether the optimizer semantics match the intended penalty.",
+      "symptoms": "Hyperparameter tuning looks stable on paper but produces inconsistent generalization behavior in practice.",
+      "why_it_happens": "The engineer collapses distinct mechanisms—penalties, constraints, noise injection, and early stopping—into one label."
+    },
+    {
+      "violation": "Sparsity penalties are imposed in settings where feature correlation or representation coupling makes sparsity unstable.",
+      "symptoms": "Coefficients flip across runs, important features disappear, or prediction quality changes abruptly with minor data variation.",
+      "why_it_happens": "The regularizer is chosen for interpretability or simplicity rather than compatibility with feature geometry."
+    },
+    {
+      "violation": "Data augmentation, dropout, early stopping, and explicit penalties are stacked without understanding their combined effect.",
+      "symptoms": "Training becomes harder to tune, and the system alternates between underfitting and overfitting depending on the seed or batch schedule.",
+      "why_it_happens": "Multiple regularization channels are applied without a clear control objective or attribution of effect."
+    }
+  ],
+  "appears_in": [
+    {
+      "domain": "Linear and generalized linear models",
+      "examples": [
+        "ridge regression, lasso, elastic net, and generalized linear models where shrinkage shapes coefficient stability"
+      ]
+    },
+    {
+      "domain": "Deep learning",
+      "examples": [
+        "dropout, label smoothing, weight decay, stochastic depth, and architecture-level constraints used to improve generalization"
+      ]
+    },
+    {
+      "domain": "Probabilistic modeling",
+      "examples": [
+        "priors and penalized likelihood formulations where regularization encodes preference structure into inference"
+      ]
+    },
+    {
+      "domain": "Ill-posed inverse problems",
+      "examples": [
+        "Tikhonov-style calibration and reconstruction where regularization is required for numerical stability"
+      ]
+    }
+  ],
+  "mental_model": "```mermaid\nflowchart LR\n  A[Unconstrained fit] --> B[High variance]\n  C[Regularization constraint] --> D[Reduced flexibility]\n  D --> E[Lower variance]\n  D --> F[Possible bias increase]\n  E --> G[Better generalization]\n  F --> H[Underfit if too strong]\n```",
+  "decision_checklist": [
+    "Is the model capacity large relative to the sample size or noise level?",
+    "Is there evidence that validation error is materially worse than training error?",
+    "Does the selected regularizer match the geometry of the parameters or features?",
+    "Is the penalty strength justified by a validation regime rather than convention?",
+    "Are multiple regularization mechanisms being composed intentionally rather than accidentally?",
+    "Does the regularizer improve out-of-sample behavior without erasing useful signal?"
+  ],
+  "misconceptions": [
+    {
+      "myth": "Regularization is only about preventing overfitting.",
+      "reality": "It also stabilizes inference, shapes optimization, and encodes structural assumptions into the model."
+    },
+    {
+      "myth": "Any penalty automatically improves generalization.",
+      "reality": "Excessive or misaligned constraints can increase bias and reduce performance."
+    },
+    {
+      "myth": "Dropout, early stopping, and weight decay are interchangeable.",
+      "reality": "They act through different mechanisms and can have different effects on optimization and calibration."
+    },
+    {
+      "myth": "Stronger regularization is always safer in production.",
+      "reality": "Over-regularization can create systematically underpowered models that fail on legitimate signal."
+    }
+  ],
+  "engineering_heuristic": "Regularize to remove unsupported freedom, not to make the model harder to train.",
+  "historical_origin": "The concept is well established in statistical estimation and inverse problems, especially through ridge/Tikhonov-style stabilization and later sparsity and structural penalties in statistical learning. Its modern deep-learning form is a synthesis of penalty methods, architectural constraints, stochastic training effects, and empirical generalization practice.",
+  "tradeoffs": {
+    "benefits": [
+      "Lower overfitting and better out-of-sample performance.",
+      "More stable parameters and predictions.",
+      "Improved calibration or interpretability in some settings.",
+      "Better control of complexity under finite data."
+    ],
+    "costs": [
+      "Added hyperparameter tuning burden.",
+      "Possible loss of representational power.",
+      "Interactions between regularizers can be non-obvious.",
+      "The wrong penalty can produce underfitting or brittle sparsity."
+    ]
+  },
+  "limitations": [
+    "It can be counterproductive when the model is already bias-limited.",
+    "It is less effective if the chosen penalty does not match the task geometry.",
+    "It does not replace better data, better features, or better labeling.",
+    "Some forms of regularization are difficult to interpret or tune in large-scale deep models."
+  ],
+  "related_concepts": [
+    "Bias–variance tradeoff",
+    "Model selection",
+    "Cross-validation",
+    "Weight decay",
+    "Ridge regression",
+    "Lasso",
+    "Elastic net",
+    "Dropout",
+    "Early stopping",
+    "Tikhonov regularization"
+  ],
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "sources": [
+    "https://arxiv.org/abs/2511.02460",
+    "https://iopscience.iop.org/article/10.1088/0266-5611/33/1/014002",
+    "https://www.spiedigitallibrary.org/conference-proceedings-of-spie/10615/2302490/Image-deblurring-based-on-nonlocal-regularization-with-a-non-convex/10.1117/12.2302490.full"
+  ],
+  "tags": [
+    "learning-theory",
+    "generalization",
+    "model-complexity",
+    "overfitting-prevention",
+    "regularization"
+  ],
+  "aliases": [
+    "reg",
+    "weight-decay",
+    "penalty-term",
+    "complexity-control",
+    "shrinkage"
+  ],
+  "keywords": [
+    "regularization",
+    "generalization",
+    "overfitting",
+    "model-complexity",
+    "l1",
+    "l2",
+    "dropout",
+    "early-stopping",
+    "weight-decay",
+    "bias-variance",
+    "constraint",
+    "prior"
+  ],
+  "search_tokens": [
+    "regularization",
+    "l1 regularization",
+    "l2 regularization",
+    "weight decay",
+    "dropout",
+    "early stopping",
+    "ridge",
+    "lasso",
+    "elastic net",
+    "model complexity",
+    "overfitting prevention"
+  ],
+  "domain": "learning_theory",
+  "difficulty": "intermediate",
+  "engineering_area": "model_selection",
+  "estimated_reading_time": 15,
+  "prerequisites": [],
+  "recommended_next": [
+    "bias-variance-tradeoff",
+    "gradient-descent"
+  ],
+  "last_verified": "2026-07-15",
+  "review_frequency": "annually",
+  "verified_against": "1.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "referenced_by_patterns": [
+    "training-loop",
+    "gradient-accumulation",
+    "kv-cache",
+    "mixed-precision",
+    "checkpointing",
+    "early-stopping",
+    "gradient-checkpointing",
+    "flash-attention",
+    "prompt-caching",
+    "streaming-inference",
+    "batch-inference"
+  ],
+  "referenced_by_models": [
+    "llama",
+    "mistral",
+    "bert"
+  ],
+  "referenced_by_workflows": [
+    "build-rag-system",
+    "fine-tune-an-llm-with-lora-qlora"
+  ]
+}

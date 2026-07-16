@@ -5,8 +5,8 @@ import {
   getAllWorkflows,
   getAllCheatsheetIds,
   getCheatsheet,
-  getRegistryTasks,
-  getRegistryByTask,
+  getAllRegistryFamilies,
+  getRegistryVariantsByFamily,
   getAllPatterns,
   getAllDebugGuides,
   getAllDecisionGuides,
@@ -142,16 +142,56 @@ export const buildSearchIndex = cache(function buildSearchIndex(): SearchResult[
     });
   });
 
-  getRegistryTasks().forEach(task => {
-    getRegistryByTask(task).forEach(entry => {
+  // Index registry families and variants with enriched search fields
+  getAllRegistryFamilies().forEach(family => {
+    // Index family
+    const familyKeywords = extractKeywordsFromProse(family.description || '');
+    const allKeywords = [...new Set([...familyKeywords, ...family.keywords || [], ...family.aliases || []])];
+    
+    results.push({
+      type: 'registry',
+      id: family.id,
+      name: family.name,
+      summary: family.description,
+      href: `/registry/families/${family.id}`,
+      updated_at: family.updated_at,
+      category: 'families',
+      // Phase 5 additions - structured fields for faceted search
+      keywords: allKeywords.length > 0 ? allKeywords : undefined,
+      tags: family.tags,
+      aliases: family.aliases,
+      search_tokens: family.search_tokens,
+      // Additional structured fields
+      production_ready: family.engineering_snapshot?.production_ready,
+      commercial_use: family.license_info?.commercial_use,
+    });
+
+    // Index variants
+    const variants = getRegistryVariantsByFamily(family.id);
+    variants.forEach(variant => {
+      const variantKeywords = extractKeywordsFromProse(variant.description || '');
+      const variantAllKeywords = [...new Set([...variantKeywords, ...variant.keywords || [], ...variant.aliases || []])];
+      
       results.push({
         type: 'registry',
-        id: entry.id,
-        name: entry.id,
-        summary: `${task} model`,
-        href: `/registry/${task}`,
-        updated_at: '',
-        category: task,
+        id: `${family.id}/${variant.id}`,
+        name: variant.name,
+        summary: variant.description,
+        href: `/registry/families/${family.id}/${variant.id}`,
+        updated_at: variant.updated_at,
+        category: 'variants',
+        family: family.id,
+        // Phase 5 additions - structured fields for faceted search
+        keywords: variantAllKeywords.length > 0 ? variantAllKeywords : undefined,
+        tags: variant.tags,
+        aliases: variant.aliases,
+        search_tokens: variant.search_tokens,
+        // Additional structured fields
+        parameter_count: variant.specifications?.parameter_count,
+        context_window: variant.specifications?.context_window,
+        min_gpu_memory: variant.hardware?.minimum_gpu_memory,
+        production_ready: variant.engineering_snapshot?.production_ready,
+        commercial_use: variant.license_info?.commercial_use,
       });
     });
   });

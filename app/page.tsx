@@ -171,9 +171,9 @@ export default function Home() {
               icon: FileCode2 
             },
             { 
-              title: 'Task Registry', 
-              description: 'System baseline task templates, inputs/outputs definitions, and metrics.', 
-              count: counts.registry_tasks, 
+              title: 'Model Registry', 
+              description: 'Deployment metadata and download locations for AI models.', 
+              count: counts.registry_families, 
               href: '/registry', 
               icon: Terminal 
             },
@@ -220,7 +220,7 @@ export default function Home() {
             { label: 'Models', count: totalModelsCount },
             { label: 'Workflows', count: counts.workflows },
             { label: 'Cheatsheets', count: counts.cheatsheets },
-            { label: 'Registry Tasks', count: counts.registry_tasks },
+            { label: 'Registry', count: counts.registry_families },
             { label: 'Problem Index', count: problemsCount },
           ].map(stat => (
             <div key={stat.label} className="bg-muted/10 border border-border/80 p-3 rounded-lg flex flex-col justify-between select-none">

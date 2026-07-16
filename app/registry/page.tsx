@@ -1,33 +1,15 @@
 import Link from 'next/link';
-import { getRegistryTasks, getRegistryByTask } from '@/lib/data';
-
-const TASK_LABELS: Record<string, string> = {
-  embedding: 'Embedding Models',
-  reranker: 'Reranker Models',
-  vision: 'Vision Models',
-  speech: 'Speech / ASR Models',
-  llm: 'Large Language Models',
-  multimodal: 'Multimodal Models',
-  ocr: 'OCR Models',
-};
-
-const TASK_DESCRIPTIONS: Record<string, string> = {
-  embedding: 'Sentence and document embedding checkpoints.',
-  reranker: 'Cross-encoder reranking models for retrieval pipelines.',
-  vision: 'Image classification, detection, and segmentation models.',
-  speech: 'Automatic speech recognition and TTS checkpoints.',
-  llm: 'Large language model checkpoints and fine-tunes.',
-  multimodal: 'Vision-language and cross-modal models.',
-  ocr: 'Optical character recognition models.',
-};
+import { getAllRegistryFamilies } from '@/lib/data';
+import RegistryFamilyView from '@/components/registry/RegistryFamilyView';
 
 export default function RegistryPage() {
-  const tasks = getRegistryTasks();
+  const families = getAllRegistryFamilies();
 
-  if (tasks.length === 0) {
+  // If no families exist, show empty state
+  if (families.length === 0) {
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-semibold text-foreground">Registries</h1>
+        <h1 className="text-2xl font-semibold text-foreground">Model Registry</h1>
         <p className="text-sm text-muted-foreground">
           No registry entries have been added yet.
         </p>
@@ -38,34 +20,49 @@ export default function RegistryPage() {
     );
   }
 
+  // Show the family-based view
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-foreground">Registries</h1>
-      <div className="space-y-3">
-        {tasks.map(task => {
-          const models = getRegistryByTask(task);
-          const label = TASK_LABELS[task] ?? task;
-          const description = TASK_DESCRIPTIONS[task] ?? '';
-          return (
-            <Link
-              key={task}
-              href={`/registry/${task}`}
-              className="block rounded-lg border border-border bg-card p-4 hover:border-foreground/20 hover:bg-muted/30 transition-colors"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h2 className="text-sm font-medium text-foreground">{label}</h2>
-                  {description && (
-                    <p className="mt-1 text-xs text-muted-foreground">{description}</p>
-                  )}
-                </div>
-                <span className="shrink-0 text-[10px] font-mono text-muted-foreground">
-                  {models.length} {models.length === 1 ? 'model' : 'models'}
-                </span>
-              </div>
-            </Link>
-          );
-        })}
+      <div className="space-y-2">
+        <h1 className="text-2xl font-bold text-foreground tracking-tight">
+          Model Registry
+        </h1>
+        <p className="text-xs text-muted-foreground max-w-2xl leading-relaxed">
+          Deployment metadata and download locations for AI models.
+          Find hardware requirements, supported runtimes, and commercial usage information.
+        </p>
+      </div>
+
+      {/* Statistics Dashboard */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+        <div className="bg-card border border-border rounded-lg p-3">
+          <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Families</div>
+          <div className="text-lg font-bold text-foreground font-mono">{families.length}</div>
+        </div>
+        <div className="bg-card border border-border rounded-lg p-3">
+          <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Providers</div>
+          <div className="text-lg font-bold text-foreground font-mono">
+            {new Set(families.map(f => f.provider)).size}
+          </div>
+        </div>
+        <div className="bg-card border border-border rounded-lg p-3">
+          <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Production</div>
+          <div className="text-lg font-bold text-emerald-600 font-mono">
+            {families.filter(f => f.engineering_snapshot?.production_ready).length}
+          </div>
+        </div>
+        <div className="bg-card border border-border rounded-lg p-3">
+          <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Commercial</div>
+          <div className="text-lg font-bold text-indigo-600 font-mono">
+            {families.filter(f => f.license_info?.commercial_use).length}
+          </div>
+        </div>
+      </div>
+
+      {/* Family Grid with Client-side Filtering */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold text-foreground">Model Families</h2>
+        <RegistryFamilyView families={families} />
       </div>
     </div>
   );

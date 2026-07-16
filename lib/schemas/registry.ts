@@ -1,27 +1,5 @@
 import { z } from 'zod';
 
-export const RegistryTaskSchema = z.enum([
-  'embedding',
-  'reranker',
-  'vision',
-  'speech',
-  'llm',
-  'multimodal',
-  'ocr',
-]);
-export type RegistryTask = z.infer<typeof RegistryTaskSchema>;
-
-export const RegistryCategorySchema = z.enum([
-  'models',
-  'datasets',
-  'benchmarks',
-  'services',
-  'leaderboards',
-  'mcp_servers',
-  'repos',
-]);
-export type RegistryCategory = z.infer<typeof RegistryCategorySchema>;
-
 // Structured missing model reference for graph completeness
 export const MissingModelRefSchema = z.object({
   type: z.literal('missing'),
@@ -261,88 +239,27 @@ export const EngineeringSnapshotSchema = z.object({
 });
 export type EngineeringSnapshot = z.infer<typeof EngineeringSnapshotSchema>;
 
-// ── Main Registry Model Schema ─────────────────────────────────────
+// ── Registry Family Schema ───────────────────────────────────────────
 
-// Link field supports both string paths and structured missing references
-export const RegistryModelSchema = z.object({
-  // Core identification
+// Family-level schema for model families (e.g., Llama 3, DeepSeek)
+export const RegistryFamilySchema = z.object({
   id: z.string(),
-  title: z.string(),
-  slug: z.string(),
-  description: z.string(),
   name: z.string(),
-  
-  // Registry-specific fields
-  task: RegistryTaskSchema,
-  category: RegistryCategorySchema,
-  size_mb: z.number(),
-  
-  // Legacy fields (preserved for backward compatibility)
-  link: z.union([z.string(), MissingModelRefSchema]).optional(),
-  hardware_requirements: z.string().optional(),
-  download_location: z.string().url().optional(),
-  license: z.string().optional(),
-  
-  // ── New Structured Metadata ───────────────────────────────────────
-  
-  // Identity
-  identity: IdentitySchema.optional(),
-  
-  // Architecture
+  description: z.string(),
+  provider: z.string(),
+  variants: z.array(z.string()).default([]),
+  // Family-level metadata (shared across variants)
   architecture: ArchitectureSchema.optional(),
-  
-  // Specifications
-  specifications: SpecificationsSchema.optional(),
-  
-  // File Formats
-  formats: FormatsSchema.optional(),
-  
-  // Ecosystem Support
-  ecosystem: EcosystemSchema.optional(),
-  
-  // References
-  references: z.array(ReferenceSchema).default([]),
-  
-  // Engineering Notes
-  engineering_notes: EngineeringNotesSchema.optional(),
-  
-  // Related Models
-  related_models: z.array(RelatedModelSchema).default([]),
-  
-  // Timeline
-  timeline: z.array(TimelineEntrySchema).default([]),
-  
-  // Capabilities
   capabilities: CapabilitiesSchema.optional(),
-  
-  // Deployment
-  deployment: DeploymentSchema.optional(),
-  
-  // Hardware (structured)
-  hardware: HardwareSchema.optional(),
-  
-  // Downloads (multiple sources)
-  downloads: z.array(DownloadSchema).default([]),
-  
-  // Runtime compatibility (extensible)
-  runtime_compatibility: z.array(RuntimeCompatibilitySchema).default([]),
-  
-  // Licensing (structured)
+  formats: FormatsSchema.optional(),
+  ecosystem: EcosystemSchema.optional(),
+  references: z.array(ReferenceSchema).default([]),
+  engineering_notes: EngineeringNotesSchema.optional(),
   license_info: LicenseSchema.optional(),
-  
-  // Status
   status: StatusSchema.optional(),
-  
-  // Engineering Snapshot
   engineering_snapshot: EngineeringSnapshotSchema.optional(),
-  
-  // Legacy fields (preserved)
-  supported_tasks: z.array(z.string()).default([]),
-  version_compatibility: z.array(z.string()).default([]),
-  
-  // Reference to official resources
-  official_resources: z.array(z.string().url()).default([]),
-  
+  timeline: z.array(TimelineEntrySchema).default([]),
+  related_models: z.array(RelatedModelSchema).default([]),
   // Metadata fields
   created_at: z.string(),
   updated_at: z.string(),
@@ -353,4 +270,37 @@ export const RegistryModelSchema = z.object({
   search_tokens: z.array(z.string()).default([]),
 });
 
-export type RegistryModel = z.infer<typeof RegistryModelSchema>;
+export type RegistryFamily = z.infer<typeof RegistryFamilySchema>;
+
+// ── Registry Variant Schema ────────────────────────────────────────
+
+// Variant-level schema for individual model variants
+export const RegistryVariantSchema = z.object({
+  id: z.string(),
+  family_id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  // Variant-specific metadata
+  size_mb: z.number(),
+  specifications: SpecificationsSchema.optional(),
+  hardware: HardwareSchema.optional(),
+  deployment: DeploymentSchema.optional(),
+  downloads: z.array(DownloadSchema).default([]),
+  runtime_compatibility: z.array(RuntimeCompatibilitySchema).default([]),
+  // Inherit from family
+  architecture: ArchitectureSchema.optional(),
+  capabilities: CapabilitiesSchema.optional(),
+  license_info: LicenseSchema.optional(),
+  status: StatusSchema.optional(),
+  engineering_snapshot: EngineeringSnapshotSchema.optional(),
+  // Metadata fields
+  created_at: z.string(),
+  updated_at: z.string(),
+  sources: z.array(z.string().url()).default([]),
+  tags: z.array(z.string()).default([]),
+  aliases: z.array(z.string()).default([]),
+  keywords: z.array(z.string()).default([]),
+  search_tokens: z.array(z.string()).default([]),
+});
+
+export type RegistryVariant = z.infer<typeof RegistryVariantSchema>;

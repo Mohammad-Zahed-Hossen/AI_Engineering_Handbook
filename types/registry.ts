@@ -1,7 +1,5 @@
 import { z } from 'zod';
 import {
-  RegistryModelSchema,
-  RegistryTaskSchema,
   MissingModelRefSchema,
   IdentitySchema,
   CapabilitiesSchema,
@@ -23,11 +21,11 @@ import {
   EngineeringNotesSchema,
   RelatedModelSchema,
   TimelineEntrySchema,
+  RegistryFamilySchema,
+  RegistryVariantSchema,
 } from '@/lib/schemas/registry';
 
-export type RegistryTask = z.infer<typeof RegistryTaskSchema>;
 export type MissingModelRef = z.infer<typeof MissingModelRefSchema>;
-export type RegistryModel = z.infer<typeof RegistryModelSchema>;
 export type Identity = z.infer<typeof IdentitySchema>;
 export type Capabilities = z.infer<typeof CapabilitiesSchema>;
 export type Deployment = z.infer<typeof DeploymentSchema>;
@@ -48,3 +46,5 @@ export type ReferenceCategory = z.infer<typeof ReferenceCategorySchema>;
 export type EngineeringNotes = z.infer<typeof EngineeringNotesSchema>;
 export type RelatedModel = z.infer<typeof RelatedModelSchema>;
 export type TimelineEntry = z.infer<typeof TimelineEntrySchema>;
+export type RegistryFamily = z.infer<typeof RegistryFamilySchema>;
+export type RegistryVariant = z.infer<typeof RegistryVariantSchema>;

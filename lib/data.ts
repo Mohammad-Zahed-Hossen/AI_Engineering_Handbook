@@ -11,9 +11,8 @@ import { PatternSchema } from '@/lib/schemas/pattern';
 import { DebugGuideSchema } from '@/lib/schemas/debug-guide';
 import { DecisionGuideSchema } from '@/lib/schemas/decision-guide';
 import { PrincipleSchema } from '@/lib/schemas/principle';
-import { RegistryModel } from '@/types/registry';
-import { REGISTRY_TASK_FILES, REGISTRY_FILE_TO_TASK } from './config/registry';
-import type { RegistryTask } from './config/registry';
+import { RegistryFamily, RegistryVariant } from '@/types/registry';
+import { RegistryFamilySchema, RegistryVariantSchema } from '@/lib/schemas/registry';
 import { Workflow } from '@/types/workflow';
 import { Cheatsheet } from '@/types/cheatsheet';
 import { Pattern } from '@/types/pattern';
@@ -164,37 +163,89 @@ export const getCategoryComparison = cache(function getCategoryComparison(catego
   return { meta, models };
 });
 
-// ── Registry ────────────────────────────────────────────────
+// ── Registry Families (New Structure) ─────────────────────────
 
 /**
- * Retrieves list of all task keys available in the registry.
+ * Retrieves list of all registry family IDs.
  * 
- * @returns {RegistryTask[]} List of tasks (e.g. ['embedding', 'vision'])
+ * @returns {string[]} List of family IDs (e.g. ['llama-3', 'deepseek'])
  */
-export const getRegistryTasks = cache(function getRegistryTasks(): RegistryTask[] {
-  const dirPath = path.join(dataDir, 'registry');
-  if (!fs.existsSync(dirPath)) return [];
-
-  const files = fs.readdirSync(dirPath).filter(file => file.endsWith('.json'));
-
-  return files
-    .map(file => REGISTRY_FILE_TO_TASK[file])
-    .filter((task): task is RegistryTask => task !== undefined)
+export const getAllRegistryFamilyIds = cache(function getAllRegistryFamilyIds(): readonly string[] {
+  const familiesDir = path.join(dataDir, 'registry', 'families');
+  if (!fs.existsSync(familiesDir)) return [];
+  
+  return fs.readdirSync(familiesDir)
+    .filter(file => {
+      const stat = fs.statSync(path.join(familiesDir, file));
+      return stat.isDirectory();
+    })
     .sort((a, b) => a.localeCompare(b));
 });
 
 /**
- * Reads the list of registry models associated with a task.
+ * Reads a single registry family's details.
  * 
- * @param {RegistryTask} task - Task name (e.g. 'embedding')
- * @returns {RegistryModel[]} Array of registry models
+ * @param {string} familyId - Family identifier (e.g. 'llama-3')
+ * @returns {RegistryFamily} Family details
  */
-export const getRegistryByTask = cache(function getRegistryByTask(task: RegistryTask): RegistryModel[] {
-  const filePath = path.join(dataDir, 'registry', REGISTRY_TASK_FILES[task]);
+export const getRegistryFamily = cache(function getRegistryFamily(familyId: string): RegistryFamily {
+  const filePath = path.join(dataDir, 'registry', 'families', familyId, '_index.json');
   if (!fs.existsSync(filePath)) {
-    return [];
+    throw new Error(`Registry family not found: ${familyId}`);
   }
-  return readJSON<RegistryModel[]>(filePath);
+  const raw = readJSON<unknown>(filePath);
+  return RegistryFamilySchema.parse(raw);
+});
+
+/**
+ * Reads all registry families.
+ * 
+ * @returns {RegistryFamily[]} List of all families
+ */
+export const getAllRegistryFamilies = cache(function getAllRegistryFamilies(): RegistryFamily[] {
+  return getAllRegistryFamilyIds().map(id => getRegistryFamily(id));
+});
+
+/**
+ * Retrieves list of all variant IDs for a given family.
+ * 
+ * @param {string} familyId - Family identifier
+ * @returns {string[]} List of variant IDs
+ */
+export const getRegistryVariantIds = cache(function getRegistryVariantIds(familyId: string): readonly string[] {
+  const familyDir = path.join(dataDir, 'registry', 'families', familyId);
+  if (!fs.existsSync(familyDir)) return [];
+  
+  return fs.readdirSync(familyDir)
+    .filter(file => file.endsWith('.json') && file !== '_index.json')
+    .map(file => path.basename(file, '.json'))
+    .sort((a, b) => a.localeCompare(b));
+});
+
+/**
+ * Reads a single registry variant's details.
+ * 
+ * @param {string} familyId - Family identifier
+ * @param {string} variantId - Variant identifier (e.g. '3-3-70b')
+ * @returns {RegistryVariant} Variant details
+ */
+export const getRegistryVariant = cache(function getRegistryVariant(familyId: string, variantId: string): RegistryVariant {
+  const filePath = path.join(dataDir, 'registry', 'families', familyId, `${variantId}.json`);
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Registry variant not found: ${familyId}/${variantId}`);
+  }
+  const raw = readJSON<unknown>(filePath);
+  return RegistryVariantSchema.parse(raw);
+});
+
+/**
+ * Reads all variants for a given family.
+ * 
+ * @param {string} familyId - Family identifier
+ * @returns {RegistryVariant[]} List of variants
+ */
+export const getRegistryVariantsByFamily = cache(function getRegistryVariantsByFamily(familyId: string): RegistryVariant[] {
+  return getRegistryVariantIds(familyId).map(id => getRegistryVariant(familyId, id));
 });
 
 // ── Workflows ───────────────────────────────────────────────
@@ -285,7 +336,7 @@ export const getDashboardCounts = cache(function getDashboardCounts(): {
   models_llm: number;
   workflows: number;
   cheatsheets: number;
-  registry_tasks: number;
+  registry_families: number;
 } {
   return {
     packages: getAllPackageIds().length,
@@ -294,7 +345,7 @@ export const getDashboardCounts = cache(function getDashboardCounts(): {
     models_llm: getModelIds('llm').length,
     workflows: getAllWorkflowIds().length,
     cheatsheets: getAllCheatsheetIds().length,
-    registry_tasks: getRegistryTasks().length,
+    registry_families: getAllRegistryFamilyIds().length,
   };
 });
 
@@ -370,6 +421,16 @@ export const getCheatsheetNavItems = cache(function getCheatsheetNavItems(): Nav
     });
   }
   return readJSON<NavItem[]>(navPath);
+});
+
+/**
+ * Lightweight navigation retriever for registry families.
+ */
+export const getRegistryNavItems = cache(function getRegistryNavItems(): NavItem[] {
+  return getAllRegistryFamilyIds().map(id => {
+    const family = getRegistryFamily(id);
+    return { id: family.id, name: family.name };
+  });
 });
 
 // ── Patterns ───────────────────────────────────────────────
@@ -613,9 +674,17 @@ export function contentExists(type: 'model' | 'package' | 'workflow' | 'cheatshe
     return fs.existsSync(path.join(dataDir, 'principles', `${id}.json`));
   }
   if (type === 'registry') {
-    for (const task of getRegistryTasks()) {
-      const models = getRegistryByTask(task);
-      if (models.some(m => m.id === id)) return true;
+    // Check if it's a family ID
+    const familyIds = getAllRegistryFamilyIds();
+    if (familyIds.includes(id)) return true;
+    
+    // Check if it's a variant ID (format: familyId/variantId)
+    if (id.includes('/')) {
+      const [familyId, variantId] = id.split('/');
+      if (familyIds.includes(familyId)) {
+        const variantIds = getRegistryVariantIds(familyId);
+        if (variantIds.includes(variantId)) return true;
+      }
     }
   }
   return false;
@@ -665,10 +734,23 @@ export function loadContentMeta(
       return { name: principle.title || principle.id, updated_at: principle.updated_at };
     }
     if (type === 'registry') {
-      for (const task of getRegistryTasks()) {
-        const models = getRegistryByTask(task);
-        const model = models.find(m => m.id === id);
-        if (model) return { name: model.id, updated_at: '' };
+      // Check if it's a family ID
+      const familyIds = getAllRegistryFamilyIds();
+      if (familyIds.includes(id)) {
+        const family = getRegistryFamily(id);
+        return { name: family.name, updated_at: family.updated_at };
+      }
+      
+      // Check if it's a variant ID (format: familyId/variantId)
+      if (id.includes('/')) {
+        const [familyId, variantId] = id.split('/');
+        if (familyIds.includes(familyId)) {
+          const variantIds = getRegistryVariantIds(familyId);
+          if (variantIds.includes(variantId)) {
+            const variant = getRegistryVariant(familyId, variantId);
+            return { name: variant.name, updated_at: variant.updated_at };
+          }
+        }
       }
     }
   } catch {
@@ -706,9 +788,17 @@ export function getContentPath(type: 'model' | 'package' | 'workflow' | 'cheatsh
     if (cat) return `/models/${cat}/${id}`;
   }
   if (type === 'registry') {
-    for (const task of getRegistryTasks()) {
-      const models = getRegistryByTask(task);
-      if (models.some(m => m.id === id)) return `/registry/${task}`;
+    // Check if it's a family ID
+    const familyIds = getAllRegistryFamilyIds();
+    if (familyIds.includes(id)) return `/registry/families/${id}`;
+    
+    // Check if it's a variant ID (format: familyId/variantId)
+    if (id.includes('/')) {
+      const [familyId, variantId] = id.split('/');
+      if (familyIds.includes(familyId)) {
+        const variantIds = getRegistryVariantIds(familyId);
+        if (variantIds.includes(variantId)) return `/registry/families/${familyId}/${variantId}`;
+      }
     }
   }
   return null;

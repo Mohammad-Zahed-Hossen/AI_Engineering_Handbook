@@ -1,0 +1,225 @@
+{
+  "id": "maximum-likelihood-estimation",
+  "title": "Maximum Likelihood Estimation",
+  "slug": "maximum-likelihood-estimation",
+  "description": "Maximum Likelihood Estimation is the principle of inferring model parameters by choosing the values that make the observed data most probable under a specified probabilistic model.",
+  "name": "Maximum Likelihood Estimation",
+  "category": "learning_theory",
+  "statement": "Estimate parameters by maximizing the likelihood under an explicit probabilistic model, and treat the validity of the result as conditional on model specification, identifiability, and regularity assumptions.",
+  "intuition": "MLE is a contract between the model and the data: if the model family is right enough, the parameter choice that best explains the sample also has desirable asymptotic properties. The failure mode is equally important: when the likelihood is misspecified or the sample is too small or too dependent, the estimate can remain numerically optimal while being statistically misleading. For AI systems, that means the value of MLE is not just optimization, but the inferential guarantees it gives—or fails to give—around parameters, uncertainty, and downstream decisions.",
+  "implications": [],
+  "engineering_consequences": [
+    {
+      "title": "Parameter inference quality",
+      "explanation": "MLE provides consistent and asymptotically efficient estimates under regularity conditions, which makes it a default choice for statistically grounded parameter fitting."
+    },
+    {
+      "title": "Uncertainty quantification",
+      "explanation": "Fisher information and asymptotic normality let engineers approximate parameter variance, but only when the likelihood is sufficiently well specified and the asymptotics are credible."
+    },
+    {
+      "title": "Calibration discipline",
+      "explanation": "Likelihood-based objectives make it possible to distinguish a good fit from a good probabilistic fit, which is critical for production systems that emit probabilities rather than point estimates."
+    },
+    {
+      "title": "Misspecification sensitivity",
+      "explanation": "If the likelihood family is wrong, the estimator can remain stable computationally while being statistically biased, which makes model validation part of the estimation problem itself."
+    },
+    {
+      "title": "Optimization alignment",
+      "explanation": "Many ML losses are implemented as surrogate objectives whose statistical meaning depends on the likelihood assumption, so incorrect interpretation can lead to false confidence in training results."
+    }
+  ],
+  "common_violations": [
+    {
+      "violation": "Cross-entropy or negative log-likelihood is used as a generic loss without checking whether the assumed observation model matches the task.",
+      "symptoms": "Probability outputs look confident but are poorly calibrated, and residuals show systematic structure.",
+      "why_it_happens": "The loss is treated as an optimization recipe rather than as a statement about the data-generating process."
+    },
+    {
+      "violation": "Standard MLE is applied under clear covariate shift or dependent samples without adjusting the estimation strategy.",
+      "symptoms": "Validation performance degrades sharply on target data, and uncertainty estimates become overconfident.",
+      "why_it_happens": "Regularity assumptions are silently inherited from textbook settings and not rechecked against deployment data."
+    },
+    {
+      "violation": "Small-sample estimates are interpreted as if asymptotic normal approximations were already valid.",
+      "symptoms": "Confidence intervals are too narrow, parameter instability is high across resamples, and model comparisons fluctuate.",
+      "why_it_happens": "The asymptotic theory is used before the sample regime is large enough for it to be informative."
+    },
+    {
+      "violation": "The likelihood is numerically maximized successfully, but identifiability is weak or absent.",
+      "symptoms": "Multiple parameter settings produce nearly identical fit, and parameter values drift between runs with little change in loss.",
+      "why_it_happens": "The estimation problem is mathematically underconstrained even though the optimizer converges."
+    }
+  ],
+  "appears_in": [
+    {
+      "domain": "Probabilistic classification",
+      "examples": [
+        "logistic regression, calibration layers, and any classifier trained with log-likelihood or cross-entropy objectives"
+      ]
+    },
+    {
+      "domain": "Generative modeling",
+      "examples": [
+        "language models, density estimators, and sequence models that maximize token likelihood or sequence likelihood"
+      ]
+    },
+    {
+      "domain": "Latent-variable estimation",
+      "examples": [
+        "expectation-maximization workflows where MLE is computed indirectly for incomplete-data problems"
+      ]
+    },
+    {
+      "domain": "Distribution shift analysis",
+      "examples": [
+        "covariate-shift settings where well-specified MLE can remain minimax optimal, but misspecification changes the correct estimator"
+      ]
+    }
+  ],
+  "mental_model": "```mermaid\nflowchart LR\n  A[Observed data] --> B[Probabilistic model]\n  B --> C[Likelihood]\n  C --> D[Parameter choice that maximizes likelihood]\n  D --> E[Asymptotic properties]\n  E --> F[Consistency]\n  E --> G[Efficiency]\n  B --> H[Assumptions]\n  H --> I[Identifiability]\n  H --> J[Regularity]\n  H --> K[Specification quality]\n```",
+  "decision_checklist": [
+    "Is there an explicit probabilistic model for the data I am fitting?",
+    "Does the likelihood match the measurement process and label noise structure?",
+    "Are identifiability and parameter redundancy under control?",
+    "Are sample size and dependence structure sufficient for asymptotic reasoning?",
+    "Do I have evidence that misspecification is not dominating the inference?",
+    "Are uncertainty estimates being derived from valid likelihood-based approximations?"
+  ],
+  "misconceptions": [
+    {
+      "myth": "MLE is just another loss function.",
+      "reality": "It is an inference principle whose statistical meaning depends on the assumed distributional model."
+    },
+    {
+      "myth": "If optimization converges, inference is trustworthy.",
+      "reality": "Convergence only says the optimizer found a stationary or optimal point of the objective; it does not validate the probabilistic assumptions behind the objective."
+    },
+    {
+      "myth": "Likelihood-based estimates are automatically well calibrated.",
+      "reality": "Calibration depends on specification quality and data regime, not just on maximizing likelihood."
+    },
+    {
+      "myth": "Asymptotic normality makes finite-sample uncertainty trivial.",
+      "reality": "The approximation can be poor in small samples, under weak identifiability, or under misspecification."
+    }
+  ],
+  "engineering_heuristic": "Maximize likelihood only after you are sure the likelihood is the right model of the data.",
+  "historical_origin": "The concept is well established in statistical theory and is strongly associated with Fisher’s early 20th-century work on likelihood, sufficiency, and asymptotic efficiency, later formalized through Cramér, Wald, Rao, and subsequent developments in statistical inference.",
+  "tradeoffs": {
+    "benefits": [
+      "Strong inferential foundation under regularity conditions.",
+      "Asymptotic consistency and efficiency in well-specified settings.",
+      "Natural route to uncertainty estimates via observed or expected information.",
+      "Unified objective for many probabilistic ML models."
+    ],
+    "costs": [
+      "Sensitive to model misspecification.",
+      "Can be misleading in small-sample or dependent-data regimes.",
+      "Requires identifiability and regularity reasoning that many training pipelines ignore.",
+      "Likelihood maximization can give a false sense of statistical validity when only optimization has been verified."
+    ]
+  },
+  "limitations": [
+    "It is less reliable when the model family is misspecified relative to the true data-generating process.",
+    "It can be counterproductive when parameter identifiability is weak or absent.",
+    "Its asymptotic guarantees are not a substitute for finite-sample validation.",
+    "It does not by itself solve robustness under heavy distribution shift or non-iid sampling."
+  ],
+  "related_concepts": [
+    "Log-likelihood",
+    "Fisher information",
+    "Asymptotic normality",
+    "Statistical consistency",
+    "Identifiability",
+    "Cross-entropy loss",
+    "Bayesian inference",
+    "Expectation-maximization",
+    "Misspecification",
+    "Covariate shift"
+  ],
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "sources": [
+    "https://www.semanticscholar.org/paper/cb481ac56588ca5c1fc29218d0a104ec3c812f61",
+    "https://projecteuclid.org/journals/bernoulli/volume-10/issue-4/Maximum-likelihood-estimation-of-pure-GARCH-and-ARMA-GARCH-processes/10.3150/bj/1093265632.full",
+    "http://ieeexplore.ieee.org/document/4034151/"
+  ],
+  "tags": [
+    "learning-theory",
+    "statistics",
+    "probabilistic-modeling",
+    "parameter-estimation",
+    "mle"
+  ],
+  "aliases": [
+    "mle",
+    "maximum-likelihood",
+    "likelihood-maximization",
+    "fisher-scoring"
+  ],
+  "keywords": [
+    "likelihood",
+    "probability",
+    "parameter-estimation",
+    "statistical-consistency",
+    "log-likelihood",
+    "fisher-information",
+    "asymptotic-normality",
+    "misspecification"
+  ],
+  "search_tokens": [
+    "maximum likelihood estimation",
+    "mle",
+    "likelihood function",
+    "log likelihood",
+    "parameter estimation",
+    "fisher information",
+    "statistical inference",
+    "probabilistic model"
+  ],
+  "domain": "learning_theory",
+  "difficulty": "intermediate",
+  "engineering_area": "probabilistic_modeling",
+  "estimated_reading_time": 20,
+  "prerequisites": [],
+  "recommended_next": [
+    "bayesian-inference",
+    "expectation-maximization",
+    "cross-entropy-loss",
+    "information-theory"
+  ],
+  "last_verified": "2026-07-15",
+  "review_frequency": "annually",
+  "verified_against": "1.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "referenced_by_patterns": [
+    "training-loop",
+    "gradient-accumulation",
+    "kv-cache",
+    "mixed-precision",
+    "checkpointing",
+    "early-stopping",
+    "gradient-checkpointing",
+    "flash-attention",
+    "prompt-caching",
+    "streaming-inference",
+    "batch-inference"
+  ],
+  "referenced_by_models": [
+    "llama",
+    "mistral",
+    "bert"
+  ],
+  "referenced_by_workflows": [
+    "build-rag-system",
+    "fine-tune-an-llm-with-lora-qlora"
+  ]
+}

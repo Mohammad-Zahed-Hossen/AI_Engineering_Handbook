@@ -4,7 +4,8 @@ import { z } from 'zod';
 import {
   PackageSchema,
   ModelSchema,
-  RegistryModelSchema,
+  RegistryFamilySchema,
+  RegistryVariantSchema,
   WorkflowSchema,
   CheatsheetSchema,
   PatternSchema,
@@ -12,7 +13,6 @@ import {
   DecisionGuideSchema,
   PrincipleSchema,
 } from '../lib/schemas/index.js';
-import { REGISTRY_FILE_TO_TASK } from '../lib/config/registry';
 import { WORKFLOW_CATEGORIES } from '../lib/config/workflows';
 import type { VisualizationEquivalent } from '../types/package';
 
@@ -150,7 +150,19 @@ for (const file of files) {
   let schema: z.ZodTypeAny | null = null;
   if (normalizedPath.startsWith('data/packages/')) schema = PackageSchema;
   else if (normalizedPath.startsWith('data/models/')) schema = ModelSchema;
-  else if (normalizedPath.startsWith('data/registry/')) schema = z.array(RegistryModelSchema);
+  else if (normalizedPath.startsWith('data/registry/families/')) {
+    // New family/variant structure
+    if (file.endsWith('_index.json')) {
+      schema = RegistryFamilySchema;
+    } else {
+      schema = RegistryVariantSchema;
+    }
+  }
+  else if (normalizedPath.startsWith('data/registry/')) {
+    // Legacy registry files are no longer supported - skip validation
+    reportWarning(`Legacy registry file detected at '${normalizedPath}' — no longer supported`);
+    continue;
+  }
   else if (normalizedPath.startsWith('data/workflows/')) schema = WorkflowSchema;
   else if (normalizedPath.startsWith('data/cheatsheets/')) schema = CheatsheetSchema;
   else if (normalizedPath.startsWith('data/patterns/')) schema = PatternSchema;
@@ -621,48 +633,6 @@ for (const file of files) {
       collectStringRelationships('referenced_by_models', 'model', 'referenced_by_models');
       collectStringRelationships('referenced_by_workflows', 'workflow', 'referenced_by_workflows');
     }
-  }
-
-  // ── Registry Files ───────────────────────────────────────
-  else if (isRegistry && Array.isArray(data)) {
-    const fileName = path.basename(file);
-    const expectedTask = REGISTRY_FILE_TO_TASK[fileName];
-
-    if (!expectedTask) {
-      reportWarning(`Unknown registry file '${normalizedPath}' — no task mapping for '${fileName}'`);
-    }
-
-    if (data.length === 0) {
-      reportError(`Registry file '${normalizedPath}' is empty`);
-    }
-
-    (data as Array<Record<string, unknown>>).forEach((item, idx) => {
-      const itemId = item.id as string | undefined;
-      const itemTask = item.task as string | undefined;
-
-      // ── STEP 3: Slug Format ─────────────────────────────
-      if (itemId && !SLUG_REGEX.test(itemId)) {
-        reportError(`Invalid slug '${itemId}' in '${normalizedPath}[${idx}]'. Must match /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/`);
-      }
-
-      // ── STEP 4: Task matches Filename ─────────────────────
-      if (expectedTask && itemTask !== expectedTask) {
-        reportError(`Task mismatch in '${normalizedPath}[${idx}]': expected '${expectedTask}', got '${itemTask}'`);
-      }
-
-      // ── STEP 5: Placeholder Detection ─────────────────────
-      // Registry entries are lightweight navigation index - no placeholder checks needed
-
-      // ── STEP 7: Duplicate Detection ───────────────────────
-      if (itemId) {
-        const idKey = `registry:${itemId}`;
-        if (idRegistry.has(idKey)) {
-          reportError(`Duplicate registry ID '${itemId}' in '${normalizedPath}[${idx}]' — already in '${idRegistry.get(idKey)}'`);
-        } else {
-          idRegistry.set(idKey, normalizedPath);
-        }
-      }
-    });
   }
 }
 

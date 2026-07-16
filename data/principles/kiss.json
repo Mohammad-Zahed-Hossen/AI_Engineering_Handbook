@@ -1,0 +1,215 @@
+{
+  "id": "kiss",
+  "title": "KISS",
+  "slug": "kiss",
+  "description": "KISS is the principle that system design should prefer the simplest solution that fully satisfies the engineering requirement.",
+  "name": "KISS",
+  "category": "systems",
+  "statement": "Prefer the simplest design that meets the requirement, and add complexity only when it removes a demonstrated engineering constraint rather than a hypothetical one.",
+  "intuition": "Every extra layer increases the number of places where the system can disagree with itself. In AI pipelines, that usually means more state, more configuration, more coupling, and more paths to debug under pressure. KISS is valuable because simplicity preserves local reasoning: engineers can predict behavior, isolate faults, and make changes without first reconstructing an elaborate mental model.",
+  "implications": [],
+  "engineering_consequences": [
+    {
+      "title": "Lower cognitive load",
+      "explanation": "Simpler systems are easier to understand, which shortens onboarding and reduces the chance that engineers misread the execution path."
+    },
+    {
+      "title": "Faster debugging",
+      "explanation": "Fewer moving parts make it easier to locate the layer that introduced the failure, especially in training and deployment workflows."
+    },
+    {
+      "title": "Reduced accidental complexity",
+      "explanation": "Avoiding unnecessary abstractions limits the amount of code that exists only to manage other code."
+    },
+    {
+      "title": "Safer change management",
+      "explanation": "Small, direct designs have fewer interaction effects, so a change is less likely to trigger regressions in distant components."
+    },
+    {
+      "title": "Improved operational clarity",
+      "explanation": "Simpler pipelines expose fewer hidden dependencies, which makes ownership and incident response more tractable."
+    }
+  ],
+  "common_violations": [
+    {
+      "violation": "Custom frameworks are built to wrap a single model or pipeline stage.",
+      "symptoms": "New contributors need architecture diagrams before they can make routine changes, and the wrapper becomes a second system to debug.",
+      "why_it_happens": "Teams overestimate future reuse and optimize for hypothetical generality instead of current requirements."
+    },
+    {
+      "violation": "Multi-stage orchestration is introduced before the workflow justifies it.",
+      "symptoms": "Debugging requires tracing state across several coordinators, and failures appear far from the underlying cause.",
+      "why_it_happens": "Complexity is added to feel “production ready” rather than to solve a concrete scaling or reliability constraint."
+    },
+    {
+      "violation": "Model and data logic are split into many micro-abstractions with unclear ownership.",
+      "symptoms": "Changes require editing many small files, and engineers cannot tell which abstraction is the authoritative one.",
+      "why_it_happens": "Abstraction is used as decoration rather than as a response to real duplication or separation of concerns."
+    },
+    {
+      "violation": "Configuration systems become more complex than the behavior they control.",
+      "symptoms": "Small changes require touching multiple config layers, and default values are difficult to reason about.",
+      "why_it_happens": "The team treats flexibility as a goal in itself instead of a cost that must be justified."
+    }
+  ],
+  "appears_in": [
+    {
+      "domain": "Training pipelines",
+      "examples": [
+        "direct training scripts that avoid unnecessary orchestrators until distributed coordination is actually required"
+      ]
+    },
+    {
+      "domain": "Inference services",
+      "examples": [
+        "simple request-to-response paths with limited middleware and explicit error boundaries"
+      ]
+    },
+    {
+      "domain": "Data workflows",
+      "examples": [
+        "straightforward transformation steps rather than deeply nested ETL frameworks for small or stable pipelines"
+      ]
+    },
+    {
+      "domain": "MLOps systems",
+      "examples": [
+        "deployment and release flows that use the minimum number of layers needed to achieve reliability and rollback safety"
+      ]
+    }
+  ],
+  "mental_model": "```mermaid\nflowchart LR\n  A[Requirement] --> B{Can a simpler design satisfy it?}\n  B -- yes --> C[Use simplest workable design]\n  B -- no --> D[Add only necessary complexity]\n  C --> E[Lower cognitive load]\n  D --> F[Justified complexity]\n  F --> E\n```",
+  "decision_checklist": [
+    "Does the proposed complexity solve a real current constraint?",
+    "Can the same outcome be achieved with fewer moving parts?",
+    "Will this design still be understandable under incident pressure?",
+    "Is the complexity helping the system or compensating for weak requirements?",
+    "Would the simpler version be easier to test, deploy, and recover?",
+    "Is the added abstraction likely to survive long enough to justify its cost?"
+  ],
+  "misconceptions": [
+    {
+      "myth": "KISS means simplistic design.",
+      "reality": "It means minimal sufficient design, not careless reduction."
+    },
+    {
+      "myth": "Simpler systems are always less scalable.",
+      "reality": "Simpler systems often scale better because they are easier to reason about and optimize incrementally."
+    },
+    {
+      "myth": "KISS conflicts with extensibility.",
+      "reality": "It conflicts only with premature extensibility; disciplined simplicity can still leave room for evolution."
+    },
+    {
+      "myth": "Complexity is free if it is hidden behind abstractions.",
+      "reality": "Hidden complexity still exists and usually moves the burden from execution to comprehension and debugging."
+    }
+  ],
+  "engineering_heuristic": "If the design needs a diagram before it can be explained, it is probably already too complex.",
+  "historical_origin": "The principle evolved through software engineering practice and is widely associated with pragmatic software design guidance and architectural simplicity rather than a single formal theoretical origin.",
+  "tradeoffs": {
+    "benefits": [
+      "Easier comprehension and faster onboarding.",
+      "Lower defect rates from interaction bugs.",
+      "Faster incident triage and safer changes.",
+      "Less accidental complexity in AI pipelines."
+    ],
+    "costs": [
+      "Fewer built-in extension points.",
+      "Some future adaptations may require refactoring rather than preemptive abstraction.",
+      "Simpler designs can look under-featured to stakeholders expecting general-purpose platforms.",
+      "Over-commitment to simplicity can delay needed specialization in mature systems."
+    ]
+  },
+  "limitations": [
+    "It can be counterproductive when a problem genuinely requires coordination across many subsystems.",
+    "It does not justify ignoring reliability, security, or compliance requirements that add unavoidable complexity.",
+    "It is less useful when the system is still exploratory and the right shape of the architecture is not yet known.",
+    "It should not be used to reject necessary abstraction after duplication or coupling has become demonstrably harmful."
+  ],
+  "related_concepts": [
+    "DRY",
+    "Separation of concerns",
+    "Modularity",
+    "Occam’s razor",
+    "Minimalism",
+    "Essential complexity",
+    "Accidental complexity",
+    "YAGNI",
+    "Maintainability",
+    "Cognitive load"
+  ],
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "sources": [
+    "https://www.semanticscholar.org/paper/0ebbd4140442f98226a990f544d3d940579fad72",
+    "https://teses.usp.br/teses/disponiveis/45/45134/tde-20230727-113255/",
+    "https://www.semanticscholar.org/paper/66bfae0f564128acd5c33f862d1222334203e6ec"
+  ],
+  "tags": [
+    "architecture",
+    "systems",
+    "design-principles",
+    "kiss"
+  ],
+  "aliases": [
+    "keep-it-simple",
+    "minimal-sufficient-design",
+    "accidental-complexity-reduction"
+  ],
+  "keywords": [
+    "kiss",
+    "simplicity",
+    "complexity",
+    "abstraction"
+  ],
+  "search_tokens": [
+    "kiss",
+    "simplicity",
+    "complexity",
+    "keep it simple",
+    "accidental complexity",
+    "minimal sufficient design"
+  ],
+  "domain": "systems",
+  "difficulty": "intermediate",
+  "engineering_area": "architecture",
+  "estimated_reading_time": 15,
+  "prerequisites": [],
+  "recommended_next": [
+    "modularity-and-composability",
+    "separation-of-concerns"
+  ],
+  "last_verified": "2026-07-15",
+  "review_frequency": "annually",
+  "verified_against": "1.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "referenced_by_patterns": [
+    "training-loop",
+    "gradient-accumulation",
+    "kv-cache",
+    "mixed-precision",
+    "checkpointing",
+    "early-stopping",
+    "gradient-checkpointing",
+    "flash-attention",
+    "prompt-caching",
+    "streaming-inference",
+    "batch-inference"
+  ],
+  "referenced_by_models": [
+    "llama",
+    "mistral",
+    "bert"
+  ],
+  "referenced_by_workflows": [
+    "build-rag-system",
+    "fine-tune-an-llm-with-lora-qlora"
+  ]
+}

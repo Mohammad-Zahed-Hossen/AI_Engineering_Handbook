@@ -28,6 +28,13 @@ export type SearchResult = {
   tags?: string[];
   // Phase 7 additions - search_tokens field for new content types
   search_tokens?: string[];
+  // Phase 5 additions - structured fields for faceted search
+  family?: string;
+  parameter_count?: number;
+  context_window?: number;
+  min_gpu_memory?: number;
+  production_ready?: boolean;
+  commercial_use?: boolean;
 };
 
 export function createFuse(data: SearchResult[]) {

@@ -26,38 +26,12 @@ function applyItemLimit<T extends { id: string }>(
   return { visible, truncated: true, total: items.length };
 }
 
-function applyItemLimitForStrings(
-  items: string[],
-  activeId: string | null,
-  max: number
-): { visible: string[]; truncated: boolean; total: number } {
-  if (items.length <= max) {
-    return { visible: items, truncated: false, total: items.length };
-  }
-  const activeIndex = items.findIndex(item => item === activeId);
-  let visible = items.slice(0, max);
-  if (activeIndex >= max) {
-    visible = [...items.slice(0, max - 1), items[activeIndex]];
-  }
-  return { visible, truncated: true, total: items.length };
-}
-
-const REGISTRY_TASK_LABELS: Record<string, string> = {
-  embedding: 'Embeddings',
-  reranker: 'Rerankers',
-  vision: 'Vision',
-  speech: 'Speech',
-  llm: 'LLMs',
-  multimodal: 'Multimodal',
-  ocr: 'OCR',
-};
-
 interface MobileSidebarTriggerProps {
   packages: NavItem[];
   mlModels: NavItem[];
   dlModels: NavItem[];
   llmModels: NavItem[];
-  registryTasks: string[];
+  registry: NavItem[];
   workflows: NavItem[];
   cheatsheets: NavItem[];
   patterns: NavItem[];
@@ -71,7 +45,7 @@ export default function MobileSidebarTrigger({
   mlModels,
   dlModels,
   llmModels,
-  registryTasks,
+  registry,
   workflows,
   cheatsheets,
   patterns,
@@ -367,29 +341,29 @@ export default function MobileSidebarTrigger({
             </ul>
           )}
 
-          {/* Model Registries */}
-          {renderSectionHeader('Registries', registryTasks.length, 'registry', '/registry')}
+          {/* Model Registry */}
+          {renderSectionHeader('Model Registry', registry.length, 'registry', '/registry')}
           {expanded === 'registry' && (
             <ul className="space-y-0.5">
               {(() => {
-                const { visible, truncated, total } = applyItemLimitForStrings(registryTasks, getActiveId(pathname), MAX_VISIBLE_ITEMS);
+                const { visible, truncated, total } = applyItemLimit(registry, getActiveId(pathname), MAX_VISIBLE_ITEMS);
                 return (
                   <>
-                    {visible.map((task) => (
-                      <li key={task}>
+                    {visible.map((r) => (
+                      <li key={r.id}>
                         <Link
-                          href={`/registry/${task}`}
-                          className={linkClass(`/registry/${task}`)}
+                          href={`/registry/families/${r.id}`}
+                          className={linkClass(`/registry/families/${r.id}`)}
                           onClick={() => setOpen(false)}
                         >
-                          {REGISTRY_TASK_LABELS[task] ?? task}
+                          {r.name}
                         </Link>
                       </li>
                     ))}
                     {truncated && (
                       <li>
                         <Link
-                          href="/registry/embedding"
+                          href="/registry"
                           className="block py-1.5 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
                           onClick={() => setOpen(false)}
                         >

@@ -1,0 +1,234 @@
+{
+  "id": "deepseek",
+  "name": "DeepSeek",
+  "description": "The DeepSeek R1/V3 family are production-oriented, open-weight Mixture-of-Experts (MoE) LLMs engineered for high reasoning throughput and cost-efficient scaling.",
+  "provider": "DeepSeek",
+  "variants": ["r1-70b"],
+  "architecture": {
+    "architecture_type": "Fine-grained Mixture-of-Experts (MoE) transformer variant (DeepSeekMoE)",
+    "transformer_type": "Decoder-only",
+    "attention_mechanism": "Multi-head Latent Attention (MLA) / Multi-head Attention",
+    "tokenizer": "Byte-level BPE",
+    "positional_encoding": "RoPE",
+    "mixture_of_experts": true,
+    "kv_cache": true,
+    "flash_attention": true,
+    "grouped_query_attention": false
+  },
+  "capabilities": {
+    "instruction_tuned": true,
+    "reasoning": true,
+    "vision": false,
+    "multilingual": true,
+    "tool_calling": true,
+    "function_calling": true,
+    "thinking_model": true,
+    "context_window": 128000
+  },
+  "formats": {
+    "safetensors": true,
+    "gguf": true,
+    "awq": true,
+    "gptq": true,
+    "exl2": true,
+    "mlx": true,
+    "onnx": true,
+    "tensorrt": true
+  },
+  "ecosystem": {
+    "transformers": {
+      "supported": true,
+      "notes": "Official Hugging Face model cards and repos host models and Transformers integration notes."
+    },
+    "vllm": {
+      "supported": true,
+      "notes": "Community and vLLM maintainers added compatibility notes for MoE and V3 family."
+    },
+    "ollama": {
+      "supported": true,
+      "notes": "Community runtimes and Ollama model adapters support DeepSeek distills."
+    },
+    "llama_cpp": {
+      "supported": true,
+      "notes": "Distilled smaller checkpoints converted for llama.cpp (GGUF/GPTQ) are present in community repositories."
+    },
+    "mlx": {
+      "supported": true,
+      "notes": "Community-backed tooling exists; not primary distribution route."
+    },
+    "litellm": {
+      "supported": true,
+      "notes": "Experimental integrations reported by community for MoE-compatible inference."
+    },
+    "openrouter": {
+      "supported": true,
+      "notes": "Router integrations show support for DeepSeek distills via hosted deployments."
+    },
+    "lm_studio": {
+      "supported": true,
+      "notes": "Community model importers in LM Studio accept DeepSeek distills and V3 checkpoints."
+    },
+    "tensorrt_llm": {
+      "supported": true,
+      "notes": "TensorRT-LLM patterns for large MoE models documented experimentally."
+    }
+  },
+  "references": [
+    {
+      "title": "DeepSeek-V3 Technical Report",
+      "url": "https://arxiv.org/pdf/2412.19437.pdf",
+      "category": "official",
+      "official": true,
+      "priority": 1,
+      "description": "Primary architecture and training specification for V3 (MoE design, MLA, token counts)."
+    },
+    {
+      "title": "DeepSeek-R1 Technical Report",
+      "url": "https://arxiv.org/pdf/2501.12948.pdf",
+      "category": "papers",
+      "official": true,
+      "priority": 1,
+      "description": "Primary source for R1 training regime (RL-first, R1-Zero, R1) and distillation strategy."
+    },
+    {
+      "title": "Hugging Face model hub (DeepSeek-R1)",
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-R1",
+      "category": "documentation",
+      "official": true,
+      "priority": 2,
+      "description": "Official model cards and checkpoint downloads for R1 family and distills."
+    },
+    {
+      "title": "Community technical summary (Graphcore Research mirror)",
+      "url": "https://graphcore-research.github.io/deepseek/",
+      "category": "repositories",
+      "official": true,
+      "priority": 2,
+      "description": "Engineering-focused summary of training efficiency, implementation notes."
+    },
+    {
+      "title": "D-Central model profile",
+      "url": "https://d-central.tech/ai/model/deepseek-r1/",
+      "category": "documentation",
+      "official": true,
+      "priority": 2,
+      "description": "Consolidated variant list and community maintenance notes."
+    }
+  ],
+  "engineering_notes": {
+    "inference_notes": [
+      "MoE activation sparsity reduces per-token FLOPs but requires expert routing and reliable load-balancing; DeepSeek implements loss-free load balancing and MLA to compress KV state, which materially reduces KV cache overhead on inference."
+    ],
+    "deployment_notes": [
+      "For V3, use MoE-aware sharding and high-throughput interconnects (NVLink/NCCL) along with runtimes such as vLLM or vendor-optimized TensorRT pipelines; distills are the recommended path for simpler deployments."
+    ],
+    "optimization_notes": [
+      "Mixed precision (FP8/FP16) micro-scaling and Multi-Token Prediction (MTP) speculative decoding were used in training to improve throughput; evaluate FP8/FP16 inference carefully against reasoning quality regressions."
+    ],
+    "compatibility_notes": [
+      "Distills convert well to GGUF/GPTQ for llama.cpp and other lightweight runtimes; full V3 requires MoE-supported runtimes and may need custom integration work for MLA and expert routing."
+    ],
+    "common_pitfalls": [
+      "Pitfall: Treating V3 like a dense model — mitigation: provision MoE-aware runtime, test load balancing and routing across shards before production rollout.",
+      "Pitfall: Quantizing R1 without RL-quality validation — mitigation: run reasoning benchmarks post-quantization to validate chain-of-thought and correctness."
+    ]
+  },
+  "license_info": {
+    "name": "MIT / Open-source licenses applied per checkpoint",
+    "commercial_use": true,
+    "modification": true,
+    "redistribution": true,
+    "attribution_required": true,
+    "notes": "Always validate license terms in the official model card before redistribution or commercial use."
+  },
+  "status": {
+    "release_date": "2024-12-26",
+    "last_verified": "2026-07-15",
+    "maintenance_status": "production"
+  },
+  "engineering_snapshot": {
+    "best_for": [
+      "High-quality reasoning and chain-of-thought agent systems where cost-per-query must be reduced via MoE activations.",
+      "Research and open-weight deployments that require reproducible RL-based reasoning models.",
+      "Self-hosted inference with MoE-aware runtimes (vLLM) to balance throughput and cost."
+    ],
+    "avoid_for": [
+      "Simple, low-complexity deployments where MoE orchestration overhead outweighs activation savings. Use dense distills instead.",
+      "Strict latency SLOs on single-GPU commodity hardware for large V3 checkpoints without aggressive quantization or sharding strategies.",
+      "Environments that cannot accept open-weight licenses or require vendor-locked support."
+    ],
+    "deployment_complexity": "high",
+    "production_ready": true,
+    "recommended_use_case": "Use R1 distills (14B–70B) for most production reasoning workloads; reserve full V3 for workloads that require maximal open-weight capacity."
+  },
+  "related_models": [
+    {
+      "id": "deepseek-v3",
+      "relationship": "parent"
+    },
+    {
+      "id": "deepseek-r1",
+      "relationship": "variant"
+    },
+    {
+      "id": "llama-3",
+      "relationship": "alternative"
+    }
+  ],
+  "timeline": [
+    {
+      "version": "DeepSeek-V3",
+      "release_date": "2024-12-26",
+      "notes": "V3 technical report and checkpoint publication; MoE/MLA architecture described."
+    },
+    {
+      "version": "DeepSeek-R1",
+      "release_date": "2025-01-22",
+      "notes": "R1 family introduced with RL-first training and R1-Zero experiments."
+    },
+    {
+      "version": "Distills",
+      "release_date": "2025-01-22",
+      "notes": "Official distills (1.5B–70B) and community quantized conversions."
+    }
+  ],
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "sources": [
+    "https://arxiv.org/pdf/2501.12948.pdf",
+    "https://arxiv.org/abs/2412.19437",
+    "https://huggingface.co/deepseek-ai/DeepSeek-R1"
+  ],
+  "tags": [
+    "deepseek",
+    "r1",
+    "v3",
+    "moe",
+    "inference",
+    "reasoning",
+    "distill",
+    "quantization"
+  ],
+  "aliases": [
+    "DeepSeek R1",
+    "DeepSeek V3",
+    "DeepSeek-R1 family"
+  ],
+  "keywords": [
+    "DeepSeek",
+    "MoE",
+    "MLA",
+    "R1-Zero",
+    "distill",
+    "GPTQ",
+    "AWQ",
+    "vLLM",
+    "HuggingFace"
+  ],
+  "search_tokens": [
+    "deepseek v3",
+    "deepseek r1",
+    "deepseek distill 70b",
+    "deepseek v3 technical report"
+  ]
+}

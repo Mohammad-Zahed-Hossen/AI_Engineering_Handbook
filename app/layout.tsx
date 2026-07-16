@@ -13,7 +13,7 @@ import { buildSearchIndex } from "@/lib/search";
 import {
   getPackageNavItems,
   getModelNavItems,
-  getRegistryTasks,
+  getRegistryNavItems,
   getWorkflowNavItems,
   getCheatsheetNavItems,
   getPatternNavItems,
@@ -48,7 +48,7 @@ export default function RootLayout({
   const mlModels = getModelNavItems("ml");
   const dlModels = getModelNavItems("dl");
   const llmModels = getModelNavItems("llm");
-  const registryTasks = getRegistryTasks();
+  const registry = getRegistryNavItems();
   const workflows = getWorkflowNavItems();
   const cheatsheets = getCheatsheetNavItems();
   const patterns = getPatternNavItems();
@@ -91,7 +91,7 @@ export default function RootLayout({
             mlModels={mlModels}
             dlModels={dlModels}
             llmModels={llmModels}
-            registryTasks={registryTasks}
+            registry={registry}
             workflows={workflows}
             cheatsheets={cheatsheets}
             patterns={patterns}
@@ -107,7 +107,7 @@ export default function RootLayout({
             mlModels={mlModels}
             dlModels={dlModels}
             llmModels={llmModels}
-            registryTasks={registryTasks}
+            registry={registry}
             workflows={workflows}
             cheatsheets={cheatsheets}
             patterns={patterns}

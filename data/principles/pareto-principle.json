@@ -1,0 +1,216 @@
+{
+  "id": "pareto-principle",
+  "title": "Pareto Principle",
+  "slug": "pareto-principle",
+  "description": "The Pareto Principle is a prioritization lens for systems with uneven outcome distribution: a small number of factors usually drive a disproportionate share of results.",
+  "name": "Pareto Principle",
+  "category": "systems",
+  "statement": "Focus engineering effort on the small set of causes, components, or decisions that account for most of the measurable outcome, and treat the remainder as secondary unless evidence shows they are becoming dominant.",
+  "intuition": "In real systems, not all inputs are equally expensive to ignore. A handful of data paths, modules, prompts, error classes, or hyperparameters often explain most of the performance loss or incident volume, while the rest contribute marginally. The principle matters because it prevents teams from “polishing the floor” while the ceiling leaks; the goal is not equal attention, but maximal effect per unit of engineering effort.",
+  "implications": [],
+  "engineering_consequences": [
+    {
+      "title": "Better prioritization under constraint",
+      "explanation": "Teams can direct scarce engineering time toward the few changes most likely to improve quality, reliability, or latency."
+    },
+    {
+      "title": "More efficient debugging",
+      "explanation": "Concentrating analysis on the dominant defect sources shortens incident resolution and improves root-cause discovery."
+    },
+    {
+      "title": "Lower optimization waste",
+      "explanation": "The principle discourages over-investment in low-impact micro-optimizations that consume time without materially changing outcomes."
+    },
+    {
+      "title": "Sharper risk control",
+      "explanation": "Monitoring and remediation can focus on the error classes or subsystems that generate most of the operational burden."
+    },
+    {
+      "title": "Improved roadmap discipline",
+      "explanation": "Product and platform work becomes more evidence-driven when high-impact leverage points are identified explicitly rather than assumed evenly distributed."
+    }
+  ],
+  "common_violations": [
+    {
+      "violation": "Every feature or module gets equal optimization effort.",
+      "symptoms": "Long work cycles produce limited improvement, and the most important bottlenecks remain unresolved.",
+      "why_it_happens": "Teams default to fairness in attention instead of evidence-based prioritization."
+    },
+    {
+      "violation": "Monitoring is spread uniformly across all error categories.",
+      "symptoms": "Dashboards are noisy, alert fatigue increases, and the recurring failure modes still dominate incidents.",
+      "why_it_happens": "Instrumentation is added broadly instead of targeted at the highest-yield failure clusters."
+    },
+    {
+      "violation": "Defect analysis treats all files or components as equally likely sources of risk.",
+      "symptoms": "Code review and testing effort are diluted, while a small number of fault-prone areas continue to generate most problems.",
+      "why_it_happens": "The organization lacks a data-backed notion of hotspot concentration."
+    },
+    {
+      "violation": "Model improvements are pursued without measuring contribution concentration.",
+      "symptoms": "Many experiments show tiny gains, but a few high-leverage changes could have produced most of the available improvement.",
+      "why_it_happens": "Teams optimize by intuition rather than by ranking contributors to outcome variance."
+    }
+  ],
+  "appears_in": [
+    {
+      "domain": "Model evaluation",
+      "examples": [
+        "identifying a few prompts, labels, or data slices that explain most failures in classification or generation quality"
+      ]
+    },
+    {
+      "domain": "Data quality management",
+      "examples": [
+        "a small set of pipelines or sources contributing most invalid records, schema breaks, or label noise"
+      ]
+    },
+    {
+      "domain": "Incident response",
+      "examples": [
+        "a few recurring error classes or services that drive the majority of page volume and downtime"
+      ]
+    },
+    {
+      "domain": "Performance engineering",
+      "examples": [
+        "the dominant latency contributors in inference paths or the highest-cost stages in training workflows"
+      ]
+    }
+  ],
+  "mental_model": "```mermaid\nflowchart LR\n  A[All inputs / causes] --> B{Measure impact}\n  B --> C[Top contributors]\n  B --> D[Long tail]\n  C --> E[Primary engineering effort]\n  D --> F[Secondary effort]\n  E --> G[Most outcome change]\n```",
+  "decision_checklist": [
+    "Have you measured which few factors dominate the outcome?",
+    "Is the current effort distribution proportional to measured impact?",
+    "Would improving the top contributor change the result more than spreading effort evenly?",
+    "Are you spending time on low-yield optimizations because they are easy to discuss?",
+    "Do the highest-frequency defects or highest-cost bottlenecks have dedicated attention?",
+    "Is the tail still important enough to justify work, or merely visible?"
+  ],
+  "misconceptions": [
+    {
+      "myth": "The rule means exactly 80/20 in every case.",
+      "reality": "The numbers are directional; the important property is disproportionate concentration, not a fixed ratio."
+    },
+    {
+      "myth": "The principle says the tail never matters.",
+      "reality": "The long tail can matter when it aggregates risk, cost, or strategic value, especially in safety or compliance contexts."
+    },
+    {
+      "myth": "Pareto thinking is an excuse to ignore hard problems.",
+      "reality": "It is a method for sequencing work by leverage, not a license to neglect critical low-frequency failures."
+    },
+    {
+      "myth": "High impact can be identified without measurement.",
+      "reality": "The principle becomes useful only when outcome concentration is observed, not assumed."
+    }
+  ],
+  "engineering_heuristic": "Find the few contributors that explain most of the pain, and optimize those before polishing the rest.",
+  "historical_origin": "The principle evolved from Pareto’s observations about uneven wealth distribution and was later generalized in quality management and systems analysis as the “vital few and trivial many.” Its use in software engineering is empirical rather than axiomatic, with defect concentration studies repeatedly showing hotspot behavior in a minority of files or modules.",
+  "tradeoffs": {
+    "benefits": [
+      "Better allocation of scarce engineering effort.",
+      "Faster quality gains from the same budget.",
+      "More focused incident reduction and optimization work.",
+      "Clearer prioritization across product and platform teams."
+    ],
+    "costs": [
+      "Requires measurement discipline and ongoing re-ranking.",
+      "Can obscure important low-frequency risks if used too aggressively.",
+      "May create tension with teams seeking balanced ownership.",
+      "Can be misapplied as a shortcut for avoiding necessary tail work."
+    ]
+  },
+  "limitations": [
+    "It is less useful when risk is intentionally uniform, such as strict compliance or safety constraints.",
+    "It can be misleading in systems where the tail is highly volatile or where few data points make concentration look stronger than it is.",
+    "It should not replace root-cause analysis when a low-frequency issue has catastrophic impact.",
+    "It is weaker in early-stage systems where the dominant contributors are not yet observable."
+  ],
+  "related_concepts": [
+    "Prioritization",
+    "Bottleneck analysis",
+    "Cost-benefit analysis",
+    "Incremental improvement",
+    "Technical debt triage",
+    "Long-tail distribution",
+    "Hotspot analysis",
+    "Resource allocation",
+    "Optimization",
+    "Opportunity cost"
+  ],
+  "created_at": "2026-07-15",
+  "updated_at": "2026-07-15",
+  "sources": [
+    "https://www.frontiersin.org/articles/10.3389/ffgc.2026.1775825/full",
+    "https://linkinghub.elsevier.com/retrieve/pii/S0925231219308975",
+    "https://www.semanticscholar.org/paper/63ad24cacd4fdf3dfee4ae305088b0d083d0c3f3"
+  ],
+  "tags": [
+    "prioritization",
+    "workload-engineering",
+    "operational-leverage",
+    "pareto"
+  ],
+  "aliases": [
+    "80-20-rule",
+    "vital-few-trivial-many",
+    "workload-concentration-analysis",
+    "leverage-optimization"
+  ],
+  "keywords": [
+    "pareto",
+    "prioritization",
+    "leverage",
+    "efficiency"
+  ],
+  "search_tokens": [
+    "pareto principle",
+    "80-20 rule",
+    "prioritization",
+    "operational leverage",
+    "bottleneck",
+    "defect concentration"
+  ],
+  "domain": "systems",
+  "difficulty": "intermediate",
+  "engineering_area": "prioritization",
+  "estimated_reading_time": 15,
+  "prerequisites": [],
+  "recommended_next": [
+    "modularity-and-composability",
+    "separation-of-concerns"
+  ],
+  "last_verified": "2026-07-15",
+  "review_frequency": "annually",
+  "verified_against": "1.0",
+  "compatible_versions": [],
+  "breaking_changes": [],
+  "canonical_status": "canonical",
+  "lifecycle": "stable",
+  "stability": "stable",
+  "confidence": "production_proven",
+  "engineering_maturity": "production_ready",
+  "referenced_by_patterns": [
+    "training-loop",
+    "gradient-accumulation",
+    "kv-cache",
+    "mixed-precision",
+    "checkpointing",
+    "early-stopping",
+    "gradient-checkpointing",
+    "flash-attention",
+    "prompt-caching",
+    "streaming-inference",
+    "batch-inference"
+  ],
+  "referenced_by_models": [
+    "llama",
+    "mistral",
+    "bert"
+  ],
+  "referenced_by_workflows": [
+    "build-rag-system",
+    "fine-tune-an-llm-with-lora-qlora"
+  ]
+}

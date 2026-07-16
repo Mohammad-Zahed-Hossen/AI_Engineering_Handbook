@@ -9,7 +9,7 @@ interface TopBarProps {
   mlModels: NavItem[];
   dlModels: NavItem[];
   llmModels: NavItem[];
-  registryTasks: string[];
+  registry: NavItem[];
   workflows: NavItem[];
   cheatsheets: NavItem[];
   patterns: NavItem[];
@@ -24,7 +24,7 @@ export default function TopBar({
   mlModels,
   dlModels,
   llmModels,
-  registryTasks,
+  registry,
   workflows,
   cheatsheets,
   patterns,
@@ -42,7 +42,7 @@ export default function TopBar({
             mlModels={mlModels}
             dlModels={dlModels}
             llmModels={llmModels}
-            registryTasks={registryTasks}
+            registry={registry}
             workflows={workflows}
             cheatsheets={cheatsheets}
             patterns={patterns}
