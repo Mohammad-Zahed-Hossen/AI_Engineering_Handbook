@@ -4,7 +4,7 @@
 
 * **Overall Score**: 98%
 * **Knowledge Density Score**: 100%
-* **Navigation Score**: 89%
+* **Navigation Score**: 91%
 * **Ownership Score**: 100%
 * **Search Discovery Score**: 100%
 * **Completeness Score**: 100%
@@ -13,9 +13,9 @@
 
 * **Total Files**: 139
 * **Errors (Fail-the-Build)**: 0
-* **Warnings**: 16
+* **Warnings**: 12
 * **Broken Reference Links**: 0
-* **Orphaned Pages**: 15
+* **Orphaned Pages**: 12
 * **Empty/Placeholder Sections**: 0
 
 ## Detailed Issues
@@ -34,7 +34,3 @@
 | **KQV006** | MEDIUM | navigation | `data/decision-guides/rag-vs-fine-tuning.json` | Orphaned page: No other pages link to this decision_guide page. | Add a reference link pointing to this page from: registry_family/llama-3, debug_guide/tokenizer-mismatch, decision_guide/dense-vs-sparse-retrieval. | 5 |
 | **KQV006** | MEDIUM | navigation | `data/models/llm/phi.json` | Orphaned page: No other pages link to this model page. | Add a reference link pointing to this page from: model/deepseek, model/gemma, model/gpt. | 5 |
 | **KQV006** | MEDIUM | navigation | `data/models/llm/t5.json` | Orphaned page: No other pages link to this model page. | Add a reference link pointing to this page from: model/deepseek, model/gemma, model/gpt. | 5 |
-| **KQV006** | MEDIUM | navigation | `data/workflows/image-classification-pipeline.json` | Orphaned page: No other pages link to this workflow page. | Add a reference link pointing to this page from: decision_guide/cnn-vs-vision-transformer, model/vit, workflow/object-detection-pipeline. | 5 |
-| **KQV006** | MEDIUM | navigation | `data/workflows/object-detection-pipeline.json` | Orphaned page: No other pages link to this workflow page. | Add a reference link pointing to this page from: decision_guide/cnn-vs-vision-transformer, workflow/image-classification-pipeline, decision_guide/pytorch-vs-tensorflow. | 5 |
-| **KQV006** | MEDIUM | navigation | `data/workflows/prompt-evaluation-regression-testing.json` | Orphaned page: No other pages link to this workflow page. | Add a reference link pointing to this page from: workflow/rag-evaluation-harness, workflow/model-selection-baseline-benchmarking. | 5 |
-| **KQV002** | LOW | navigation | `data/workflows/object-detection-pipeline.json` | Zero outgoing links: this page has no related content or navigation links. | Add relevant reference entries inside `related_content` list. | 3 |
