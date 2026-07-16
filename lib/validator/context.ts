@@ -366,6 +366,24 @@ export async function buildValidationContext(): Promise<{
                 sourceType: node.type,
                 targetId: r.id,
                 targetType: 'model', // registry references model pages
+                relationshipType: (r.relationship as string) || (r.relationship_type as string) || 'related_to'
+              });
+            }
+          }
+        }
+      }
+
+      const relatedResources = obj.related_resources;
+      if (Array.isArray(relatedResources)) {
+        for (const rel of relatedResources) {
+          if (rel && typeof rel === 'object' && 'resource_slug' in rel && 'resource_type' in rel) {
+            const r = rel as Record<string, unknown>;
+            if (typeof r.resource_slug === 'string' && typeof r.resource_type === 'string') {
+              graph.addEdge({
+                sourceId: node.id,
+                sourceType: node.type,
+                targetId: r.resource_slug,
+                targetType: mapConfigRefType(r.resource_type),
                 relationshipType: (r.relationship as string) || 'related_to'
               });
             }

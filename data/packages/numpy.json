@@ -33,6 +33,21 @@
       "id": "numpy",
       "type": "cheatsheet",
       "relationship_type": "references"
+    },
+    {
+      "id": "feature-engineering-pipeline",
+      "type": "workflow",
+      "relationship_type": "used_by"
+    },
+    {
+      "id": "linear-regression",
+      "type": "model",
+      "relationship_type": "implements"
+    },
+    {
+      "id": "logistic-regression",
+      "type": "model",
+      "relationship_type": "implements"
     }
   ],
   "tags": [],
@@ -1892,9 +1907,9 @@
       "example": "import numpy as np\n\na = np.array([1, 2, 3])\nnp.save(\"array.npy\", a)\nb = np.load(\"array.npy\")\nprint(b)",
       "use_when": "1) Persisting a single ndarray. 2) Caching intermediate numeric results. 3) Sharing arrays between Python runs.",
       "avoid_when": "You need multiple named arrays in one file; use savez.",
-      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: None\nExpected Output: A binary .npy or .npz file containing the serialized array state written to disk.\nPurpose: I need to write one array to a file for later loading.\nCommon Mistakes: Produces NumPy\u2019s binary npy format; allow_pickle has security implications; Best for NumPy arrays, not arbitrary objects; Load requires compatible dtype handling; Keep versioned file formats in mind for long-term storage\nRelated APIs: array, asarray",
+      "decision_notes": "Category: Array Creation\nModule: `numpy`\nReturn Value: None\nExpected Output: A binary .npy or .npz file containing the serialized array state written to disk.\nPurpose: I need to write one array to a file for later loading.\nCommon Mistakes: Produces NumPy’s binary npy format; allow_pickle has security implications; Best for NumPy arrays, not arbitrary objects; Load requires compatible dtype handling; Keep versioned file formats in mind for long-term storage\nRelated APIs: array, asarray",
       "gotchas": [
-        "Produces NumPy\u2019s binary .npy format.",
+        "Produces NumPy’s binary .npy format.",
         "allow_pickle has security implications.",
         "Best for NumPy arrays, not arbitrary objects.",
         "Load requires compatible dtype handling.",
@@ -1969,11 +1984,11 @@
       "example": "import numpy as np\n\nx = np.arange(10)\nnp.savez_compressed(\"bundle_compressed.npz\", x=x)\ndata = np.load(\"bundle_compressed.npz\")\nprint(data[\"x\"])",
       "use_when": "1) Reducing artifact size. 2) Archiving experiment outputs. 3) Storing large but compressible arrays.",
       "avoid_when": "You need maximum write throughput and can afford larger files; use savez.",
-      "decision_notes": "Category: File I/O\nModule: `numpy`\nReturn Value: None\nExpected Output: A binary .npy or .npz file containing the serialized array state written to disk.\nPurpose: I want multiple arrays saved more compactly.\nCommon Mistakes: Compression costs CPU time; Best for sparse-like or repetitive data; Still loads through NumPy\u2019s archive reader; Not ideal for performance-critical logging; Compression tradeoff depends on data entropy\nRelated APIs: array, asarray",
+      "decision_notes": "Category: File I/O\nModule: `numpy`\nReturn Value: None\nExpected Output: A binary .npy or .npz file containing the serialized array state written to disk.\nPurpose: I want multiple arrays saved more compactly.\nCommon Mistakes: Compression costs CPU time; Best for sparse-like or repetitive data; Still loads through NumPy’s archive reader; Not ideal for performance-critical logging; Compression tradeoff depends on data entropy\nRelated APIs: array, asarray",
       "gotchas": [
         "Compression costs CPU time.",
         "Best for sparse-like or repetitive data.",
-        "Still loads through NumPy\u2019s archive reader.",
+        "Still loads through NumPy’s archive reader.",
         "Not ideal for performance-critical logging.",
         "Compression tradeoff depends on data entropy."
       ],

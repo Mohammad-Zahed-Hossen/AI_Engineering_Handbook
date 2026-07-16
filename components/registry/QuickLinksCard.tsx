@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { RegistryBadge } from './RegistryBadge';
-import { Download, ExternalLink, Book, FileText, Package, Wrench, Zap, Shield, Cpu, Link2 } from 'lucide-react';
+import { Download, ExternalLink, Book, Wrench } from 'lucide-react';
 import { Reference, Download as DownloadType, RelatedResource } from '@/types/registry';
 
 interface QuickLinksCardProps {
@@ -11,19 +11,6 @@ interface QuickLinksCardProps {
   references?: Reference[];
   relatedResources?: RelatedResource[];
 }
-
-const categoryIcons: Record<string, React.ReactNode> = {
-  official: <Shield className="h-3 w-3" />,
-  documentation: <Book className="h-3 w-3" />,
-  papers: <FileText className="h-3 w-3" />,
-  benchmarks: <Zap className="h-3 w-3" />,
-  deployment: <Wrench className="h-3 w-3" />,
-  repositories: <Link2 className="h-3 w-3" />,
-  fine_tuning: <Cpu className="h-3 w-3" />,
-  leaderboards: <Zap className="h-3 w-3" />,
-  tutorials: <Book className="h-3 w-3" />,
-  community: <Link2 className="h-3 w-3" />,
-};
 
 const categoryLabels: Record<string, string> = {
   official: 'Official',
@@ -36,15 +23,6 @@ const categoryLabels: Record<string, string> = {
   leaderboards: 'Leaderboard',
   tutorials: 'Tutorial',
   community: 'Community',
-};
-
-const resourceTypeIcons: Record<string, React.ReactNode> = {
-  workflow: <Wrench className="h-3 w-3" />,
-  pattern: <Zap className="h-3 w-3" />,
-  package: <Package className="h-3 w-3" />,
-  decision_guide: <Book className="h-3 w-3" />,
-  debug_guide: <Shield className="h-3 w-3" />,
-  principle: <Book className="h-3 w-3" />,
 };
 
 const resourceTypeLabels: Record<string, string> = {

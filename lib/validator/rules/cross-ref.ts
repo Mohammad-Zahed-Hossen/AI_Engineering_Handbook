@@ -79,8 +79,7 @@ export class CrossRefRule implements ValidationRule {
         'references_principle': { reciprocalType: 'principle_referenced_by_pattern', expectedTargetType: 'principle' },
         'principle_referenced_by_pattern': { reciprocalType: 'references_principle', expectedTargetType: 'pattern' },
         
-        'principle_referenced_by_model': { reciprocalType: 'references_principle', expectedTargetType: 'model' },
-        'principle_referenced_by_workflow': { reciprocalType: 'references_principle', expectedTargetType: 'workflow' }
+        'principle_referenced_by_model': { reciprocalType: 'references_principle', expectedTargetType: 'model' }
       };
 
       for (const edge of graph.edges) {
@@ -93,12 +92,27 @@ export class CrossRefRule implements ValidationRule {
         // Ensure the target node actually exists before verifying reciprocal
         if (!graph.nodes.has(targetKey)) continue;
 
+        let expectedReciprocalType = pairInfo.reciprocalType;
+        if (edge.relationshipType === 'uses_debug_guide') {
+          if (edge.sourceType === 'workflow') {
+            expectedReciprocalType = 'associated_workflow';
+          } else if (edge.sourceType === 'pattern') {
+            expectedReciprocalType = 'associated_pattern';
+          }
+        } else if (edge.relationshipType === 'references_principle') {
+          if (edge.sourceType === 'model') {
+            expectedReciprocalType = 'principle_referenced_by_model';
+          } else if (edge.sourceType === 'pattern') {
+            expectedReciprocalType = 'principle_referenced_by_pattern';
+          }
+        }
+
         // Check if there is a matching reciprocal edge
         const targetOutgoingEdges = graph.outgoing.get(targetKey) || [];
         const hasReciprocal = targetOutgoingEdges.some(targetEdge => 
           targetEdge.targetId === edge.sourceId &&
           targetEdge.targetType === edge.sourceType &&
-          targetEdge.relationshipType === pairInfo.reciprocalType
+          targetEdge.relationshipType === expectedReciprocalType
         );
 
         if (!hasReciprocal) {

@@ -48,7 +48,6 @@
   "stability": "stable",
   "confidence": "production_proven",
   "engineering_maturity": "production_ready",
-  
   "overview": {
     "severity": "critical",
     "frequency": "common",
@@ -56,7 +55,6 @@
     "estimated_fix_time": "15-60 min",
     "production_impact": "severe"
   },
-  
   "quick_identification": [
     {
       "check": "RuntimeError: CUDA out of memory. Tried to allocate X.X MiB",
@@ -71,7 +69,6 @@
       "description": "Memory is fully consumed before the error"
     }
   ],
-  
   "symptoms": [
     {
       "symptom": "RuntimeError: CUDA out of memory. Tried to allocate X.X MiB",
@@ -87,7 +84,6 @@
       "frequency": "always"
     }
   ],
-  
   "root_causes": [
     {
       "cause": "Batch size too large",
@@ -123,7 +119,6 @@
       "typical_environment": "Long-running training jobs with dynamic tensor sizes"
     }
   ],
-  
   "investigation_checklist": [
     {
       "check": "Check GPU utilization with nvidia-smi",
@@ -150,7 +145,6 @@
       "description": "Verify if model checkpointing is properly configured"
     }
   ],
-  
   "diagnostic_commands": [
     {
       "purpose": "Check GPU memory usage in real-time",
@@ -171,7 +165,6 @@
       "interpretation": "Watch for memory growth patterns during training"
     }
   ],
-  
   "diagnostic_tests": [
     {
       "purpose": "Check isolated memory footprint",
@@ -190,7 +183,6 @@
       "next_action": "Reduce batch size or implement gradient accumulation"
     }
   ],
-  
   "decision_tree": {
     "question": "OOM occurs immediately at start?",
     "yes": {
@@ -213,7 +205,6 @@
       }
     }
   },
-  
   "solutions": [
     {
       "solution": "Reduce training batch size",
@@ -259,7 +250,6 @@
       "verification": "Memory usage should drop significantly while maintaining model accuracy."
     }
   ],
-  
   "verification_checklist": [
     {
       "check": "No OOM error during training",
@@ -278,7 +268,6 @@
       "description": "GPU is not idle due to CPU bottlenecks"
     }
   ],
-  
   "prevention": [
     {
       "category": "development",
@@ -313,7 +302,6 @@
       ]
     }
   ],
-  
   "common_misconceptions": [
     {
       "misconception": "torch.cuda.empty_cache() frees allocated tensors",
@@ -324,7 +312,6 @@
       "reality": "Often caused by memory leaks or fragmentation, not model size"
     }
   ],
-  
   "false_positive_cases": [
     {
       "case": "CPU OOM",
@@ -342,7 +329,6 @@
       "how_to_distinguish": "Check dmesg and nvidia-smi - driver will show errors"
     }
   ],
-  
   "escalation_paths": [
     {
       "path": "DeepSpeed ZeRO",
@@ -377,7 +363,6 @@
       ]
     }
   ],
-  
   "related_packages": [
     "pytorch"
   ],
@@ -393,5 +378,7 @@
     "mixed-precision",
     "checkpointing",
     "gradient-checkpointing"
-  ]
+  ],
+  "related_models": [],
+  "related_registry": []
 }

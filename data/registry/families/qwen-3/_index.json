@@ -200,26 +200,6 @@
   ],
   "related_models": [
     {
-      "id": "qwen-2-5",
-      "relationship": "Predecessor family and main migration baseline."
-    },
-    {
-      "id": "qwen-3-2507",
-      "relationship": "Later evolution of the same family with updated instruct/thinking variants and longer context capabilities."
-    },
-    {
-      "id": "qwen-3-coder",
-      "relationship": "Specialized adjacent family for coding-centric workflows."
-    },
-    {
-      "id": "qwen-3-vl",
-      "relationship": "Multimodal adjacent family for vision-language workloads."
-    },
-    {
-      "id": "qwen-3-omni",
-      "relationship": "Multimodal adjacent family spanning text, image, audio, and video."
-    },
-    {
       "id": "deepseek",
       "relationship": "Alternative reasoning-first family for comparison and deployment trade-offs."
     }
@@ -310,56 +290,76 @@
     "runtime_matrix": [
       {
         "runtime": "Transformers",
-        "supports": ["basic_inference", "quantization"],
+        "supports": [
+          "basic_inference",
+          "quantization"
+        ],
         "official": true,
         "priority": "recommended",
         "notes": "Official repo gives the canonical Python loading pattern and requires a recent version."
       },
       {
         "runtime": "vLLM",
-        "supports": ["continuous_batching", "tensor_parallelism"],
+        "supports": [
+          "continuous_batching",
+          "tensor_parallelism"
+        ],
         "official": true,
         "priority": "recommended",
         "notes": "Officially recommended for deployment; supports reasoning-parser configuration."
       },
       {
         "runtime": "SGLang",
-        "supports": ["continuous_batching", "tensor_parallelism"],
+        "supports": [
+          "continuous_batching",
+          "tensor_parallelism"
+        ],
         "official": true,
         "priority": "recommended",
         "notes": "Officially recommended for deployment; useful for OpenAI-compatible serving."
       },
       {
         "runtime": "llama.cpp",
-        "supports": ["gguf"],
+        "supports": [
+          "gguf"
+        ],
         "official": true,
         "priority": "supported",
         "notes": "Officially documented for local use; best with GGUF checkpoints."
       },
       {
         "runtime": "Ollama",
-        "supports": ["local_serving"],
+        "supports": [
+          "local_serving"
+        ],
         "official": true,
         "priority": "supported",
         "notes": "Officially documented for local use, but naming and context defaults need care."
       },
       {
         "runtime": "LM Studio",
-        "supports": ["local_serving"],
+        "supports": [
+          "local_serving"
+        ],
         "official": true,
         "priority": "supported",
         "notes": "Official docs say Qwen3 is already supported via GGUF files."
       },
       {
         "runtime": "TensorRT-LLM",
-        "supports": ["tensorrt", "tensor_parallelism"],
+        "supports": [
+          "tensorrt",
+          "tensor_parallelism"
+        ],
         "official": true,
         "priority": "recommended",
         "notes": "Official docs document support in the re-architected PyTorch backend for NVIDIA GPU serving."
       },
       {
         "runtime": "MLX",
-        "supports": ["mlx"],
+        "supports": [
+          "mlx"
+        ],
         "official": true,
         "priority": "supported",
         "notes": "Apple Silicon support is documented via mlx-lm."
@@ -371,7 +371,13 @@
       "relationship": "recommended_for",
       "resource_type": "workflow",
       "resource_slug": "llm-application-serving",
-      "reason": "Production serving pipeline"
+      "reason": "Production serving pipeline for Qwen3 models"
+    },
+    {
+      "relationship": "recommended_for",
+      "resource_type": "workflow",
+      "resource_slug": "build-rag-system",
+      "reason": "RAG system with Qwen3 for retrieval-augmented generation"
     },
     {
       "relationship": "used_with",
@@ -383,13 +389,67 @@
       "relationship": "used_with",
       "resource_type": "pattern",
       "resource_slug": "kv-cache",
-      "reason": "KV cache optimization"
+      "reason": "KV cache optimization for long-context inference"
     },
     {
       "relationship": "used_with",
       "resource_type": "pattern",
       "resource_slug": "streaming-inference",
-      "reason": "Streaming token generation"
+      "reason": "Streaming token generation for interactive applications"
+    },
+    {
+      "relationship": "used_with",
+      "resource_type": "pattern",
+      "resource_slug": "mixed-precision",
+      "reason": "Quantization for memory-efficient deployment"
+    },
+    {
+      "relationship": "used_with",
+      "resource_type": "debug_guide",
+      "resource_slug": "cuda-out-of-memory",
+      "reason": "Common GPU memory issues with large models"
+    },
+    {
+      "relationship": "used_with",
+      "resource_type": "debug_guide",
+      "resource_slug": "tokenizer-mismatch",
+      "reason": "Tokenizer configuration for Qwen3 models"
+    },
+    {
+      "relationship": "used_with",
+      "resource_type": "workflow",
+      "resource_slug": "production-llm-cost-latency-optimization",
+      "reason": "Inference latency optimization."
+    },
+    {
+      "relationship": "recommended_for",
+      "resource_type": "workflow",
+      "resource_slug": "agentic-tool-use-system",
+      "reason": "Agentic tool-use loops."
+    },
+    {
+      "relationship": "recommended_for",
+      "resource_type": "workflow",
+      "resource_slug": "multi-agent-orchestration",
+      "reason": "Multi-agent coordination."
+    },
+    {
+      "relationship": "used_with",
+      "resource_type": "pattern",
+      "resource_slug": "flash-attention",
+      "reason": "Flash attention optimization."
+    },
+    {
+      "relationship": "used_with",
+      "resource_type": "pattern",
+      "resource_slug": "prompt-caching",
+      "reason": "Prompt caching support."
+    },
+    {
+      "relationship": "see_also",
+      "resource_type": "debug_guide",
+      "resource_slug": "checkpoint-load-error",
+      "reason": "Resolving state dict mismatches."
     }
   ],
   "tags": [
