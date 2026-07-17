@@ -1,115 +1,145 @@
-# AI Engineering Knowledge System & Handbook
+# AI Engineering Navigation System (AENS)
 
-A localized, zero-latency, and content-dense repository designed for AI/ML engineers. It acts as an offline reference tool for Python package APIs, model architectures, model task registries, production deployment workflows, and quick-access syntax cheatsheets.
+A localized, zero-latency, content-dense knowledge system for AI/ML engineers. Built as a static-first Next.js application that parses structured local JSON files, eliminating the need for complex databases or external API calls.
 
-This project is built as a static-first, Next.js server-rendered application that parses structured local JSON files, eliminating the need for complex databases or external API calls.
+## Project Overview
 
----
+AENS is a **personal AI Engineering knowledge system** designed to:
+- Quickly recall Python package syntax
+- Browse AI/ML/DL/LLM models
+- Review Hugging Face ecosystem tools
+- Study workflows (RAG, Fine-Tuning, Evaluation, Inference)
+- Reference cheatsheets while working on AI projects
 
-## 🚀 Key Features
+**Target Audience:** AI engineers seeking canonical implementation knowledge for production systems.
 
-* **Content Density & Zero Latency**: Fast, readable pages containing code blocks, hyperparameter tables, pros/cons, and gotchas.
-* **Local-First Database**: Completely powered by version-controlled JSON files under the `data/` directory. No database connection strings, no SQL migrations, and zero external network dependencies.
-* **Fuse.js Search**: Client-side fuzzy searching across the entire catalog for instant access to packages, models, and workflows.
-* **Automated Data Quality & Validation**: A custom TypeScript validation suite runs during `prebuild` to enforce strict Zod schema checking, naming conventions, and referential link integrity.
+## Features
 
----
+- **Knowledge Graph** - Bidirectional relationships between all content types
+- **Problem Index** - Problem-first discovery layer
+- **Workflows** - End-to-end production pipelines
+- **Patterns** - Tool-independent engineering concepts
+- **Models** - Algorithm selection and understanding
+- **Packages** - Library implementation details
+- **Cheatsheets** - Quick syntax reference
+- **Decision Guides** - X vs Y comparison frameworks
+- **Debug Guides** - Troubleshooting knowledge
+- **Principles** - Fundamental engineering axioms
+- **Registry** - Model deployment metadata
+- **Search** - Client-side fuzzy search with Fuse.js
+- **Cross-linking** - Related content navigation
 
-## 🛠️ Technology Stack
+## Architecture Overview
 
-* **Framework**: [Next.js 15 (App Router)](https://nextjs.org/) (React 19)
-* **Language**: [TypeScript](https://www.typescriptlang.org/) (Strict Mode)
-* **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) & Vanilla CSS
-* **Components**: Custom layouts, utility grids, and [shadcn/ui](https://ui.shadcn.com/) primitives
-* **Fuzzy Search**: [Fuse.js](https://fusejs.io/)
-* **Schema Validation**: [Zod](https://zod.dev/)
-* **Runtime / Builder**: [tsx](https://github.com/privatenumber/tsx) (TypeScript Execution)
+AENS follows a **static generation** architecture:
+- All content stored as JSON files in `data/` directory
+- Zod schemas enforce data integrity at build time
+- React cache for efficient data loading
+- Lightweight `_nav.json` indexes for navigation performance
+- No database, no backend, no API routes
 
----
-
-## 📂 Codebase Structure
-
-```text
-ai-engineering-handbook/
-├── app/                      # Next.js App Router Pages (Server Components)
-│   ├── layout.tsx            # Global layout (Sidebar + Main Content wrapper)
-│   ├── page.tsx              # Main dashboard summarizing catalogs & recent activity
-│   ├── packages/[id]/        # Package detail sheets (e.g. NumPy, PyTorch)
-│   ├── models/[category]/    # Model lists with interactive filters (ml, dl, llm)
-│   ├── models/[category]/[id]# Model detail cards (e.g. XGBoost, Transformer, Llama 3)
-│   ├── registry/[task]/      # Model tables grouped by task (embeddings, vision, speech)
-│   ├── workflows/[id]/       # Step-by-step production pipelines (e.g. RAG, Fine-Tuning)
-│   └── cheatsheets/[id]/     # Syntax reference sheets
-├── components/               # UI Component Tree
-│   ├── layout/               # Sidebar and TopBar global layouts
-│   └── shared/               # Reusable blocks (CodeBlock, SectionCard, FilterBar)
-├── data/                     # Content Database (Version-controlled JSON files)
-│   ├── packages/             # Package details & index
-│   ├── models/               # Model details & category subfolders
-│   ├── registry/             # Task-specific model registry sheets
-│   ├── workflows/            # Production walkthroughs
-│   └── cheatsheets/          # Command recall references
-├── docs/                     # Developer guides & architectural guidelines
-├── lib/                      # Business Logic & Schemas
-│   ├── data.ts               # File system data-loading utils (Next.js server-cached)
-│   ├── search.ts             # Fuse.js search query resolvers
-│   └── schemas/              # Zod schemas mapped to data types
-├── scripts/                  # Command line scripts and validation pipelines
-│   └── validate-content.ts   # The data integrity checker
-└── types/                    # Strict TypeScript interfaces defining catalog models
-```
-
----
-
-## 🛡️ Content Validation & Integrity
-
-To guarantee that markdown links do not break and that data files conform to the codebase schemas, the application runs a static checker during the `prebuild` phase.
-
-### Rules Enforced by the Validator:
-1. **Schema Validation**: Every JSON file under `data/` is validated against its respective Zod schema in `lib/schemas/`.
-2. **Kebab-Case Naming**: All filenames and internal `"id"` attributes must consist only of lowercase letters, digits, hyphens, and periods (`/^[a-z0-9.-]+$/`).
-3. **Internal ID Sync**: For all standalone items, the filename must match the declared internal `"id"` property.
-4. **Namespace Collision Prevention**:
-   * Core entities (`package`, `model`, `workflow`) share a global namespace. No two core files can share an ID.
-   * Cheatsheets are allowed to share their ID with a package or model (e.g., cheatsheet `numpy` and package `numpy`).
-   * Registry items are allowed to share their ID with detailed models (e.g., registry model `mistral-7b` and detailed model profile `mistral-7b`).
-5. **Referential Integrity**: All cross-references (such as `alternatives` or `links`) are verified. The target must exist in the database and have the correct entity type.
-
----
-
-## 💻 Getting Started
+## Installation
 
 ### Prerequisites
-Make sure you have Node.js (v18+) and npm/yarn installed.
+- Node.js (v18+)
+- npm or yarn
 
-### 1. Install Dependencies
+### Install Dependencies
 ```bash
 npm install
 ```
 
-### 2. Run the Development Server
+### Development
 ```bash
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the interactive system.
+Open [http://localhost:3000](http://localhost:3000) with your browser.
 
-### 3. Run Content Validation
-To manually check the integrity of your JSON databases:
-```bash
-npm run validate
-```
-
-### 4. Build for Production
-The application compiles into a zero-runtime static page distribution using:
+### Build
 ```bash
 npm run build
 ```
 
----
+### Validate
+```bash
+npm run validate
+```
 
-## ✍️ Contribution & Project Rules
+## Repository Structure
 
-* **Data Storage**: Do not introduce databases (SQL/NoSQL) or API endpoints. All content belongs in the local JSON files.
-* **Component Model**: Keep interactive features contained within Client Components, keeping standard presentation rendering in Server Components.
-* **No External API Calls**: Fetching data from online endpoints is prohibited; all data processing must occur locally.
-* **Strict Type Safety**: Modifying core interfaces in `types/` without reviewing system validators is prohibited.
+```
+ai-engineering-handbook/
+├── app/                      # Next.js App Router pages
+├── components/               # UI components
+│   ├── layout/               # Sidebar, TopBar, navigation
+│   ├── shared/               # Reusable components
+│   └── ui/                   # shadcn/ui primitives
+├── data/                     # Content database (JSON files)
+│   ├── packages/               # Library documentation
+│   ├── models/                 # ML/DL/LLM models
+│   ├── workflows/              # Production pipelines
+│   ├── cheatsheets/            # Syntax references
+│   ├── patterns/               # Engineering patterns
+│   ├── debug-guides/           # Troubleshooting guides
+│   ├── decision-guides/          # Decision frameworks
+│   ├── principles/             # Engineering principles
+│   └── registry/               # Model deployment metadata
+├── docs/                     # Documentation
+│   ├── architecture/           # System design documentation
+│   ├── engineering/            # Contributor rules
+│   ├── guides/                 # How-to procedures
+│   ├── reference/              # Quick references
+│   └── adr/                    # Architecture decisions
+├── lib/                      # Business logic
+│   ├── schemas/                # Zod validation schemas
+│   ├── search/                 # Search engine
+│   └── hooks/                  # React hooks
+├── scripts/                  # Build scripts
+│   ├── validate-content.ts     # Content validation
+│   └── build-nav-index.ts      # Navigation index generation
+└── types/                    # TypeScript interfaces
+```
+
+## Development Workflow
+
+### Adding New Content
+
+1. Create JSON file in the appropriate `data/` subdirectory
+2. Follow the schema in `lib/schemas/*.ts`
+3. Use kebab-case for the ID (filename without .json)
+4. Run `npm run validate` to check integrity
+5. Run `npm run build:nav` to update navigation indexes
+6. Run `npm run build` to verify static generation
+
+See `docs/guides/adding-*.md` for detailed guides.
+
+## Content Standards
+
+All content must follow the quality standards defined in:
+- `docs/engineering/content-schema.md` - Schema and field guidelines
+- `docs/engineering/validation.md` - Validation rules
+- `docs/reference/schemas.md` - Schema reference
+
+## Contributing
+
+This is a **curated knowledge base**, not a documentation platform. Contributions should:
+- Follow existing patterns and conventions
+- Pass all validation checks
+- Include appropriate cross-links
+- Have complete metadata
+- Be actionable and practical
+
+See `docs/engineering/project-rules.md` for detailed contribution guidelines.
+
+## License
+
+[License to be determined]
+
+## Technology Stack
+
+- **Framework:** Next.js 16.2.9 (App Router)
+- **Language:** TypeScript 5 (strict mode)
+- **Styling:** Tailwind CSS v4
+- **Components:** shadcn/ui + Radix UI
+- **Search:** Fuse.js
+- **Validation:** Zod
