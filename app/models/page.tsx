@@ -22,7 +22,7 @@ export default function ModelsPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold text-foreground tracking-tight">Models Library</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Models Library</h1>
         <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
           A comprehensive catalog of machine learning algorithms, deep learning primitives, and LLM architecture families.
           Compare model trade-offs, inspect implementation snippets, and trace dependencies across the AI stack.

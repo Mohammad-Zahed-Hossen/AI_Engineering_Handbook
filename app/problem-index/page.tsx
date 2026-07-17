@@ -122,7 +122,7 @@ export default function ProblemIndexPage() {
       <div className="bg-card text-card-foreground border border-border p-5 rounded-lg shadow-sm">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-foreground font-sans">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
               Problem Index
             </h1>
             <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed font-sans">

@@ -9,7 +9,7 @@ export default function RegistryPage() {
   if (families.length === 0) {
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-semibold text-foreground">Model Registry</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Model Registry</h1>
         <p className="text-sm text-muted-foreground">
           No registry entries have been added yet.
         </p>
