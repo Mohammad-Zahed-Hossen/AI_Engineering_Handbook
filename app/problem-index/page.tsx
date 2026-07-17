@@ -1,27 +1,19 @@
 import fs from 'fs';
 import path from 'path';
 import { Suspense } from 'react';
-import { getAllWorkflows, getAllDecisionGuides } from '@/lib/data';
+import { 
+  getAllWorkflows, 
+  getAllDecisionGuides,
+  getPackageNavItems,
+  getModelNavItems,
+  getPatternNavItems,
+  getDebugGuideNavItems,
+  getRegistryNavItems
+} from '@/lib/data';
+import { Taxonomy } from '@/types/problem';
 import ProblemIndexDashboard from './ProblemIndexDashboard';
 
 const dataDir = path.join(process.cwd(), 'data');
-
-interface Problem {
-  id: string;
-  name: string;
-  description: string;
-  related_workflows: string[];
-  related_decision_guides?: string[];
-}
-
-interface ProblemCategory {
-  description: string;
-  problems: Problem[];
-}
-
-interface Taxonomy {
-  [category: string]: ProblemCategory;
-}
 
 function loadTaxonomy(): Taxonomy {
   const filePath = path.join(dataDir, 'problem-index', 'taxonomy.json');
@@ -46,6 +38,9 @@ export default function ProblemIndexPage() {
     difficulty?: string;
     duration?: number;
     tags: string[];
+    confidence?: string;
+    stability?: string;
+    lifecycle?: string;
   }> = {};
 
   workflows.forEach(w => {
@@ -57,6 +52,9 @@ export default function ProblemIndexPage() {
       difficulty: w.difficulty,
       duration: w.estimated_reading_time,
       tags: w.tags || [],
+      confidence: w.confidence,
+      stability: w.stability,
+      lifecycle: w.lifecycle,
     };
   });
 
@@ -80,6 +78,34 @@ export default function ProblemIndexPage() {
     };
   });
 
+  // Gather other lookup lists to build cross-references on the client side
+  const modelMap: Record<string, { name: string; category: string }> = {};
+  (['ml', 'dl', 'llm'] as const).forEach(cat => {
+    getModelNavItems(cat).forEach(item => {
+      modelMap[item.id] = { name: item.name, category: cat };
+    });
+  });
+
+  const patternMap: Record<string, string> = {};
+  getPatternNavItems().forEach(item => {
+    patternMap[item.id] = item.name;
+  });
+
+  const debugGuideMap: Record<string, string> = {};
+  getDebugGuideNavItems().forEach(item => {
+    debugGuideMap[item.id] = item.name;
+  });
+
+  const packageMap: Record<string, string> = {};
+  getPackageNavItems().forEach(item => {
+    packageMap[item.id] = item.name;
+  });
+
+  const registryMap: Record<string, string> = {};
+  getRegistryNavItems().forEach(item => {
+    registryMap[item.id] = item.name;
+  });
+
   return (
     <div className="space-y-6">
       <div className="bg-card text-card-foreground border border-border p-5 rounded-lg shadow-sm">
@@ -101,6 +127,11 @@ export default function ProblemIndexPage() {
           taxonomy={taxonomy} 
           workflowMap={workflowMap}
           decisionGuideMap={decisionGuideMap}
+          modelMap={modelMap}
+          patternMap={patternMap}
+          debugGuideMap={debugGuideMap}
+          packageMap={packageMap}
+          registryMap={registryMap}
         />
       </Suspense>
     </div>

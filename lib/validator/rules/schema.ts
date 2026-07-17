@@ -21,6 +21,7 @@ export class SchemaValidationRule implements ValidationRule {
     const SLUG_REGEX = /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/;
 
     for (const node of graph.nodes.values()) {
+      if (node.type === 'problem') continue;
       const obj = node.data as { slug?: string; tags?: unknown[]; aliases?: unknown[] } | null;
       if (!obj || typeof obj !== 'object') {
         issues.push({

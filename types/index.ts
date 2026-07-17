@@ -13,3 +13,4 @@ export * from './pattern';
 export * from './debug-guide';
 export * from './decision-guide';
 export * from './principle';
+export * from './problem';

@@ -20,6 +20,7 @@ export class RelatedRule implements ValidationRule {
     const maxTotal = config.size_budgets?.max_total_relationships || 50;
 
     for (const [key, node] of graph.nodes.entries()) {
+      if (node.type === 'problem') continue;
       const obj = node.data as Record<string, unknown>;
       if (!obj || typeof obj !== 'object') continue;
 

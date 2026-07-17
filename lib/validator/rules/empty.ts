@@ -80,6 +80,7 @@ export class EmptyRule implements ValidationRule {
     }
 
     for (const node of graph.nodes.values()) {
+      if (node.type === 'problem') continue;
       if (!node.data) continue;
       checkValue(node.data, node.filePath, '');
     }

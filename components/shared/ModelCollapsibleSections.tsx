@@ -537,12 +537,11 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
                   <div key={label} className="space-y-1.5">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-foreground">{label}</span>
                     <div className="flex flex-wrap gap-1.5">
-                      {arrayItems.map((item) => {
+                      {arrayItems.map((item, idx) => {
                         // Resolve using server-passed resolvedKnowledgeLinks dictionary,
                         // falling back to old relatedKnowledgeLinks for backwards compatibility
                         let href = resolvedKnowledgeLinks?.[item];
                         if (!href && (label === 'Related Models' || label === 'Alternative Models') && relatedKnowledgeLinks && category) {
-                          const idx = arrayItems.indexOf(item);
                           const linkKey = label === 'Related Models' ? 'relatedmodels' : 'alternative_models';
                           const resolvedSlug = relatedKnowledgeLinks[linkKey as keyof typeof relatedKnowledgeLinks]?.[idx]?.slug;
                           if (resolvedSlug) {
@@ -552,7 +551,7 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
 
                         return (
                           <RelatedItem
-                            key={item}
+                            key={`${item}-${idx}`}
                             item={item}
                             href={href}
                           />

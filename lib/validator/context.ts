@@ -43,6 +43,7 @@ export class KnowledgeGraph {
   addNode(node: GraphNode) {
     const key = `${node.type}:${node.id}`;
     this.nodes.set(key, node);
+    if (node.type === 'problem') return;
     
     if (node.data && typeof node.data === 'object') {
       const obj = node.data as {
@@ -266,11 +267,72 @@ export async function buildValidationContext(): Promise<{
       isValid
     });
   }
+
+  // Load problem-index taxonomy problems as nodes
+  const taxonomyPath = path.join(dataDir, 'problem-index', 'taxonomy.json');
+  if (fs.existsSync(taxonomyPath)) {
+    try {
+      const rawContent = fs.readFileSync(taxonomyPath, 'utf-8');
+      const taxonomy = JSON.parse(rawContent);
+      for (const categoryData of Object.values(taxonomy)) {
+        const catObj = categoryData as { problems?: unknown[] };
+        if (catObj && Array.isArray(catObj.problems)) {
+          for (const problem of catObj.problems) {
+            if (problem && typeof problem === 'object' && 'id' in problem) {
+              const pObj = problem as { id: string };
+              graph.addNode({
+                id: pObj.id,
+                type: 'problem',
+                filePath: 'data/problem-index/taxonomy.json',
+                data: problem,
+                isValid: true
+              });
+            }
+          }
+        }
+      }
+    } catch (e) {
+      errors.push(`JSON parse error in 'data/problem-index/taxonomy.json': ${(e as Error).message}`);
+    }
+  }
   
   // Second pass: construct directed graph edges
   for (const node of graph.nodes.values()) {
     if (!node.data || typeof node.data !== 'object') continue;
     const obj = node.data as Record<string, unknown>;
+
+    // Handle problem node edges specifically
+    if (node.type === 'problem') {
+      const mappings: Array<{ field: string; expectedType: string; relName: string }> = [
+        { field: 'related_workflows', expectedType: 'workflow', relName: 'uses_workflow' },
+        { field: 'related_decision_guides', expectedType: 'decision_guide', relName: 'uses_decision_guide' },
+        { field: 'related_models', expectedType: 'model', relName: 'uses_model' },
+        { field: 'related_patterns', expectedType: 'pattern', relName: 'uses_pattern' },
+        { field: 'related_packages', expectedType: 'package', relName: 'uses_package' },
+        { field: 'related_debug_guides', expectedType: 'debug_guide', relName: 'uses_debug_guide' },
+        { field: 'related_registry', expectedType: 'registry_family', relName: 'uses_registry' },
+        { field: 'related_problems', expectedType: 'problem', relName: 'related_to_problem' },
+        { field: 'requires', expectedType: 'prerequisite', relName: 'requires' }
+      ];
+
+      for (const mapping of mappings) {
+        const relatedIds = obj[mapping.field];
+        if (Array.isArray(relatedIds)) {
+          for (const id of relatedIds) {
+            if (typeof id === 'string') {
+              graph.addEdge({
+                sourceId: node.id,
+                sourceType: node.type,
+                targetId: id,
+                targetType: mapping.expectedType,
+                relationshipType: mapping.relName
+              });
+            }
+          }
+        }
+      }
+      continue;
+    }
     
     // Related Content (standard field)
     let relatedContentList: unknown[] = [];

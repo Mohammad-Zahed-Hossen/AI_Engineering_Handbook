@@ -12,7 +12,8 @@ type NodeType =
   | 'pattern'
   | 'debug_guide'
   | 'decision_guide'
-  | 'principle';
+  | 'principle'
+  | 'problem';
 
 interface RelationRef {
   id?: string;
@@ -125,6 +126,28 @@ function scanNodes() {
       filePath: file,
       data,
     });
+  }
+
+  // Scan taxonomy.json for problem nodes
+  const taxonomyPath = path.join(dataDir, 'problem-index', 'taxonomy.json');
+  if (fs.existsSync(taxonomyPath)) {
+    const raw = fs.readFileSync(taxonomyPath, 'utf-8');
+    const taxonomy = JSON.parse(raw);
+    for (const data of Object.values(taxonomy)) {
+      const catObj = data as { problems?: Array<{ id: string; [key: string]: unknown }> };
+      if (catObj && Array.isArray(catObj.problems)) {
+        for (const problem of catObj.problems) {
+          if (problem && typeof problem === 'object' && problem.id) {
+            allNodes.set(`problem:${problem.id}`, {
+              id: problem.id,
+              type: 'problem',
+              filePath: taxonomyPath,
+              data: problem
+            });
+          }
+        }
+      }
+    }
   }
 }
 
@@ -1225,6 +1248,7 @@ function resolveSchemaCompletenessErrors() {
 // Write the modified JSON data back to files
 function saveChanges() {
   for (const node of allNodes.values()) {
+    if (node.type === 'problem') continue;
     const formatted = JSON.stringify(node.data, null, 2) + '\n';
     fs.writeFileSync(node.filePath, formatted, 'utf-8');
   }
