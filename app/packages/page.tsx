@@ -6,7 +6,7 @@ export default function PackagesPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-foreground">Packages</h1>
+      <h1 className="text-2xl font-bold tracking-tight text-foreground">Packages</h1>
       <PackageListClient packages={packages} />
     </div>
   );

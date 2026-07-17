@@ -6,7 +6,7 @@ export default function PrinciplesPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-foreground">Principles</h1>
+      <h1 className="text-2xl font-bold tracking-tight text-foreground">Principles</h1>
       <div className="space-y-3">
         {principles.map(principle => (
           <Link

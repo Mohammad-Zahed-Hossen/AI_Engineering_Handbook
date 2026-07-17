@@ -1,4 +1,4 @@
-# AENS Design System Migration Plan
+# AENS Design System Migration Plan (Depreciated)
 
 **Document Version:** 2.0  
 **Date:** July 2026  

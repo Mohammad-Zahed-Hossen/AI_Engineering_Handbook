@@ -6,7 +6,7 @@ export default function CheatsheetsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-foreground">Cheatsheets</h1>
+      <h1 className="text-2xl font-bold tracking-tight text-foreground">Cheatsheets</h1>
       <div className="space-y-3">
         {cheatsheetIds.map(id => {
           const cs = getCheatsheet(id);

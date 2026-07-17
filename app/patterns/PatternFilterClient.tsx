@@ -104,7 +104,7 @@ export default function PatternFilterClient({ patterns }: PatternFilterClientPro
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-foreground">Patterns</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Patterns</h1>
         {(totalActiveFilters > 0 || searchQuery) && (
           <button
             onClick={clearAllFilters}
@@ -123,7 +123,7 @@ export default function PatternFilterClient({ patterns }: PatternFilterClientPro
           placeholder="Search patterns by name or description..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="w-full pl-10 pr-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
       </div>
 

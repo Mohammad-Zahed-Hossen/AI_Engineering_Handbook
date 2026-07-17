@@ -172,7 +172,7 @@ export function CodeBlockInteractive({
       <div className={cn("relative", shouldCollapse && !isExpanded && "max-h-[200px] overflow-hidden")}>
         <div 
           className={cn(
-            "text-[11px] leading-relaxed scrollbar-thin select-text",
+              "text-xs leading-relaxed scrollbar-thin select-text",
             wrapped === null
               ? "max-md:whitespace-pre-wrap max-md:break-words md:overflow-x-auto md:whitespace-pre md:break-normal"
               : wrapped

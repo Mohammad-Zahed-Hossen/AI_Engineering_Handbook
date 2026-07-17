@@ -6,7 +6,7 @@ export default function DebugGuidesPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-foreground">Debug Guides</h1>
+      <h1 className="text-2xl font-bold tracking-tight text-foreground">Debug Guides</h1>
       <div className="space-y-3">
         {debugGuides.map(dg => (
           <Link
