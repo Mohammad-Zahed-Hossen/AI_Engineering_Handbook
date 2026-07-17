@@ -9,7 +9,6 @@ import TopBar from "@/components/layout/TopBar";
 import ReadingProgress from "@/components/shared/ReadingProgress";
 import BackToTop from "@/components/shared/BackToTop";
 import PageVisitTracker from "@/components/shared/PageVisitTracker";
-import { buildSearchIndex } from "@/lib/search";
 import {
   getPackageNavItems,
   getModelNavItems,
@@ -55,7 +54,6 @@ export default function RootLayout({
   const debugGuides = getDebugGuideNavItems();
   const decisionGuides = getDecisionGuideNavItems();
   const principles = getPrincipleNavItems();
-  const searchIndex = buildSearchIndex();
 
   return (
     <html
@@ -114,7 +112,6 @@ export default function RootLayout({
             debugGuides={debugGuides}
             decisionGuides={decisionGuides}
             principles={principles}
-            searchIndex={searchIndex}
           />
           <main id="main-scroll" className="flex-1 overflow-y-auto bg-zinc-50 dark:bg-zinc-950 px-4 py-5 md:px-8 md:py-8">
             <div className="max-w-5xl mx-auto w-full">

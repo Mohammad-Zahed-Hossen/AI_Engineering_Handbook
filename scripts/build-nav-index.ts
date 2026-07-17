@@ -9,6 +9,7 @@
  */
 import fs from 'fs';
 import path from 'path';
+import { buildSearchIndex } from '../lib/search';
 
 const dataDir = path.join(process.cwd(), 'data');
 
@@ -111,5 +112,18 @@ writeNavIndex(
   path.join(dataDir, 'principles'),
   buildNavIndex(path.join(dataDir, 'principles'), 'principle')
 );
+
+// Build and write global search index
+console.log('Building search index...');
+const searchIndex = buildSearchIndex();
+const publicDir = path.join(process.cwd(), 'public');
+if (!fs.existsSync(publicDir)) {
+  fs.mkdirSync(publicDir, { recursive: true });
+}
+fs.writeFileSync(
+  path.join(publicDir, 'search-index.json'),
+  JSON.stringify(searchIndex, null, 2)
+);
+console.log(`  ✓ public/search-index.json (${searchIndex.length} entries)`);
 
 console.log('Done.');

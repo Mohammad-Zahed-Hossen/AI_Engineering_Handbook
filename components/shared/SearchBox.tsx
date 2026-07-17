@@ -20,7 +20,7 @@ type SearchDisplayResult = {
 };
 
 interface SearchBoxProps {
-  index: SearchResult[];
+  index?: SearchResult[];
   placeholder?: string;
   limit?: number;
   compact?: boolean;
@@ -112,7 +112,7 @@ function highlightText(text: string, query: string): React.ReactNode {
 }
 
 export default function SearchBox({
-  index,
+  index = [],
   placeholder = 'Search packages, models, workflows…',
   limit = 8,
   compact = false,
@@ -127,7 +127,31 @@ export default function SearchBox({
   const [activeIndex, setActiveIndex] = useState(0);
   const [focused, setFocused] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>(() => loadRecentSearches());
-  const fuse = useMemo(() => createFuse(index), [index]);
+
+  const [searchIndex, setSearchIndex] = useState<SearchResult[]>(index);
+  const [loading, setLoading] = useState(false);
+
+  const handleFocus = async () => {
+    setFocused(true);
+    if (searchIndex.length === 0 && !loading) {
+      setLoading(true);
+      try {
+        const res = await fetch('/search-index.json');
+        if (res.ok) {
+          const data = await res.json();
+          setSearchIndex(data);
+        } else {
+          console.error('Failed to load search index: Status', res.status);
+        }
+      } catch (e) {
+        console.error('Failed to load search index:', e);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const fuse = useMemo(() => createFuse(searchIndex), [searchIndex]);
 
   // Keyboard shortcut
   useEffect(() => {
@@ -286,7 +310,7 @@ export default function SearchBox({
           setQuery(e.target.value);
           setActiveIndex(0);
         }}
-        onFocus={() => setFocused(true)}
+        onFocus={handleFocus}
         onBlur={() => setTimeout(() => setFocused(false), 150)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}

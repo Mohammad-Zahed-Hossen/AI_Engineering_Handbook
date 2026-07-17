@@ -1,7 +1,6 @@
 import MobileSidebarTrigger from './MobileSidebarTrigger';
 import SearchBox from '@/components/shared/SearchBox';
 import { NavItem } from '@/lib/data';
-import { SearchResult } from '@/lib/search';
 import DarkModeToggle from './DarkModeToggle';
 
 interface TopBarProps {
@@ -16,7 +15,6 @@ interface TopBarProps {
   debugGuides: NavItem[];
   decisionGuides: NavItem[];
   principles: NavItem[];
-  searchIndex: SearchResult[];
 }
 
 export default function TopBar({
@@ -31,7 +29,6 @@ export default function TopBar({
   debugGuides,
   decisionGuides,
   principles,
-  searchIndex,
 }: TopBarProps) {
   return (
     <header className="h-14 border-b border-border bg-card text-card-foreground px-4 flex items-center justify-between gap-4 select-none shrink-0">
@@ -56,7 +53,7 @@ export default function TopBar({
         </span>
       </div>
       <div className="flex-1 flex justify-center max-w-lg">
-        <SearchBox index={searchIndex} compact placeholder="Search handbook…" />
+        <SearchBox compact placeholder="Search handbook…" />
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <DarkModeToggle />

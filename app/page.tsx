@@ -17,7 +17,6 @@ import {
   getPrinciple,
   RecentContentItem
 } from "@/lib/data";
-import { buildSearchIndex } from "@/lib/search";
 import SearchBox from "@/components/shared/SearchBox";
 import ContentTypeBadge from "@/components/shared/ContentTypeBadge";
 import RecentActivity from "@/components/shared/RecentActivity";
@@ -77,7 +76,6 @@ export default function Home() {
   const llmModels = getAllModels("llm");
   const workflows = getAllWorkflows();
   const recent = getRecentContent(6);
-  const searchIndex = buildSearchIndex();
 
   const totalModelsCount = counts.models_ml + counts.models_dl + counts.models_llm;
 
@@ -121,7 +119,7 @@ export default function Home() {
             A production-ready reference catalog for package syntax, neural network architectures, pipeline workflows, cheatsheets, and debug baseline guides.
           </p>
         </div>
-        <SearchBox index={searchIndex} placeholder="Search by library name, task type, or engineering problem…" />
+        <SearchBox placeholder="Search by library name, task type, or engineering problem…" />
       </header>
 
       {/* Section 2: Resume Learning (User Context Group) */}
