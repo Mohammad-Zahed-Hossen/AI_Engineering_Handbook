@@ -3,16 +3,16 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { 
-  Search, 
-  FileText, 
-  Eye, 
-  Cpu, 
-  Layers, 
-  ArrowRight, 
-  ChevronDown, 
-  ChevronUp, 
-  CheckCircle2, 
+import {
+  Search,
+  FileText,
+  Eye,
+  Cpu,
+  Layers,
+  ArrowRight,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle2,
   X,
   Compass,
   ChevronsDown,
@@ -27,13 +27,13 @@ import {
   Terminal
 } from 'lucide-react';
 
-import { 
-  Taxonomy, 
-  Problem, 
-  NavigatorProblemType, 
-  InputModality, 
-  EngineeringComplexity, 
-  EngineeringCharacteristic 
+import {
+  Taxonomy,
+  Problem,
+  NavigatorProblemType,
+  InputModality,
+  EngineeringComplexity,
+  EngineeringCharacteristic
 } from '@/types/problem';
 
 interface WorkflowMetadata {
@@ -86,7 +86,7 @@ function HighlightText({ text, query }: { text: string; query: string }) {
   const parts = text.split(regex);
   return (
     <>
-      {parts.map((part, i) => 
+      {parts.map((part, i) =>
         regex.test(part) ? (
           <mark key={i} className="bg-yellow-500/30 dark:bg-yellow-500/20 text-inherit px-0.5 rounded font-medium">
             {part}
@@ -167,9 +167,9 @@ function renderComplexityStars(complexity: EngineeringComplexity): string {
   }
 }
 
-export default function ProblemIndexDashboard({ 
-  taxonomy, 
-  workflowMap, 
+export default function ProblemIndexDashboard({
+  taxonomy,
+  workflowMap,
   decisionGuideMap,
   modelMap,
   patternMap,
@@ -197,7 +197,7 @@ export default function ProblemIndexDashboard({
   useEffect(() => {
     const stored = localStorage.getItem('problem_index_collapsed_categories');
     const categories = stored ? JSON.parse(stored) : [];
-    
+
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setHydratedState({
       collapsedCategories: new Set(categories),
@@ -214,7 +214,7 @@ export default function ProblemIndexDashboard({
   const [selectedComplexities, setSelectedComplexities] = useState<EngineeringComplexity[]>([]);
   const [selectedMaturities, setSelectedMaturities] = useState<string[]>([]);
   const [selectedCharacteristics, setSelectedCharacteristics] = useState<EngineeringCharacteristic[]>([]);
-  
+
   // Sort State
   const [sortBy, setSortBy] = useState<'name' | 'maturity' | 'complexity' | 'solutions'>('maturity');
 
@@ -237,7 +237,7 @@ export default function ProblemIndexDashboard({
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
-      
+
       const params = new URLSearchParams(window.location.search);
       if (searchQuery.trim()) {
         params.set('q', searchQuery);
@@ -255,7 +255,7 @@ export default function ProblemIndexDashboard({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const activeEl = document.activeElement;
-      
+
       if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.getAttribute('contenteditable') === 'true')) {
         return;
       }
@@ -278,7 +278,7 @@ export default function ProblemIndexDashboard({
 
     const handleScroll = () => {
       const scrollY = mainElement.scrollTop;
-      
+
       // Change sticky state at 120px
       setStickyState(scrollY > 120 ? 'compact' : 'full');
     };
@@ -322,18 +322,18 @@ export default function ProblemIndexDashboard({
   // Search logic helper
   const matchesSearch = useCallback((problem: Problem, query: string, categoryName: string) => {
     if (!query) return true;
-    
+
     // 1. Base details
     if (problem.name.toLowerCase().includes(query)) return true;
     if (problem.description.toLowerCase().includes(query)) return true;
     if (categoryName.toLowerCase().includes(query)) return true;
-    
+
     // 2. Aliases, keywords, tokens, tags
     if (problem.aliases?.some(a => a.toLowerCase().includes(query))) return true;
     if (problem.keywords?.some(k => k.toLowerCase().includes(query))) return true;
     if (problem.search_tokens?.some(s => s.toLowerCase().includes(query))) return true;
     if (problem.tags?.some(t => t.toLowerCase().includes(query))) return true;
-    
+
     // 3. Prerequisites requires
     if (problem.requires?.some(rId => {
       if (rId.toLowerCase().includes(query)) return true;
@@ -463,14 +463,14 @@ export default function ProblemIndexDashboard({
 
     return result;
   }, [
-    taxonomy, 
-    debouncedSearchQuery, 
-    selectedTypes, 
-    selectedModalities, 
-    selectedComplexities, 
-    selectedMaturities, 
-    selectedCharacteristics, 
-    sortBy, 
+    taxonomy,
+    debouncedSearchQuery,
+    selectedTypes,
+    selectedModalities,
+    selectedComplexities,
+    selectedMaturities,
+    selectedCharacteristics,
+    sortBy,
     workflowMap,
     matchesSearch
   ]);
@@ -479,11 +479,11 @@ export default function ProblemIndexDashboard({
     return Object.values(filteredTaxonomy).reduce((acc, data) => acc + data.problems.length, 0);
   }, [filteredTaxonomy]);
 
-  const hasActiveFilters = 
-    selectedTypes.length > 0 || 
-    selectedModalities.length > 0 || 
-    selectedComplexities.length > 0 || 
-    selectedMaturities.length > 0 || 
+  const hasActiveFilters =
+    selectedTypes.length > 0 ||
+    selectedModalities.length > 0 ||
+    selectedComplexities.length > 0 ||
+    selectedMaturities.length > 0 ||
     selectedCharacteristics.length > 0;
 
   const clearAllFilters = () => {
@@ -553,19 +553,18 @@ export default function ProblemIndexDashboard({
     <div className="space-y-6 relative">
       {/* Background click-outside overlay for active filter dropdowns */}
       {openDropdown && (
-        <div 
-          className="fixed inset-0 z-30 cursor-default" 
-          onClick={() => setOpenDropdown(null)} 
+        <div
+          className="fixed inset-0 z-30 cursor-default"
+          onClick={() => setOpenDropdown(null)}
         />
       )}
 
 
       {/* Sticky Filters & Search Area */}
-      <div className={`sticky top-0 z-40 transition-all duration-300 ${
-        stickyState === 'compact' 
-          ? 'bg-background/95 backdrop-blur-md border-b border-border py-2' 
+      <div className={`sticky top-0 z-40 transition-all duration-300 ${stickyState === 'compact'
+          ? 'bg-background/95 backdrop-blur-md border-b border-border py-2'
           : 'bg-background/95 backdrop-blur-md border-b border-border py-3'
-      }`}>
+        }`}>
         <div className="relative space-y-3">
           {/* Persistent Search input */}
           <div className="relative">
@@ -597,207 +596,204 @@ export default function ProblemIndexDashboard({
 
           {/* Interactive Filters Grid & Sorting Panel */}
           <div className="flex items-center gap-2 pt-1 z-50 overflow-x-auto pb-1 scrollbar-none md:flex-wrap">
-              {/* Primary Filters: Complexity, Maturity */}
-              {/* Complexity Filter */}
-              <div className="relative">
-                <button
-                  onClick={() => setOpenDropdown(openDropdown === 'complexity' ? null : 'complexity')}
-                  aria-expanded={openDropdown === 'complexity'}
-                  className={`inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold border cursor-pointer select-none transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px] ${
-                    selectedComplexities.length > 0 
-                      ? 'bg-primary/10 text-primary border-primary/30' 
-                      : 'bg-card border-border hover:bg-muted/50'
+            {/* Primary Filters: Complexity, Maturity */}
+            {/* Complexity Filter */}
+            <div className="relative">
+              <button
+                onClick={() => setOpenDropdown(openDropdown === 'complexity' ? null : 'complexity')}
+                aria-expanded={openDropdown === 'complexity'}
+                className={`inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold border cursor-pointer select-none transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px] ${selectedComplexities.length > 0
+                    ? 'bg-primary/10 text-primary border-primary/30'
+                    : 'bg-card border-border hover:bg-muted/50'
                   }`}
-                >
-                  <Filter className="w-3 h-3" />
-                  <span>Complexity</span>
-                  {selectedComplexities.length > 0 && (
-                    <span className="ml-1 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.2 rounded-full">
-                      {selectedComplexities.length}
-                    </span>
-                  )}
-                  <ChevronDown className="w-3 h-3 ml-0.5" />
-                </button>
-                {openDropdown === 'complexity' && (
-                  <div className="absolute left-0 mt-1.5 w-48 rounded-lg border border-border bg-card shadow-lg p-2 space-y-1 z-40">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase px-2 py-1">Filter by Complexity</p>
-                    {(['beginner', 'intermediate', 'advanced', 'expert'] as EngineeringComplexity[]).map(c => (
-                      <button
-                        key={c}
-                        onClick={() => toggleFilter(selectedComplexities, setSelectedComplexities, c)}
-                        className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-foreground hover:bg-muted text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
-                      >
-                        <span className="capitalize">{c} {renderComplexityStars(c)}</span>
-                        {selectedComplexities.includes(c) && <Check className="w-3.5 h-3.5 text-primary" />}
-                      </button>
-                    ))}
-                  </div>
+              >
+                <Filter className="w-3 h-3" />
+                <span>Complexity</span>
+                {selectedComplexities.length > 0 && (
+                  <span className="ml-1 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.2 rounded-full">
+                    {selectedComplexities.length}
+                  </span>
                 )}
-              </div>
-
-              {/* Maturity Filter */}
-              <div className="relative">
-                <button
-                  onClick={() => setOpenDropdown(openDropdown === 'maturity' ? null : 'maturity')}
-                  aria-expanded={openDropdown === 'maturity'}
-                  className={`inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold border cursor-pointer select-none transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px] ${
-                    selectedMaturities.length > 0 
-                      ? 'bg-primary/10 text-primary border-primary/30' 
-                      : 'bg-card border-border hover:bg-muted/50'
-                  }`}
-                >
-                  <Filter className="w-3 h-3" />
-                  <span>Maturity</span>
-                  {selectedMaturities.length > 0 && (
-                    <span className="ml-1 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.2 rounded-full">
-                      {selectedMaturities.length}
-                    </span>
-                  )}
-                  <ChevronDown className="w-3 h-3 ml-0.5" />
-                </button>
-                {openDropdown === 'maturity' && (
-                  <div className="absolute left-0 mt-1.5 w-48 rounded-lg border border-border bg-card shadow-lg p-2 space-y-1 z-40">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase px-2 py-1">Filter by Maturity</p>
-                    {['Production', 'Stable', 'Beta', 'Research', 'Experimental'].map(m => (
-                      <button
-                        key={m}
-                        onClick={() => toggleFilter(selectedMaturities, setSelectedMaturities, m)}
-                        className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-foreground hover:bg-muted text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
-                      >
-                        <span>{m}</span>
-                        {selectedMaturities.includes(m) && <Check className="w-3.5 h-3.5 text-primary" />}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* More Filters (Type, Modality, Characteristics) */}
-              <div className="relative">
-                <button
-                  onClick={() => setOpenDropdown(openDropdown === 'moreFilters' ? null : 'moreFilters')}
-                  aria-expanded={openDropdown === 'moreFilters'}
-                  className={`inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold border cursor-pointer select-none transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px] ${
-                    selectedTypes.length > 0 || selectedModalities.length > 0 || selectedCharacteristics.length > 0
-                      ? 'bg-primary/10 text-primary border-primary/30' 
-                      : 'bg-card border-border hover:bg-muted/50'
-                  }`}
-                >
-                  <Filter className="w-3 h-3" />
-                  <span>More filters</span>
-                  {(selectedTypes.length + selectedModalities.length + selectedCharacteristics.length) > 0 && (
-                    <span className="ml-1 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.2 rounded-full">
-                      {selectedTypes.length + selectedModalities.length + selectedCharacteristics.length}
-                    </span>
-                  )}
-                  <ChevronDown className="w-3 h-3 ml-0.5" />
-                </button>
-                {openDropdown === 'moreFilters' && (
-                  <div className="absolute left-0 mt-1.5 w-72 rounded-lg border border-border bg-card shadow-lg p-3 space-y-3 z-40 max-h-96 overflow-y-auto">
-                    {/* Type Filter */}
-                    <div>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase px-2 py-1">Problem Type</p>
-                      <div className="space-y-1">
-                        {(['classification', 'generation', 'retrieval', 'prediction', 'ranking', 'clustering', 'planning', 'reasoning', 'forecasting'] as NavigatorProblemType[]).map(t => (
-                          <button
-                            key={t}
-                            onClick={() => toggleFilter(selectedTypes, setSelectedTypes, t)}
-                            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-foreground hover:bg-muted text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
-                          >
-                            <span className="capitalize">{t}</span>
-                            {selectedTypes.includes(t) && <Check className="w-3.5 h-3.5 text-primary" />}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Modality Filter */}
-                    <div>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase px-2 py-1">Input Modality</p>
-                      <div className="space-y-1">
-                        {(['text', 'image', 'audio', 'video', 'tabular', 'multimodal'] as InputModality[]).map(m => (
-                          <button
-                            key={m}
-                            onClick={() => toggleFilter(selectedModalities, setSelectedModalities, m)}
-                            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-foreground hover:bg-muted text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
-                          >
-                            <span className="capitalize">{m}</span>
-                            {selectedModalities.includes(m) && <Check className="w-3.5 h-3.5 text-primary" />}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Characteristics Filter */}
-                    <div>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase px-2 py-1">Engineering Traits</p>
-                      <div className="space-y-1">
-                        {([
-                          'real_time', 'batch', 'streaming', 'offline', 'gpu_required', 
-                          'large_dataset', 'low_latency', 'high_throughput', 'resource_constrained'
-                        ] as EngineeringCharacteristic[]).map(c => (
-                          <button
-                            key={c}
-                            onClick={() => toggleFilter(selectedCharacteristics, setSelectedCharacteristics, c)}
-                            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-foreground hover:bg-muted text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
-                          >
-                            <span className="capitalize">{c.replace(/_/g, ' ')}</span>
-                            {selectedCharacteristics.includes(c) && <Check className="w-3.5 h-3.5 text-primary" />}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Reset Filters */}
-              {hasActiveFilters && (
-                <button
-                  onClick={clearAllFilters}
-                  className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold border border-dashed border-red-500/30 text-red-500 hover:bg-red-500/10 cursor-pointer select-none transition-all focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 min-h-[44px]"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  <span>Reset</span>
-                </button>
+                <ChevronDown className="w-3 h-3 ml-0.5" />
+              </button>
+              {openDropdown === 'complexity' && (
+                <div className="absolute left-0 mt-1.5 w-48 rounded-lg border border-border bg-card shadow-lg p-2 space-y-1 z-40">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase px-2 py-1">Filter by Complexity</p>
+                  {(['beginner', 'intermediate', 'advanced', 'expert'] as EngineeringComplexity[]).map(c => (
+                    <button
+                      key={c}
+                      onClick={() => toggleFilter(selectedComplexities, setSelectedComplexities, c)}
+                      className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-foreground hover:bg-muted text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
+                    >
+                      <span className="capitalize">{c} {renderComplexityStars(c)}</span>
+                      {selectedComplexities.includes(c) && <Check className="w-3.5 h-3.5 text-primary" />}
+                    </button>
+                  ))}
+                </div>
               )}
-
-              {/* Sorting Options */}
-              <div className="relative ml-auto">
-                <button
-                  onClick={() => setOpenDropdown(openDropdown === 'sort' ? null : 'sort')}
-                  aria-expanded={openDropdown === 'sort'}
-                  className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold border border-border bg-card hover:bg-muted/50 cursor-pointer select-none transition-all shadow-xs focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px]"
-                >
-                  <span className="text-muted-foreground font-normal">Sort:</span>
-                  <span className="capitalize font-bold">{sortBy === 'solutions' ? 'Solution Count' : sortBy}</span>
-                  <ChevronDown className="w-3.5 h-3.5" />
-                </button>
-                {openDropdown === 'sort' && (
-                  <div className="absolute right-0 mt-1.5 w-48 rounded-lg border border-border bg-card shadow-lg p-2 space-y-1 z-40">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase px-2 py-1">Sort Problems</p>
-                    {[
-                      { value: 'maturity', label: 'Solution Maturity' },
-                      { value: 'complexity', label: 'Complexity' },
-                      { value: 'name', label: 'Alphabetical Name' },
-                      { value: 'solutions', label: 'Solution Count' }
-                    ].map(s => (
-                      <button
-                        key={s.value}
-                        onClick={() => {
-                          setSortBy(s.value as typeof sortBy);
-                          setOpenDropdown(null);
-                        }}
-                        className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-foreground hover:bg-muted text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
-                      >
-                        <span>{s.label}</span>
-                        {sortBy === s.value && <Check className="w-3.5 h-3.5 text-primary" />}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
             </div>
+
+            {/* Maturity Filter */}
+            <div className="relative">
+              <button
+                onClick={() => setOpenDropdown(openDropdown === 'maturity' ? null : 'maturity')}
+                aria-expanded={openDropdown === 'maturity'}
+                className={`inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold border cursor-pointer select-none transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px] ${selectedMaturities.length > 0
+                    ? 'bg-primary/10 text-primary border-primary/30'
+                    : 'bg-card border-border hover:bg-muted/50'
+                  }`}
+              >
+                <Filter className="w-3 h-3" />
+                <span>Maturity</span>
+                {selectedMaturities.length > 0 && (
+                  <span className="ml-1 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.2 rounded-full">
+                    {selectedMaturities.length}
+                  </span>
+                )}
+                <ChevronDown className="w-3 h-3 ml-0.5" />
+              </button>
+              {openDropdown === 'maturity' && (
+                <div className="absolute left-0 mt-1.5 w-48 rounded-lg border border-border bg-card shadow-lg p-2 space-y-1 z-40">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase px-2 py-1">Filter by Maturity</p>
+                  {['Production', 'Stable', 'Beta', 'Research', 'Experimental'].map(m => (
+                    <button
+                      key={m}
+                      onClick={() => toggleFilter(selectedMaturities, setSelectedMaturities, m)}
+                      className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-foreground hover:bg-muted text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
+                    >
+                      <span>{m}</span>
+                      {selectedMaturities.includes(m) && <Check className="w-3.5 h-3.5 text-primary" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* More Filters (Type, Modality, Characteristics) */}
+            <div className="relative">
+              <button
+                onClick={() => setOpenDropdown(openDropdown === 'moreFilters' ? null : 'moreFilters')}
+                aria-expanded={openDropdown === 'moreFilters'}
+                className={`inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold border cursor-pointer select-none transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px] ${selectedTypes.length > 0 || selectedModalities.length > 0 || selectedCharacteristics.length > 0
+                    ? 'bg-primary/10 text-primary border-primary/30'
+                    : 'bg-card border-border hover:bg-muted/50'
+                  }`}
+              >
+                <Filter className="w-3 h-3" />
+                <span>More filters</span>
+                {(selectedTypes.length + selectedModalities.length + selectedCharacteristics.length) > 0 && (
+                  <span className="ml-1 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.2 rounded-full">
+                    {selectedTypes.length + selectedModalities.length + selectedCharacteristics.length}
+                  </span>
+                )}
+                <ChevronDown className="w-3 h-3 ml-0.5" />
+              </button>
+              {openDropdown === 'moreFilters' && (
+                <div className="absolute left-0 mt-1.5 w-72 rounded-lg border border-border bg-card shadow-lg p-3 space-y-3 z-40 max-h-96 overflow-y-auto">
+                  {/* Type Filter */}
+                  <div>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase px-2 py-1">Problem Type</p>
+                    <div className="space-y-1">
+                      {(['classification', 'generation', 'retrieval', 'prediction', 'ranking', 'clustering', 'planning', 'reasoning', 'forecasting'] as NavigatorProblemType[]).map(t => (
+                        <button
+                          key={t}
+                          onClick={() => toggleFilter(selectedTypes, setSelectedTypes, t)}
+                          className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-foreground hover:bg-muted text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
+                        >
+                          <span className="capitalize">{t}</span>
+                          {selectedTypes.includes(t) && <Check className="w-3.5 h-3.5 text-primary" />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Modality Filter */}
+                  <div>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase px-2 py-1">Input Modality</p>
+                    <div className="space-y-1">
+                      {(['text', 'image', 'audio', 'video', 'tabular', 'multimodal'] as InputModality[]).map(m => (
+                        <button
+                          key={m}
+                          onClick={() => toggleFilter(selectedModalities, setSelectedModalities, m)}
+                          className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-foreground hover:bg-muted text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
+                        >
+                          <span className="capitalize">{m}</span>
+                          {selectedModalities.includes(m) && <Check className="w-3.5 h-3.5 text-primary" />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Characteristics Filter */}
+                  <div>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase px-2 py-1">Engineering Traits</p>
+                    <div className="space-y-1">
+                      {([
+                        'real_time', 'batch', 'streaming', 'offline', 'gpu_required',
+                        'large_dataset', 'low_latency', 'high_throughput', 'resource_constrained'
+                      ] as EngineeringCharacteristic[]).map(c => (
+                        <button
+                          key={c}
+                          onClick={() => toggleFilter(selectedCharacteristics, setSelectedCharacteristics, c)}
+                          className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-foreground hover:bg-muted text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
+                        >
+                          <span className="capitalize">{c.replace(/_/g, ' ')}</span>
+                          {selectedCharacteristics.includes(c) && <Check className="w-3.5 h-3.5 text-primary" />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Reset Filters */}
+            {hasActiveFilters && (
+              <button
+                onClick={clearAllFilters}
+                className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold border border-dashed border-red-500/30 text-red-500 hover:bg-red-500/10 cursor-pointer select-none transition-all focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 min-h-[44px]"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Reset</span>
+              </button>
+            )}
+
+            {/* Sorting Options */}
+            <div className="relative ml-auto">
+              <button
+                onClick={() => setOpenDropdown(openDropdown === 'sort' ? null : 'sort')}
+                aria-expanded={openDropdown === 'sort'}
+                className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold border border-border bg-card hover:bg-muted/50 cursor-pointer select-none transition-all shadow-xs focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px]"
+              >
+                <span className="text-muted-foreground font-normal">Sort:</span>
+                <span className="capitalize font-bold">{sortBy === 'solutions' ? 'Solution Count' : sortBy}</span>
+                <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+              {openDropdown === 'sort' && (
+                <div className="absolute right-0 mt-1.5 w-48 rounded-lg border border-border bg-card shadow-lg p-2 space-y-1 z-40">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase px-2 py-1">Sort Problems</p>
+                  {[
+                    { value: 'maturity', label: 'Solution Maturity' },
+                    { value: 'complexity', label: 'Complexity' },
+                    { value: 'name', label: 'Alphabetical Name' },
+                    { value: 'solutions', label: 'Solution Count' }
+                  ].map(s => (
+                    <button
+                      key={s.value}
+                      onClick={() => {
+                        setSortBy(s.value as typeof sortBy);
+                        setOpenDropdown(null);
+                      }}
+                      className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-foreground hover:bg-muted text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
+                    >
+                      <span>{s.label}</span>
+                      {sortBy === s.value && <Check className="w-3.5 h-3.5 text-primary" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Active Filter Badges - integrated inline with filters */}
@@ -848,7 +844,7 @@ export default function ProblemIndexDashboard({
       </div>
 
       {/* Navigation & Action Toolbar */}
-      <div 
+      <div
         className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pt-2 mt-2 border-t border-border/40"
       >
         {/* Scrollable Navigation Chips */}
@@ -864,11 +860,10 @@ export default function ProblemIndexDashboard({
               <button
                 key={category}
                 onClick={() => handleScrollToCategory(category)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all whitespace-nowrap cursor-pointer select-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px] ${
-                  isActive 
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all whitespace-nowrap cursor-pointer select-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px] ${isActive
                     ? 'bg-primary text-primary-foreground border-primary shadow-xs'
                     : 'border-border bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted hover:border-foreground/25'
-                }`}
+                  }`}
               >
                 <IconComponent className="w-3.5 h-3.5" />
                 <span>{category}</span>
@@ -962,7 +957,7 @@ export default function ProblemIndexDashboard({
                 </button>
 
                 {/* Collapsible content area */}
-                <div 
+                <div
                   id={`category-content-${slug}`}
                   aria-hidden={isCollapsed}
                   suppressHydrationWarning
@@ -978,29 +973,29 @@ export default function ProblemIndexDashboard({
                         const hasWorkflows = problem.related_workflows.length > 0 || (problem.related_decision_guides && problem.related_decision_guides.length > 0);
                         const computedMaturity = getProblemMaturity(problem, workflowMap);
                         const isExpanded = expandedCards[problem.id] || { solutions: false, resources: false };
-                        
+
                         // Get the highest maturity workflow for primary action
-                        const primaryWorkflow = problem.related_workflows.length > 0 
+                        const primaryWorkflow = problem.related_workflows.length > 0
                           ? problem.related_workflows
-                              .map(id => workflowMap[id])
-                              .filter(Boolean)
-                              .sort((a, b) => {
-                                const maturityWeight: Record<string, number> = { 'production_proven': 4, 'stable': 3, 'verified': 2, 'experimental': 1, 'research': 0 };
-                                const aConfidence = (a.confidence || 'research') as keyof typeof maturityWeight;
-                                const bConfidence = (b.confidence || 'research') as keyof typeof maturityWeight;
-                                const aWeight = maturityWeight[aConfidence] ?? 0;
-                                const bWeight = maturityWeight[bConfidence] ?? 0;
-                                return bWeight - aWeight;
-                              })[0]
+                            .map(id => workflowMap[id])
+                            .filter(Boolean)
+                            .sort((a, b) => {
+                              const maturityWeight: Record<string, number> = { 'production_proven': 4, 'stable': 3, 'verified': 2, 'experimental': 1, 'research': 0 };
+                              const aConfidence = (a.confidence || 'research') as keyof typeof maturityWeight;
+                              const bConfidence = (b.confidence || 'research') as keyof typeof maturityWeight;
+                              const aWeight = maturityWeight[aConfidence] ?? 0;
+                              const bWeight = maturityWeight[bConfidence] ?? 0;
+                              return bWeight - aWeight;
+                            })[0]
                           : null;
 
-                        const additionalWorkflows = primaryWorkflow 
+                        const additionalWorkflows = primaryWorkflow
                           ? problem.related_workflows.filter(id => id !== primaryWorkflow.id)
                           : problem.related_workflows;
 
-                        const hasRelatedResources = 
-                          (problem.related_models?.length ?? 0) > 0 || 
-                          (problem.related_patterns?.length ?? 0) > 0 || 
+                        const hasRelatedResources =
+                          (problem.related_models?.length ?? 0) > 0 ||
+                          (problem.related_patterns?.length ?? 0) > 0 ||
                           (problem.related_debug_guides?.length ?? 0) > 0 ||
                           (problem.related_packages?.length ?? 0) > 0 ||
                           (problem.related_registry?.length ?? 0) > 0;
@@ -1026,12 +1021,11 @@ export default function ProblemIndexDashboard({
                                 </div>
                                 <div className="flex items-center gap-1.5 shrink-0">
                                   {/* Combined status/maturity badge */}
-                                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-mono font-bold select-none ${
-                                    computedMaturity === 'Production' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' :
-                                    computedMaturity === 'Stable' ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400' :
-                                    computedMaturity === 'Beta' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400' :
-                                    'bg-muted text-muted-foreground'
-                                  }`}>
+                                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-mono font-bold select-none ${computedMaturity === 'Production' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' :
+                                      computedMaturity === 'Stable' ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400' :
+                                        computedMaturity === 'Beta' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400' :
+                                          'bg-muted text-muted-foreground'
+                                    }`}>
                                     {hasWorkflows ? <CheckCircle2 className="w-2.5 h-2.5" /> : <Compass className="w-2.5 h-2.5" />}
                                     {computedMaturity}
                                   </span>
@@ -1100,7 +1094,7 @@ export default function ProblemIndexDashboard({
                                 {problem.requires.slice(0, 3).map(rId => {
                                   const link = resolveLink(rId, modelMap, patternMap, debugGuideMap, packageMap, registryMap, workflowMap);
                                   const name = resolveName(rId, modelMap, patternMap, debugGuideMap, packageMap, registryMap, workflowMap);
-                                  
+
                                   if (link) {
                                     return (
                                       <Link
@@ -1112,7 +1106,7 @@ export default function ProblemIndexDashboard({
                                       </Link>
                                     );
                                   }
-                                  
+
                                   return (
                                     <span key={rId} className="inline-flex items-center px-2 py-0.5 rounded bg-muted text-[10px] font-medium border border-border text-foreground">
                                       {name}
@@ -1269,7 +1263,7 @@ export default function ProblemIndexDashboard({
           <p className="text-xs text-muted-foreground mt-1 max-w-sm leading-relaxed">
             We couldn&apos;t find any problems matching your search/filters criteria.
           </p>
-          <button 
+          <button
             onClick={() => { setSearchQuery(''); clearAllFilters(); }}
             className="mt-3 px-4 py-2 bg-primary text-primary-foreground text-xs font-semibold rounded-lg hover:bg-primary/90 transition-colors cursor-pointer"
           >

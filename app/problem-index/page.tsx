@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { Suspense } from 'react';
-import { 
-  getAllWorkflows, 
+import {
+  getAllWorkflows,
   getAllDecisionGuides,
   getPackageNavItems,
   getModelNavItems,
@@ -147,8 +147,8 @@ export default function ProblemIndexPage() {
           <p className="text-xs text-muted-foreground">Loading Problem Index...</p>
         </div>
       }>
-        <ProblemIndexDashboard 
-          taxonomy={taxonomy} 
+        <ProblemIndexDashboard
+          taxonomy={taxonomy}
           workflowMap={workflowMap}
           decisionGuideMap={decisionGuideMap}
           modelMap={modelMap}
