@@ -327,13 +327,21 @@
   "latency_notes": "Benefit: Targeted budget: 50–100ms embedding (per-query or cached), 80–200ms vector search, 100–300ms reranking, 500ms–2s generation (model dependent); use cached query embeddings and warmed vLLM pools.\nTrade-off: meeting aggressive budgets requires pre-warmed GPUs and higher cost.\nWhen not to use it: batch offline analytic retrieval.\nOperational impact: requires autoscaling policies tuned for tail-loads and warm pools.",
   "observability_notes": "Benefit: Track: per-stage latency percentiles, candidate counts, token budget violations, embedding_model_id alignment rate, index vs SQL record reconciliation, golden-query NDCG.\nTrade-off: more metrics to store and alert on.\nWhen not to use it: none — observability is required.\nOperational impact: enables fast detection of integration failures described above.",
   "related_patterns": [
-    "training-loop"
+    "training-loop",
+    "kv-cache",
+    "prompt-caching"
   ],
   "related_models": [],
   "related_packages": [
     "pytorch"
   ],
   "related_debug_guides": [
-    "cuda-out-of-memory"
+    "cuda-out-of-memory",
+    "tokenizer-mismatch"
+  ],
+  "related_decision_guides": [
+    "dense-vs-sparse-retrieval",
+    "postgresql-vs-vector-db",
+    "rag-vs-fine-tuning"
   ]
 }

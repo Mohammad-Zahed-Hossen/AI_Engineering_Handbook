@@ -147,7 +147,8 @@
   "related_models": [],
   "related_packages": [],
   "related_patterns": [
-    "checkpointing"
+    "checkpointing",
+    "kv-cache"
   ],
   "related_debug_guides": [],
   "steps": [
@@ -423,5 +424,8 @@
   "scaling_notes": "Parallel tool execution and distributed agents improve throughput when many requests are independent or can be partially decomposed. The benefit is higher completion rate under concurrency; the trade-off is harder state coordination and more failure modes around shared resources. Do not parallelize blindly when tool outputs are order-dependent or side effects are not idempotent. The operational impact is better fleet utilization with stricter execution discipline.",
   "cost_notes": "Reasoning depth control, tool caching, and model routing reduce cost per completed task by limiting unnecessary steps and avoiding expensive tool/model calls. The benefit is lower inference and API spend; the trade-off is that aggressive pruning can reduce success rate on ambiguous tasks. Do not optimize for minimal tool calls if the task quality depends on exploration. The operational impact is a more predictable cost envelope with explicit control over compute waste.",
   "latency_notes": "Planning latency, tool latency, and execution depth are the three metrics that matter most for user-visible speed in agent systems. The benefit of optimizing them jointly is lower end-to-end completion time; the trade-off is that reducing depth can lower success on complex tasks. Do not use a deep reasoning loop for trivial requests that should be answered directly. The operational impact is lower tail latency and fewer runaway sessions.",
-  "observability_notes": "LangSmith traces, tool success metrics, and execution graphs make multi-step failures traceable rather than opaque. The benefit is fast diagnosis of where the agent diverged; the trade-off is telemetry overhead and more instrumentation work. Do not rely on coarse request logs for agent debugging because they cannot expose loop structure or tool provenance. The operational impact is faster incident resolution and safer iteration on live traffic."
+  "observability_notes": "LangSmith traces, tool success metrics, and execution graphs make multi-step failures traceable rather than opaque. The benefit is fast diagnosis of where the agent diverged; the trade-off is telemetry overhead and more instrumentation work. Do not rely on coarse request logs for agent debugging because they cannot expose loop structure or tool provenance. The operational impact is faster incident resolution and safer iteration on live traffic.",
+  "related_decision_guides": [
+    "kubernetes-vs-docker-compose"
+  ]
 }

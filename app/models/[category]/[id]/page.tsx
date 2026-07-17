@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getModelIds, getModel, getRelatedContent, resolveModelByName } from '@/lib/data';
+import { getModelIds, getModel, getRelatedContent, resolveModelByName, getRelatedKnowledgeResolver } from '@/lib/data';
 import { ModelCategory } from '@/types/model';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
@@ -78,6 +78,28 @@ export default async function ModelDetailPage({ params }: PageProps) {
       slug: resolveModelByName(name, validCategory)
     })),
   };
+
+  const resolver = getRelatedKnowledgeResolver();
+  const resolvedKnowledgeLinks: Record<string, string> = {};
+  const resolveAndAdd = (type: 'model' | 'principle' | 'workflow' | 'pattern' | 'package' | 'guide' | 'registry', names: string[]) => {
+    if (Array.isArray(names)) {
+      names.forEach(name => {
+        const href = resolver.resolve(type, name);
+        if (href) {
+          resolvedKnowledgeLinks[name] = href;
+        }
+      });
+    }
+  };
+
+  resolveAndAdd('model', model.relatedknowledge.relatedmodels);
+  resolveAndAdd('model', model.relatedknowledge.alternative_models);
+  resolveAndAdd('principle', model.relatedknowledge.related_principles);
+  resolveAndAdd('workflow', model.relatedknowledge.related_workflows);
+  resolveAndAdd('pattern', model.relatedknowledge.related_patterns);
+  resolveAndAdd('package', model.relatedknowledge.related_packages);
+  resolveAndAdd('guide', model.relatedknowledge.related_guides);
+  resolveAndAdd('registry', model.relatedknowledge.related_registry);
 
   return (
     <ContentPageLayout
@@ -252,7 +274,12 @@ export default async function ModelDetailPage({ params }: PageProps) {
         </SectionCard>
       )}
 
-      <ModelCollapsibleSections model={model} relatedKnowledgeLinks={relatedKnowledgeLinks} category={validCategory} />
+      <ModelCollapsibleSections
+        model={model}
+        relatedKnowledgeLinks={relatedKnowledgeLinks}
+        category={validCategory}
+        resolvedKnowledgeLinks={resolvedKnowledgeLinks}
+      />
 
       <RecommendedNextSection items={recommendedNextItems} category={validCategory} />
 

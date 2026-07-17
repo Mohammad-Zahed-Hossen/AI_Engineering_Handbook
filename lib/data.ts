@@ -626,6 +626,144 @@ export function resolveModelByName(displayName: string, category: ModelCategory)
   return null;
 }
 
+export const getRelatedKnowledgeResolver = cache(function getRelatedKnowledgeResolver() {
+  const map = new Map<string, string>();
+  const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  // 1. Principles
+  getAllPrinciples().forEach(p => {
+    const url = `/principles/${p.id}`;
+    if (p.id) map.set(`principle:${normalize(p.id)}`, url);
+    if (p.slug) map.set(`principle:${normalize(p.slug)}`, url);
+    if (p.name) map.set(`principle:${normalize(p.name)}`, url);
+    if (p.title) map.set(`principle:${normalize(p.title)}`, url);
+    if (Array.isArray(p.aliases)) {
+      p.aliases.forEach(a => map.set(`principle:${normalize(a)}`, url));
+    }
+  });
+
+  // 2. Workflows
+  getAllWorkflows().forEach(w => {
+    const url = `/workflows/${w.id}`;
+    if (w.id) map.set(`workflow:${normalize(w.id)}`, url);
+    if (w.slug) map.set(`workflow:${normalize(w.slug)}`, url);
+    if (w.name) map.set(`workflow:${normalize(w.name)}`, url);
+    if (w.title) map.set(`workflow:${normalize(w.title)}`, url);
+    if (Array.isArray(w.aliases)) {
+      w.aliases.forEach(a => map.set(`workflow:${normalize(a)}`, url));
+    }
+  });
+
+  // 3. Patterns
+  getAllPatterns().forEach(p => {
+    const url = `/patterns/${p.id}`;
+    if (p.id) map.set(`pattern:${normalize(p.id)}`, url);
+    if (p.slug) map.set(`pattern:${normalize(p.slug)}`, url);
+    if (p.name) map.set(`pattern:${normalize(p.name)}`, url);
+    if (p.title) map.set(`pattern:${normalize(p.title)}`, url);
+    if (Array.isArray(p.aliases)) {
+      p.aliases.forEach(a => map.set(`pattern:${normalize(a)}`, url));
+    }
+  });
+
+  // 4. Packages
+  getAllPackages().forEach(p => {
+    const url = `/packages/${p.id}`;
+    if (p.id) map.set(`package:${normalize(p.id)}`, url);
+    if (p.slug) map.set(`package:${normalize(p.slug)}`, url);
+    if (p.name) map.set(`package:${normalize(p.name)}`, url);
+    if (p.title) map.set(`package:${normalize(p.title)}`, url);
+    if (Array.isArray(p.aliases)) {
+      p.aliases.forEach(a => map.set(`package:${normalize(a)}`, url));
+    }
+  });
+
+  // 5. Guides (check debug guides, decision guides, and cheatsheets)
+  getAllDebugGuides().forEach(g => {
+    const url = `/debug-guides/${g.id}`;
+    if (g.id) map.set(`guide:${normalize(g.id)}`, url);
+    if (g.slug) map.set(`guide:${normalize(g.slug)}`, url);
+    if (g.name) map.set(`guide:${normalize(g.name)}`, url);
+    if (g.title) map.set(`guide:${normalize(g.title)}`, url);
+    if (Array.isArray(g.aliases)) {
+      g.aliases.forEach(a => map.set(`guide:${normalize(a)}`, url));
+    }
+  });
+  getAllDecisionGuides().forEach(g => {
+    const url = `/decision-guides/${g.id}`;
+    if (g.id) map.set(`guide:${normalize(g.id)}`, url);
+    if (g.slug) map.set(`guide:${normalize(g.slug)}`, url);
+    if (g.name) map.set(`guide:${normalize(g.name)}`, url);
+    if (g.title) map.set(`guide:${normalize(g.title)}`, url);
+    if (Array.isArray(g.aliases)) {
+      g.aliases.forEach(a => map.set(`guide:${normalize(a)}`, url));
+    }
+  });
+  getAllCheatsheetIds().forEach(id => {
+    const url = `/cheatsheets/${id}`;
+    map.set(`guide:${normalize(id)}`, url);
+    try {
+      const c = getCheatsheet(id);
+      if (c.slug) map.set(`guide:${normalize(c.slug)}`, url);
+      if (c.name) map.set(`guide:${normalize(c.name)}`, url);
+      if (c.title) map.set(`guide:${normalize(c.title)}`, url);
+      if (Array.isArray(c.aliases)) {
+        c.aliases.forEach(a => map.set(`guide:${normalize(a)}`, url));
+      }
+    } catch {}
+  });
+
+  // 6. Registry (check families and variants)
+  getAllRegistryFamilies().forEach(f => {
+    const url = `/registry/families/${f.id}`;
+    if (f.id) map.set(`registry:${normalize(f.id)}`, url);
+    if (f.slug) map.set(`registry:${normalize(f.slug)}`, url);
+    if (f.name) map.set(`registry:${normalize(f.name)}`, url);
+    if (f.title) map.set(`registry:${normalize(f.title)}`, url);
+    if (Array.isArray(f.aliases)) {
+      f.aliases.forEach(a => map.set(`registry:${normalize(a)}`, url));
+    }
+
+    const variantIds = getRegistryVariantIds(f.id);
+    variantIds.forEach(vid => {
+      const vurl = `/registry/families/${f.id}/${vid}`;
+      map.set(`registry:${normalize(vid)}`, vurl);
+      try {
+        const v = getRegistryVariant(f.id, vid);
+        if (v.slug) map.set(`registry:${normalize(v.slug)}`, vurl);
+        if (v.name) map.set(`registry:${normalize(v.name)}`, vurl);
+        if (v.title) map.set(`registry:${normalize(v.title)}`, vurl);
+        if (Array.isArray(v.aliases)) {
+          v.aliases.forEach(a => map.set(`registry:${normalize(a)}`, vurl));
+        }
+      } catch {}
+    });
+  });
+
+  // 7. Models
+  const categories: ModelCategory[] = ['ml', 'dl', 'llm'];
+  categories.forEach(cat => {
+    getAllModels(cat).forEach(m => {
+      const url = `/models/${cat}/${m.id}`;
+      if (m.id) map.set(`model:${normalize(m.id)}`, url);
+      if (m.slug) map.set(`model:${normalize(m.slug)}`, url);
+      if (m.name) map.set(`model:${normalize(m.name)}`, url);
+      if (m.title) map.set(`model:${normalize(m.title)}`, url);
+      if (Array.isArray(m.aliases)) {
+        m.aliases.forEach(a => map.set(`model:${normalize(a)}`, url));
+      }
+    });
+  });
+
+  return {
+    resolve: (type: 'model' | 'principle' | 'workflow' | 'pattern' | 'package' | 'guide' | 'registry', name: string): string | null => {
+      const norm = normalize(name);
+      return map.get(`${type}:${norm}`) || null;
+    }
+  };
+});
+
+
 export interface RecentContentItem {
   id: string;
   name: string;

@@ -154,7 +154,8 @@
     "kv-cache",
     "flash-attention",
     "prompt-caching",
-    "batch-inference"
+    "batch-inference",
+    "mixed-precision"
   ],
   "related_models": [],
   "related_packages": [
@@ -162,7 +163,8 @@
   ],
   "related_debug_guides": [
     "cuda-out-of-memory",
-    "tokenizer-mismatch"
+    "tokenizer-mismatch",
+    "gpu-not-detected"
   ],
   "steps": [
     {
@@ -457,5 +459,10 @@
   "scaling_notes": "Benefit: Dynamic batching, autoscaling, and request routing work together to raise throughput and keep GPU utilization above target without sacrificing streaming behavior.\nTrade-off: larger batches improve efficiency but can raise queue latency and TTFT if admission control is too loose.\nWhen not to use it: when your product is dominated by ultra-low-latency interactive chat.",
   "cost_notes": "Benefit: Quantization, prefix caching, and GPU packing reduce cost per request and improve capacity density.\nTrade-off: occasional quality loss, extra routing complexity, or stricter compatibility constraints around tokenizer and model versioning.\nWhen not to use it: over-optimizing these levers for small workloads where operational complexity outweighs savings.",
   "latency_notes": "Benefit: TTFT, decode throughput, and queue latency are the primary performance signals for serving quality. Lower TTFT improves perceived responsiveness, while higher decode throughput and lower queue time improve total capacity.\nTrade-off: none.\nWhen not to use it: least useful when generation length is tiny or when the workload is dominated by non-LLM application logic.",
-  "observability_notes": "Benefit: Prometheus metrics, tracing, and structured logging form the production feedback loop for overload, regressions, and rollout safety. The benefit is fast root cause analysis and actionable SLOs.\nTrade-off: extra instrumentation overhead and cardinality management.\nWhen not to use it: ad hoc logging as a substitute for request-scoped metrics when the system must support autoscaling and incident response."
+  "observability_notes": "Benefit: Prometheus metrics, tracing, and structured logging form the production feedback loop for overload, regressions, and rollout safety. The benefit is fast root cause analysis and actionable SLOs.\nTrade-off: extra instrumentation overhead and cardinality management.\nWhen not to use it: ad hoc logging as a substitute for request-scoped metrics when the system must support autoscaling and incident response.",
+  "related_decision_guides": [
+    "batch-vs-online-inference",
+    "kafka-vs-rabbitmq",
+    "kubernetes-vs-docker-compose"
+  ]
 }

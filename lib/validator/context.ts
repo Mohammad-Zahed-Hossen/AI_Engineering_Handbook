@@ -324,14 +324,16 @@ export async function buildValidationContext(): Promise<{
         { field: 'related_models', expectedType: 'model', relName: 'uses_model' },
         { field: 'related_packages', expectedType: 'package', relName: 'uses_package' },
         { field: 'related_principles', expectedType: 'principle', relName: 'references_principle' },
-        { field: 'related_debug_guides', expectedType: 'debug_guide', relName: 'uses_debug_guide' }
+        { field: 'related_debug_guides', expectedType: 'debug_guide', relName: 'uses_debug_guide' },
+        { field: 'related_decision_guides', expectedType: 'decision_guide', relName: 'uses_decision_guide' }
       );
     } else if (node.type === 'workflow') {
       relationshipMappings.push(
         { field: 'related_patterns', expectedType: 'pattern', relName: 'uses_pattern' },
         { field: 'related_models', expectedType: 'model', relName: 'uses_model' },
         { field: 'related_packages', expectedType: 'package', relName: 'uses_package' },
-        { field: 'related_debug_guides', expectedType: 'debug_guide', relName: 'uses_debug_guide' }
+        { field: 'related_debug_guides', expectedType: 'debug_guide', relName: 'uses_debug_guide' },
+        { field: 'related_decision_guides', expectedType: 'decision_guide', relName: 'uses_decision_guide' }
       );
     } else if (node.type === 'debug_guide') {
       relationshipMappings.push(
@@ -339,13 +341,18 @@ export async function buildValidationContext(): Promise<{
         { field: 'related_patterns', expectedType: 'pattern', relName: 'associated_pattern' },
         { field: 'related_models', expectedType: 'model', relName: 'associated_model' },
         { field: 'related_packages', expectedType: 'package', relName: 'associated_package' },
-        { field: 'related_registry', expectedType: 'registry_family', relName: 'associated_registry' } // Maps to registry family
+        { field: 'related_registry', expectedType: 'registry_family', relName: 'associated_registry' },
+        { field: 'related_decision_guides', expectedType: 'decision_guide', relName: 'associated_decision_guide' }
       );
     } else if (node.type === 'decision_guide') {
       relationshipMappings.push(
         { field: 'related_workflows', expectedType: 'workflow', relName: 'decides_workflow' },
         { field: 'related_models', expectedType: 'model', relName: 'decides_model' },
-        { field: 'related_packages', expectedType: 'package', relName: 'decides_package' }
+        { field: 'related_packages', expectedType: 'package', relName: 'decides_package' },
+        { field: 'related_patterns', expectedType: 'pattern', relName: 'decides_pattern' },
+        { field: 'related_debug_guides', expectedType: 'debug_guide', relName: 'troubleshooting_for' },
+        { field: 'related_registry', expectedType: 'registry_family', relName: 'decides_registry' },
+        { field: 'related_decision_guides', expectedType: 'decision_guide', relName: 'related_to' }
       );
     } else if (node.type === 'principle') {
       relationshipMappings.push(

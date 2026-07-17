@@ -31,6 +31,31 @@ interface ModelCollapsibleSectionsProps {
     alternative_models: Array<{ name: string; slug: string | null }>;
   };
   category?: ModelCategory;
+  resolvedKnowledgeLinks?: Record<string, string>;
+}
+
+interface RelatedItemProps {
+  item: string;
+  href?: string;
+}
+
+function RelatedItem({ item, href }: RelatedItemProps) {
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="inline-flex items-center px-2 py-0.5 rounded border border-border bg-muted/40 text-[10px] font-mono text-foreground hover:bg-muted hover:border-foreground/20 hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 select-none"
+      >
+        {item}
+      </Link>
+    );
+  }
+
+  return (
+    <span className="inline-flex items-center px-2 py-0.5 rounded border border-border bg-muted/40 text-[10px] font-mono text-muted-foreground select-none">
+      {item}
+    </span>
+  );
 }
 
 interface CollapsibleSectionProps {
@@ -98,7 +123,7 @@ const libraryParamsMap: Record<string, string> = {
   "bootstrap": "bootstrap",
 };
 
-export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks, category }: ModelCollapsibleSectionsProps) {
+export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks, category, resolvedKnowledgeLinks }: ModelCollapsibleSectionsProps) {
   const [coreOpen, setCoreOpen] = useState(false);
   const [engOpen, setEngOpen] = useState(false);
   const [hyperOpen, setHyperOpen] = useState(false);
@@ -502,48 +527,47 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
         onToggle={() => setKnowledgeOpen(v => !v)}
       >
         <div className="space-y-4 text-xs font-sans">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {relatedKnowledgeSections.map(([label, items]) => {
-              const arrayItems = items as readonly string[];
-              if (!arrayItems || arrayItems.length === 0) return null;
-              
-              // Check if this section should use cross-linking
-              const isModelSection = label === 'Related Models' || label === 'Alternative Models';
-              const linkKey = label === 'Related Models' ? 'relatedmodels' : 'alternative_models';
-              const resolvedLinks = isModelSection && relatedKnowledgeLinks && category 
-                ? relatedKnowledgeLinks[linkKey as keyof typeof relatedKnowledgeLinks] 
-                : null;
-              
-              return (
-                <div key={label} className="space-y-1.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-foreground">{label}</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {arrayItems.map((item, idx) => {
-                      const resolvedSlug = resolvedLinks?.[idx]?.slug;
-                      
-                      if (isModelSection && resolvedSlug && category) {
+          {relatedKnowledgeSections.some(([, items]) => items && items.length > 0) ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {relatedKnowledgeSections.map(([label, items]) => {
+                const arrayItems = items as readonly string[];
+                if (!arrayItems || arrayItems.length === 0) return null;
+                
+                return (
+                  <div key={label} className="space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-foreground">{label}</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {arrayItems.map((item) => {
+                        // Resolve using server-passed resolvedKnowledgeLinks dictionary,
+                        // falling back to old relatedKnowledgeLinks for backwards compatibility
+                        let href = resolvedKnowledgeLinks?.[item];
+                        if (!href && (label === 'Related Models' || label === 'Alternative Models') && relatedKnowledgeLinks && category) {
+                          const idx = arrayItems.indexOf(item);
+                          const linkKey = label === 'Related Models' ? 'relatedmodels' : 'alternative_models';
+                          const resolvedSlug = relatedKnowledgeLinks[linkKey as keyof typeof relatedKnowledgeLinks]?.[idx]?.slug;
+                          if (resolvedSlug) {
+                            href = `/models/${category}/${resolvedSlug}`;
+                          }
+                        }
+
                         return (
-                          <Link
+                          <RelatedItem
                             key={item}
-                            href={`/models/${category}/${resolvedSlug}`}
-                            className="px-2 py-0.5 rounded border border-border bg-muted/40 text-[10px] font-mono text-foreground hover:bg-muted hover:border-foreground/20 transition-colors"
-                          >
-                            {item}
-                          </Link>
+                            item={item}
+                            href={href}
+                          />
                         );
-                      }
-                      
-                      return (
-                        <span key={item} className="px-2 py-0.5 rounded border border-border bg-muted/40 text-[10px] font-mono text-muted-foreground">
-                          {item}
-                        </span>
-                      );
-                    })}
+                      })}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-muted-foreground italic font-sans text-xs py-1">
+              No related resources available.
+            </div>
+          )}
         </div>
       </CollapsibleSection>
     </div>

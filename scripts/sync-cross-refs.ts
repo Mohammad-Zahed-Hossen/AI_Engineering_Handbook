@@ -49,6 +49,7 @@ interface ContentData {
   relatedcontent?: RelationRef[];
   alternatives?: RelationRef[];
   related_resources?: ResourceRef[];
+  related_decision_guides?: string[];
   [key: string]: unknown;
 }
 
@@ -223,10 +224,11 @@ function cleanReferences() {
 
     // Filter registry related_models
     if (node.type === 'registry_family' && data.related_models && Array.isArray(data.related_models)) {
-      data.related_models = (data.related_models as RelationRef[]).filter((ref: RelationRef) => {
+      const filtered = (data.related_models as RelationRef[]).filter((ref: RelationRef) => {
         if (!ref || typeof ref !== 'object' || !ref.id) return false;
         return exists('model', ref.id);
       });
+      (data as Record<string, unknown>).related_models = filtered;
     }
 
     // Filter registry related_resources
@@ -400,6 +402,7 @@ function injectPassRelationships() {
       { type: 'model', id: 'qwen', relationship: 'implements' },
       { type: 'model', id: 'gemma', relationship: 'implements' },
       { type: 'model', id: 'mistral', relationship: 'implements' },
+      { type: 'model', id: 'phi', relationship: 'implements' },
       { type: 'model', id: 'bert', relationship: 'implements' },
       { type: 'model', id: 'roberta', relationship: 'implements' },
       { type: 'model', id: 't5', relationship: 'implements' },
@@ -461,6 +464,368 @@ function injectPassRelationships() {
           type: rel.type,
           relationship_type: rel.relationship,
         });
+      }
+    }
+  }
+
+  // ── PASS 4: Patterns related_workflows, related_models, related_packages, related_debug_guides ─────
+  const patternRelations: Record<string, Array<{ type: NodeType; id: string; relationship: string }>> = {
+    'kv-cache': [
+      { type: 'workflow', id: 'llm-application-serving', relationship: 'used_in' },
+      { type: 'workflow', id: 'production-llm-cost-latency-optimization', relationship: 'used_in' },
+      { type: 'package', id: 'pytorch', relationship: 'implemented_by' },
+      { type: 'debug_guide', id: 'cuda-out-of-memory', relationship: 'troubleshooting_for' },
+    ],
+    'flash-attention': [
+      { type: 'workflow', id: 'llm-application-serving', relationship: 'used_in' },
+      { type: 'workflow', id: 'production-llm-cost-latency-optimization', relationship: 'used_in' },
+      { type: 'package', id: 'pytorch', relationship: 'implemented_by' },
+    ],
+    'training-loop': [
+      { type: 'workflow', id: 'tabular-ml-model-development-lifecycle', relationship: 'used_in' },
+      { type: 'workflow', id: 'full-fine-tuning-a-pretrained-transformer', relationship: 'used_in' },
+      { type: 'workflow', id: 'fine-tune-an-llm-with-lora-qlora', relationship: 'used_in' },
+      { type: 'package', id: 'pytorch', relationship: 'implemented_by' },
+      { type: 'package', id: 'scikit-learn', relationship: 'implemented_by' },
+      { type: 'debug_guide', id: 'cuda-out-of-memory', relationship: 'troubleshooting_for' },
+      { type: 'debug_guide', id: 'nan-loss-exploding-gradients', relationship: 'troubleshooting_for' },
+    ],
+    'distributed-data-parallel': [
+      { type: 'workflow', id: 'full-fine-tuning-a-pretrained-transformer', relationship: 'used_in' },
+      { type: 'package', id: 'pytorch', relationship: 'implemented_by' },
+    ],
+    'gradient-accumulation': [
+      { type: 'workflow', id: 'fine-tune-an-llm-with-lora-qlora', relationship: 'used_in' },
+      { type: 'package', id: 'pytorch', relationship: 'implemented_by' },
+    ],
+    'mixed-precision': [
+      { type: 'workflow', id: 'llm-application-serving', relationship: 'used_in' },
+      { type: 'workflow', id: 'full-fine-tuning-a-pretrained-transformer', relationship: 'used_in' },
+      { type: 'package', id: 'pytorch', relationship: 'implemented_by' },
+    ],
+    'gradient-checkpointing': [
+      { type: 'workflow', id: 'full-fine-tuning-a-pretrained-transformer', relationship: 'used_in' },
+      { type: 'package', id: 'pytorch', relationship: 'implemented_by' },
+    ],
+    'checkpointing': [
+      { type: 'workflow', id: 'full-fine-tuning-a-pretrained-transformer', relationship: 'used_in' },
+      { type: 'package', id: 'pytorch', relationship: 'implemented_by' },
+    ],
+    'early-stopping': [
+      { type: 'workflow', id: 'tabular-ml-model-development-lifecycle', relationship: 'used_in' },
+      { type: 'workflow', id: 'hyperparameter-optimization-workflow', relationship: 'used_in' },
+      { type: 'package', id: 'scikit-learn', relationship: 'implemented_by' },
+    ],
+    'prompt-caching': [
+      { type: 'workflow', id: 'llm-application-serving', relationship: 'used_in' },
+      { type: 'workflow', id: 'build-rag-system', relationship: 'used_in' },
+      { type: 'package', id: 'pytorch', relationship: 'implemented_by' },
+    ],
+    'streaming-inference': [
+      { type: 'workflow', id: 'llm-application-serving', relationship: 'used_in' },
+      { type: 'package', id: 'pytorch', relationship: 'implemented_by' },
+    ],
+    'batch-inference': [
+      { type: 'workflow', id: 'llm-application-serving', relationship: 'used_in' },
+      { type: 'workflow', id: 'production-llm-cost-latency-optimization', relationship: 'used_in' },
+      { type: 'package', id: 'pytorch', relationship: 'implemented_by' },
+    ],
+    'learning-rate-scheduling': [
+      { type: 'workflow', id: 'hyperparameter-optimization-workflow', relationship: 'used_in' },
+      { type: 'package', id: 'pytorch', relationship: 'implemented_by' },
+    ],
+  };
+
+  for (const [patternId, list] of Object.entries(patternRelations)) {
+    const node = allNodes.get(`pattern:${patternId}`);
+    if (!node) continue;
+    
+    for (const rel of list) {
+      if (!exists(rel.type, rel.id)) continue;
+      
+      if (rel.type === 'workflow') {
+        if (!node.data.related_workflows) node.data.related_workflows = [];
+        if (!node.data.related_workflows.includes(rel.id)) {
+          node.data.related_workflows.push(rel.id);
+        }
+      } else if (rel.type === 'model') {
+        if (!node.data.related_models) node.data.related_models = [];
+        const modelList = node.data.related_models as string[];
+        if (!modelList.includes(rel.id)) {
+          modelList.push(rel.id);
+        }
+      } else if (rel.type === 'package') {
+        if (!node.data.related_packages) node.data.related_packages = [];
+        if (!node.data.related_packages.includes(rel.id)) {
+          node.data.related_packages.push(rel.id);
+        }
+      } else if (rel.type === 'debug_guide') {
+        if (!node.data.related_debug_guides) node.data.related_debug_guides = [];
+        if (!node.data.related_debug_guides.includes(rel.id)) {
+          node.data.related_debug_guides.push(rel.id);
+        }
+      }
+    }
+  }
+
+  // ── PASS 5: Workflows related_patterns, related_models, related_packages, related_debug_guides ───
+  const workflowRelations: Record<string, Array<{ type: NodeType; id: string; relationship: string }>> = {
+    'llm-application-serving': [
+      { type: 'pattern', id: 'kv-cache', relationship: 'uses' },
+      { type: 'pattern', id: 'flash-attention', relationship: 'uses' },
+      { type: 'pattern', id: 'prompt-caching', relationship: 'uses' },
+      { type: 'pattern', id: 'streaming-inference', relationship: 'uses' },
+      { type: 'pattern', id: 'batch-inference', relationship: 'uses' },
+      { type: 'pattern', id: 'mixed-precision', relationship: 'uses' },
+      { type: 'debug_guide', id: 'cuda-out-of-memory', relationship: 'debugged_by' },
+      { type: 'debug_guide', id: 'tokenizer-mismatch', relationship: 'debugged_by' },
+    ],
+    'production-llm-cost-latency-optimization': [
+      { type: 'pattern', id: 'kv-cache', relationship: 'uses' },
+      { type: 'pattern', id: 'flash-attention', relationship: 'uses' },
+      { type: 'pattern', id: 'prompt-caching', relationship: 'uses' },
+      { type: 'pattern', id: 'batch-inference', relationship: 'uses' },
+    ],
+    'fine-tune-an-llm-with-lora-qlora': [
+      { type: 'pattern', id: 'training-loop', relationship: 'uses' },
+      { type: 'pattern', id: 'gradient-accumulation', relationship: 'uses' },
+      { type: 'pattern', id: 'mixed-precision', relationship: 'uses' },
+      { type: 'pattern', id: 'gradient-checkpointing', relationship: 'uses' },
+      { type: 'pattern', id: 'checkpointing', relationship: 'uses' },
+    ],
+    'full-fine-tuning-a-pretrained-transformer': [
+      { type: 'pattern', id: 'training-loop', relationship: 'uses' },
+      { type: 'pattern', id: 'distributed-data-parallel', relationship: 'uses' },
+      { type: 'pattern', id: 'gradient-accumulation', relationship: 'uses' },
+      { type: 'pattern', id: 'mixed-precision', relationship: 'uses' },
+      { type: 'pattern', id: 'gradient-checkpointing', relationship: 'uses' },
+      { type: 'pattern', id: 'checkpointing', relationship: 'uses' },
+    ],
+    'build-rag-system': [
+      { type: 'pattern', id: 'kv-cache', relationship: 'uses' },
+      { type: 'pattern', id: 'prompt-caching', relationship: 'uses' },
+    ],
+    'tabular-ml-model-development-lifecycle': [
+      { type: 'pattern', id: 'training-loop', relationship: 'uses' },
+      { type: 'pattern', id: 'early-stopping', relationship: 'uses' },
+    ],
+    'feature-engineering-pipeline': [
+      { type: 'pattern', id: 'training-loop', relationship: 'uses' },
+    ],
+    'hyperparameter-optimization-workflow': [
+      { type: 'pattern', id: 'early-stopping', relationship: 'uses' },
+      { type: 'pattern', id: 'learning-rate-scheduling', relationship: 'uses' },
+    ],
+    'deep-learning-experiment-lifecycle': [
+      { type: 'pattern', id: 'training-loop', relationship: 'uses' },
+    ],
+    'agentic-tool-use-system': [
+      { type: 'pattern', id: 'kv-cache', relationship: 'uses' },
+    ],
+    'multi-agent-orchestration': [
+      { type: 'pattern', id: 'kv-cache', relationship: 'uses' },
+    ],
+  };
+
+  for (const [workflowId, list] of Object.entries(workflowRelations)) {
+    const node = allNodes.get(`workflow:${workflowId}`);
+    if (!node) continue;
+    
+    for (const rel of list) {
+      if (!exists(rel.type, rel.id)) continue;
+      
+      if (rel.type === 'pattern') {
+        if (!node.data.related_patterns) node.data.related_patterns = [];
+        if (!node.data.related_patterns.includes(rel.id)) {
+          node.data.related_patterns.push(rel.id);
+        }
+      } else if (rel.type === 'model') {
+        if (!node.data.related_models) node.data.related_models = [];
+        const modelList = node.data.related_models as string[];
+        if (!modelList.includes(rel.id)) {
+          modelList.push(rel.id);
+        }
+      } else if (rel.type === 'package') {
+        if (!node.data.related_packages) node.data.related_packages = [];
+        if (!node.data.related_packages.includes(rel.id)) {
+          node.data.related_packages.push(rel.id);
+        }
+      } else if (rel.type === 'debug_guide') {
+        if (!node.data.related_debug_guides) node.data.related_debug_guides = [];
+        if (!node.data.related_debug_guides.includes(rel.id)) {
+          node.data.related_debug_guides.push(rel.id);
+        }
+      }
+    }
+  }
+
+  // ── PASS 6: Decision Guides related_models, related_packages, related_workflows ───────────────
+  const decisionGuideRelations: Record<string, Array<{ type: NodeType; id: string; relationship: string }>> = {
+    'lora-vs-qlora': [
+      { type: 'workflow', id: 'fine-tune-an-llm-with-lora-qlora', relationship: 'compares' },
+      { type: 'package', id: 'pytorch', relationship: 'compares' },
+    ],
+    'pytorch-vs-tensorflow': [
+      { type: 'workflow', id: 'deep-learning-experiment-lifecycle', relationship: 'compares' },
+      { type: 'debug_guide', id: 'gpu-not-detected', relationship: 'troubleshooting_for' },
+      { type: 'debug_guide', id: 'checkpoint-load-error', relationship: 'troubleshooting_for' },
+      { type: 'debug_guide', id: 'dataloader-hang', relationship: 'troubleshooting_for' },
+    ],
+    'rag-vs-fine-tuning': [
+      { type: 'workflow', id: 'build-rag-system', relationship: 'compares' },
+      { type: 'workflow', id: 'fine-tune-an-llm-with-lora-qlora', relationship: 'compares' },
+      { type: 'registry_family', id: 'llama-3', relationship: 'compares' },
+      { type: 'debug_guide', id: 'tokenizer-mismatch', relationship: 'troubleshooting_for' },
+    ],
+    'dense-vs-sparse-retrieval': [
+      { type: 'workflow', id: 'build-rag-system', relationship: 'compares' },
+      { type: 'decision_guide', id: 'postgresql-vs-vector-db', relationship: 'related_to' },
+    ],
+    'postgresql-vs-vector-db': [
+      { type: 'workflow', id: 'vector-database-setup-indexing-strategy', relationship: 'compares' },
+      { type: 'decision_guide', id: 'dense-vs-sparse-retrieval', relationship: 'related_to' },
+    ],
+    'batch-vs-online-inference': [
+      { type: 'workflow', id: 'llm-application-serving', relationship: 'compares' },
+      { type: 'pattern', id: 'batch-inference', relationship: 'compares' },
+    ],
+    'cnn-vs-vision-transformer': [
+      { type: 'workflow', id: 'image-classification-pipeline', relationship: 'compares' },
+      { type: 'model', id: 'vit', relationship: 'compares' },
+      { type: 'workflow', id: 'object-detection-pipeline', relationship: 'compares' },
+    ],
+    'mlflow-vs-weights-and-biases': [
+      { type: 'workflow', id: 'deep-learning-experiment-lifecycle', relationship: 'compares' },
+      { type: 'workflow', id: 'hyperparameter-optimization-workflow', relationship: 'compares' },
+      { type: 'workflow', id: 'model-selection-baseline-benchmarking', relationship: 'compares' },
+    ],
+    'kafka-vs-rabbitmq': [
+      { type: 'pattern', id: 'batch-inference', relationship: 'compares' },
+    ],
+    'kubernetes-vs-docker-compose': [
+      { type: 'workflow', id: 'agentic-tool-use-system', relationship: 'compares' },
+    ],
+  };
+
+  for (const [dgId, list] of Object.entries(decisionGuideRelations)) {
+    const node = allNodes.get(`decision_guide:${dgId}`);
+    if (!node) continue;
+    
+    for (const rel of list) {
+      if (!exists(rel.type, rel.id)) continue;
+      
+      if (rel.type === 'workflow') {
+        if (!node.data.related_workflows) node.data.related_workflows = [];
+        if (!node.data.related_workflows.includes(rel.id)) {
+          node.data.related_workflows.push(rel.id);
+        }
+      } else if (rel.type === 'model') {
+        if (!node.data.related_models) node.data.related_models = [];
+        const modelList = node.data.related_models as string[];
+        if (!modelList.includes(rel.id)) {
+          modelList.push(rel.id);
+        }
+      } else if (rel.type === 'package') {
+        if (!node.data.related_packages) node.data.related_packages = [];
+        if (!node.data.related_packages.includes(rel.id)) {
+          node.data.related_packages.push(rel.id);
+        }
+      } else if (rel.type === 'debug_guide') {
+        if (!node.data.related_debug_guides) node.data.related_debug_guides = [];
+        if (!node.data.related_debug_guides.includes(rel.id)) {
+          node.data.related_debug_guides.push(rel.id);
+        }
+      } else if (rel.type === 'registry_family') {
+        if (!node.data.related_registry) node.data.related_registry = [];
+        if (!node.data.related_registry.includes(rel.id)) {
+          node.data.related_registry.push(rel.id);
+        }
+      } else if (rel.type === 'pattern') {
+        if (!node.data.related_patterns) node.data.related_patterns = [];
+        if (!node.data.related_patterns.includes(rel.id)) {
+          node.data.related_patterns.push(rel.id);
+        }
+      } else if (rel.type === 'decision_guide') {
+        if (!node.data.related_decision_guides) node.data.related_decision_guides = [];
+        if (!node.data.related_decision_guides.includes(rel.id)) {
+          node.data.related_decision_guides.push(rel.id);
+        }
+      }
+    }
+  }
+
+  // ── PASS 7: Debug Guides related_patterns, related_workflows, related_packages, related_registry ──
+  const debugGuideRelations: Record<string, Array<{ type: NodeType; id: string; relationship: string }>> = {
+    'cuda-out-of-memory': [
+      { type: 'pattern', id: 'kv-cache', relationship: 'related_to' },
+      { type: 'pattern', id: 'gradient-accumulation', relationship: 'related_to' },
+      { type: 'pattern', id: 'mixed-precision', relationship: 'related_to' },
+      { type: 'pattern', id: 'gradient-checkpointing', relationship: 'related_to' },
+      { type: 'workflow', id: 'llm-application-serving', relationship: 'related_to' },
+      { type: 'workflow', id: 'full-fine-tuning-a-pretrained-transformer', relationship: 'related_to' },
+      { type: 'workflow', id: 'fine-tune-an-llm-with-lora-qlora', relationship: 'related_to' },
+      { type: 'package', id: 'pytorch', relationship: 'related_to' },
+      { type: 'registry_family', id: 'llama-3', relationship: 'related_to' },
+      { type: 'registry_family', id: 'deepseek', relationship: 'related_to' },
+      { type: 'registry_family', id: 'qwen-3', relationship: 'related_to' },
+    ],
+    'tokenizer-mismatch': [
+      { type: 'workflow', id: 'build-rag-system', relationship: 'related_to' },
+      { type: 'registry_family', id: 'llama-3', relationship: 'related_to' },
+      { type: 'registry_family', id: 'deepseek', relationship: 'related_to' },
+      { type: 'registry_family', id: 'qwen-3', relationship: 'related_to' },
+    ],
+    'checkpoint-load-error': [
+      { type: 'workflow', id: 'full-fine-tuning-a-pretrained-transformer', relationship: 'related_to' },
+      { type: 'registry_family', id: 'llama-3', relationship: 'related_to' },
+      { type: 'registry_family', id: 'deepseek', relationship: 'related_to' },
+      { type: 'registry_family', id: 'qwen-3', relationship: 'related_to' },
+    ],
+    'nan-loss-exploding-gradients': [
+      { type: 'pattern', id: 'training-loop', relationship: 'related_to' },
+      { type: 'workflow', id: 'full-fine-tuning-a-pretrained-transformer', relationship: 'related_to' },
+    ],
+    'model-not-learning': [
+      { type: 'pattern', id: 'training-loop', relationship: 'related_to' },
+      { type: 'workflow', id: 'tabular-ml-model-development-lifecycle', relationship: 'related_to' },
+    ],
+    'dataloader-hang': [
+      { type: 'workflow', id: 'tabular-ml-model-development-lifecycle', relationship: 'related_to' },
+      { type: 'workflow', id: 'feature-engineering-pipeline', relationship: 'related_to' },
+    ],
+    'gpu-not-detected': [
+      { type: 'workflow', id: 'llm-application-serving', relationship: 'related_to' },
+      { type: 'workflow', id: 'deep-learning-experiment-lifecycle', relationship: 'related_to' },
+    ],
+  };
+
+  for (const [dgId, list] of Object.entries(debugGuideRelations)) {
+    const node = allNodes.get(`debug_guide:${dgId}`);
+    if (!node) continue;
+    
+    for (const rel of list) {
+      if (!exists(rel.type, rel.id)) continue;
+      
+      if (rel.type === 'pattern') {
+        if (!node.data.related_patterns) node.data.related_patterns = [];
+        if (!node.data.related_patterns.includes(rel.id)) {
+          node.data.related_patterns.push(rel.id);
+        }
+      } else if (rel.type === 'workflow') {
+        if (!node.data.related_workflows) node.data.related_workflows = [];
+        if (!node.data.related_workflows.includes(rel.id)) {
+          node.data.related_workflows.push(rel.id);
+        }
+      } else if (rel.type === 'package') {
+        if (!node.data.related_packages) node.data.related_packages = [];
+        if (!node.data.related_packages.includes(rel.id)) {
+          node.data.related_packages.push(rel.id);
+        }
+      } else if (rel.type === 'registry_family') {
+        if (!node.data.related_registry) node.data.related_registry = [];
+        if (!node.data.related_registry.includes(rel.id)) {
+          node.data.related_registry.push(rel.id);
+        }
       }
     }
   }
@@ -625,6 +990,69 @@ function syncBidirectional() {
         }
       }
     }
+
+    // 13. Decision Guide -> Workflow (compares) - add incoming links to workflows
+    if (node.type === 'decision_guide' && Array.isArray(data.related_workflows)) {
+      for (const wId of data.related_workflows) {
+        const wNode = allNodes.get(`workflow:${wId}`);
+        if (wNode) {
+          addToSetArray(wNode.data, 'related_decision_guides', node.id);
+        }
+      }
+    }
+
+    // 14. Decision Guide -> Pattern (compares) - add incoming links to patterns
+    if (node.type === 'decision_guide' && Array.isArray(data.related_patterns)) {
+      for (const pId of data.related_patterns) {
+        const pNode = allNodes.get(`pattern:${pId}`);
+        if (pNode) {
+          addToSetArray(pNode.data, 'related_decision_guides', node.id);
+        }
+      }
+    }
+
+    // 15. Decision Guide -> Model (compares) - add incoming links to models
+    if (node.type === 'decision_guide' && Array.isArray(data.related_models)) {
+      for (const mId of data.related_models) {
+        const mNode = allNodes.get(`model:${mId}`);
+        if (mNode) {
+          addToSetArray(mNode.data, 'related_decision_guides', node.id);
+        }
+      }
+    }
+
+    // 16. Decision Guide -> Debug Guide (troubleshooting_for) - add incoming links to debug guides
+    if (node.type === 'decision_guide' && Array.isArray(data.related_debug_guides)) {
+      for (const dgId of data.related_debug_guides) {
+        const dgNode = allNodes.get(`debug_guide:${dgId}`);
+        if (dgNode) {
+          addToSetArray(dgNode.data, 'related_decision_guides', node.id);
+        }
+      }
+    }
+
+    // 17. Decision Guide -> Registry Family (compares) - add incoming links to registry families
+    if (node.type === 'decision_guide' && Array.isArray(data.related_registry)) {
+      for (const regId of data.related_registry) {
+        const regNode = allNodes.get(`registry_family:${regId}`);
+        if (regNode) {
+          if (!regNode.data.related_decision_guides) regNode.data.related_decision_guides = [];
+          if (!regNode.data.related_decision_guides.includes(node.id)) {
+            regNode.data.related_decision_guides.push(node.id);
+          }
+        }
+      }
+    }
+
+    // 18. Decision Guide -> Decision Guide (related_to) - add incoming links
+    if (node.type === 'decision_guide' && Array.isArray(data.related_decision_guides)) {
+      for (const dgId of data.related_decision_guides) {
+        const dgNode = allNodes.get(`decision_guide:${dgId}`);
+        if (dgNode) {
+          addToSetArray(dgNode.data, 'related_decision_guides', node.id);
+        }
+      }
+    }
   }
 }
 
@@ -652,6 +1080,22 @@ function pruneBudgets() {
       data.relatedcontent = pruned;
     }
 
+    // Smart pruning for packages: preserve model relationships (bidirectional)
+    if (node.type === 'package' && Array.isArray(data.related_content) && data.related_content.length > maxPerType) {
+      const modelRefs = data.related_content.filter((ref: RelationRef) => ref.type === 'model');
+      const otherRefs = data.related_content.filter((ref: RelationRef) => ref.type !== 'model');
+      
+      const pruned = [...modelRefs];
+      const remainingSlots = maxPerType - pruned.length;
+      if (remainingSlots > 0) {
+        pruned.push(...otherRefs.slice(0, remainingSlots));
+      } else {
+        pruned.splice(maxPerType); // Keep only first 20 models if more than 20
+      }
+      console.log(`Smart pruned related_content in package ${node.filePath} from ${data.related_content.length} to ${pruned.length} (models preserved).`);
+      data.related_content = pruned;
+    }
+
     // Prune standard lists
     const relationshipLists = [
       'related_workflows',
@@ -672,6 +1116,8 @@ function pruneBudgets() {
     for (const field of relationshipLists) {
       // Skip relatedcontent of models as it was already smart pruned
       if (node.type === 'model' && field === 'relatedcontent') continue;
+      // Skip related_content of packages as it was already smart pruned
+      if (node.type === 'package' && field === 'related_content') continue;
 
       if (Array.isArray(data[field]) && data[field].length > maxPerType) {
         console.log(`Pruning list '${field}' in ${node.filePath} from ${data[field].length} to ${maxPerType}`);
@@ -697,10 +1143,12 @@ function pruneBudgets() {
         // Workflow -> related_patterns, related_debug_guides
         // Debug Guide -> related_patterns, related_workflows
         // Model -> relatedcontent (specifically principle refs)
+        // Package -> related_content (specifically model refs)
         if (node.type === 'pattern' && ['related_workflows', 'related_debug_guides', 'related_principles'].includes(field)) continue;
         if (node.type === 'workflow' && ['related_patterns', 'related_debug_guides'].includes(field)) continue;
         if (node.type === 'debug_guide' && ['related_patterns', 'related_workflows'].includes(field)) continue;
-        if (node.type === 'model' && field === 'relatedcontent') continue; // don't touch smart pruned model list if possible
+        if (node.type === 'model' && field === 'relatedcontent') continue;
+        if (node.type === 'package' && field === 'related_content') continue;
 
         if (Array.isArray(data[field]) && totalCount > maxTotal) {
           const toRemove = Math.min(data[field].length, totalCount - maxTotal);

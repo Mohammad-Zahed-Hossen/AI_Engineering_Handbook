@@ -144,10 +144,12 @@
   ],
   "related_patterns": [
     "checkpointing",
-    "early-stopping"
+    "early-stopping",
+    "training-loop"
   ],
   "related_debug_guides": [
-    "checkpoint-load-error"
+    "checkpoint-load-error",
+    "gpu-not-detected"
   ],
   "steps": [
     {
@@ -422,5 +424,9 @@
   "scaling_notes": "Distributed experimentation and parallel hyperparameter runs improve utilization when multiple candidate configurations must be explored simultaneously. The benefit is faster search across the experiment space. The trade-off is higher coordination overhead and more difficult debugging. Do not scale out if the bottleneck is data readiness rather than compute. The operational impact is shorter iteration cycles on sufficiently prepared workloads.",
   "cost_notes": "Experiment reuse, artifact caching, and checkpoint optimization reduce wasted compute and storage. The benefit is lower cost per validated experiment. The trade-off is added artifact lifecycle complexity. Do not over-cache if the data or config changes too frequently for reuse to matter. The operational impact is better spend efficiency and lower restart cost.",
   "latency_notes": "Training throughput, checkpoint latency, and artifact upload performance are the main operational performance indicators. The benefit of tracking them is faster identification of underperforming infrastructure. The trade-off is additional telemetry and storage overhead. Do not optimize throughput in isolation from reproducibility. The operational impact is more predictable experiment turnaround.",
-  "observability_notes": "MLflow dashboards, Weights & Biases, experiment lineage, and model registry metrics provide the operational view of the system. The benefit is an end-to-end picture from config to deployment. The trade-off is that operational discipline is required to keep metadata complete. Do not rely on metric charts without lineage records. The operational impact is better auditability and faster root-cause analysis."
+  "observability_notes": "MLflow dashboards, Weights & Biases, experiment lineage, and model registry metrics provide the operational view of the system. The benefit is an end-to-end picture from config to deployment. The trade-off is that operational discipline is required to keep metadata complete. Do not rely on metric charts without lineage records. The operational impact is better auditability and faster root-cause analysis.",
+  "related_decision_guides": [
+    "mlflow-vs-weights-and-biases",
+    "pytorch-vs-tensorflow"
+  ]
 }

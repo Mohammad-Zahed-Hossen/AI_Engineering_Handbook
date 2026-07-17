@@ -173,13 +173,16 @@
   "related_patterns": [
     "gradient-accumulation",
     "mixed-precision",
-    "gradient-checkpointing"
+    "gradient-checkpointing",
+    "training-loop",
+    "checkpointing"
   ],
   "related_debug_guides": [
     "tokenizer-mismatch",
     "nan-loss-exploding-gradients",
     "model-not-learning",
-    "gpu-not-detected"
+    "gpu-not-detected",
+    "cuda-out-of-memory"
   ],
   "steps": [
     {
@@ -459,5 +462,9 @@
   "scaling_notes": "Distributed fine-tuning and gradient accumulation are the main levers when sequence length or model size strains memory budgets. The benefit is higher effective batch size without needing the full memory footprint at once; the trade-off is that convergence behavior can become harder to tune. Do not increase accumulation blindly when step-level feedback matters more than throughput. The operational impact is better GPU utilization and more predictable completion times.",
   "cost_notes": "QLoRA, NF4, mixed precision, and FlashAttention are the canonical cost-control knobs when full-precision training is too expensive. The benefit is large memory savings and better hardware access; the trade-off is tighter constraints on numerical stability and implementation compatibility. Do not force aggressive quantization on workloads that already fit comfortably in memory. The operational impact is materially lower training cost per run.",
   "latency_notes": "Training throughput, GPU utilization, and memory efficiency determine whether fine-tuning can be iterated quickly enough for production schedules. The benefit of monitoring these is that bottlenecks become visible before the run budget is exhausted. The trade-off is additional instrumentation overhead. Do not optimize throughput at the expense of checkpoint quality or reproducibility. The operational impact is faster iteration with fewer failed training jobs.",
-  "observability_notes": "Weights & Biases plus checkpoint metrics provide the simplest durable view of convergence, variance, and run-to-run reproducibility. The benefit is a clear historical record of training curves and adapter versions; the trade-off is extra process and artifact management. Do not rely on console logs alone for production training. The operational impact is stronger auditability and faster diagnosis when a run degrades."
+  "observability_notes": "Weights & Biases plus checkpoint metrics provide the simplest durable view of convergence, variance, and run-to-run reproducibility. The benefit is a clear historical record of training curves and adapter versions; the trade-off is extra process and artifact management. Do not rely on console logs alone for production training. The operational impact is stronger auditability and faster diagnosis when a run degrades.",
+  "related_decision_guides": [
+    "lora-vs-qlora",
+    "rag-vs-fine-tuning"
+  ]
 }

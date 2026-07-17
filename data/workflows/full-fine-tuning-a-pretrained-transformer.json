@@ -184,13 +184,15 @@
     "mixed-precision",
     "checkpointing",
     "gradient-accumulation",
-    "learning-rate-scheduling"
+    "learning-rate-scheduling",
+    "training-loop"
   ],
   "related_debug_guides": [
     "nan-loss-exploding-gradients",
     "model-not-learning",
     "gpu-not-detected",
-    "checkpoint-load-error"
+    "checkpoint-load-error",
+    "cuda-out-of-memory"
   ],
   "steps": [
     {
@@ -474,5 +476,8 @@
   "scaling_notes": "Distributed fine-tuning, gradient accumulation, and pipeline or data parallelism are the main levers for throughput and memory pressure. The benefit is the ability to train models and sequence lengths that would otherwise be infeasible. The trade-off is communication overhead and more difficult performance tuning. Do not over-shard if the model already fits comfortably on one device. The operational impact is shorter wall-clock time when scaling is justified.",
   "cost_notes": "Mixed precision, gradient checkpointing, activation checkpointing, and optimizer sharding reduce memory pressure and improve hardware efficiency. The benefit is lower memory use and often higher effective batch sizes. The trade-off is extra compute, more complex debugging, and potential numerical fragility. Do not enable every optimization by default if the system already meets its targets. The operational impact is lower cost per run and better hardware utilization.",
   "latency_notes": "Training throughput, GPU utilization, communication overhead, and memory efficiency are the main operational indicators for this workflow. The benefit of tracking them is that scaling regressions become visible before budget burn becomes excessive. The trade-off is additional instrumentation and performance measurement overhead. Do not treat utilization alone as success if convergence or checkpoint quality degrades. The operational impact is more stable training schedules and better capacity planning.",
-  "observability_notes": "Weights & Biases plus optimizer statistics plus gradient norms and checkpoint metrics provide the most useful operational visibility for full fine-tuning. The benefit is that failures can be correlated with training dynamics instead of inferred after the fact. The trade-off is extra logging cost and artifact management. Do not rely solely on final validation scores. The operational impact is faster incident response and more reliable model promotion."
+  "observability_notes": "Weights & Biases plus optimizer statistics plus gradient norms and checkpoint metrics provide the most useful operational visibility for full fine-tuning. The benefit is that failures can be correlated with training dynamics instead of inferred after the fact. The trade-off is extra logging cost and artifact management. Do not rely solely on final validation scores. The operational impact is faster incident response and more reliable model promotion.",
+  "related_decision_guides": [
+    "pytorch-vs-tensorflow"
+  ]
 }
