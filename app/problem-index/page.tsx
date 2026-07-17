@@ -106,15 +106,39 @@ export default function ProblemIndexPage() {
     registryMap[item.id] = item.name;
   });
 
+  // Compute inline stats for header
+  const categories = Object.keys(taxonomy);
+  let totalProblemsCount = 0;
+  let solvedProblemsCount = 0;
+  categories.forEach(cat => {
+    const pList = taxonomy[cat].problems;
+    totalProblemsCount += pList.length;
+    solvedProblemsCount += pList.filter(p => p.related_workflows.length > 0 || (p.related_decision_guides && p.related_decision_guides.length > 0)).length;
+  });
+  const coveragePercent = totalProblemsCount > 0 ? Math.round((solvedProblemsCount / totalProblemsCount) * 100) : 0;
+
   return (
     <div className="space-y-6">
       <div className="bg-card text-card-foreground border border-border p-5 rounded-lg shadow-sm">
-        <h1 className="text-xl font-bold tracking-tight text-foreground font-sans">
-          Problem Index
-        </h1>
-        <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed font-sans">
-          Browse engineering problems to find relevant workflows. Select a problem to see workflows that solve it.
-        </p>
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-foreground font-sans">
+              Problem Index
+            </h1>
+            <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed font-sans">
+              Browse engineering problems to find relevant workflows. Select a problem to see workflows that solve it.
+            </p>
+          </div>
+          <div className="text-xs text-muted-foreground font-medium">
+            <span className="inline-flex items-center gap-1">
+              <span>{totalProblemsCount} problems</span>
+              <span className="text-border/50">·</span>
+              <span>{solvedProblemsCount} with solutions ({coveragePercent}%)</span>
+              <span className="text-border/50">·</span>
+              <span>{categories.length} categories</span>
+            </span>
+          </div>
+        </div>
       </div>
 
       <Suspense fallback={
