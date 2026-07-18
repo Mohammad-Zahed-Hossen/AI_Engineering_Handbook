@@ -33,7 +33,7 @@ export default function RegistryPage() {
         </p>
       </div>
 
-      {/* Statistics Dashboard */}
+      {/* Statistics Dashboard - mobile first: 2 columns, then 3, then 4 */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
         <div className="bg-card border border-border rounded-lg p-3">
           <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Families</div>

@@ -12,10 +12,10 @@ export default function PrinciplesPage() {
           <Link
             key={principle.id}
             href={`/principles/${principle.id}`}
-            className="block rounded-lg border border-border bg-card p-4 hover:border-foreground/20 hover:bg-muted/30 transition-colors"
+            className="block rounded-lg border border-border bg-card p-4 hover:border-foreground/20 hover:bg-muted/30 transition-colors touch-target"
           >
-            <div className="flex items-start justify-between gap-2">
-              <div>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
                 <h2 className="text-sm font-medium text-foreground">{principle.title || principle.id}</h2>
                 <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
                   {principle.description}

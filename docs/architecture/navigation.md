@@ -76,13 +76,18 @@ Sidebar
     │   ├─ Deep Learning (expandable)
     │   └─ Large Language Models (expandable)
     ├─ Registries (expandable)
-    │   └─ Task list (limited to 12 visible)
+    │   ├─ Task list (limited to 12 visible)
+    │   └─ Families (expandable)
     ├─ Workflows (expandable)
     │   ├─ Grouped by first letter (if >30)
     │   └─ Limited to 12 visible
-    └─ Cheatsheets (expandable)
-        ├─ Grouped by first letter (if >30)
-        └─ Limited to 12 visible
+    ├─ Cheatsheets (expandable)
+    │   ├─ Grouped by first letter (if >30)
+    │   └─ Limited to 12 visible
+    ├─ Debug Guides (expandable)
+    ├─ Decision Guides (expandable)
+    ├─ Patterns (expandable)
+    └─ Principles (expandable)
 ```
 
 ---

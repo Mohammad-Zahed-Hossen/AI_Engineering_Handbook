@@ -103,12 +103,12 @@ export default function PatternFilterClient({ patterns }: PatternFilterClientPro
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Patterns</h1>
         {(totalActiveFilters > 0 || searchQuery) && (
           <button
             onClick={clearAllFilters}
-            className="text-xs text-rose-500 hover:text-rose-600 font-medium"
+            className="text-xs text-rose-500 hover:text-rose-600 font-medium touch-target-sm"
           >
             Clear All ({totalActiveFilters + (searchQuery ? 1 : 0)})
           </button>
@@ -123,7 +123,7 @@ export default function PatternFilterClient({ patterns }: PatternFilterClientPro
           placeholder="Search patterns by name or description..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="w-full pl-10 pr-4 py-2.5 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent touch-target"
         />
       </div>
 
@@ -131,7 +131,7 @@ export default function PatternFilterClient({ patterns }: PatternFilterClientPro
       <div className="border border-border rounded-lg bg-card overflow-hidden">
         <button
           onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
-          className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 transition-colors"
+          className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 transition-colors touch-target"
         >
           <span>Filters {totalActiveFilters > 0 && `(${totalActiveFilters} active)`}</span>
           {isFiltersExpanded ? (
@@ -202,12 +202,12 @@ export default function PatternFilterClient({ patterns }: PatternFilterClientPro
                     {patternsInCategory.length}
                   </span>
                 </div>
-                <div className="p-3 space-y-2">
+                <div className="p-3 space-y-3">
                   {patternsInCategory.map(pattern => (
                     <Link
                       key={pattern.id}
                       href={`/patterns/${pattern.id}`}
-                      className="block rounded-lg border border-border bg-card p-4 hover:border-foreground/20 hover:bg-muted/30 transition-colors"
+                      className="block rounded-lg border border-border bg-card p-4 hover:border-foreground/20 hover:bg-muted/30 transition-colors touch-target"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">

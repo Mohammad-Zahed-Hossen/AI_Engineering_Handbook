@@ -207,7 +207,7 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
             teaser={
               <div className="mt-1 text-xs text-muted-foreground leading-relaxed italic flex items-start sm:items-center gap-1">
                 <span className="text-primary/70 shrink-0 font-medium not-italic text-[10px] uppercase tracking-wider select-none">Trigger:</span>
-                <span className="line-clamp-2 sm:line-clamp-none">&quot;{task.mental_trigger}&quot;</span>
+                <span className="line-clamp-2 sm:line-clamp-none">&ldquo;{task.mental_trigger}&rdquo;</span>
               </div>
             }
             icon={
@@ -224,7 +224,7 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
           >
             {isExpanded && (
               <div className="p-4 space-y-6">
-                {/* 1. Technical Workbench: Syntax & Example */}
+                {/* 1. Technical Workbench: Syntax & Example - mobile first: stack on mobile */}
                 <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr]">
                   <div className="rounded-lg border border-border bg-muted/5 dark:bg-muted/[0.01] p-4 min-w-0 flex flex-col justify-between">
                     <div>
@@ -248,8 +248,8 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
                   </div>
                 </div>
 
-                {/* 2. Usage Decisions (When to Use & Avoid When) */}
-                <div className="grid gap-4 md:grid-cols-2">
+                {/* 2. Usage Decisions (When to Use & Avoid When) - mobile first: stack on mobile */}
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-500/[0.01] p-4 text-sm flex flex-col justify-between">
                     <div>
                       <h4 className="flex items-center gap-1.5 font-semibold text-emerald-700 dark:text-emerald-400 mb-2.5">
@@ -433,7 +433,7 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
                               href={task.official_docs}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-primary bg-primary/5 hover:bg-primary/10 border border-primary/10 transition-colors w-fit cursor-pointer select-none"
+                              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-primary bg-primary/5 hover:bg-primary/10 border border-primary/10 transition-colors w-fit cursor-pointer select-none touch-target-sm"
                             >
                             <ExternalLink className="w-3.5 h-3.5" />
                             Official API Documentation
@@ -452,7 +452,7 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
                               <Link
                                 key={ref.id}
                                 href={ref.href}
-                                className="inline-flex items-center justify-between rounded-lg border border-border bg-muted/30 hover:bg-muted px-3 py-2 text-xs text-foreground transition-colors cursor-pointer"
+                                className="inline-flex items-center justify-between rounded-lg border border-border bg-muted/30 hover:bg-muted px-3 py-2 text-xs text-foreground transition-colors cursor-pointer touch-target"
                               >
                                 <span className="font-medium">{ref.name}</span>
                                 <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
@@ -462,7 +462,7 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
                               <Link
                                 key={ref.id}
                                 href={ref.href}
-                                className="inline-flex items-center justify-between rounded-lg border border-border bg-muted/30 hover:bg-muted px-3 py-2 text-xs text-foreground transition-colors cursor-pointer"
+                                className="inline-flex items-center justify-between rounded-lg border border-border bg-muted/30 hover:bg-muted px-3 py-2 text-xs text-foreground transition-colors cursor-pointer touch-target"
                               >
                                 <span className="font-medium">{ref.name}</span>
                                 <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
@@ -475,12 +475,12 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
                       </div>
                     </div>
                   </div>
-                  </div>
                 </div>
-              )}
-            </CollapsibleRow>
-          );
-        })}
-      </div>
+              </div>
+            )}
+          </CollapsibleRow>
+        );
+      })}
+    </div>
   );
 }

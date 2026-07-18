@@ -131,7 +131,7 @@ export function ModelListFilter({ models, category, categoriesMeta = {} }: Model
                 <div className="flex items-center justify-between p-3.5 bg-muted/10 border-b border-border select-none text-left">
                   <button
                     onClick={() => toggleSubcategoryExpand(sub)}
-                    className="flex items-center gap-2 flex-1 text-left"
+                    className="flex items-center gap-2 flex-1 text-left touch-target"
                   >
                     {isExpanded ? (
                       <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -147,22 +147,22 @@ export function ModelListFilter({ models, category, categoriesMeta = {} }: Model
                   </button>
                   <Link
                     href={`/models/${category}/compare/${sub}`}
-                    className="text-xs font-medium text-primary hover:underline pr-2"
+                    className="text-xs font-medium text-primary hover:underline pr-2 touch-target-sm"
                   >
-                    Compare Category &rarr;
+                    Compare &rarr;
                   </Link>
                 </div>
 
                 {/* Content (Table & Cards) */}
                 {isExpanded && (
-                  <div className="p-4">
-                    {/* Mobile Card View */}
+                  <div className="p-3 sm:p-4">
+                    {/* Mobile Card View - full width on mobile */}
                     <div className="md:hidden space-y-3">
                       {modelsInSub.map((m) => (
                         <Link
                           key={m.id}
                           href={`/models/${category}/${m.id}`}
-                          className="block rounded-lg border border-border bg-card p-4 hover:border-foreground/20 hover:bg-muted/30 active:bg-muted/50 transition-colors"
+                          className="block rounded-lg border border-border bg-card p-3.5 hover:border-foreground/20 hover:bg-muted/30 active:bg-muted/50 transition-colors touch-target"
                         >
                           <div className="flex items-start justify-between gap-2 mb-2">
                             <h3 className="text-sm font-semibold text-primary">{m.name}</h3>
@@ -198,68 +198,70 @@ export function ModelListFilter({ models, category, categoriesMeta = {} }: Model
 
                     {/* Desktop Table View */}
                     <div className="hidden md:block bg-card text-card-foreground border border-border rounded-lg overflow-hidden transition-colors hover:border-foreground/15">
-                      <table className="min-w-full divide-y divide-border text-left">
-                        <thead className="bg-muted/40 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider select-none">
-                          <tr>
-                            <th className="px-4 py-2.5 w-1/4">Model Name</th>
-                            <th className="px-4 py-2.5 w-2/5">Summary</th>
-                            <th className="px-4 py-2.5">Problem Types</th>
-                            <th className="px-4 py-2.5 text-center">Difficulty</th>
-                            <th className="px-4 py-2.5 text-center">Maturity</th>
-                            <th className="px-4 py-2.5 text-right pr-6">Action</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border text-[11px]">
-                          {modelsInSub.map((m) => (
-                            <tr key={m.id} className="hover:bg-muted/10 font-sans">
-                              <td className="px-4 py-3 align-middle">
-                                <Link
-                                  href={`/models/${category}/${m.id}`}
-                                  className="font-semibold text-primary hover:underline text-xs"
-                                >
-                                  {m.name}
-                                </Link>
-                              </td>
-                              <td className="px-4 py-3 align-middle text-muted-foreground leading-relaxed">
-                                {m.decisionsummary.summary}
-                              </td>
-                              <td className="px-4 py-3 align-middle">
-                                <div className="flex flex-wrap gap-1">
-                                  {m.problem_types.map((pt) => (
-                                    <span
-                                      key={pt}
-                                      className="px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground border border-border text-[9px] font-mono capitalize"
-                                    >
-                                      {pt}
-                                    </span>
-                                  ))}
-                                </div>
-                              </td>
-                              <td className="px-4 py-3 align-middle text-center capitalize font-mono">
-                                <span className={cn(
-                                  m.difficulty === 'beginner' && 'text-emerald-500',
-                                  m.difficulty === 'intermediate' && 'text-amber-500',
-                                  m.difficulty === 'advanced' && 'text-rose-500',
-                                  m.difficulty === 'expert' && 'text-purple-500'
-                                )}>
-                                  {m.difficulty}
-                                </span>
-                              </td>
-                              <td className="px-4 py-3 align-middle text-center capitalize font-mono text-muted-foreground">
-                                {m.engineeringmaturity}
-                              </td>
-                              <td className="px-4 py-3 align-middle text-right pr-6">
-                                <Link
-                                  href={`/models/${category}/${m.id}`}
-                                  className="text-xs text-foreground font-semibold hover:underline"
-                                >
-                                  Configure &rarr;
-                                </Link>
-                              </td>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-border text-left">
+                          <thead className="bg-muted/40 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider select-none">
+                            <tr>
+                              <th className="px-4 py-2.5 w-1/4">Model Name</th>
+                              <th className="px-4 py-2.5 w-2/5">Summary</th>
+                              <th className="px-4 py-2.5">Problem Types</th>
+                              <th className="px-4 py-2.5 text-center">Difficulty</th>
+                              <th className="px-4 py-2.5 text-center">Maturity</th>
+                              <th className="px-4 py-2.5 text-right pr-6">Action</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody className="divide-y divide-border text-[11px]">
+                            {modelsInSub.map((m) => (
+                              <tr key={m.id} className="hover:bg-muted/10 font-sans">
+                                <td className="px-4 py-3 align-middle">
+                                  <Link
+                                    href={`/models/${category}/${m.id}`}
+                                    className="font-semibold text-primary hover:underline text-xs"
+                                  >
+                                    {m.name}
+                                  </Link>
+                                </td>
+                                <td className="px-4 py-3 align-middle text-muted-foreground leading-relaxed">
+                                  {m.decisionsummary.summary}
+                                </td>
+                                <td className="px-4 py-3 align-middle">
+                                  <div className="flex flex-wrap gap-1">
+                                    {m.problem_types.map((pt) => (
+                                      <span
+                                        key={pt}
+                                        className="px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground border border-border text-[9px] font-mono capitalize"
+                                      >
+                                        {pt}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </td>
+                                <td className="px-4 py-3 align-middle text-center capitalize font-mono">
+                                  <span className={cn(
+                                    m.difficulty === 'beginner' && 'text-emerald-500',
+                                    m.difficulty === 'intermediate' && 'text-amber-500',
+                                    m.difficulty === 'advanced' && 'text-rose-500',
+                                    m.difficulty === 'expert' && 'text-purple-500'
+                                  )}>
+                                    {m.difficulty}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 align-middle text-center capitalize font-mono text-muted-foreground">
+                                  {m.engineeringmaturity}
+                                </td>
+                                <td className="px-4 py-3 align-middle text-right pr-6">
+                                  <Link
+                                    href={`/models/${category}/${m.id}`}
+                                    className="text-xs text-foreground font-semibold hover:underline"
+                                  >
+                                    Configure &rarr;
+                                  </Link>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 )}

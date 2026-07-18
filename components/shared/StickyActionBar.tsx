@@ -86,9 +86,9 @@ export default function StickyActionBar({ tocItems }: StickyActionBarProps) {
     <>
       <div
         className={cn(
-          "fixed bottom-16 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1",
+          "fixed bottom-20 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1",
           "rounded-full border border-border bg-card/90 backdrop-blur-sm shadow-sm",
-          "px-1 py-1 transition-all duration-200 select-none",
+          "px-1.5 py-1.5 transition-all duration-200 select-none",
           visible ? "translate-y-0 opacity-100" : "translate-y-16 opacity-0 pointer-events-none"
         )}
       >
@@ -97,7 +97,7 @@ export default function StickyActionBar({ tocItems }: StickyActionBarProps) {
           onClick={() => scrollToSection(activeIndex - 1)}
           disabled={!canGoPrev}
           className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-full transition-colors",
+            "flex h-10 w-10 items-center justify-center rounded-full transition-colors touch-target-sm",
             canGoPrev
               ? "text-foreground hover:bg-muted active:scale-95"
               : "text-muted-foreground/30 cursor-not-allowed"
@@ -110,7 +110,7 @@ export default function StickyActionBar({ tocItems }: StickyActionBarProps) {
         {/* Current section label */}
         <button
           onClick={() => setSheetOpen(true)}
-          className="flex h-8 items-center px-2 text-[10px] font-medium text-foreground hover:bg-muted rounded-full transition-colors max-w-[140px] truncate"
+          className="flex h-10 items-center px-3 text-xs font-medium text-foreground hover:bg-muted rounded-full transition-colors max-w-[160px] truncate touch-target-sm"
           title="Jump to section"
           aria-label="Open section navigation"
         >
@@ -122,7 +122,7 @@ export default function StickyActionBar({ tocItems }: StickyActionBarProps) {
           onClick={() => scrollToSection(activeIndex + 1)}
           disabled={!canGoNext}
           className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-full transition-colors",
+            "flex h-10 w-10 items-center justify-center rounded-full transition-colors touch-target-sm",
             canGoNext
               ? "text-foreground hover:bg-muted active:scale-95"
               : "text-muted-foreground/30 cursor-not-allowed"
@@ -150,7 +150,7 @@ export default function StickyActionBar({ tocItems }: StickyActionBarProps) {
                   setSheetOpen(false);
                 }}
                 className={cn(
-                  'w-full text-left px-4 py-3 text-sm border-b border-border last:border-0',
+                  'w-full text-left px-4 py-3 text-sm border-b border-border last:border-0 touch-target',
                   activeLabel === item.label
                     ? 'text-foreground font-medium bg-muted/30'
                     : 'text-muted-foreground'
@@ -167,7 +167,7 @@ export default function StickyActionBar({ tocItems }: StickyActionBarProps) {
                 }
                 setSheetOpen(false);
               }}
-              className="w-full text-left px-4 py-3 text-xs text-muted-foreground border-t border-border mt-1"
+              className="w-full text-left px-4 py-3 text-xs text-muted-foreground border-t border-border mt-1 touch-target"
             >
               ↑ Back to top
             </button>

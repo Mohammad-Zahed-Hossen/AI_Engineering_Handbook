@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { List } from 'lucide-react';
 
 interface TocItem {
   id: string;
@@ -65,6 +67,47 @@ function TableOfContentsPresentational({ items, variant, activeId }: { items: To
 
   return (
     <>
+      {/* Mobile: Floating button that opens a sheet */}
+      {(variant === 'sidebar' || variant === 'both') && (
+        <div className="lg:hidden fixed bottom-20 right-4 z-30">
+          <Sheet>
+            <SheetTrigger asChild>
+              <button
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors touch-target"
+                aria-label="Open table of contents"
+              >
+                <List className="h-5 w-5" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[280px] p-0">
+              <SheetHeader className="px-4 py-3 border-b border-border">
+                <SheetTitle className="text-sm font-semibold">On this page</SheetTitle>
+              </SheetHeader>
+              <nav aria-label="Table of contents" className="p-2">
+                <ul className="space-y-1">
+                  {items.map(item => (
+                    <li key={item.id}>
+                      <a
+                        href={`#${item.id}`}
+                        className={cn(
+                          'block px-3 py-2.5 rounded text-sm transition-colors touch-target',
+                          activeId === item.id
+                            ? 'bg-primary/10 text-foreground font-medium'
+                            : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                        )}
+                      >
+                        {item.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
+      )}
+
+      {/* Desktop sidebar TOC */}
       {(variant === 'sidebar' || variant === 'both') && (
         <aside className="hidden lg:block w-48 shrink-0">
           <div className="sticky top-6 rounded-lg border border-border bg-card p-3 select-none">
@@ -94,6 +137,7 @@ function TableOfContentsPresentational({ items, variant, activeId }: { items: To
         </aside>
       )}
 
+      {/* Tablet horizontal TOC */}
       {(variant === 'horizontal' || variant === 'both') && (
         <div className="hidden md:block lg:hidden w-full shrink-0">
           <div className="sticky top-4 rounded-lg border border-border bg-card p-2 select-none">

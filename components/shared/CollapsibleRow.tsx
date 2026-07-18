@@ -95,7 +95,7 @@ export default function CollapsibleRow({
       <button
         onClick={handleToggle}
         className={cn(
-          "w-full flex justify-between p-4 bg-muted/20 hover:bg-muted/40 transition-colors select-none text-left cursor-pointer",
+          "w-full flex justify-between p-4 bg-muted/20 hover:bg-muted/40 transition-colors select-none text-left cursor-pointer touch-target",
           align === 'center' ? 'items-center' : 'items-start',
           headerClassName
         )}
@@ -129,7 +129,7 @@ export default function CollapsibleRow({
         ref={contentRef}
         id={contentId}
         className={cn(
-          "p-5 bg-card [content-visibility:auto]",
+          "p-4 sm:p-5 bg-card [content-visibility:auto]",
           contentClassName?.includes('border-t-0') ? '' : 'border-t border-border',
           contentClassName
         )}

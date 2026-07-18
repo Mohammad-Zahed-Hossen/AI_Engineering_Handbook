@@ -84,58 +84,167 @@ ai-engineering-handbook/
 │   ├── not-found.tsx                       ← 404 page (Server Component)
 │   ├── error.tsx                           ← Error boundary (Client Component)
 │   ├── favicon.ico
+│   ├── api/
+│   │   └── registry/
+│   │       └── search/
+│   │           └── route.ts                ← Search API endpoint
 │   ├── packages/
-│   │   └── [id]/
-│   │       └── page.tsx                    ← Package detail page
+│   │   ├── [id]/
+│   │   │   └── page.tsx                    ← Package detail page
+│   │   ├── page.tsx
+│   │   └── PackageListClient.tsx
 │   ├── models/
 │   │   ├── [category]/
-│   │   │   ├── page.tsx                    ← Model list with filters
-│   │   │   └── [id]/
-│   │   │       └── page.tsx                ← Model detail page
+│   │   │   ├── [id]/
+│   │   │   │   └── page.tsx                ← Model detail page
+│   │   │   └── page.tsx                    ← Model list with filters
+│   │   └── page.tsx                        ← Unified models page
 │   ├── registry/
-│   │   └── [task]/
-│   │       └── page.tsx                    ← Registry task page
+│   │   ├── [task]/
+│   │   │   └── page.tsx                    ← Registry task page
+│   │   ├── families/
+│   │   │   ├── [family]/
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── [variant]/
+│   │   │   └── page.tsx
+│   │   └── page.tsx
 │   ├── workflows/
-│   │   └── [id]/
-│   │       └── page.tsx                    ← Workflow detail page
-│   └── cheatsheets/
-│       └── [id]/
-│           └── page.tsx                    ← Cheatsheet detail page
-│
+│   │   ├── [id]/
+│   │   │   └── page.tsx                    ← Workflow detail page
+│   │   └── page.tsx
+│   ├── cheatsheets/
+│   │   ├── [id]/
+│   │   │   └── page.tsx                    ← Cheatsheet detail page
+│   │   └── page.tsx
+│   ├── debug-guides/
+│   │   ├── [id]/
+│   │   │   └── page.tsx
+│   │   └── page.tsx
+│   ├── decision-guides/
+│   │   ├── [id]/
+│   │   │   └── page.tsx
+│   │   └── page.tsx
+│   ├── patterns/
+│   │   ├── [id]/
+│   │   │   └── page.tsx
+│   │   └── page.tsx
+│   ├── principles/
+│   │   ├── [id]/
+│   │   │   └── page.tsx
+│   │   └── page.tsx
+│   └── problem-index/
+│       ├── page.tsx
+│       └── ProblemIndexDashboard.tsx
 ├── components/
 │   ├── layout/
 │   │   ├── Sidebar.tsx                     ← Desktop sidebar (collapsible sections)
 │   │   ├── TopBar.tsx                      ← Header with search
 │   │   └── MobileSidebarTrigger.tsx        ← Mobile menu (Sheet component)
+│   ├── principles/
+│   │   ├── AppearsInGroup.tsx
+│   │   ├── DecisionChecklist.tsx
+│   │   ├── EngineeringConsequenceCard.tsx
+│   │   ├── MentalModelDisplay.tsx
+│   │   ├── MisconceptionRow.tsx
+│   │   └── TradeoffComparison.tsx
+│   ├── registry/
+│   │   ├── DeploymentProfiles.tsx
+│   │   ├── DeploymentSummaryCard.tsx
+│   │   ├── EngineeringContinuation.tsx
+│   │   ├── EngineeringDecisionCards.tsx
+│   │   ├── FamilyCard.tsx
+│   │   ├── PaginationControls.tsx
+│   │   ├── PerformanceDimensions.tsx
+│   │   ├── QuickLinksCard.tsx
+│   │   ├── RegistryBadge.tsx
+│   │   ├── RegistryFamilyView.tsx
+│   │   ├── RegistryFilter.tsx
+│   │   ├── RelatedResources.tsx
+│   │   ├── RuntimeDecisionCard.tsx
+│   │   ├── RuntimeMatrix.tsx
+│   │   ├── VariantCard.tsx
+│   │   └── VariantComparisonTable.tsx
 │   ├── shared/
-│   │   ├── AlternativesList.tsx            ← ContentRef-based alternatives
-│   │   ├── Breadcrumbs.tsx                 ← Navigation breadcrumbs
-│   │   ├── CodeBlock.tsx                   ← Code with copy button
-│   │   ├── ContentPageLayout.tsx           ← Page layout wrapper
-│   │   ├── ContentTypeBadge.tsx            ← Type badge (package/model/etc)
-│   │   ├── FilterBar.tsx                   ← Client-side filter component
-│   │   ├── MetadataBadges.tsx              ← Updated at, sources badges
-│   │   ├── OfficialResources.tsx           ← Sources[] rendering
-│   │   ├── SearchBox.tsx                   ← Fuse.js search input
-│   │   ├── SectionCard.tsx                 ← Section container
-│   │   ├── StatusBadge.tsx                 ← Status indicator
-│   │   └── TableOfContents.tsx             ← Page TOC
+│   │   ├── AlternativesList.tsx
+│   │   ├── AntiPatternCard.tsx
+│   │   ├── BackToTop.tsx
+│   │   ├── BadgeRow.tsx
+│   │   ├── Breadcrumbs.tsx
+│   │   ├── CheatsheetEntry.tsx
+│   │   ├── CodeBlock.tsx
+│   │   ├── CodeBlockInteractive.tsx
+│   │   ├── CollapsibleRow.tsx
+│   │   ├── CollapsibleSection.tsx
+│   │   ├── ConstraintRecommendations.tsx
+│   │   ├── ContentPageLayout.tsx
+│   │   ├── ContentTypeBadge.tsx
+│   │   ├── DataTable.tsx
+│   │   ├── DebugChecklist.tsx
+│   │   ├── DebugDecisionTree.tsx
+│   │   ├── DebugOverviewCard.tsx
+│   │   ├── DebugSolutionList.tsx
+│   │   ├── DecisionFlow.tsx
+│   │   ├── DecisionGuideSummary.tsx
+│   │   ├── DecisionMatrix.tsx
+│   │   ├── DecisionOptionGrid.tsx
+│   │   ├── DecisionSummary.tsx
+│   │   ├── DecisionTree.tsx
+│   │   ├── DiagnosticCommandList.tsx
+│   │   ├── ExpandableText.tsx
+│   │   ├── FilterBar.tsx
+│   │   ├── HiddenCosts.tsx
+│   │   ├── HybridStrategy.tsx
+│   │   ├── LearningResources.tsx
+│   │   ├── MetadataBadges.tsx
+│   │   ├── MigrationPath.tsx
+│   │   ├── ModelCategoryComparison.tsx
+│   │   ├── ModelCollapsibleSections.tsx
+│   │   ├── ModelDecisionStrip.tsx
+│   │   ├── ModelHubExplorer.tsx
+│   │   ├── ModelListFilter.tsx
+│   │   ├── OfficialResources.tsx
+│   │   ├── PackageTaskList.tsx
+│   │   ├── PageVisitTracker.tsx
+│   │   ├── PatternSnapshot.tsx
+│   │   ├── ProductionExamples.tsx
+│   │   ├── Prose.tsx
+│   │   ├── QuickIdentificationChecklist.tsx
+│   │   ├── QuickSetupSection.tsx
+│   │   ├── ReadingProgress.tsx
+│   │   ├── ReadingSessionTracker.tsx
+│   │   ├── RecentActivity.tsx
+│   │   ├── RecommendedNextSection.tsx
+│   │   ├── RelatedContent.tsx
+│   │   ├── RelatedPatternGraph.tsx
+│   │   ├── RelationshipSection.tsx
+│   │   ├── ScrollRestore.tsx
+│   │   ├── SearchBox.tsx
+│   │   ├── SectionCard.tsx
+│   │   ├── SectionSummary.tsx
+│   │   ├── StatusBadge.tsx
+│   │   ├── StickyActionBar.tsx
+│   │   ├── TableOfContents.tsx
+│   │   ├── TradeoffHeatmap.tsx
+│   │   ├── TradeoffTable.tsx
+│   │   ├── VariationCard.tsx
+│   │   ├── VerificationChecklist.tsx
+│   │   ├── VisualizationEquivalents.tsx
+│   │   ├── VisualTrainingLoop.tsx
+│   │   └── WorkflowStepList.tsx
 │   └── ui/
-│       ├── badge.tsx                       ← shadcn badge
-│       ├── button.tsx                      ← shadcn button
-│       ├── card.tsx                        ← shadcn card
-│       ├── separator.tsx                   ← shadcn separator
-│       └── sheet.tsx                       ← shadcn sheet
-│
+│       ├── badge.tsx
+│       ├── button.tsx
+│       ├── card.tsx
+│       ├── separator.tsx
+│       └── sheet.tsx
 ├── data/
-│   ├── packages/                           ← Auto-discovered via scanDirectoryForIds()
-│   │   ├── _nav.json                       ← Lightweight navigation index
+│   ├── packages/
+│   │   ├── _nav.json
 │   │   ├── numpy.json
-│   │   ├── pandas.json
 │   │   └── ...
 │   ├── models/
 │   │   ├── ml/
-│   │   │   ├── _nav.json                   ← Lightweight navigation index
+│   │   │   ├── _nav.json
 │   │   │   ├── random-forest.json
 │   │   │   └── ...
 │   │   ├── dl/
@@ -145,97 +254,140 @@ ai-engineering-handbook/
 │   │       ├── _nav.json
 │   │       └── ...
 │   ├── registry/
-│   │   ├── embeddings.json
-│   │   ├── rerankers.json
-│   │   ├── vision.json
-│   │   ├── speech.json
-│   │   ├── llms.json
-│   │   ├── multimodal.json
-│   │   └── ocr.json
-│   ├── search/
-│   │   ├── concept-groups.json             ← Search concept groupings
-│   │   ├── search.config.json              ← Search configuration
-│   │   └── synonyms.json                   ← Synonym mappings
+│   │   └── families/
+│   │       ├── deepseek/
+│   │       ├── llama-3/
+│   │       └── qwen-3/
 │   ├── workflows/
-│   │   ├── _nav.json                       ← Lightweight navigation index
+│   │   ├── _nav.json
 │   │   ├── rag.json
 │   │   └── ...
-│   └── cheatsheets/
-│       ├── _nav.json                       ← Lightweight navigation index
-│       ├── pytorch.json
-│       └── ...
-│
+│   ├── cheatsheets/
+│   │   ├── _nav.json
+│   │   ├── pytorch.json
+│   │   └── ...
+│   ├── debug-guides/
+│   │   ├── _nav.json
+│   │   └── ...
+│   ├── decision-guides/
+│   │   ├── _nav.json
+│   │   └── ...
+│   ├── patterns/
+│   │   ├── _nav.json
+│   │   └── ...
+│   ├── principles/
+│   │   ├── _nav.json
+│   │   └── ...
+│   └── problem-index/
+│       └── taxonomy.json
 ├── lib/
-│   ├── data.ts                             ← All data loading (fs.readFileSync + React.cache)
-│   ├── search.ts                           ← Fuse.js search index builder
-│   ├── search-types.ts                     ← SearchResult type, createFuse config
-│   ├── resources.ts                        ← Resource URL resolver
-│   ├── route-params.ts                     ← generateStaticParams helpers
-│   ├── session-tracking.ts                 ← Session tracking utilities
-│   ├── utils.ts                            ← cn() utility
+│   ├── data.ts
+│   ├── format-date.ts
+│   ├── format-registry.ts
+│   ├── format-time.ts
+│   ├── pagination.ts
+│   ├── relationships.ts
+│   ├── resources.ts
+│   ├── route-params.ts
+│   ├── search-types.ts
+│   ├── search.ts
+│   ├── session-tracking.ts
+│   ├── theme.ts
+│   ├── utils.ts
 │   ├── config/
-│   │   └── registry.ts                    ← Registry task ↔ filename mapping
+│   │   ├── loader.ts
+│   │   └── workflows.ts
 │   ├── hooks/
-│   │   ├── useLocalStorage.ts              ← Local storage hook
-│   │   └── useReadingSession.ts            ← Reading session hook
+│   │   ├── useLocalStorage.ts
+│   │   └── useReadingSession.ts
 │   ├── search/
-│   │   ├── engine.ts                       ← Custom search engine
-│   │   ├── inverted-index.ts               ← Inverted index implementation
-│   │   ├── related-search.ts                ← Related content search
-│   │   ├── synonym-expander.ts             ← Synonym expansion
-│   │   └── tokenizer.ts                    ← Code tokenizer
-│   └── schemas/
-│       ├── package.ts                      ← Zod schema for Package
-│       ├── model.ts                        ← Zod schema for Model
-│       ├── registry.ts                     ← Zod schema for RegistryModel
-│       ├── workflow.ts                     ← Zod schema for Workflow
-│       ├── cheatsheet.ts                   ← Zod schema for Cheatsheet
-│       ├── meta.ts                         ← Zod schema for BaseMeta
-│       └── index.ts                        ← Re-export all schemas
-│
+│   │   ├── engine.ts
+│   │   ├── intent-detection.ts
+│   │   ├── inverted-index.ts
+│   │   ├── query-assistance.ts
+│   │   ├── ranking.ts
+│   │   ├── related-search.ts
+│   │   ├── snippets.ts
+│   │   ├── synonym-expander.ts
+│   │   ├── tokenizer.ts
+│   │   └── typo-tolerance.ts
+│   ├── schemas/
+│   │   ├── base.ts
+│   │   ├── cheatsheet.ts
+│   │   ├── debug-guide.ts
+│   │   ├── decision-guide.ts
+│   │   ├── index.ts
+│   │   ├── model.ts
+│   │   ├── package.ts
+│   │   ├── pattern.ts
+│   │   ├── principle.ts
+│   │   ├── registry.ts
+│   │   └── workflow.ts
+│   ├── text/
+│   │   └── parseLabeledClauses.ts
+│   └── validator/
+│       ├── context.ts
+│       ├── engine.ts
+│       ├── report.ts
+│       └── rules/
+│           ├── base.ts
+│           ├── cross-ref.ts
+│           ├── empty.ts
+│           ├── orphans.ts
+│           ├── registry.ts
+│           ├── related.ts
+│           └── schema.ts
 ├── types/
-│   ├── package.ts                          ← TypeScript interface for Package
-│   ├── model.ts                            ← TypeScript interface for Model
-│   ├── registry.ts                         ← TypeScript interface for RegistryModel
-│   ├── workflow.ts                         ← TypeScript interface for Workflow
-│   ├── cheatsheet.ts                       ← TypeScript interface for Cheatsheet
-│   ├── meta.ts                             ← TypeScript interface for BaseMeta
-│   └── index.ts                            ← Re-export all types
-│
+│   ├── cheatsheet.ts
+│   ├── config.ts
+│   ├── debug-guide.ts
+│   ├── decision-guide.ts
+│   ├── index.ts
+│   ├── meta.ts
+│   ├── model.ts
+│   ├── package.ts
+│   ├── pattern.ts
+│   ├── principle.ts
+│   ├── problem.ts
+│   ├── registry.ts
+│   └── workflow.ts
 ├── scripts/
-│   ├── validate-content.ts                 ← Zod validation for all JSON files
-│   └── build-nav-index.ts                  ← Builds _nav.json files for navigation
-│
+│   ├── build-nav-index.ts
+│   ├── search-audit.ts
+│   ├── sync-cross-refs.ts
+│   └── validate-content.ts
+├── tests/
+│   ├── relationships.test.ts
+│   ├── search-enhancements.test.ts
+│   ├── tokenizer.test.ts
+│   └── validator/
+│       ├── engine.test.ts
+│       └── rules.test.ts
+├── public/
+├── schema/
+│   ├── config.schema.json
+│   └── v2/
+│       └── .gitkeep
 ├── docs/
-│   ├── standards/
-│   │   ├── project-rules.md               ← This file
-│   │   ├── content-schema.md
-│   │   └── validation.md
+│   ├── architecture/
+│   ├── engineering/
 │   ├── guides/
+│   ├── knowledge/
+│   ├── prompt/
 │   ├── reference/
-│   ├── decisions/
-│   └── archive/
-│
-├── public/                                 ← Static assets
-├── next.config.ts                          ← Next.js config (TS strict)
-├── eslint.config.mjs                       ← ESLint flat config
-├── tsconfig.json                           ← TypeScript config
-├── tailwind.config.ts                      ← Tailwind v4 config
+│   └── report/
 └── package.json
 ```
 
 **Key changes from old structure:**
-- **_nav.json files** — lightweight navigation indexes for performance, built via `npm run build:nav`
-- **No meta.json** — dashboard counts computed dynamically via `getDashboardCounts()`
-- **lib/schemas/** added — Zod schemas mirror TypeScript types
-- **lib/search/** directory added — custom search engine with tokenizer, inverted index, synonym expander
-- **lib/search.ts** — Fuse.js search index builder
-- **lib/resources.ts, lib/route-params.ts** added — utility functions
-- **components/shared/** expanded — many new reusable components
-- **components/ui/** added — shadcn/ui components
-- **scripts/validate-content.ts** added — build-time JSON validation
-- **scripts/build-nav-index.ts** added — builds _nav.json files for navigation optimization
-- **data/search/** directory added — search configuration and synonym files
+- **New content types**: debug-guides, decision-guides, patterns, principles, problem-index
+- **lib/search/** expanded with intent-detection, query-assistance, ranking, snippets, typo-tolerance
+- **lib/validator/** added for content validation
+- **lib/text/** added for text parsing utilities
+- **components/principles/** and **components/registry/** added
+- **data/registry/families/** added for model family data
+- **scripts/search-audit.ts** and **scripts/sync-cross-refs.ts** added
+- **tests/** directory added with test files
 
 ---
 

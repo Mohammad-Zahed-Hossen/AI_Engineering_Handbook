@@ -93,6 +93,10 @@ Load All Content
 ├─ models (getAllModels)
 ├─ workflows (getAllWorkflows)
 ├─ cheatsheets (getAllCheatsheets)
+├─ debug-guides (getAllDebugGuides)
+├─ decision-guides (getAllDecisionGuides)
+├─ patterns (getAllPatterns)
+├─ principles (getAllPrinciples)
 └─ registry (getRegistryTasks)
     ↓
 Tokenize Fields
@@ -100,7 +104,11 @@ Tokenize Fields
 ├─ summary
 ├─ tasks[].syntax (packages)
 ├─ entries[].snippet (cheatsheets)
-└─ problem_type (models)
+├─ problem_types (models)
+├─ symptoms[].symptom (debug-guides)
+├─ problem (decision-guides)
+├─ concept (patterns)
+└─ statement (principles)
     ↓
 Build Inverted Index
 ├─ tokenMap: token → Set<docId>

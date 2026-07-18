@@ -320,7 +320,7 @@ export default function SearchBox({
         aria-expanded={showResults || showRecent}
         aria-controls={listboxId}
         aria-activedescendant={flatResults[activeIndex] ? `${listboxId}-${activeIndex}` : undefined}
-        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
+        className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 touch-target"
       />
 
       {!focused && !query && (
@@ -348,7 +348,7 @@ export default function SearchBox({
                     setQuery(term);
                     setActiveIndex(0);
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-foreground hover:bg-muted/50 transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-sm text-foreground hover:bg-muted/50 transition-colors touch-target"
                 >
                   <Search className="w-3.5 h-3.5 text-muted-foreground" />
                   <span>{term}</span>
@@ -407,7 +407,7 @@ export default function SearchBox({
                           onClick={() => handleSelect(result.href)}
                           onMouseEnter={() => setActiveIndex(currentIdx)}
                           className={cn(
-                            'block px-3 py-2.5 transition-colors',
+                            'block px-3 py-2.5 transition-colors touch-target',
                             isActive ? 'bg-muted text-foreground' : 'hover:bg-muted/50'
                           )}
                         >

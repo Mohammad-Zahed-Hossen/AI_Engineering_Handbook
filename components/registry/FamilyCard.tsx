@@ -17,7 +17,7 @@ export default function FamilyCard({ family, variantCount }: FamilyCardProps) {
   return (
     <Link
       href={`/registry/families/${family.id}`}
-      className="block"
+      className="block touch-target"
     >
       <Card className="hover:border-foreground/20 hover:bg-muted/30 transition-colors cursor-pointer h-full">
         <CardHeader className="pb-2">

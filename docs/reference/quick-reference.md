@@ -59,7 +59,12 @@ data/
 │   └── llm/           # Large Language Models
 ├── workflows/         # Workflow JSON files
 ├── cheatsheets/       # Cheatsheet JSON files
-└── registry/          # Registry JSON arrays
+├── debug-guides/      # Debug Guide JSON files
+├── decision-guides/   # Decision Guide JSON files
+├── patterns/          # Pattern JSON files
+├── principles/        # Principle JSON files
+├── registry/          # Registry JSON arrays
+└── problem-index/     # Problem Index JSON files
 ```
 
 ---
@@ -90,6 +95,30 @@ data/
 - **Schema**: `lib/schemas/cheatsheet.ts`
 - **Guide**: `guides/adding-cheatsheet.md`
 
+### Debug Guides
+- **Location**: `data/debug-guides/{id}.json`
+- **Required**: 1 symptom, 1 root cause, 1 solution, 1 prevention
+- **Schema**: `lib/schemas/debug-guide.ts`
+- **Guide**: `guides/adding-debug-guide.md`
+
+### Decision Guides
+- **Location**: `data/decision-guides/{id}.json`
+- **Required**: 2 options minimum, 1 evaluation criteria
+- **Schema**: `lib/schemas/decision-guide.ts`
+- **Guide**: `guides/adding-decision-guide.md`
+
+### Patterns
+- **Location**: `data/patterns/{id}.json`
+- **Required**: `concept` and `applicability` fields
+- **Schema**: `lib/schemas/pattern.ts`
+- **Guide**: `guides/adding-pattern.md`
+
+### Principles
+- **Location**: `data/principles/{id}.json`
+- **Required**: `statement` field
+- **Schema**: `lib/schemas/principle.ts`
+- **Guide**: `guides/adding-principle.md`
+
 ---
 
 ## Validation Rules Summary
@@ -115,6 +144,10 @@ data/
 - **Packages**: 1 task
 - **Workflows**: 3 steps
 - **Cheatsheets**: 1 entry
+- **Debug Guides**: 1 symptom, 1 root cause, 1 solution, 1 prevention
+- **Decision Guides**: 2 options, 1 evaluation criteria
+- **Patterns**: `concept` and `applicability` fields
+- **Principles**: `statement` field
 
 ---
 

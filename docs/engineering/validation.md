@@ -36,7 +36,12 @@ Every JSON file in the `data/` subdirectory must conform to its corresponding Zo
 - **Models** (`data/models/{ml,dl,llm}/*.json`): Verified against `ModelSchema`
 - **Workflows** (`data/workflows/*.json`): Verified against `WorkflowSchema`
 - **Cheatsheets** (`data/cheatsheets/*.json`): Verified against `CheatsheetSchema`
+- **Debug Guides** (`data/debug-guides/*.json`): Verified against `DebugGuideSchema`
+- **Decision Guides** (`data/decision-guides/*.json`): Verified against `DecisionGuideSchema`
+- **Patterns** (`data/patterns/*.json`): Verified against `PatternSchema`
+- **Principles** (`data/principles/*.json`): Verified against `PrincipleSchema`
 - **Registries** (`data/registry/*.json`): Verified against an array of `RegistryModelSchema`
+- **Problem Index** (`data/problem-index/*.json`): Verified against `ProblemSchema`
 
 ### 2. Naming Conventions (kebab-case)
 All content file base names and their declared internal `"id"` values must conform to a strict kebab-case format:

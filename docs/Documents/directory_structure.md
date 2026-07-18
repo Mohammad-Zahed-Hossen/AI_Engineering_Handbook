@@ -2,144 +2,361 @@
 
 > Generated for the repository root `d:/Project/ai-engineering-handbook`
 
-- .agents
-  - .agents/skills
-    - .agents/skills/references
-      - .agents/skills/references/foundation
-        - .agents/skills/references/foundation/01-project-philosophy.md
-        - .agents/skills/references/foundation/02-content-taxonomy.md
-        - .agents/skills/references/foundation/03-writing-standards.md
-        - .agents/skills/references/foundation/04-json-conventions.md
-        - .agents/skills/references/foundation/05-naming-conventions.md
-        - .agents/skills/references/foundation/06-official-resource-policy.md
-        - .agents/skills/references/foundation/07-research-guidelines.md
-        - .agents/skills/references/foundation/08-cross-linking.md
-        - .agents/skills/references/foundation/09-quality-checklist.md
-        - .agents/skills/references/foundation/10-maintenance-policy.md
-      - .agents/skills/references/schemas
-        - .agents/skills/references/schemas/model.md
-        - .agents/skills/references/schemas/package.md
-        - .agents/skills/references/schemas/workflow.md
-- .claude
-  - .claude/skills
-    - .claude/skills/references
-      - .claude/skills/references/foundation
-        - .claude/skills/references/foundation/01-project-philosophy.md
-        - .claude/skills/references/foundation/02-content-taxonomy.md
-        - .claude/skills/references/foundation/03-writing-standards.md
-        - .claude/skills/references/foundation/04-json-conventions.md
-        - .claude/skills/references/foundation/05-naming-conventions.md
-        - .claude/skills/references/foundation/06-official-resource-policy.md
-        - .claude/skills/references/foundation/07-research-guidelines.md
-        - .claude/skills/references/foundation/08-cross-linking.md
-        - .claude/skills/references/foundation/09-quality-checklist.md
-        - .claude/skills/references/foundation/10-maintenance-policy.md
-      - .claude/skills/references/schemas
-        - .claude/skills/references/schemas/model.md
-        - .claude/skills/references/schemas/package.md
-        - .claude/skills/references/schemas/workflow.md
 - .gitignore
 - aens.config.json
-- app
-  - app/cheatsheets
-    - app/cheatsheets/[id]
+- app/
+  - app/api/
+    - app/api/registry/
+      - app/api/registry/search/
+        - app/api/registry/search/route.ts
+  - app/cheatsheets/
+    - app/cheatsheets/[id]/
       - app/cheatsheets/[id]/page.tsx
     - app/cheatsheets/page.tsx
-  - app/debug-guides
-    - app/debug-guides/[id]
+  - app/debug-guides/
+    - app/debug-guides/[id]/
       - app/debug-guides/[id]/page.tsx
-  - app/decision-guides
-    - app/decision-guides/[id]
+    - app/debug-guides/page.tsx
+  - app/decision-guides/
+    - app/decision-guides/[id]/
       - app/decision-guides/[id]/page.tsx
+    - app/decision-guides/page.tsx
   - app/error.tsx
   - app/favicon.ico
   - app/globals.css
   - app/layout.tsx
-  - app/models
-    - app/models/[category]
-      - app/models/[category]/[id]
+  - app/not-found.tsx
+  - app/page.tsx
+  - app/models/
+    - app/models/[category]/
+      - app/models/[category]/[id]/
         - app/models/[category]/[id]/page.tsx
       - app/models/[category]/page.tsx
     - app/models/page.tsx
-  - app/not-found.tsx
-  - app/packages
-    - app/packages/[id]
+  - app/packages/
+    - app/packages/[id]/
       - app/packages/[id]/page.tsx
     - app/packages/page.tsx
-  - app/page.tsx
-  - app/patterns
-    - app/patterns/[id]
+    - app/packages/PackageListClient.tsx
+  - app/patterns/
+    - app/patterns/[id]/
       - app/patterns/[id]/page.tsx
-  - app/principles
-    - app/principles/[id]
+    - app/patterns/page.tsx
+    - app/patterns/PatternFilterClient.tsx
+  - app/principles/
+    - app/principles/[id]/
       - app/principles/[id]/page.tsx
-  - app/problem-index
-    - app/problem-index/ProblemIndexDashboard.tsx
+    - app/principles/page.tsx
+  - app/problem-index/
     - app/problem-index/page.tsx
-  - app/registry
-    - app/registry/[task]
+    - app/problem-index/ProblemIndexDashboard.tsx
+  - app/registry/
+    - app/registry/[task]/
       - app/registry/[task]/page.tsx
+    - app/registry/families/
+      - app/registry/families/[family]/
+        - app/registry/families/[family]/page.tsx
+      - app/registry/families/[family]/[variant]/
     - app/registry/page.tsx
-  - app/workflows
-    - app/workflows/[id]
+  - app/workflows/
+    - app/workflows/[id]/
       - app/workflows/[id]/page.tsx
     - app/workflows/page.tsx
-- components
-- components.json
-  - components/layout
+- components/
+  - components/layout/
     - components/layout/DarkModeToggle.tsx
     - components/layout/MobileSidebarTrigger.tsx
     - components/layout/Sidebar.tsx
-    - components/layout/ThemeInitializer.tsx
     - components/layout/TopBar.tsx
-  - components/shared
+  - components/principles/
+    - components/principles/AppearsInGroup.tsx
+    - components/principles/DecisionChecklist.tsx
+    - components/principles/EngineeringConsequenceCard.tsx
+    - components/principles/MentalModelDisplay.tsx
+    - components/principles/MisconceptionRow.tsx
+    - components/principles/TradeoffComparison.tsx
+    - components/principles/ViolationWarningCard.tsx
+  - components/registry/
+    - components/registry/DeploymentProfiles.tsx
+    - components/registry/DeploymentSummaryCard.tsx
+    - components/registry/EngineeringContinuation.tsx
+    - components/registry/EngineeringDecisionCards.tsx
+    - components/registry/FamilyCard.tsx
+    - components/registry/PaginationControls.tsx
+    - components/registry/PerformanceDimensions.tsx
+    - components/registry/QuickLinksCard.tsx
+    - components/registry/RegistryBadge.tsx
+    - components/registry/RegistryFamilyView.tsx
+    - components/registry/RegistryFilter.tsx
+    - components/registry/RelatedResources.tsx
+    - components/registry/RuntimeDecisionCard.tsx
+    - components/registry/RuntimeMatrix.tsx
+    - components/registry/VariantCard.tsx
+    - components/registry/VariantComparisonTable.tsx
+  - components/shared/
     - components/shared/AlternativesList.tsx
+    - components/shared/AntiPatternCard.tsx
     - components/shared/BackToTop.tsx
+    - components/shared/BadgeRow.tsx
     - components/shared/Breadcrumbs.tsx
     - components/shared/CheatsheetEntry.tsx
     - components/shared/CodeBlock.tsx
+    - components/shared/CodeBlockInteractive.tsx
+    - components/shared/CollapsibleRow.tsx
+    - components/shared/CollapsibleSection.tsx
+    - components/shared/ConstraintRecommendations.tsx
     - components/shared/ContentPageLayout.tsx
     - components/shared/ContentTypeBadge.tsx
-    - components/shared/ContinueReadingSection.tsx
+    - components/shared/DataTable.tsx
+    - components/shared/DebugChecklist.tsx
+    - components/shared/DebugDecisionTree.tsx
+    - components/shared/DebugOverviewCard.tsx
+    - components/shared/DebugSolutionList.tsx
+    - components/shared/DecisionFlow.tsx
+    - components/shared/DecisionGuideSummary.tsx
+    - components/shared/DecisionMatrix.tsx
+    - components/shared/DecisionOptionGrid.tsx
+    - components/shared/DecisionSummary.tsx
+    - components/shared/DecisionTree.tsx
+    - components/shared/DiagnosticCommandList.tsx
     - components/shared/ExpandableText.tsx
     - components/shared/FilterBar.tsx
+    - components/shared/HiddenCosts.tsx
+    - components/shared/HybridStrategy.tsx
+    - components/shared/LearningResources.tsx
     - components/shared/MetadataBadges.tsx
+    - components/shared/MigrationPath.tsx
+    - components/shared/ModelCategoryComparison.tsx
     - components/shared/ModelCollapsibleSections.tsx
+    - components/shared/ModelDecisionStrip.tsx
+    - components/shared/ModelHubExplorer.tsx
+    - components/shared/ModelListFilter.tsx
     - components/shared/OfficialResources.tsx
     - components/shared/PackageTaskList.tsx
     - components/shared/PageVisitTracker.tsx
+    - components/shared/PatternSnapshot.tsx
+    - components/shared/ProductionExamples.tsx
+    - components/shared/Prose.tsx
+    - components/shared/QuickIdentificationChecklist.tsx
     - components/shared/QuickSetupSection.tsx
     - components/shared/ReadingProgress.tsx
     - components/shared/ReadingSessionTracker.tsx
-    - components/shared/RecentKnowledgeSection.tsx
+    - components/shared/RecentActivity.tsx
+    - components/shared/RecommendedNextSection.tsx
     - components/shared/RelatedContent.tsx
+    - components/shared/RelatedPatternGraph.tsx
+    - components/shared/RelationshipSection.tsx
     - components/shared/ScrollRestore.tsx
     - components/shared/SearchBox.tsx
     - components/shared/SectionCard.tsx
+    - components/shared/SectionSummary.tsx
     - components/shared/StatusBadge.tsx
     - components/shared/StickyActionBar.tsx
     - components/shared/TableOfContents.tsx
+    - components/shared/TradeoffHeatmap.tsx
+    - components/shared/TradeoffTable.tsx
+    - components/shared/VariationCard.tsx
+    - components/shared/VerificationChecklist.tsx
+    - components/shared/VisualizationEquivalents.tsx
+    - components/shared/VisualTrainingLoop.tsx
     - components/shared/WorkflowStepList.tsx
-  - components/ui
+  - components/ui/
     - components/ui/badge.tsx
     - components/ui/button.tsx
     - components/ui/card.tsx
     - components/ui/separator.tsx
     - components/ui/sheet.tsx
-- content
-  - content/packages
-    - content/packages/.gitkeep
-- data
-- docs
-  - docs/adr
-    - docs/adr/.gitkeep
+- components.json
+- data/
+  - data/DIRECTORY_STRUCTURE.md
+  - data/registered-aliases.json
+  - data/registered-tags.json
+  - data/cheatsheets/
+    - data/cheatsheets/_nav.json
+    - data/cheatsheets/matplotlib.json
+    - data/cheatsheets/numpy.json
+    - data/cheatsheets/pandas.json
+    - data/cheatsheets/plotly-express.json
+    - data/cheatsheets/plotly-go.json
+    - data/cheatsheets/scikit-learn.json
+    - data/cheatsheets/seaborn.json
+  - data/debug-guides/
+    - data/debug-guides/_nav.json
+    - data/debug-guides/checkpoint-load-error.json
+    - data/debug-guides/cuda-out-of-memory.json
+    - data/debug-guides/dataloader-hang.json
+    - data/debug-guides/gpu-not-detected.json
+    - data/debug-guides/model-not-learning.json
+    - data/debug-guides/nan-loss-exploding-gradients.json
+    - data/debug-guides/tokenizer-mismatch.json
+  - data/decision-guides/
+    - data/decision-guides/_nav.json
+    - data/decision-guides/batch-vs-online-inference.json
+    - data/decision-guides/cnn-vs-vision-transformer.json
+    - data/decision-guides/dense-vs-sparse-retrieval.json
+    - data/decision-guides/kafka-vs-rabbitmq.json
+    - data/decision-guides/kubernetes-vs-docker-compose.json
+    - data/decision-guides/lora-vs-qlora.json
+    - data/decision-guides/mlflow-vs-weights-and-biases.json
+    - data/decision-guides/postgresql-vs-vector-db.json
+    - data/decision-guides/pytorch-vs-tensorflow.json
+    - data/decision-guides/rag-vs-fine-tuning.json
+  - data/models/
+    - data/models/dl/
+      - data/models/dl/_categories.json
+      - data/models/dl/_nav.json
+      - data/models/dl/auto-encoders.json
+      - data/models/dl/cnn.json
+      - data/models/dl/gnn.json
+      - data/models/dl/gru.json
+      - data/models/dl/lstm.json
+      - data/models/dl/mlp.json
+      - data/models/dl/rnn.json
+      - data/models/dl/transformer.json
+      - data/models/dl/vae.json
+      - data/models/dl/vit.json
+    - data/models/llm/
+      - data/models/llm/_categories.json
+      - data/models/llm/_nav.json
+      - data/models/llm/bert.json
+      - data/models/llm/deepseek.json
+      - data/models/llm/gemma.json
+      - data/models/llm/gpt.json
+      - data/models/llm/llama.json
+      - data/models/llm/mistral.json
+      - data/models/llm/phi.json
+      - data/models/llm/qwen.json
+      - data/models/llm/roberta.json
+      - data/models/llm/t5.json
+    - data/models/ml/
+      - data/models/ml/_categories.json
+      - data/models/ml/_nav.json
+      - data/models/ml/dbscan.json
+      - data/models/ml/decision-tree.json
+      - data/models/ml/k-means-clustering.json
+      - data/models/ml/knn.json
+      - data/models/ml/linear-regression.json
+      - data/models/ml/logistic-regression.json
+      - data/models/ml/naive-bayes.json
+      - data/models/ml/pca.json
+      - data/models/ml/random-forest.json
+      - data/models/ml/svm.json
+  - data/packages/
+    - data/packages/_nav.json
+    - data/packages/matplotlib.json
+    - data/packages/numpy.json
+    - data/packages/pandas.json
+    - data/packages/plotly-express.json
+    - data/packages/pytorch.json
+    - data/packages/scikit-learn.json
+    - data/packages/seaborn.json
+  - data/patterns/
+    - data/patterns/_nav.json
+    - data/patterns/batch-inference.json
+    - data/patterns/checkpointing.json
+    - data/patterns/distributed-data-parallel.json
+    - data/patterns/early-stopping.json
+    - data/patterns/flash-attention.json
+    - data/patterns/gradient-accumulation.json
+    - data/patterns/gradient-checkpointing.json
+    - data/patterns/kv-cache.json
+    - data/patterns/learning-rate-scheduling.json
+    - data/patterns/mixed-precision.json
+    - data/patterns/prompt-caching.json
+    - data/patterns/streaming-inference.json
+    - data/patterns/training-loop.json
+  - data/principles/
+    - data/principles/_nav.json
+    - data/principles/bayesian-inference.json
+    - data/principles/bias-variance-tradeoff.json
+    - data/principles/fail-fast.json
+    - data/principles/gradient-descent.json
+    - data/principles/idempotency.json
+    - data/principles/information-bottleneck.json
+    - data/principles/kiss.json
+    - data/principles/maximum-likelihood-estimation.json
+    - data/principles/modularity-and-composability.json
+    - data/principles/pareto-principle.json
+    - data/principles/regularization.json
+    - data/principles/separation-of-concerns.json
+    - data/principles/single-source-of-truth.json
+  - data/problem-index/
+    - data/problem-index/taxonomy.json
+  - data/registry/
+    - data/registry/families/
+      - data/registry/families/deepseek/
+        - data/registry/families/deepseek/_index.json
+        - data/registry/families/deepseek/coder-6-7b-33b.json
+        - data/registry/families/deepseek/r1-70b.json
+        - data/registry/families/deepseek/r1-0528.json
+        - data/registry/families/deepseek/r1-distill.json
+        - data/registry/families/deepseek/r1-reasoner.json
+        - data/registry/families/deepseek/v3-1-chat-hybrid.json
+        - data/registry/families/deepseek/v3-2-chat.json
+      - data/registry/families/llama-3/
+        - data/registry/families/llama-3/_index.json
+        - data/registry/families/llama-3/3-1-8b-instruct.json
+        - data/registry/families/llama-3/3-1-70b-instruct.json
+        - data/registry/families/llama-3/3-1-405b-instruct.json
+        - data/registry/families/llama-3/3-2-3b-instruct.json
+        - data/registry/families/llama-3/3-2-vision-11b-instruct.json
+        - data/registry/families/llama-3/3-3-70b.json
+        - data/registry/families/llama-3/code-llama-34b-instruct.json
+        - data/registry/families/llama-3/llama-guard-3-8b.json
+      - data/registry/families/qwen-3/
+        - data/registry/families/qwen-3/_index.json
+        - data/registry/families/qwen-3/3-0.6b.json
+        - data/registry/families/qwen-3/3-1.7b.json
+        - data/registry/families/qwen-3/3-3b.json
+        - data/registry/families/qwen-3/3-4b.json
+        - data/registry/families/qwen-3/3-8b.json
+        - data/registry/families/qwen-3/3-30b-a3b-instruct.json
+        - data/registry/families/qwen-3/3-235b-a22b-instruct.json
+        - data/registry/families/qwen-3/qwen-coder-latest.json
+        - data/registry/families/qwen-3/qwen-vl-latest.json
+  - data/workflows/
+    - data/workflows/_nav.json
+    - data/workflows/agentic-tool-use-system.json
+    - data/workflows/build-rag-system.json
+    - data/workflows/ci-cd-for-ml-models.json
+    - data/workflows/data-validation-drift-detection.json
+    - data/workflows/deep-learning-experiment-lifecycle.json
+    - data/workflows/feature-engineering-pipeline.json
+    - data/workflows/fine-tune-an-llm-with-lora-qlora.json
+    - data/workflows/full-fine-tuning-a-pretrained-transformer.json
+    - data/workflows/hyperparameter-optimization-workflow.json
+    - data/workflows/image-classification-pipeline.json
+    - data/workflows/instruction-tuning-rlhf-lite-dpo.json
+    - data/workflows/llm-application-serving.json
+    - data/workflows/model-deployment-batch-real-time.json
+    - data/workflows/model-monitoring-observability.json
+    - data/workflows/model-selection-baseline-benchmarking.json
+    - data/workflows/multi-agent-orchestration.json
+    - data/workflows/named-entity-recognition-pipeline.json
+    - data/workflows/object-detection-pipeline.json
+    - data/workflows/production-llm-cost-latency-optimization.json
+    - data/workflows/prompt-evaluation-regression-testing.json
+    - data/workflows/rag-evaluation-harness.json
+    - data/workflows/tabular-ml-model-development-lifecycle.json
+    - data/workflows/text-classification-pipeline-classical-encoder.json
+    - data/workflows/transfer-learning-for-vision.json
+    - data/workflows/vector-database-setup-indexing-strategy.json
+- docs/
+  - docs/AENS_CANONICAL_SPECIFICATION.md
+  - docs/AGENTS.md
+  - docs/AI_CONTEXT.md
+  - docs/ARCHITECTURE_REDESIGN_REPORT.md
+  - docs/CLAUDE.md
+  - docs/DEPENDENCY_GRAPH.md
+  - docs/Documents/
+    - docs/Documents/AENS Knowledge Layer Specification.md
+    - docs/Documents/directory_structure.md
+  - docs/adr/
     - docs/adr/001-content-schema-specification-approach.md
     - docs/adr/002-category-assignment-strategy.md
     - docs/adr/003-search-behavior-specification.md
     - docs/adr/004-model-id-format.md
-  - docs/AGENTS.md
-  - docs/architecture
-  - docs/ARCHITECTURE_REDESIGN_REPORT.md
+  - docs/architecture/
     - docs/architecture/components.md
     - docs/architecture/data-flow.md
     - docs/architecture/design-principles.md
@@ -147,113 +364,240 @@
     - docs/architecture/overview.md
     - docs/architecture/repository.md
     - docs/architecture/search.md
-  - docs/archive
-    - docs/archive/completed
-      - docs/archive/completed/Documentation_Synchronization_Summary.md
-    - docs/archive/prompt
-      - docs/archive/prompt/AENS — Final UX Implementation Prompts (Pre-Freeze).md
-      - docs/archive/prompt/AENS Home Page — Information Architecture Report.md
-      - docs/archive/prompt/AENS Home Page — UX Architecture Report.md
-      - docs/archive/prompt/AENS Mobile Cognitive Interface Audit.md
-      - docs/archive/prompt/AENS UX Inspection - Continue Reading System.md
-      - docs/archive/prompt/AENS_Models_Workflows_Fix_Prompts.md
-      - docs/archive/prompt/AENS_PreFreeze_Fix_Prompts.md
-      - docs/archive/prompt/AENS_Search_Implementation_Prompts.md
-      - docs/archive/prompt/AENS_UI_Pareto_Prompts.md
-      - docs/archive/prompt/Codeblock Overflow Investigation Report.md
-      - docs/archive/prompt/On_this_page (Sticky) issue.md
-    - docs/archive/report
-      - docs/archive/report/AENS Home Page — Reconciled Pre-Freeze Plan.md
-      - docs/archive/report/AENS Mobile UI UX Freeze Audit - V2.md
-      - docs/archive/report/AENS Skill Design Specification (SDS).md
-      - docs/archive/report/AENS v2 Architecture Blueprint.md
-      - docs/archive/report/aens_skill_implementation_plan.svg
-      - docs/archive/report/AENS_System_Audit_Report (windsurf).md
-      - docs/archive/report/AENS_v2_Content_Audit_Report.md
-      - docs/archive/report/AENS_V2_Search_Architecture.md
-      - docs/archive/report/AI Engineer Navigation System - Knowledge Architecture Audit Report.md
-      - docs/archive/report/AI Engineer Navigation System (AENS).md
-      - docs/archive/report/ARCHITECTURAL_REVIEW.md
-      - docs/archive/report/Claude_Archi_Review.md
-      - docs/archive/report/Claude_Infrastructure_Audit.md
-      - docs/archive/report/Final Architecture Fixing Report.md
-  - docs/CLAUDE.md
-  - docs/data
-    - docs/data/.gitkeep
-    - docs/data/numpy
-    - docs/data/pandas
-      - docs/data/pandas/AENS Canonical Knowledge Blueprint Claude Audit (v1).md
-      - docs/data/pandas/aens_architecture_audit.md
-      - docs/data/pandas/ARCHITECTURE_IMPLEMENTATION_CHANGELOG.md
-      - docs/data/pandas/ARCHITECTURE_RECONCILIATION_REPORT.md
-      - docs/data/pandas/CANONICAL_PACKAGE_BLUEPRINT_SPECIFICATION_v2.md
-      - docs/data/pandas/CANONICAL_PACKAGE_BLUEPRINT_SPECIFICATION.md
-      - docs/data/pandas/Codex_Audit.md
-      - docs/data/pandas/PANDAS_KNOWLEDGE_BLUEPRINT_v2.md
-      - docs/data/pandas/perflexity research.md
-  - docs/DEPENDENCY_GRAPH.md
-  - docs/engineering
+  - docs/archive/
+    - docs/archive/historical/
+  - docs/engineering/
     - docs/engineering/content-schema.md
     - docs/engineering/project-rules.md
     - docs/engineering/validation.md
-  - docs/guides
+  - docs/guides/
     - docs/guides/adding-cheatsheet.md
+    - docs/guides/adding-debug-guide.md
+    - docs/guides/adding-decision-guide.md
     - docs/guides/adding-model.md
     - docs/guides/adding-package.md
+    - docs/guides/adding-pattern.md
+    - docs/guides/adding-principle.md
+    - docs/guides/adding-registry.md
     - docs/guides/adding-workflow.md
+    - docs/guides/All Schema.md
+    - docs/guides/relationship-system.md
     - docs/guides/validation-workflow.md
-  - docs/migration
-  - docs/migration_v2
-    - docs/migration_v2/AENS_REBUILD_MASTER_PLAN.md
-    - docs/migration_v2/AI_EXECUTION_PROTOCOL.md
-    - docs/migration_v2/AI_IMPLEMENTATION_PLAYBOOK.md
-    - docs/migration_v2/AI_IMPLEMENTATION_READINESS_REVIEW.md
-    - docs/migration_v2/ARCHITECTURE_AUDIT_REPORT_Claude.md
-    - docs/migration_v2/ARCHITECTURE_AUDIT_REPORT_Kimi.md
-    - docs/migration_v2/BUILD_PIPELINE_SPECIFICATION.md
-    - docs/migration_v2/FINAL_ARCHITECTURE_AUDIT_REPORT_Antigravity.md
-    - docs/migration_v2/FOUNDATION_IMPLEMENTATION_BLUEPRINT.md
-    - docs/migration_v2/IMPLEMENTATION_MILESTONES.md
-    - docs/migration_v2/IMPLEMENTATION_ROADMAP.md
-    - docs/migration_v2/IMPLEMENTATION_SPECIFICATION.md
-    - docs/migration_v2/PHASE_1_CLEANUP_REPORT.md
-    - docs/migration_v2/REBUILD_PHASE_CHECKLIST.md
-    - docs/migration_v2/TESTING_SPECIFICATION.md
-    - docs/migration_v2/v2.1 Freeze Plan
-      - docs/migration_v2/v2.1 Freeze Plan/REPOSITORY_FOUNDATION_SPECIFICATION_v2.md
-      - docs/migration_v2/v2.1 Freeze Plan/SPECIFICATION_GAP_LOG.md
-      - docs/migration_v2/v2.1 Freeze Plan/V2.1_FIX_CLASSIFICATION.md
-      - docs/migration_v2/v2.1 Freeze Plan/V2.1_SPECIFICATION_FREEZE_PLAN.md
-    - docs/migration_v2/V2.1_CONSISTENCY_AUDIT.md
-    - docs/migration/AENS v2 - Repository Freeze Decision Document Revision.md
-    - docs/migration/AENS v2 — Architecture Freeze Decision Document.md
-    - docs/migration/AENS v2 — File System Mapping & Migration Plan.md
-    - docs/migration/AENS v2 — Repository Foundation Specification v1.1.md
-    - docs/migration/AENS v2 — Repository Freeze Decision Register.md
-    - docs/migration/ARCHITECTURE_DECISION_REVIEW.md
-    - docs/migration/decision-index.json
-    - docs/migration/IMPLEMENTATION_ROADMAP.md
-    - docs/migration/INTEGRATION_ARCHITECTURE.md
-    - docs/migration/Step 2B Roadmap (Final).md
-    - docs/migration/Step 2B Roadmap.md
-  - docs/reference
+  - docs/knowledge/
+    - docs/knowledge/cheatsheet/
+      - docs/knowledge/cheatsheet/matplotlib/
+        - docs/knowledge/cheatsheet/matplotlib/Matplotlib Cheatsheet.md
+        - docs/knowledge/cheatsheet/matplotlib/matplotlib_cheatsheet.md
+      - docs/knowledge/cheatsheet/numpy/
+        - docs/knowledge/cheatsheet/numpy/NumPy Cheatsheet.md
+        - docs/knowledge/cheatsheet/numpy/numpy_cheatsheet.md
+        - docs/knowledge/cheatsheet/numpy/numpy_cheatsheet2.md
+      - docs/knowledge/cheatsheet/pandas/
+        - docs/knowledge/cheatsheet/pandas/Pandas Cheatsheet.md
+        - docs/knowledge/cheatsheet/pandas/Pandas Cheatsheet2.md
+        - docs/knowledge/cheatsheet/pandas/pandas_cheatsheet.md
+        - docs/knowledge/cheatsheet/pandas/pandas_cheatsheet2.md
+      - docs/knowledge/cheatsheet/plotly/
+        - docs/knowledge/cheatsheet/plotly/Plotly.express_cheatsheet.md
+        - docs/knowledge/cheatsheet/plotly/plotly.go_cheatsheet.md
+      - docs/knowledge/cheatsheet/scikit-learn/
+        - docs/knowledge/cheatsheet/scikit-learn/Scikit-Learn.md
+        - docs/knowledge/cheatsheet/scikit-learn/scikit-learn2.md
+        - docs/knowledge/cheatsheet/scikit-learn/sklearn.md
+      - docs/knowledge/cheatsheet/seaborn/
+        - docs/knowledge/cheatsheet/seaborn/Seaborn Cheatsheet Addendum.md
+        - docs/knowledge/cheatsheet/seaborn/Seaborn Cheatsheet.md
+        - docs/knowledge/cheatsheet/seaborn/sns.load_dataset().md
+    - docs/knowledge/debug-guide/
+      - docs/knowledge/debug-guide/Checkpoint Loading Errors (missing_keys, unexpected_keys, size mismatch)/
+      - docs/knowledge/debug-guide/DataLoader Problems (Deadlock, Hanging, Slow Loading, Worker Crashes)/
+      - docs/knowledge/debug-guide/GPU Not Detected (CUDA-Driver-PyTorch Mismatch)/
+      - docs/knowledge/debug-guide/Model Not Learning (Loss Not Decreasing)/
+      - docs/knowledge/debug-guide/NaN Loss or Exploding Gradients/
+      - docs/knowledge/debug-guide/Tokenizer ↔ Model Mismatch (Vocabulary - Special Tokens - Shape Errors)/
+    - docs/knowledge/decision-guide/
+      - docs/knowledge/decision-guide/Batch vs Online Inference/
+      - docs/knowledge/decision-guide/CNN vs Vision Transformer/
+      - docs/knowledge/decision-guide/Dense vs Sparse Retrieval/
+      - docs/knowledge/decision-guide/Kafka vs RabbitMQ/
+      - docs/knowledge/decision-guide/Kubernetes vs Docker Compose/
+      - docs/knowledge/decision-guide/LoRA vs QLoRA/
+      - docs/knowledge/decision-guide/MLflow vs Weights & Biases/
+      - docs/knowledge/decision-guide/PostgreSQL vs Vector DB/
+      - docs/knowledge/decision-guide/PyTorch vs TensorFlow/
+      - docs/knowledge/decision-guide/RAG vs Fine-Tuning/
+    - docs/knowledge/model/
+      - docs/knowledge/model/dl/
+      - docs/knowledge/model/llm/
+      - docs/knowledge/model/ml/
+    - docs/knowledge/package/
+      - docs/knowledge/package/matplotlib/
+      - docs/knowledge/package/numpy/
+      - docs/knowledge/package/pandas/
+      - docs/knowledge/package/plotly_express/
+      - docs/knowledge/package/scikit-learn/
+      - docs/knowledge/package/seaborn/
+    - docs/knowledge/pattern/
+      - docs/knowledge/pattern/Batch Inference/
+      - docs/knowledge/pattern/Checkpointing & Resume Training/
+      - docs/knowledge/pattern/Distributed Data Parallel/
+      - docs/knowledge/pattern/Early Stopping/
+      - docs/knowledge/pattern/FlashAttention/
+      - docs/knowledge/pattern/Gradient Accumulation/
+      - docs/knowledge/pattern/Gradient Checkpointing/
+      - docs/knowledge/pattern/KV-Cache/
+      - docs/knowledge/pattern/Learning Rate Scheduling/
+      - docs/knowledge/pattern/Mixed Precision Training/
+      - docs/knowledge/pattern/Prompt Caching/
+      - docs/knowledge/pattern/Streaming Inference/
+      - docs/knowledge/pattern/Training Loop/
+    - docs/knowledge/principles/
+      - docs/knowledge/principles/Bayesian Inference/
+      - docs/knowledge/principles/Bias–Variance Tradeoff/
+      - docs/knowledge/principles/DRY/
+      - docs/knowledge/principles/End-to-End/
+      - docs/knowledge/principles/Fail Fast/
+      - docs/knowledge/principles/Gradient Descent/
+      - docs/knowledge/principles/Idempotency/
+      - docs/knowledge/principles/Information Bottleneck/
+      - docs/knowledge/principles/KISS/
+      - docs/knowledge/principles/Maximum Likelihood Estimation/
+      - docs/knowledge/principles/Modularity & Composability/
+      - docs/knowledge/principles/Pareto Principle/
+      - docs/knowledge/principles/Regularization/
+      - docs/knowledge/principles/Separation of Concerns/
+      - docs/knowledge/principles/Single Source of Truth/
+    - docs/knowledge/registry/
+      - docs/knowledge/registry/DeepSeek Family/
+      - docs/knowledge/registry/DeepSeek R1_V3 Family/
+      - docs/knowledge/registry/Gemma 3 Family/
+      - docs/knowledge/registry/Llama 3.x Family/
+      - docs/knowledge/registry/Qwen 3 Family/
+    - docs/knowledge/workflow/
+      - docs/knowledge/workflow/Agentic Tool-Use System/
+      - docs/knowledge/workflow/Build Rag System/
+      - docs/knowledge/workflow/CI_CD for ML Models/
+      - docs/knowledge/workflow/Data Validation & Drift Detection/
+      - docs/knowledge/workflow/Deep Learning Experiment Lifecycle/
+      - docs/knowledge/workflow/Feature Engineering Pipeline/
+      - docs/knowledge/workflow/Fine-Tune an LLM with LoRA-QLoRA/
+      - docs/knowledge/workflow/Full Fine-Tuning a Pretrained Transformer/
+      - docs/knowledge/workflow/Hyperparameter Optimization Workflow/
+      - docs/knowledge/workflow/Image Classification Pipeline/
+      - docs/knowledge/workflow/Instruction Tuning_RLHF-lite (DPO)/
+      - docs/knowledge/workflow/LLM Application Serving/
+      - docs/knowledge/workflow/Model Deployment (Batch + Real-Time)/
+      - docs/knowledge/workflow/Model Monitoring & Observability/
+      - docs/knowledge/workflow/Model Selection & Baseline Benchmarking/
+      - docs/knowledge/workflow/Multi-Agent Orchestration/
+      - docs/knowledge/workflow/Named Entity Recognition Pipeline/
+      - docs/knowledge/workflow/Object Detection Pipeline/
+      - docs/knowledge/workflow/Production LLM Cost & Latency Optimization/
+      - docs/knowledge/workflow/Prompt Evaluation & Regression Testing/
+      - docs/knowledge/workflow/RAG Evaluation Harness/
+      - docs/knowledge/workflow/Tabular ML Model Development Lifecycle/
+      - docs/knowledge/workflow/Text Classification Pipeline (Classical + Encoder)/
+      - docs/knowledge/workflow/Transfer Learning for Vision/
+      - docs/knowledge/workflow/Vector Database Setup & Indexing Strategy/
+  - docs/prompt/
+    - docs/prompt/cheatsheet/
+      - docs/prompt/cheatsheet/master_cheatsheet_prompt.md
+      - docs/prompt/cheatsheet/Pandas Cheatsheet.md
+      - docs/prompt/cheatsheet/Plotly_Cheatsheet.md
+      - docs/prompt/cheatsheet/scikit-learn_cheatsheet_prompt.md
+    - docs/prompt/debug-guide/
+      - docs/prompt/debug-guide/Model Not Learning (Loss Not Decreasing).md
+      - docs/prompt/debug-guide/NaN Loss Exploding Gradients Debug Guide Prompt.md
+    - docs/prompt/decision-guide/
+      - docs/prompt/decision-guide/CNN vs Vision Transformer.md
+      - docs/prompt/decision-guide/LoRA vs QLoRA Decision Guide Prompt.md
+      - docs/prompt/decision-guide/PyTorch vs TensorFlow.md
+    - docs/prompt/model/
+      - docs/prompt/model/AENS Model Resource Prompt v2.1 (Finalize).md
+      - docs/prompt/model/Antigravity Linear Regression.md
+      - docs/prompt/model/Model Master Prompt.md
+    - docs/prompt/package/
+      - docs/prompt/package/seaborn.md
+    - docs/prompt/pattern/
+      - docs/prompt/pattern/Pattern Master Prompt.md
+    - docs/prompt/principle/
+      - docs/prompt/principle/bayesian_inference_prompt.md
+      - docs/prompt/principle/bias_variance_tradeoff_prompt.md
+      - docs/prompt/principle/dry_prompt.md
+      - docs/prompt/principle/end_to_end_prompt.md
+      - docs/prompt/principle/fail_fast_prompt.md
+      - docs/prompt/principle/gradient_descent_prompt.md
+      - docs/prompt/principle/idempotency_prompt.md
+      - docs/prompt/principle/information_bottleneck_prompt.md
+      - docs/prompt/principle/kiss_prompt.md
+      - docs/prompt/principle/maximum_likelihood_estimation_prompt.md
+      - docs/prompt/principle/Modularity & Composability.md
+      - docs/prompt/principle/pareto_principle_prompt.md
+      - docs/prompt/principle/regularization_prompt.md
+      - docs/prompt/principle/Separation of Concerns Principle Prompt.md
+    - docs/prompt/registry/
+      - docs/prompt/registry/DeepSeek-Coder Variant.md
+      - docs/prompt/registry/DeepSeek-R1 Distill Variant.md
+      - docs/prompt/registry/DeepSeek-R1-0528.md
+      - docs/prompt/registry/Qwen3 Family.md
+      - docs/prompt/registry/Qwen3 Variant.md
+      - docs/prompt/registry/Depreciated/
+    - docs/prompt/universal/
+      - docs/prompt/universal/Knowledge Ingestion Prompt.md
+      - docs/prompt/universal/knowledge_ingestion_prompt (Finalize).md
+      - docs/prompt/universal/Registry Ingestion Prompt.md
+    - docs/prompt/workflow/
+      - docs/prompt/workflow/AENS Workflow Resource Prompt — v2.1 → v3.0 Upgrade.md
+      - docs/prompt/workflow/AENS Workflow Resource Prompt v2.1.md
+      - docs/prompt/workflow/AENS Workflow Resource Prompt v3.0.md
+      - docs/prompt/workflow/Agentic Tool-Use System.md
+      - docs/prompt/workflow/Build RAG System Workflow Resource Prompt (Finalize).md
+      - docs/prompt/workflow/Build_RAG_System_Workflow_Resource_Prompt.md
+      - docs/prompt/workflow/CI_CD for ML Models.md
+      - docs/prompt/workflow/Deep Learning Experiment Lifecycle.md
+      - docs/prompt/workflow/Feature Engineering Pipeline.md
+      - docs/prompt/workflow/Fine-Tune an LLM with LoRA-QLoRA.md
+      - docs/prompt/workflow/Full Fine-Tuning a Pretrained Transformer.md
+      - docs/prompt/workflow/Hyperparameter Optimization Workflow.md
+      - docs/prompt/workflow/Instruction Tuning - DPO.md
+      - docs/prompt/workflow/LLM Application Serving.md
+      - docs/prompt/workflow/Model Deployment (Batch + Real-Time) .md
+      - docs/prompt/workflow/Model Monitoring & Observability.md
+      - docs/prompt/workflow/Model Selection & Baseline Benchmarking.md
+      - docs/prompt/workflow/Multi-Agent Orchestration.md
+      - docs/prompt/workflow/Prompt Evaluation & Regression Testing.md
+      - docs/prompt/workflow/RAG Evaluation Harness.md
+      - docs/prompt/workflow/Tabular ML Model Development Lifecycle.md
+      - docs/prompt/workflow/Vector Database Setup & Indexing Strategy.md
+  - docs/reference/
+    - docs/reference/Canonical Engineering Capability Taxonomy (CECT).md
+    - docs/reference/CONTENT_QUALITY_STANDARD.md
     - docs/reference/naming.md
     - docs/reference/quick-reference.md
+    - docs/reference/REGISTRY_MODEL_BOUNDARY.md
+    - docs/reference/RESOURCE_KNOWLEDGE_REQUIREMENTS_REPORT.md
     - docs/reference/schemas.md
+  - docs/report/
+    - docs/report/AENS Search Production-Readiness Fixes Report.md
+    - docs/report/AENS_CROSS_LINK_AUDIT_REPORT.md
+    - docs/report/KNOWLEDGE_GRAPH_IMPROVEMENT_SUMMARY.md
 - eslint.config.mjs
-- lib
-  - lib/config
+- lib/
+  - lib/config/
     - lib/config/loader.ts
-    - lib/config/registry.ts
-  - lib/content
-    - lib/content/.gitkeep
+    - lib/config/workflows.ts
   - lib/data.ts
-  - lib/hooks
+  - lib/format-date.ts
+  - lib/format-registry.ts
+  - lib/format-time.ts
+  - lib/hooks/
     - lib/hooks/useLocalStorage.ts
     - lib/hooks/useReadingSession.ts
+  - lib/pagination.ts
+  - lib/relationships.ts
   - lib/resources.ts
   - lib/route-params.ts
-  - lib/schemas
+  - lib/schemas/
     - lib/schemas/base.ts
     - lib/schemas/cheatsheet.ts
     - lib/schemas/debug-guide.ts
@@ -265,41 +609,66 @@
     - lib/schemas/principle.ts
     - lib/schemas/registry.ts
     - lib/schemas/workflow.ts
-  - lib/search
-  - lib/search-types.ts
-  - lib/search.ts
+  - lib/search/
     - lib/search/engine.ts
+    - lib/search/intent-detection.ts
     - lib/search/inverted-index.ts
+    - lib/search/query-assistance.ts
+    - lib/search/ranking.ts
     - lib/search/related-search.ts
+    - lib/search/snippets.ts
     - lib/search/synonym-expander.ts
     - lib/search/tokenizer.ts
+    - lib/search/typo-tolerance.ts
+  - lib/search-types.ts
   - lib/session-tracking.ts
+  - lib/text/
+    - lib/text/parseLabeledClauses.ts
+  - lib/theme.ts
   - lib/utils.ts
-  - lib/validation
-    - lib/validation/.gitkeep
-- next-env.d.ts
+  - lib/validator/
+    - lib/validator/context.ts
+    - lib/validator/engine.ts
+    - lib/validator/report.ts
+    - lib/validator/rules/
+      - lib/validator/rules/base.ts
+      - lib/validator/rules/cross-ref.ts
+      - lib/validator/rules/empty.ts
+      - lib/validator/rules/orphans.ts
+      - lib/validator/rules/registry.ts
+      - lib/validator/rules/related.ts
+      - lib/validator/rules/schema.ts
 - next.config.ts
 - package-lock.json
 - package.json
 - postcss.config.mjs
-- public
+- public/
   - public/file.svg
   - public/globe.svg
   - public/next.svg
+  - public/search-index.json
   - public/vercel.svg
   - public/window.svg
 - README.md
-- schema
-  - schema/config.schema.json
-  - schema/v2
-    - schema/v2/.gitkeep
-- scripts
+- scripts/
+  - scripts/archive/
+    - scripts/archive/migrate-to-v2.ts
   - scripts/build-nav-index.ts
-  - scripts/migrate-to-v2.ts
+  - scripts/search-audit.ts
+  - scripts/sync-cross-refs.ts
   - scripts/validate-content.ts
-- tsconfig.json
-- tsconfig.tsbuildinfo
-- types
+- schema/
+  - schema/config.schema.json
+  - schema/v2/
+    - schema/v2/.gitkeep
+- tests/
+  - tests/relationships.test.ts
+  - tests/search-enhancements.test.ts
+  - tests/tokenizer.test.ts
+  - tests/validator/
+    - tests/validator/engine.test.ts
+    - tests/validator/rules.test.ts
+- types/
   - types/cheatsheet.ts
   - types/config.ts
   - types/debug-guide.ts
@@ -310,5 +679,7 @@
   - types/package.ts
   - types/pattern.ts
   - types/principle.ts
+  - types/problem.ts
   - types/registry.ts
   - types/workflow.ts
+- tsconfig.json

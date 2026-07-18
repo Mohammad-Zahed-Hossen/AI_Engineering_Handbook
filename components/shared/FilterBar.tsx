@@ -18,8 +18,8 @@ export default function FilterBar({
   onClear,
 }: FilterBarProps) {
   return (
-    <div className="bg-card text-card-foreground border border-border rounded-lg p-3 flex flex-wrap items-center gap-3 select-none text-xs">
-      <span className="font-semibold text-muted-foreground font-sans">{label}:</span>
+    <div className="bg-card text-card-foreground border border-border rounded-lg p-3 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-3 select-none text-xs">
+      <span className="font-semibold text-muted-foreground font-sans sm:shrink-0">{label}:</span>
       <div className="flex flex-wrap gap-1.5 flex-1">
         {options.map((opt) => {
           const active = selectedOptions.includes(opt);
@@ -28,7 +28,7 @@ export default function FilterBar({
               key={opt}
               onClick={() => onToggle(opt)}
               className={cn(
-                "px-2 py-0.5 rounded border text-[10px] font-medium cursor-pointer select-none",
+                "px-2.5 py-1 rounded border text-[10px] font-medium cursor-pointer select-none touch-target-sm",
                 active
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-secondary text-secondary-foreground border-border hover:bg-muted"
@@ -42,7 +42,7 @@ export default function FilterBar({
       {selectedOptions.length > 0 && (
         <button
           onClick={onClear}
-          className="text-[10px] text-rose-500 hover:text-rose-600 font-semibold cursor-pointer"
+          className="text-[10px] text-rose-500 hover:text-rose-600 font-semibold cursor-pointer touch-target-sm sm:shrink-0"
         >
           Clear Filters ({selectedOptions.length})
         </button>

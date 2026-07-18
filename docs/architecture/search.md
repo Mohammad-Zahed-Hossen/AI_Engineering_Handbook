@@ -157,12 +157,20 @@ Query "embedding" → expands to:
 
 ## Search Configuration
 
-**Location**: `data/search/`
+**Location**: `lib/search/`
 
 ### Files
 
-- `synonyms.json`: Token → synonym array mappings
-- `concept-groups.json`: Concept → member ID array mappings
+- `engine.ts`: Main search engine implementation
+- `inverted-index.ts`: Inverted index implementation
+- `tokenizer.ts`: Code tokenizer
+- `synonym-expander.ts`: Synonym expansion
+- `ranking.ts`: Score aggregation
+- `related-search.ts`: Related content search
+- `snippets.ts`: Snippet extraction
+- `typo-tolerance.ts`: Typo tolerance handling
+- `intent-detection.ts`: Query intent detection
+- `query-assistance.ts`: Query assistance
 
 ---
 

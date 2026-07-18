@@ -123,12 +123,12 @@ export function CodeBlockInteractive({
           <span className="text-[9px] font-mono text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">
             {linesCount} lines
           </span>
-          {/* Theme toggle button - now visible on mobile */}
+          {/* Theme toggle button - now visible on mobile with touch target */}
           <button
             onClick={() => setIsDarkTheme(!isDarkTheme)}
             aria-label="Toggle theme"
             className={cn(
-              "flex items-center justify-center w-6 h-6 rounded transition-all duration-200 cursor-pointer select-none",
+              "flex items-center justify-center w-7 h-7 rounded transition-all duration-200 cursor-pointer select-none touch-target-sm",
               isDarkTheme
                 ? "text-zinc-400 bg-zinc-900 hover:text-zinc-200"
                 : "text-zinc-500 bg-white hover:text-zinc-700"
@@ -136,13 +136,13 @@ export function CodeBlockInteractive({
           >
             {isDarkTheme ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
           </button>
-          {/* Wrap toggle button - now visible on mobile */}
+          {/* Wrap toggle button - now visible on mobile with touch target */}
           <button
             onClick={() => setWrapped(prev => prev === true ? false : true)}
             aria-label="Toggle line wrap"
             aria-pressed={wrapped === true}
             className={cn(
-              "flex items-center justify-center w-6 h-6 rounded transition-all duration-200 cursor-pointer select-none",
+              "flex items-center justify-center w-7 h-7 rounded transition-all duration-200 cursor-pointer select-none touch-target-sm",
               wrapped === true
                 ? "text-emerald-400 bg-emerald-500/10"
                 : buttonBaseClasses
@@ -150,11 +150,11 @@ export function CodeBlockInteractive({
           >
             <WrapText className="w-3.5 h-3.5" />
           </button>
-          {/* Copy button - now visible on mobile */}
+          {/* Copy button - now visible on mobile with touch target */}
           <button
             onClick={handleCopy}
             className={cn(
-              "flex items-center justify-center w-6 h-6 rounded transition-all duration-200 cursor-pointer select-none",
+              "flex items-center justify-center w-7 h-7 rounded transition-all duration-200 cursor-pointer select-none touch-target-sm",
               copied
                 ? "text-emerald-400 bg-emerald-500/10"
                 : isDarkTheme
@@ -202,7 +202,7 @@ export function CodeBlockInteractive({
           onClick={() => setIsExpanded(!isExpanded)}
           aria-expanded={isExpanded}
           className={cn(
-            "w-full py-2 text-[10px] font-sans font-semibold uppercase tracking-wider transition-colors cursor-pointer select-none border-t",
+            "w-full py-2.5 text-[10px] font-sans font-semibold uppercase tracking-wider transition-colors cursor-pointer select-none border-t touch-target",
             isDarkTheme
               ? "text-zinc-400 hover:text-zinc-200 border-zinc-800 bg-zinc-900/50"
               : "text-zinc-500 hover:text-zinc-700 border-zinc-200 bg-zinc-50"

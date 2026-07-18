@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { RegistryBadge } from './RegistryBadge';
+import { cn } from '@/lib/utils';
 
 interface RegistryFilterProps {
   onFilterChange: (filters: RegistryFilters) => void;
@@ -75,18 +76,20 @@ export default function RegistryFilter({ onFilterChange, families }: RegistryFil
     <div className="space-y-4">
       {/* Active Filters */}
       {getActiveFilterLabels().length > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2">
+          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider sm:shrink-0">
             Active Filters:
           </span>
-          {getActiveFilterLabels().map(label => (
-            <RegistryBadge key={label} variant="secondary" size="xs" className="font-mono">
-              {label}
-            </RegistryBadge>
-          ))}
+          <div className="flex flex-wrap gap-1.5">
+            {getActiveFilterLabels().map(label => (
+              <RegistryBadge key={label} variant="secondary" size="xs" className="font-mono">
+                {label}
+              </RegistryBadge>
+            ))}
+          </div>
           <button
             onClick={clearFilters}
-            className="text-[10px] text-primary hover:underline font-medium"
+            className="text-[10px] text-primary hover:underline font-medium touch-target-sm sm:shrink-0"
           >
             Clear all
           </button>
@@ -94,30 +97,34 @@ export default function RegistryFilter({ onFilterChange, families }: RegistryFil
       )}
 
       {/* Status Filters */}
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2">
+        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider sm:shrink-0">
           Status:
         </span>
-        <button
-          onClick={() => updateFilter('productionReady', true)}
-          className={`text-[10px] px-2 py-0.5 rounded border font-mono transition-colors ${
-            filters.productionReady === true
-              ? 'bg-emerald-500/10 border-emerald-500 text-emerald-600'
-              : 'border-border hover:bg-muted/50'
-          }`}
-        >
-          Production Ready
-        </button>
-        <button
-          onClick={() => updateFilter('commercialUse', true)}
-          className={`text-[10px] px-2 py-0.5 rounded border font-mono transition-colors ${
-            filters.commercialUse === true
-              ? 'bg-indigo-500/10 border-indigo-500 text-indigo-600'
-              : 'border-border hover:bg-muted/50'
-          }`}
-        >
-          Commercial Use
-        </button>
+        <div className="flex flex-wrap gap-1.5">
+          <button
+            onClick={() => updateFilter('productionReady', true)}
+            className={cn(
+              "text-[10px] px-2.5 py-1 rounded border font-mono transition-colors touch-target-sm",
+              filters.productionReady === true
+                ? 'bg-emerald-500/10 border-emerald-500 text-emerald-600'
+                : 'border-border hover:bg-muted/50'
+            )}
+          >
+            Production Ready
+          </button>
+          <button
+            onClick={() => updateFilter('commercialUse', true)}
+            className={cn(
+              "text-[10px] px-2.5 py-1 rounded border font-mono transition-colors touch-target-sm",
+              filters.commercialUse === true
+                ? 'bg-indigo-500/10 border-indigo-500 text-indigo-600'
+                : 'border-border hover:bg-muted/50'
+            )}
+          >
+            Commercial Use
+          </button>
+        </div>
       </div>
 
       {/* Modality Filter */}
@@ -125,16 +132,17 @@ export default function RegistryFilter({ onFilterChange, families }: RegistryFil
         <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
           Modality
         </div>
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1.5">
           {(['llm', 'embedding', 'reranker', 'vision', 'speech', 'multimodal'] as const).map(m => (
             <button
               key={m}
               onClick={() => updateFilter('modality', m)}
-              className={`text-[10px] px-2 py-0.5 rounded border font-mono transition-colors ${
+              className={cn(
+                "text-[10px] px-2.5 py-1 rounded border font-mono transition-colors touch-target-sm",
                 filters.modality === m
                   ? 'bg-primary/10 border-primary text-primary'
                   : 'border-border hover:bg-muted/50'
-              }`}
+              )}
             >
               {m}
             </button>
@@ -147,34 +155,37 @@ export default function RegistryFilter({ onFilterChange, families }: RegistryFil
         <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
           Capabilities
         </div>
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1.5">
           <button
             onClick={() => updateFilter('reasoning', true)}
-            className={`text-[10px] px-2 py-0.5 rounded border font-mono transition-colors ${
+            className={cn(
+              "text-[10px] px-2.5 py-1 rounded border font-mono transition-colors touch-target-sm",
               filters.reasoning === true
                 ? 'bg-amber-500/10 border-amber-500 text-amber-600'
                 : 'border-border hover:bg-muted/50'
-            }`}
+            )}
           >
             Reasoning
           </button>
           <button
             onClick={() => updateFilter('vision', true)}
-            className={`text-[10px] px-2 py-0.5 rounded border font-mono transition-colors ${
+            className={cn(
+              "text-[10px] px-2.5 py-1 rounded border font-mono transition-colors touch-target-sm",
               filters.vision === true
                 ? 'bg-sky-500/10 border-sky-500 text-sky-600'
                 : 'border-border hover:bg-muted/50'
-            }`}
+            )}
           >
             Vision
           </button>
           <button
             onClick={() => updateFilter('tool_calling', true)}
-            className={`text-[10px] px-2 py-0.5 rounded border font-mono transition-colors ${
+            className={cn(
+              "text-[10px] px-2.5 py-1 rounded border font-mono transition-colors touch-target-sm",
               filters.tool_calling === true
                 ? 'bg-violet-500/10 border-violet-500 text-violet-600'
                 : 'border-border hover:bg-muted/50'
-            }`}
+            )}
           >
             Tool Calling
           </button>
@@ -187,16 +198,17 @@ export default function RegistryFilter({ onFilterChange, families }: RegistryFil
           <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
             Family
           </div>
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1.5">
             {families.map(family => (
               <button
                 key={family}
                 onClick={() => updateFilter('family', family)}
-                className={`text-[10px] px-2 py-0.5 rounded border font-mono transition-colors ${
+                className={cn(
+                  "text-[10px] px-2.5 py-1 rounded border font-mono transition-colors touch-target-sm",
                   filters.family === family
                     ? 'bg-primary/10 border-primary text-primary'
                     : 'border-border hover:bg-muted/50'
-                }`}
+                )}
               >
                 {family}
               </button>

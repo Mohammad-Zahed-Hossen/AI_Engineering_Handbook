@@ -45,8 +45,8 @@ export default async function ModelCategoryPage({ params }: PageProps) {
   return (
     <div className="space-y-6">
       {/* Category Header Card */}
-      <div className="bg-card text-card-foreground border border-border p-5 rounded-lg shadow-sm select-none">
-        <h1 className="text-xl font-bold tracking-tight text-foreground font-sans">
+      <div className="bg-card text-card-foreground border border-border p-4 sm:p-5 rounded-lg shadow-sm select-none">
+        <h1 className="text-lg sm:text-xl font-bold tracking-tight text-foreground font-sans">
           {titles[category]}
         </h1>
         <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed font-sans">

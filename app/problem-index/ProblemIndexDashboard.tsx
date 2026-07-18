@@ -968,7 +968,7 @@ export default function ProblemIndexDashboard({
                   }}
                 >
                   <div className="overflow-hidden">
-                    <div className="p-5 grid gap-5 grid-cols-1 xl:grid-cols-2">
+<div className="p-4 sm:p-5 grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2">
                       {data.problems.map(problem => {
                         const hasWorkflows = problem.related_workflows.length > 0 || (problem.related_decision_guides && problem.related_decision_guides.length > 0);
                         const computedMaturity = getProblemMaturity(problem, workflowMap);
@@ -1001,9 +1001,9 @@ export default function ProblemIndexDashboard({
                           (problem.related_registry?.length ?? 0) > 0;
 
                         return (
-                          <div
+<div
                             key={problem.id}
-                            className="rounded-xl border border-border/80 bg-muted/5 dark:bg-muted/[0.005] p-5 flex flex-col gap-4 transition-all hover:shadow-sm hover:border-border/100"
+                            className="rounded-xl border border-border/80 bg-muted/5 dark:bg-muted/[0.005] p-4 sm:p-5 flex flex-col gap-3 sm:gap-4 transition-all hover:shadow-sm hover:border-border/100 touch-target"
                           >
                             {/* Header Zone: Problem name + aliases + combined status/maturity */}
                             <div>

@@ -121,8 +121,8 @@ export default function RegistryFamilyView({ families: initialFamilies }: Regist
         </div>
       )}
 
-      {/* Family Grid */}
-      <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      {/* Family Grid - mobile first: 1 column, then 2, then 3 */}
+      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {!isLoading && (pagination.items as FamilyWithVariantCount[]).map((family) => (
           <FamilyCard key={family.id} family={family} variantCount={family.variant_count ?? 0} />
         ))}
