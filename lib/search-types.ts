@@ -12,6 +12,10 @@ export type SearchResult = {
   fn_signature?: string;
   fn_section?: string;
   fn_package_id?: string;
+  // API signature for code query matching (e.g., "torch.nn.Linear", "RandomForestClassifier.fit()")
+  api_signature?: string;
+  // Internal unique ID for search index (prevents collisions while preserving original id for routing)
+  search_id?: string;
   // Phase 1 additions - optional fields for deep indexing
   mental_trigger?: string;
   concept?: string;
@@ -45,6 +49,24 @@ export type SearchResult = {
     function_calling?: boolean;
     thinking_model?: boolean;
   };
+  // Phase 1 additions - error message and CLI command search
+  error_messages?: string[];
+  diagnostic_commands?: string[];
+  quick_checks?: string[];
+  // Phase 1 additions - confidence and maturity fields
+  confidence?: string;
+  engineering_maturity?: string;
+  canonical_status?: string;
+  difficulty?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  // Phase 2 additions - relationship count
+  related_count?: number;
+  // Source type to distinguish between package functions and cheatsheet entries
+  source_type?: 'package' | 'cheatsheet';
+  // Phase 2 additions - extended metadata fields for better indexing
+  gotchas?: string[];
+  root_causes?: string[];
+  symptoms?: string[];
+  decision_flow?: Array<{ question?: string; if_yes?: string; if_no?: string }>;
 };
 
 export function createFuse(data: SearchResult[]) {
@@ -66,6 +88,10 @@ export function createFuse(data: SearchResult[]) {
       { name: 'id', weight: 0.03 },
       { name: 'category', weight: 0.02 },
       { name: 'parent_name', weight: 0.02 },
+      // Phase 1 additions - error message and CLI command search
+      { name: 'error_messages', weight: 0.15 },
+      { name: 'diagnostic_commands', weight: 0.12 },
+      { name: 'quick_checks', weight: 0.10 },
     ],
     threshold: 0.25,
     minMatchCharLength: 2,

@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { RuleEngine } from '../../lib/validator/engine.js';
-import { KnowledgeGraph } from '../../lib/validator/context.js';
-import { generateReport } from '../../lib/validator/report.js';
+import { RuleEngine } from '../../lib/validator/engine.ts';
+import { KnowledgeGraph } from '../../lib/validator/context.ts';
+import { generateReport } from '../../lib/validator/report.ts';
 
 test('RuleEngine registers default Phase 2 rules', () => {
   const engine = new RuleEngine();

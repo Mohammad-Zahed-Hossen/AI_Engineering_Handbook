@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { resolvePackageRelationship, getRelationshipSearchKeywords } from '../lib/relationships';
-import { getRelatedContent } from '../lib/data';
+import { resolvePackageRelationship, getRelationshipSearchKeywords } from '../lib/relationships.ts';
+import { getRelatedContent } from '../lib/data.ts';
 
 interface TestPackageTask {
   task: string;

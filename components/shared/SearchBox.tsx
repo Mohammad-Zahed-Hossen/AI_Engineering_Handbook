@@ -9,10 +9,7 @@ import ContentTypeBadge from './ContentTypeBadge';
 import { formatContentType } from '@/lib/resources';
 import { cn } from '@/lib/utils';
 import { Clock, Search } from 'lucide-react';
-
-interface SearchEngine {
-  search: (query: string, limit?: number) => SearchResult[];
-}
+import { createSearchEngine } from '@/lib/search/engine';
 
 type SearchDisplayResult = {
   item: SearchResult;
@@ -24,7 +21,6 @@ interface SearchBoxProps {
   placeholder?: string;
   limit?: number;
   compact?: boolean;
-  engine?: SearchEngine | null;
 }
 
 const RECENT_SEARCHES_KEY = 'aens-recent-searches';
@@ -116,7 +112,6 @@ export default function SearchBox({
   placeholder = 'Search packages, models, workflows…',
   limit = 8,
   compact = false,
-  engine = null,
 }: SearchBoxProps) {
   const router = useRouter();
   const inputId = useId();
@@ -130,6 +125,12 @@ export default function SearchBox({
 
   const [searchIndex, setSearchIndex] = useState<SearchResult[]>(index);
   const [loading, setLoading] = useState(false);
+  const searchEngine = useMemo(() => {
+    if (searchIndex.length > 0) {
+      return createSearchEngine(searchIndex);
+    }
+    return null;
+  }, [searchIndex]);
 
   const handleFocus = async () => {
     setFocused(true);
@@ -182,15 +183,16 @@ export default function SearchBox({
     const trimmed = query.trim();
     if (!trimmed) return [];
 
-    if (engine?.search) {
-      return engine.search(trimmed, limit).map(item => ({ item }));
+    // Use the enhanced search engine if available
+    if (searchEngine?.search) {
+      return searchEngine.search(trimmed, limit).map(item => ({ item }));
     }
 
     return fuse.search(trimmed, { limit }).map(result => ({
       item: result.item,
       matches: result.matches,
     }));
-  }, [fuse, query, limit, engine]);
+  }, [fuse, query, limit, searchEngine]);
 
   const groupedResults = useMemo(() => {
     const groups = new Map<SearchResult['type'], SearchDisplayResult[]>();

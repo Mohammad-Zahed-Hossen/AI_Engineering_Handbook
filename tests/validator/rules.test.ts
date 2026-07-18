@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { KnowledgeGraph } from '../../lib/validator/context.js';
-import { SchemaValidationRule } from '../../lib/validator/rules/schema.js';
-import { CrossRefRule } from '../../lib/validator/rules/cross-ref.js';
-import { OrphanRule } from '../../lib/validator/rules/orphans.js';
-import { RelatedRule } from '../../lib/validator/rules/related.js';
-import { EmptyRule } from '../../lib/validator/rules/empty.js';
-import { RegistryRule } from '../../lib/validator/rules/registry.js';
+import { KnowledgeGraph } from '../../lib/validator/context.ts';
+import { SchemaValidationRule } from '../../lib/validator/rules/schema.ts';
+import { CrossRefRule } from '../../lib/validator/rules/cross-ref.ts';
+import { OrphanRule } from '../../lib/validator/rules/orphans.ts';
+import { RelatedRule } from '../../lib/validator/rules/related.ts';
+import { EmptyRule } from '../../lib/validator/rules/empty.ts';
+import { RegistryRule } from '../../lib/validator/rules/registry.ts';
 
 // Helper to create basic validation context
 function createMockContext(graph: KnowledgeGraph) {

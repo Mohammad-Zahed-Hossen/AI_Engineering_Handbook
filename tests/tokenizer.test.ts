@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tokenizeCodeField, tokenize } from '../lib/search/tokenizer';
+import { tokenizeCodeField, tokenize } from '../lib/search/tokenizer.ts';
 
 test('tokenizeCodeField handles inherited object properties safely', () => {
   assert.doesNotThrow(() => tokenizeCodeField('constructor'));

@@ -1,145 +1,149 @@
 # AI Engineering Navigation System (AENS)
 
-A localized, zero-latency, content-dense knowledge system for AI/ML engineers. Built as a static-first Next.js application that parses structured local JSON files, eliminating the need for complex databases or external API calls.
+A localized, zero-latency, content-dense knowledge system for AI/ML engineers.
 
-## Project Overview
+- **Local-first**: the site reads structured **JSON files** from `data/`
+- **Static-first**: routes are generated at build time (no database required)
+- **Quality-gated**: all content is validated via Zod during `npm run build`
 
-AENS is a **personal AI Engineering knowledge system** designed to:
-- Quickly recall Python package syntax
-- Browse AI/ML/DL/LLM models
-- Review Hugging Face ecosystem tools
-- Study workflows (RAG, Fine-Tuning, Evaluation, Inference)
-- Reference cheatsheets while working on AI projects
-
-**Target Audience:** AI engineers seeking canonical implementation knowledge for production systems.
-
-## Features
-
-- **Knowledge Graph** - Bidirectional relationships between all content types
-- **Problem Index** - Problem-first discovery layer
-- **Workflows** - End-to-end production pipelines
-- **Patterns** - Tool-independent engineering concepts
-- **Models** - Algorithm selection and understanding
-- **Packages** - Library implementation details
-- **Cheatsheets** - Quick syntax reference
-- **Decision Guides** - X vs Y comparison frameworks
-- **Debug Guides** - Troubleshooting knowledge
-- **Principles** - Fundamental engineering axioms
-- **Registry** - Model deployment metadata
-- **Search** - Client-side fuzzy search with Fuse.js
-- **Cross-linking** - Related content navigation
-
-## Architecture Overview
-
-AENS follows a **static generation** architecture:
-- All content stored as JSON files in `data/` directory
-- Zod schemas enforce data integrity at build time
-- React cache for efficient data loading
-- Lightweight `_nav.json` indexes for navigation performance
-- No database, no backend, no API routes
-
-## Installation
+## Quick Start
 
 ### Prerequisites
-- Node.js (v18+)
-- npm or yarn
+- Node.js **v18+**
+- npm
 
-### Install Dependencies
+### Install
 ```bash
 npm install
 ```
 
-### Development
+### Run (development)
 ```bash
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) with your browser.
+Open: http://localhost:3000
 
-### Build
-```bash
-npm run build
-```
-
-### Validate
+### Validate content (recommended before committing JSON changes)
 ```bash
 npm run validate
 ```
 
-## Repository Structure
+### Build for production
+```bash
+npm run build
+```
+
+Note: `prebuild` automatically runs:
+- `npm run validate`
+- `npm run build:nav`
+
+## What AENS is for
+
+AENS is a **personal AI Engineering knowledge system** designed to help you:
+- recall Python package syntax
+- browse AI/ML/DL/LLM models
+- review the Hugging Face ecosystem
+- study end-to-end workflows (RAG, fine-tuning, evaluation, inference)
+- use cheatsheets while building real AI systems
+
+## Non-goals / Hard constraints
+
+This is **not** a SaaS product.
+
+The system intentionally avoids:
+- database usage
+- external API fetching for content
+- adding new runtime dependencies without approval
+
+See: `docs/engineering/project-rules.md`
+
+## How the project works
+
+### Content pipeline
+1. Content lives in `data/` as JSON
+2. `npm run validate` runs `scripts/validate-content.ts` (Zod schema validation + integrity checks)
+3. `npm run build` renders the Next.js App Router pages using the local JSON
+
+Key references:
+- Validation: `docs/engineering/validation.md`
+- Architecture: `docs/architecture/overview.md`
+
+### Navigation indexes
+To keep navigation fast, the app generates lightweight `_nav.json` files.
+
+- Run when you add/update content:
+  ```bash
+  npm run build:nav
+  ```
+- Triggered automatically by `prebuild`
+
+## Repository layout (high level)
 
 ```
 ai-engineering-handbook/
-├── app/                      # Next.js App Router pages
-├── components/               # UI components
-│   ├── layout/               # Sidebar, TopBar, navigation
-│   ├── shared/               # Reusable components
-│   └── ui/                   # shadcn/ui primitives
-├── data/                     # Content database (JSON files)
-│   ├── packages/               # Library documentation
-│   ├── models/                 # ML/DL/LLM models
-│   ├── workflows/              # Production pipelines
-│   ├── cheatsheets/            # Syntax references
-│   ├── patterns/               # Engineering patterns
-│   ├── debug-guides/           # Troubleshooting guides
-│   ├── decision-guides/          # Decision frameworks
-│   ├── principles/             # Engineering principles
-│   └── registry/               # Model deployment metadata
-├── docs/                     # Documentation
-│   ├── architecture/           # System design documentation
-│   ├── engineering/            # Contributor rules
-│   ├── guides/                 # How-to procedures
-│   ├── reference/              # Quick references
-│   └── adr/                    # Architecture decisions
-├── lib/                      # Business logic
-│   ├── schemas/                # Zod validation schemas
-│   ├── search/                 # Search engine
-│   └── hooks/                  # React hooks
-├── scripts/                  # Build scripts
-│   ├── validate-content.ts     # Content validation
-│   └── build-nav-index.ts      # Navigation index generation
-└── types/                    # TypeScript interfaces
+├─ app/                # Next.js App Router
+├─ components/        # UI components (sidebar, shared renderers, etc.)
+├─ data/              # All content JSON + _nav.json indexes
+├─ lib/               # Data loading, schemas, search/indexing
+├─ scripts/           # build-time validation + nav index generation
+├─ docs/              # Contributor rules + schema docs + guides
+└─ types/             # Domain interfaces (kept in sync with Zod)
 ```
 
-## Development Workflow
+## Adding or updating content (contribution workflow)
 
-### Adding New Content
+General workflow for new/modified JSON content:
 
-1. Create JSON file in the appropriate `data/` subdirectory
-2. Follow the schema in `lib/schemas/*.ts`
-3. Use kebab-case for the ID (filename without .json)
-4. Run `npm run validate` to check integrity
-5. Run `npm run build:nav` to update navigation indexes
-6. Run `npm run build` to verify static generation
+1. Put the file under the correct `data/<type>/...` directory
+2. Follow the Zod schema in `lib/schemas/*`
+3. Ensure the internal `id` matches the filename (kebab-case)
+4. Run:
+   ```bash
+   npm run validate
+   ```
+5. Rebuild nav indexes:
+   ```bash
+   npm run build:nav
+   ```
+6. Confirm build:
+   ```bash
+   npm run build
+   ```
 
-See `docs/guides/adding-*.md` for detailed guides.
+### Contribution guides
+- Adding a model: `docs/guides/adding-model.md`
+- Adding a workflow: `docs/guides/adding-workflow.md`
 
-## Content Standards
+## Content quality checklist (most common failure points)
 
-All content must follow the quality standards defined in:
-- `docs/engineering/content-schema.md` - Schema and field guidelines
-- `docs/engineering/validation.md` - Validation rules
-- `docs/reference/schemas.md` - Schema reference
+- **No markdown fencing inside snippet fields** (e.g. `quick_start`, `install`, `example` must be raw code strings)
+- **Dates** follow strict `YYYY-MM-DD` format (`created_at`, `updated_at`)
+- **`sources[]` is required** and must not be empty
+- **Enum fields** must match the exact allowed lowercase values
+- **Cross-links are integrity-checked** (orphan detection + type compatibility)
 
-## Contributing
+Schema guidance: `docs/engineering/content-schema.md`
+Validation rules: `docs/engineering/validation.md`
 
-This is a **curated knowledge base**, not a documentation platform. Contributions should:
-- Follow existing patterns and conventions
-- Pass all validation checks
-- Include appropriate cross-links
-- Have complete metadata
-- Be actionable and practical
+## Scripts (developer commands)
 
-See `docs/engineering/project-rules.md` for detailed contribution guidelines.
-
-## License
-
-[License to be determined]
+- `npm run dev` — Next.js development server
+- `npm run build` — production build (runs validation + nav indexing via `prebuild`)
+- `npm run validate` — validate all JSON content
+- `npm run build:nav` — regenerate `_nav.json` indexes
+- `npm run lint` — ESLint
 
 ## Technology Stack
 
-- **Framework:** Next.js 16.2.9 (App Router)
-- **Language:** TypeScript 5 (strict mode)
-- **Styling:** Tailwind CSS v4
-- **Components:** shadcn/ui + Radix UI
+- **Next.js:** 16.2.9 (App Router)
+- **React:** 19.2.4
+- **TypeScript:** 5 (strict mode)
+- **Tailwind CSS:** v4
+- **UI:** shadcn/ui + Radix UI
 - **Search:** Fuse.js
 - **Validation:** Zod
+
+## License
+
+License to be determined.
+
