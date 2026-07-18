@@ -159,7 +159,7 @@
   }
 }
 
-/* Mobile-first touch target improvements */
+/* Mobile-first touch target and spacing utilities */
 @layer utilities {
   .touch-target {
     min-height: 44px;
@@ -169,11 +169,24 @@
     min-height: 44px;
     min-width: 44px;
   }
+  .touch-target-inline {
+    min-height: 36px;
+    min-width: 36px;
+  }
+  .touch-spacing {
+    gap: 0.5rem;
+  }
   .mobile-section {
     @apply space-y-6 sm:space-y-8;
   }
+  .mobile-section-spacing {
+    @apply mb-6 sm:mb-8;
+  }
   .mobile-stack {
     @apply grid grid-cols-1 gap-3 sm:gap-4;
+  }
+  .mobile-gap {
+    @apply gap-3 sm:gap-4;
   }
   .mobile-card-padding {
     @apply p-3 min-[390px]:p-4;
@@ -228,8 +241,32 @@ body .katex {
 }
 
 /* Shiki background override - remove double background in code blocks */
-.shiki, .shiki pre {
+.shiki,
+.shiki pre {
   background-color: transparent !important;
+}
+
+/* Mobile-first code block foundations */
+.shiki {
+  max-width: 100%;
+}
+
+.shiki pre {
+  margin: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.shiki code {
+  font-size: 0.8125rem; /* 13px on mobile */
+  line-height: 1.625;
+}
+
+@media (min-width: 640px) {
+  .shiki code {
+    font-size: 0.875rem; /* 14px on larger screens */
+  }
 }
 
 /* Collapsed code block styling */
