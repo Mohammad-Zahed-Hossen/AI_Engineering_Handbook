@@ -69,7 +69,7 @@ function TableOfContentsPresentational({ items, variant, activeId }: { items: To
     <>
       {/* Mobile: Floating button that opens a sheet */}
       {(variant === 'sidebar' || variant === 'both') && (
-        <div className="lg:hidden fixed bottom-20 right-4 z-30">
+        <div className="lg:hidden fixed left-4 z-30 mobile-fab-bottom">
           <Sheet>
             <SheetTrigger asChild>
               <button
@@ -79,7 +79,7 @@ function TableOfContentsPresentational({ items, variant, activeId }: { items: To
                 <List className="h-5 w-5" />
               </button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[280px] p-0">
+            <SheetContent side="left" className="w-[min(84vw,320px)] p-0">
               <SheetHeader className="px-4 py-3 border-b border-border">
                 <SheetTitle className="text-sm font-semibold">On this page</SheetTitle>
               </SheetHeader>
@@ -148,7 +148,7 @@ function TableOfContentsPresentational({ items, variant, activeId }: { items: To
                     key={item.id}
                     href={`#${item.id}`}
                     className={cn(
-                      'whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-medium transition-colors border',
+                      'whitespace-nowrap px-3 py-2 rounded-full text-[11px] font-medium transition-colors border touch-target',
                       activeId === item.id
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-muted text-muted-foreground border-border hover:bg-muted/80 hover:text-foreground'

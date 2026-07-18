@@ -324,7 +324,7 @@ export default function SearchBox({
       />
 
       {!focused && !query && (
-        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
+        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:block">
           <kbd className="text-[9px] font-mono text-muted-foreground/50 border border-border/50 rounded px-1 py-0.5">
             /
           </kbd>

@@ -218,7 +218,7 @@ export default function ModelHubExplorer({ initialModels, categoriesMeta }: Mode
                           </button>
                           <Link
                             href={`/models/${domain}/compare/${sub}`}
-                            className="text-[10px] font-medium text-primary hover:underline pr-2 touch-target-sm"
+                            className="text-[10px] font-medium text-primary hover:underline pr-2 touch-target"
                           >
                             Compare &rarr;
                           </Link>

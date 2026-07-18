@@ -86,7 +86,7 @@ export default function StickyActionBar({ tocItems }: StickyActionBarProps) {
     <>
       <div
         className={cn(
-          "fixed bottom-20 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1",
+          "fixed left-1/2 -translate-x-1/2 z-40 flex max-w-[calc(100vw-5.5rem)] items-center gap-1 mobile-sticky-bar-bottom",
           "rounded-full border border-border bg-card/90 backdrop-blur-sm shadow-sm",
           "px-1.5 py-1.5 transition-all duration-200 select-none",
           visible ? "translate-y-0 opacity-100" : "translate-y-16 opacity-0 pointer-events-none"
@@ -97,7 +97,7 @@ export default function StickyActionBar({ tocItems }: StickyActionBarProps) {
           onClick={() => scrollToSection(activeIndex - 1)}
           disabled={!canGoPrev}
           className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-full transition-colors touch-target-sm",
+            "flex h-11 w-11 items-center justify-center rounded-full transition-colors touch-target",
             canGoPrev
               ? "text-foreground hover:bg-muted active:scale-95"
               : "text-muted-foreground/30 cursor-not-allowed"
@@ -110,7 +110,7 @@ export default function StickyActionBar({ tocItems }: StickyActionBarProps) {
         {/* Current section label */}
         <button
           onClick={() => setSheetOpen(true)}
-          className="flex h-10 items-center px-3 text-xs font-medium text-foreground hover:bg-muted rounded-full transition-colors max-w-[160px] truncate touch-target-sm"
+          className="flex h-11 min-w-0 items-center px-3 text-xs font-medium text-foreground hover:bg-muted rounded-full transition-colors max-w-[min(160px,calc(100vw-12rem))] truncate touch-target"
           title="Jump to section"
           aria-label="Open section navigation"
         >
@@ -122,7 +122,7 @@ export default function StickyActionBar({ tocItems }: StickyActionBarProps) {
           onClick={() => scrollToSection(activeIndex + 1)}
           disabled={!canGoNext}
           className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-full transition-colors touch-target-sm",
+            "flex h-11 w-11 items-center justify-center rounded-full transition-colors touch-target",
             canGoNext
               ? "text-foreground hover:bg-muted active:scale-95"
               : "text-muted-foreground/30 cursor-not-allowed"

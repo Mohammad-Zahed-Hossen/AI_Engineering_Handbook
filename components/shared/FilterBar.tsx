@@ -28,7 +28,7 @@ export default function FilterBar({
               key={opt}
               onClick={() => onToggle(opt)}
               className={cn(
-                "px-2.5 py-1 rounded border text-[10px] font-medium cursor-pointer select-none touch-target-sm",
+                "px-2.5 py-1.5 rounded border text-[10px] font-medium cursor-pointer select-none touch-target",
                 active
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-secondary text-secondary-foreground border-border hover:bg-muted"
@@ -42,7 +42,7 @@ export default function FilterBar({
       {selectedOptions.length > 0 && (
         <button
           onClick={onClear}
-          className="text-[10px] text-rose-500 hover:text-rose-600 font-semibold cursor-pointer touch-target-sm sm:shrink-0"
+          className="text-[10px] text-rose-500 hover:text-rose-600 font-semibold cursor-pointer touch-target sm:shrink-0"
         >
           Clear Filters ({selectedOptions.length})
         </button>

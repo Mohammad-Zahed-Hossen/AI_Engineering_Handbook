@@ -102,21 +102,21 @@ export default function MobileSidebarTrigger({
   const linkClass = (href: string) => {
     const active = pathname === href;
     return cn(
-      "block py-1.5 px-2.5 rounded text-xs font-mono leading-normal transition-none select-none",
+      "flex min-h-11 items-center px-2.5 py-2 rounded text-xs font-mono leading-normal transition-none select-none",
       active
         ? "bg-primary text-primary-foreground font-semibold"
         : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
     );
   };
 
-  const sectionHeadingClass = "px-2.5 mt-4 mb-1 text-[10px] uppercase font-bold text-foreground/50 tracking-wider select-none flex items-center gap-1.5 cursor-pointer hover:text-foreground/70";
+  const sectionHeadingClass = "px-2.5 mt-3 mb-1 min-h-11 text-[10px] uppercase font-bold text-foreground/50 tracking-wider select-none flex items-center gap-1.5 cursor-pointer hover:text-foreground/70";
 
   const renderSectionHeader = (title: string, count: number, section: string, href: string) => (
     <div className={sectionHeadingClass}>
       {/* Chevron toggle — expands/collapses; does NOT navigate */}
       <span
         onClick={() => toggleSection(section)}
-        className="flex items-center cursor-pointer"
+        className="flex h-11 w-8 items-center justify-center -ml-2 cursor-pointer"
         aria-label={`Toggle ${title}`}
       >
         {expanded === section ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
@@ -124,7 +124,7 @@ export default function MobileSidebarTrigger({
       {/* Title — navigates to list page; does NOT toggle */}
       <Link
         href={href}
-        className="flex-1 hover:text-foreground/90 transition-none"
+        className="flex min-h-11 flex-1 items-center hover:text-foreground/90 transition-none"
         onClick={e => e.stopPropagation()}
       >
         {title}
@@ -138,12 +138,12 @@ export default function MobileSidebarTrigger({
       <SheetTrigger asChild>
         <button
           aria-label="Open navigation menu"
-          className="flex items-center justify-center w-11 h-11 rounded-md text-foreground hover:bg-muted transition-colors"
+          className="flex items-center justify-center w-11 h-11 rounded-md text-foreground hover:bg-muted transition-colors touch-target"
         >
           <Menu className="w-5 h-5" />
         </button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-[280px] p-0 bg-sidebar text-sidebar-foreground overflow-y-auto border-r border-sidebar-border">
+      <SheetContent side="left" className="w-[min(84vw,320px)] p-0 bg-sidebar text-sidebar-foreground overflow-y-auto border-r border-sidebar-border">
         <SheetHeader className="sr-only">
           <SheetTitle>Navigation Menu</SheetTitle>
         </SheetHeader>
@@ -152,7 +152,7 @@ export default function MobileSidebarTrigger({
         <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
           <Link 
             href="/" 
-            className="font-bold tracking-tight text-xs text-foreground uppercase"
+            className="flex min-h-11 items-center font-bold tracking-tight text-xs text-foreground uppercase"
             onClick={() => setOpen(false)}
           >
             AI Engineering
@@ -194,7 +194,7 @@ export default function MobileSidebarTrigger({
                       <li>
                         <Link
                           href="/packages"
-                          className="block py-1.5 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                          className="flex min-h-11 items-center px-2.5 py-2 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
                           onClick={() => setOpen(false)}
                         >
                           See all {total} →
@@ -213,10 +213,10 @@ export default function MobileSidebarTrigger({
           </Link>
 
           <div className="pl-2.5 mt-1.5 text-[10px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5">
-            <span className="flex items-center cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('ml')}>
+            <span className="flex h-11 w-8 items-center justify-center -ml-2 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('ml')}>
               {expanded === 'ml' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             </span>
-            <Link href="/models/ml" className="flex-1 hover:text-foreground/90 transition-none" onClick={e => e.stopPropagation()}>
+            <Link href="/models/ml" className="flex min-h-11 flex-1 items-center hover:text-foreground/90 transition-none" onClick={e => e.stopPropagation()}>
               Machine Learning
             </Link>
             <span className="ml-auto text-[8px] bg-muted px-1 rounded text-muted-foreground">{mlModels.length}</span>
@@ -242,7 +242,7 @@ export default function MobileSidebarTrigger({
                       <li>
                         <Link
                           href="/models/ml"
-                          className="block py-1.5 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                          className="flex min-h-11 items-center px-2.5 py-2 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
                           onClick={() => setOpen(false)}
                         >
                           See all {total} →
@@ -256,10 +256,10 @@ export default function MobileSidebarTrigger({
           )}
 
           <div className="pl-2.5 mt-2.5 text-[10px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5">
-            <span className="flex items-center cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('dl')}>
+            <span className="flex h-11 w-8 items-center justify-center -ml-2 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('dl')}>
               {expanded === 'dl' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             </span>
-            <Link href="/models/dl" className="flex-1 hover:text-foreground/90 transition-none" onClick={e => e.stopPropagation()}>
+            <Link href="/models/dl" className="flex min-h-11 flex-1 items-center hover:text-foreground/90 transition-none" onClick={e => e.stopPropagation()}>
               Deep Learning
             </Link>
             <span className="ml-auto text-[8px] bg-muted px-1 rounded text-muted-foreground">{dlModels.length}</span>
@@ -285,7 +285,7 @@ export default function MobileSidebarTrigger({
                       <li>
                         <Link
                           href="/models/dl"
-                          className="block py-1.5 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                          className="flex min-h-11 items-center px-2.5 py-2 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
                           onClick={() => setOpen(false)}
                         >
                           See all {total} →
@@ -299,10 +299,10 @@ export default function MobileSidebarTrigger({
           )}
 
           <div className="pl-2.5 mt-2.5 text-[10px] font-semibold text-muted-foreground uppercase flex items-center gap-1.5">
-            <span className="flex items-center cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('llm')}>
+            <span className="flex h-11 w-8 items-center justify-center -ml-2 cursor-pointer hover:text-foreground/70" onClick={() => toggleSection('llm')}>
               {expanded === 'llm' ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             </span>
-            <Link href="/models/llm" className="flex-1 hover:text-foreground/90 transition-none" onClick={e => e.stopPropagation()}>
+            <Link href="/models/llm" className="flex min-h-11 flex-1 items-center hover:text-foreground/90 transition-none" onClick={e => e.stopPropagation()}>
               Large Language Models
             </Link>
             <span className="ml-auto text-[8px] bg-muted px-1 rounded text-muted-foreground">{llmModels.length}</span>
@@ -328,7 +328,7 @@ export default function MobileSidebarTrigger({
                       <li>
                         <Link
                           href="/models/llm"
-                          className="block py-1.5 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                          className="flex min-h-11 items-center px-2.5 py-2 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
                           onClick={() => setOpen(false)}
                         >
                           See all {total} →
@@ -364,7 +364,7 @@ export default function MobileSidebarTrigger({
                       <li>
                         <Link
                           href="/registry"
-                          className="block py-1.5 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                          className="flex min-h-11 items-center px-2.5 py-2 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
                           onClick={() => setOpen(false)}
                         >
                           See all {total} →
@@ -400,7 +400,7 @@ export default function MobileSidebarTrigger({
                       <li>
                         <Link
                           href="/workflows"
-                          className="block py-1.5 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                          className="flex min-h-11 items-center px-2.5 py-2 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
                           onClick={() => setOpen(false)}
                         >
                           See all {total} →
@@ -436,7 +436,7 @@ export default function MobileSidebarTrigger({
                       <li>
                         <Link
                           href="/cheatsheets"
-                          className="block py-1.5 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                          className="flex min-h-11 items-center px-2.5 py-2 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
                           onClick={() => setOpen(false)}
                         >
                           See all {total} →
@@ -472,7 +472,7 @@ export default function MobileSidebarTrigger({
                       <li>
                         <Link
                           href="/patterns"
-                          className="block py-1.5 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                          className="flex min-h-11 items-center px-2.5 py-2 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
                           onClick={() => setOpen(false)}
                         >
                           See all {total} →
@@ -508,7 +508,7 @@ export default function MobileSidebarTrigger({
                       <li>
                         <Link
                           href="/debug-guides"
-                          className="block py-1.5 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                          className="flex min-h-11 items-center px-2.5 py-2 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
                           onClick={() => setOpen(false)}
                         >
                           See all {total} →
@@ -544,7 +544,7 @@ export default function MobileSidebarTrigger({
                       <li>
                         <Link
                           href="/decision-guides"
-                          className="block py-1.5 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                          className="flex min-h-11 items-center px-2.5 py-2 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
                           onClick={() => setOpen(false)}
                         >
                           See all {total} →
@@ -580,7 +580,7 @@ export default function MobileSidebarTrigger({
                       <li>
                         <Link
                           href="/principles"
-                          className="block py-1.5 px-2.5 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
+                          className="flex min-h-11 items-center px-2.5 py-2 rounded text-[10px] font-mono text-muted-foreground/70 hover:text-foreground hover:bg-secondary/40 transition-none select-none"
                           onClick={() => setOpen(false)}
                         >
                           See all {total} →

@@ -16,12 +16,12 @@ export default function ContentPageLayout({ breadcrumbs, toc, children }: Conten
   const activeId = useActiveSection(toc || []);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 items-start w-full">
+    <div className="flex flex-col lg:flex-row gap-6 sm:gap-8 items-start w-full">
       <ScrollRestore />
-      <div className="min-w-0 flex-1 space-y-8 w-full">
+      <div className="min-w-0 flex-1 space-y-6 sm:space-y-8 w-full">
         <Breadcrumbs items={breadcrumbs} />
         {toc && <TableOfContents items={toc} variant="horizontal" activeId={activeId} />}
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           {children}
         </div>
       </div>

@@ -139,7 +139,7 @@ export default function RecentActivity() {
           </div>
 
           {recentItems.length > 0 ? (
-            <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
+            <div className="grid gap-2 grid-cols-1 md:grid-cols-2">
               {recentItems.slice(0, 6).map((item, idx) => (
                 <Link
                   key={`${item.href}-${idx}`}

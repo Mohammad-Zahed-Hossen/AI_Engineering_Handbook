@@ -31,8 +31,8 @@ export default function TopBar({
   principles,
 }: TopBarProps) {
   return (
-    <header className="h-14 border-b border-border bg-card text-card-foreground px-4 flex items-center justify-between gap-4 select-none shrink-0">
-      <div className="flex items-center gap-3 min-w-0">
+    <header className="h-14 border-b border-border bg-card text-card-foreground px-2 min-[390px]:px-3 sm:px-4 flex items-center justify-between gap-2 sm:gap-4 select-none shrink-0">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink-0">
         <div className="md:hidden flex items-center shrink-0">
           <MobileSidebarTrigger
             packages={packages}
@@ -52,8 +52,8 @@ export default function TopBar({
           AI Engineering Handbook
         </span>
       </div>
-      <div className="flex-1 flex justify-center max-w-lg">
-        <SearchBox compact placeholder="Search handbook…" />
+      <div className="flex-1 min-w-0 flex justify-center sm:max-w-lg">
+        <SearchBox compact placeholder="Search…" />
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <DarkModeToggle />

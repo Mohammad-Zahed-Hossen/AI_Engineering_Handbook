@@ -433,7 +433,7 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
                               href={task.official_docs}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-primary bg-primary/5 hover:bg-primary/10 border border-primary/10 transition-colors w-fit cursor-pointer select-none touch-target-sm"
+                              className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-semibold text-primary bg-primary/5 hover:bg-primary/10 border border-primary/10 transition-colors w-fit cursor-pointer select-none touch-target"
                             >
                             <ExternalLink className="w-3.5 h-3.5" />
                             Official API Documentation

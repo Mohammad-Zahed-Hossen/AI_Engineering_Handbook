@@ -68,6 +68,7 @@ export default function DarkModeToggle() {
       variant="ghost"
       size="icon-sm"
       onClick={handleToggle}
+      className="h-11 w-11 touch-target shrink-0"
       aria-label={isDark ? 'Use light mode' : 'Use dark mode'}
       title={isDark ? 'Use light mode' : 'Use dark mode'}
       suppressHydrationWarning

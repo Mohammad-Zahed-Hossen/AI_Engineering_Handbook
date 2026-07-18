@@ -81,6 +81,14 @@
   --sidebar-ring: oklch(0.708 0 0);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
+  /* Mobile-first foundation tokens */
+  --mobile-touch-min: 2.75rem; /* 44px */
+  --mobile-touch-inline: 2.25rem; /* 36px */
+  --mobile-body-size: 0.875rem; /* 14px */
+  --mobile-fab-size: 2.75rem;
+  --mobile-fab-gap: 0.75rem;
+  --mobile-fab-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  --mobile-sticky-bar-bottom: calc(var(--mobile-fab-bottom) + var(--mobile-fab-size) + var(--mobile-fab-gap));
 }
 
 .dark {
@@ -122,8 +130,9 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground text-sm;
     min-width: 320px;
+    font-size: var(--mobile-body-size);
     overflow-wrap: break-word;
     text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
@@ -133,13 +142,13 @@
     scroll-behavior: smooth;
   }
   h1 {
-    @apply text-2xl font-semibold tracking-tight text-foreground;
+    @apply text-2xl md:text-3xl font-semibold tracking-tight text-foreground;
   }
   h2 {
-    @apply text-xl font-semibold tracking-tight text-foreground;
+    @apply text-xl md:text-2xl font-semibold tracking-tight text-foreground;
   }
   h3 {
-    @apply text-lg font-semibold text-foreground;
+    @apply text-lg md:text-xl font-semibold text-foreground;
   }
   p, li {
     @apply leading-relaxed;
@@ -191,6 +200,38 @@
   .mobile-card-padding {
     @apply p-3 min-[390px]:p-4;
   }
+  .mobile-fab-bottom {
+    bottom: var(--mobile-fab-bottom);
+  }
+  .mobile-sticky-bar-bottom {
+    bottom: var(--mobile-sticky-bar-bottom);
+  }
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  /* Apply this to any long-form text field rendered outside a code block */
+  .content-prose {
+    max-width: 72ch;
+    overflow-wrap: break-word;
+    font-size: var(--mobile-body-size);
+  }
+  .content-readable {
+    max-width: 72ch;
+    overflow-wrap: break-word;
+    font-size: var(--mobile-body-size);
+  }
+  .wide-scroll {
+    @apply overflow-x-auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 @layer components {
@@ -198,20 +239,11 @@
     @apply border border-border rounded-lg bg-card;
   }
 }
-@layer utilities {
-  /* Apply this to any long-form text field rendered outside a code block */
-  .content-prose {
-    max-width: 72ch;
-    overflow-wrap: break-word;
-  }
+
+@media (min-width: 640px) {
+  .content-prose,
   .content-readable {
-    max-width: 72ch;
-    overflow-wrap: break-word;
-  }
-  .wide-scroll {
-    @apply overflow-x-auto;
-    max-width: 100%;
-    -webkit-overflow-scrolling: touch;
+    font-size: 1rem;
   }
 }
 

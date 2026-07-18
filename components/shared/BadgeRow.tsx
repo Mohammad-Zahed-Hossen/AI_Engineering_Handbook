@@ -20,7 +20,7 @@ export function BadgeRow({ children, defaultVisible = 8, className = '' }: Badge
       {showMore && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="inline-flex items-center gap-1 rounded border border-border bg-muted/40 px-1.5 py-0.5 text-[9px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none cursor-pointer"
+          className="inline-flex items-center gap-1 rounded border border-border bg-muted/40 px-2 py-1 text-[9px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none cursor-pointer touch-target"
         >
           {expanded ? (
             <>
