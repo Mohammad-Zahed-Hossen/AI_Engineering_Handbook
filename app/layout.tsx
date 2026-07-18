@@ -113,8 +113,8 @@ export default function RootLayout({
             decisionGuides={decisionGuides}
             principles={principles}
           />
-          <main id="main-scroll" className="flex-1 overflow-y-auto bg-zinc-50 dark:bg-zinc-950 px-4 py-5 sm:px-6 sm:py-6 md:px-8 md:py-8">
-            <div className="w-full max-w-5xl mx-auto">
+          <main id="main-scroll" className="flex-1 overflow-x-hidden overflow-y-auto bg-zinc-50 dark:bg-zinc-950 px-3 py-4 min-[390px]:px-4 min-[390px]:py-5 sm:px-6 sm:py-6 md:px-8 md:py-8">
+            <div className="w-full min-w-0 max-w-5xl mx-auto">
               {children}
             </div>
           </main>
