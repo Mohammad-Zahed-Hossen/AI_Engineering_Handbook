@@ -23,7 +23,7 @@ export default function DecisionMatrix({ matrix }: DecisionMatrixProps) {
       </h2>
       
       <div className="rounded-lg border border-border bg-card overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm content-table">
           <thead className="bg-muted/40 font-semibold text-foreground border-b border-border">
             <tr>
               <th className="px-4 py-3 text-left">Criterion</th>

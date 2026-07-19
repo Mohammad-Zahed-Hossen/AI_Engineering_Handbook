@@ -69,7 +69,7 @@ function TableOfContentsPresentational({ items, variant, activeId }: { items: To
     <>
       {/* Mobile: Floating button that opens a sheet */}
       {(variant === 'sidebar' || variant === 'both') && (
-        <div className="lg:hidden fixed left-4 z-30 mobile-fab-bottom">
+        <div className="lg:hidden fixed left-4 z-30 bottom-[calc(var(--mobile-sticky-bar-bottom)+3.5rem)] mobile-fab-bottom">
           <Sheet>
             <SheetTrigger asChild>
               <button

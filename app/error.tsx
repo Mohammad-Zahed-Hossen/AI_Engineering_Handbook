@@ -1,6 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { AlertTriangle, RefreshCw, Home, FileText, Bug } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -9,41 +12,63 @@ interface ErrorProps {
 
 export default function GlobalError({ error, reset }: ErrorProps) {
   return (
-    <div className="space-y-6 max-w-xl mx-auto mt-12">
-      <div className="bg-card text-card-foreground border border-border p-6 rounded-lg shadow-sm">
-        <h1 className="text-xl font-bold tracking-tight text-foreground font-sans select-none">
-          Something went wrong
-        </h1>
-        <p className="text-xs text-muted-foreground mt-2 select-none">
-          An error occurred while loading this page. This might be due to a missing, corrupt, or invalid data file.
-        </p>
+    <div className="flex items-center justify-center min-h-[calc(100vh-8rem)] px-4">
+      <Card className="w-full max-w-lg border-destructive/20">
+        <CardHeader>
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-destructive/10 border border-destructive/20 shrink-0">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-destructive">Something went wrong</CardTitle>
+              <CardDescription className="mt-1">
+                An error occurred while loading this page. This might be due to a missing, corrupt, or invalid data file.
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
 
-        {/* Error message block */}
-        <div className="mt-4 p-3 bg-secondary/60 border border-border/80 rounded font-mono text-[11px] text-destructive overflow-x-auto select-text">
-          {error.message || 'Unknown error'}
-        </div>
+        <CardContent className="space-y-4">
+          {/* Error message block */}
+          <div className="p-3 bg-muted/50 border border-border rounded-lg font-mono text-[11px] text-destructive overflow-x-auto">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Bug className="w-3.5 h-3.5" />
+              <span className="font-semibold uppercase tracking-wider text-[10px]">Error Message</span>
+            </div>
+            <code className="block break-words">{error.message || 'Unknown error'}</code>
+          </div>
 
-        {error.digest && (
-          <p className="text-[10px] text-muted-foreground mt-2 font-mono select-text">
-            Error ID: {error.digest}
-          </p>
-        )}
+          {error.digest && (
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-mono">
+              <FileText className="w-3.5 h-3.5" />
+              <span>Error ID: <code className="bg-muted px-1.5 py-0.5 rounded">{error.digest}</code></span>
+            </div>
+          )}
+        </CardContent>
 
-        <div className="border-t border-border mt-4 pt-4 flex items-center gap-4 select-none">
-          <button
+        <CardFooter className="flex flex-col sm:flex-row gap-2 pt-4">
+          <Button
             onClick={() => reset()}
-            className="px-3 py-1.5 rounded bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/95 transition-none cursor-pointer"
+            variant="default"
+            size="sm"
+            className="w-full sm:w-auto"
           >
+            <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
             Try Again
-          </button>
-          <Link
-            href="/"
-            className="text-xs font-semibold text-indigo-500 hover:underline"
+          </Button>
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="w-full sm:w-auto"
           >
-            Back to Dashboard
-          </Link>
-        </div>
-      </div>
+            <Link href="/">
+              <Home className="w-3.5 h-3.5 mr-1.5" />
+              Back to Dashboard
+            </Link>
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

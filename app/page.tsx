@@ -112,7 +112,7 @@ export default function Home() {
       {/* Section 1: Global Search */}
       <header className="space-y-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground font-sans">
+          <h1>
             AI Engineering Handbook
           </h1>
           <p className="mt-1 text-xs text-muted-foreground leading-relaxed max-w-2xl">
@@ -123,91 +123,93 @@ export default function Home() {
       </header>
 
       {/* Section 2: Resume Learning (User Context Group) */}
-      <RecentActivity />
+      <section className="mobile-section-spacing">
+        <RecentActivity />
+      </section>
 
       {/* Section 3: Knowledge Explorer */}
-      <section className="space-y-3">
+      <section className="mobile-section-spacing space-y-3">
         <div className="flex items-center gap-1.5 select-none">
           <Compass className="w-4.5 h-4.5 text-primary" />
           <h2 className="text-sm font-bold text-foreground">Knowledge Explorer</h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {[
-            { 
-              title: 'Problem Index', 
-              description: 'Map common machine learning and deep learning engineering issues directly to reference guides.', 
-              count: problemsCount, 
-              href: '/problem-index', 
-              icon: Layers 
-            },
-            { 
-              title: 'Packages', 
-              description: 'Scientific Python library references, function definitions, parameters, and syntax helpers.', 
-              count: counts.packages, 
-              href: '/packages', 
-              icon: Code 
-            },
-            { 
-              title: 'Models Library', 
-              description: 'Prebuilt architectures, layers structures, and hyperparameter blueprints.', 
-              count: totalModelsCount, 
-              href: '/models', 
-              icon: Cpu 
-            },
-            { 
-              title: 'Workflows', 
-              description: 'Step-by-step end-to-end pipelines, evaluation baselines, and production setup details.', 
-              count: counts.workflows, 
-              href: '/workflows', 
-              icon: WorkflowIcon 
-            },
-            { 
-              title: 'Cheatsheets', 
-              description: 'Dynamic reference index cards for quick API syntax recall and common bugs.', 
-              count: counts.cheatsheets, 
-              href: '/cheatsheets', 
-              icon: FileCode2 
-            },
-            { 
-              title: 'Model Registry', 
-              description: 'Deployment metadata and download locations for AI models.', 
-              count: counts.registry_families, 
-              href: '/registry', 
-              icon: Terminal 
-            },
-          ].map(cat => {
-            const Icon = cat.icon;
-            return (
-              <Link
-                key={cat.title}
-                href={cat.href}
-                className="group rounded-xl border border-border bg-card p-4 hover:border-foreground/20 hover:shadow-sm transition-all flex items-start gap-3 cursor-pointer"
-              >
-                <div className="p-2 rounded-lg bg-primary/5 border border-primary/10 group-hover:bg-primary/10 group-hover:border-primary/20 transition-all shrink-0">
-                  <Icon className="w-4.5 h-4.5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1">
-                    <h3 className="text-sm font-bold text-foreground leading-snug group-hover:text-primary transition-colors">
-                      {cat.title}
-                    </h3>
-                    <ArrowRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                    {cat.description}
-                  </p>
-                  <span className="inline-block mt-3 text-[9px] font-mono font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded select-none">
-                    {cat.count} {cat.count === 1 ? 'entry' : 'entries'} →
-                  </span>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
+         {[
+           { 
+             title: 'Problem Index', 
+             description: 'Map common machine learning and deep learning engineering issues directly to reference guides.', 
+             count: problemsCount, 
+             href: '/problem-index', 
+             icon: Layers 
+           },
+           { 
+             title: 'Packages', 
+             description: 'Scientific Python library references, function definitions, parameters, and syntax helpers.', 
+             count: counts.packages, 
+             href: '/packages', 
+             icon: Code 
+           },
+           { 
+             title: 'Models Library', 
+             description: 'Prebuilt architectures, layers structures, and hyperparameter blueprints.', 
+             count: totalModelsCount, 
+             href: '/models', 
+             icon: Cpu 
+           },
+           { 
+             title: 'Workflows', 
+             description: 'Step-by-step end-to-end pipelines, evaluation baselines, and production setup details.', 
+             count: counts.workflows, 
+             href: '/workflows', 
+             icon: WorkflowIcon 
+           },
+           { 
+             title: 'Cheatsheets', 
+             description: 'Dynamic reference index cards for quick API syntax recall and common bugs.', 
+             count: counts.cheatsheets, 
+             href: '/cheatsheets', 
+             icon: FileCode2 
+           },
+           { 
+             title: 'Model Registry', 
+             description: 'Deployment metadata and download locations for AI models.', 
+             count: counts.registry_families, 
+             href: '/registry', 
+             icon: Terminal 
+           },
+         ].map(cat => {
+           const Icon = cat.icon;
+           return (
+             <Link
+               key={cat.title}
+               href={cat.href}
+               className="group rounded-xl border border-border bg-card mobile-card-padding hover:border-foreground/20 hover:shadow-sm transition-all flex items-start gap-2.5 sm:gap-3 cursor-pointer"
+             >
+               <div className="p-1.5 sm:p-2 rounded-lg bg-primary/5 border border-primary/10 group-hover:bg-primary/10 group-hover:border-primary/20 transition-all shrink-0">
+                 <Icon className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-primary" />
+               </div>
+               <div className="flex-1 min-w-0">
+                 <div className="flex items-center justify-between gap-1">
+                   <h3 className="text-xs sm:text-sm font-bold text-foreground leading-snug group-hover:text-primary transition-colors">
+                     {cat.title}
+                   </h3>
+                   <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                 </div>
+                 <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 leading-relaxed">
+                   {cat.description}
+                 </p>
+                 <span className="inline-block mt-2 sm:mt-3 text-[8px] sm:text-[9px] font-mono font-bold text-muted-foreground bg-muted px-1 sm:px-1.5 py-0.5 rounded select-none">
+                   {cat.count} {cat.count === 1 ? 'entry' : 'entries'} →
+                 </span>
+               </div>
+             </Link>
+             );
+         })}
+       </div>
       </section>
 
       {/* Section 4: Knowledge Overview (Metrics) */}
-      <section className="space-y-3">
+      <section className="mobile-section-spacing space-y-3">
         <div className="flex items-center gap-1.5 select-none">
           <Activity className="w-4.5 h-4.5 text-primary" />
           <h2 className="text-sm font-bold text-foreground">Handbook Overview</h2>
@@ -230,7 +232,7 @@ export default function Home() {
       </section>
 
       {/* Section 5: Developer Shortcuts */}
-      <section className="space-y-3">
+      <section className="mobile-section-spacing space-y-3">
         <div className="flex items-center gap-1.5 select-none">
           <Terminal className="w-4.5 h-4.5 text-primary" />
           <h2 className="text-sm font-bold text-foreground">Developer Intent Shortcuts</h2>
@@ -302,14 +304,14 @@ export default function Home() {
       </section>
 
       {/* Section 6: Featured Collections */}
-      <section className="space-y-3">
+      <section className="mobile-section-spacing space-y-3">
         <div className="flex items-center gap-1.5 select-none">
           <Star className="w-4.5 h-4.5 text-primary" />
           <h2 className="text-sm font-bold text-foreground">Featured Collections</h2>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Card 1: Top Packages */}
-          <div className="rounded-xl border border-border bg-card p-4 space-y-3 flex flex-col justify-between">
+          <div className="rounded-xl border border-border bg-card mobile-card-padding space-y-3 flex flex-col justify-between">
             <div>
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-2 select-none">Most Complete Packages</span>
               <div className="space-y-2">
@@ -335,7 +337,7 @@ export default function Home() {
           </div>
 
           {/* Card 2: Featured Workflows */}
-          <div className="rounded-xl border border-border bg-card p-4 space-y-3 flex flex-col justify-between">
+          <div className="rounded-xl border border-border bg-card mobile-card-padding space-y-3 flex flex-col justify-between">
             <div>
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-2 select-none">Complex Blueprints</span>
               <div className="space-y-2">
@@ -361,7 +363,7 @@ export default function Home() {
           </div>
 
           {/* Card 3: Important Models */}
-          <div className="rounded-xl border border-border bg-card p-4 space-y-3 flex flex-col justify-between">
+          <div className="rounded-xl border border-border bg-card mobile-card-padding space-y-3 flex flex-col justify-between">
             <div>
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-2 select-none">Neural Libraries</span>
               <div className="space-y-2">
@@ -389,7 +391,7 @@ export default function Home() {
       </section>
 
       {/* Section 7: Recently Updated */}
-      <section className="space-y-3">
+      <section className="mobile-section-spacing space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 select-none">
             <Bookmark className="w-4.5 h-4.5 text-primary" />
@@ -414,7 +416,7 @@ export default function Home() {
             return (
               <div
                 key={`${item.type}-${item.id}`}
-                className="rounded-xl border border-border bg-card p-4 flex flex-col justify-between gap-3 hover:shadow-sm hover:border-foreground/15 transition-all"
+                className="rounded-xl border border-border bg-card mobile-card-padding flex flex-col justify-between gap-3 hover:shadow-sm hover:border-foreground/15 transition-all"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 select-none">

@@ -110,7 +110,7 @@ export default function StickyActionBar({ tocItems }: StickyActionBarProps) {
         {/* Current section label */}
         <button
           onClick={() => setSheetOpen(true)}
-          className="flex h-11 min-w-0 items-center px-3 text-xs font-medium text-foreground hover:bg-muted rounded-full transition-colors max-w-[min(160px,calc(100vw-12rem))] truncate touch-target"
+          className="flex h-11 min-w-0 items-center px-3 text-xs font-medium text-foreground hover:bg-muted rounded-full transition-colors max-w-[min(180px,calc(100vw-14rem))] truncate touch-target"
           title="Jump to section"
           aria-label="Open section navigation"
         >

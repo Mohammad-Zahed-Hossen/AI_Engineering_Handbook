@@ -263,48 +263,48 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
           enableHashDeepLink={true}
         >
           {/* Sub-navigation pills */}
-          <div className="flex flex-wrap gap-1.5 mb-6 border-b border-border pb-3">
-            {workflow.production_notes && (
-              <a
-                href="#production-deployment"
-                className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-1 text-[10px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
-              >
-                Deployment
-              </a>
-            )}
-            {workflow.scaling_notes && (
-              <a
-                href="#production-scaling"
-                className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-1 text-[10px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
-              >
-                Scaling
-              </a>
-            )}
-            {workflow.cost_notes && (
-              <a
-                href="#production-cost"
-                className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-1 text-[10px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
-              >
-                Cost
-              </a>
-            )}
-            {workflow.latency_notes && (
-              <a
-                href="#production-latency"
-                className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-1 text-[10px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
-              >
-                Latency
-              </a>
-            )}
-            {workflow.observability_notes && (
-              <a
-                href="#production-observability"
-                className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-1 text-[10px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
-              >
-                Observability
-              </a>
-            )}
-          </div>
+       <div className="flex flex-wrap gap-1.5 mb-4 sm:mb-6 border-b border-border pb-3">
+           {workflow.production_notes && (
+             <a
+               href="#production-deployment"
+               className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-1 text-[10px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
+             >
+               Deployment
+             </a>
+           )}
+           {workflow.scaling_notes && (
+             <a
+               href="#production-scaling"
+               className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-1 text-[10px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
+             >
+               Scaling
+             </a>
+           )}
+           {workflow.cost_notes && (
+             <a
+               href="#production-cost"
+               className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-1 text-[10px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
+             >
+               Cost
+             </a>
+           )}
+           {workflow.latency_notes && (
+             <a
+               href="#production-latency"
+               className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-1 text-[10px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
+             >
+               Latency
+             </a>
+           )}
+           {workflow.observability_notes && (
+             <a
+               href="#production-observability"
+               className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-1 text-[10px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
+             >
+               Observability
+             </a>
+           )}
+         </div>
 
           <div className="space-y-4 text-xs leading-relaxed text-muted-foreground">
             {workflow.production_notes && (

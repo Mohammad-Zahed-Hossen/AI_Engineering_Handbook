@@ -205,7 +205,7 @@ export default async function DecisionGuidePage({ params }: PageProps) {
         <section id="comparison-table" className="space-y-3 scroll-mt-24">
           <h2 className="text-lg font-semibold text-foreground">Comparison Table</h2>
           <div className="rounded-lg border border-border bg-card overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm comparison-table">
               <tbody>
                 {Object.entries(decisionGuide.comparison_table).map(([key, value], idx) => (
                   <tr key={idx} className="border-t border-border last:border-0">

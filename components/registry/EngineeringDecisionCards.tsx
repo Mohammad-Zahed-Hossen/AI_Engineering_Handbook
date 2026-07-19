@@ -20,13 +20,13 @@ export default function EngineeringDecisionCards({ family }: EngineeringDecision
   }
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-foreground">Engineering Decision</h2>
+    <div className="space-y-3">
+      <h2 className="text-base md:text-lg font-semibold text-foreground">Engineering Decision</h2>
       
       <div className="grid gap-3">
         {/* Choose If */}
         {decision.choose_if && decision.choose_if.length > 0 && (
-          <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3">
+          <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-4 md:p-3">
             <div className="flex items-start gap-2">
               <Check className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
               <div className="space-y-1">
@@ -45,7 +45,7 @@ export default function EngineeringDecisionCards({ family }: EngineeringDecision
 
         {/* Avoid If */}
         {decision.avoid_if && decision.avoid_if.length > 0 && (
-          <div className="bg-rose-500/5 border border-rose-500/20 rounded-lg p-3">
+          <div className="bg-rose-500/5 border border-rose-500/20 rounded-lg p-4 md:p-3">
             <div className="flex items-start gap-2">
               <X className="h-4 w-4 text-rose-600 mt-0.5 shrink-0" />
               <div className="space-y-1">
@@ -64,7 +64,7 @@ export default function EngineeringDecisionCards({ family }: EngineeringDecision
 
         {/* Watch Out For */}
         {decision.watch_out_for && decision.watch_out_for.length > 0 && (
-          <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-3">
+          <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-4 md:p-3">
             <div className="flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
               <div className="space-y-1">
@@ -83,7 +83,7 @@ export default function EngineeringDecisionCards({ family }: EngineeringDecision
 
         {/* Best Deployment Scenario */}
         {decision.best_deployment_scenario && (
-          <div className="bg-indigo-500/5 border border-indigo-500/20 rounded-lg p-3">
+          <div className="bg-indigo-500/5 border border-indigo-500/20 rounded-lg p-4 md:p-3">
             <div className="flex items-start gap-2">
               <Star className="h-4 w-4 text-indigo-600 mt-0.5 shrink-0" />
               <div className="space-y-1">
@@ -98,7 +98,7 @@ export default function EngineeringDecisionCards({ family }: EngineeringDecision
 
         {/* Alternatives */}
         {decision.alternatives && decision.alternatives.length > 0 && (
-          <div className="bg-muted/30 border border-border rounded-lg p-3">
+          <div className="bg-muted/30 border border-border rounded-lg p-4 md:p-3">
             <div className="flex items-start gap-2">
               <ArrowRight className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
               <div className="space-y-1">

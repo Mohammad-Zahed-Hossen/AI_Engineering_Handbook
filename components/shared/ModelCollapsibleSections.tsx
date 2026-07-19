@@ -181,18 +181,18 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
         teaser={coreTeaser}
       >
         <div className="space-y-5 text-xs font-sans">
-          {/* Visual Specs Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            {specs.map(({ label, value, icon }) => (
-              <div key={label} className="rounded-lg border border-border/85 bg-muted/15 p-3 flex items-start gap-2.5">
-                <span className="mt-0.5 shrink-0">{icon}</span>
-                <div className="space-y-0.5 text-left">
-                  <span className="text-[9px] uppercase tracking-wider text-muted-foreground block font-bold">{label}</span>
-                  <ProseInline content={value} className="text-xs font-semibold text-foreground leading-snug" />
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* Visual Specs Grid - Mobile-first: 1 col on mobile, 2 on sm, 3 on md */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+             {specs.map(({ label, value, icon }) => (
+               <div key={label} className="rounded-lg border border-border/85 bg-muted/15 p-3 flex items-start gap-2.5">
+                 <span className="mt-0.5 shrink-0">{icon}</span>
+                 <div className="space-y-0.5 text-left">
+                   <span className="text-[9px] uppercase tracking-wider text-muted-foreground block font-bold">{label}</span>
+                   <ProseInline content={value} className="text-xs font-semibold text-foreground leading-snug" />
+                 </div>
+               </div>
+             ))}
+           </div>
 
           <div className="space-y-3.5 leading-relaxed text-muted-foreground pt-1">
             <div>
@@ -235,10 +235,11 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
         teaser={engTeaser}
       >
         <div className="space-y-5 text-xs font-sans leading-relaxed text-muted-foreground">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* Mobile-first: 1 col on mobile, 2 on sm, 3 on md */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             {/* Col 1: Data & Features */}
             <div className="space-y-4">
-              <div className="rounded-xl border border-border/60 bg-muted/5 p-4 space-y-3 h-full">
+              <div className="rounded-xl border border-border/60 bg-muted/5 p-3 sm:p-4 space-y-3 h-full">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-primary border-b border-border pb-1.5 m-0 font-sans">
                   Data & Preprocessing
                 </h3>
@@ -265,7 +266,7 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
 
             {/* Col 2: Performance & Scale */}
             <div className="space-y-4">
-              <div className="rounded-xl border border-border/60 bg-muted/5 p-4 space-y-3 h-full">
+              <div className="rounded-xl border border-border/60 bg-muted/5 p-3 sm:p-4 space-y-3 h-full">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-primary border-b border-border pb-1.5 m-0 font-sans">
                   Runtime & Scalability
                 </h3>
@@ -288,7 +289,7 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
 
             {/* Col 3: Pipeline & Robustness */}
             <div className="space-y-4">
-              <div className="rounded-xl border border-border/60 bg-muted/5 p-4 space-y-3 h-full">
+              <div className="rounded-xl border border-border/60 bg-muted/5 p-3 sm:p-4 space-y-3 h-full">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-primary border-b border-border pb-1.5 m-0 font-sans">
                   Pipeline Fit & Robustness
                 </h3>
@@ -421,7 +422,8 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
                         <ProseClient content={hp.tradeoffs} className="text-muted-foreground leading-relaxed" />
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
+                      {/* Mobile-first: 1 col on mobile, 2 on sm */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
                         {/* Effect of Increasing */}
                         <div className="rounded-lg border border-emerald-500/10 bg-emerald-500/5 dark:bg-emerald-950/5 p-3 space-y-1">
                           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
@@ -440,31 +442,34 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
                       </div>
                     </div>
 
-                    {(hp.interactions.length > 0 || hp.commonmistakes.length > 0) && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-t border-border text-[11px] leading-relaxed">
-                        {hp.interactions.length > 0 && (
-                          <div className="space-y-1">
-                            <span className="text-[9px] font-bold uppercase tracking-wider text-foreground block">Key Interactions</span>
-                            <ul className="list-disc pl-4 space-y-0.5 text-muted-foreground">
-                              {hp.interactions.map((inter, idx) => (
-                                <li key={idx}><ProseInline content={inter} /></li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
+                    {hp.interactions.length > 0 || hp.commonmistakes.length > 0 ? (
+                      <>
+                        {/* Mobile-first: 1 col on mobile, 2 on sm */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-border text-[11px] leading-relaxed">
+                          {hp.interactions.length > 0 && (
+                            <div className="space-y-1">
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-foreground block">Key Interactions</span>
+                              <ul className="list-disc pl-4 space-y-0.5 text-muted-foreground">
+                                {hp.interactions.map((inter, idx) => (
+                                  <li key={idx}><ProseInline content={inter} /></li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
 
-                        {hp.commonmistakes.length > 0 && (
-                          <div className="space-y-1">
-                            <span className="text-[9px] font-bold uppercase tracking-wider text-rose-500 block">Common Pitfalls & Mistakes</span>
-                            <ul className="list-disc pl-4 space-y-0.5 text-muted-foreground">
-                              {hp.commonmistakes.map((mistake, idx) => (
-                                <li key={idx}><ProseInline content={mistake} /></li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                          {hp.commonmistakes.length > 0 && (
+                            <div className="space-y-1">
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-rose-500 block">Common Pitfalls & Mistakes</span>
+                              <ul className="list-disc pl-4 space-y-0.5 text-muted-foreground">
+                                {hp.commonmistakes.map((mistake, idx) => (
+                                  <li key={idx}><ProseInline content={mistake} /></li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    ) : null}
                   </div>
                 </div>
               </div>
@@ -490,7 +495,8 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
                   <span className="flex h-5 w-5 items-center justify-center rounded bg-primary/10 text-primary text-[10px] font-bold">VS</span>
                   Comparison with {comp.model}
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 font-sans">
+                {/* Mobile-first: 1 col on mobile, 2 on sm, 3 on md */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 font-sans">
                   <div className="p-3 rounded-lg border border-emerald-500/10 bg-emerald-500/5 dark:bg-emerald-950/5 space-y-1">
                     <span className="text-[9px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
                       Choose {model.name} When
@@ -527,46 +533,49 @@ export default function ModelCollapsibleSections({ model, relatedKnowledgeLinks,
         onToggle={() => setKnowledgeOpen(v => !v)}
       >
         <div className="space-y-4 text-xs font-sans">
-          {relatedKnowledgeSections.some(([, items]) => items && items.length > 0) ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {relatedKnowledgeSections.map(([label, items]) => {
-                const arrayItems = items as readonly string[];
-                if (!arrayItems || arrayItems.length === 0) return null;
-                
-                return (
-                  <div key={label} className="space-y-1.5">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-foreground">{label}</span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {arrayItems.map((item, idx) => {
-                        // Resolve using server-passed resolvedKnowledgeLinks dictionary,
-                        // falling back to old relatedKnowledgeLinks for backwards compatibility
-                        let href = resolvedKnowledgeLinks?.[item];
-                        if (!href && (label === 'Related Models' || label === 'Alternative Models') && relatedKnowledgeLinks && category) {
-                          const linkKey = label === 'Related Models' ? 'relatedmodels' : 'alternative_models';
-                          const resolvedSlug = relatedKnowledgeLinks[linkKey as keyof typeof relatedKnowledgeLinks]?.[idx]?.slug;
-                          if (resolvedSlug) {
-                            href = `/models/${category}/${resolvedSlug}`;
+          {relatedKnowledgeSections.some(([, items]) => items && items.length > 0) ?
+            <>
+              {/* Mobile-first: 1 col on mobile, 2 on sm */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                {relatedKnowledgeSections.map(([label, items]) => {
+                  const arrayItems = items as readonly string[];
+                  if (!arrayItems || arrayItems.length === 0) return null;
+                  
+                  return (
+                    <div key={label} className="space-y-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-foreground">{label}</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {arrayItems.map((item, idx) => {
+                          // Resolve using server-passed resolvedKnowledgeLinks dictionary,
+                          // falling back to old relatedKnowledgeLinks for backwards compatibility
+                          let href = resolvedKnowledgeLinks?.[item];
+                          if (!href && (label === 'Related Models' || label === 'Alternative Models') && relatedKnowledgeLinks && category) {
+                            const linkKey = label === 'Related Models' ? 'relatedmodels' : 'alternative_models';
+                            const resolvedSlug = relatedKnowledgeLinks[linkKey as keyof typeof relatedKnowledgeLinks]?.[idx]?.slug;
+                            if (resolvedSlug) {
+                              href = `/models/${category}/${resolvedSlug}`;
+                            }
                           }
-                        }
 
-                        return (
-                          <RelatedItem
-                            key={`${item}-${idx}`}
-                            item={item}
-                            href={href}
-                          />
-                        );
-                      })}
+                          return (
+                            <RelatedItem
+                              key={`${item}-${idx}`}
+                              item={item}
+                              href={href}
+                            />
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
+                  );
+                })}
+              </div>
+            </>
+          :
             <div className="text-muted-foreground italic font-sans text-xs py-1">
               No related resources available.
             </div>
-          )}
+          }
         </div>
       </CollapsibleSection>
     </div>

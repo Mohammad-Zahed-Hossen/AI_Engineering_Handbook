@@ -81,7 +81,7 @@ export async function Prose({ content, className }: ProseProps) {
               const highlighted = await highlightCode(codeText, language);
               return (
                 <div
-                  className="rounded-md border border-border my-2 font-mono bg-card dark:bg-zinc-950"
+                  className="rounded-md border border-border my-2 font-mono bg-card dark:bg-zinc-950 overflow-x-auto"
                   dangerouslySetInnerHTML={{ __html: highlighted }}
                 />
               );
@@ -146,8 +146,8 @@ export function ProseClient({ content, className }: ProseProps) {
               const codeText = child.props.children;
               const language = child.props.className?.replace('language-', '') || undefined;
               return (
-                <div className="rounded-md border border-border my-2 font-mono bg-card dark:bg-zinc-950 overflow-hidden">
-                  <pre className="text-xs font-mono p-3 m-0">
+                <div className="rounded-md border border-border my-2 font-mono bg-card dark:bg-zinc-950 overflow-x-auto">
+                  <pre className="text-xs font-mono p-3 m-0 whitespace-pre">
                     <code className={`language-${language || 'text'}`}>{codeText}</code>
                   </pre>
                 </div>

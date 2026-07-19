@@ -2,10 +2,14 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown, ChevronRight, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Model, ModelCategory, ProblemType } from '@/types/model';
 import { cn } from '@/lib/utils';
 import FilterBar from './FilterBar';
+import SearchFilterToolbar from './SearchFilterToolbar';
+
+const difficultyLevels = ['beginner', 'intermediate', 'advanced', 'expert'];
+const maturityLevels = ['experimental', 'prototype', 'production', 'deprecated'];
 
 interface ModelHubExplorerProps {
   initialModels: Model[];
@@ -47,6 +51,8 @@ const problemTypesList: ProblemType[] = [
 export default function ModelHubExplorer({ initialModels, categoriesMeta }: ModelHubExplorerProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProblems, setSelectedProblems] = useState<ProblemType[]>([]);
+  const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([]);
+  const [selectedMaturities, setSelectedMaturities] = useState<string[]>([]);
   const [expandedDomains, setExpandedDomains] = useState<Set<ModelCategory>>(
     new Set<ModelCategory>(['ml', 'dl', 'llm'])
   );
@@ -95,7 +101,29 @@ export default function ModelHubExplorer({ initialModels, categoriesMeta }: Mode
     }
   };
 
-  // Filter models based on search query and problem types
+  const toggleDifficulty = (opt: string) => {
+    if (selectedDifficulties.includes(opt)) {
+      setSelectedDifficulties(selectedDifficulties.filter((d) => d !== opt));
+    } else {
+      setSelectedDifficulties([...selectedDifficulties, opt]);
+    }
+  };
+
+  const toggleMaturity = (opt: string) => {
+    if (selectedMaturities.includes(opt)) {
+      setSelectedMaturities(selectedMaturities.filter((m) => m !== opt));
+    } else {
+      setSelectedMaturities([...selectedMaturities, opt]);
+    }
+  };
+
+  const clearAllFilters = () => {
+    setSelectedProblems([]);
+    setSelectedDifficulties([]);
+    setSelectedMaturities([]);
+  };
+
+  // Filter models based on search query and all filters
   const filteredModels = initialModels.filter((m) => {
     const matchesSearch =
       searchQuery === '' ||
@@ -107,7 +135,13 @@ export default function ModelHubExplorer({ initialModels, categoriesMeta }: Mode
     const matchesProblems =
       selectedProblems.length === 0 || m.problem_types.some((pt) => selectedProblems.includes(pt));
 
-    return matchesSearch && matchesProblems;
+    const matchesDifficulty =
+      selectedDifficulties.length === 0 || selectedDifficulties.includes(m.difficulty);
+
+    const matchesMaturity =
+      selectedMaturities.length === 0 || selectedMaturities.includes(m.engineeringmaturity);
+
+    return matchesSearch && matchesProblems && matchesDifficulty && matchesMaturity;
   });
 
   // Group models by domain -> subcategory
@@ -132,28 +166,54 @@ export default function ModelHubExplorer({ initialModels, categoriesMeta }: Mode
     llm: 'Large Language Models',
   };
 
+  // Build active filters array for display - capitalize first letter for better readability
+  const activeFilters = [
+    ...selectedProblems.map(p => ({ label: p.charAt(0).toUpperCase() + p.slice(1), value: p, onRemove: () => toggleProblem(p) })),
+    ...selectedDifficulties.map(d => ({ label: d.charAt(0).toUpperCase() + d.slice(1), value: d, onRemove: () => toggleDifficulty(d) })),
+    ...selectedMaturities.map(m => ({ label: m.charAt(0).toUpperCase() + m.slice(1), value: m, onRemove: () => toggleMaturity(m) })),
+  ];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Search and Filters */}
-      <div className="space-y-3">
-        <div className="relative">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search models by name, subcategory, problem type, or description..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 text-sm bg-card text-card-foreground border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary touch-target"
-          />
-        </div>
+      <SearchFilterToolbar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Search models..."
+        activeFilters={activeFilters}
+        onClearAll={activeFilters.length > 0 ? clearAllFilters : undefined}
+        resultCount={filteredModels.length}
+        totalCount={initialModels.length}
+        moreFiltersContent={
+          <div className="space-y-3">
+            <FilterBar
+              label="Difficulty"
+              options={difficultyLevels}
+              selectedOptions={selectedDifficulties}
+              onToggle={toggleDifficulty}
+              onClear={() => setSelectedDifficulties([])}
+              horizontal
+            />
+            <FilterBar
+              label="Maturity"
+              options={maturityLevels}
+              selectedOptions={selectedMaturities}
+              onToggle={toggleMaturity}
+              onClear={() => setSelectedMaturities([])}
+              horizontal
+            />
+          </div>
+        }
+      >
         <FilterBar
-          label="Filter by Problem Type"
+          label="Problem Type"
           options={problemTypesList}
           selectedOptions={selectedProblems}
           onToggle={toggleProblem}
           onClear={() => setSelectedProblems([])}
+          horizontal
         />
-      </div>
+      </SearchFilterToolbar>
 
       {/* Main tree list */}
       <div className="space-y-4">
@@ -171,7 +231,7 @@ export default function ModelHubExplorer({ initialModels, categoriesMeta }: Mode
               {/* Domain Header */}
               <button
                 onClick={() => toggleDomain(domain)}
-                className="w-full flex items-center justify-between p-4 bg-muted/20 hover:bg-muted/40 transition-colors border-b border-border select-none text-left touch-target"
+                className="w-full flex items-center justify-between p-3 min-[360px]:p-4 bg-muted/20 hover:bg-muted/40 transition-colors border-b border-border select-none text-left touch-target"
               >
                 <div className="flex items-center gap-2">
                   {isDomainExpanded ? (
@@ -199,7 +259,7 @@ export default function ModelHubExplorer({ initialModels, categoriesMeta }: Mode
                     return (
                       <div key={sub} className="border border-border/80 rounded-md overflow-hidden bg-card/50">
                         {/* Subcategory Header */}
-                        <div className="flex items-center justify-between p-3 bg-muted/10 border-b border-border/60 select-none text-left">
+                        <div className="flex items-center justify-between p-2.5 min-[360px]:p-3 bg-muted/10 border-b border-border/60 select-none text-left">
                           <button
                             onClick={() => toggleSubcategory(sub)}
                             className="flex items-center gap-2 flex-1 text-left touch-target"
@@ -226,13 +286,13 @@ export default function ModelHubExplorer({ initialModels, categoriesMeta }: Mode
 
                         {/* Models in subcategory (if expanded) */}
                         {isSubExpanded && (
-                          <div className="p-3 grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                          <div className="p-3 mobile-stack grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                             {modelsInSub.map((m) => (
-                              <Link
-                                key={m.id}
-                                href={`/models/${domain}/${m.id}`}
-                                className="block rounded-lg border border-border bg-card p-3.5 hover:border-foreground/20 hover:bg-muted/30 transition-colors touch-target"
-                              >
+                               <Link
+                                 key={m.id}
+                                 href={`/models/${domain}/${m.id}`}
+                                 className="block rounded-lg border border-border bg-card mobile-card-padding hover:border-foreground/20 hover:bg-muted/30 transition-colors touch-target"
+                               >
                                 <div className="flex items-start justify-between gap-2 mb-2">
                                   <h4 className="text-xs font-semibold text-primary">{m.name}</h4>
                                   <span

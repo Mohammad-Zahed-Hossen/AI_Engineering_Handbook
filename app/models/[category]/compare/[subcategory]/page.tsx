@@ -46,6 +46,16 @@ export default async function CategoryComparePage({ params }: PageProps) {
     llm: 'Large Language Models',
   };
 
+  // Table of contents for the comparison page
+  const tocItems = [
+    { id: 'comparison-matrix', label: 'Comparison Matrix' },
+    { id: 'when-to-choose', label: 'When to Choose' },
+    { id: 'computational-profile', label: 'Computational Profile' },
+    { id: 'data-requirements', label: 'Data Requirements' },
+    { id: 'model-comparisons', label: 'Model Comparisons' },
+    { id: 'related-models', label: 'Related Models' },
+  ];
+
   return (
     <ContentPageLayout
       breadcrumbs={[
@@ -54,6 +64,7 @@ export default async function CategoryComparePage({ params }: PageProps) {
         { label: domainLabels[validCategory], href: `/models/${validCategory}` },
         { label: `${meta.label} Comparison` },
       ]}
+      toc={tocItems}
     >
       <ModelCategoryComparison
         category={validCategory}

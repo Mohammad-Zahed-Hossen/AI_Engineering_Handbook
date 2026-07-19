@@ -81,19 +81,20 @@ export default function QuickLinksCard({ downloads, references, relatedResources
                     href={download.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between gap-2 group hover:bg-muted/30 -mx-1 px-1 py-0.5 rounded"
+                    className="flex items-center justify-between gap-2 group hover:bg-muted/30 -mx-1 px-1 py-0.5 rounded min-h-[44px]"
                   >
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs text-foreground group-hover:underline">
+                      <Download className="h-4 w-4 text-foreground md:hidden" />
+                      <span className="text-xs text-foreground group-hover:underline group-hover:text-primary">
                         {download.platform}
                       </span>
                       {download.official && (
-                        <RegistryBadge variant="success" size="xs" className="font-mono">
+                        <RegistryBadge variant="success" size="xs" className="font-mono hidden md:inline-flex whitespace-nowrap">
                           Official
                         </RegistryBadge>
                       )}
                     </div>
-                    <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ExternalLink className="h-3 w-3 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                   </a>
                 ))}
               </div>
@@ -118,17 +119,18 @@ export default function QuickLinksCard({ downloads, references, relatedResources
                     href={ref.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between gap-2 group hover:bg-muted/30 -mx-1 px-1 py-0.5 rounded"
+                    className="flex items-center justify-between gap-2 group hover:bg-muted/30 -mx-1 px-1 py-0.5 rounded min-h-[44px]"
                   >
                     <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-xs text-foreground group-hover:underline truncate">
+                      <Book className="h-4 w-4 text-foreground md:hidden" />
+                      <span className="text-xs text-foreground group-hover:underline group-hover:text-primary truncate">
                         {ref.title}
                       </span>
-                      <RegistryBadge variant="outline" size="xs" className="font-mono shrink-0">
+                      <RegistryBadge variant="outline" size="xs" className="font-mono hidden md:inline-flex whitespace-nowrap">
                         {categoryLabels[ref.category] || ref.category}
                       </RegistryBadge>
                     </div>
-                    <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                    <ExternalLink className="h-3 w-3 text-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                   </a>
                 ))}
               </div>
@@ -153,17 +155,18 @@ export default function QuickLinksCard({ downloads, references, relatedResources
                     <Link
                       key={idx}
                       href={href}
-                      className="flex items-center justify-between gap-2 group hover:bg-muted/30 -mx-1 px-1 py-0.5 rounded"
+                      className="flex items-center justify-between gap-2 group hover:bg-muted/30 -mx-1 px-1 py-0.5 rounded min-h-[44px]"
                     >
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="text-xs text-foreground group-hover:underline truncate">
+                        <Wrench className="h-4 w-4 text-foreground md:hidden" />
+                        <span className="text-xs text-foreground group-hover:underline group-hover:text-primary truncate">
                           {resource.resource_slug.replace(/-/g, ' ')}
                         </span>
-                        <RegistryBadge variant="secondary" size="xs" className="font-mono shrink-0">
+                        <RegistryBadge variant="secondary" size="xs" className="font-mono hidden md:inline-flex whitespace-nowrap">
                           {resourceTypeLabels[resource.resource_type] || resource.resource_type}
                         </RegistryBadge>
                       </div>
-                      <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                      <ExternalLink className="h-3 w-3 text-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                     </Link>
                   );
                 })}

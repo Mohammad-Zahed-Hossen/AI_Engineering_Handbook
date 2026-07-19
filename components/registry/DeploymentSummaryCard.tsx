@@ -50,28 +50,28 @@ export default function DeploymentSummaryCard({
       
       <div className="grid gap-2">
         {/* Status & Runtime Row */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5">
           {productionReady !== undefined && (
             <RegistryBadge 
               variant={productionReady ? 'success' : 'destructive'} 
               size="xs" 
-              className="font-mono"
+              className="font-mono whitespace-nowrap"
             >
               {productionReady ? 'Production Ready' : 'Experimental'}
             </RegistryBadge>
           )}
           {complexity && (
-            <RegistryBadge variant="outline" size="xs" className="font-mono">
+            <RegistryBadge variant="outline" size="xs" className="font-mono whitespace-nowrap">
               Complexity: {complexity}
             </RegistryBadge>
           )}
           {recommendedRuntime && (
-            <RegistryBadge variant="secondary" size="xs" className="font-mono">
+            <RegistryBadge variant="secondary" size="xs" className="font-mono whitespace-nowrap">
               Runtime: {recommendedRuntime}
             </RegistryBadge>
           )}
           {recommendedQuantization && (
-            <RegistryBadge variant="info" size="xs" className="font-mono">
+            <RegistryBadge variant="info" size="xs" className="font-mono whitespace-nowrap">
               Quant: {recommendedQuantization}
             </RegistryBadge>
           )}
@@ -86,22 +86,22 @@ export default function DeploymentSummaryCard({
             </div>
             <div className="flex flex-wrap items-center gap-1.5 pl-4">
               {hardware?.minimum_gpu_memory && (
-                <RegistryBadge variant="outline" size="xs" className="font-mono">
+                <RegistryBadge variant="outline" size="xs" className="font-mono whitespace-nowrap">
                   Min GPU: {formatMemory(hardware.minimum_gpu_memory)}
                 </RegistryBadge>
               )}
               {hardware?.recommended_gpu_memory && (
-                <RegistryBadge variant="outline" size="xs" className="font-mono">
+                <RegistryBadge variant="outline" size="xs" className="font-mono whitespace-nowrap">
                   Rec GPU: {formatMemory(hardware.recommended_gpu_memory)}
                 </RegistryBadge>
               )}
               {hardware?.minimum_ram && (
-                <RegistryBadge variant="outline" size="xs" className="font-mono">
+                <RegistryBadge variant="outline" size="xs" className="font-mono whitespace-nowrap">
                   RAM: {formatMemory(hardware.minimum_ram)}
                 </RegistryBadge>
               )}
               {hardware?.disk_space && (
-                <RegistryBadge variant="outline" size="xs" className="font-mono">
+                <RegistryBadge variant="outline" size="xs" className="font-mono whitespace-nowrap">
                   Disk: {formatSize(hardware.disk_space)}
                 </RegistryBadge>
               )}
@@ -116,9 +116,9 @@ export default function DeploymentSummaryCard({
               <HardDrive className="h-3 w-3 text-muted-foreground" />
               <span className="text-muted-foreground font-semibold uppercase tracking-wider">Formats</span>
             </div>
-            <div className="flex flex-wrap items-center gap-1 pl-4">
+            <div className="flex flex-wrap items-center gap-1.5 pl-4">
               {formatBadges.map(({ key, label }) => (
-                <RegistryBadge key={key} variant="muted" size="xs" className="font-mono">
+                <RegistryBadge key={key} variant="muted" size="xs" className="font-mono whitespace-nowrap">
                   {label}
                 </RegistryBadge>
               ))}
@@ -135,7 +135,7 @@ export default function DeploymentSummaryCard({
             </div>
             <ul className="space-y-0.5 pl-4">
               {engineeringSnapshot.deployment_risks.map((risk, idx) => (
-                <li key={idx} className="text-xs text-foreground">
+                <li key={idx} className="text-xs text-foreground min-w-0 break-words">
                   • {risk}
                 </li>
               ))}
@@ -152,7 +152,7 @@ export default function DeploymentSummaryCard({
             </div>
             <ul className="space-y-0.5 pl-4">
               {engineeringSnapshot.failure_modes.map((mode, idx) => (
-                <li key={idx} className="text-xs text-foreground">
+                <li key={idx} className="text-xs text-foreground min-w-0 break-words">
                   • {mode}
                 </li>
               ))}
@@ -169,7 +169,7 @@ export default function DeploymentSummaryCard({
             </div>
             <ul className="space-y-0.5 pl-4">
               {engineeringSnapshot.hidden_costs.map((cost, idx) => (
-                <li key={idx} className="text-xs text-foreground">
+                <li key={idx} className="text-xs text-foreground min-w-0 break-words">
                   • {cost}
                 </li>
               ))}

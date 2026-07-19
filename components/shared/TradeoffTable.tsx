@@ -38,7 +38,7 @@ export default function TradeoffTable({ tradeoffs = [], className }: TradeoffTab
           Tradeoff Analysis
         </h3>
       </div>
-      <table className="w-full text-xs">
+      <table className="w-full text-xs content-table">
         <thead>
           <tr className="border-b border-border bg-muted/50">
             <th className="text-left font-semibold text-foreground px-4 py-2 uppercase tracking-wider">

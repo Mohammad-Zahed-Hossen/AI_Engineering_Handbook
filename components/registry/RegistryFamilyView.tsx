@@ -112,7 +112,9 @@ export default function RegistryFamilyView({ families: initialFamilies }: Regist
       {/* Faceted Search Filter */}
       <RegistryFilter 
         onFilterChange={handleFilterChange} 
-        families={familyIds} 
+        families={familyIds}
+        resultCount={pagination.total}
+        totalCount={initialFamilies.length}
       />
 
       {isLoading && (

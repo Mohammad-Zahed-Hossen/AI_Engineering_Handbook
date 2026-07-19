@@ -5,7 +5,11 @@ import { Model, ProblemType } from '@/types/model';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import FilterBar from './FilterBar';
+import SearchFilterToolbar from './SearchFilterToolbar';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+
+const difficultyLevels = ['beginner', 'intermediate', 'advanced', 'expert'];
+const maturityLevels = ['experimental', 'prototype', 'production', 'deprecated'];
 
 const problemTypesList: ProblemType[] = [
   'classification',
@@ -32,6 +36,8 @@ interface ModelListFilterProps {
 export function ModelListFilter({ models, category, categoriesMeta = {} }: ModelListFilterProps) {
   const [selectedProblems, setSelectedProblems] = useState<ProblemType[]>([]);
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
+  const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([]);
+  const [selectedMaturities, setSelectedMaturities] = useState<string[]>([]);
 
   // Derived subcategories list
   const subcategoriesList = Array.from(new Set(models.map((m) => m.subcategory))).sort();
@@ -65,6 +71,29 @@ export function ModelListFilter({ models, category, categoriesMeta = {} }: Model
     }
   };
 
+  const toggleDifficulty = (opt: string) => {
+    if (selectedDifficulties.includes(opt)) {
+      setSelectedDifficulties(selectedDifficulties.filter((d) => d !== opt));
+    } else {
+      setSelectedDifficulties([...selectedDifficulties, opt]);
+    }
+  };
+
+  const toggleMaturity = (opt: string) => {
+    if (selectedMaturities.includes(opt)) {
+      setSelectedMaturities(selectedMaturities.filter((m) => m !== opt));
+    } else {
+      setSelectedMaturities([...selectedMaturities, opt]);
+    }
+  };
+
+  const clearAllFilters = () => {
+    setSelectedProblems([]);
+    setSelectedSubcategories([]);
+    setSelectedDifficulties([]);
+    setSelectedMaturities([]);
+  };
+
   const toggleSubcategoryExpand = (sub: string) => {
     const next = new Set(expandedSubcategories);
     if (next.has(sub)) {
@@ -78,7 +107,9 @@ export function ModelListFilter({ models, category, categoriesMeta = {} }: Model
   const filteredModels = models.filter((model) => {
     const matchesProblem = selectedProblems.length === 0 || model.problem_types.some((pt) => selectedProblems.includes(pt));
     const matchesSubcategory = selectedSubcategories.length === 0 || selectedSubcategories.includes(model.subcategory);
-    return matchesProblem && matchesSubcategory;
+    const matchesDifficulty = selectedDifficulties.length === 0 || selectedDifficulties.includes(model.difficulty);
+    const matchesMaturity = selectedMaturities.length === 0 || selectedMaturities.includes(model.engineeringmaturity);
+    return matchesProblem && matchesSubcategory && matchesDifficulty && matchesMaturity;
   });
 
   // Group filtered models by subcategory
@@ -93,25 +124,64 @@ export function ModelListFilter({ models, category, categoriesMeta = {} }: Model
 
   const subcategoriesPresent = Object.keys(grouped).sort();
 
+  // Build active filters array for display - capitalize first letter for better readability
+  const activeFilters = [
+    ...selectedProblems.map(p => ({ label: p.charAt(0).toUpperCase() + p.slice(1), value: p, onRemove: () => handleToggleProblem(p) })),
+    ...selectedSubcategories.map(s => ({ label: s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), value: s, onRemove: () => handleToggleSubcategory(s) })),
+    ...selectedDifficulties.map(d => ({ label: d.charAt(0).toUpperCase() + d.slice(1), value: d, onRemove: () => toggleDifficulty(d) })),
+    ...selectedMaturities.map(m => ({ label: m.charAt(0).toUpperCase() + m.slice(1), value: m, onRemove: () => toggleMaturity(m) })),
+  ];
+
   return (
-    <div className="space-y-6">
-      {/* Filter Bars */}
-      <div className="space-y-3">
+    <div className="space-y-4">
+      {/* Search and Filters */}
+      <SearchFilterToolbar
+        searchQuery=""
+        onSearchChange={() => {}}
+        searchPlaceholder=""
+        showClearSearch={false}
+        activeFilters={activeFilters}
+        onClearAll={activeFilters.length > 0 ? clearAllFilters : undefined}
+        resultCount={filteredModels.length}
+        totalCount={models.length}
+        moreFiltersContent={
+          <div className="space-y-3">
+            <FilterBar
+              label="Difficulty"
+              options={difficultyLevels}
+              selectedOptions={selectedDifficulties}
+              onToggle={toggleDifficulty}
+              onClear={() => setSelectedDifficulties([])}
+              horizontal
+            />
+            <FilterBar
+              label="Maturity"
+              options={maturityLevels}
+              selectedOptions={selectedMaturities}
+              onToggle={toggleMaturity}
+              onClear={() => setSelectedMaturities([])}
+              horizontal
+            />
+          </div>
+        }
+      >
         <FilterBar
-          label="Filter by Problem Type"
+          label="Problem Type"
           options={problemTypesList}
           selectedOptions={selectedProblems}
           onToggle={handleToggleProblem}
           onClear={() => setSelectedProblems([])}
+          horizontal
         />
         <FilterBar
-          label="Filter by Subcategory"
+          label="Subcategory"
           options={subcategoriesList}
           selectedOptions={selectedSubcategories}
           onToggle={handleToggleSubcategory}
           onClear={() => setSelectedSubcategories([])}
+          horizontal
         />
-      </div>
+      </SearchFilterToolbar>
 
       {/* Grouped Collapsible Sections */}
       <div className="space-y-4">

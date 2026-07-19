@@ -41,19 +41,19 @@ export default async function RegistryFamilyPage({ params }: PageProps) {
         { label: familyData.name },
       ]}
     >
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Family Header */}
         <div className="space-y-2">
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">
+          <h1 className="text-xl md:text-2xl font-bold text-foreground tracking-tight">
             {familyData.name}
           </h1>
-          <p className="text-xs text-muted-foreground max-w-2xl leading-relaxed">
+          <p className="text-xs md:text-sm text-muted-foreground max-w-2xl leading-relaxed">
             {familyData.description}
           </p>
         </div>
 
-        {/* Family Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {/* Family Stats - Full-width rows on mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <div className="bg-card border border-border rounded-lg p-3">
             <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Provider</div>
             <div className="text-sm font-medium text-foreground">{familyData.provider}</div>
@@ -90,15 +90,10 @@ export default async function RegistryFamilyPage({ params }: PageProps) {
           />
         )}
 
-        {/* Engineering Continuation - Answers: What should I do next? */}
-        {familyData.related_resources && familyData.related_resources.length > 0 && (
-          <EngineeringContinuation resources={familyData.related_resources} />
-        )}
-
         {/* Variants Section */}
         {variants.length > 0 ? (
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-foreground">Available Variants</h2>
+            <h2 className="text-base md:text-lg font-semibold text-foreground">Available Variants</h2>
             <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
               {variants.map((variant) => (
                 <VariantCard key={variant.id} variant={variant} familyId={family} />
@@ -114,7 +109,7 @@ export default async function RegistryFamilyPage({ params }: PageProps) {
         {/* Comparison Table */}
         {variants.length > 1 && (
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-foreground">Variant Comparison</h2>
+            <h2 className="text-base md:text-lg font-semibold text-foreground">Variant Comparison</h2>
             <VariantComparisonTable variants={variants} />
           </div>
         )}
@@ -123,6 +118,11 @@ export default async function RegistryFamilyPage({ params }: PageProps) {
         <QuickLinksCard
           references={familyData.references}
         />
+
+        {/* Engineering Continuation - Answers: What should I do next? */}
+        {familyData.related_resources && familyData.related_resources.length > 0 && (
+          <EngineeringContinuation resources={familyData.related_resources} />
+        )}
       </div>
     </ContentPageLayout>
   );

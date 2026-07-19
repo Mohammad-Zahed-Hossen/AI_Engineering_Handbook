@@ -60,27 +60,29 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
-    >
-      <body className="h-full flex overflow-hidden bg-background text-foreground text-sm leading-relaxed">
-        <Script
-          id="theme-script"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                const STORAGE_KEY = 'handbook-theme';
-                function getPreferredTheme() {
-                  const stored = localStorage.getItem(STORAGE_KEY);
-                  if (stored === 'light' || stored === 'dark') return stored;
-                  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                }
-                const theme = getPreferredTheme();
-                document.documentElement.classList.toggle('dark', theme === 'dark');
-              })();
-            `,
-          }}
-        />
-        <PageVisitTracker />
+     >
+       <head>
+         <Script
+           id="theme-script"
+           strategy="beforeInteractive"
+           dangerouslySetInnerHTML={{
+             __html: `
+               (function() {
+                 const STORAGE_KEY = 'handbook-theme';
+                 function getPreferredTheme() {
+                   const stored = localStorage.getItem(STORAGE_KEY);
+                   if (stored === 'light' || stored === 'dark') return stored;
+                   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                 }
+                 const theme = getPreferredTheme();
+                 document.documentElement.classList.toggle('dark', theme === 'dark');
+               })();
+             `,
+           }}
+         />{/* Theme script for preventing flash of unstyled content */}
+       </head>
+       <body className="h-full flex overflow-hidden bg-background text-foreground text-sm leading-relaxed">
+         <PageVisitTracker />
         <ReadingProgress />
         <BackToTop />
         <div className="hidden md:block shrink-0 h-full sticky top-0">

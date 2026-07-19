@@ -9,8 +9,8 @@ interface DataTableProps {
 
 export default function DataTable({ headers, rows, monoColumns = [], columnStyles }: DataTableProps) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-border">
-      <table className="w-full text-left border-collapse text-xs">
+<div className="overflow-x-auto rounded-lg border border-border">
+        <table className="w-full text-left border-collapse text-xs content-table">
         <thead className="bg-muted/40 font-semibold text-foreground border-b border-border">
           <tr>{headers.map((h, i) => <th key={i} className="p-3">{h}</th>)}</tr>
         </thead>

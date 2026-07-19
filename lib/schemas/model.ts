@@ -18,6 +18,8 @@ export const ModelSubcategorySchema = z.enum([
   'recurrent_sequence',
   'transformer_encoder',
   'transformer_decoder',
+  'autoencoder',
+  'transformer',
   'generative_adversarial',
   'diffusion',
   'graph_neural_network',

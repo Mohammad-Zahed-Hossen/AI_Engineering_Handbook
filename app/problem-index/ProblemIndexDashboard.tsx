@@ -206,7 +206,6 @@ export default function ProblemIndexDashboard({
   }, []);
 
   const [activeCategory, setActiveCategory] = useState<string>('all');
-  const [stickyState, setStickyState] = useState<'full' | 'compact'>('full');
 
   // Multi-select filters states
   const [selectedTypes, setSelectedTypes] = useState<NavigatorProblemType[]>([]);
@@ -271,53 +270,7 @@ export default function ProblemIndexDashboard({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Unified Scroll State Controller
-  useEffect(() => {
-    const mainElement = document.getElementById('main-scroll');
-    if (!mainElement) return;
 
-    const handleScroll = () => {
-      const scrollY = mainElement.scrollTop;
-
-      // Change sticky state at 120px
-      setStickyState(scrollY > 120 ? 'compact' : 'full');
-    };
-
-    mainElement.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => {
-      mainElement.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
-
-  // Highlight Visible Category on Scroll (Intersection Observer)
-  useEffect(() => {
-    const categories = Object.keys(taxonomy);
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const id = entry.target.id;
-            const matchedCat = categories.find(cat => categorySlugs[cat] === id.replace('category-', ''));
-            if (matchedCat) {
-              setActiveCategory(matchedCat);
-            }
-          }
-        });
-      },
-      {
-        rootMargin: '-10% 0px -75% 0px',
-      }
-    );
-
-    categories.forEach(cat => {
-      const slug = categorySlugs[cat];
-      const el = document.getElementById(`category-${slug}`);
-      if (el) observer.observe(el);
-    });
-
-    return () => observer.disconnect();
-  }, [taxonomy, categorySlugs]);
 
   // Search logic helper
   const matchesSearch = useCallback((problem: Problem, query: string, categoryName: string) => {
@@ -486,6 +439,38 @@ export default function ProblemIndexDashboard({
     selectedMaturities.length > 0 ||
     selectedCharacteristics.length > 0;
 
+  // Highlight Visible Category on Scroll (Scroll-based detection)
+  useEffect(() => {
+    const categories = Object.keys(taxonomy);
+
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 100; // Offset from top
+      let activeCat = '';
+
+      for (const cat of categories) {
+        const slug = categorySlugs[cat];
+        const el = document.getElementById(`category-${slug}`);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          const elementTop = rect.top + window.scrollY;
+          
+          if (elementTop <= scrollPosition) {
+            activeCat = cat;
+          }
+        }
+      }
+
+      if (activeCat) {
+        setActiveCategory(activeCat);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Initial check
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [taxonomy, categorySlugs]);
+
   const clearAllFilters = () => {
     setSelectedTypes([]);
     setSelectedModalities([]);
@@ -550,7 +535,7 @@ export default function ProblemIndexDashboard({
   };
 
   return (
-    <div className="space-y-6 relative">
+    <div className="space-y-4 sm:space-y-6 relative">
       {/* Background click-outside overlay for active filter dropdowns */}
       {openDropdown && (
         <div
@@ -560,12 +545,9 @@ export default function ProblemIndexDashboard({
       )}
 
 
-      {/* Sticky Filters & Search Area */}
-      <div className={`sticky top-0 z-40 transition-all duration-300 ${stickyState === 'compact'
-          ? 'bg-background/95 backdrop-blur-md border-b border-border py-2'
-          : 'bg-background/95 backdrop-blur-md border-b border-border py-3'
-        }`}>
-        <div className="relative space-y-3">
+      {/* Search & Filter Area */}
+      <div className="bg-background/95 backdrop-blur-md border-b border-border py-2 sm:py-3">
+        <div className="relative space-y-2 sm:space-y-3">
           {/* Persistent Search input */}
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground" />
@@ -595,7 +577,7 @@ export default function ProblemIndexDashboard({
           </div>
 
           {/* Interactive Filters Grid & Sorting Panel */}
-          <div className="flex items-center gap-2 pt-1 z-50 overflow-x-auto pb-1 scrollbar-none md:flex-wrap">
+          <div className="flex items-center gap-1.5 sm:gap-2 pt-1 z-50 pb-1 scrollbar-none md:flex-wrap">
             {/* Primary Filters: Complexity, Maturity */}
             {/* Complexity Filter */}
             <div className="relative">
@@ -617,7 +599,7 @@ export default function ProblemIndexDashboard({
                 <ChevronDown className="w-3 h-3 ml-0.5" />
               </button>
               {openDropdown === 'complexity' && (
-                <div className="absolute left-0 mt-1.5 w-48 rounded-lg border border-border bg-card shadow-lg p-2 space-y-1 z-40">
+                <div className="absolute left-0 mt-1.5 w-48 rounded-lg border border-border bg-card shadow-lg p-2 space-y-1 z-50">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase px-2 py-1">Filter by Complexity</p>
                   {(['beginner', 'intermediate', 'advanced', 'expert'] as EngineeringComplexity[]).map(c => (
                     <button
@@ -653,7 +635,7 @@ export default function ProblemIndexDashboard({
                 <ChevronDown className="w-3 h-3 ml-0.5" />
               </button>
               {openDropdown === 'maturity' && (
-                <div className="absolute left-0 mt-1.5 w-48 rounded-lg border border-border bg-card shadow-lg p-2 space-y-1 z-40">
+                <div className="absolute left-0 mt-1.5 w-48 rounded-lg border border-border bg-card shadow-lg p-2 space-y-1 z-50">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase px-2 py-1">Filter by Maturity</p>
                   {['Production', 'Stable', 'Beta', 'Research', 'Experimental'].map(m => (
                     <button
@@ -689,7 +671,7 @@ export default function ProblemIndexDashboard({
                 <ChevronDown className="w-3 h-3 ml-0.5" />
               </button>
               {openDropdown === 'moreFilters' && (
-                <div className="absolute left-0 mt-1.5 w-72 rounded-lg border border-border bg-card shadow-lg p-3 space-y-3 z-40 max-h-96 overflow-y-auto">
+                <div className="absolute left-0 mt-1.5 w-72 rounded-lg border border-border bg-card shadow-lg p-3 space-y-3 z-50 max-h-96 overflow-y-auto">
                   {/* Type Filter */}
                   <div>
                     <p className="text-[10px] font-bold text-muted-foreground uppercase px-2 py-1">Problem Type</p>
@@ -770,7 +752,7 @@ export default function ProblemIndexDashboard({
                 <ChevronDown className="w-3.5 h-3.5" />
               </button>
               {openDropdown === 'sort' && (
-                <div className="absolute right-0 mt-1.5 w-48 rounded-lg border border-border bg-card shadow-lg p-2 space-y-1 z-40">
+                <div className="absolute right-0 mt-1.5 w-48 rounded-lg border border-border bg-card shadow-lg p-2 space-y-1 z-50">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase px-2 py-1">Sort Problems</p>
                   {[
                     { value: 'maturity', label: 'Solution Maturity' },
@@ -798,7 +780,7 @@ export default function ProblemIndexDashboard({
 
         {/* Active Filter Badges - integrated inline with filters */}
         {hasActiveFilters && (
-          <div className="flex flex-wrap items-center gap-1.5 mt-2 select-none overflow-x-auto pb-1 scrollbar-none md:flex-wrap">
+          <div className="flex flex-wrap items-center gap-1 mt-1.5 sm:mt-2 select-none pb-1 scrollbar-none md:flex-wrap">
             {selectedComplexities.map(c => (
               <span key={c} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-[10px] font-medium border border-border text-foreground">
                 <span className="capitalize">{c}</span>
@@ -845,10 +827,10 @@ export default function ProblemIndexDashboard({
 
       {/* Navigation & Action Toolbar */}
       <div
-        className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pt-2 mt-2 border-t border-border/40"
+        className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 sm:gap-3 pt-2 mt-2 border-t border-border/40"
       >
         {/* Scrollable Navigation Chips */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 select-none scrollbar-none w-full md:max-w-[70%]">
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 select-none scrollbar-none w-full md:max-w-[70%]">
           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider shrink-0 mr-1">
             Jump To:
           </span>
@@ -874,7 +856,7 @@ export default function ProblemIndexDashboard({
         </div>
 
         {/* Bulk Toggles and Search Summary Counter */}
-        <div className="flex items-center justify-between md:justify-end gap-3 select-none w-full md:w-auto border-t border-border/40 pt-2 md:border-t-0 md:pt-0">
+        <div className="flex items-center justify-between md:justify-end gap-2 sm:gap-3 select-none w-full md:w-auto border-t border-border/40 pt-2 md:border-t-0 md:pt-0">
           <div>
             <p className="text-[10px] font-bold text-muted-foreground select-none">
               {searchQuery.trim() || hasActiveFilters ? (
@@ -885,7 +867,7 @@ export default function ProblemIndexDashboard({
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={expandAll}
               className="inline-flex items-center gap-1 px-2.5 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px]"
@@ -908,7 +890,7 @@ export default function ProblemIndexDashboard({
 
       {/* Category & Problem Grid */}
       {hasResults ? (
-        <div className="space-y-6 pt-20">
+        <div className="space-y-4 sm:space-y-6 pt-8 sm:pt-20">
           {Object.entries(filteredTaxonomy).map(([category, data]) => {
             // On server and before hydration, all categories are expanded (isCollapsed = false)
             // After hydration, use localStorage state
@@ -923,7 +905,7 @@ export default function ProblemIndexDashboard({
               <section
                 key={category}
                 id={`category-${slug}`}
-                className="scroll-mt-20 rounded-l border border-border bg-card overflow-hidden transition-all duration-100"
+                className="scroll-mt-8 sm:scroll-mt-20 rounded-l border border-border bg-card overflow-hidden transition-all duration-100"
               >
                 {/* Category Header */}
                 <button
@@ -931,11 +913,11 @@ export default function ProblemIndexDashboard({
                   aria-expanded={!isCollapsed}
                   aria-controls={`category-content-${slug}`}
                   suppressHydrationWarning
-                  className="w-full px-5 py-4 bg-muted/10 hover:bg-muted/20 border-b border-border transition-all flex items-start justify-between gap-3 text-left cursor-pointer"
+                  className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-muted/10 hover:bg-muted/20 border-b border-border transition-all flex items-start justify-between gap-3 text-left cursor-pointer"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-1.5 rounded-lg bg-primary/5 border border-primary/10">
-                      <IconComponent className="w-4 h-4 text-primary" />
+                  <div className="flex items-center gap-2 sm:gap-2.5">
+                    <div className="p-1 sm:p-1.5 rounded-lg bg-primary/5 border border-primary/10">
+                      <IconComponent className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                     </div>
                     <div>
                       <h2 className="text-sm font-bold text-foreground flex items-center flex-wrap gap-2">
@@ -947,12 +929,12 @@ export default function ProblemIndexDashboard({
                           ({solvedInCat}/{totalInCat} solved)
                         </span>
                       </h2>
-                      <p className="text-xs text-muted-foreground mt-0.5">{data.description}</p>
+                      <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">{data.description}</p>
                     </div>
                   </div>
                   <ChevronDown
                     suppressHydrationWarning
-                    className={`w-5 h-5 text-muted-foreground shrink-0 mt-1 transition-transform duration-200 ${isCollapsed ? 'rotate-0' : 'rotate-180'}`}
+                    className={`w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground shrink-0 mt-1 transition-transform duration-200 ${isCollapsed ? 'rotate-0' : 'rotate-180'}`}
                   />
                 </button>
 
@@ -968,7 +950,7 @@ export default function ProblemIndexDashboard({
                   }}
                 >
                   <div className="overflow-hidden">
-<div className="p-4 sm:p-5 grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2">
+<div className="p-3 sm:p-4 sm:p-5 grid gap-3 sm:gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2">
                       {data.problems.map(problem => {
                         const hasWorkflows = problem.related_workflows.length > 0 || (problem.related_decision_guides && problem.related_decision_guides.length > 0);
                         const computedMaturity = getProblemMaturity(problem, workflowMap);
@@ -1003,7 +985,7 @@ export default function ProblemIndexDashboard({
                         return (
 <div
                             key={problem.id}
-                            className="rounded-xl border border-border/80 bg-muted/5 dark:bg-muted/[0.005] p-4 sm:p-5 flex flex-col gap-3 sm:gap-4 transition-all hover:shadow-sm hover:border-border/100 touch-target"
+                            className="rounded-xl border border-border/80 bg-muted/5 dark:bg-muted/[0.005] p-3 sm:p-4 sm:p-5 flex flex-col gap-2.5 sm:gap-3 sm:gap-4 transition-all hover:shadow-sm hover:border-border/100 touch-target"
                           >
                             {/* Header Zone: Problem name + aliases + combined status/maturity */}
                             <div>
@@ -1032,29 +1014,29 @@ export default function ProblemIndexDashboard({
                                 </div>
                               </div>
                               {/* Summary Zone: Description */}
-                              <p className="text-xs text-muted-foreground mt-2 leading-relaxed max-w-prose">
+                              <p className="text-[11px] sm:text-xs text-muted-foreground mt-1.5 sm:mt-2 leading-relaxed max-w-prose">
                                 <HighlightText text={problem.description} query={debouncedSearchQuery} />
                               </p>
                             </div>
 
                             {/* Primary Action Zone: Best solution surfaced immediately */}
                             {primaryWorkflow && (
-                              <div className="bg-card border border-border/60 rounded-lg p-3">
-                                <div className="flex items-center justify-between gap-3">
+                              <div className="bg-card border border-border/60 rounded-lg p-2.5 sm:p-3">
+                                <div className="flex items-center justify-between gap-2 sm:gap-3">
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Start here</p>
-                                    <p className="text-xs font-bold text-foreground truncate">
+                                    <p className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Start here</p>
+                                    <p className="text-[11px] sm:text-xs font-bold text-foreground truncate">
                                       <HighlightText text={primaryWorkflow.title} query={debouncedSearchQuery} />
                                     </p>
                                     {primaryWorkflow.description && (
-                                      <p className="text-[11px] text-muted-foreground leading-normal line-clamp-1 mt-0.5">
+                                      <p className="text-[10px] sm:text-[11px] text-muted-foreground leading-normal line-clamp-1 mt-0.5">
                                         <HighlightText text={primaryWorkflow.description} query={debouncedSearchQuery} />
                                       </p>
                                     )}
                                   </div>
                                   <Link
                                     href={`/workflows/${primaryWorkflow.id}`}
-                                    className="shrink-0 inline-flex items-center gap-1 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-all cursor-pointer select-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px]"
+                                    className="shrink-0 inline-flex items-center gap-1 px-3 sm:px-4 py-2 rounded-lg bg-primary text-primary-foreground text-[11px] sm:text-xs font-bold hover:bg-primary/90 transition-all cursor-pointer select-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px]"
                                   >
                                     Open
                                     <ArrowRight className="w-3 h-3" />
@@ -1064,7 +1046,7 @@ export default function ProblemIndexDashboard({
                             )}
 
                             {/* Fact Strip: Compact metadata */}
-                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
+                            <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
                               <span className="font-medium">Complexity:</span>
                               <span className="font-semibold text-foreground capitalize inline-flex items-center gap-0.5">
                                 {problem.engineering_complexity}
@@ -1089,7 +1071,7 @@ export default function ProblemIndexDashboard({
 
                             {/* Prerequisites - only when non-empty */}
                             {problem.requires && problem.requires.length > 0 && (
-                              <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
+                              <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 text-[10px]">
                                 <span className="font-semibold text-muted-foreground uppercase tracking-wider">Requires:</span>
                                 {problem.requires.slice(0, 3).map(rId => {
                                   const link = resolveLink(rId, modelMap, patternMap, debugGuideMap, packageMap, registryMap, workflowMap);
@@ -1121,7 +1103,7 @@ export default function ProblemIndexDashboard({
 
                             {/* Additional Solutions - collapsible */}
                             {(additionalWorkflows.length > 0 || (problem.related_decision_guides && problem.related_decision_guides.length > 0)) && (
-                              <div className="border-t border-border/50 pt-3">
+                              <div className="border-t border-border/50 pt-2.5 sm:pt-3">
                                 <button
                                   onClick={() => toggleCardExpansion(problem.id, 'solutions')}
                                   className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
@@ -1130,13 +1112,13 @@ export default function ProblemIndexDashboard({
                                   {additionalWorkflows.length + (problem.related_decision_guides?.length ?? 0)} more solutions
                                 </button>
                                 {isExpanded.solutions && (
-                                  <div className="mt-2 space-y-2">
+                                  <div className="mt-1.5 sm:mt-2 space-y-1.5 sm:space-y-2">
                                     {additionalWorkflows.map(wfId => {
                                       const metadata = workflowMap[wfId];
                                       if (metadata) {
                                         return (
-                                          <div key={wfId} className="rounded-lg border border-border/80 bg-card p-3 flex flex-col justify-between gap-1.5 hover:border-foreground/15 transition-all text-xs shadow-xs">
-                                            <div className="flex items-center justify-between gap-3">
+                                          <div key={wfId} className="rounded-lg border border-border/80 bg-card p-2.5 sm:p-3 flex flex-col justify-between gap-1.5 hover:border-foreground/15 transition-all text-xs shadow-xs">
+                                            <div className="flex items-center justify-between gap-2 sm:gap-3">
                                               <div className="min-w-0">
                                                 <p className="font-bold text-foreground truncate">
                                                   <HighlightText text={metadata.title} query={debouncedSearchQuery} />
@@ -1160,8 +1142,8 @@ export default function ProblemIndexDashboard({
                                       const metadata = decisionGuideMap[dgId];
                                       if (metadata) {
                                         return (
-                                          <div key={dgId} className="rounded-lg border border-border/80 bg-card p-3 flex flex-col justify-between gap-1.5 hover:border-foreground/15 transition-all text-xs shadow-xs">
-                                            <div className="flex items-center justify-between gap-3">
+                                          <div key={dgId} className="rounded-lg border border-border/80 bg-card p-2.5 sm:p-3 flex flex-col justify-between gap-1.5 hover:border-foreground/15 transition-all text-xs shadow-xs">
+                                            <div className="flex items-center justify-between gap-2 sm:gap-3">
                                               <div className="min-w-0">
                                                 <p className="font-bold text-foreground truncate">
                                                   <HighlightText text={metadata.title} query={debouncedSearchQuery} />
@@ -1188,7 +1170,7 @@ export default function ProblemIndexDashboard({
 
                             {/* Related Resources - collapsible */}
                             {hasRelatedResources && (
-                              <div className="border-t border-border/50 pt-3">
+                              <div className="border-t border-border/50 pt-2.5 sm:pt-3">
                                 <button
                                   onClick={() => toggleCardExpansion(problem.id, 'resources')}
                                   className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
@@ -1197,7 +1179,7 @@ export default function ProblemIndexDashboard({
                                   Related resources
                                 </button>
                                 {isExpanded.resources && (
-                                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[10px]">
+                                  <div className="mt-1.5 sm:mt-2 flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1.5 text-[10px]">
                                     {problem.related_models?.map(mId => {
                                       const details = modelMap[mId];
                                       if (details) {
@@ -1257,15 +1239,15 @@ export default function ProblemIndexDashboard({
         </div>
       ) : (
         /* Empty State */
-        <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center flex flex-col items-center justify-center py-12 select-none !mt-52">
-          <Search className="w-8 h-8 text-muted-foreground/60 mb-2" />
-          <h3 className="text-md font-bold text-foreground">No matches found</h3>
-          <p className="text-xs text-muted-foreground mt-1 max-w-sm leading-relaxed">
+        <div className="rounded-xl border border-dashed border-border bg-card p-6 sm:p-8 text-center flex flex-col items-center justify-center py-10 sm:py-12 select-none !mt-36 sm:!mt-52">
+          <Search className="w-7 h-7 sm:w-8 sm:h-8 text-muted-foreground/60 mb-2" />
+          <h3 className="text-sm sm:text-md font-bold text-foreground">No matches found</h3>
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 max-w-sm leading-relaxed">
             We couldn&apos;t find any problems matching your search/filters criteria.
           </p>
           <button
             onClick={() => { setSearchQuery(''); clearAllFilters(); }}
-            className="mt-3 px-4 py-2 bg-primary text-primary-foreground text-xs font-semibold rounded-lg hover:bg-primary/90 transition-colors cursor-pointer"
+            className="mt-2.5 sm:mt-3 px-3.5 sm:px-4 py-2 bg-primary text-primary-foreground text-[11px] sm:text-xs font-semibold rounded-lg hover:bg-primary/90 transition-colors cursor-pointer"
           >
             Clear Search & Filters
           </button>

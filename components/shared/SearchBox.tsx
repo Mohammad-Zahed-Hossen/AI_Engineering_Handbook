@@ -331,33 +331,33 @@ export default function SearchBox({
         </div>
       )}
 
-      {/* Recent searches */}
-      {showRecent && (
-        <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-border bg-popover shadow-sm">
-          <div className="px-3 py-1.5 border-b border-border bg-muted/30">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Clock className="w-3 h-3" />
-              Recent searches
-            </span>
-          </div>
-          <ul id={listboxId} role="listbox" className="max-h-60 overflow-y-auto">
-            {recentSearches.map((term) => (
-              <li key={term} role="option" aria-selected={false} className="border-b border-border last:border-b-0">
-                <button
-                  onClick={() => {
-                    setQuery(term);
-                    setActiveIndex(0);
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-sm text-foreground hover:bg-muted/50 transition-colors touch-target"
-                >
-                  <Search className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span>{term}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+                 {/* Recent searches */}
+                 {showRecent && (
+                   <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-border bg-popover shadow-sm">
+                     <div className="px-3 py-1.5 border-b border-border bg-muted/30">
+                       <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                         <Clock className="w-3 h-3" />
+                         Recent searches
+                       </span>
+                     </div>
+                     <ul id={listboxId} role="listbox" className="max-h-60 overflow-y-auto">
+                       {recentSearches.map((term) => (
+                         <li key={term} role="option" aria-selected={false} className="border-b border-border last:border-b-0">
+                           <button
+                             onClick={() => {
+                               setQuery(term);
+                               setActiveIndex(0);
+                             }}
+                             className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-sm text-foreground hover:bg-muted/50 transition-colors touch-target"
+                           >
+                             <Search className="w-3.5 h-3.5 text-muted-foreground" />
+                             <span>{term}</span>
+                           </button>
+                         </li>
+                       ))}
+                     </ul>
+                   </div>
+                 )}
 
       {/* Search results */}
       {showResults && (

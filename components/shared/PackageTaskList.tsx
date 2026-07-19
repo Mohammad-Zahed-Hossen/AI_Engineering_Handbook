@@ -223,72 +223,72 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
             contentClassName="p-0 border-t-0 bg-card"
           >
             {isExpanded && (
-              <div className="p-4 space-y-6">
-                {/* 1. Technical Workbench: Syntax & Example - mobile first: stack on mobile */}
-                <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr]">
-                  <div className="rounded-lg border border-border bg-muted/5 dark:bg-muted/[0.01] p-4 min-w-0 flex flex-col justify-between">
-                    <div>
-                      <h4 className="mb-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 select-none">
-                        <Sliders className="w-3.5 h-3.5 text-muted-foreground" />
-                        Syntax Definition
-                      </h4>
-                      <div className="text-xs">
-                        {task.syntaxBlock}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="rounded-lg border border-border bg-muted/5 dark:bg-muted/[0.01] p-4 min-w-0">
-                    <h4 className="mb-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 select-none">
-                      <FileText className="w-3.5 h-3.5 text-muted-foreground" />
-                      Code Example
-                    </h4>
-                    <div className="text-xs">
-                      {task.exampleBlock}
-                    </div>
-                  </div>
-                </div>
+              <div className="mobile-card-padding space-y-6">
+                 {/* 1. Technical Workbench: Syntax & Example - mobile first: stack on mobile */}
+                 <div className="grid gap-4 md:grid-cols-2">
+                   <div className="rounded-lg border border-border bg-muted/5 dark:bg-muted/[0.01] mobile-card-padding min-w-0 flex flex-col justify-between">
+                     <div>
+                       <h4 className="mb-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 select-none">
+                         <Sliders className="w-3.5 h-3.5 text-muted-foreground" />
+                         Syntax Definition
+                       </h4>
+                       <div className="text-xs">
+                         {task.syntaxBlock}
+                       </div>
+                     </div>
+                   </div>
+                   <div className="rounded-lg border border-border bg-muted/5 dark:bg-muted/[0.01] mobile-card-padding min-w-0">
+                     <h4 className="mb-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 select-none">
+                       <FileText className="w-3.5 h-3.5 text-muted-foreground" />
+                       Code Example
+                     </h4>
+                     <div className="text-xs">
+                       {task.exampleBlock}
+                     </div>
+                   </div>
+                 </div>
 
-                {/* 2. Usage Decisions (When to Use & Avoid When) - mobile first: stack on mobile */}
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-500/[0.01] p-4 text-sm flex flex-col justify-between">
-                    <div>
-                      <h4 className="flex items-center gap-1.5 font-semibold text-emerald-700 dark:text-emerald-400 mb-2.5">
-                        <CheckCircle2 className="w-4 h-4 shrink-0" />
-                        When to Use
-                      </h4>
-                      <ExpandableText
-                        maxLines={3}
-                        cacheKey={`pkg-${packageName}-${taskAnchor}-use`}
-                        fadeClass="from-emerald-500/5 dark:from-emerald-500/[0.01] to-transparent"
-                      >
-                        <p className="text-muted-foreground leading-relaxed text-xs">{task.use_when}</p>
-                      </ExpandableText>
-                    </div>
-                  </div>
-                  <div className="rounded-lg border border-rose-500/20 bg-rose-500/5 dark:bg-rose-500/[0.01] p-4 text-sm flex flex-col justify-between">
-                    <div>
-                      <h4 className="flex items-center gap-1.5 font-semibold text-rose-700 dark:text-rose-400 mb-2.5">
-                        <XCircle className="w-4 h-4 shrink-0" />
-                        Avoid When
-                      </h4>
-                      <ExpandableText
-                        maxLines={3}
-                        cacheKey={`pkg-${packageName}-${taskAnchor}-avoid`}
-                        fadeClass="from-rose-500/5 dark:from-rose-500/[0.01] to-transparent"
-                      >
-                        <p className="text-muted-foreground leading-relaxed text-xs">{task.avoid_when}</p>
-                      </ExpandableText>
-                    </div>
-                  </div>
-                </div>
+                 {/* 2. Usage Decisions (When to Use & Avoid When) - mobile first: stack on mobile */}
+                 <div className="grid gap-4 md:grid-cols-2">
+                   <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-500/[0.01] mobile-card-padding text-sm flex flex-col justify-between">
+                     <div>
+                       <h4 className="flex items-center gap-1.5 font-semibold text-emerald-700 dark:text-emerald-400 mb-2.5">
+                         <CheckCircle2 className="w-4 h-4 shrink-0" />
+                         When to Use
+                       </h4>
+                       <ExpandableText
+                         maxLines={3}
+                         cacheKey={`pkg-${packageName}-${taskAnchor}-use`}
+                         fadeClass="from-emerald-500/5 dark:from-emerald-500/[0.01] to-transparent"
+                       >
+                         <p className="text-muted-foreground leading-relaxed text-xs">{task.use_when}</p>
+                       </ExpandableText>
+                     </div>
+                   </div>
+                   <div className="rounded-lg border border-rose-500/20 bg-rose-500/5 dark:bg-rose-500/[0.01] mobile-card-padding text-sm flex flex-col justify-between">
+                     <div>
+                       <h4 className="flex items-center gap-1.5 font-semibold text-rose-700 dark:text-rose-400 mb-2.5">
+                         <XCircle className="w-4 h-4 shrink-0" />
+                         Avoid When
+                       </h4>
+                       <ExpandableText
+                         maxLines={3}
+                         cacheKey={`pkg-${packageName}-${taskAnchor}-avoid`}
+                         fadeClass="from-rose-500/5 dark:from-rose-500/[0.01] to-transparent"
+                       >
+                         <p className="text-muted-foreground leading-relaxed text-xs">{task.avoid_when}</p>
+                       </ExpandableText>
+                     </div>
+                   </div>
+                 </div>
 
                 {/* 3. Signature & Behavior */}
-                <div className="rounded-lg border border-border bg-card p-4 space-y-4">
+                <div className="rounded-lg border border-border bg-card mobile-card-padding space-y-4">
                   <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 select-none">
                     <Sliders className="w-3.5 h-3.5 text-muted-foreground" />
                     Signature & Output
                   </h4>
-                  <div className="grid gap-4 sm:grid-cols-2 text-xs">
+                  <div className="grid gap-4 md:grid-cols-2 text-xs">
                     <div className="space-y-2">
                       <span className="font-semibold text-foreground/80 block">Key Parameters</span>
                       {task.important_params && task.important_params.length > 0 ? (
@@ -343,7 +343,7 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
 
                 {/* 4. Safety & Pitfalls */}
                 {(notes.commonMistakes || (task.gotchas && task.gotchas.length > 0)) && (
-                  <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 dark:bg-amber-500/[0.01] p-4 space-y-3.5">
+                  <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 dark:bg-amber-500/[0.01] mobile-card-padding space-y-3.5">
                     <h4 className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 select-none">
                       <AlertTriangle className="w-4 h-4 shrink-0" />
                       Safety & Pitfalls
@@ -372,7 +372,7 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
                 )}
 
                 {/* 5. Ecosystem & Connections */}
-                <div className="rounded-lg border border-border bg-card p-4 space-y-4">
+                <div className="rounded-lg border border-border bg-card mobile-card-padding space-y-4">
                   <VisualizationEquivalents equivalents={visualizationEquivalents} currentPackageId={packageName} />
 
                   {visualizationEquivalents.length > 0 && ['matplotlib', 'seaborn', 'plotly-express'].includes(packageName.toLowerCase()) && (
@@ -384,7 +384,7 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
                     Ecosystem & Next Steps
                   </h4>
                   
-                  <div className="grid gap-4 sm:grid-cols-2 text-xs">
+                  <div className="grid gap-4 md:grid-cols-2 text-xs">
                     {/* Left: Related APIs */}
                     <div className="space-y-3">
                       <div>
@@ -443,7 +443,7 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
                     </div>
 
                     {/* Right: Handbook content references */}
-                    <div className="space-y-3 border-t sm:border-t-0 sm:border-l border-border pt-3 sm:pt-0 sm:pl-4">
+                    <div className="space-y-3 border-t md:border-t-0 md:border-l border-border pt-3 md:pt-0 md:pl-4">
                       <div>
                         <span className="font-semibold text-foreground/80 block mb-2">Connected Guides</span>
                         {(task.related_workflow_links.length > 0 || task.related_cheatsheet_links.length > 0) ? (

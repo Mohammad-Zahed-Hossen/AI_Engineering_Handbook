@@ -42,9 +42,9 @@ export default function RuntimeDecisionCard({
           const isRecommended = entry.runtime === recommendedRuntime;
           
           return (
-            <div key={entry.runtime} className="border border-border rounded-lg p-2.5">
-              <div className="flex items-start justify-between gap-2">
-                <div className="space-y-1">
+            <div key={entry.runtime} className="border border-border rounded-lg p-3 md:p-2.5">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
+                <div className="space-y-1 flex-1">
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs font-mono font-medium text-foreground">
                       {entry.runtime}
@@ -73,7 +73,7 @@ export default function RuntimeDecisionCard({
                   )}
                 </div>
                 
-                <RegistryBadge variant={config.variant} size="xs" className="font-mono shrink-0">
+                <RegistryBadge variant={config.variant} size="xs" className="font-mono shrink-0 self-start">
                   {config.label}
                 </RegistryBadge>
               </div>

@@ -10,27 +10,27 @@ interface CodeBlockProps {
 
 export async function highlightCodeSnippet(code: string, language: string = 'text') {
   const lines = code.split('\n');
-  const MAX_COLLAPSED_LINES = 30;
+  const MAX_COLLAPSED_LINES = 7;
   const shouldCollapse = lines.length > MAX_COLLAPSED_LINES;
   
   // For text/plain, don't collapse
   const isPlainText = language === 'text' || language === 'plain';
   const shouldActuallyCollapse = shouldCollapse && !isPlainText;
-
+  
   let fullHighlightedDark = '';
   let fullHighlightedLight = '';
   let collapsedHighlightedDark = '';
   let collapsedHighlightedLight = '';
-
+  
   const normalizeLang = (lang: string) => {
     const l = lang.toLowerCase();
     if (l === 'py') return 'python';
     if (l === 'sh' || l === 'bash') return 'bash';
     return l;
   };
-
+  
   const highlightedLang = normalizeLang(language);
-
+  
   // Generate full highlighted HTML for both themes
   try {
     fullHighlightedDark = await codeToHtml(code, {
@@ -41,7 +41,7 @@ export async function highlightCodeSnippet(code: string, language: string = 'tex
     console.error('Shiki highlighting error (dark):', err);
     fullHighlightedDark = `<pre><code>${escapeHtml(code)}</code></pre>`;
   }
-
+  
   try {
     fullHighlightedLight = await codeToHtml(code, {
       lang: highlightedLang,
@@ -51,13 +51,32 @@ export async function highlightCodeSnippet(code: string, language: string = 'tex
     console.error('Shiki highlighting error (light):', err);
     fullHighlightedLight = `<pre><code>${escapeHtml(code)}</code></pre>`;
   }
-
-  // Generate collapsed view by truncating the already-highlighted HTML
+  
+  // Generate collapsed view by truncating the source code before highlighting
   if (shouldCollapse) {
-    collapsedHighlightedDark = truncateHighlightedHtml(fullHighlightedDark, MAX_COLLAPSED_LINES);
-    collapsedHighlightedLight = truncateHighlightedHtml(fullHighlightedLight, MAX_COLLAPSED_LINES);
+    const collapsedCode = lines.slice(0, MAX_COLLAPSED_LINES).join('\n');
+    
+    try {
+      collapsedHighlightedDark = await codeToHtml(collapsedCode, {
+        lang: highlightedLang,
+        theme: 'github-dark',
+      });
+    } catch (err) {
+      console.error('Shiki highlighting error (collapsed dark):', err);
+      collapsedHighlightedDark = `<pre><code>${escapeHtml(collapsedCode)}</code></pre>`;
+    }
+    
+    try {
+      collapsedHighlightedLight = await codeToHtml(collapsedCode, {
+        lang: highlightedLang,
+        theme: 'github-light',
+      });
+    } catch (err) {
+      console.error('Shiki highlighting error (collapsed light):', err);
+      collapsedHighlightedLight = `<pre><code>${escapeHtml(collapsedCode)}</code></pre>`;
+    }
   }
-
+  
   return {
     fullHighlightedDark,
     fullHighlightedLight,
@@ -65,7 +84,7 @@ export async function highlightCodeSnippet(code: string, language: string = 'tex
     collapsedHighlightedLight,
     shouldCollapse: shouldActuallyCollapse,
     linesCount: lines.length,
-    maxCollapsedLines: MAX_COLLAPSED_LINES
+    maxCollapsedLines: MAX_COLLAPSED_LINES,
   };
 }
 
@@ -82,9 +101,9 @@ export async function CodeBlock({
     collapsedHighlightedLight,
     shouldCollapse,
     linesCount,
-    maxCollapsedLines
+    maxCollapsedLines,
   } = await highlightCodeSnippet(code, language);
-
+  
   return (
     <CodeBlockInteractive
       code={code}
@@ -102,95 +121,11 @@ export async function CodeBlock({
   );
 }
 
-/**
- * Truncates Shiki-highlighted HTML to the first N line spans.
- * Shiki wraps each source line in <span class="line">...</span>.
- * This extracts only the first N line spans while preserving the wrapper structure.
- */
-function truncateHighlightedHtml(html: string, maxLines: number): string {
-  // Find the opening <pre> and <code> tags
-  const preMatch = html.match(/<pre[^>]*>/i);
-  const codeMatch = html.match(/<code[^>]*>/i);
-  
-  if (!preMatch || !codeMatch) {
-    // Fallback if structure is unexpected
-    return html;
-  }
-
-  const codeStart = html.indexOf(codeMatch[0]) + codeMatch[0].length;
-  const codeEnd = html.lastIndexOf('</code>');
-
-  if (codeStart >= codeEnd) {
-    return html;
-  }
-
-  // Extract the inner content between <code> and </code>
-  const innerContent = html.slice(codeStart, codeEnd);
-  
-  // Find all outermost `<span class="line"` blocks using a depth-counter walk
-  const lineSpans: string[] = [];
-  let currentIndex = 0;
-  
-  while (currentIndex < innerContent.length && lineSpans.length < maxLines) {
-    // Find the next line span opening tag
-    const lineStartMatch = innerContent.slice(currentIndex).match(/<span class="line"[^>]*>/);
-    if (!lineStartMatch || lineStartMatch.index === undefined) {
-      break;
-    }
-    
-    const lineStartPos = currentIndex + lineStartMatch.index;
-    const startTag = lineStartMatch[0];
-    
-    // Walk character by character from after the line start tag to find the matching close tag
-    let depth = 1;
-    let scanIndex = lineStartPos + startTag.length;
-    let foundEnd = false;
-    
-    while (scanIndex < innerContent.length) {
-      if (innerContent.startsWith('</span>', scanIndex)) {
-        depth--;
-        scanIndex += 7; // Length of </span>
-        if (depth === 0) {
-          foundEnd = true;
-          break;
-        }
-      } else if (innerContent.startsWith('<span', scanIndex)) {
-        depth++;
-        scanIndex += 5; // Length of <span
-      } else {
-        scanIndex++;
-      }
-    }
-    
-    if (foundEnd) {
-      const lineSpanText = innerContent.slice(lineStartPos, scanIndex);
-      lineSpans.push(lineSpanText);
-      currentIndex = scanIndex;
-    } else {
-      // If we couldn't find a matching close tag, break and fallback
-      break;
-    }
-  }
-
-  if (lineSpans.length === 0) {
-    return html;
-  }
-
-  // Take only the first N line spans
-  const truncatedLines = lineSpans.join('');
-  
-  // Reconstruct the HTML with truncated content
-  const preTag = preMatch[0];
-  const codeTag = codeMatch[0];
-  
-  return `${preTag}${codeTag}${truncatedLines}</code></pre>`;
-}
-
 function escapeHtml(text: string): string {
   return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+    .replace(/&/g, '&')
+    .replace(/</g, '<')
+    .replace(/>/g, '>')
+    .replace(/"/g, '"')
     .replace(/'/g, '&#039;');
 }

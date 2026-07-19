@@ -52,7 +52,7 @@ export default function TopBar({
           AI Engineering Handbook
         </span>
       </div>
-      <div className="flex-1 min-w-0 flex justify-center sm:max-w-lg">
+      <div className="flex-1 min-w-0 flex justify-center">
         <SearchBox compact placeholder="Search…" />
       </div>
       <div className="flex items-center gap-2 shrink-0">

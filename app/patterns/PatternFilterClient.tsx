@@ -202,13 +202,13 @@ export default function PatternFilterClient({ patterns }: PatternFilterClientPro
                     {patternsInCategory.length}
                   </span>
                 </div>
-                <div className="p-3 space-y-3">
-                  {patternsInCategory.map(pattern => (
-                    <Link
-                      key={pattern.id}
-                      href={`/patterns/${pattern.id}`}
-                      className="block rounded-lg border border-border bg-card p-4 hover:border-foreground/20 hover:bg-muted/30 transition-colors touch-target"
-                    >
+                   <div className="p-2.5 min-[360px]:p-3 space-y-2.5 min-[390px]:space-y-3">
+                   {patternsInCategory.map(pattern => (
+                     <Link
+                       key={pattern.id}
+                       href={`/patterns/${pattern.id}`}
+                       className="block rounded-lg border border-border bg-card mobile-card-padding hover:border-foreground/20 hover:bg-muted/30 transition-colors touch-target"
+                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <h2 className="text-sm font-medium text-foreground">{pattern.title || pattern.id}</h2>

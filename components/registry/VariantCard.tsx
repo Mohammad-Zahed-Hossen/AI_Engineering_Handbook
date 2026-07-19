@@ -34,12 +34,12 @@ export default function VariantCard({ variant, familyId }: VariantCardProps) {
       className="block"
     >
       <Card className="hover:border-foreground/20 hover:bg-muted/30 transition-colors cursor-pointer">
-        <CardHeader className="pb-2">
+        <CardHeader className="pb-2 px-3 py-3 md:px-6 md:py-4">
           <CardTitle className="text-xs font-mono">
             {name}
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-0 space-y-2">
+        <CardContent className="pt-0 space-y-2 px-3 py-3 md:px-6 md:py-4">
           <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[10px]">
             <div className="text-muted-foreground">Size</div>
             <div className="text-foreground font-mono text-right">

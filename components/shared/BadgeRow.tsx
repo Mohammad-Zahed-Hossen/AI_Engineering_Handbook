@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface BadgeRowProps {
@@ -11,8 +11,21 @@ interface BadgeRowProps {
 
 export function BadgeRow({ children, defaultVisible = 8, className = '' }: BadgeRowProps) {
   const [expanded, setExpanded] = useState(false);
-  const showMore = children.length > defaultVisible;
-  const visibleChildren = expanded ? children : children.slice(0, defaultVisible);
+  // Use smaller default on mobile (320-390px screens)
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 390);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  const mobileDefault = isMobile ? 4 : defaultVisible;
+  const showMore = children.length > mobileDefault;
+  const visibleChildren = expanded ? children : children.slice(0, mobileDefault);
 
   return (
     <div className={`flex flex-wrap gap-1.5 items-center ${className}`}>
@@ -20,7 +33,7 @@ export function BadgeRow({ children, defaultVisible = 8, className = '' }: Badge
       {showMore && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="inline-flex items-center gap-1 rounded border border-border bg-muted/40 px-2 py-1 text-[9px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none cursor-pointer touch-target"
+          className="inline-flex items-center gap-1 rounded border border-border bg-muted/40 px-2.5 py-1.5 text-[9px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none cursor-pointer touch-target"
         >
           {expanded ? (
             <>
@@ -30,7 +43,7 @@ export function BadgeRow({ children, defaultVisible = 8, className = '' }: Badge
           ) : (
             <>
               <ChevronDown className="w-3 h-3" />
-              +{children.length - defaultVisible} more
+              +{children.length - mobileDefault} more
             </>
           )}
         </button>
