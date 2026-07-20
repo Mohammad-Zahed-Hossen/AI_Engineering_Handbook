@@ -4,10 +4,9 @@ import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import OfficialResources from '@/components/shared/OfficialResources';
 import RelatedContent from '@/components/shared/RelatedContent';
-import CheatsheetEntry from '@/components/shared/CheatsheetEntry';
-import { CodeBlock } from '@/components/shared/CodeBlock';
-import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
+import CheatsheetEntryList from './CheatsheetEntryList';
 import DataTable from '@/components/shared/DataTable';
+import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 
 export async function generateStaticParams() {
   return getAllCheatsheetIds().map((id) => ({ id }));
@@ -29,11 +28,12 @@ export default async function CheatsheetDetailPage({ params }: PageProps) {
   }
   const relatedContent = getRelatedContent('cheatsheet', cheatsheet.id);
 
+  // Build TOC with improved labels (6 words instead of 4)
   const toc = [
     { id: 'cheatsheet-header', label: cheatsheet.name },
     ...cheatsheet.entries.map((entry, idx) => ({
       id: `entry-${idx}`,
-      label: entry.problem.split(' ').slice(0, 4).join(' '),
+      label: entry.problem.split(' ').slice(0, 6).join(' '),
     })),
   ];
 
@@ -58,8 +58,6 @@ export default async function CheatsheetDetailPage({ params }: PageProps) {
         <MetadataBadges type="cheatsheet" updatedAt={cheatsheet.updated_at} />
       </header>
 
-      <OfficialResources sources={cheatsheet.sources} githubRepo={cheatsheet.github_repo} />
-
       <div className="space-y-8">
         <section id="cheatsheet-header" className="space-y-2 scroll-mt-24">
           <h2>Cheatsheet</h2>
@@ -67,17 +65,7 @@ export default async function CheatsheetDetailPage({ params }: PageProps) {
             {cheatsheet.entries.length} {cheatsheet.entries.length === 1 ? 'entry' : 'entries'}
             {' — '}tap any entry to expand
           </p>
-          <div className="space-y-3">
-            {cheatsheet.entries.map((entry, idx) => (
-              <CheatsheetEntry
-                key={idx}
-                entry={entry}
-                idx={idx}
-                id={`entry-${idx}`}
-                codeBlock={<CodeBlock code={entry.snippet} language="python" />}
-              />
-            ))}
-          </div>
+          <CheatsheetEntryList entries={cheatsheet.entries} />
         </section>
 
 
@@ -87,7 +75,7 @@ export default async function CheatsheetDetailPage({ params }: PageProps) {
             <DataTable
               headers={ref.headers}
               rows={ref.rows}
-              monoColumns={ref.headers.map((h, i) => ['api', 'attribute', 'style', 'marker', 'setting', 'parameter'].includes(h.toLowerCase()) ? i : -1).filter(i => i >= 0)}
+              monoColumns={ref.monoColumns || ref.headers.map((h, i) => ['api', 'attribute', 'style', 'marker', 'setting', 'parameter'].includes(h.toLowerCase()) ? i : -1).filter(i => i >= 0)}
             />
           </section>
         ))}
@@ -95,6 +83,9 @@ export default async function CheatsheetDetailPage({ params }: PageProps) {
       </div>
 
       <RelatedContent items={relatedContent} />
+
+      {/* Further Study - Moved to bottom */}
+      <OfficialResources sources={cheatsheet.sources} githubRepo={cheatsheet.github_repo} />
     </ContentPageLayout>
   );
 }

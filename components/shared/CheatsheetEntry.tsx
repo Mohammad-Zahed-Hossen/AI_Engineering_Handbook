@@ -17,34 +17,33 @@ interface CheatsheetEntryProps {
   idx: number;
   id: string;
   codeBlock?: React.ReactNode;
+  open?: boolean;
+  onToggle?: () => void;
 }
 
-function inferTag(docsUrl?: string): string {
-  if (!docsUrl) return '';
-  return 'API';
-}
+export default function CheatsheetEntry({ entry, idx, id, codeBlock, open, onToggle }: CheatsheetEntryProps) {
+  const [localExpanded, setLocalExpanded] = useState(false);
+  const isControlled = open !== undefined;
+  const isExpanded = isControlled ? open : localExpanded;
 
-export default function CheatsheetEntry({ entry, idx, id, codeBlock }: CheatsheetEntryProps) {
-  const [expanded, setExpanded] = useState(false);
-  const tag = inferTag(entry.docs_url);
+  const handleToggle = () => {
+    if (isControlled && onToggle) {
+      onToggle();
+    } else {
+      setLocalExpanded(prev => !prev);
+    }
+  };
 
   const label = (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-      <span className="text-sm font-bold text-foreground leading-snug">
-        {entry.problem}
-      </span>
-      {tag && (
-        <span className="inline-block rounded bg-primary/10 text-primary px-1.5 py-0.5 text-[9px] font-mono font-semibold tracking-wide select-all">
-          {tag}
-        </span>
-      )}
-    </div>
+    <span className="text-sm font-bold text-foreground leading-snug">
+      {entry.problem}
+    </span>
   );
 
   const teaser = entry.trigger ? (
     <div className="mt-1 text-xs text-muted-foreground leading-relaxed italic flex items-start sm:items-center gap-1">
       <span className="text-primary/70 shrink-0 font-medium not-italic text-[10px] uppercase tracking-wider select-none">When:</span>
-      <span className="line-clamp-2 sm:line-clamp-none">&quot;{entry.trigger}&quot;</span>
+      <span className="line-clamp-2 sm:line-clamp-none">"{entry.trigger}"</span>
     </div>
   ) : undefined;
 
@@ -60,14 +59,14 @@ export default function CheatsheetEntry({ entry, idx, id, codeBlock }: Cheatshee
       label={label}
       teaser={teaser}
       icon={icon}
-      open={expanded}
-      onToggle={() => setExpanded(prev => !prev)}
+      open={isExpanded}
+      onToggle={handleToggle}
       enableHashDeepLink={true}
       align="start"
       headerClassName="px-4 py-3.5 border-b border-border bg-muted/10 hover:bg-muted/20"
       contentClassName="p-0 border-t-0 bg-card"
     >
-      {expanded && (
+      {isExpanded && (
         <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr]">
           {/* Left: Trigger + Notes + Bug */}
           <div className="p-4 space-y-4">

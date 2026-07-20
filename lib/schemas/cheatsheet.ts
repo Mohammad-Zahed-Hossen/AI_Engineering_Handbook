@@ -8,6 +8,7 @@ export const CheatsheetEntrySchema = z.object({
   minimal_notes: z.string(),
   common_bug: z.string(),
   docs_url: z.string().url(),
+  language: z.enum(['python', 'bash', 'sh', 'sql', 'yaml', 'json', 'docker', 'javascript', 'js', 'typescript', 'ts', 'text']).optional(),
 });
 
 export const CheatsheetSchema = BaseMetaSchema.extend({
@@ -23,5 +24,6 @@ export const CheatsheetSchema = BaseMetaSchema.extend({
     title: z.string(),
     headers: z.array(z.string()),
     rows: z.array(z.array(z.string())),
+    monoColumns: z.array(z.number()).optional(),
   })).optional(),
 });

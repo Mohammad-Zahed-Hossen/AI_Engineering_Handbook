@@ -12,25 +12,25 @@ export async function highlightCodeSnippet(code: string, language: string = 'tex
   const lines = code.split('\n');
   const MAX_COLLAPSED_LINES = 7;
   const shouldCollapse = lines.length > MAX_COLLAPSED_LINES;
-  
+
   // For text/plain, don't collapse
   const isPlainText = language === 'text' || language === 'plain';
   const shouldActuallyCollapse = shouldCollapse && !isPlainText;
-  
+
   let fullHighlightedDark = '';
   let fullHighlightedLight = '';
   let collapsedHighlightedDark = '';
   let collapsedHighlightedLight = '';
-  
+
   const normalizeLang = (lang: string) => {
     const l = lang.toLowerCase();
     if (l === 'py') return 'python';
     if (l === 'sh' || l === 'bash') return 'bash';
     return l;
   };
-  
+
   const highlightedLang = normalizeLang(language);
-  
+
   // Generate full highlighted HTML for both themes
   try {
     fullHighlightedDark = await codeToHtml(code, {
@@ -41,7 +41,7 @@ export async function highlightCodeSnippet(code: string, language: string = 'tex
     console.error('Shiki highlighting error (dark):', err);
     fullHighlightedDark = `<pre><code>${escapeHtml(code)}</code></pre>`;
   }
-  
+
   try {
     fullHighlightedLight = await codeToHtml(code, {
       lang: highlightedLang,
@@ -51,11 +51,11 @@ export async function highlightCodeSnippet(code: string, language: string = 'tex
     console.error('Shiki highlighting error (light):', err);
     fullHighlightedLight = `<pre><code>${escapeHtml(code)}</code></pre>`;
   }
-  
+
   // Generate collapsed view by truncating the source code before highlighting
   if (shouldCollapse) {
     const collapsedCode = lines.slice(0, MAX_COLLAPSED_LINES).join('\n');
-    
+
     try {
       collapsedHighlightedDark = await codeToHtml(collapsedCode, {
         lang: highlightedLang,
@@ -65,7 +65,7 @@ export async function highlightCodeSnippet(code: string, language: string = 'tex
       console.error('Shiki highlighting error (collapsed dark):', err);
       collapsedHighlightedDark = `<pre><code>${escapeHtml(collapsedCode)}</code></pre>`;
     }
-    
+
     try {
       collapsedHighlightedLight = await codeToHtml(collapsedCode, {
         lang: highlightedLang,
@@ -76,7 +76,7 @@ export async function highlightCodeSnippet(code: string, language: string = 'tex
       collapsedHighlightedLight = `<pre><code>${escapeHtml(collapsedCode)}</code></pre>`;
     }
   }
-  
+
   return {
     fullHighlightedDark,
     fullHighlightedLight,
@@ -88,6 +88,7 @@ export async function highlightCodeSnippet(code: string, language: string = 'tex
   };
 }
 
+// Server Component version for use in Server Components
 export async function CodeBlock({
   code,
   language = 'python',
@@ -103,7 +104,7 @@ export async function CodeBlock({
     linesCount,
     maxCollapsedLines,
   } = await highlightCodeSnippet(code, language);
-  
+
   return (
     <CodeBlockInteractive
       code={code}

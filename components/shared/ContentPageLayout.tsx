@@ -25,7 +25,6 @@ export default function ContentPageLayout({ breadcrumbs, toc, children }: Conten
           {children}
         </div>
       </div>
-      {toc && <TableOfContents items={toc} variant="sidebar" activeId={activeId} />}
       <StickyActionBar tocItems={toc} />
     </div>
   );

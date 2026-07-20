@@ -309,6 +309,15 @@ export const getCheatsheet = cache(function getCheatsheet(id: string): Cheatshee
   return CheatsheetSchema.parse(raw);
 });
 
+/**
+ * Fetches all cheatsheets by mapping over all cheatsheet IDs.
+ * 
+ * @returns {Cheatsheet[]} List of all cheatsheets
+ */
+export const getAllCheatsheets = cache(function getAllCheatsheets(): Cheatsheet[] {
+  return getAllCheatsheetIds().map(id => getCheatsheet(id));
+});
+
 // ── Meta (dashboard) ────────────────────────────────────────
 
 /**

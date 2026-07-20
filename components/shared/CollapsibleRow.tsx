@@ -94,34 +94,40 @@ export default function CollapsibleRow({
     >
       <button
         onClick={handleToggle}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleToggle();
+          }
+        }}
         className={cn(
-          "w-full flex justify-between p-4 bg-muted/20 hover:bg-muted/40 transition-colors select-none text-left cursor-pointer touch-target",
+          "w-full flex justify-between px-3.5 py-2.5 sm:px-4 sm:py-3 bg-muted/20 hover:bg-muted/40 transition-colors select-none text-left cursor-pointer touch-target",
           align === 'center' ? 'items-center' : 'items-start',
           headerClassName
         )}
         aria-expanded={isOpen}
         aria-controls={contentId}
       >
-        <div className="flex items-start gap-2.5 flex-1 min-w-0">
+        <div className="flex items-start gap-2 flex-1 min-w-0">
           {icon && <span className="shrink-0">{icon}</span>}
           <div className="flex flex-col flex-1 min-w-0">
             {typeof label === 'string' ? (
-              <h2 className="text-sm font-bold text-foreground font-sans m-0">{label}</h2>
+              <h2 className="text-sm font-bold text-foreground font-sans m-0 leading-tight">{label}</h2>
             ) : (
               label
             )}
             {teaser && (
-              <div className="text-[10px] text-muted-foreground mt-0.5">
+              <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
                 {teaser}
               </div>
             )}
           </div>
         </div>
-        <div className={cn("shrink-0 ml-2", align === 'start' ? 'mt-1' : '')}>
+        <div className={cn("shrink-0 ml-1.5", align === 'start' ? 'mt-0.5' : '')}>
           {isOpen ? (
-            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
           ) : (
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
           )}
         </div>
       </button>
@@ -129,11 +135,11 @@ export default function CollapsibleRow({
         ref={contentRef}
         id={contentId}
         className={cn(
-          "p-4 sm:p-5 bg-card [content-visibility:auto]",
+          "bg-card [content-visibility:auto]",
           contentClassName?.includes('border-t-0') ? '' : 'border-t border-border',
           contentClassName
         )}
-        hidden={isOpen ? undefined : ('until-found' as unknown as boolean)}
+        hidden={!isOpen}
       >
         {children}
       </div>

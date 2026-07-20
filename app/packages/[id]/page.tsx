@@ -1,19 +1,17 @@
 import { notFound } from 'next/navigation';
 import { getAllPackageIds, getPackage, getRelatedContent, getContentPath, getContentName, getAllPackages } from '@/lib/data';
 import { resolvePackageRelationship } from '@/lib/relationships';
-import ContentPageLayout from '@/components/shared/ContentPageLayout';
+import PackagePageLayout from '@/components/shared/PackagePageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import OfficialResources from '@/components/shared/OfficialResources';
 import PackageTaskList from '@/components/shared/PackageTaskList';
-import { CodeBlock } from '@/components/shared/CodeBlock';
-import QuickSetupSection from '@/components/shared/QuickSetupSection';
 import RelatedContent from '@/components/shared/RelatedContent';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 import ExpandableText from '@/components/shared/ExpandableText';
 import { ProseClient } from '@/components/shared/Prose';
 import PackageSnapshot from '@/components/shared/PackageSnapshot';
-import PackageStickyBar from '@/components/shared/PackageStickyBar';
-import PackageTaskNavigation from '@/components/shared/PackageTaskNavigation';
+import { CodeBlock } from '@/components/shared/CodeBlock';
+import StickyActionBar from '@/components/shared/StickyActionBar';
 
 export async function generateStaticParams() {
   return getAllPackageIds().map((id) => ({ id }));
@@ -64,27 +62,21 @@ export default async function PackageDetailPage({ params }: PageProps) {
       .filter((r): r is NonNullable<typeof r> => r !== null),
   }));
 
-  // Task navigation items
+  // Task navigation items for chips
   const taskNavItems = pkg.tasks.map(task => ({
     id: slugify(task.task),
     label: task.task,
   }));
 
-  const toc = [
-    { id: 'setup', label: 'Quick Setup' },
-    { id: 'summary', label: 'Summary' },
-    ...pkg.tasks.map(task => ({ id: slugify(task.task), label: task.task })),
-  ];
   const relatedContent = getRelatedContent('package', pkg.id);
 
   return (
-    <ContentPageLayout
+    <PackagePageLayout
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Packages', href: '/packages' },
         { label: pkg.name },
       ]}
-      toc={toc}
     >
       <ReadingSessionTracker href={`/packages/${pkg.id}`} name={pkg.name} type="package" />
       
@@ -93,7 +85,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
         <MetadataBadges type="package" updatedAt={pkg.updated_at} version={pkg.version} />
       </header>
 
-      {/* Quick Package Snapshot */}
+      {/* Package Snapshot - Single source of truth for install/import */}
       <PackageSnapshot
         name={pkg.name}
         version={pkg.version}
@@ -104,31 +96,21 @@ export default async function PackageDetailPage({ params }: PageProps) {
         updatedAt={pkg.updated_at}
       />
 
-      <QuickSetupSection install={pkg.install} importAs={pkg.import_as} importLanguage={pkg.language} />
-
-      <section id="summary" className="scroll-mt-24">
+       <section id="summary" className="scroll-mt-24">
         <ExpandableText cacheKey={`pkg-summary-${pkg.id}`} fadeClass="from-background to-transparent">
           <ProseClient content={pkg.summary} className="content-prose text-sm text-muted-foreground" />
         </ExpandableText>
       </section>
 
-      <OfficialResources sources={pkg.sources} githubRepo={pkg.github_repo} />
-
-      {/* Task Navigation - Mobile chips */}
-      <PackageTaskNavigation tasks={taskNavItems} />
-
       <PackageTaskList tasks={resolvedTasks} packageName={pkg.id} language={pkg.language} />
 
       <RelatedContent items={relatedContent} />
 
-      {/* Sticky Action Bar */}
-      <PackageStickyBar
-        packageName={pkg.name}
-        version={pkg.version}
-        install={pkg.install}
-        importAs={pkg.import_as}
-        taskCount={pkg.tasks.length}
-      />
-    </ContentPageLayout>
+      {/* Further Study - Moved to bottom */}
+      <OfficialResources sources={pkg.sources} githubRepo={pkg.github_repo} />
+
+      {/* On this Page - Bottom popup navigation */}
+      <StickyActionBar tocItems={taskNavItems} />
+    </PackagePageLayout>
   );
 }

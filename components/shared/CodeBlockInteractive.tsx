@@ -109,65 +109,70 @@ export function CodeBlockInteractive({
     : "from-white via-white to-transparent";
 
   return (
-    <div className={cn("relative rounded-lg border my-3 font-mono shadow-sm overflow-hidden", themeClasses)}>
-      {/* Header bar: filename or language */}
-      <div className={cn("flex items-center justify-between px-3 py-2 border-b select-none", headerClasses)}>
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            {getLanguageIcon(language)}
-            <span className="font-sans font-semibold uppercase tracking-wide text-[10px] sm:text-[11px]">
-              {filename || languageLabel}
+      <div className={cn("relative rounded-lg border my-2 font-mono shadow-sm overflow-hidden", themeClasses)}>
+        {/* Header bar: filename or language */}
+        <div className={cn("flex items-center justify-between px-2.5 py-1.5 sm:px-3 sm:py-2 border-b select-none", headerClasses)}>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {getLanguageIcon(language)}
+              <span className="font-sans font-semibold uppercase tracking-wide text-[9px] sm:text-[10px]">
+                {filename || languageLabel}
+              </span>
+            </div>
+            {/* Line count badge - hidden on very small screens, shown on larger mobile */}
+            <span className="hidden sm:inline-flex text-[8px] font-mono text-muted-foreground bg-muted/50 px-1 py-0 rounded flex-shrink-0">
+              {linesCount} lines
             </span>
           </div>
-          {/* Line count badge - hidden on very small screens, shown on larger mobile */}
-          <span className="hidden sm:inline-flex text-[9px] font-mono text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded flex-shrink-0">
-            {linesCount} lines
-          </span>
+          <div className="flex items-center gap-0.5">
+             {/* Theme toggle button - hidden on mobile for cleaner UI */}
+            <button
+              onClick={() => setIsDarkTheme(!isDarkTheme)}
+              aria-label="Toggle theme"
+              className={cn(
+                "hidden sm:flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-150 cursor-pointer select-none",
+                buttonBaseClasses
+              )}
+            >
+              {isDarkTheme ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+            </button>
+            {/* Copy button */}
+            <button
+              onClick={handleCopy}
+              className={cn(
+                "flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg transition-all duration-150 cursor-pointer select-none",
+                copied
+                  ? "text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20"
+                  : buttonBaseClasses
+              )}
+              aria-label="Copy code"
+            >
+              {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-           {/* Theme toggle button */}
-           <button
-             onClick={() => setIsDarkTheme(!isDarkTheme)}
-             aria-label="Toggle theme"
-             className={cn(
-               "flex items-center justify-center w-11 h-11 rounded-lg transition-all duration-150 cursor-pointer select-none",
-               buttonBaseClasses
-             )}
-           >
-             {isDarkTheme ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-           </button>
-           {/* Copy button */}
-           <button
-             onClick={handleCopy}
-             className={cn(
-               "flex items-center justify-center w-11 h-11 rounded-lg transition-all duration-150 cursor-pointer select-none",
-               copied
-                 ? "text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20"
-                 : buttonBaseClasses
-             )}
-             aria-label="Copy code"
-           >
-             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-           </button>
-        </div>
-      </div>
 
-      {/* Code body */}
-      <div className={cn("relative", shouldCollapse && !isExpanded && `max-h-[${maxCollapsedHeight}] overflow-hidden`)}>
-        <div 
-          className={cn(
-              "text-[13px] sm:text-[14px] leading-relaxed select-text overflow-x-auto whitespace-pre",
-              "scrollbar-thin scrollbar-thumb-zinc-400/30 hover:scrollbar-thumb-zinc-400/50 scrollbar-track-transparent",
-              "scrollbar-w-1.5 scrollbar-h-1.5",
-              showLineNumbers ? "pl-3 pr-4 py-3 show-line-numbers" : "px-4 py-3"
+        {/* Code body */}
+        <div className={cn("relative w-full", shouldCollapse && !isExpanded && `max-h-[${maxCollapsedHeight}] overflow-hidden`)}>
+          <div 
+            className={cn(
+                "text-[12px] sm:text-[13px] leading-relaxed select-text overflow-x-auto w-full",
+                "scrollbar-thin scrollbar-thumb-zinc-400/30 hover:scrollbar-thumb-zinc-400/50 scrollbar-track-transparent",
+                "scrollbar-w-1.5 scrollbar-h-1.5",
+                showLineNumbers ? "pl-2.5 pr-3 py-2 sm:pl-3 sm:pr-4 sm:py-3" : "px-2.5 py-2 sm:px-4 sm:py-3"
+            )}
+            style={{ maxWidth: '100%' }}
+          >
+            <div 
+              className="shiki-wrapper"
+              dangerouslySetInnerHTML={{ __html: displayHtml }}
+            />
+          </div>
+          {/* Vertical bottom fade for collapsed state */}
+          {shouldCollapse && !isExpanded && (
+            <div className={cn("absolute inset-x-0 bottom-0 h-16 sm:h-20 bg-gradient-to-t pointer-events-none", codeContainerClasses)} />
           )}
-          dangerouslySetInnerHTML={{ __html: displayHtml }}
-        />
-        {/* Vertical bottom fade for collapsed state */}
-        {shouldCollapse && !isExpanded && (
-          <div className={cn("absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t pointer-events-none", codeContainerClasses)} />
-        )}
-      </div>
+        </div>
 
       {/* Expand button for collapsed code */}
       {shouldCollapse && (
@@ -176,7 +181,7 @@ export function CodeBlockInteractive({
           onClick={() => setIsExpanded(!isExpanded)}
           aria-expanded={isExpanded}
           className={cn(
-            "w-full py-3 px-4 text-[11px] font-sans font-medium uppercase tracking-wide transition-all duration-200 cursor-pointer select-none border-t flex items-center justify-center gap-2",
+            "w-full py-2 px-3 text-[10px] sm:text-[11px] font-sans font-medium uppercase tracking-wide transition-all duration-200 cursor-pointer select-none border-t flex items-center justify-center gap-1.5",
             isDarkTheme
               ? "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/30 border-zinc-800/60 bg-zinc-900/30"
               : "text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 border-zinc-200 bg-zinc-50/80"
@@ -184,12 +189,12 @@ export function CodeBlockInteractive({
         >
           {isExpanded ? (
             <>
-              <ChevronDown className="w-4 h-4 transition-transform duration-200 rotate-180" />
+              <ChevronDown className="w-3.5 h-3.5 transition-transform duration-200 rotate-180" />
               Show Less
             </>
           ) : (
             <>
-              <ChevronDown className="w-4 h-4 transition-transform duration-200" />
+              <ChevronDown className="w-3.5 h-3.5 transition-transform duration-200" />
               Show More
             </>
           )}
