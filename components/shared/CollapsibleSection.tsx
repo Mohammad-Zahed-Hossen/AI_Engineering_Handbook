@@ -4,12 +4,16 @@ import { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+// Global memory cache to preserve expanded state across page navigations
+const expandedCache: Record<string, boolean> = {};
+
 interface CollapsibleSectionProps {
   title: string;
   icon?: React.ReactNode;
   defaultOpen?: boolean;
   children: React.ReactNode;
   className?: string;
+  cacheKey?: string;
 }
 
 export default function CollapsibleSection({ 
@@ -17,14 +21,28 @@ export default function CollapsibleSection({
   icon, 
   defaultOpen = false, 
   children,
-  className 
+  className,
+  cacheKey
 }: CollapsibleSectionProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [isOpen, setIsOpen] = useState(() => {
+    if (cacheKey) {
+      return expandedCache[cacheKey] || defaultOpen;
+    }
+    return defaultOpen;
+  });
+
+  const handleToggle = () => {
+    const newState = !isOpen;
+    setIsOpen(newState);
+    if (cacheKey) {
+      expandedCache[cacheKey] = newState;
+    }
+  };
 
   return (
     <div className={cn('border border-border rounded-lg bg-card overflow-hidden', className)}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 transition-colors text-left"
       >
         {isOpen ? (

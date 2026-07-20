@@ -149,3 +149,32 @@ page.tsx (async server component)
 6. **Fix prop naming**: Correct `tradesoffs` typo in TradeoffHeatmap
 7. **Add print/export**: Allow users to export decision matrix as PDF/markdown
 8. **Improve related content placement**: Move to more prominent position or add inline references
+
+---
+
+## 11. Implemented Changes (This Iteration)
+
+### New Components Created
+- **`PhaseDivider`**: Lightweight organizational marker for reading phases (Overview, Compare, Decide, Implement)
+- **`DecisionSnapshot`**: Unified decision summary component consolidating default recommendation, one-sentence summary, choose/avoid conditions, and hybrid recommendation
+
+### Components Modified
+- **`CollapsibleSection`**: Added `cacheKey` prop for expansion state memory across page navigations
+- **`DecisionOptionGrid`**: Added per-card "Show Details" toggle for deep-dive fields (infrastructure, costs, failure modes)
+
+### Page Structure Changes (`app/decision-guides/[id]/page.tsx`)
+- **Section reordering**: Implemented logical decision flow:
+  - Overview: Decision Snapshot → Problem
+  - Compare: Decision Matrix → Tradeoff Analysis → Evaluation Criteria → Constraint Recommendations → Options → Hidden Costs
+  - Decide: Recommendations → Decision Tree
+  - Implement: Hybrid Strategy → Migration Path → Production Examples → Common Mistakes → Related Content
+- **Added PhaseDividers**: Visual separation between reading phases
+- **Fixed TOC**: Added "Hidden Costs" to table of contents
+- **Removed unused imports**: Cleaned up unused icons and components
+- **Restored sections as collapsible**: Evaluation Criteria, Tradeoff Heatmap, Common Mistakes (preserved knowledge, reduced cognitive load)
+
+### Key Improvements
+- **Reduced initial viewport content**: Collapsible sections for secondary information
+- **Better information architecture**: Clear phase-based reading flow
+- **Per-card option details**: Engineers can expand only the options they need to inspect
+- **Expansion state memory**: Sections remember their open/closed state across sessions

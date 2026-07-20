@@ -1,35 +1,66 @@
-import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { ReactNode } from 'react';
 
 interface SectionCardProps {
   title: string;
-  subtitle?: string;
-  badge?: ReactNode;
+  icon?: ReactNode;
   children: ReactNode;
-  id?: string;
   className?: string;
+  variant?: 'default' | 'insight' | 'warning' | 'action';
+  collapsible?: boolean;
+  defaultOpen?: boolean;
+  id?: string;
+  subtitle?: string;
+  badge?: string;
 }
 
-export default function SectionCard({ title, subtitle, badge, children, id, className }: SectionCardProps) {
+// Shared primitive for section containers
+// Supports both simple usage (title + children) and extended usage (subtitle, badge)
+export default function SectionCard({
+  title,
+  icon,
+  children,
+  className,
+  variant = 'default',
+  collapsible = false,
+  defaultOpen = true,
+  id,
+  subtitle,
+  badge,
+}: SectionCardProps) {
+  const variantStyles = {
+    default: 'border-border bg-card',
+    insight: 'border-emerald-500/20 bg-emerald-500/5',
+    warning: 'border-red-500/20 bg-red-500/5',
+    action: 'border-2 border-amber-500/30 bg-amber-500/10',
+  };
+
   return (
-    <div id={id} className={cn("bg-card text-card-foreground border border-border rounded-lg overflow-hidden transition-colors hover:border-foreground/15", className)}>
-      {/* Card Header section */}
-      <div className="px-4 py-3 border-b border-border bg-muted/20 flex items-center justify-between select-none">
+    <div
+      id={id}
+      className={cn(
+        'rounded-lg border overflow-hidden',
+        variantStyles[variant],
+        className
+      )}
+    >
+      <div className="px-4 py-2.5 border-b border-border/50 bg-muted/30 flex items-center justify-between">
         <div>
-          <h3 className="text-xs font-semibold tracking-tight text-foreground font-sans uppercase">
+          <h3 className="text-xs font-semibold text-foreground flex items-center gap-2">
+            {icon}
             {title}
           </h3>
           {subtitle && (
-            <p className="text-[10px] text-muted-foreground mt-0.5 font-sans leading-normal">
-              {subtitle}
-            </p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{subtitle}</p>
           )}
         </div>
-        {badge && <div className="text-xs shrink-0">{badge}</div>}
+        {badge && (
+          <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground font-mono">
+            {badge}
+          </span>
+        )}
       </div>
-
-      {/* Content wrapper */}
-      <div className="p-4 text-xs space-y-3 leading-relaxed">
+      <div className="p-4">
         {children}
       </div>
     </div>
