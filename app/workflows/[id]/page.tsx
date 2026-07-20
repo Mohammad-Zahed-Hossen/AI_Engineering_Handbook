@@ -12,9 +12,11 @@ import ExpandableText from '@/components/shared/ExpandableText';
 import { CodeBlock, highlightCodeSnippet } from '@/components/shared/CodeBlock';
 import CollapsibleRow from '@/components/shared/CollapsibleRow';
 import ContentTypeBadge from '@/components/shared/ContentTypeBadge';
+import QuickNav from '@/components/shared/QuickNav';
 import { parseLabeledClauses } from '@/lib/text/parseLabeledClauses';
-import { Prose, ProseInline } from '@/components/shared/Prose';
+import { ProseClient, ProseInline } from '@/components/shared/Prose';
 import { BadgeRow } from '@/components/shared/BadgeRow';
+import { Server, Cpu, Clock, DollarSign, Activity, BookOpen, AlertTriangle, CheckCircle2, ArrowRight } from 'lucide-react';
 
 export async function generateStaticParams() {
   return getAllWorkflowIds().map((id) => ({ id }));
@@ -22,6 +24,247 @@ export async function generateStaticParams() {
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+// Helper to render production notes with clause parsing
+function renderProductionNotes(notes: string | undefined, labels: string[]) {
+  if (!notes) return null;
+  const clauses = parseLabeledClauses(notes, labels);
+  if (clauses) {
+    return (
+      <div className="text-sm leading-relaxed space-y-0.5 content-prose">
+        {clauses.map((clause, cIdx) => (
+          <div key={cIdx}>
+            <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
+            <span className="ml-1"><ProseInline content={clause.text} /></span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return <div className="text-sm leading-relaxed content-prose"><ProseInline content={notes} /></div>;
+}
+
+// Compact Quick Facts component for hero - mobile-first
+function QuickFacts({ workflow }: { workflow: { steps: unknown[]; difficulty?: string; domain?: string; estimated_reading_time?: number; engineering_maturity?: string } }) {
+  const primaryFacts = [
+    { label: 'Steps', value: String(workflow.steps.length) },
+    workflow.difficulty && { label: 'Difficulty', value: workflow.difficulty },
+    workflow.domain && { label: 'Domain', value: workflow.domain },
+  ].filter(Boolean) as { label: string; value: string }[];
+
+  const secondaryFacts = [
+    workflow.estimated_reading_time && { label: 'Time', value: `${workflow.estimated_reading_time} min` },
+    workflow.engineering_maturity && { label: 'Status', value: workflow.engineering_maturity.replace('_', ' ') },
+  ].filter(Boolean) as { label: string; value: string }[];
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {primaryFacts.map((fact) => (
+        <span
+          key={fact.label}
+          className="text-[10px] font-mono text-muted-foreground"
+        >
+          {fact.label}: <span className="font-medium text-foreground">{fact.value}</span>
+        </span>
+      ))}
+      {secondaryFacts.length > 0 && (
+        <span className="text-[10px] font-mono text-muted-foreground">
+          {secondaryFacts.map((fact, i) => (
+            <span key={fact.label}>
+              {i > 0 && ' · '}
+              {fact.label}: <span className="font-medium text-foreground">{fact.value}</span>
+            </span>
+          ))}
+        </span>
+      )}
+    </div>
+  );
+}
+
+// Production Profile Card component
+function ProductionProfileCard({ 
+  id, 
+  title, 
+  icon, 
+  notes, 
+  labels 
+}: { 
+  id: string; 
+  title: string; 
+  icon: React.ReactNode; 
+  notes: string | undefined; 
+  labels: string[];
+}) {
+  if (!notes) return null;
+
+  return (
+    <CollapsibleRow
+      id={id}
+      label={
+        <div className="flex items-center gap-2">
+          {icon}
+          <span>{title}</span>
+        </div>
+      }
+      teaser="Engineering considerations for production deployment"
+      enableHashDeepLink={true}
+      className="bg-card"
+    >
+      {renderProductionNotes(notes, labels)}
+    </CollapsibleRow>
+  );
+}
+
+// Worked Example Card component
+function WorkedExampleCard({ 
+  example, 
+  idx 
+}: { 
+  example: { name: string; description: string; code?: string; language?: string; implementation_notes?: string; related_step?: number }; 
+  idx: number;
+}) {
+  const hasCode = !!example.code;
+  const hasNotes = !!example.implementation_notes;
+
+  return (
+    <CollapsibleRow
+      id={`example-${idx}`}
+      label={
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-semibold uppercase tracking-tight">{example.name}</span>
+          <span className="text-[10px] font-normal text-muted-foreground">{example.description}</span>
+        </div>
+      }
+      teaser={
+        <div className="flex items-center gap-2 mt-1">
+          {example.related_step && (
+            <span className="text-[10px] text-muted-foreground">
+              Related to Step {example.related_step}
+            </span>
+          )}
+        </div>
+      }
+      enableHashDeepLink={true}
+      className="bg-card"
+    >
+      {hasCode && (
+        <div className="rounded-md border border-border overflow-hidden my-2">
+          <CodeBlock
+            code={example.code!}
+            language={example.language || 'python'}
+            filename={example.name}
+          />
+        </div>
+      )}
+      {hasNotes && (
+        <div className="rounded border border-border bg-muted/30 p-3 text-xs leading-relaxed">
+          <span className="text-[10px] font-semibold uppercase text-muted-foreground block mb-1">
+            Implementation Notes
+          </span>
+          <ProseClient content={example.implementation_notes!} className="text-muted-foreground" />
+        </div>
+      )}
+    </CollapsibleRow>
+  );
+}
+
+// Failure Point Card component
+function FailurePointCard({ 
+  failure 
+}: { 
+  failure: string;
+}) {
+  // Try parsing with recovery strategy first
+  let clauses = parseLabeledClauses(failure, [
+    'Failure:',
+    '* Origin:',
+    '* Trigger:',
+    '* Immediate symptom:',
+    '* Downstream propagation:',
+    '* Why debugging is difficult:',
+    '* Recommended detection:',
+    '* Recovery strategy:'
+  ]);
+
+  if (!clauses) {
+    // Try without recovery strategy
+    clauses = parseLabeledClauses(failure, [
+      'Failure:',
+      '* Origin:',
+      '* Trigger:',
+      '* Immediate symptom:',
+      '* Downstream propagation:',
+      '* Why debugging is difficult:',
+      '* Recommended detection:'
+    ]);
+  }
+
+  return (
+    <div className="border-l-2 border-amber-500 bg-amber-500/5 rounded-r-lg p-3">
+      {clauses ? (
+        <div className="space-y-1.5">
+          {clauses.map((clause, cIdx) => (
+            <div key={cIdx} className={cIdx === 0 ? "" : "pl-3 border-l border-amber-500/20"}>
+              <span className="font-semibold text-[10px] uppercase text-amber-800 dark:text-amber-400">
+                {clause.label.replace(/^\*\s*/, '')}
+              </span>
+              <span className="ml-1 text-sm text-muted-foreground"><ProseInline content={clause.text} /></span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-sm text-muted-foreground"><ProseInline content={failure} /></div>
+      )}
+    </div>
+  );
+}
+
+// Next Workflow Continuation component
+function NextWorkflowSection({ 
+  nextLinks, 
+  currentWorkflowName 
+}: { 
+  nextLinks: string[];
+  currentWorkflowName: string;
+}) {
+  const validLinks = nextLinks
+    .filter(wfId => contentExists('workflow', wfId))
+    .map(wfId => {
+      let name = wfId;
+      try { name = getWorkflow(wfId).name; } catch { }
+      return { id: wfId, name };
+    });
+
+  if (!validLinks.length) return null;
+
+  return (
+    <section id="next" className="space-y-3">
+      <div className="flex items-center gap-2">
+        <ArrowRight className="w-4 h-4 text-primary" />
+        <h2 className="text-sm font-semibold text-foreground">Continue Learning</h2>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        After {currentWorkflowName}, explore these related workflows:
+      </p>
+      <div className="flex flex-col sm:flex-row gap-2">
+        {validLinks.map(({ id: wfId, name }) => (
+          <Link
+            key={wfId}
+            href={`/workflows/${wfId}`}
+            className="flex-1 rounded-lg border border-border bg-card p-3 hover:bg-muted/30 transition-colors group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-foreground group-hover:text-primary transition-colors">
+                {name}
+              </span>
+              <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 export default async function WorkflowDetailPage({ params }: PageProps) {
@@ -44,6 +287,11 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
     workflow.observability_notes
   );
 
+  const hasWorkedExamples = workflow.worked_examples && workflow.worked_examples.length > 0;
+  const hasFailures = workflow.common_failure_points.length > 0;
+  const hasEvaluation = workflow.evaluation_checks && workflow.evaluation_checks.length > 0;
+  const hasNextLinks = workflow.next_links && workflow.next_links.length > 0;
+
   const resolvedLinks = resolveWorkflowStepLinks(workflow);
 
   const stepsWithHighlightedCode = await Promise.all(
@@ -57,6 +305,15 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
     })
   );
 
+  // Build quick nav items
+  const quickNavItems = [
+    { id: 'steps', label: 'Steps' },
+    ...(hasWorkedExamples ? [{ id: 'worked-examples', label: 'Examples' }] : []),
+    ...(hasFailures ? [{ id: 'failures', label: 'Failures' }] : []),
+    ...(hasProductionProfile ? [{ id: 'production', label: 'Production' }] : []),
+    ...(hasEvaluation ? [{ id: 'evaluation', label: 'Evaluation' }] : []),
+  ];
+
   return (
     <ContentPageLayout
       breadcrumbs={[
@@ -67,21 +324,22 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
       toc={[
         { id: 'overview', label: 'Overview' },
         { id: 'steps', label: 'Steps' },
-        ...(workflow.worked_examples?.length
-          ? [{ id: 'worked-examples', label: 'Worked Examples' }]
-          : []),
-        { id: 'failures', label: 'Failure Points' },
-        ...(hasProductionProfile
-          ? [{ id: 'production', label: 'Production Profile' }]
-          : []),
-        ...(workflow.evaluation_checks?.length
-          ? [{ id: 'evaluation', label: 'Evaluation' }]
-          : []),
+        ...(hasWorkedExamples ? [{ id: 'worked-examples', label: 'Worked Examples' }] : []),
+        ...(hasFailures ? [{ id: 'failures', label: 'Failure Points' }] : []),
+        ...(hasProductionProfile ? [{ id: 'production', label: 'Production Profile' }] : []),
+        ...(hasEvaluation ? [{ id: 'evaluation', label: 'Evaluation' }] : []),
       ]}
     >
       <ReadingSessionTracker href={`/workflows/${workflow.id}`} name={workflow.name} type="workflow" category={workflow.category} />
-      <header id="overview" className="space-y-3 border-b border-border pb-4 scroll-mt-24">
+      
+      {/* Hero Section */}
+      <header id="overview" className="space-y-3 border-b border-border pb-3 scroll-mt-24">
         <h1>{workflow.name}</h1>
+        
+        <ExpandableText cacheKey={`workflow-overview-${workflow.id}`} fadeClass="from-background to-transparent" maxLines={3}>
+          <ProseClient content={workflow.overview} className="text-sm text-muted-foreground" />
+        </ExpandableText>
+        
         <MetadataBadges
           type="workflow"
           updatedAt={workflow.updated_at}
@@ -90,391 +348,198 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
           domain={workflow.domain}
           engineeringArea={workflow.engineering_area}
         />
-        <ExpandableText cacheKey={`workflow-overview-${workflow.id}`} fadeClass="from-background to-transparent" maxLines={4}>
-          <Prose content={workflow.overview} className="text-sm text-muted-foreground" />
-        </ExpandableText>
+        
+        <QuickFacts workflow={workflow} />
+        
         {workflow.starter_stack.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="space-y-1.5">
             <span className="text-xs font-semibold text-muted-foreground">Starter Stack:</span>
-            <BadgeRow defaultVisible={8}>
+            <BadgeRow defaultVisible={4}>
               {workflow.starter_stack.map(tool => {
-              // Try to resolve as package first, then model
-              let link = null;
-              let type = null;
-              
-              if (contentExists('package', tool)) {
-                link = getContentPath('package', tool);
-                type = 'package';
-              } else if (contentExists('model', tool)) {
-                link = getContentPath('model', tool);
-                type = 'model';
-              }
-              
-              const content = (
-                <>
-                  <ContentTypeBadge type={type || 'tool'} className="px-1 py-0 text-[8px] h-3.5 leading-none shrink-0" />
-                  <span className="truncate text-[10px] font-mono">{tool}</span>
-                </>
-              );
-              
-              if (link) {
+                let link = null;
+                let type = null;
+                
+                if (contentExists('package', tool)) {
+                  link = getContentPath('package', tool);
+                  type = 'package';
+                } else if (contentExists('model', tool)) {
+                  link = getContentPath('model', tool);
+                  type = 'model';
+                }
+                
+                const content = (
+                  <>
+                    <ContentTypeBadge type={type || 'tool'} className="px-1 py-0 text-[8px] h-3.5 leading-none shrink-0" />
+                    <span className="truncate text-[10px] font-mono">{tool}</span>
+                  </>
+                );
+                
+                if (link) {
+                  return (
+                    <Link
+                      key={tool}
+                      href={link}
+                      className="inline-flex items-center gap-1 rounded border border-border bg-muted/40 px-1.5 py-0.5 text-[9px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
+                    >
+                      {content}
+                    </Link>
+                  );
+                }
+                
                 return (
-                  <Link
+                  <span
                     key={tool}
-                    href={link}
-                    className="inline-flex items-center gap-1 rounded border border-border bg-muted/40 px-1.5 py-0.5 text-[9px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
+                    className="inline-flex items-center gap-1 rounded border border-border bg-muted px-1.5 py-0.5 text-[9px] text-muted-foreground select-none"
                   >
                     {content}
-                  </Link>
+                  </span>
                 );
-              }
-              
-              return (
-                <span
-                  key={tool}
-                  className="inline-flex items-center gap-1 rounded border border-border bg-muted px-1.5 py-0.5 text-[9px] text-muted-foreground select-none"
-                >
-                  {content}
-                </span>
-              );
-            })}
+              })}
             </BadgeRow>
           </div>
         )}
       </header>
 
-      <SectionCard title="Workflow Steps" subtitle="Sequential pipeline" badge={`${workflow.steps.length} steps`} id="steps" className="scroll-mt-24">
+      {/* Quick Navigation */}
+      {quickNavItems.length > 1 && (
+        <QuickNav items={quickNavItems} />
+      )}
+
+      {/* Workflow Steps - Primary Content */}
+      <SectionCard 
+        title="Workflow Steps" 
+        subtitle="Sequential pipeline" 
+        badge={`${workflow.steps.length} steps`} 
+        id="steps" 
+        className="scroll-mt-24"
+      >
         <WorkflowStepList steps={stepsWithHighlightedCode} resolvedLinks={resolvedLinks} workedExamples={workflow.worked_examples} />
       </SectionCard>
 
-      {workflow.worked_examples && workflow.worked_examples.length > 0 && (
-        <section id="worked-examples" className="space-y-4 scroll-mt-24">
-          <h2 className="text-base font-bold text-foreground uppercase tracking-wider text-[10px] font-sans">
-            Worked Examples
-          </h2>
-          <div className="space-y-4">
+      {/* Worked Examples - Secondary Content */}
+      {hasWorkedExamples && (
+        <section id="worked-examples" className="space-y-3 scroll-mt-24">
+          <div className="flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-primary" />
+            <h2 className="text-sm font-semibold text-foreground">Worked Examples</h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Implementation recipes for key steps in this workflow.
+          </p>
+          <div className="space-y-2">
             {workflow.worked_examples.map((example, idx) => (
-              <div key={idx} id={`example-${idx}`} className="border border-border rounded-lg bg-card overflow-hidden transition-colors hover:border-foreground/15">
-                <div className="border-b border-border bg-muted/20 px-4 py-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1">
-                      <h3 className="text-xs font-semibold text-foreground uppercase tracking-tight">{example.name}</h3>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{example.description}</p>
-                    </div>
-                    {example.related_step ? (
-                      <Link
-                        href={`#step-${example.related_step}`}
-                        className="shrink-0 text-[10px] font-medium text-primary hover:underline"
-                      >
-                        Used in Step {example.related_step}
-                      </Link>
-                    ) : (
-                      <span className="shrink-0 text-[10px] font-medium text-muted-foreground">
-                        Full Pipeline Recipe
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="p-4 space-y-4">
-                  {example.code && (
-                    <div className="rounded overflow-hidden text-xs">
-                      <CodeBlock
-                        code={example.code}
-                        language={example.language || 'python'}
-                        filename={example.name}
-                      />
-                    </div>
-                  )}
-                  {example.implementation_notes && (
-                    <div className="rounded border border-border bg-muted/30 p-3 text-xs leading-relaxed">
-                      <span className="text-[10px] font-semibold uppercase text-muted-foreground block mb-1">
-                        Implementation Notes
-                      </span>
-                      <Prose content={example.implementation_notes} className="text-muted-foreground" />
-                    </div>
-                  )}
-                </div>
-              </div>
+              <WorkedExampleCard 
+                key={idx} 
+                example={example} 
+                idx={idx}
+              />
             ))}
           </div>
         </section>
       )}
 
-      {workflow.common_failure_points.length > 0 && (
-        <div id="failures" className="border-l-2 border-amber-500 bg-amber-500/5 p-4 rounded-r scroll-mt-24">
-          <h2 className="text-amber-700 dark:text-amber-400 font-sans text-xs font-bold uppercase tracking-wider mb-2">Common Failure Points</h2>
-          <ul className="mt-2 space-y-4 text-sm text-muted-foreground">
-            {workflow.common_failure_points.map((pt, idx) => {
-              // Try parsing with recovery strategy first
-              let clauses = parseLabeledClauses(pt, [
-                'Failure:',
-                '* Origin:',
-                '* Trigger:',
-                '* Immediate symptom:',
-                '* Downstream propagation:',
-                '* Why debugging is difficult:',
-                '* Recommended detection:',
-                '* Recovery strategy:'
-              ]);
-              
-              if (!clauses) {
-                // Try without recovery strategy
-                clauses = parseLabeledClauses(pt, [
-                  'Failure:',
-                  '* Origin:',
-                  '* Trigger:',
-                  '* Immediate symptom:',
-                  '* Downstream propagation:',
-                  '* Why debugging is difficult:',
-                  '* Recommended detection:'
-                ]);
-              }
-              
-              if (clauses) {
-                return (
-                  <li key={idx} className="content-prose space-y-1 text-sm list-none">
-                    {clauses.map((clause, cIdx) => (
-                      <div key={cIdx} className={cIdx === 0 ? "mb-1.5" : "pl-3 border-l border-amber-500/20"}>
-                        <span className="font-semibold text-[10px] uppercase text-amber-800 dark:text-amber-400">
-                          {clause.label.replace(/^\*\s*/, '')}
-                        </span>
-                        <span className="ml-1 text-muted-foreground"><ProseInline content={clause.text} /></span>
-                      </div>
-                    ))}
-                  </li>
-                );
-              }
-              
-              return (
-                <li key={idx} className="content-prose list-disc pl-4">
-                  <ProseInline content={pt} />
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
-
-      {hasProductionProfile && (
-        <CollapsibleRow
-          id="production"
-          label="Production Profile"
-          teaser="Production, scaling, cost, latency, and observability wisdom"
-          enableHashDeepLink={true}
-        >
-          {/* Sub-navigation pills */}
-       <div className="flex flex-wrap gap-1.5 mb-4 sm:mb-6 border-b border-border pb-3">
-           {workflow.production_notes && (
-             <a
-               href="#production-deployment"
-               className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-1 text-[10px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
-             >
-               Deployment
-             </a>
-           )}
-           {workflow.scaling_notes && (
-             <a
-               href="#production-scaling"
-               className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-1 text-[10px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
-             >
-               Scaling
-             </a>
-           )}
-           {workflow.cost_notes && (
-             <a
-               href="#production-cost"
-               className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-1 text-[10px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
-             >
-               Cost
-             </a>
-           )}
-           {workflow.latency_notes && (
-             <a
-               href="#production-latency"
-               className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-1 text-[10px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
-             >
-               Latency
-             </a>
-           )}
-           {workflow.observability_notes && (
-             <a
-               href="#production-observability"
-               className="inline-flex items-center rounded border border-border bg-muted/40 px-2 py-1 text-[10px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none"
-             >
-               Observability
-             </a>
-           )}
-         </div>
-
-          <div className="space-y-4 text-xs leading-relaxed text-muted-foreground">
-            {workflow.production_notes && (
-              <div id="production-deployment" className="scroll-mt-24">
-                <span className="text-[10px] font-semibold uppercase text-foreground block mb-1">
-                  Production Deployment
-                </span>
-                {(() => {
-                  const clauses = parseLabeledClauses(workflow.production_notes, ['Benefit:', 'Trade-off:', 'When not to use it:', 'Operational impact:']);
-                  if (clauses) {
-                    return (
-                      <div className="text-sm leading-relaxed space-y-0.5 content-prose">
-                        {clauses.map((clause, cIdx) => (
-                          <div key={cIdx}>
-                            <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
-                            <span className="ml-1"><ProseInline content={clause.text} /></span>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  }
-                  return <p className="text-sm leading-relaxed content-prose"><ProseInline content={workflow.production_notes} /></p>;
-                })()}
-              </div>
-            )}
-            {workflow.scaling_notes && (
-              <div id="production-scaling" className="scroll-mt-24">
-                <span className="text-[10px] font-semibold uppercase text-foreground block mb-1">
-                  Scaling & Throughput
-                </span>
-                {(() => {
-                  const clauses = parseLabeledClauses(workflow.scaling_notes, ['Benefit:', 'Trade-off:', 'When not to use it:', 'Operational impact:']);
-                  if (clauses) {
-                    return (
-                      <div className="text-sm leading-relaxed space-y-0.5 content-prose">
-                        {clauses.map((clause, cIdx) => (
-                          <div key={cIdx}>
-                            <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
-                            <span className="ml-1"><ProseInline content={clause.text} /></span>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  }
-                  return <p className="text-sm leading-relaxed content-prose"><ProseInline content={workflow.scaling_notes} /></p>;
-                })()}
-              </div>
-            )}
-            {workflow.cost_notes && (
-              <div id="production-cost" className="scroll-mt-24">
-                <span className="text-[10px] font-semibold uppercase text-foreground block mb-1">
-                  Infrastructure Cost
-                </span>
-                {(() => {
-                  const clauses = parseLabeledClauses(workflow.cost_notes, ['Benefit:', 'Trade-off:', 'When not to use it:', 'Operational impact:']);
-                  if (clauses) {
-                    return (
-                      <div className="text-sm leading-relaxed space-y-0.5 content-prose">
-                        {clauses.map((clause, cIdx) => (
-                          <div key={cIdx}>
-                            <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
-                            <span className="ml-1"><ProseInline content={clause.text} /></span>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  }
-                  return <p className="text-sm leading-relaxed content-prose"><ProseInline content={workflow.cost_notes} /></p>;
-                })()}
-              </div>
-            )}
-            {workflow.latency_notes && (
-              <div id="production-latency" className="scroll-mt-24">
-                <span className="text-[10px] font-semibold uppercase text-foreground block mb-1">
-                  Latency & Performance
-                </span>
-                {(() => {
-                  const clauses = parseLabeledClauses(workflow.latency_notes, ['Benefit:', 'Trade-off:', 'When not to use it:', 'Operational impact:']);
-                  if (clauses) {
-                    return (
-                      <div className="text-sm leading-relaxed space-y-0.5 content-prose">
-                        {clauses.map((clause, cIdx) => (
-                          <div key={cIdx}>
-                            <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
-                            <span className="ml-1"><ProseInline content={clause.text} /></span>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  }
-                  return <p className="text-sm leading-relaxed content-prose"><ProseInline content={workflow.latency_notes} /></p>;
-                })()}
-              </div>
-            )}
-            {workflow.observability_notes && (
-              <div id="production-observability" className="scroll-mt-24">
-                <span className="text-[10px] font-semibold uppercase text-foreground block mb-1">
-                  Observability & Monitoring
-                </span>
-                {(() => {
-                  const clauses = parseLabeledClauses(workflow.observability_notes, ['Benefit:', 'Trade-off:', 'When not to use it:', 'Operational impact:']);
-                  if (clauses) {
-                    return (
-                      <div className="text-sm leading-relaxed space-y-0.5 content-prose">
-                        {clauses.map((clause, cIdx) => (
-                          <div key={cIdx}>
-                            <span className="font-semibold text-[10px] uppercase">{clause.label}</span>
-                            <span className="ml-1"><ProseInline content={clause.text} /></span>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  }
-                  return <p className="text-sm leading-relaxed content-prose"><ProseInline content={workflow.observability_notes} /></p>;
-                })()}
-              </div>
-            )}
+      {/* Failure Points - Warning Section */}
+      {hasFailures && (
+        <section id="failures" className="space-y-3 scroll-mt-24">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-600" />
+            <h2 className="text-sm font-semibold text-foreground">Failure Points</h2>
           </div>
-        </CollapsibleRow>
-      )}
-
-      {workflow.evaluation_checks && workflow.evaluation_checks.length > 0 && (
-        <div id="evaluation" className="rounded-lg border border-border bg-card p-4 space-y-2 scroll-mt-24">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">
-            Evaluation Checklist
-          </span>
-          <ul className="space-y-1.5">
-            {workflow.evaluation_checks.map((check, idx) => (
-              <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
-                <span className="mt-0.5 text-emerald-500 shrink-0 text-xs">✓</span>
-                <span className="leading-relaxed">{check}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {workflow.next_links && workflow.next_links.length > 0 && (() => {
-        const validLinks = workflow.next_links
-          .filter(wfId => contentExists('workflow', wfId))
-          .map(wfId => {
-            let name = wfId;
-            try { name = getWorkflow(wfId).name; } catch { }
-            return { id: wfId, name };
-          });
-        if (!validLinks.length) return null;
-        return (
+          <p className="text-xs text-muted-foreground">
+            Common failure modes and detection strategies.
+          </p>
           <div className="space-y-2">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">
-              Next Workflow
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {validLinks.map(({ id: wfId, name }) => (
-                <Link
-                  key={wfId}
-                  href={`/workflows/${wfId}`}
-                  className="inline-flex items-center gap-1.5 rounded border border-border bg-muted/40 
-                             px-3 py-1.5 text-xs font-medium text-foreground 
-                             hover:bg-muted hover:border-foreground/20 transition-colors"
-                >
-                  {name} →
-                </Link>
-              ))}
-            </div>
+            {workflow.common_failure_points.map((pt, idx) => (
+              <FailurePointCard key={idx} failure={pt} />
+            ))}
           </div>
-        );
-      })()}
+        </section>
+      )}
 
+      {/* Production Profile - Engineering Dashboard */}
+      {hasProductionProfile && (
+        <section id="production" className="space-y-3 scroll-mt-24">
+          <div className="flex items-center gap-2">
+            <Server className="w-4 h-4 text-primary" />
+            <h2 className="text-sm font-semibold text-foreground">Production Profile</h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Engineering considerations for production deployment.
+          </p>
+          <div className="space-y-2">
+            <ProductionProfileCard
+              id="production-deployment"
+              title="Deployment"
+              icon={<Server className="w-3.5 h-3.5 text-blue-500" />}
+              notes={workflow.production_notes}
+              labels={['Benefit:', 'Trade-off:', 'When not to use it:', 'Operational impact:']}
+            />
+            <ProductionProfileCard
+              id="production-scaling"
+              title="Scaling & Throughput"
+              icon={<Cpu className="w-3.5 h-3.5 text-green-500" />}
+              notes={workflow.scaling_notes}
+              labels={['Benefit:', 'Trade-off:', 'When not to use it:', 'Operational impact:']}
+            />
+            <ProductionProfileCard
+              id="production-latency"
+              title="Latency & Performance"
+              icon={<Clock className="w-3.5 h-3.5 text-orange-500" />}
+              notes={workflow.latency_notes}
+              labels={['Benefit:', 'Trade-off:', 'When not to use it:', 'Operational impact:']}
+            />
+            <ProductionProfileCard
+              id="production-cost"
+              title="Infrastructure Cost"
+              icon={<DollarSign className="w-3.5 h-3.5 text-purple-500" />}
+              notes={workflow.cost_notes}
+              labels={['Benefit:', 'Trade-off:', 'When not to use it:', 'Operational impact:']}
+            />
+            <ProductionProfileCard
+              id="production-observability"
+              title="Observability & Monitoring"
+              icon={<Activity className="w-3.5 h-3.5 text-cyan-500" />}
+              notes={workflow.observability_notes}
+              labels={['Benefit:', 'Trade-off:', 'When not to use it:', 'Operational impact:']}
+            />
+          </div>
+        </section>
+      )}
+
+      {/* Evaluation Checklist - Success Section */}
+      {hasEvaluation && (
+        <section id="evaluation" className="space-y-3 scroll-mt-24">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            <h2 className="text-sm font-semibold text-foreground">Evaluation Checklist</h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Verify your implementation against these criteria.
+          </p>
+          <div className="rounded-lg border border-border bg-card p-3">
+            <ul className="space-y-2">
+              {workflow.evaluation_checks!.map((check, idx) => (
+                <li key={idx} className="flex items-start gap-2.5 text-xs">
+                  <span className="mt-0.5 text-emerald-500 shrink-0">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  </span>
+                  <span className="leading-relaxed text-muted-foreground">{check}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
+      {/* Next Workflow - Continuation */}
+      {hasNextLinks && (
+        <NextWorkflowSection nextLinks={workflow.next_links!} currentWorkflowName={workflow.name} />
+      )}
+
+      {/* Official Resources */}
       <OfficialResources sources={workflow.sources} githubRepo={workflow.github_repo} />
 
+      {/* Related Content */}
       <RelatedContent items={relatedContent} />
     </ContentPageLayout>
   );

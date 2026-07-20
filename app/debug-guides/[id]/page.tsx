@@ -3,17 +3,19 @@ import { getDebugGuide, getAllDebugGuideIds } from '@/lib/data';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import RelatedContent from '@/components/shared/RelatedContent';
-import DebugSolutionList from '@/components/shared/DebugSolutionList';
-import DebugOverviewCard from '@/components/shared/DebugOverviewCard';
 import DebugChecklist from '@/components/shared/DebugChecklist';
 import DiagnosticCommandList from '@/components/shared/DiagnosticCommandList';
-import DebugDecisionTree from '@/components/shared/DebugDecisionTree';
 import VerificationChecklist from '@/components/shared/VerificationChecklist';
 import QuickIdentificationChecklist from '@/components/shared/QuickIdentificationChecklist';
 import ExpandableText from '@/components/shared/ExpandableText';
-import { Prose } from '@/components/shared/Prose';
-import { AlertTriangle, CheckCircle2, Activity, Shield, Search, Terminal, TestTube, XCircle, ArrowUpCircle } from 'lucide-react';
+import { ProseClient } from '@/components/shared/Prose';
+import { AlertTriangle, CheckCircle2, Activity, Shield, Search, Terminal, TestTube, XCircle, ArrowUpCircle, ChevronRight } from 'lucide-react';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
+import DebugDashboard from '@/components/shared/DebugDashboard';
+import DecisionWizard from '@/components/shared/DecisionWizard';
+import RootCauseCard from '@/components/shared/RootCauseCard';
+import DiagnosticTestCard from '@/components/shared/DiagnosticTestCard';
+import SolutionGroup from '@/components/shared/SolutionGroup';
 
 export async function generateStaticParams() {
   const ids = getAllDebugGuideIds();
@@ -39,7 +41,6 @@ export default async function DebugGuidePage({ params }: PageProps) {
   ];
 
   const toc = [
-    { id: 'overview', label: 'Overview' },
     { id: 'quick-identification', label: 'Quick Identification' },
     { id: 'symptoms', label: 'Symptoms' },
     { id: 'root-causes', label: 'Root Causes' },
@@ -74,35 +75,48 @@ export default async function DebugGuidePage({ params }: PageProps) {
     <ContentPageLayout breadcrumbs={breadcrumbs} toc={toc}>
       <ReadingSessionTracker href={`/debug-guides/${debugGuide.id}`} name={debugGuide.title} type="debug_guide" category={debugGuide.category} />
       
-      {/* Header */}
-      <div className="space-y-4">
-        <h1 className="text-2xl font-semibold tracking-tight">{debugGuide.title}</h1>
-        <ExpandableText cacheKey={`debug-desc-${debugGuide.id}`} fadeClass="from-background to-transparent">
-          <Prose content={debugGuide.description} className="text-muted-foreground" />
-        </ExpandableText>
-        <MetadataBadges
-          type="debug_guide"
-          updatedAt={debugGuide.updated_at}
-          lastVerified={debugGuide.last_verified}
-          category={debugGuide.category}
-          difficulty={debugGuide.difficulty}
-          domain={debugGuide.domain}
-          engineeringArea={debugGuide.engineering_area}
-          confidence={debugGuide.confidence}
-          engineeringMaturity={debugGuide.engineering_maturity}
-          lifecycle={debugGuide.lifecycle}
-          stability={debugGuide.stability}
-        />
+      {/* Debug Dashboard - Hero Section */}
+      <DebugDashboard
+        title={debugGuide.title}
+        category={debugGuide.category}
+        overview={debugGuide.overview}
+        hasQuickIdentification={debugGuide.quick_identification && debugGuide.quick_identification.length > 0}
+      />
+
+      {/* Workflow Progress Indicator */}
+      <div className="border-t border-b border-border py-3 -mx-4 px-4">
+        <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
+          <span>Identify</span>
+          <ChevronRight className="w-3 h-3" />
+          <span>Diagnose</span>
+          <ChevronRight className="w-3 h-3" />
+          <span>Fix</span>
+          <ChevronRight className="w-3 h-3" />
+          <span>Verify</span>
+        </div>
       </div>
 
-      {/* Overview Card */}
-      {debugGuide.overview && (
-        <section id="overview" className="space-y-3 scroll-mt-24">
-          <DebugOverviewCard overview={debugGuide.overview} />
-        </section>
-      )}
+      {/* Description */}
+      <ExpandableText cacheKey={`debug-desc-${debugGuide.id}`} fadeClass="from-background to-transparent">
+        <ProseClient content={debugGuide.description} className="text-muted-foreground" />
+      </ExpandableText>
 
-      {/* Quick Identification */}
+      {/* Metadata Badges */}
+      <MetadataBadges
+        type="debug_guide"
+        updatedAt={debugGuide.updated_at}
+        lastVerified={debugGuide.last_verified}
+        category={debugGuide.category}
+        difficulty={debugGuide.difficulty}
+        domain={debugGuide.domain}
+        engineeringArea={debugGuide.engineering_area}
+        confidence={debugGuide.confidence}
+        engineeringMaturity={debugGuide.engineering_maturity}
+        lifecycle={debugGuide.lifecycle}
+        stability={debugGuide.stability}
+      />
+
+      {/* Quick Identification - High Priority */}
       {debugGuide.quick_identification && debugGuide.quick_identification.length > 0 && (
         <section id="quick-identification" className="space-y-3 scroll-mt-24">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
@@ -114,7 +128,7 @@ export default async function DebugGuidePage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Symptoms */}
+      {/* Symptoms - High Priority */}
       <section id="symptoms" className="space-y-3 scroll-mt-24">
         <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-orange-500" />
@@ -125,7 +139,7 @@ export default async function DebugGuidePage({ params }: PageProps) {
             <div key={idx} className="rounded-lg border border-border bg-card p-4">
               <p className="text-sm font-medium text-foreground">{symptom.symptom}</p>
               {symptom.description && (
-                <Prose content={symptom.description} className="text-xs text-muted-foreground mt-1" />
+                <ProseClient content={symptom.description} className="text-xs text-muted-foreground mt-1" />
               )}
               {symptom.error_message && (
                 <div className="mt-2">
@@ -152,7 +166,7 @@ export default async function DebugGuidePage({ params }: PageProps) {
         </div>
       </section>
 
-      {/* Root Causes */}
+      {/* Root Causes - High Priority, Collapsible */}
       <section id="root-causes" className="space-y-3 scroll-mt-24">
         <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
           <Activity className="w-5 h-5 text-red-500" />
@@ -160,59 +174,29 @@ export default async function DebugGuidePage({ params }: PageProps) {
         </h2>
         <div className="space-y-3">
           {sortedRootCauses.map((cause, idx) => (
-            <div key={idx} className="rounded-lg border border-border bg-card p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">{cause.cause}</p>
-                  {cause.explanation && (
-                    <Prose content={cause.explanation} className="text-xs text-muted-foreground mt-1" />
-                  )}
-                  {cause.recognition_clues && cause.recognition_clues.length > 0 && (
-                    <div className="mt-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Recognition Clues</span>
-                      <ul className="mt-1 space-y-0.5">
-                        {cause.recognition_clues.map((clue, cIdx) => (
-                          <li key={cIdx} className="text-xs text-muted-foreground">• {clue}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {cause.typical_environment && (
-                    <div className="mt-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Typical Environment</span>
-                      <p className="text-xs text-muted-foreground mt-0.5">{cause.typical_environment}</p>
-                    </div>
-                  )}
-                </div>
-                <span className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
-                  cause.probability === 'high' 
-                    ? 'bg-red-500/10 text-red-700 dark:text-red-400' 
-                    : cause.probability === 'medium'
-                    ? 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400'
-                    : 'bg-blue-500/10 text-blue-700 dark:text-blue-400'
-                }`}>
-                  {cause.probability} likelihood
-                </span>
-              </div>
-            </div>
+            <RootCauseCard
+              key={idx}
+              cause={cause}
+              defaultExpanded={cause.probability === 'high'}
+            />
           ))}
         </div>
       </section>
 
-      {/* Investigation Checklist */}
+      {/* Investigation Checklist - Medium Priority */}
       {debugGuide.investigation_checklist && debugGuide.investigation_checklist.length > 0 && (
         <section id="investigation" className="space-y-3 scroll-mt-24">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
             <Search className="w-5 h-5 text-blue-500" />
             Investigation Checklist
           </h2>
-          <div className="rounded-lg border border-border bg-card p-4">
+          <div className="border border-border rounded-lg bg-card p-4">
             <DebugChecklist items={debugGuide.investigation_checklist} />
           </div>
         </section>
       )}
 
-      {/* Diagnostic Commands */}
+      {/* Diagnostic Commands - Medium Priority */}
       {debugGuide.diagnostic_commands && debugGuide.diagnostic_commands.length > 0 && (
         <section id="diagnostic-commands" className="space-y-3 scroll-mt-24">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
@@ -223,7 +207,7 @@ export default async function DebugGuidePage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Diagnostic Tests */}
+      {/* Diagnostic Tests - Medium Priority */}
       {debugGuide.diagnostic_tests && debugGuide.diagnostic_tests.length > 0 && (
         <section id="diagnostic-tests" className="space-y-3 scroll-mt-24">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
@@ -232,75 +216,40 @@ export default async function DebugGuidePage({ params }: PageProps) {
           </h2>
           <div className="space-y-3">
             {debugGuide.diagnostic_tests.map((test, idx) => (
-              <div key={idx} className="rounded-lg border border-border bg-card p-4 space-y-3">
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Purpose</span>
-                  <p className="text-sm text-foreground mt-0.5">{test.purpose}</p>
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Test</span>
-                  <p className="text-sm text-foreground mt-0.5">{test.test}</p>
-                </div>
-                {test.command && (
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Command</span>
-                    <pre className="text-xs font-mono bg-muted/50 border border-border rounded p-2 mt-1 overflow-x-auto">
-                      <code className="text-foreground">{test.command}</code>
-                    </pre>
-                  </div>
-                )}
-                {test.expected_result && (
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Expected Result</span>
-                    <p className="text-sm text-muted-foreground mt-0.5">{test.expected_result}</p>
-                  </div>
-                )}
-                {test.interpretation && (
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Interpretation</span>
-                    <p className="text-sm text-muted-foreground mt-0.5">{test.interpretation}</p>
-                  </div>
-                )}
-                {test.next_action && (
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Next Action</span>
-                    <p className="text-sm text-foreground mt-0.5">{test.next_action}</p>
-                  </div>
-                )}
-              </div>
+              <DiagnosticTestCard key={idx} test={test} />
             ))}
           </div>
         </section>
       )}
 
-      {/* Decision Tree */}
+      {/* Decision Tree - Highest Priority, Wizard Style */}
       {debugGuide.decision_tree && (
-        <DebugDecisionTree tree={debugGuide.decision_tree} />
+        <DecisionWizard tree={debugGuide.decision_tree} />
       )}
 
-      {/* Solutions */}
+      {/* Solutions - Highest Priority, Grouped */}
       <section id="solutions" className="space-y-3 scroll-mt-24">
         <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
           <CheckCircle2 className="w-5 h-5 text-emerald-500" />
           Solutions
         </h2>
-        <DebugSolutionList solutions={debugGuide.solutions} />
+        <SolutionGroup solutions={debugGuide.solutions} />
       </section>
 
-      {/* Verification Checklist */}
+      {/* Verification Checklist - Medium Priority */}
       {debugGuide.verification_checklist && debugGuide.verification_checklist.length > 0 && (
         <section id="verification" className="space-y-3 scroll-mt-24">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-emerald-500" />
             Verification Checklist
           </h2>
-          <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4">
+          <div className="border border-emerald-500/20 bg-emerald-500/5 p-4">
             <VerificationChecklist items={debugGuide.verification_checklist} />
           </div>
         </section>
       )}
 
-      {/* Prevention */}
+      {/* Prevention - Lower Priority */}
       <section id="prevention" className="space-y-3 scroll-mt-24">
         <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
           <Shield className="w-5 h-5 text-purple-500" />
@@ -308,7 +257,7 @@ export default async function DebugGuidePage({ params }: PageProps) {
         </h2>
         <div className="space-y-3">
           {debugGuide.prevention.map((prev, idx) => (
-            <div key={idx} className="rounded-lg border border-purple-500/20 bg-purple-500/5 p-4">
+            <div key={idx} className="border border-purple-500/20 bg-purple-500/5 p-4">
               <h3 className="text-xs font-semibold text-purple-700 dark:text-purple-400 mb-2 capitalize">
                 {prev.category}
               </h3>
@@ -324,7 +273,7 @@ export default async function DebugGuidePage({ params }: PageProps) {
         </div>
       </section>
 
-      {/* Common Misconceptions */}
+      {/* Common Misconceptions - Lower Priority */}
       {debugGuide.common_misconceptions && debugGuide.common_misconceptions.length > 0 && (
         <section id="misconceptions" className="space-y-3 scroll-mt-24">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
@@ -333,7 +282,7 @@ export default async function DebugGuidePage({ params }: PageProps) {
           </h2>
           <div className="space-y-3">
             {debugGuide.common_misconceptions.map((misconception, idx) => (
-              <div key={idx} className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+              <div key={idx} className="border border-amber-500/20 bg-amber-500/5 p-4">
                 <div className="space-y-2">
                   <div>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Misconception</span>
@@ -350,7 +299,7 @@ export default async function DebugGuidePage({ params }: PageProps) {
         </section>
       )}
 
-      {/* False Positive Cases */}
+      {/* False Positive Cases - Lower Priority */}
       {debugGuide.false_positive_cases && debugGuide.false_positive_cases.length > 0 && (
         <section id="false-positives" className="space-y-3 scroll-mt-24">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
@@ -359,7 +308,7 @@ export default async function DebugGuidePage({ params }: PageProps) {
           </h2>
           <div className="space-y-3">
             {debugGuide.false_positive_cases.map((fp, idx) => (
-              <div key={idx} className="rounded-lg border border-red-500/20 bg-red-500/5 p-4">
+              <div key={idx} className="border border-red-500/20 bg-red-500/5 p-4">
                 <p className="text-sm font-medium text-foreground mb-2">{fp.case}</p>
                 {fp.why_it_looks_similar && (
                   <div className="mb-2">
@@ -379,7 +328,7 @@ export default async function DebugGuidePage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Escalation Paths */}
+      {/* Escalation Paths - Lower Priority */}
       {debugGuide.escalation_paths && debugGuide.escalation_paths.length > 0 && (
         <section id="escalation" className="space-y-3 scroll-mt-24">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
@@ -388,7 +337,7 @@ export default async function DebugGuidePage({ params }: PageProps) {
           </h2>
           <div className="space-y-3">
             {debugGuide.escalation_paths.map((path, idx) => (
-              <div key={idx} className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-4">
+              <div key={idx} className="border border-blue-500/20 bg-blue-500/5 p-4">
                 <p className="text-sm font-medium text-foreground mb-2">{path.path}</p>
                 {path.when_to_use && (
                   <div className="mb-2">
@@ -412,7 +361,7 @@ export default async function DebugGuidePage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Related Content */}
+      {/* Related Content - Lightweight, at bottom */}
       {allRelatedContent.length > 0 && (
         <RelatedContent items={allRelatedContent} />
       )}

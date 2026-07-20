@@ -58,6 +58,9 @@ export async function Prose({ content, className }: ProseProps) {
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}
         components={{
+          p: ({ children }) => (
+            <p className="prose-paragraph mb-4 last:mb-0">{children}</p>
+          ),
           table: ({ children }) => (
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-left border-collapse text-xs">{children}</table>
@@ -93,6 +96,21 @@ export async function Prose({ content, className }: ProseProps) {
             // The :not(pre) > code CSS rule in globals.css handles inline code styling
             return <code className={className}>{children}</code>;
           },
+          ul: ({ children, ...props }) => (
+            <ul className="prose-list mb-4 last:mb-0 ml-5 space-y-1.5" {...props}>
+              {children}
+            </ul>
+          ),
+          ol: ({ children, ...props }) => (
+            <ol className="prose-list mb-4 last:mb-0 ml-5 space-y-1.5" {...props}>
+              {children}
+            </ol>
+          ),
+          li: ({ children, ...props }) => (
+            <li className="prose-list-item" {...props}>
+              {children}
+            </li>
+          ),
         }}
       >
         {normalizeContent(content)}
@@ -103,18 +121,21 @@ export async function Prose({ content, className }: ProseProps) {
 
 export function ProseInline({ content, className }: ProseProps) {
   return (
-    <span className={cn(className)}>
+    <div className={cn(className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}
         components={{
-          // Override paragraph to render as span for inline use
+          // Override block-level elements to render as inline-friendly fragments
           p: ({ children }) => <>{children}</>,
+          ul: ({ children }) => <>{children}</>,
+          ol: ({ children }) => <>{children}</>,
+          li: ({ children }) => <>{children}</>,
         }}
       >
         {normalizeContent(content)}
       </ReactMarkdown>
-    </span>
+    </div>
   );
 }
 
@@ -126,6 +147,9 @@ export function ProseClient({ content, className }: ProseProps) {
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}
         components={{
+          p: ({ children }) => (
+            <p className="prose-paragraph mb-4 last:mb-0">{children}</p>
+          ),
           table: ({ children }) => (
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-left border-collapse text-xs">{children}</table>
@@ -159,6 +183,21 @@ export function ProseClient({ content, className }: ProseProps) {
             // Inline code - let the default styling handle it
             return <code className={className}>{children}</code>;
           },
+          ul: ({ children, ...props }) => (
+            <ul className="prose-list mb-4 last:mb-0 ml-5 space-y-1.5" {...props}>
+              {children}
+            </ul>
+          ),
+          ol: ({ children, ...props }) => (
+            <ol className="prose-list mb-4 last:mb-0 ml-5 space-y-1.5" {...props}>
+              {children}
+            </ol>
+          ),
+          li: ({ children, ...props }) => (
+            <li className="prose-list-item" {...props}>
+              {children}
+            </li>
+          ),
         }}
       >
         {normalizeContent(content)}

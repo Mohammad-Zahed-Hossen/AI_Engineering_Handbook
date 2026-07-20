@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Search, Home, Package, Cpu, Workflow, BookOpen, Layers, Terminal, Compass, FileCode2 } from 'lucide-react';
+import { Search, Home, Package, Cpu, Workflow, BookOpen, Layers, Terminal, Compass } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 

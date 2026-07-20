@@ -33,17 +33,19 @@ export function BadgeRow({ children, defaultVisible = 8, className = '' }: Badge
       {showMore && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="inline-flex items-center gap-1 rounded border border-border bg-muted/40 px-2.5 py-1.5 text-[9px] font-medium text-foreground hover:bg-muted hover:border-foreground/20 transition-colors select-none cursor-pointer touch-target"
+          className="inline-flex items-center gap-0.5 rounded border border-border bg-muted/30 px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+          aria-expanded={expanded}
+          aria-label={expanded ? 'Show less items' : `Show ${children.length - mobileDefault} more items`}
         >
           {expanded ? (
             <>
-              <ChevronUp className="w-3 h-3" />
-              Show less
+              <ChevronUp className="w-2.5 h-2.5" />
+              less
             </>
           ) : (
             <>
-              <ChevronDown className="w-3 h-3" />
-              +{children.length - mobileDefault} more
+              <ChevronDown className="w-2.5 h-2.5" />
+              +{children.length - mobileDefault}
             </>
           )}
         </button>

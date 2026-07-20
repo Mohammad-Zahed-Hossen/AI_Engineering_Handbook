@@ -10,7 +10,10 @@ import QuickSetupSection from '@/components/shared/QuickSetupSection';
 import RelatedContent from '@/components/shared/RelatedContent';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 import ExpandableText from '@/components/shared/ExpandableText';
-import { Prose } from '@/components/shared/Prose';
+import { ProseClient } from '@/components/shared/Prose';
+import PackageSnapshot from '@/components/shared/PackageSnapshot';
+import PackageStickyBar from '@/components/shared/PackageStickyBar';
+import PackageTaskNavigation from '@/components/shared/PackageTaskNavigation';
 
 export async function generateStaticParams() {
   return getAllPackageIds().map((id) => ({ id }));
@@ -61,6 +64,12 @@ export default async function PackageDetailPage({ params }: PageProps) {
       .filter((r): r is NonNullable<typeof r> => r !== null),
   }));
 
+  // Task navigation items
+  const taskNavItems = pkg.tasks.map(task => ({
+    id: slugify(task.task),
+    label: task.task,
+  }));
+
   const toc = [
     { id: 'setup', label: 'Quick Setup' },
     { id: 'summary', label: 'Summary' },
@@ -78,24 +87,48 @@ export default async function PackageDetailPage({ params }: PageProps) {
       toc={toc}
     >
       <ReadingSessionTracker href={`/packages/${pkg.id}`} name={pkg.name} type="package" />
+      
       <header className="space-y-3 border-b border-border pb-4">
         <h1>{pkg.name}</h1>
         <MetadataBadges type="package" updatedAt={pkg.updated_at} version={pkg.version} />
       </header>
 
+      {/* Quick Package Snapshot */}
+      <PackageSnapshot
+        name={pkg.name}
+        version={pkg.version}
+        install={pkg.install}
+        importAs={pkg.import_as}
+        language={pkg.language}
+        taskCount={pkg.tasks.length}
+        updatedAt={pkg.updated_at}
+      />
+
       <QuickSetupSection install={pkg.install} importAs={pkg.import_as} importLanguage={pkg.language} />
 
       <section id="summary" className="scroll-mt-24">
         <ExpandableText cacheKey={`pkg-summary-${pkg.id}`} fadeClass="from-background to-transparent">
-          <Prose content={pkg.summary} className="content-prose text-sm text-muted-foreground" />
+          <ProseClient content={pkg.summary} className="content-prose text-sm text-muted-foreground" />
         </ExpandableText>
       </section>
 
       <OfficialResources sources={pkg.sources} githubRepo={pkg.github_repo} />
 
+      {/* Task Navigation - Mobile chips */}
+      <PackageTaskNavigation tasks={taskNavItems} />
+
       <PackageTaskList tasks={resolvedTasks} packageName={pkg.id} language={pkg.language} />
 
       <RelatedContent items={relatedContent} />
+
+      {/* Sticky Action Bar */}
+      <PackageStickyBar
+        packageName={pkg.name}
+        version={pkg.version}
+        install={pkg.install}
+        importAs={pkg.import_as}
+        taskCount={pkg.tasks.length}
+      />
     </ContentPageLayout>
   );
 }

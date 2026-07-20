@@ -4,7 +4,7 @@ import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import RelatedContent from '@/components/shared/RelatedContent';
 import ExpandableText from '@/components/shared/ExpandableText';
-import { Prose } from '@/components/shared/Prose';
+import { ProseClient } from '@/components/shared/Prose';
 import { CodeBlock } from '@/components/shared/CodeBlock';
 import { Lightbulb, AlertTriangle, Code, Layers, ArrowLeft, ArrowRight } from 'lucide-react';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
@@ -28,6 +28,45 @@ export async function generateStaticParams() {
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+// Helper to split long prose into logical paragraph chunks for better readability
+function splitProseIntoParagraphs(text: string): string[] {
+  if (!text) return [];
+  
+  // Split on sentence boundaries (period followed by space and capital letter)
+  // This creates more readable chunks for long paragraphs
+  const sentences = text.split(/(?<=[.!?])\s+(?=[A-Z])/);
+  
+  // Group sentences into logical paragraphs (2-3 sentences each)
+  const paragraphs: string[] = [];
+  for (let i = 0; i < sentences.length; i += 2) {
+    const chunk = sentences.slice(i, i + 2).join(' ');
+    if (chunk.trim()) {
+      paragraphs.push(chunk.trim());
+    }
+  }
+  
+  return paragraphs.length > 0 ? paragraphs : [text];
+}
+
+// Component to render prose with paragraph chunking
+function ChunkedProse({ content, className }: { content: string; className?: string }) {
+  const paragraphs = splitProseIntoParagraphs(content);
+  
+  if (paragraphs.length <= 1) {
+    // Single paragraph - render normally
+    return <ProseClient content={content} className={className} />;
+  }
+  
+  // Multiple paragraphs - render with better spacing
+  return (
+    <div className="space-y-4">
+      {paragraphs.map((para, idx) => (
+        <ProseClient key={idx} content={para} className={className} />
+      ))}
+    </div>
+  );
 }
 
 export default async function PatternPage({ params }: PageProps) {
@@ -74,7 +113,7 @@ export default async function PatternPage({ params }: PageProps) {
       <div className="space-y-3">
         <h1 className="text-2xl font-semibold tracking-tight">{pattern.title}</h1>
         <ExpandableText cacheKey={`pattern-desc-${pattern.id}`} fadeClass="from-background to-transparent">
-          <Prose content={pattern.description} className="text-muted-foreground" />
+          <ProseClient content={pattern.description} className="text-muted-foreground" />
         </ExpandableText>
         <MetadataBadges
           type="pattern"
@@ -150,7 +189,7 @@ export default async function PatternPage({ params }: PageProps) {
             ].filter(Boolean)}
             icon={<Lightbulb className="w-4 h-4 text-yellow-500" />}
           />
-          <Prose content={pattern.concept} className="text-sm text-muted-foreground leading-relaxed" />
+          <ChunkedProse content={pattern.concept} className="text-sm text-muted-foreground leading-relaxed" />
         </CollapsibleSection>
       </section>
 
@@ -168,7 +207,7 @@ export default async function PatternPage({ params }: PageProps) {
             ].filter(Boolean)}
             icon={<Layers className="w-4 h-4 text-blue-500" />}
           />
-          <Prose content={pattern.applicability} className="text-sm text-muted-foreground leading-relaxed" />
+          <ChunkedProse content={pattern.applicability} className="text-sm text-muted-foreground leading-relaxed" />
         </CollapsibleSection>
       </section>
 
@@ -187,7 +226,7 @@ export default async function PatternPage({ params }: PageProps) {
               ].filter(Boolean)}
               icon={<Code className="w-4 h-4 text-purple-500" />}
             />
-            <Prose content={pattern.implementation_notes} className="text-sm text-muted-foreground leading-relaxed" />
+            <ChunkedProse content={pattern.implementation_notes} className="text-sm text-muted-foreground leading-relaxed" />
           </CollapsibleSection>
         </section>
       )}

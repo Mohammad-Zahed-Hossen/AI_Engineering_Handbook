@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import "katex/dist/katex.min.css";
 import { cn } from "@/lib/utils";
@@ -9,6 +8,7 @@ import TopBar from "@/components/layout/TopBar";
 import ReadingProgress from "@/components/shared/ReadingProgress";
 import BackToTop from "@/components/shared/BackToTop";
 import PageVisitTracker from "@/components/shared/PageVisitTracker";
+import ThemeScript from "@/components/shared/ThemeScript";
 import {
   getPackageNavItems,
   getModelNavItems,
@@ -62,24 +62,7 @@ export default function RootLayout({
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
      >
        <head>
-         <Script
-           id="theme-script"
-           strategy="beforeInteractive"
-           dangerouslySetInnerHTML={{
-             __html: `
-               (function() {
-                 const STORAGE_KEY = 'handbook-theme';
-                 function getPreferredTheme() {
-                   const stored = localStorage.getItem(STORAGE_KEY);
-                   if (stored === 'light' || stored === 'dark') return stored;
-                   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                 }
-                 const theme = getPreferredTheme();
-                 document.documentElement.classList.toggle('dark', theme === 'dark');
-               })();
-             `,
-           }}
-         />{/* Theme script for preventing flash of unstyled content */}
+         <ThemeScript />{/* Theme script for preventing flash of unstyled content */}
        </head>
        <body className="h-full flex overflow-hidden bg-background text-foreground text-sm leading-relaxed">
          <PageVisitTracker />
