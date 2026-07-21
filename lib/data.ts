@@ -1270,3 +1270,485 @@ export const getRecentContent = cache(function getRecentContent(limit = 6): Rece
     })
     .slice(0, limit);
 });
+
+// ── Dashboard Helpers ─────────────────────────────────────────────
+
+export interface IntentItem {
+  intent: string;
+  target: string;
+  priority: number;
+  icon: string;
+  description: string;
+}
+
+/**
+ * Loads developer intent shortcuts from the dashboard configuration.
+ */
+export const getDashboardIntents = cache(function getDashboardIntents(): IntentItem[] {
+  const filePath = path.join(dataDir, 'dashboard', 'intents.json');
+  if (!fs.existsSync(filePath)) {
+    return [];
+  }
+  return readJSON<IntentItem[]>(filePath);
+});
+
+/**
+ * Loads popular search terms from the dashboard configuration.
+ */
+export const getPopularSearches = cache(function getPopularSearches(): string[] {
+  const filePath = path.join(dataDir, 'dashboard', 'popular-searches.json');
+  if (!fs.existsSync(filePath)) {
+    return [];
+  }
+  return readJSON<string[]>(filePath);
+});
+
+/**
+ * Loads recommendation mappings for personalized suggestions.
+ */
+export interface RecommendationMapping {
+  recommendations: string[];
+}
+
+export const getRecommendations = cache(function getRecommendations(): Record<string, RecommendationMapping> {
+  const filePath = path.join(dataDir, 'dashboard', 'recommendations.json');
+  if (!fs.existsSync(filePath)) {
+    return {};
+  }
+  return readJSON<Record<string, RecommendationMapping>>(filePath);
+});
+
+/**
+ * Gets recommended content IDs based on a source content ID.
+ * Returns up to 4 recommendations that actually exist in the handbook.
+ */
+export function getRecommendedContent(sourceId: string, limit = 4): Array<{ id: string; type: string; name: string; href: string | null }> {
+  const mappings = getRecommendations();
+  const mapping = mappings[sourceId];
+  
+  if (!mapping || !mapping.recommendations) {
+    return [];
+  }
+  
+  const recommendations: Array<{ id: string; type: string; name: string; href: string | null }> = [];
+  
+  for (const recId of mapping.recommendations) {
+    // Try to find the content type and path
+    let found = false;
+    
+    // Check packages
+    if (contentExists('package', recId)) {
+      const pkg = getPackage(recId);
+      recommendations.push({ id: recId, type: 'package', name: pkg.name, href: `/packages/${recId}` });
+      found = true;
+    }
+    // Check workflows
+    else if (contentExists('workflow', recId)) {
+      const wf = getWorkflow(recId);
+      recommendations.push({ id: recId, type: 'workflow', name: wf.name || wf.title, href: `/workflows/${recId}` });
+      found = true;
+    }
+    // Check models (need to check all categories)
+    else {
+      const categories: ModelCategory[] = ['ml', 'dl', 'llm'];
+      for (const cat of categories) {
+        if (contentExists('model', recId)) {
+          const model = getModel(cat, recId);
+          recommendations.push({ id: recId, type: 'model', name: model.name || model.title, href: `/models/${cat}/${recId}` });
+          found = true;
+          break;
+        }
+      }
+    }
+    
+    if (found && recommendations.length >= limit) break;
+  }
+  
+  return recommendations;
+}
+
+/**
+ * Gets recently added content based on created_at metadata.
+ */
+export const getRecentlyAdded = cache(function getRecentlyAdded(limit = 5): RecentContentItem[] {
+  // Collect all content with created_at
+  const allItems: Array<RecentContentItem & { created_at: string }> = [];
+  
+  // Packages
+  getAllPackageIds().forEach(id => {
+    try {
+      const p = getPackage(id);
+      allItems.push({ id: p.id, name: p.name, type: 'package', updated_at: p.updated_at, created_at: p.created_at });
+    } catch {}
+  });
+  
+  // Models
+  (['ml', 'dl', 'llm'] as const).forEach(cat => {
+    getModelIds(cat).forEach(id => {
+      try {
+        const m = getModel(cat, id);
+        allItems.push({ id: m.id, name: m.name || m.title, type: 'model', updated_at: m.updated_at, created_at: m.created_at, category: cat });
+      } catch {}
+    });
+  });
+  
+  // Workflows
+  getAllWorkflowIds().forEach(id => {
+    try {
+      const w = getWorkflow(id);
+      allItems.push({ id: w.id, name: w.name || w.title, type: 'workflow', updated_at: w.updated_at, created_at: w.created_at });
+    } catch {}
+  });
+  
+  // Cheatsheets
+  getAllCheatsheetIds().forEach(id => {
+    try {
+      const cs = getCheatsheet(id);
+      allItems.push({ id: cs.id, name: cs.name || cs.title, type: 'cheatsheet', updated_at: cs.updated_at, created_at: cs.created_at });
+    } catch {}
+  });
+  
+  // Patterns
+  getAllPatternIds().forEach(id => {
+    try {
+      const p = getPattern(id);
+      allItems.push({ id: p.id, name: p.title || p.id, type: 'pattern', updated_at: p.updated_at, created_at: p.created_at });
+    } catch {}
+  });
+  
+  // Debug guides
+  getAllDebugGuideIds().forEach(id => {
+    try {
+      const dg = getDebugGuide(id);
+      allItems.push({ id: dg.id, name: dg.title || dg.id, type: 'debug_guide', updated_at: dg.updated_at, created_at: dg.created_at });
+    } catch {}
+  });
+  
+  // Decision guides
+  getAllDecisionGuideIds().forEach(id => {
+    try {
+      const dg = getDecisionGuide(id);
+      allItems.push({ id: dg.id, name: dg.title || dg.id, type: 'decision_guide', updated_at: dg.updated_at, created_at: dg.created_at });
+    } catch {}
+  });
+  
+  // Principles
+  getAllPrincipleIds().forEach(id => {
+    try {
+      const principle = getPrinciple(id);
+      allItems.push({ id: principle.id, name: principle.title || principle.id, type: 'principle', updated_at: principle.updated_at, created_at: principle.created_at });
+    } catch {}
+  });
+  
+  // Sort by created_at descending and return
+  return allItems
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .slice(0, limit) as RecentContentItem[];
+});
+
+/**
+ * Loads problem categories from the taxonomy file.
+ */
+export interface ProblemCategory {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export const getProblemCategories = cache(function getProblemCategories(): ProblemCategory[] {
+  const filePath = path.join(dataDir, 'problem-index', 'taxonomy.json');
+  if (!fs.existsSync(filePath)) {
+    return [];
+  }
+  const taxonomy = readJSON<Record<string, { description: string; problems: { id: string; name: string; description: string }[] }>>(filePath);
+  const categories: ProblemCategory[] = [];
+  
+  Object.entries(taxonomy).forEach(([name, data]) => {
+    if (data.problems && data.problems.length > 0) {
+      categories.push({
+        id: name.toLowerCase().replace(/\s+/g, '-'),
+        name: name,
+        description: data.description
+      });
+    }
+  });
+  
+  return categories;
+});
+
+/**
+ * Gets preview items for knowledge explorer cards.
+ */
+export interface KnowledgePreviewItem {
+  id: string;
+  name: string;
+  tasks?: number;
+  steps?: number;
+}
+
+export const getKnowledgeExplorerPreview = cache(function getKnowledgeExplorerPreview(
+  type: 'package' | 'model' | 'workflow',
+  limit: number
+): KnowledgePreviewItem[] {
+  if (type === 'package') {
+    return getAllPackages()
+      .sort((a, b) => (b.tasks?.length || 0) - (a.tasks?.length || 0))
+      .slice(0, limit)
+      .map(p => ({
+        id: p.id,
+        name: p.name,
+        tasks: p.tasks?.length
+      }));
+  }
+  
+  if (type === 'model') {
+    const allModels = [...getAllModels('ml'), ...getAllModels('dl'), ...getAllModels('llm')];
+    return allModels
+      .slice(0, limit)
+      .map(m => ({
+        id: m.id,
+        name: m.name || m.title
+      }));
+  }
+  
+  if (type === 'workflow') {
+    return getAllWorkflows()
+      .sort((a, b) => (b.steps?.length || 0) - (a.steps?.length || 0))
+      .slice(0, limit)
+      .map(w => ({
+        id: w.id,
+        name: w.name || w.title,
+        steps: w.steps?.length
+      }));
+  }
+  
+  return [];
+});
+
+/**
+ * Gets knowledge distribution counts by content type.
+ */
+export const getKnowledgeDistribution = cache(function getKnowledgeDistribution(): {
+  packages: number;
+  models_ml: number;
+  models_dl: number;
+  models_llm: number;
+  workflows: number;
+  cheatsheets: number;
+  registry_families: number;
+  decision_guides: number;
+  debug_guides: number;
+  patterns: number;
+  principles: number;
+} {
+  return {
+    packages: getAllPackageIds().length,
+    models_ml: getModelIds('ml').length,
+    models_dl: getModelIds('dl').length,
+    models_llm: getModelIds('llm').length,
+    workflows: getAllWorkflowIds().length,
+    cheatsheets: getAllCheatsheetIds().length,
+    registry_families: getAllRegistryFamilyIds().length,
+    decision_guides: getAllDecisionGuideIds().length,
+    debug_guides: getAllDebugGuideIds().length,
+    patterns: getAllPatternIds().length,
+    principles: getAllPrincipleIds().length,
+  };
+});
+
+/**
+ * Gets featured collections with smart ranking based on canonical_status, engineering_maturity, and confidence.
+ * Falls back to task/step count if metadata is not available.
+ */
+const MATURITY_SCORE: Record<string, number> = {
+  production_ready: 4,
+  stable: 3,
+  emerging: 2,
+  experimental: 1,
+  research: 0,
+};
+
+const CANONICAL_SCORE: Record<string, number> = {
+  canonical: 3,
+  reference: 2,
+  generated: 1,
+};
+
+const CONFIDENCE_SCORE: Record<string, number> = {
+  production_proven: 3,
+  verified: 2,
+  community_accepted: 1,
+  experimental: 0,
+  research: 0,
+};
+
+function getFeaturedScore(item: {
+  canonical_status?: string;
+  engineering_maturity?: string;
+  confidence?: string;
+  tasks?: number;
+  steps?: number;
+}): number {
+  // Prefer metadata-based scoring
+  const canonicalScore = item.canonical_status ? (CANONICAL_SCORE[item.canonical_status] || 0) : 0;
+  const maturityScore = item.engineering_maturity ? (MATURITY_SCORE[item.engineering_maturity] || 0) : 0;
+  const confidenceScore = item.confidence ? (CONFIDENCE_SCORE[item.confidence] || 0) : 0;
+  
+  // If we have metadata, use it; otherwise fall back to task/step count
+  if (canonicalScore > 0 || maturityScore > 0 || confidenceScore > 0) {
+    return canonicalScore * 100 + maturityScore * 10 + confidenceScore;
+  }
+  
+  // Fallback: use task/step count
+  return (item.tasks || 0) + (item.steps || 0);
+}
+
+export const getFeaturedCollections = cache(function getFeaturedCollections(): {
+  packages: Array<{ id: string; name: string; tasks?: number; difficulty?: string; estimated_reading_time?: number }>;
+  workflows: Array<{ id: string; name: string; steps?: number; difficulty?: string; estimated_reading_time?: number }>;
+  models: Array<{ id: string; name: string; category?: string; difficulty?: string; estimated_reading_time?: number }>;
+} {
+  // Featured packages - ranked by metadata, then task count
+  const packages = getAllPackages()
+    .sort((a, b) => {
+      const scoreA = getFeaturedScore({
+        canonical_status: a.canonical_status,
+        engineering_maturity: a.engineering_maturity,
+        confidence: a.confidence,
+        tasks: a.tasks?.length,
+      });
+      const scoreB = getFeaturedScore({
+        canonical_status: b.canonical_status,
+        engineering_maturity: b.engineering_maturity,
+        confidence: b.confidence,
+        tasks: b.tasks?.length,
+      });
+      return scoreB - scoreA;
+    })
+    .slice(0, 3)
+    .map(p => ({
+      id: p.id,
+      name: p.name,
+      tasks: p.tasks?.length,
+      difficulty: p.difficulty,
+      estimated_reading_time: p.estimated_reading_time
+    }));
+
+  // Featured workflows - ranked by metadata, then step count
+  const workflows = getAllWorkflows()
+    .sort((a, b) => {
+      const scoreA = getFeaturedScore({
+        canonical_status: a.canonical_status,
+        engineering_maturity: a.engineering_maturity,
+        confidence: a.confidence,
+        steps: a.steps?.length,
+      });
+      const scoreB = getFeaturedScore({
+        canonical_status: b.canonical_status,
+        engineering_maturity: b.engineering_maturity,
+        confidence: b.confidence,
+        steps: b.steps?.length,
+      });
+      return scoreB - scoreA;
+    })
+    .slice(0, 3)
+    .map(w => ({
+      id: w.id,
+      name: w.name || w.title,
+      steps: w.steps?.length,
+      difficulty: w.difficulty,
+      estimated_reading_time: w.estimated_reading_time
+    }));
+
+  // Featured models - ranked by metadata, then task count
+  // Note: Model uses engineeringmaturity (camelCase) and doesn't have canonical_status
+  const allModels = [...getAllModels('ml'), ...getAllModels('dl'), ...getAllModels('llm')];
+  const models = allModels
+    .sort((a, b) => {
+      // Model uses camelCase field names
+      const maturityA = a.engineeringmaturity ? (MATURITY_SCORE[a.engineeringmaturity] || 0) : 0;
+      const maturityB = b.engineeringmaturity ? (MATURITY_SCORE[b.engineeringmaturity] || 0) : 0;
+      const confidenceA = a.confidence ? (CONFIDENCE_SCORE[a.confidence] || 0) : 0;
+      const confidenceB = b.confidence ? (CONFIDENCE_SCORE[b.confidence] || 0) : 0;
+      return (maturityB * 10 + confidenceB) - (maturityA * 10 + confidenceA);
+    })
+    .slice(0, 3)
+    .map(m => ({
+      id: m.id,
+      name: m.name || m.title,
+      category: m.category,
+      difficulty: m.difficulty,
+      estimated_reading_time: m.estimatedreadingtime
+    }));
+
+  return { packages, workflows, models };
+});
+
+/**
+ * Orchestrator function that returns all dashboard data.
+ */
+export const getDashboardData = cache(function getDashboardData() {
+  const counts = getDashboardCounts();
+  const distribution = getKnowledgeDistribution();
+  const featured = getFeaturedCollections();
+  const intents = getDashboardIntents();
+  const problemCategories = getProblemCategories();
+  const popularSearches = getPopularSearches();
+  const recent = getRecentContent(6);
+
+  return {
+    counts,
+    distribution,
+    featured,
+    intents,
+    problemCategories,
+    popularSearches,
+    recent
+  };
+});
+
+/**
+ * Resolves a summary for a content item.
+ */
+export function getSummaryForItem(item: RecentContentItem): string | null {
+  try {
+    if (item.type === 'package') {
+      const p = getPackage(item.id);
+      return p.summary || p.description || null;
+    }
+    if (item.type === 'model') {
+      const cat = item.category as ModelCategory;
+      if (cat) {
+        const m = getModel(cat, item.id);
+        return m.description || null;
+      }
+    }
+    if (item.type === 'workflow') {
+      const w = getWorkflow(item.id);
+      return w.description || null;
+    }
+    if (item.type === 'cheatsheet') {
+      const cs = getCheatsheet(item.id);
+      return cs.description || null;
+    }
+    if (item.type === 'pattern') {
+      const p = getPattern(item.id);
+      return p.description || null;
+    }
+    if (item.type === 'debug_guide') {
+      const dg = getDebugGuide(item.id);
+      return dg.description || null;
+    }
+    if (item.type === 'decision_guide') {
+      const dg = getDecisionGuide(item.id);
+      return dg.description || null;
+    }
+    if (item.type === 'principle') {
+      const principle = getPrinciple(item.id);
+      return principle.description || null;
+    }
+  } catch {
+    // Graceful fallback
+  }
+  return null;
+}

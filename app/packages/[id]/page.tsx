@@ -12,6 +12,7 @@ import { ProseClient } from '@/components/shared/Prose';
 import PackageSnapshot from '@/components/shared/PackageSnapshot';
 import { CodeBlock } from '@/components/shared/CodeBlock';
 import StickyActionBar from '@/components/shared/StickyActionBar';
+import FavoriteButton from '@/components/shared/FavoriteButton';
 
 export async function generateStaticParams() {
   return getAllPackageIds().map((id) => ({ id }));
@@ -78,11 +79,16 @@ export default async function PackageDetailPage({ params }: PageProps) {
         { label: pkg.name },
       ]}
     >
-      <ReadingSessionTracker href={`/packages/${pkg.id}`} name={pkg.name} type="package" />
+      <ReadingSessionTracker id={pkg.id} href={`/packages/${pkg.id}`} name={pkg.name} type="package" />
       
       <header className="space-y-3 border-b border-border pb-4">
-        <h1>{pkg.name}</h1>
-        <MetadataBadges type="package" updatedAt={pkg.updated_at} version={pkg.version} />
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h1>{pkg.name}</h1>
+            <MetadataBadges type="package" updatedAt={pkg.updated_at} version={pkg.version} />
+          </div>
+          <FavoriteButton type="package" id={pkg.id} name={pkg.name} href={`/packages/${pkg.id}`} />
+        </div>
       </header>
 
       {/* Package Snapshot - Single source of truth for install/import */}

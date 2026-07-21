@@ -256,10 +256,10 @@ export default function MobileSidebarTrigger({
         </div>
 
         {/* Navigation - organized by workflow */}
-        <nav className="flex-1 p-3 space-y-4 safe-area-bottom">
+        <nav className="flex-1 p-3 space-y-4 safe-area-bottom pb-6">
           
           {/* Explore Section */}
-          <div className="space-y-2">
+          <div className="space-y-2 mb-2">
             <h2 className="px-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
               Explore
             </h2>
@@ -274,7 +274,7 @@ export default function MobileSidebarTrigger({
           </div>
 
           {/* Knowledge Section */}
-          <div className="space-y-2">
+          <div className="space-y-2 mb-2">
             <h2 className="px-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
               Knowledge
             </h2>
@@ -427,7 +427,7 @@ export default function MobileSidebarTrigger({
           </div>
 
           {/* Build Section */}
-          <div className="space-y-2">
+          <div className="space-y-2 mb-2">
             <h2 className="px-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
               Build
             </h2>
@@ -525,7 +525,7 @@ export default function MobileSidebarTrigger({
           </div>
 
           {/* Reference Section */}
-          <div className="space-y-2">
+          <div className="space-y-2 mb-2">
             <h2 className="px-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
               Reference
             </h2>

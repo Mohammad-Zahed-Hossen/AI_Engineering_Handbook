@@ -44,6 +44,7 @@ export default function MetadataBadges({
   simplified = false,
 }: MetadataBadgesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const mounted = true;
 
   const hasFreshness = !!(updatedAt || lastVerified);
   const hasApplicability = !!(problemTypes && problemTypes.length > 0);
@@ -167,7 +168,7 @@ export default function MetadataBadges({
               title={`Updated: ${updatedAt}`}
             >
               <Clock className="w-3 h-3 text-muted-foreground" />
-              Updated {formatRelativeTime(updatedAt)}
+              Updated {mounted ? formatRelativeTime(updatedAt) : ''}
             </span>
           )}
           {lastVerified && (
@@ -176,7 +177,7 @@ export default function MetadataBadges({
               title={`Verified: ${lastVerified}`}
             >
               <CheckCircle2 className="w-3 h-3" />
-              Verified {formatRelativeTime(lastVerified)}
+              Verified {mounted ? formatRelativeTime(lastVerified) : ''}
             </span>
           )}
         </div>

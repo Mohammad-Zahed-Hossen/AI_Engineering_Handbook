@@ -245,7 +245,7 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
             teaser={
               <div className="mt-1 text-xs text-muted-foreground leading-relaxed italic flex items-start sm:items-center gap-1">
                 <span className="text-primary/70 shrink-0 font-medium not-italic text-[10px] uppercase tracking-wider select-none">Trigger:</span>
-                <span className="line-clamp-2 sm:line-clamp-none">"{task.mental_trigger}"</span>
+                <span className="line-clamp-2 sm:line-clamp-none">&ldquo;{task.mental_trigger}&rdquo;</span>
               </div>
             }
             icon={

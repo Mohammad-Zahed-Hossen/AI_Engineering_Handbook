@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useId, useMemo, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import type { FuseResultMatch } from 'fuse.js';
 import { createFuse, SearchResult } from '@/lib/search-types';
 import ContentTypeBadge from './ContentTypeBadge';
@@ -114,13 +114,14 @@ export default function SearchBox({
   compact = false,
 }: SearchBoxProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const inputId = useId();
   const listboxId = useId();
   const resultRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(() => searchParams?.get('q') || '');
   const [activeIndex, setActiveIndex] = useState(0);
-  const [focused, setFocused] = useState(false);
+  const [focused, setFocused] = useState(!!searchParams?.get('q'));
   const [recentSearches, setRecentSearches] = useState<string[]>(() => loadRecentSearches());
 
   const [searchIndex, setSearchIndex] = useState<SearchResult[]>(index);

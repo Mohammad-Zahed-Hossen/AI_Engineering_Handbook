@@ -17,6 +17,7 @@ import { parseLabeledClauses } from '@/lib/text/parseLabeledClauses';
 import { ProseClient, ProseInline } from '@/components/shared/Prose';
 import { BadgeRow } from '@/components/shared/BadgeRow';
 import { Server, Cpu, Clock, DollarSign, Activity, BookOpen, AlertTriangle, CheckCircle2, ArrowRight } from 'lucide-react';
+import FavoriteButton from '@/components/shared/FavoriteButton';
 
 export async function generateStaticParams() {
   return getAllWorkflowIds().map((id) => ({ id }));
@@ -330,26 +331,31 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
         ...(hasEvaluation ? [{ id: 'evaluation', label: 'Evaluation' }] : []),
       ]}
     >
-      <ReadingSessionTracker href={`/workflows/${workflow.id}`} name={workflow.name} type="workflow" category={workflow.category} />
+      <ReadingSessionTracker id={workflow.id} href={`/workflows/${workflow.id}`} name={workflow.name} type="workflow" category={workflow.category} />
       
       {/* Hero Section */}
       <header id="overview" className="space-y-3 border-b border-border pb-3 scroll-mt-24">
-        <h1>{workflow.name}</h1>
-        
-        <ExpandableText cacheKey={`workflow-overview-${workflow.id}`} fadeClass="from-background to-transparent" maxLines={3}>
-          <ProseClient content={workflow.overview} className="text-sm text-muted-foreground" />
-        </ExpandableText>
-        
-        <MetadataBadges
-          type="workflow"
-          updatedAt={workflow.updated_at}
-          category={workflow.category}
-          difficulty={workflow.difficulty}
-          domain={workflow.domain}
-          engineeringArea={workflow.engineering_area}
-        />
-        
-        <QuickFacts workflow={workflow} />
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h1>{workflow.name}</h1>
+            
+            <ExpandableText cacheKey={`workflow-overview-${workflow.id}`} fadeClass="from-background to-transparent" maxLines={3}>
+              <ProseClient content={workflow.overview} className="text-sm text-muted-foreground" />
+            </ExpandableText>
+            
+            <MetadataBadges
+              type="workflow"
+              updatedAt={workflow.updated_at}
+              category={workflow.category}
+              difficulty={workflow.difficulty}
+              domain={workflow.domain}
+              engineeringArea={workflow.engineering_area}
+            />
+            
+            <QuickFacts workflow={workflow} />
+          </div>
+          <FavoriteButton type="workflow" id={workflow.id} name={workflow.name} href={`/workflows/${workflow.id}`} />
+        </div>
         
         {workflow.starter_stack.length > 0 && (
           <div className="space-y-1.5">

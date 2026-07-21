@@ -1,4 +1,4 @@
-import { CheckCircle, GitFork, ArrowRight } from 'lucide-react';
+import { CheckCircle, GitFork } from 'lucide-react';
 import { DecisionGuide } from '@/types/decision-guide';
 
 interface DecisionSnapshotProps {

@@ -7,6 +7,7 @@ import ExpandableText from '@/components/shared/ExpandableText';
 import { ProseClient } from '@/components/shared/Prose';
 import { BookOpen, Brain, AlertTriangle, CheckCircle2, Link2, Lightbulb, ClipboardList, BarChart3, History } from 'lucide-react';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
+import FavoriteButton from '@/components/shared/FavoriteButton';
 import EngineeringConsequenceCard from '@/components/principles/EngineeringConsequenceCard';
 import ViolationWarningCard from '@/components/principles/ViolationWarningCard';
 import AppearsInGroup from '@/components/principles/AppearsInGroup';
@@ -82,20 +83,25 @@ export default async function PrinciplePage({ params }: PageProps) {
 
   return (
     <ContentPageLayout breadcrumbs={breadcrumbs} toc={toc}>
-      <ReadingSessionTracker href={`/principles/${principle.id}`} name={principle.title} type="principle" category={principle.category} />
+      <ReadingSessionTracker id={principle.id} href={`/principles/${principle.id}`} name={principle.title} type="principle" category={principle.category} />
       
       {/* Header - Hero section */}
       <div className="space-y-4">
-        <h1 className="text-2xl font-semibold tracking-tight">{principle.title}</h1>
-        <ExpandableText cacheKey={`principle-desc-${principle.id}`} fadeClass="from-background to-transparent">
-          <ProseClient content={principle.description} className="text-muted-foreground" />
-        </ExpandableText>
-        <MetadataBadges
-          type="principle"
-          updatedAt={principle.updated_at}
-          lastVerified={principle.last_verified}
-          category={principle.category}
-        />
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl font-semibold tracking-tight">{principle.title}</h1>
+            <ExpandableText cacheKey={`principle-desc-${principle.id}`} fadeClass="from-background to-transparent">
+              <ProseClient content={principle.description} className="text-muted-foreground" />
+            </ExpandableText>
+            <MetadataBadges
+              type="principle"
+              updatedAt={principle.updated_at}
+              lastVerified={principle.last_verified}
+              category={principle.category}
+            />
+          </div>
+          <FavoriteButton type="principle" id={principle.id} name={principle.title} href={`/principles/${principle.id}`} />
+        </div>
       </div>
 
       {/* CORE UNDERSTANDING BLOCK - Always visible, no borders */}
@@ -137,7 +143,7 @@ export default async function PrinciplePage({ params }: PageProps) {
             Engineering Consequences
           </h2>
           <div className="space-y-2">
-            {principle.engineering_consequences.map((consequence, idx) => (
+            {principle.engineering_consequences.map((consequence) => (
               <EngineeringConsequenceCard
                 key={consequence.title}
                 title={consequence.title}

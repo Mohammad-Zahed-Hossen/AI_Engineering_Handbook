@@ -8,6 +8,7 @@ import ExpandableText from '@/components/shared/ExpandableText';
 import { ProseClient } from '@/components/shared/Prose';
 import { Scale, GitBranch, ArrowRight as ArrowRightIcon, Building2, BarChart3, AlertTriangle } from 'lucide-react';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
+import FavoriteButton from '@/components/shared/FavoriteButton';
 import DecisionSnapshot from '@/components/shared/DecisionSnapshot';
 import DecisionMatrix from '@/components/shared/DecisionMatrix';
 import ConstraintRecommendations from '@/components/shared/ConstraintRecommendations';
@@ -94,20 +95,25 @@ export default async function DecisionGuidePage({ params }: PageProps) {
 
   return (
     <ContentPageLayout breadcrumbs={breadcrumbs} toc={toc}>
-      <ReadingSessionTracker href={`/decision-guides/${decisionGuide.id}`} name={decisionGuide.title} type="decision_guide" category={decisionGuide.category} />
+      <ReadingSessionTracker id={decisionGuide.id} href={`/decision-guides/${decisionGuide.id}`} name={decisionGuide.title} type="decision_guide" category={decisionGuide.category} />
       
       {/* Header */}
       <div className="space-y-4">
-        <h1 className="text-2xl font-semibold tracking-tight">{decisionGuide.title}</h1>
-        <ExpandableText cacheKey={`decision-desc-${decisionGuide.id}`} fadeClass="from-background to-transparent">
-          <ProseClient content={decisionGuide.description} className="text-muted-foreground" />
-        </ExpandableText>
-        <MetadataBadges
-          type="decision_guide"
-          updatedAt={decisionGuide.updated_at}
-          lastVerified={decisionGuide.last_verified}
-          category={decisionGuide.category}
-        />
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl font-semibold tracking-tight">{decisionGuide.title}</h1>
+            <ExpandableText cacheKey={`decision-desc-${decisionGuide.id}`} fadeClass="from-background to-transparent">
+              <ProseClient content={decisionGuide.description} className="text-muted-foreground" />
+            </ExpandableText>
+            <MetadataBadges
+              type="decision_guide"
+              updatedAt={decisionGuide.updated_at}
+              lastVerified={decisionGuide.last_verified}
+              category={decisionGuide.category}
+            />
+          </div>
+          <FavoriteButton type="decision_guide" id={decisionGuide.id} name={decisionGuide.title} href={`/decision-guides/${decisionGuide.id}`} />
+        </div>
       </div>
 
       {/* OVERVIEW PHASE */}

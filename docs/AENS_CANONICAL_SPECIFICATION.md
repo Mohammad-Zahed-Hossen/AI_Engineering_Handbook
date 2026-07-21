@@ -1340,6 +1340,81 @@ Query "embedding" → expands to:
 | Decision Guides | name, problem, options |
 | Principles | name, statement, implications |
 
+## Package Page Search/Filter
+
+The package list page (`app/packages/page.tsx`) provides client-side search and filtering functionality:
+
+### Search Functionality
+- **Search input** - Filters packages by name, summary, and task names
+- **Real-time filtering** - Results update as user types
+- **Clear button** - X icon to clear search query
+
+### Filter Options
+- **Difficulty filter** - Filter by `beginner`, `intermediate`, `advanced`, `expert`
+- **Maturity filter** - Filter by `research`, `experimental`, `emerging`, `production_ready`, `legacy`
+- **More filters toggle** - Collapsible filter section with Filter icon button
+
+### UI Components
+- `PackageListClient.tsx` - Client component with search state management
+- Results count display showing `filtered / total` packages
+- "Clear all" button when filters are active
+- Expandable package cards showing install/import commands
+
+## Package Detail Page Search/Filter
+
+The package detail page (`app/packages/[id]/page.tsx`) provides task navigation and search:
+
+### Sticky Action Bar
+- **Location:** `components/shared/StickyActionBar.tsx`
+- **Purpose:** Quick navigation between package tasks
+- **Trigger:** Appears when scrolling down (200px threshold) or near bottom
+- **Features:**
+  - Previous/Next section buttons
+  - Current section label display
+  - Sheet popup for full section list
+  - Keyboard navigation support
+
+### Task Navigation
+- **Source:** `PackageTaskList` component
+- **Navigation:** Click task chips to scroll to specific tasks
+- **Anchors:** Each task has a unique ID for direct linking
+
+## Cheatsheet Page Search/Filter
+
+The cheatsheet list page (`app/cheatsheets/page.tsx`) provides client-side search and filtering functionality:
+
+### Search Functionality
+- **Search input** - Filters cheatsheets by name, description, and entry problems/triggers
+- **Real-time filtering** - Results update as user types
+- **Clear button** - X icon to clear search query
+
+### Filter Options
+- **Difficulty filter** - Filter by `beginner`, `intermediate`, `advanced`, `expert`
+- **Domain filter** - Filter by domain (e.g., `ml`, `dl`, `llm`, `data`, `deployment`)
+- **More filters toggle** - Collapsible filter section with Filter icon button
+
+### UI Components
+- `CheatsheetListClient.tsx` - Client component with search state management
+- Results count display showing `filtered / total` cheatsheets
+- "Clear all" button when filters are active
+- Expandable cheatsheet cards showing quick reference tables
+
+## Cheatsheet Entry List Search/Filter
+
+The cheatsheet entry list (`app/cheatsheets/[id]/CheatsheetEntryList.tsx`) provides entry-level search:
+
+### Content Command Palette
+- **Location:** `components/shared/ContentCommandPalette.tsx`
+- **Purpose:** Search and filter individual cheatsheet entries
+- **Search fields:** problem, trigger, minimal_notes, common_bug, snippet
+- **Keyboard shortcut:** `/` to focus search
+
+### Features
+- **Real-time filtering** - Results update as user types
+- **Keyboard navigation** - Arrow keys to navigate, Enter to select
+- **Auto-scroll** - Selected entry scrolls into view
+- **Clear button** - X icon to clear search query
+
 ## Advanced Search Features
 
 ### Typo Tolerance
@@ -1960,6 +2035,138 @@ graph TD
     DG --> R[Registry]
     R --> PI[Problem Index]
 ```
+
+---
+
+# 19. Personalized Dashboard
+
+## Overview
+
+The AENS dashboard provides a **personalized engineering workspace** that adapts to user behavior over time. It uses localStorage for all state management, requiring no backend.
+
+## Dashboard State Schema
+
+**Location:** `lib/dashboard-state.ts`
+
+**Storage Key:** `aens-dashboard`
+
+**Version:** 1 (for future migrations)
+
+```typescript
+interface DashboardState {
+  version: number;
+  favorites: FavoriteItem[];
+  history: HistoryItem[];
+  widgetPreferences: WidgetPreferences;
+}
+
+interface FavoriteItem {
+  type: ContentType;
+  id: string;
+  name: string;
+  href: string;
+  timestamp: number;
+}
+
+interface HistoryItem {
+  type: ContentType;
+  id: string;
+  name: string;
+  href: string;
+  timestamp: number;
+  visitCount: number;
+}
+
+interface WidgetPreferences {
+  [widgetId: string]: {
+    enabled: boolean;
+    pinned: boolean;
+  };
+}
+```
+
+## Content Types
+
+All content types support favorites and history tracking:
+- `package` - Python libraries
+- `model` - ML/DL/LLM models
+- `workflow` - End-to-end processes
+- `cheatsheet` - Syntax references
+- `pattern` - Engineering patterns
+- `debug_guide` - Troubleshooting guides
+- `decision_guide` - Trade-off analysis
+- `principle` - Fundamental concepts
+- `registry` - Model metadata
+
+## Widget System
+
+### Available Widgets
+
+| Widget | Purpose | Default State |
+|--------|---------|---------------|
+| Continue Learning | Resume reading with scroll position | enabled, pinned |
+| Favorites | Bookmarked content | enabled, pinned |
+| Frequently Used | Top 5 most visited content | enabled, pinned |
+| Recommendations | Context-aware suggestions | enabled, pinned |
+| Recently Added | Newly added content | enabled, not pinned |
+| Learning Progress | Visited/favorited stats per type | enabled, not pinned |
+| Dashboard Insights | Dynamic usage insights | enabled, not pinned |
+
+### Widget Architecture
+
+All widgets are client components that:
+- Use centralized state from `lib/dashboard-state.ts`
+- Support hide/show via `isWidgetEnabled()`
+- Support pin-to-top via `isWidgetPinned()`
+- Sort dynamically in `PersonalizedWidgets.tsx`
+
+### Widget Preferences
+
+Users can customize the dashboard via the WidgetPreferences popover:
+- **Eye icon** - Toggle widget visibility
+- **Pin icon** - Pin widget to top of dashboard
+- Preferences persist in localStorage
+
+## Recommendation Engine
+
+**Location:** `data/dashboard/recommendations.json`
+
+Provides context-aware recommendations based on content relationships:
+
+```json
+{
+  "pytorch": {
+    "recommendations": ["autograd", "optimizer", "dataloader", "training-loop"]
+  },
+  "transformers": {
+    "recommendations": ["attention", "tokenization", "positional-encoding"]
+  }
+}
+```
+
+**API:**
+- `getRecommendations()` - Load all mappings
+- `getRecommendedContent(sourceId, limit)` - Get recommendations for a content item
+
+## Reading Session Tracking
+
+**Location:** `lib/hooks/useReadingSession.ts`
+
+Tracks reading progress for the Continue Learning widget:
+- Scroll position (Y coordinate)
+- Scroll percentage
+- Timestamp
+- Session duration
+
+**Component:** `ReadingSessionTracker` (added to all content pages)
+
+## Performance Considerations
+
+- All state reads centralized in `lib/dashboard-state.ts`
+- Widgets use `useState` with lazy initialization
+- History limited to 50 items to prevent storage bloat
+- Server component for Recently Added (no client JS needed)
+- No duplicate helper logic across components
 
 ---
 

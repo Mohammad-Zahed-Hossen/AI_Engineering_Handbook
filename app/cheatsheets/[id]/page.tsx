@@ -7,6 +7,7 @@ import RelatedContent from '@/components/shared/RelatedContent';
 import CheatsheetEntryList from './CheatsheetEntryList';
 import DataTable from '@/components/shared/DataTable';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
+import FavoriteButton from '@/components/shared/FavoriteButton';
 
 export async function generateStaticParams() {
   return getAllCheatsheetIds().map((id) => ({ id }));
@@ -52,10 +53,15 @@ export default async function CheatsheetDetailPage({ params }: PageProps) {
       ]}
       toc={toc}
     >
-      <ReadingSessionTracker href={`/cheatsheets/${cheatsheet.id}`} name={cheatsheet.name} type="cheatsheet" />
+      <ReadingSessionTracker id={cheatsheet.id} href={`/cheatsheets/${cheatsheet.id}`} name={cheatsheet.name} type="cheatsheet" />
       <header className="space-y-3 border-b border-border pb-4">
-        <h1>{cheatsheet.name}</h1>
-        <MetadataBadges type="cheatsheet" updatedAt={cheatsheet.updated_at} />
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h1>{cheatsheet.name}</h1>
+            <MetadataBadges type="cheatsheet" updatedAt={cheatsheet.updated_at} />
+          </div>
+          <FavoriteButton type="cheatsheet" id={cheatsheet.id} name={cheatsheet.name} href={`/cheatsheets/${cheatsheet.id}`} />
+        </div>
       </header>
 
       <div className="space-y-8">

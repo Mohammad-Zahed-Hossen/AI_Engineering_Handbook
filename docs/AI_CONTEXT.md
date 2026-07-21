@@ -101,6 +101,74 @@ npm run dev       # Development server
 - **Synonym Expansion:** Query expansion with related terms
 - **Ranking:** Exact match (1.0) → Fuzzy match (0-0.45)
 
+## Package Page Search/Filter
+
+The package list page provides client-side search and filtering:
+
+### Search
+- Search input filters by name, summary, and task names
+- Real-time filtering with clear button (X icon)
+
+### Filters
+- **Difficulty:** `beginner`, `intermediate`, `advanced`, `expert`
+- **Maturity:** `research`, `experimental`, `emerging`, `production_ready`, `legacy`
+- **More filters toggle** - Collapsible filter section
+
+### UI
+- `PackageListClient.tsx` - Client component with state management
+- Results count: `filtered / total`
+- "Clear all" button when filters active
+- Expandable cards showing install/import commands
+
+## Package Detail Page Search/Filter
+
+The package detail page provides task navigation:
+
+### Sticky Action Bar
+- **Location:** `components/shared/StickyActionBar.tsx`
+- **Purpose:** Quick navigation between package tasks
+- **Trigger:** Appears when scrolling (200px threshold) or near bottom
+- **Features:** Previous/Next buttons, section label, sheet popup
+
+### Task Navigation
+- Click task chips to scroll to specific tasks
+- Each task has a unique ID for direct linking
+
+## Cheatsheet Page Search/Filter
+
+The cheatsheet list page provides client-side search and filtering:
+
+### Search
+- Search input filters by name, description, and entry problems/triggers
+- Real-time filtering with clear button (X icon)
+
+### Filters
+- **Difficulty:** `beginner`, `intermediate`, `advanced`, `expert`
+- **Domain:** `ml`, `dl`, `llm`, `data`, `deployment`, etc.
+- **More filters toggle** - Collapsible filter section
+
+### UI
+- `CheatsheetListClient.tsx` - Client component with state management
+- Results count: `filtered / total`
+- "Clear all" button when filters active
+- Expandable cards showing quick reference tables
+
+## Cheatsheet Entry List Search/Filter
+
+The cheatsheet entry list provides entry-level search:
+
+### Content Command Palette
+- **Location:** `components/shared/ContentCommandPalette.tsx`
+- **Purpose:** Search and filter individual cheatsheet entries
+- **Search fields:** problem, trigger, minimal_notes, common_bug, snippet
+- **Keyboard shortcut:** `/` to focus search
+
+### Features
+- Real-time filtering as user types
+- Keyboard navigation (Arrow keys, Enter)
+- Auto-scroll to selected entry
+- Clear button (X icon)
+
 ## Navigation Performance
 
 - `_nav.json` files contain only `id`, `name`, `version`, `updated_at`
@@ -129,6 +197,39 @@ aens.config.json # Configuration
 4. Using string alternatives instead of `ContentRef` objects
 5. Forgetting bidirectional relationships
 
+## Personalized Dashboard
+
+### Dashboard State
+- **Location:** `lib/dashboard-state.ts`
+- **Storage Key:** `aens-dashboard`
+- **Content Types:** package, model, workflow, cheatsheet, pattern, debug_guide, decision_guide, principle, registry
+
+### Available Widgets
+| Widget | Purpose |
+|--------|---------|
+| Continue Learning | Resume reading with scroll position |
+| Favorites | Bookmarked content |
+| Frequently Used | Top 5 most visited content |
+| Recommendations | Context-aware suggestions |
+| Recently Added | Newly added content |
+| Learning Progress | Visited/favorited stats per type |
+| Dashboard Insights | Dynamic usage insights |
+
+### Widget Preferences
+- Users can hide/show widgets via eye icon
+- Users can pin widgets to top via pin icon
+- Preferences persist in localStorage
+
+### Recommendation Engine
+- **Location:** `data/dashboard/recommendations.json`
+- Provides context-aware suggestions based on content relationships
+- Example: PyTorch → Autograd, Optimizer, DataLoader, Training Loop
+
+### Reading Session Tracking
+- **Location:** `lib/hooks/useReadingSession.ts`
+- Tracks scroll position and reading progress
+- Used by Continue Learning widget
+
 ## Loading Order for AI
 
 1. `docs/AGENTS.md` - Loading order
@@ -137,6 +238,7 @@ aens.config.json # Configuration
 4. `docs/architecture/data-flow.md` - Data flows
 5. `lib/schemas/*.ts` - Content schemas
 6. `lib/data.ts` - Data loading patterns
+7. `lib/dashboard-state.ts` - Dashboard state management
 
 ---
 

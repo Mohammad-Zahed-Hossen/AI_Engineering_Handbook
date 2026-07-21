@@ -9,6 +9,8 @@ import DeploymentProfiles from '@/components/registry/DeploymentProfiles';
 import RuntimeDecisionCard from '@/components/registry/RuntimeDecisionCard';
 import EngineeringContinuation from '@/components/registry/EngineeringContinuation';
 import QuickLinksCard from '@/components/registry/QuickLinksCard';
+import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
+import FavoriteButton from '@/components/shared/FavoriteButton';
 
 /**
  * Pre-generates family params for static rendering.
@@ -41,15 +43,20 @@ export default async function RegistryFamilyPage({ params }: PageProps) {
         { label: familyData.name },
       ]}
     >
+      <ReadingSessionTracker id={family} href={`/registry/families/${family}`} name={familyData.name} type="registry" category={family} />
+      
       <div className="space-y-4">
         {/* Family Header */}
-        <div className="space-y-2">
-          <h1 className="text-xl md:text-2xl font-bold text-foreground tracking-tight">
-            {familyData.name}
-          </h1>
-          <p className="text-xs md:text-sm text-muted-foreground max-w-2xl leading-relaxed">
-            {familyData.description}
-          </p>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl md:text-2xl font-bold text-foreground tracking-tight">
+              {familyData.name}
+            </h1>
+            <p className="text-xs md:text-sm text-muted-foreground max-w-2xl leading-relaxed">
+              {familyData.description}
+            </p>
+          </div>
+          <FavoriteButton type="registry" id={family} name={familyData.name} href={`/registry/families/${family}`} />
         </div>
 
         {/* Family Stats - Full-width rows on mobile */}

@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Server, Clock, Wrench, TrendingUp, AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react';
 import { DecisionOption } from '@/types/decision-guide';
-import { cn } from '@/lib/utils';
 
 // Global memory cache to preserve expanded state across page navigations
 const expandedCache: Record<string, boolean> = {};

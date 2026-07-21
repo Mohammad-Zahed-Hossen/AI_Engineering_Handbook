@@ -1,6 +1,6 @@
 'use client';
 
-import { Copy, Check, Package, Terminal, Code2, BookOpen, Clock } from 'lucide-react';
+import { Copy, Check, Package, Terminal, Code2, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatRelativeTime } from '@/lib/format-date';
 import { useState } from 'react';

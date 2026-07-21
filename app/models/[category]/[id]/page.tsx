@@ -15,6 +15,7 @@ import { Prose } from '@/components/shared/Prose';
 import RecommendedNextSection from '@/components/shared/RecommendedNextSection';
 import SectionCard from '@/components/shared/SectionCard';
 import { AlertCircle, Check, AlertTriangle, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
+import FavoriteButton from '@/components/shared/FavoriteButton';
 
 export async function generateStaticParams() {
   const categories: ModelCategory[] = ['ml', 'dl', 'llm'];
@@ -110,23 +111,28 @@ export default async function ModelDetailPage({ params }: PageProps) {
       ]}
       toc={toc}
     >
-      <ReadingSessionTracker href={`/models/${validCategory}/${model.id}`} name={model.name} type="model" category={validCategory} />
+      <ReadingSessionTracker id={model.id} href={`/models/${validCategory}/${model.id}`} name={model.name} type="model" category={validCategory} />
       
       <header id="summary" className="space-y-3 border-b border-border pb-4 scroll-mt-24">
-        <h1>{model.name}</h1>
-        <MetadataBadges
-          type="model"
-          updatedAt={model.updated_at}
-          lastVerified={model.lastverified}
-          problemTypes={model.problem_types}
-        />
-        <ModelDecisionStrip
-          interpretability={model.decisionsummary.interpretability}
-          stability={model.stability}
-          confidence={model.confidence}
-          engineeringMaturity={model.engineeringmaturity}
-          difficulty={model.difficulty}
-        />
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h1>{model.name}</h1>
+            <MetadataBadges
+              type="model"
+              updatedAt={model.updated_at}
+              lastVerified={model.lastverified}
+              problemTypes={model.problem_types}
+            />
+            <ModelDecisionStrip
+              interpretability={model.decisionsummary.interpretability}
+              stability={model.stability}
+              confidence={model.confidence}
+              engineeringMaturity={model.engineeringmaturity}
+              difficulty={model.difficulty}
+            />
+          </div>
+          <FavoriteButton type="model" id={model.id} name={model.name} href={`/models/${validCategory}/${model.id}`} />
+        </div>
         <div className="rounded-lg bg-muted/30 p-3.5 border border-border/80">
           <span className="text-[10px] font-bold uppercase text-muted-foreground block mb-1">Architecture Overview</span>
           <Prose content={model.description} className="text-xs text-foreground leading-relaxed font-sans" />

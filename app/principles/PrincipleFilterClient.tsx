@@ -22,19 +22,6 @@ const categoryLabels: Record<PrincipleCategory, string> = {
   probability: 'Probability',
 };
 
-// Category badge styles
-const getCategoryBadgeClass = (category: string) => {
-  const styles: Record<string, string> = {
-    learning_theory: 'text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-500/30 dark:bg-blue-500/10',
-    optimization: 'text-emerald-600 border-emerald-200 bg-emerald-50 dark:text-emerald-400 dark:border-emerald-500/30 dark:bg-emerald-500/10',
-    representation: 'text-purple-600 border-purple-200 bg-purple-50 dark:text-purple-400 dark:border-purple-500/30 dark:bg-purple-500/10',
-    systems: 'text-amber-600 border-amber-200 bg-amber-50 dark:text-amber-400 dark:border-amber-500/30 dark:bg-amber-500/10',
-    information_theory: 'text-indigo-600 border-indigo-200 bg-indigo-50 dark:text-indigo-400 dark:border-indigo-500/30 dark:bg-indigo-500/10',
-    statistics: 'text-rose-600 border-rose-200 bg-rose-50 dark:text-rose-400 dark:border-rose-500/30 dark:bg-rose-500/10',
-    probability: 'text-cyan-600 border-cyan-200 bg-cyan-50 dark:text-cyan-400 dark:border-cyan-500/30 dark:bg-cyan-500/10',
-  };
-  return styles[category] || 'text-muted-foreground border-border bg-muted';
-};
 
 // Engineering maturity badge styles
 const getMaturityBadgeClass = (maturity: string) => {

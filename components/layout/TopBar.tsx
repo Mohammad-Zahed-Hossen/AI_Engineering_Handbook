@@ -1,5 +1,5 @@
 import MobileSidebarTrigger from './MobileSidebarTrigger';
-import SearchBox from '@/components/shared/SearchBox';
+import SearchBoxWrapper from '@/components/shared/SearchBoxWrapper';
 import { NavItem } from '@/lib/data';
 import DarkModeToggle from './DarkModeToggle';
 
@@ -53,7 +53,7 @@ export default function TopBar({
         </span>
       </div>
       <div className="flex-1 min-w-0 flex justify-center">
-        <SearchBox compact placeholder="Search…" />
+        <SearchBoxWrapper compact placeholder="Search…" />
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <DarkModeToggle />

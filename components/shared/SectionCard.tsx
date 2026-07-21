@@ -22,8 +22,6 @@ export default function SectionCard({
   children,
   className,
   variant = 'default',
-  collapsible = false,
-  defaultOpen = true,
   id,
   subtitle,
   badge,

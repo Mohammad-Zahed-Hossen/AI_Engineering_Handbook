@@ -1,4 +1,3 @@
-import { ProseClient } from '@/components/shared/Prose';
 import { cn } from '@/lib/utils';
 import { Lightbulb } from 'lucide-react';
 

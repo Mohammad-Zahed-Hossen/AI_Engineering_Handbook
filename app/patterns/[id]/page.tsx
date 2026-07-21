@@ -20,6 +20,7 @@ import Link from 'next/link';
 import CollapsibleSection from '@/components/shared/CollapsibleSection';
 import SectionSummary from '@/components/shared/SectionSummary';
 import BackToTop from '@/components/shared/BackToTop';
+import FavoriteButton from '@/components/shared/FavoriteButton';
 
 export async function generateStaticParams() {
   const ids = getAllPatternIds();
@@ -108,27 +109,32 @@ export default async function PatternPage({ params }: PageProps) {
 
   return (
     <ContentPageLayout breadcrumbs={breadcrumbs} toc={toc}>
-      <ReadingSessionTracker href={`/patterns/${pattern.id}`} name={pattern.title} type="pattern" />
+      <ReadingSessionTracker id={pattern.id} href={`/patterns/${pattern.id}`} name={pattern.title} type="pattern" />
       {/* Header */}
       <div className="space-y-3">
-        <h1 className="text-2xl font-semibold tracking-tight">{pattern.title}</h1>
-        <ExpandableText cacheKey={`pattern-desc-${pattern.id}`} fadeClass="from-background to-transparent">
-          <ProseClient content={pattern.description} className="text-muted-foreground" />
-        </ExpandableText>
-        <MetadataBadges
-          type="pattern"
-          updatedAt={pattern.updated_at}
-          lastVerified={pattern.last_verified}
-          category={pattern.category}
-          difficulty={pattern.difficulty}
-          domain={pattern.domain}
-          engineeringArea={pattern.engineering_area}
-          confidence={pattern.confidence}
-          engineeringMaturity={pattern.engineering_maturity}
-          lifecycle={pattern.lifecycle}
-          stability={pattern.stability}
-          simplified={true}
-        />
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl font-semibold tracking-tight">{pattern.title}</h1>
+            <ExpandableText cacheKey={`pattern-desc-${pattern.id}`} fadeClass="from-background to-transparent">
+              <ProseClient content={pattern.description} className="text-muted-foreground" />
+            </ExpandableText>
+            <MetadataBadges
+              type="pattern"
+              updatedAt={pattern.updated_at}
+              lastVerified={pattern.last_verified}
+              category={pattern.category}
+              difficulty={pattern.difficulty}
+              domain={pattern.domain}
+              engineeringArea={pattern.engineering_area}
+              confidence={pattern.confidence}
+              engineeringMaturity={pattern.engineering_maturity}
+              lifecycle={pattern.lifecycle}
+              stability={pattern.stability}
+              simplified={true}
+            />
+          </div>
+          <FavoriteButton type="pattern" id={pattern.id} name={pattern.title} href={`/patterns/${pattern.id}`} />
+        </div>
       </div>
 
       {/* Decision Summary */}

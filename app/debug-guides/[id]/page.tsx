@@ -12,6 +12,7 @@ import { ProseClient } from '@/components/shared/Prose';
 import { AlertTriangle, CheckCircle2, Activity, Shield, Search, Terminal, TestTube, XCircle, ArrowUpCircle, ChevronRight } from 'lucide-react';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 import DebugDashboard from '@/components/shared/DebugDashboard';
+import FavoriteButton from '@/components/shared/FavoriteButton';
 import DecisionWizard from '@/components/shared/DecisionWizard';
 import RootCauseCard from '@/components/shared/RootCauseCard';
 import DiagnosticTestCard from '@/components/shared/DiagnosticTestCard';
@@ -73,15 +74,20 @@ export default async function DebugGuidePage({ params }: PageProps) {
 
   return (
     <ContentPageLayout breadcrumbs={breadcrumbs} toc={toc}>
-      <ReadingSessionTracker href={`/debug-guides/${debugGuide.id}`} name={debugGuide.title} type="debug_guide" category={debugGuide.category} />
+      <ReadingSessionTracker id={debugGuide.id} href={`/debug-guides/${debugGuide.id}`} name={debugGuide.title} type="debug_guide" category={debugGuide.category} />
       
       {/* Debug Dashboard - Hero Section */}
-      <DebugDashboard
-        title={debugGuide.title}
-        category={debugGuide.category}
-        overview={debugGuide.overview}
-        hasQuickIdentification={debugGuide.quick_identification && debugGuide.quick_identification.length > 0}
-      />
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <DebugDashboard
+            title={debugGuide.title}
+            category={debugGuide.category}
+            overview={debugGuide.overview}
+            hasQuickIdentification={debugGuide.quick_identification && debugGuide.quick_identification.length > 0}
+          />
+        </div>
+        <FavoriteButton type="debug_guide" id={debugGuide.id} name={debugGuide.title} href={`/debug-guides/${debugGuide.id}`} />
+      </div>
 
       {/* Workflow Progress Indicator */}
       <div className="border-t border-b border-border py-3 -mx-4 px-4">

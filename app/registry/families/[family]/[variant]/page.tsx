@@ -7,6 +7,8 @@ import { formatSize, formatParameterCount, formatContextWindow } from '@/lib/for
 import DeploymentSummaryCard from '@/components/registry/DeploymentSummaryCard';
 import QuickLinksCard from '@/components/registry/QuickLinksCard';
 import EngineeringContinuation from '@/components/registry/EngineeringContinuation';
+import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
+import FavoriteButton from '@/components/shared/FavoriteButton';
 
 /**
  * Pre-generates variant params for static rendering.
@@ -70,35 +72,39 @@ export default async function RegistryVariantPage({ params }: PageProps) {
         { label: variantData.name },
       ]}
     >
+      <ReadingSessionTracker id={variant} href={`/registry/families/${family}/${variant}`} name={variantData.name} type="registry" category={family} />
+      
       <div className="overflow-x-hidden space-y-6">
         {/* Variant Header */}
-        <div className="space-y-2">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
             <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight break-words">
               {variantData.name}
             </h1>
-            <div className="flex flex-wrap items-center gap-1.5">
-              <RegistryBadge variant="info" size="xs" className="font-mono whitespace-nowrap">
-                {familyData.provider}
-              </RegistryBadge>
-              {engineeringSnapshot?.production_ready !== undefined && (
-                engineeringSnapshot.production_ready ? (
-                  <RegistryBadge variant="success" size="xs" className="font-mono whitespace-nowrap">
-                    <Check className="h-2.5 w-2.5" />
-                    Production
-                  </RegistryBadge>
-                ) : (
-                  <RegistryBadge variant="destructive" size="xs" className="font-mono whitespace-nowrap">
-                    <X className="h-2.5 w-2.5" />
-                    Experimental
-                  </RegistryBadge>
-                )
-              )}
-            </div>
+            <p className="text-xs text-muted-foreground max-w-full md:max-w-2xl leading-relaxed">
+              {variantData.description}
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground max-w-full md:max-w-2xl leading-relaxed">
-            {variantData.description}
-          </p>
+          <FavoriteButton type="registry" id={variant} name={variantData.name} href={`/registry/families/${family}/${variant}`} />
+        </div>
+        
+        <div className="flex flex-wrap items-center gap-1.5">
+          <RegistryBadge variant="info" size="xs" className="font-mono whitespace-nowrap">
+            {familyData.provider}
+          </RegistryBadge>
+          {engineeringSnapshot?.production_ready !== undefined && (
+            engineeringSnapshot.production_ready ? (
+              <RegistryBadge variant="success" size="xs" className="font-mono whitespace-nowrap">
+                <Check className="h-2.5 w-2.5" />
+                Production
+              </RegistryBadge>
+            ) : (
+              <RegistryBadge variant="destructive" size="xs" className="font-mono whitespace-nowrap">
+                <X className="h-2.5 w-2.5" />
+                Experimental
+              </RegistryBadge>
+            )
+          )}
         </div>
 
         {/* Key Specs Grid */}

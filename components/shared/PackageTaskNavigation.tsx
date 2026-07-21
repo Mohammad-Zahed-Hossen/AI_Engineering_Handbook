@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 interface TaskNavigationItem {
@@ -10,10 +10,6 @@ interface TaskNavigationItem {
 
 interface PackageTaskNavigationProps {
   tasks: TaskNavigationItem[];
-}
-
-function slugify(value: string): string {
-  return value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
 
 export default function PackageTaskNavigation({ tasks }: PackageTaskNavigationProps) {

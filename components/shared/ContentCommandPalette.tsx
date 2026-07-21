@@ -30,6 +30,12 @@ export default function ContentCommandPalette<T>({
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Reset highlighted index when search changes
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setHighlightedIndex(0);
+  };
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -73,11 +79,6 @@ export default function ContentCommandPalette<T>({
     });
   }, [items, searchQuery, getLabel, getDescription, searchText]);
 
-  // Reset highlighted index when search changes
-  useEffect(() => {
-    setHighlightedIndex(0);
-  }, [searchQuery]);
-
   // Handle keyboard navigation
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (!searchQuery) return;
@@ -118,7 +119,7 @@ export default function ContentCommandPalette<T>({
           type="text"
           placeholder={placeholder}
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => handleSearchChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           onKeyDown={handleKeyDown}
@@ -126,6 +127,7 @@ export default function ContentCommandPalette<T>({
           aria-label="Search content"
           aria-autocomplete="list"
           aria-expanded={searchQuery.length > 0}
+          aria-controls="search-results"
           role="combobox"
         />
         {searchQuery && (
@@ -146,7 +148,8 @@ export default function ContentCommandPalette<T>({
 
       {/* Search results dropdown */}
       {searchQuery && filteredItems.length > 0 && (
-        <div 
+        <div
+          id="search-results"
           className="absolute top-full left-0 right-0 mt-1.5 max-h-80 overflow-y-auto bg-card border border-border rounded-lg shadow-lg z-50 p-1.5"
           role="listbox"
         >
