@@ -10,14 +10,6 @@ import WidgetPreferences from './WidgetPreferences';
 import { History } from 'lucide-react';
 import { isWidgetEnabled, isWidgetPinned } from '@/lib/dashboard-state';
 
-// Default recommendations to show when no user history exists
-const DEFAULT_RECOMMENDATIONS = [
-  { id: 'autograd', type: 'package', name: 'Autograd', href: '/packages/autograd' },
-  { id: 'optimizer', type: 'package', name: 'Optimizer', href: '/packages/optimizer' },
-  { id: 'dataloader', type: 'package', name: 'DataLoader', href: '/packages/dataloader' },
-  { id: 'training-loop', type: 'package', name: 'Training Loop', href: '/packages/training-loop' },
-];
-
 // Widget order configuration - pinned widgets appear first
 const WIDGET_ORDER: Array<{ id: string; render: () => React.ReactNode }> = [
   { 
@@ -34,7 +26,7 @@ const WIDGET_ORDER: Array<{ id: string; render: () => React.ReactNode }> = [
   },
   { 
     id: 'recommendations', 
-    render: () => <RecommendationsWidget recommendations={DEFAULT_RECOMMENDATIONS} /> 
+    render: () => <RecommendationsWidget /> 
   },
   { 
     id: 'learningProgress', 

@@ -133,7 +133,10 @@ export default function ModelHubExplorer({ initialModels, categoriesMeta }: Mode
       m.problem_types.some((pt) => pt.toLowerCase().includes(searchQuery.toLowerCase()));
 
     const matchesProblems =
-      selectedProblems.length === 0 || m.problem_types.some((pt) => selectedProblems.includes(pt));
+      selectedProblems.length === 0 ||
+      m.problem_types.some((pt) =>
+        selectedProblems.some((selected) => pt.toLowerCase().includes(selected.toLowerCase()))
+      );
 
     const matchesDifficulty =
       selectedDifficulties.length === 0 || selectedDifficulties.includes(m.difficulty);

@@ -1304,6 +1304,30 @@ export const getPopularSearches = cache(function getPopularSearches(): string[] 
 });
 
 /**
+ * Resolves a popular search term to its canonical destination.
+ * Returns the href if a known destination exists, or null to fall back to search.
+ */
+export function resolvePopularSearch(term: string): string | null {
+  const normalized = term.toLowerCase().replace(/[^a-z0-9]/g, '');
+  
+  // Map popular search terms to their canonical destinations
+  const popularSearchMap: Record<string, string> = {
+    // PyTorch → Packages
+    pytorch: '/packages/pytorch',
+    // Transformer → Models (dl category)
+    transformer: '/models/dl/transformer',
+    // CUDA → Debug Guide
+    cuda: '/debug-guides/cuda-out-of-memory',
+    // RAG → Workflow
+    rag: '/workflows/build-rag-system',
+    // Fine-tuning → Decision Guide
+    finetuning: '/decision-guides/rag-vs-fine-tuning',
+  };
+  
+  return popularSearchMap[normalized] || null;
+}
+
+/**
  * Loads recommendation mappings for personalized suggestions.
  */
 export interface RecommendationMapping {
@@ -1317,6 +1341,65 @@ export const getRecommendations = cache(function getRecommendations(): Record<st
   }
   return readJSON<Record<string, RecommendationMapping>>(filePath);
 });
+
+/**
+ * Centralized href resolver for any content item.
+ * Returns the correct href for a content item based on its type and id.
+ * For models, the category must be provided.
+ */
+export function getContentHref(
+  type: 'package' | 'model' | 'workflow' | 'cheatsheet' | 'pattern' | 'debug_guide' | 'decision_guide' | 'principle' | 'registry',
+  id: string,
+  category?: string
+): string | null {
+  if (type === 'package') {
+    return contentExists('package', id) ? `/packages/${id}` : null;
+  }
+  if (type === 'workflow') {
+    return contentExists('workflow', id) ? `/workflows/${id}` : null;
+  }
+  if (type === 'cheatsheet') {
+    return contentExists('cheatsheet', id) ? `/cheatsheets/${id}` : null;
+  }
+  if (type === 'pattern') {
+    return contentExists('pattern', id) ? `/patterns/${id}` : null;
+  }
+  if (type === 'debug_guide') {
+    return contentExists('debug_guide', id) ? `/debug-guides/${id}` : null;
+  }
+  if (type === 'decision_guide') {
+    return contentExists('decision_guide', id) ? `/decision-guides/${id}` : null;
+  }
+  if (type === 'principle') {
+    return contentExists('principle', id) ? `/principles/${id}` : null;
+  }
+  if (type === 'model') {
+    const cat = category as ModelCategory | undefined ?? getModelCategoryById(id);
+    if (cat) {
+      return contentExists('model', id) ? `/models/${cat}/${id}` : null;
+    }
+    return null;
+  }
+  if (type === 'registry') {
+    // Check if it's a family ID
+    const familyIds = getAllRegistryFamilyIds();
+    if (familyIds.includes(id)) {
+      return `/registry/families/${id}`;
+    }
+    // Check if it's a variant ID (format: familyId/variantId)
+    if (id.includes('/')) {
+      const [familyId, variantId] = id.split('/');
+      if (familyIds.includes(familyId)) {
+        const variantIds = getRegistryVariantIds(familyId);
+        if (variantIds.includes(variantId)) {
+          return `/registry/families/${familyId}/${variantId}`;
+        }
+      }
+    }
+    return null;
+  }
+  return null;
+}
 
 /**
  * Gets recommended content IDs based on a source content ID.
@@ -1339,13 +1422,13 @@ export function getRecommendedContent(sourceId: string, limit = 4): Array<{ id: 
     // Check packages
     if (contentExists('package', recId)) {
       const pkg = getPackage(recId);
-      recommendations.push({ id: recId, type: 'package', name: pkg.name, href: `/packages/${recId}` });
+      recommendations.push({ id: recId, type: 'package', name: pkg.name, href: getContentHref('package', recId) });
       found = true;
     }
     // Check workflows
     else if (contentExists('workflow', recId)) {
       const wf = getWorkflow(recId);
-      recommendations.push({ id: recId, type: 'workflow', name: wf.name || wf.title, href: `/workflows/${recId}` });
+      recommendations.push({ id: recId, type: 'workflow', name: wf.name || wf.title, href: getContentHref('workflow', recId) });
       found = true;
     }
     // Check models (need to check all categories)
@@ -1354,7 +1437,7 @@ export function getRecommendedContent(sourceId: string, limit = 4): Array<{ id: 
       for (const cat of categories) {
         if (contentExists('model', recId)) {
           const model = getModel(cat, recId);
-          recommendations.push({ id: recId, type: 'model', name: model.name || model.title, href: `/models/${cat}/${recId}` });
+          recommendations.push({ id: recId, type: 'model', name: model.name || model.title, href: getContentHref('model', recId, cat) });
           found = true;
           break;
         }

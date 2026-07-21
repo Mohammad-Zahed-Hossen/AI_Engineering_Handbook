@@ -164,9 +164,28 @@ export function getHistory(): HistoryItem[] {
 }
 
 export function getFrequentlyUsed(limit = 5): HistoryItem[] {
-  return getHistory()
-    .sort((a, b) => b.visitCount - a.visitCount)
-    .slice(0, limit);
+  const history = getHistory();
+  const now = Date.now();
+  const DAYS_TO_MS = 24 * 60 * 60 * 1000;
+  
+  // Calculate recency-weighted score for each item
+  // score = visitCount * recencyWeight
+  // recencyWeight decays over time (recent visits get higher weight)
+  const scored = history.map(item => {
+    const daysSinceVisit = (now - item.timestamp) / DAYS_TO_MS;
+    // Exponential decay: weight = e^(-days/30)
+    // Items visited within last 30 days get high weight
+    // Items visited 6 months ago get very low weight
+    const recencyWeight = Math.exp(-daysSinceVisit / 30);
+    const score = item.visitCount * recencyWeight;
+    return { ...item, score };
+  });
+  
+  // Sort by score (descending)
+  scored.sort((a, b) => b.score - a.score);
+  
+  // Return top items without the score property
+  return scored.slice(0, limit).map(({ score, ...item }) => item);
 }
 
 // Widget preferences operations

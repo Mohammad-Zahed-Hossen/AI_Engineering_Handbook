@@ -15,7 +15,13 @@ function ScrollRestoreInner() {
       if (!isNaN(scrollY) && scrollY > 0) {
         // Allow content to render before scrolling
         setTimeout(() => {
-          window.scrollTo({ top: scrollY, behavior: 'instant' });
+          // Use the main scroll container if available, otherwise fall back to window
+          const mainElement = document.getElementById('main-scroll');
+          if (mainElement) {
+            mainElement.scrollTop = scrollY;
+          } else {
+            window.scrollTo({ top: scrollY, behavior: 'instant' });
+          }
           
           // Clean up the URL by removing the scrollTo param
           const url = new URL(window.location.href);

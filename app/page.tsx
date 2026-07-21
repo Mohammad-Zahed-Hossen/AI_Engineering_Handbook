@@ -3,6 +3,17 @@ import {
   getDashboardData,
   getKnowledgeExplorerPreview,
   getSummaryForItem,
+  resolvePopularSearch,
+  getContentHref,
+  getAllPackageIds,
+  getModelIds,
+  getAllWorkflowIds,
+  getAllCheatsheetIds,
+  getAllPatternIds,
+  getAllDebugGuideIds,
+  getAllDecisionGuideIds,
+  getAllPrincipleIds,
+  getAllRegistryFamilyIds,
 } from "@/lib/data";
 import SearchBoxWrapper from "@/components/shared/SearchBoxWrapper";
 import ContentTypeBadge from "@/components/shared/ContentTypeBadge";
@@ -27,7 +38,15 @@ import {
   RefreshCw,
   Scale,
   ShieldCheck,
+  Library,
+  BarChart3,
+  TrendingUp,
+  Sparkles,
 } from "lucide-react";
+import {
+  getContentTypeIcon,
+  getContentTypeLabel,
+} from "@/lib/content-type-meta";
 
 // Icon mapping for dynamic intent loading
 const INTENT_ICONS: Record<string, React.ElementType> = {
@@ -45,6 +64,16 @@ export default function Home() {
   const { counts, distribution, featured, intents, problemCategories, popularSearches, recent } = dashboardData;
 
   const totalModelsCount = counts.models_ml + counts.models_dl + counts.models_llm;
+  const totalContent =
+    getAllPackageIds().length +
+    getModelIds('ml').length + getModelIds('dl').length + getModelIds('llm').length +
+    getAllWorkflowIds().length +
+    getAllCheatsheetIds().length +
+    getAllPatternIds().length +
+    getAllDebugGuideIds().length +
+    getAllDecisionGuideIds().length +
+    getAllPrincipleIds().length +
+    getAllRegistryFamilyIds().length;
 
   // Get preview items for knowledge explorer cards
   const packagePreview = getKnowledgeExplorerPreview('package', 3);
@@ -52,61 +81,104 @@ export default function Home() {
   const workflowPreview = getKnowledgeExplorerPreview('workflow', 3);
 
   return (
-    <div className="space-y-8 pb-10">
-      {/* Section 1: Global Search */}
-      <header className="space-y-4">
-        <div>
-          <h1>
-            AI Engineering Handbook
-          </h1>
-          <p className="mt-1 text-xs text-muted-foreground leading-relaxed max-w-2xl">
-            A production-ready reference catalog for package syntax, neural network architectures, pipeline workflows, cheatsheets, and debug baseline guides.
-          </p>
+    <div className="space-y-6 sm:space-y-8 pb-10">
+      {/* ── Section 1: Hero / Global Search ── */}
+      <header className="space-y-4 sm:space-y-5">
+        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/5 via-primary/[0.03] to-background border border-primary/10 p-4 sm:p-6">
+          {/* Subtle decorative gradient blob */}
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-1.5 rounded-lg bg-primary/10 border border-primary/20">
+                <Library className="w-4 h-4 text-primary" />
+              </div>
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-primary/70">
+                v{/* Version placeholder */}1.0
+              </span>
+            </div>
+            <h1 className="text-lg sm:text-xl lg:text-2xl font-extrabold text-foreground tracking-tight">
+              AI Engineering Handbook
+            </h1>
+            <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-2xl">
+              A production-ready reference catalog for package syntax, neural network architectures, 
+              pipeline workflows, cheatsheets, and debug baseline guides.
+            </p>
+          </div>
         </div>
-        <SearchBoxWrapper placeholder="Search by library name, task type, or engineering problem…" />
-        
+
+        <div className="space-y-2">
+          <SearchBoxWrapper placeholder="Search by library name, task type, or engineering problem…" />
+          
+          {/* Quick Stats Bar */}
+          <div className="flex flex-wrap gap-1.5 items-center text-[10px] text-muted-foreground select-none">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/60 border border-border/60 font-medium">
+              <BarChart3 className="w-3 h-3" />
+              {totalContent} total entries
+            </span>
+            <span className="text-muted-foreground/40">·</span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/60 border border-border/60 font-medium">
+              <TrendingUp className="w-3 h-3" />
+              {recent.length} recently updated
+            </span>
+            <span className="text-muted-foreground/40">·</span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/60 border border-border/60 font-medium">
+              <Sparkles className="w-3 h-3" />
+              {intents.length} quick actions
+            </span>
+          </div>
+        </div>
+
         {/* Popular Searches */}
         {popularSearches.length > 0 && (
           <div className="flex flex-wrap gap-1.5 items-center">
             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider select-none">Popular:</span>
-            {popularSearches.map(term => (
-              <Link
-                key={term}
-                href={`/search?q=${encodeURIComponent(term)}`}
-                className="text-[10px] px-2 py-0.5 rounded bg-muted/50 hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
-              >
-                {term}
-              </Link>
-            ))}
+            {popularSearches.map(term => {
+              const resolvedHref = resolvePopularSearch(term);
+              const href = resolvedHref || `/search?q=${encodeURIComponent(term)}`;
+              return (
+                <Link
+                  key={term}
+                  href={href}
+                  className="group text-[10px] px-2 py-0.5 rounded-full bg-muted/50 hover:bg-primary/10 text-muted-foreground hover:text-primary transition-all cursor-pointer border border-transparent hover:border-primary/20"
+                >
+                  <span className="inline-flex items-center gap-1">
+                    {term}
+                    <ArrowRight className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100 transition-opacity -ml-0.5" />
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         )}
       </header>
 
-      {/* Section 2: Personalized Widgets */}
+      {/* ── Section 2: Personalized Widgets ── */}
       <PersonalizedWidgets />
       <RecentlyAddedWidgetServer />
 
-      {/* Section 3: Problem-first Entry */}
+      {/* ── Section 3: Problem-first Entry ── */}
       {problemCategories.length > 0 && (
         <section className="mobile-section-spacing">
-          <div className="rounded-xl border border-border bg-card mobile-card-padding hover:border-foreground/20 hover:shadow-sm transition-all">
+          <div className="rounded-xl border border-border bg-card mobile-card-padding hover:border-primary/20 hover:shadow-sm hover:shadow-primary/5 transition-all group">
             <div className="flex items-start gap-2.5 sm:gap-3">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-primary/5 border border-primary/10 shrink-0">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 shrink-0 group-hover:from-primary/15 group-hover:to-primary/10 transition-all">
                 <Layers className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <h2 className="text-xs sm:text-sm font-bold text-foreground mb-2">
+                <h2 className="text-xs sm:text-sm font-bold text-foreground mb-1">
                   Not sure where to start?
                 </h2>
                 <p className="text-[10px] sm:text-xs text-muted-foreground mb-3">
-                  Browse by Engineering Problem
+                  Browse by Engineering Problem — find solutions organized by real-world challenges
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {problemCategories.slice(0, 5).map(cat => (
                     <Link
                       key={cat.id}
                       href={`/problem-index#${cat.id.toLowerCase().replace(/\s+/g, '-')}`}
-                      className="text-[10px] px-2 py-0.5 rounded bg-muted/30 hover:bg-primary/10 text-foreground hover:text-primary transition-colors cursor-pointer"
+                      className="text-[10px] px-2.5 py-1 rounded-full bg-muted/30 hover:bg-primary/10 text-foreground hover:text-primary transition-all cursor-pointer border border-transparent hover:border-primary/20 font-medium"
                     >
                       {cat.name}
                     </Link>
@@ -115,20 +187,25 @@ export default function Home() {
               </div>
               <Link
                 href="/problem-index"
-                className="shrink-0 text-[10px] font-mono font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded hover:bg-primary/10 hover:text-primary transition-colors"
+                className="shrink-0 text-[10px] font-mono font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-full hover:bg-primary/10 hover:text-primary transition-all inline-flex items-center gap-1"
               >
-                View All →
+                View All <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
           </div>
         </section>
       )}
 
-      {/* Section 4: Knowledge Explorer */}
+      {/* ── Section 4: Knowledge Explorer ── */}
       <section className="mobile-section-spacing space-y-3">
-        <div className="flex items-center gap-1.5 select-none">
-          <Compass className="w-4.5 h-4.5 text-primary" />
-          <h2 className="text-sm font-bold text-foreground">Knowledge Explorer</h2>
+        <div className="flex items-center justify-between select-none">
+          <div className="flex items-center gap-1.5">
+            <Compass className="w-4.5 h-4.5 text-primary" />
+            <h2 className="text-sm font-bold text-foreground">Knowledge Explorer</h2>
+          </div>
+          <span className="text-[10px] text-muted-foreground font-mono">
+            {6} sections
+          </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
           {[
@@ -137,7 +214,9 @@ export default function Home() {
               description: 'Map common machine learning and deep learning engineering issues directly to reference guides.', 
               count: totalModelsCount,
               href: '/problem-index', 
-              icon: Layers 
+              icon: Layers,
+              accent: 'from-indigo-500/10 to-indigo-500/5',
+              borderAccent: 'hover:border-indigo-500/30',
             },
             { 
               title: 'Packages', 
@@ -145,7 +224,9 @@ export default function Home() {
               count: counts.packages, 
               href: '/packages', 
               icon: Code,
-              preview: packagePreview
+              preview: packagePreview,
+              accent: 'from-emerald-500/10 to-emerald-500/5',
+              borderAccent: 'hover:border-emerald-500/30',
             },
             { 
               title: 'Models Library', 
@@ -153,7 +234,9 @@ export default function Home() {
               count: totalModelsCount, 
               href: '/models', 
               icon: Cpu,
-              preview: modelPreview
+              preview: modelPreview,
+              accent: 'from-violet-500/10 to-violet-500/5',
+              borderAccent: 'hover:border-violet-500/30',
             },
             { 
               title: 'Workflows', 
@@ -161,21 +244,27 @@ export default function Home() {
               count: counts.workflows, 
               href: '/workflows', 
               icon: WorkflowIcon,
-              preview: workflowPreview
+              preview: workflowPreview,
+              accent: 'from-blue-500/10 to-blue-500/5',
+              borderAccent: 'hover:border-blue-500/30',
             },
             { 
               title: 'Cheatsheets', 
               description: 'Dynamic reference index cards for quick API syntax recall and common bugs.', 
               count: counts.cheatsheets, 
               href: '/cheatsheets', 
-              icon: FileCode2 
+              icon: FileCode2,
+              accent: 'from-amber-500/10 to-amber-500/5',
+              borderAccent: 'hover:border-amber-500/30',
             },
             { 
               title: 'Model Registry', 
               description: 'Deployment metadata and download locations for AI models.', 
               count: counts.registry_families, 
               href: '/registry', 
-              icon: Terminal 
+              icon: Terminal,
+              accent: 'from-rose-500/10 to-rose-500/5',
+              borderAccent: 'hover:border-rose-500/30',
             },
           ].map(cat => {
             const Icon = cat.icon;
@@ -183,10 +272,13 @@ export default function Home() {
               <Link
                 key={cat.title}
                 href={cat.href}
-                className="group rounded-xl border border-border bg-card mobile-card-padding hover:border-foreground/20 hover:shadow-sm transition-all flex flex-col gap-2.5 sm:gap-3 cursor-pointer"
+                className={`group rounded-xl border border-border bg-card mobile-card-padding ${cat.borderAccent} hover:shadow-sm transition-all flex flex-col gap-2.5 sm:gap-3 cursor-pointer relative overflow-hidden`}
               >
+                {/* Accent gradient strip */}
+                <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${cat.accent} opacity-60 group-hover:opacity-100 transition-opacity`} />
+                
                 <div className="flex items-start gap-2.5 sm:gap-3">
-                  <div className="p-1.5 sm:p-2 rounded-lg bg-primary/5 border border-primary/10 group-hover:bg-primary/10 group-hover:border-primary/20 transition-all shrink-0">
+                  <div className={`p-1.5 sm:p-2 rounded-lg bg-gradient-to-br ${cat.accent} border border-primary/10 group-hover:border-primary/20 transition-all shrink-0`}>
                     <Icon className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -194,7 +286,7 @@ export default function Home() {
                       <h3 className="text-xs sm:text-sm font-bold text-foreground leading-snug group-hover:text-primary transition-colors">
                         {cat.title}
                       </h3>
-                      <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                      <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0" />
                     </div>
                     <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 leading-relaxed">
                       {cat.description}
@@ -227,7 +319,7 @@ export default function Home() {
                   </div>
                 )}
                 
-                <span className="inline-block mt-auto text-[8px] sm:text-[9px] font-mono font-bold text-muted-foreground bg-muted px-1 sm:px-1.5 py-0.5 rounded select-none self-start">
+                <span className="inline-block mt-auto text-[8px] sm:text-[9px] font-mono font-bold text-muted-foreground bg-muted px-1 sm:px-1.5 py-0.5 rounded select-none self-start group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                   {cat.count} {cat.count === 1 ? 'entry' : 'entries'} →
                 </span>
               </Link>
@@ -236,35 +328,56 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Section 5: Knowledge Distribution */}
+      {/* ── Section 5: Knowledge Distribution with Mini Bar Charts ── */}
       <section className="mobile-section-spacing space-y-3">
         <div className="flex items-center gap-1.5 select-none">
           <Activity className="w-4.5 h-4.5 text-primary" />
           <h2 className="text-sm font-bold text-foreground">Knowledge Distribution</h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {[
-            { label: 'Packages', count: distribution.packages },
-            { label: 'ML Models', count: distribution.models_ml },
-            { label: 'DL Models', count: distribution.models_dl },
-            { label: 'LLM Models', count: distribution.models_llm },
-            { label: 'Workflows', count: distribution.workflows },
-            { label: 'Cheatsheets', count: distribution.cheatsheets },
-            { label: 'Registry', count: distribution.registry_families },
-            { label: 'Decision Guides', count: distribution.decision_guides },
-            { label: 'Debug Guides', count: distribution.debug_guides },
-            { label: 'Patterns', count: distribution.patterns },
-            { label: 'Principles', count: distribution.principles },
-          ].map(stat => (
-            <div key={stat.label} className="bg-muted/10 border border-border/80 p-3 rounded-lg flex flex-col justify-between select-none">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{stat.label}</span>
-              <span className="text-xl font-extrabold text-foreground mt-1">{stat.count}</span>
+
+        {(() => {
+          const distItems = [
+            { label: 'Packages', count: distribution.packages, color: 'bg-emerald-500' },
+            { label: 'ML Models', count: distribution.models_ml, color: 'bg-violet-500' },
+            { label: 'DL Models', count: distribution.models_dl, color: 'bg-violet-600' },
+            { label: 'LLM Models', count: distribution.models_llm, color: 'bg-violet-700' },
+            { label: 'Workflows', count: distribution.workflows, color: 'bg-blue-500' },
+            { label: 'Cheatsheets', count: distribution.cheatsheets, color: 'bg-amber-500' },
+            { label: 'Registry', count: distribution.registry_families, color: 'bg-rose-500' },
+            { label: 'Decision Guides', count: distribution.decision_guides, color: 'bg-cyan-500' },
+            { label: 'Debug Guides', count: distribution.debug_guides, color: 'bg-red-500' },
+            { label: 'Patterns', count: distribution.patterns, color: 'bg-orange-500' },
+            { label: 'Principles', count: distribution.principles, color: 'bg-purple-500' },
+          ];
+          const maxCount = Math.max(...distItems.map(d => d.count), 1);
+          
+          return (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+              {distItems.map(stat => {
+                const percent = (stat.count / maxCount) * 100;
+                const barWidth = Math.max(percent, 4); // minimum 4% for visibility
+                return (
+                  <div key={stat.label} className="bg-muted/10 border border-border/80 p-3 rounded-lg flex flex-col gap-1.5 select-none hover:bg-muted/20 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{stat.label}</span>
+                      <span className="text-lg font-extrabold text-foreground tabular-nums">{stat.count}</span>
+                    </div>
+                    {/* Mini progress bar */}
+                    <div className="w-full h-1.5 rounded-full bg-muted/40 overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full ${stat.color} transition-all duration-500`}
+                        style={{ width: `${barWidth}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          ))}
-        </div>
+          );
+        })()}
       </section>
 
-      {/* Section 6: Developer Intent Navigation */}
+      {/* ── Section 6: Developer Intent Navigation ── */}
       {intents.length > 0 && (
         <section className="mobile-section-spacing space-y-3">
           <div className="flex items-center gap-1.5 select-none">
@@ -278,7 +391,7 @@ export default function Home() {
                 <Link
                   key={intent.intent}
                   href={intent.target}
-                  className="group p-3 border border-border bg-card hover:border-foreground/15 rounded-lg transition-all flex items-center justify-between gap-3 cursor-pointer"
+                  className="group p-3 border border-border bg-card hover:border-foreground/15 rounded-lg transition-all flex items-center justify-between gap-3 cursor-pointer hover:shadow-sm"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="p-1.5 rounded bg-muted/60 text-muted-foreground group-hover:text-primary group-hover:bg-primary/5 transition-all shrink-0">
@@ -301,7 +414,7 @@ export default function Home() {
         </section>
       )}
 
-      {/* Section 7: Featured Collections */}
+      {/* ── Section 7: Featured Collections ── */}
       <section className="mobile-section-spacing space-y-3">
         <div className="flex items-center gap-1.5 select-none">
           <Star className="w-4.5 h-4.5 text-primary" />
@@ -309,19 +422,24 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Card 1: Core Libraries */}
-          <div className="rounded-xl border border-border bg-card mobile-card-padding space-y-3 flex flex-col justify-between">
+          <div className="rounded-xl border border-border bg-card mobile-card-padding space-y-3 flex flex-col justify-between hover:border-emerald-500/20 hover:shadow-sm transition-all group">
             <div>
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-2 select-none">Core Libraries</span>
+              <div className="flex items-center gap-2 mb-3 select-none">
+                <div className="p-1 rounded bg-emerald-500/10 border border-emerald-500/20">
+                  <Code className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Core Libraries</span>
+              </div>
               {featured.packages.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {featured.packages.map(pkg => (
                     <Link
                       key={pkg.id}
                       href={`/packages/${pkg.id}`}
-                      className="group flex items-center justify-between p-2 rounded border border-border/60 hover:border-foreground/15 transition-all text-xs"
+                      className="group/item flex items-center justify-between p-2 rounded-lg border border-border/60 hover:border-emerald-500/20 hover:bg-emerald-500/5 transition-all text-xs"
                     >
                       <div className="min-w-0">
-                        <span className="font-semibold text-foreground font-mono group-hover:text-primary transition-colors truncate block">
+                        <span className="font-semibold text-foreground font-mono group-hover/item:text-emerald-600 dark:group-hover/item:text-emerald-400 transition-colors truncate block">
                           {pkg.name}
                         </span>
                         {pkg.difficulty && (
@@ -345,19 +463,24 @@ export default function Home() {
           </div>
 
           {/* Card 2: Production Workflows */}
-          <div className="rounded-xl border border-border bg-card mobile-card-padding space-y-3 flex flex-col justify-between">
+          <div className="rounded-xl border border-border bg-card mobile-card-padding space-y-3 flex flex-col justify-between hover:border-blue-500/20 hover:shadow-sm transition-all group">
             <div>
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-2 select-none">Production Workflows</span>
+              <div className="flex items-center gap-2 mb-3 select-none">
+                <div className="p-1 rounded bg-blue-500/10 border border-blue-500/20">
+                  <WorkflowIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Production Workflows</span>
+              </div>
               {featured.workflows.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {featured.workflows.map(wf => (
                     <Link
                       key={wf.id}
                       href={`/workflows/${wf.id}`}
-                      className="group flex items-center justify-between p-2 rounded border border-border/60 hover:border-foreground/15 transition-all text-xs"
+                      className="group/item flex items-center justify-between p-2 rounded-lg border border-border/60 hover:border-blue-500/20 hover:bg-blue-500/5 transition-all text-xs"
                     >
                       <div className="min-w-0">
-                        <span className="font-semibold text-foreground group-hover:text-primary transition-colors truncate block">
+                        <span className="font-semibold text-foreground group-hover/item:text-blue-600 dark:group-hover/item:text-blue-400 transition-colors truncate block">
                           {wf.name}
                         </span>
                         {wf.difficulty && (
@@ -374,26 +497,31 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="rounded-lg border border-dashed border-border p-3 text-center select-none">
-                  <p className="text-xs text-muted-foreground">No workflows available yet.</p>
+                  <p className="text-xs text-m-foreground">No workflows available yet.</p>
                 </div>
               )}
             </div>
           </div>
 
           {/* Card 3: Core Architectures */}
-          <div className="rounded-xl border border-border bg-card mobile-card-padding space-y-3 flex flex-col justify-between">
+          <div className="rounded-xl border border-border bg-card mobile-card-padding space-y-3 flex flex-col justify-between hover:border-violet-500/20 hover:shadow-sm transition-all group">
             <div>
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-2 select-none">Core Architectures</span>
+              <div className="flex items-center gap-2 mb-3 select-none">
+                <div className="p-1 rounded bg-violet-500/10 border border-violet-500/20">
+                  <Cpu className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
+                </div>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Core Architectures</span>
+              </div>
               {featured.models.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {featured.models.map(m => (
                     <Link
                       key={`${m.category}-${m.id}`}
                       href={`/models/${m.category}/${m.id}`}
-                      className="group flex items-center justify-between p-2 rounded border border-border/60 hover:border-foreground/15 transition-all text-xs"
+                      className="group/item flex items-center justify-between p-2 rounded-lg border border-border/60 hover:border-violet-500/20 hover:bg-violet-500/5 transition-all text-xs"
                     >
                       <div className="min-w-0">
-                        <span className="font-semibold text-foreground group-hover:text-primary transition-colors truncate block">
+                        <span className="font-semibold text-foreground group-hover/item:text-violet-600 dark:group-hover/item:text-violet-400 transition-colors truncate block">
                           {m.name}
                         </span>
                         {m.difficulty && (
@@ -402,7 +530,7 @@ export default function Home() {
                           </span>
                         )}
                       </div>
-                      <span className="shrink-0 text-[8px] font-mono font-bold uppercase tracking-wider bg-primary/10 text-primary px-1.5 py-0.5 rounded ml-2">
+                      <span className="shrink-0 text-[8px] font-mono font-bold uppercase tracking-wider bg-violet-500/10 text-violet-600 dark:text-violet-400 px-1.5 py-0.5 rounded ml-2">
                         {m.category?.toUpperCase()}
                       </span>
                     </Link>
@@ -418,7 +546,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Section 8: Recently Updated */}
+      {/* ── Section 8: Recently Updated ── */}
       <section className="mobile-section-spacing space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 select-none">
@@ -428,19 +556,16 @@ export default function Home() {
           <span className="text-[10px] font-mono text-muted-foreground select-none">Sorted by updated_at</span>
         </div>
         {recent.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {recent.map(item => {
-              const href = item.type === 'model'
-                ? `/models/${item.category}/${item.id}`
-                : item.type === 'package'
-                ? `/packages/${item.id}`
-                : item.type === 'workflow'
-                ? `/workflows/${item.id}`
-                : item.type === 'registry'
-                ? `/registry/${item.category}`
-                : `/cheatsheets/${item.id}`;
+              const href = getContentHref(
+                item.type as 'package' | 'model' | 'workflow' | 'cheatsheet' | 'pattern' | 'debug_guide' | 'decision_guide' | 'principle' | 'registry',
+                item.id,
+                item.category
+              );
 
               const summary = getSummaryForItem(item);
+              const ItemIcon = getContentTypeIcon(item.type);
 
               return (
                 <div
@@ -449,7 +574,10 @@ export default function Home() {
                 >
                   <div>
                     <div className="flex items-center justify-between gap-2 select-none">
-                      <ContentTypeBadge type={item.type} className="px-1.5 py-0.5 text-[8px] font-bold uppercase" />
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted text-[8px] font-bold uppercase tracking-wider text-muted-foreground">
+                        <ItemIcon className="w-2.5 h-2.5" />
+                        {getContentTypeLabel(item.type)}
+                      </span>
                       <span className="text-[10px] font-mono text-muted-foreground">
                         {formatRelativeTime(item.updated_at)}
                       </span>
@@ -463,22 +591,24 @@ export default function Home() {
                       </p>
                     )}
                   </div>
+                {href && (
                   <div className="border-t border-border/60 pt-2.5 mt-auto flex justify-end">
                     <Link
                       href={href}
-                      className="inline-flex items-center gap-0.5 px-2.5 py-1 rounded bg-primary/5 hover:bg-primary/10 border border-primary/10 hover:border-primary/20 text-[10px] font-bold text-primary transition-all cursor-pointer select-none"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-primary/5 hover:bg-primary/10 border border-primary/10 hover:border-primary/20 text-[10px] font-bold text-primary transition-all cursor-pointer select-none"
                     >
                       Open Reference
                       <ArrowRight className="w-3 h-3" />
                     </Link>
                   </div>
+                )}
                 </div>
               );
             })}
           </div>
         ) : (
           <div className="rounded-xl border border-border bg-card mobile-card-padding">
-            <p className="text-xs text-muted-foreground text-center">
+            <p className="text-xs text-muted-foreground text-center py-4">
               No recent updates. Check back soon for new content.
             </p>
           </div>

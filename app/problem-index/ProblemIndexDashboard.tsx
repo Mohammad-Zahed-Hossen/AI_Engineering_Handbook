@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -237,14 +237,21 @@ export default function ProblemIndexDashboard({
     const timer = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
 
+      // Only update URL if the query param actually changed
       const params = new URLSearchParams(window.location.search);
-      if (searchQuery.trim()) {
-        params.set('q', searchQuery);
-      } else {
-        params.delete('q');
+      const currentQuery = params.get('q') || '';
+      if (currentQuery !== searchQuery.trim()) {
+        if (searchQuery.trim()) {
+          params.set('q', searchQuery.trim());
+        } else {
+          params.delete('q');
+        }
+        const newSearch = params.toString();
+        const newUrl = newSearch ? `?${newSearch}` : window.location.pathname;
+        if (newUrl !== window.location.pathname + window.location.search) {
+          router.replace(newUrl, { scroll: false });
+        }
       }
-      const newSearch = params.toString();
-      router.replace(newSearch ? `?${newSearch}` : window.location.pathname, { scroll: false });
     }, 150);
 
     return () => clearTimeout(timer);
@@ -273,7 +280,7 @@ export default function ProblemIndexDashboard({
 
 
   // Search logic helper
-  const matchesSearch = useCallback((problem: Problem, query: string, categoryName: string) => {
+  function matchesSearch(problem: Problem, query: string, categoryName: string) {
     if (!query) return true;
 
     // 1. Base details
@@ -347,7 +354,7 @@ export default function ProblemIndexDashboard({
     })) return true;
 
     return false;
-  }, [modelMap, patternMap, debugGuideMap, packageMap, registryMap, workflowMap, decisionGuideMap]);
+  }
 
   // Filter & Sorting Logic
   const filteredTaxonomy = useMemo(() => {
@@ -425,7 +432,12 @@ export default function ProblemIndexDashboard({
     selectedCharacteristics,
     sortBy,
     workflowMap,
-    matchesSearch
+    modelMap,
+    patternMap,
+    debugGuideMap,
+    packageMap,
+    registryMap,
+    decisionGuideMap
   ]);
 
   const totalFilteredProblems = useMemo(() => {
@@ -604,7 +616,10 @@ export default function ProblemIndexDashboard({
                   {(['beginner', 'intermediate', 'advanced', 'expert'] as EngineeringComplexity[]).map(c => (
                     <button
                       key={c}
-                      onClick={() => toggleFilter(selectedComplexities, setSelectedComplexities, c)}
+                      onClick={() => {
+                        toggleFilter(selectedComplexities, setSelectedComplexities, c);
+                        setOpenDropdown(null);
+                      }}
                       className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-foreground hover:bg-muted text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
                     >
                       <span className="capitalize">{c} {renderComplexityStars(c)}</span>
@@ -640,7 +655,10 @@ export default function ProblemIndexDashboard({
                   {['Production', 'Stable', 'Beta', 'Research', 'Experimental'].map(m => (
                     <button
                       key={m}
-                      onClick={() => toggleFilter(selectedMaturities, setSelectedMaturities, m)}
+                      onClick={() => {
+                        toggleFilter(selectedMaturities, setSelectedMaturities, m);
+                        setOpenDropdown(null);
+                      }}
                       className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-foreground hover:bg-muted text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
                     >
                       <span>{m}</span>
@@ -679,7 +697,10 @@ export default function ProblemIndexDashboard({
                       {(['classification', 'generation', 'retrieval', 'prediction', 'ranking', 'clustering', 'planning', 'reasoning', 'forecasting'] as NavigatorProblemType[]).map(t => (
                         <button
                           key={t}
-                          onClick={() => toggleFilter(selectedTypes, setSelectedTypes, t)}
+                          onClick={() => {
+                            toggleFilter(selectedTypes, setSelectedTypes, t);
+                            setOpenDropdown(null);
+                          }}
                           className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-foreground hover:bg-muted text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
                         >
                           <span className="capitalize">{t}</span>
@@ -696,7 +717,10 @@ export default function ProblemIndexDashboard({
                       {(['text', 'image', 'audio', 'video', 'tabular', 'multimodal'] as InputModality[]).map(m => (
                         <button
                           key={m}
-                          onClick={() => toggleFilter(selectedModalities, setSelectedModalities, m)}
+                          onClick={() => {
+                            toggleFilter(selectedModalities, setSelectedModalities, m);
+                            setOpenDropdown(null);
+                          }}
                           className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-foreground hover:bg-muted text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
                         >
                           <span className="capitalize">{m}</span>
@@ -716,7 +740,10 @@ export default function ProblemIndexDashboard({
                       ] as EngineeringCharacteristic[]).map(c => (
                         <button
                           key={c}
-                          onClick={() => toggleFilter(selectedCharacteristics, setSelectedCharacteristics, c)}
+                          onClick={() => {
+                            toggleFilter(selectedCharacteristics, setSelectedCharacteristics, c);
+                            setOpenDropdown(null);
+                          }}
                           className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-foreground hover:bg-muted text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
                         >
                           <span className="capitalize">{c.replace(/_/g, ' ')}</span>

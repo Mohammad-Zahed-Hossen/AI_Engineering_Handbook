@@ -1,14 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Lightbulb, TrendingUp, BookOpen, Shield, Zap, BarChart3 } from 'lucide-react';
-import { getHistory, getFavorites, type ContentType } from '@/lib/dashboard-state';
+import { Lightbulb, ArrowRight, Target } from 'lucide-react';
+import { getHistory, type ContentType } from '@/lib/dashboard-state';
 
 interface Insight {
   id: string;
+  title: string;
   text: string;
   icon: React.ElementType;
-  type: 'info' | 'tip' | 'warning';
+  type: 'focus' | 'next';
+  action?: string;
 }
 
 export default function DashboardInsightsWidget() {
@@ -18,136 +20,152 @@ export default function DashboardInsightsWidget() {
   useEffect(() => {
     setIsMounted(true);
     const history = getHistory();
-    const favorites = getFavorites();
     
     const newInsights: Insight[] = [];
     
-    // Count visits by type
+    // Count visits by type for learning focus
     const visitsByType: Record<ContentType, number> = {} as Record<ContentType, number>;
     const allTypes: ContentType[] = ['package', 'model', 'workflow', 'cheatsheet', 'pattern', 'debug_guide', 'decision_guide', 'principle', 'registry'];
     allTypes.forEach(type => {
       visitsByType[type] = history.filter(h => h.type === type).length;
     });
     
-    // Find most visited type
-    const mostVisited = Object.entries(visitsByType).reduce((max, entry) => 
-      entry[1] > max[1] ? entry : max, ['', 0]
-    );
+    const totalVisits = history.length;
     
-    if (mostVisited[1] > 0) {
-      const typeLabels: Record<ContentType, string> = {
-        package: 'Packages',
-        model: 'Models',
-        workflow: 'Workflows',
-        cheatsheet: 'Cheatsheets',
-        pattern: 'Patterns',
-        debug_guide: 'Debug Guides',
-        decision_guide: 'Decision Guides',
-        principle: 'Principles',
-        registry: 'Registry',
-      };
+    // Insight 1: Learning Focus
+    if (totalVisits > 0) {
+      const mostVisited = Object.entries(visitsByType).reduce((max, entry) => 
+        entry[1] > max[1] ? entry : max, ['', 0]
+      );
       
-      if (mostVisited[0] === 'model') {
+      if (mostVisited[1] > 0) {
+        const typeLabels: Record<ContentType, string> = {
+          package: 'Packages',
+          model: 'Models',
+          workflow: 'Workflows',
+          cheatsheet: 'Cheatsheets',
+          pattern: 'Patterns',
+          debug_guide: 'Debug Guides',
+          decision_guide: 'Decision Guides',
+          principle: 'Principles',
+          registry: 'Registry',
+        };
+        
+        const percentage = Math.round((mostVisited[1] / totalVisits) * 100);
         newInsights.push({
-          id: 'ml-focus',
-          text: `You've explored mostly ${typeLabels[mostVisited[0] as ContentType]}.`,
-          icon: Lightbulb,
-          type: 'info',
-        });
-      } else if (mostVisited[0] === 'workflow') {
-        newInsights.push({
-          id: 'workflow-focus',
-          text: `You're actively studying ${typeLabels[mostVisited[0] as ContentType]}.`,
-          icon: TrendingUp,
-          type: 'tip',
+          id: 'learning-focus',
+          title: 'Learning Focus',
+          text: `${percentage}% of your recent activity is ${typeLabels[mostVisited[0] as ContentType]}.`,
+          icon: Target,
+          type: 'focus',
         });
       }
     }
     
-    // Check for unvisited types
-    const unvisitedTypes = allTypes.filter(type => visitsByType[type] === 0);
-    if (unvisitedTypes.length > 0) {
-      const typeLabels: Record<ContentType, string> = {
-        package: 'Packages',
-        model: 'Models',
-        workflow: 'Workflows',
-        cheatsheet: 'Cheatsheets',
-        pattern: 'Patterns',
-        debug_guide: 'Debug Guides',
-        decision_guide: 'Decision Guides',
-        principle: 'Principles',
-        registry: 'Registry',
-      };
-      
-      if (unvisitedTypes.includes('debug_guide')) {
-        newInsights.push({
-          id: 'no-debug',
-          text: `You haven't visited any ${typeLabels['debug_guide']}.`,
-          icon: Shield,
-          type: 'tip',
-        });
-      }
-    }
-    
-    // Check for recent activity
+    // Insight 2: Next Step (based on most recent item)
     if (history.length > 0) {
       const recentItem = history[0];
-      const typeLabels: Record<ContentType, string> = {
-        package: 'Package',
-        model: 'Model',
-        workflow: 'Workflow',
-        cheatsheet: 'Cheatsheet',
-        pattern: 'Pattern',
-        debug_guide: 'Debug Guide',
-        decision_guide: 'Decision Guide',
-        principle: 'Principle',
-        registry: 'Registry',
-      };
       
-      newInsights.push({
-        id: 'recent',
-        text: `You recently started learning ${recentItem.name}.`,
-        icon: BookOpen,
-        type: 'info',
-      });
+      // Suggest next content type based on current focus
+      if (recentItem.type === 'package') {
+        newInsights.push({
+          id: 'next-step',
+          title: 'Next Step',
+          text: `You've learned ${recentItem.name}. Explore related Workflows for practical application.`,
+          icon: ArrowRight,
+          type: 'next',
+          action: 'Explore Workflows',
+        });
+      } else if (recentItem.type === 'model') {
+        newInsights.push({
+          id: 'next-step',
+          title: 'Next Step',
+          text: `You've studied ${recentItem.name}. Check Debug Guides for common implementation issues.`,
+          icon: ArrowRight,
+          type: 'next',
+          action: 'Explore Debug Guides',
+        });
+      } else if (recentItem.type === 'workflow') {
+        newInsights.push({
+          id: 'next-step',
+          title: 'Next Step',
+          text: `You've completed ${recentItem.name}. Review relevant Cheatsheets for quick reference.`,
+          icon: ArrowRight,
+          type: 'next',
+          action: 'Explore Cheatsheets',
+        });
+      } else if (recentItem.type === 'debug_guide') {
+        newInsights.push({
+          id: 'next-step',
+          title: 'Next Step',
+          text: `You've reviewed ${recentItem.name}. Apply the fix in a related Workflow.`,
+          icon: ArrowRight,
+          type: 'next',
+          action: 'Explore Workflows',
+        });
+      }
     }
     
-    // Check for favorites
-    if (favorites.length > 0) {
-      newInsights.push({
-        id: 'favorites',
-        text: `You have ${favorites.length} bookmarked reference${favorites.length !== 1 ? 's' : ''}.`,
-        icon: Lightbulb,
-        type: 'tip',
-      });
-    }
-    
-    setInsights(newInsights);
+    setInsights(newInsights.slice(0, 4));
   }, []);
 
   if (!isMounted) return null;
-  if (insights.length === 0) return null;
 
   return (
     <section className="rounded-xl border border-border bg-card mobile-card-padding space-y-3">
       <div className="flex items-center gap-1.5 select-none">
-        <Lightbulb className="w-4.5 h-4.5 text-primary" />
-        <h2 className="text-sm font-bold text-foreground">Dashboard Insights</h2>
+        <div className="p-1 rounded bg-indigo-500/10 border border-indigo-500/20">
+          <Lightbulb className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+        </div>
+        <div>
+          <h2 className="text-sm font-bold text-foreground">Dashboard Insights</h2>
+          {insights.length > 0 && (
+            <p className="text-[9px] text-muted-foreground">{insights.length} actionable insights</p>
+          )}
+        </div>
       </div>
 
-      <div className="space-y-2">
-        {insights.map((insight) => {
-          const Icon = insight.icon;
-          const bgColor = insight.type === 'warning' ? 'bg-amber-500/5 border-amber-500/20' : 'bg-primary/5 border-primary/20';
-          
-          return (
-            <div key={insight.id} className={`flex items-start gap-2 p-2.5 rounded-lg border ${bgColor}`}>
-              <Icon className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-              <span className="text-xs text-foreground">{insight.text}</span>
-            </div>
-          );
-        })}
-      </div>
+      {insights.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-border/60 p-4 text-center select-none">
+          <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-muted/50 mb-2">
+            <Lightbulb className="w-4 h-4 text-muted-foreground" />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Start exploring the handbook to receive personalized insights and recommendations.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {insights.map((insight) => {
+            const Icon = insight.icon;
+            const bgColors = {
+              focus: 'bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20',
+              gap: 'bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20',
+              next: 'bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20',
+              resume: 'bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20',
+            };
+            
+            return (
+              <div key={insight.id} className={`flex flex-col gap-1.5 p-3 rounded-lg border ${bgColors[insight.type]} hover:shadow-sm transition-all`}>
+                <div className="flex items-center gap-2">
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="text-xs font-bold text-foreground">{insight.title}</span>
+                </div>
+                <p className="text-xs text-foreground leading-relaxed pl-6">
+                  {insight.text}
+                </p>
+                {insight.action && (
+                  <div className="pl-6 mt-0.5">
+                    <span className="text-[10px] font-semibold text-primary">
+                      {insight.action}
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }
