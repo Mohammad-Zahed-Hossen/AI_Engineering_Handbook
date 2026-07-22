@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Lightbulb, ArrowRight, Target } from 'lucide-react';
 import { getHistory, type ContentType } from '@/lib/dashboard-state';
 
@@ -14,11 +14,7 @@ interface Insight {
 }
 
 export default function DashboardInsightsWidget() {
-  const [insights, setInsights] = useState<Insight[]>([]);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
+  const insights = useMemo<Insight[]>(() => {
     const history = getHistory();
     
     const newInsights: Insight[] = [];
@@ -106,10 +102,31 @@ export default function DashboardInsightsWidget() {
       }
     }
     
-    setInsights(newInsights.slice(0, 4));
+    return newInsights.slice(0, 4);
   }, []);
 
-  if (!isMounted) return null;
+  if (insights.length === 0) {
+    return (
+      <section className="rounded-xl border border-border bg-card mobile-card-padding space-y-3">
+        <div className="flex items-center gap-1.5 select-none">
+          <div className="p-1 rounded bg-indigo-500/10 border border-indigo-500/20">
+            <Lightbulb className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+          </div>
+          <div>
+            <h2 className="text-sm font-bold text-foreground">Dashboard Insights</h2>
+          </div>
+        </div>
+        <div className="rounded-lg border border-dashed border-border/60 p-4 text-center select-none">
+          <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-muted/50 mb-2">
+            <Lightbulb className="w-4 h-4 text-muted-foreground" />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Start exploring the handbook to receive personalized insights and recommendations.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="rounded-xl border border-border bg-card mobile-card-padding space-y-3">
@@ -125,47 +142,36 @@ export default function DashboardInsightsWidget() {
         </div>
       </div>
 
-      {insights.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border/60 p-4 text-center select-none">
-          <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-muted/50 mb-2">
-            <Lightbulb className="w-4 h-4 text-muted-foreground" />
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Start exploring the handbook to receive personalized insights and recommendations.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {insights.map((insight) => {
-            const Icon = insight.icon;
-            const bgColors = {
-              focus: 'bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20',
-              gap: 'bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20',
-              next: 'bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20',
-              resume: 'bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20',
-            };
-            
-            return (
-              <div key={insight.id} className={`flex flex-col gap-1.5 p-3 rounded-lg border ${bgColors[insight.type]} hover:shadow-sm transition-all`}>
-                <div className="flex items-center gap-2">
-                  <Icon className="w-4 h-4 shrink-0" />
-                  <span className="text-xs font-bold text-foreground">{insight.title}</span>
-                </div>
-                <p className="text-xs text-foreground leading-relaxed pl-6">
-                  {insight.text}
-                </p>
-                {insight.action && (
-                  <div className="pl-6 mt-0.5">
-                    <span className="text-[10px] font-semibold text-primary">
-                      {insight.action}
-                    </span>
-                  </div>
-                )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {insights.map((insight) => {
+          const Icon = insight.icon;
+          const bgColors = {
+            focus: 'bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20',
+            gap: 'bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20',
+            next: 'bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20',
+            resume: 'bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20',
+          };
+          
+          return (
+            <div key={insight.id} className={`flex flex-col gap-1.5 p-3 rounded-lg border ${bgColors[insight.type]} hover:shadow-sm transition-all`}>
+              <div className="flex items-center gap-2">
+                <Icon className="w-4 h-4 shrink-0" />
+                <span className="text-xs font-bold text-foreground">{insight.title}</span>
               </div>
-            );
-          })}
-        </div>
-      )}
+              <p className="text-xs text-foreground leading-relaxed pl-6">
+                {insight.text}
+              </p>
+              {insight.action && (
+                <div className="pl-6 mt-0.5">
+                  <span className="text-[10px] font-semibold text-primary">
+                    {insight.action}
+                  </span>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </section>
   );
 }

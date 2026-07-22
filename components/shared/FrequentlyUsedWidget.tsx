@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Flame, ExternalLink, BarChart3, TrendingUp } from 'lucide-react';
+import { Flame, BarChart3, TrendingUp } from 'lucide-react';
 import { getFrequentlyUsed } from '@/lib/dashboard-state';
 import ContentTypeBadge from './ContentTypeBadge';
 import { formatTimeAgo } from '@/lib/format-time';
@@ -15,14 +14,6 @@ function getVisitBarColor(visits: number): string {
 
 export default function FrequentlyUsedWidget() {
   const frequentlyUsed = getFrequentlyUsed(5);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) return null;
-
   const maxVisits = frequentlyUsed.length > 0 ? Math.max(...frequentlyUsed.map(i => i.visitCount), 1) : 1;
 
   return (

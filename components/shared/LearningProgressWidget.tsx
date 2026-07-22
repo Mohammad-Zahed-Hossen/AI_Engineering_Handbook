@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { BarChart3, CheckCircle2, BookOpen, Workflow, Cpu, Code, Lightbulb, FileCode2, Shield, Zap, Terminal, TrendingUp, Target } from 'lucide-react';
+import { useMemo } from 'react';
+import { BarChart3, CheckCircle2, Workflow, Cpu, Code, Lightbulb, FileCode2, Shield, Zap, Terminal, TrendingUp } from 'lucide-react';
 import { getHistory, getFavorites, type ContentType } from '@/lib/dashboard-state';
 
 interface ProgressStats {
@@ -22,11 +22,7 @@ const CONTENT_TYPES: { type: ContentType; label: string; icon: React.ElementType
 ];
 
 export default function LearningProgressWidget() {
-  const [stats, setStats] = useState<Record<ContentType, ProgressStats>>({} as Record<ContentType, ProgressStats>);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
+  const stats = useMemo<Record<ContentType, ProgressStats>>(() => {
     const history = getHistory();
     const favorites = getFavorites();
     
@@ -39,15 +35,11 @@ export default function LearningProgressWidget() {
       };
     });
     
-    setStats(newStats);
+    return newStats;
   }, []);
-
-  if (!isMounted) return null;
 
   const totalVisited = Object.values(stats).reduce((sum, s) => sum + s.visited, 0);
   const totalFavorited = Object.values(stats).reduce((sum, s) => sum + s.favorited, 0);
-
-  if (totalVisited === 0 && totalFavorited === 0) return null;
 
   const maxVisited = Math.max(...Object.values(stats).map(s => s.visited), 1);
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { Sparkles, Lightbulb } from 'lucide-react';
 import ContentTypeBadge from './ContentTypeBadge';
@@ -48,15 +48,10 @@ interface RecItem {
 }
 
 export default function RecommendationsWidget() {
-  const [isMounted, setIsMounted] = useState(false);
-  const [recommendations, setRecommendations] = useState<RecItem[]>([]);
-  const [hasHistory, setHasHistory] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
+  const { recommendations, hasHistory } = useMemo(() => {
     const history = getHistory();
     const favorites = getFavorites();
-    setHasHistory(history.length > 0);
+    const hasHistory = history.length > 0;
 
     const visitedHrefs = new Set(history.map(h => h.href));
     const favoriteHrefs = new Set(favorites.map(f => f.href));
@@ -107,10 +102,8 @@ export default function RecommendationsWidget() {
       })
       .slice(0, 4);
 
-    setRecommendations(ranked);
+    return { recommendations: ranked, hasHistory };
   }, []);
-
-  if (!isMounted) return null;
 
   return (
     <section className="rounded-xl border border-border bg-card mobile-card-padding space-y-3">

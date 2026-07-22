@@ -2,22 +2,26 @@
   "id": "pytorch",
   "title": "PyTorch",
   "slug": "pytorch",
-  "description": "PyTorch is an open-source deep learning framework for tensor computation, automatic differentiation, and GPUaccelerated model training.",
+  "description": "Production-focused package reference for implementing deep learning systems with PyTorch.",
   "name": "PyTorch",
-  "version": "2.12",
-  "install": "pip install torch torchvision torchaudio",
+  "version": "2.6.0",
+  "install": "pip install torch torchvision",
   "import_as": "import torch",
   "language": "python",
-  "summary": "PyTorch is a dynamic deep learning framework with strong Python integration, GPU acceleration, and flexible model definition for research and production.",
-  "created_at": "2016-01-01",
-  "updated_at": "2026-07-03",
-  "last_verified": "2026-07-03",
+  "summary": "PyTorch is a tensor and deep learning library for building, training, compiling, and serving neural networks with CPU and GPU acceleration.",
+  "created_at": "2026-07-22",
+  "updated_at": "2026-07-22",
+  "last_verified": "2026-07-22",
   "review_frequency": "quarterly",
-  "verified_against": "2.12",
+  "verified_against": "2.6.0",
   "compatible_versions": [
     "2.0",
     "2.1",
-    "2.12"
+    "2.2",
+    "2.3",
+    "2.4",
+    "2.5",
+    "2.6"
   ],
   "owner": "PyTorch Developers",
   "canonical_status": "canonical",
@@ -25,17 +29,15 @@
   "stability": "stable",
   "confidence": "production_proven",
   "engineering_maturity": "production_ready",
-  "domain": "data_processing",
-  "category": "data",
+  "domain": "deep_learning",
+  "category": "deep_learning",
   "difficulty": "intermediate",
-  "engineering_area": "data_engineering",
-  "estimated_reading_time": 85,
+  "engineering_area": "ai_engineering",
+  "estimated_reading_time": 90,
   "prerequisites": [
     "numpy"
   ],
-  "recommended_next": [
-    "scikit-learn"
-  ],
+  "recommended_next": [],
   "related_content": [
     {
       "id": "bert",
@@ -43,52 +45,7 @@
       "relationship_type": "implements"
     },
     {
-      "id": "rnn",
-      "type": "model",
-      "relationship_type": "implements"
-    },
-    {
-      "id": "cnn",
-      "type": "model",
-      "relationship_type": "implements"
-    },
-    {
-      "id": "lstm",
-      "type": "model",
-      "relationship_type": "implements"
-    },
-    {
-      "id": "gru",
-      "type": "model",
-      "relationship_type": "implements"
-    },
-    {
-      "id": "auto-encoders",
-      "type": "model",
-      "relationship_type": "implements"
-    },
-    {
-      "id": "vae",
-      "type": "model",
-      "relationship_type": "implements"
-    },
-    {
-      "id": "transformer",
-      "type": "model",
-      "relationship_type": "implements"
-    },
-    {
-      "id": "vit",
-      "type": "model",
-      "relationship_type": "implements"
-    },
-    {
       "id": "gnn",
-      "type": "model",
-      "relationship_type": "implements"
-    },
-    {
-      "id": "gemma",
       "type": "model",
       "relationship_type": "implements"
     },
@@ -103,39 +60,69 @@
       "relationship_type": "implements"
     },
     {
-      "id": "mistral",
+      "id": "logistic-regression",
       "type": "model",
       "relationship_type": "implements"
     },
     {
-      "id": "qwen",
+      "id": "lstm",
       "type": "model",
       "relationship_type": "implements"
     },
     {
-      "id": "deepseek",
+      "id": "mlp",
       "type": "model",
       "relationship_type": "implements"
     },
     {
-      "id": "phi",
+      "id": "transformer",
       "type": "model",
       "relationship_type": "implements"
     },
     {
-      "id": "roberta",
+      "id": "vit",
       "type": "model",
       "relationship_type": "implements"
     },
     {
-      "id": "t5",
-      "type": "model",
-      "relationship_type": "implements"
+      "id": "checkpointing",
+      "type": "pattern",
+      "relationship_type": "implemented_by"
     },
     {
-      "id": "scikit-learn",
-      "type": "package",
-      "relationship_type": "references"
+      "id": "gradient-accumulation",
+      "type": "pattern",
+      "relationship_type": "implemented_by"
+    },
+    {
+      "id": "mixed-precision",
+      "type": "pattern",
+      "relationship_type": "implemented_by"
+    },
+    {
+      "id": "training-loop",
+      "type": "pattern",
+      "relationship_type": "implemented_by"
+    },
+    {
+      "id": "image-classification-pipeline",
+      "type": "workflow",
+      "relationship_type": "used_by"
+    },
+    {
+      "id": "object-detection-pipeline",
+      "type": "workflow",
+      "relationship_type": "used_by"
+    },
+    {
+      "id": "production-llm-cost-latency-optimization",
+      "type": "workflow",
+      "relationship_type": "used_by"
+    },
+    {
+      "id": "text-classification-pipeline-classical-encoder",
+      "type": "workflow",
+      "relationship_type": "used_by"
     }
   ],
   "tags": [
@@ -153,70 +140,920 @@
     "torch",
     "deep learning",
     "tensor",
-    "gpu",
-    "autograd"
+    "autograd",
+    "nn",
+    "cuda"
   ],
   "search_tokens": [
     "pytorch",
     "torch",
-    "Tensor",
+    "tensor",
     "autograd",
     "nn",
     "cuda"
   ],
   "sources": [
-    "https://pytorch.org/docs/stable/",
+    "https://docs.pytorch.org/docs/stable/index.html",
     "https://github.com/pytorch/pytorch"
   ],
   "github_repo": "https://github.com/pytorch/pytorch",
   "tasks": [
     {
-      "task": "Create a Tensor",
-      "mental_trigger": "I need a tensor for numeric data.",
+      "task": "Create Tensor from Data / NumPy",
+      "mental_trigger": "I need to turn raw data into a tensor I can compute on.",
       "syntax": "torch.tensor(data, dtype=None, device=None, requires_grad=False)",
-      "example": "import torch\n\nx = torch.tensor([1.0, 2.0, 3.0])\nprint(x, x.shape)",
       "important_params": [
         "data",
         "dtype",
         "device",
         "requires_grad"
       ],
-      "use_when": "1) You need PyTorch tensor arithmetic or model input data.",
-      "avoid_when": "Your data is only for NumPy-based workflows and no autograd is required.",
+      "example": "import numpy as np\nimport torch\n\narr = np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float32)\nx = torch.tensor(arr, dtype=torch.float32)\n\nprint(x)",
+      "use_when": "Use when you need to convert lists, tuples, or NumPy arrays into tensors.",
+      "avoid_when": "Avoid when you need a view into existing memory; prefer `torch.from_numpy()`.",
+      "decision_notes": "Problem Solved: Converts external numeric data into a PyTorch tensor for model input or downstream tensor operations.\nReturn Value: Returns a new `torch.Tensor`.\nPerformance Notes: Use `torch.from_numpy()` when zero-copy behavior is desirable on CPU.\nFramework Migration Notes: Coming from NumPy-centric code, `torch.tensor()` is the direct conversion step before you use modules, losses, or optimizers.\nTensorFlow Equivalent: `tf.convert_to_tensor`\nVersion Compatibility:\n- **Introduced**: Core API in early PyTorch releases.\n- **Modern replacement**: Prefer explicit `dtype` and `device` in 2.x code.\n- **Behavior note**: Copies by default.\nSearch Metadata:\n- **Aliases**: Tensor constructor, array to tensor\n- **Common Search Terms**: create tensor from numpy, torch tensor list\n- **Keywords**: tensor, conversion, numpy, copy\n- **Frequently Confused With**: `torch.from_numpy`, `torch.as_tensor`\nRelated APIs: `torch.from_numpy`, `torch.as_tensor`, `torch.Tensor`\nRelated Models: logistic-regression, transformer\nRelated Patterns: training-loop",
       "gotchas": [
-        "Default dtype may be inferred as int64 for integer lists.",
-        "Tensors on different devices cannot be combined without transfer.",
-        "requires_grad=False by default.",
-        "Tensor construction may copy data depending on the input type."
+        "`torch.tensor()` copies data by default.",
+        "NumPy dtype may not match model expectations.",
+        "Device placement must be explicit for GPU use.",
+        "Gradients are off unless `requires_grad=True`.",
+        "Copy semantics can hide performance issues for large arrays."
       ],
-      "official_docs": "https://pytorch.org/docs/stable/generated/torch.tensor.html",
-      "related_workflows": [],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
       "related_cheatsheets": [],
       "visualization_equivalents": [],
-      "decision_notes": "Category: Tensor Creation\nModule: `torch`\nReturn Value: torch.Tensor\nExpected Output: A PyTorch tensor backed by CPU or GPU memory.\nCommon Mistakes: Default dtype inference can produce int tensors; tensors on different devices cannot be combined without transfer; requires_grad=False is the default.\nRelated APIs: torch.zeros, torch.ones, torch.arange."
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.tensor.html"
     },
     {
-      "task": "Move a Tensor to GPU",
-      "mental_trigger": "I want to use CUDA for faster training.",
-      "syntax": "tensor.to(device, dtype=None, non_blocking=False, copy=False)",
-      "example": "import torch\n\nif torch.cuda.is_available():\n    x = torch.tensor([1.0, 2.0, 3.0])\n    x_gpu = x.to('cuda')\n    print(x_gpu.device)",
+      "task": "Create Special Tensors",
+      "mental_trigger": "I need a tensor with a known initialization pattern.",
+      "syntax": "torch.zeros(*size, out=None, dtype=None, layout=torch.strided, device=None, requires_grad=False)\ntorch.ones(*size, out=None, dtype=None, layout=torch.strided, device=None, requires_grad=False)\ntorch.empty(*size, out=None, dtype=None, layout=torch.strided, device=None, requires_grad=False)\ntorch.rand(*size, out=None, dtype=None, layout=torch.strided, device=None, requires_grad=False)\ntorch.arange(start=0, end=None, step=1, *, out=None, dtype=None, layout=torch.strided, device=None, requires_grad=False)\ntorch.linspace(start, end, steps, *, out=None, dtype=None, layout=torch.strided, device=None, requires_grad=False)",
+      "important_params": [
+        "size",
+        "dtype",
+        "device",
+        "requires_grad",
+        "steps"
+      ],
+      "example": "import torch\n\na = torch.zeros(2, 3)\nb = torch.ones(2, 3)\nc = torch.rand(2, 3)\nd = torch.arange(0, 5)\ne = torch.linspace(0, 1, steps=5)\n\nprint(a, b, c, d, e, sep=\"\\n\")",
+      "use_when": "Use for initializing buffers, masks, toy data, and coordinate grids.",
+      "avoid_when": "Avoid `torch.empty()` unless you immediately fill the tensor.",
+      "decision_notes": "Problem Solved: Initializes tensors for weights, buffers, masks, positions, and synthetic inputs.\nReturn Value: Returns a tensor filled according to the requested initializer.\nPerformance Notes: Prefer factory functions over Python loops for large tensors.\nFramework Migration Notes: Use these factories instead of manual list construction when building model inputs or initialization values.\nTensorFlow Equivalent: `tf.zeros`, `tf.ones`, `tf.random.uniform`, `tf.range`, `tf.linspace`\nVersion Compatibility:\n- **Introduced**: Core APIs.\n- **Modern replacement**: Use device-aware factory functions directly in 2.x.\nSearch Metadata:\n- **Aliases**: Factory tensors, initializer tensors\n- **Common Search Terms**: torch zeros ones arange linspace\n- **Keywords**: initialization, random, factory, tensor\n- **Frequently Confused With**: `torch.full`, `torch.randn`\nRelated APIs: `torch.full`, `torch.randn`, `torch.empty_like`, `torch.zeros_like`\nRelated Models: transformer, vit\nRelated Patterns: training-loop, checkpointing",
+      "gotchas": [
+        "`torch.empty()` contains uninitialized memory.",
+        "Random initialization is nondeterministic unless seeded.",
+        "Integer tensors do not support all float-style operations.",
+        "`linspace` and `arange` differ in endpoint semantics.",
+        "Device and dtype must match downstream modules."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/torch.html"
+    },
+    {
+      "task": "Inspect Tensor Properties",
+      "mental_trigger": "I need to verify what kind of tensor I am working with.",
+      "syntax": "tensor.dtype\ntensor.shape\ntensor.device\ntensor.layout\ntensor.ndim",
+      "important_params": [
+        "None"
+      ],
+      "example": "import torch\n\nx = torch.randn(2, 3, 4, device=\"cpu\")\nprint(x.dtype)\nprint(x.shape)\nprint(x.device)\nprint(x.layout)\nprint(x.ndim)",
+      "use_when": "Use when debugging shape mismatches or device placement issues.",
+      "avoid_when": "Avoid repeated metadata checks inside hot inner loops.",
+      "decision_notes": "Problem Solved: Helps confirm tensor compatibility before computation or module forwarding.\nReturn Value: Returns tensor metadata through attributes.\nPerformance Notes: Metadata access is cheap, but avoid excessive logging in production inference loops.\nFramework Migration Notes: PyTorch makes tensor metadata explicit and inspectable, which helps catch mismatches early.\nTensorFlow Equivalent: `tensor.dtype`, `tensor.shape`, `tensor.device`, `tf.rank`\nVersion Compatibility:\n- **Introduced**: Core tensor attributes.\n- **Modern replacement**: Use `tensor.ndim` and `tensor.device` directly.\nSearch Metadata:\n- **Aliases**: Tensor introspection, metadata inspection\n- **Common Search Terms**: pytorch tensor shape dtype device\n- **Keywords**: metadata, rank, layout, shape\n- **Frequently Confused With**: `tensor.size`, `tensor.stride`\nRelated APIs: `tensor.size()`, `tensor.stride()`, `tensor.is_contiguous()`\nRelated Models: bert, transformer\nRelated Patterns: training-loop",
+      "gotchas": [
+        "`shape` returns a `torch.Size` object.",
+        "`ndim` is often easier than `len(tensor.shape)`.",
+        "`layout` is usually `torch.strided` in standard workflows.",
+        "Device mismatch causes runtime errors during ops or module calls.",
+        "Shape ranks often differ between batched and unbatched inputs."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/tensors.html"
+    },
+    {
+      "task": "Transfer Tensor Device",
+      "mental_trigger": "I need this tensor on the same device as the model.",
+      "syntax": "tensor.to(device=None, dtype=None, non_blocking=False, copy=False, memory_format=torch.preserve_format)",
       "important_params": [
         "device",
         "dtype",
-        "non_blocking"
+        "non_blocking",
+        "copy",
+        "memory_format"
       ],
-      "use_when": "1) You need to execute tensor operations on GPU for speed.",
-      "avoid_when": "Your model and data are small enough that CPU performance is sufficient.",
+      "example": "import torch\n\nx = torch.randn(2, 3)\ndevice = \"cuda\" if torch.cuda.is_available() else \"cpu\"\ny = x.to(device)\nprint(y.device)",
+      "use_when": "Use before forward passes, especially when model parameters live on GPU.",
+      "avoid_when": "Avoid unnecessary transfers inside tight loops.",
+      "decision_notes": "Problem Solved: Places tensors on the correct accelerator or back on CPU for preprocessing and I/O.\nReturn Value: Returns a tensor on the requested device or dtype.\nPerformance Notes: Batch transfers and use pinned memory for faster CPU-to-GPU input pipelines.\nFramework Migration Notes: In PyTorch, device placement is explicit and usually managed once per batch rather than hidden inside the runtime.\nTensorFlow Equivalent: `tf.device` placement scope\nVersion Compatibility:\n- **Introduced**: Core API.\n- **Modern replacement**: Use `tensor.to(device)` over backend-specific ad hoc paths.\nSearch Metadata:\n- **Aliases**: Move tensor to GPU, device transfer\n- **Common Search Terms**: pytorch tensor to cuda cpu mps\n- **Keywords**: device, transfer, cuda, mps\n- **Frequently Confused With**: `module.to`, `tensor.type`\nRelated APIs: `tensor.cuda()`, `tensor.cpu()`, `tensor.mps()`, `module.to()`\nRelated Models: transformer, gpt\nRelated Patterns: training-loop, mixed-precision",
       "gotchas": [
-        "CUDA must be installed and available.",
-        "Tensor device and model device must match.",
-        "Transfers add overhead and can slow small workloads."
+        "Input and parameter devices must match.",
+        "`non_blocking=True` is most useful with pinned memory.",
+        "Moving between devices allocates and may be expensive.",
+        "MPS and CUDA have different backend behaviors.",
+        "`.to()` may also cast dtype unintentionally if requested."
       ],
-      "official_docs": "https://pytorch.org/docs/stable/generated/torch.Tensor.to.html",
-      "related_workflows": [],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
       "related_cheatsheets": [],
       "visualization_equivalents": [],
-      "decision_notes": "Category: Device Management\nModule: `torch.Tensor`\nReturn Value: A tensor on the requested device.\nExpected Output: A tensor allocated on CUDA or CPU based on the target device.\nCommon Mistakes: Device mismatch errors can occur when tensors and models are on different devices; transfers add latency; CUDA must be available.\nRelated APIs: torch.cuda.is_available, tensor.cpu, tensor.cuda."
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.Tensor.to.html"
+    },
+    {
+      "task": "Concatenate Tensors",
+      "mental_trigger": "I need to join tensors end to end along one axis.",
+      "syntax": "torch.cat(tensors, dim=0, *, out=None)",
+      "important_params": [
+        "tensors",
+        "dim",
+        "out"
+      ],
+      "example": "import torch\n\na = torch.randn(2, 3)\nb = torch.randn(4, 3)\nx = torch.cat([a, b], dim=0)\nprint(x.shape)",
+      "use_when": "Use when tensors share all dimensions except the concatenation axis.",
+      "avoid_when": "Avoid when you need a new stack dimension; prefer `torch.stack()`.",
+      "decision_notes": "Problem Solved: Combines matching tensors into a larger batch or feature representation.\nReturn Value: Returns a concatenated tensor.\nPerformance Notes: Repeated `cat` operations in loops are expensive; accumulate in lists first.\nFramework Migration Notes: Equivalent to concatenation operations in other frameworks, but dimension semantics must be checked carefully.\nTensorFlow Equivalent: `tf.concat`\nVersion Compatibility:\n- **Introduced**: Core API.\n- **Modern replacement**: Same in 2.x.\nSearch Metadata:\n- **Aliases**: Join tensors, concatenate batches\n- **Common Search Terms**: torch cat dim concatenate\n- **Keywords**: concatenate, batch, axis, shape\n- **Frequently Confused With**: `torch.stack`\nRelated APIs: `torch.stack`, `torch.split`, `torch.chunk`\nRelated Models: transformer\nRelated Patterns: training-loop",
+      "gotchas": [
+        "Non-concatenated dimensions must match.",
+        "Concatenating inside loops can create extra allocations.",
+        "Concatenation is not the same as stacking.",
+        "`dim` must be chosen carefully for batch vs feature joins.",
+        "Shape errors are common when mixing sequence lengths."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.cat.html"
+    },
+    {
+      "task": "Stack Tensors",
+      "mental_trigger": "I need a new dimension for a batch or collection.",
+      "syntax": "torch.stack(tensors, dim=0, out=None)",
+      "important_params": [
+        "tensors",
+        "dim",
+        "out"
+      ],
+      "example": "import torch\n\na = torch.randn(3)\nb = torch.randn(3)\nx = torch.stack([a, b], dim=0)\nprint(x.shape)",
+      "use_when": "Use when you want to build a tensor with one extra dimension.",
+      "avoid_when": "Avoid when tensors have different shapes; use padding or concatenation instead.",
+      "decision_notes": "Problem Solved: Combines tensors with identical shapes into a batched tensor with an added axis.\nReturn Value: Returns a stacked tensor.\nPerformance Notes: Prefer stacking once after collecting tensors rather than repeated incremental stacking.\nFramework Migration Notes: Use when converting a Python list of same-shaped samples into a batch tensor.\nTensorFlow Equivalent: `tf.stack`\nVersion Compatibility:\n- **Introduced**: Core API.\n- **Modern replacement**: Same in 2.x.\nSearch Metadata:\n- **Aliases**: Add batch dimension, tensor batchify\n- **Common Search Terms**: torch stack new dimension\n- **Keywords**: stack, batch, dimension, tensor\n- **Frequently Confused With**: `torch.cat`\nRelated APIs: `torch.cat`, `torch.unbind`, `torch.unsqueeze`\nRelated Models: transformer\nRelated Patterns: training-loop, gradient-accumulation",
+      "gotchas": [
+        "All tensors must have the same shape.",
+        "`stack` inserts a dimension, unlike `cat`.",
+        "Stacking can increase memory use.",
+        "Choosing the wrong `dim` changes model input rank.",
+        "DataLoader collation often uses stacking implicitly."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.stack.html"
+    },
+    {
+      "task": "Split Tensor into Chunks",
+      "mental_trigger": "I need to partition this tensor into smaller parts.",
+      "syntax": "torch.split(tensor, split_size_or_sections, dim=0)\ntorch.chunk(input, chunks, dim=0)",
+      "important_params": [
+        "split_size_or_sections",
+        "chunks",
+        "dim"
+      ],
+      "example": "import torch\n\nx = torch.arange(10)\nparts = torch.split(x, 3)\nchunks = torch.chunk(x, 4)\nprint([p.tolist() for p in parts])\nprint([c.tolist() for c in chunks])",
+      "use_when": "Use for slicing batches, sequence segments, or uneven splits.",
+      "avoid_when": "Avoid when you need a view with custom indexing logic; use slicing directly.",
+      "decision_notes": "Problem Solved: Breaks large tensors into smaller pieces for batching, parallelism, or sequence handling.\nReturn Value: Returns a tuple of tensor chunks.\nPerformance Notes: These are lightweight compared to copying large tensors, but follow with care when modifying views.\nFramework Migration Notes: Useful when converting batch-processing logic that expects fixed-size sub-batches.\nTensorFlow Equivalent: `tf.split`\nVersion Compatibility:\n- **Introduced**: Core APIs.\nSearch Metadata:\n- **Aliases**: Slice tensor, partition tensor\n- **Common Search Terms**: torch split chunk\n- **Keywords**: split, chunk, partition, sequence\n- **Frequently Confused With**: `torch.cat`, `torch.stack`\nRelated APIs: `torch.cat`, `torch.unbind`, slicing\nRelated Models: transformer, lstm\nRelated Patterns: training-loop, gradient-accumulation",
+      "gotchas": [
+        "`split` and `chunk` have different split semantics.",
+        "Chunk sizes may differ if the tensor is not divisible.",
+        "Splitting along the wrong dimension changes meaning.",
+        "Returned pieces may share storage.",
+        "Shape assumptions can break downstream code."
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.split.html"
+    },
+    {
+      "task": "Reshape Tensor View",
+      "mental_trigger": "I need to reshape this tensor without allocating new memory.",
+      "syntax": "tensor.view(*shape)",
+      "important_params": [
+        "shape"
+      ],
+      "example": "import torch\n\nx = torch.randn(2, 3, 4)\ny = x.view(6, 4)\nprint(y.shape)",
+      "use_when": "Use when the tensor is contiguous and you need a cheap reshape.",
+      "avoid_when": "Avoid when the tensor may be non-contiguous; use `reshape()`.",
+      "decision_notes": "Problem Solved: Reinterprets tensor dimensions without copying when storage is compatible.\nReturn Value: Returns a view of the original tensor.\nPerformance Notes: A view is memory-efficient, but only when storage layout allows it.\nFramework Migration Notes: Similar to reshape in other frameworks, but with stronger storage-layout constraints.\nTensorFlow Equivalent: `tf.reshape`\nVersion Compatibility:\n- **Introduced**: Core API.\n- **Modern replacement**: Use `reshape()` when layout is uncertain.\nSearch Metadata:\n- **Aliases**: View reshape, cheap reshape\n- **Common Search Terms**: pytorch view contiguous\n- **Keywords**: view, reshape, storage, contiguous\n- **Frequently Confused With**: `torch.reshape`\nRelated APIs: `torch.reshape`, `tensor.contiguous`\nRelated Models: transformer\nRelated Patterns: training-loop",
+      "gotchas": [
+        "Works best on contiguous tensors.",
+        "Non-contiguous tensors may error.",
+        "View semantics can reflect in-place changes.",
+        "Wrong shape inference breaks downstream layers.",
+        "Do not assume it copies data."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/tensors.html\\#torch.Tensor.view"
+    },
+    {
+      "task": "Reshape Tensor Copy/View",
+      "mental_trigger": "I need a reshape that works even if the tensor is not contiguous.",
+      "syntax": "torch.reshape(input, shape)",
+      "important_params": [
+        "input",
+        "shape"
+      ],
+      "example": "import torch\n\nx = torch.randn(2, 3, 4).transpose(1, 2)\ny = torch.reshape(x, (2, 12))\nprint(y.shape)",
+      "use_when": "Use when reshaping tensors produced by transposes or other layout-changing ops.",
+      "avoid_when": "Avoid when you specifically require zero-copy view semantics.",
+      "decision_notes": "Problem Solved: Changes tensor shape while choosing a view or copy depending on memory layout.\nReturn Value: Returns a tensor with the requested shape.\nPerformance Notes: Use `view()` when you can guarantee contiguity; use `reshape()` when correctness matters more than aliasing.\nFramework Migration Notes: This is the safer reshape choice for most application code.\nTensorFlow Equivalent: `tf.reshape`\nVersion Compatibility:\n- **Introduced**: Core API.\n- **Modern replacement**: Common default reshape choice in 2.x code.\nSearch Metadata:\n- **Aliases**: Safe reshape, dynamic reshape\n- **Common Search Terms**: pytorch reshape non contiguous\n- **Keywords**: reshape, copy, view, layout\n- **Frequently Confused With**: `torch.view`\nRelated APIs: `tensor.view`, `tensor.contiguous`\nRelated Models: transformer\nRelated Patterns: training-loop",
+      "gotchas": [
+        "May return a copy rather than a view.",
+        "Shape inference can hide memory behavior.",
+        "Do not depend on storage aliasing.",
+        "Non-contiguous tensors often trigger copies.",
+        "Check performance if used repeatedly."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.reshape.html"
+    },
+    {
+      "task": "Transpose Dimensions",
+      "mental_trigger": "I need to reorder axes before a layer or reduction.",
+      "syntax": "torch.transpose(input, dim0, dim1)\ntorch.permute(input, dims)",
+      "important_params": [
+        "dim0",
+        "dim1",
+        "dims"
+      ],
+      "example": "import torch\n\nx = torch.randn(2, 3, 4)\ny = torch.transpose(x, 1, 2)\nz = torch.permute(x, (0, 2, 1))\nprint(y.shape, z.shape)",
+      "use_when": "Use for channel-last/first conversion, sequence reshaping, or matrix axis swaps.",
+      "avoid_when": "Avoid confusing `transpose` for full permutation; use `permute` for multiple axes.",
+      "decision_notes": "Problem Solved: Reorders tensor axes for convolution, attention, sequence, and layout conversion tasks.\nReturn Value: Returns a tensor with reordered dimensions.\nPerformance Notes: Axis reordering itself is cheap, but follow-up `.contiguous()` may allocate memory.\nFramework Migration Notes: Axis order changes are common when moving between image and sequence formats.\nTensorFlow Equivalent: `tf.transpose`\nVersion Compatibility:\n- **Introduced**: Core API.\n- **Modern replacement**: Use `permute` for explicit multi-axis reordering.\nSearch Metadata:\n- **Aliases**: Axis swap, dimension reorder\n- **Common Search Terms**: pytorch transpose permute dimensions\n- **Keywords**: transpose, permute, axes, layout\n- **Frequently Confused With**: `torch.reshape`, `torch.view`\nRelated APIs: `torch.swapdims`, `tensor.contiguous`, `tensor.view`\nRelated Models: vit, transformer\nRelated Patterns: training-loop",
+      "gotchas": [
+        "`transpose` only swaps two dimensions.",
+        "`permute` needs the full dimension order.",
+        "Returned tensors are often non-contiguous.",
+        "Follow with `contiguous()` if a view-only op is required.",
+        "Axis mistakes are a common source of silent logic bugs."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.transpose.html"
+    },
+    {
+      "task": "Squeeze and Unsqueeze Dimensions",
+      "mental_trigger": "I need to add or remove a singleton dimension.",
+      "syntax": "torch.squeeze(input, dim=None)\ntorch.unsqueeze(input, dim)",
+      "important_params": [
+        "dim",
+        "input"
+      ],
+      "example": "import torch\n\nx = torch.randn(1, 3, 1, 4)\ny = torch.squeeze(x)\nz = torch.unsqueeze(y, dim=0)\nprint(y.shape, z.shape)",
+      "use_when": "Use when preparing inputs for layers expecting a specific rank.",
+      "avoid_when": "Avoid `squeeze()` without `dim` when a size-1 batch dimension must be preserved.",
+      "decision_notes": "Problem Solved: Adjusts tensor rank for batching, broadcasting, and layer input compatibility.\nReturn Value: Returns a tensor with singleton dimensions removed or added.\nPerformance Notes: These are lightweight metadata-style operations and usually do not copy data.\nFramework Migration Notes: Equivalent shape manipulation is often needed when porting models between frameworks with different batch conventions.\nTensorFlow Equivalent: `tf.squeeze`, `tf.expand_dims`\nVersion Compatibility:\n- **Introduced**: Core API.\nSearch Metadata:\n- **Aliases**: Add axis, remove axis\n- **Common Search Terms**: pytorch squeeze unsqueeze\n- **Keywords**: rank, singleton, axis, broadcast\n- **Frequently Confused With**: `torch.flatten`, `torch.reshape`\nRelated APIs: `torch.flatten`, `torch.stack`, `torch.cat`\nRelated Models: transformer\nRelated Patterns: training-loop",
+      "gotchas": [
+        "`squeeze()` can remove unintended dimensions.",
+        "`unsqueeze()` changes axis positions.",
+        "Broadcasting assumptions may change after shape edits.",
+        "Accidentally removing batch dimensions causes downstream errors.",
+        "Rank changes can confuse loss functions and metrics."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.unsqueeze.html"
+    },
+    {
+      "task": "Flatten Tensor Dimensions",
+      "mental_trigger": "I need to collapse dimensions before a classifier head.",
+      "syntax": "torch.flatten(input, start_dim=0, end_dim=-1)",
+      "important_params": [
+        "start_dim",
+        "end_dim"
+      ],
+      "example": "import torch\n\nx = torch.randn(2, 3, 4, 5)\ny = torch.flatten(x, start_dim=1)\nprint(y.shape)",
+      "use_when": "Use before dense heads or when converting multi-dimensional features into vectors.",
+      "avoid_when": "Avoid when the dimension structure is semantically meaningful for later layers.",
+      "decision_notes": "Problem Solved: Converts feature maps or sequences into vector inputs for linear layers or pooling heads.\nReturn Value: Returns a flattened tensor.\nPerformance Notes: Can be cheap on contiguous tensors, but layout changes may force copies.\nFramework Migration Notes: Common replacement for manual reshape logic in dense classifier heads.\nTensorFlow Equivalent: `tf.reshape`, `tf.keras.layers.Flatten`\nVersion Compatibility:\n- **Introduced**: Core API.\nSearch Metadata:\n- **Aliases**: Collapse dimensions, vectorize features\n- **Common Search Terms**: pytorch flatten start_dim\n- **Keywords**: flatten, vector, features, rank\n- **Frequently Confused With**: `torch.reshape`, `torch.view`\nRelated APIs: `torch.view`, `torch.reshape`, `torch.nn.Flatten`\nRelated Models: mlp, bert\nRelated Patterns: training-loop",
+      "gotchas": [
+        "Flattening from the wrong axis destroys structure.",
+        "Batch dimension is often preserved with `start_dim=1`.",
+        "Non-contiguous tensors may require extra handling.",
+        "Flattening sequences can break token alignment.",
+        "Downstream layers may expect a specific rank."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.flatten.html"
+    },
+    {
+      "task": "Element-wise Mathematical Operations",
+      "mental_trigger": "I need to transform every value in this tensor independently.",
+      "syntax": "torch.add(input, other, *, alpha=1, out=None)\ntorch.mul(input, other, *, out=None)\ntorch.exp(input, *, out=None)\ntorch.log(input, *, out=None)\ntorch.sqrt(input, *, out=None)",
+      "important_params": [
+        "input",
+        "other",
+        "alpha",
+        "out"
+      ],
+      "example": "import torch\n\nx = torch.tensor([1.0, 2.0, 3.0])\ny = torch.add(x, 2.0)\nz = torch.exp(x)\nprint(y, z)",
+      "use_when": "Use for activation-like transforms, feature preprocessing, and scalar-tensor arithmetic.",
+      "avoid_when": "Avoid when a reduction or matrix operation is required instead.",
+      "decision_notes": "Problem Solved: Computes nonlinear transforms, normalization steps, and feature transformations on tensors.\nReturn Value: Returns a tensor with element-wise results.\nPerformance Notes: Vectorized ops are far faster than Python loops and typically fuse well on accelerators.\nFramework Migration Notes: Direct tensor arithmetic is the standard PyTorch way to write numerical transformations.\nTensorFlow Equivalent: `tf.add`, `tf.multiply`, `tf.exp`, `tf.math.log`\nVersion Compatibility:\n- **Introduced**: Core API.\n- **Modern replacement**: Use vectorized tensor ops instead of Python-side loops.\nSearch Metadata:\n- **Aliases**: Pointwise ops, scalar ops\n- **Common Search Terms**: pytorch elementwise add mul exp log\n- **Keywords**: arithmetic, broadcast, nonlinear, pointwise\n- **Frequently Confused With**: reduction ops, matrix ops\nRelated APIs: `torch.sub`, `torch.div`, `torch.pow`, `torch.clamp`\nRelated Models: mlp, transformer\nRelated Patterns: training-loop",
+      "gotchas": [
+        "Broadcasting may hide shape mismatches.",
+        "`log()` requires positive inputs.",
+        "Division by zero and overflow can produce invalid values.",
+        "In-place variants can interfere with autograd.",
+        "Type promotion can change dtype unexpectedly."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/torch.html"
+    },
+    {
+      "task": "Matrix Multiplication",
+      "mental_trigger": "I need to combine features with a learned projection.",
+      "syntax": "torch.matmul(input, other, *, out=None)\ntorch.bmm(input, mat2, *, out=None)",
+      "important_params": [
+        "input",
+        "other",
+        "mat2",
+        "out"
+      ],
+      "example": "import torch\n\nx = torch.randn(2, 3)\nw = torch.randn(3, 4)\ny = torch.matmul(x, w)\n\nbx = torch.randn(5, 2, 3)\nbw = torch.randn(5, 3, 4)\nby = torch.bmm(bx, bw)\n\nprint(y.shape, by.shape)",
+      "use_when": "Use for linear projections, attention logits, and batched feature transforms.",
+      "avoid_when": "Avoid using `bmm` for non-batched inputs; use `matmul`.",
+      "decision_notes": "Problem Solved: Computes dense linear algebra for linear layers, projections, attention, and batched inference.\nReturn Value: Returns the matrix or batched matrix product.\nPerformance Notes: Use accelerator-backed linear algebra kernels when available; batch sizes can strongly affect throughput.\nFramework Migration Notes: This is the core primitive behind dense layers and attention projections.\nTensorFlow Equivalent: `tf.matmul`\nVersion Compatibility:\n- **Introduced**: Core API.\nSearch Metadata:\n- **Aliases**: GEMM, dot product, projection\n- **Common Search Terms**: pytorch matmul bmm\n- **Keywords**: matrix, batched, projection, linear algebra\n- **Frequently Confused With**: `torch.mm`, `torch.einsum`\nRelated APIs: `torch.mm`, `torch.bmm`, `torch.einsum`, `torch.nn.Linear`\nRelated Models: mlp, transformer, bert, gpt\nRelated Patterns: training-loop, mixed-precision",
+      "gotchas": [
+        "Shape rules differ between `matmul` and `bmm`.",
+        "Broadcasting can change result rank.",
+        "Mixed dtypes may trigger implicit promotion.",
+        "Large batched products can be memory intensive.",
+        "Wrong transpose order changes semantics."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.matmul.html"
+    },
+    {
+      "task": "Tensor Reduction Operations",
+      "mental_trigger": "I need one value or index summary from a tensor.",
+      "syntax": "torch.sum(input, dim=None, keepdim=False, dtype=None)\ntorch.mean(input, dim=None, keepdim=False, dtype=None)\ntorch.max(input, dim=None, keepdim=False)\ntorch.min(input, dim=None, keepdim=False)\ntorch.argmax(input, dim=None)",
+      "important_params": [
+        "dim",
+        "keepdim",
+        "dtype",
+        "input"
+      ],
+      "example": "import torch\n\nx = torch.tensor([[1.0, 3.0], [2.0, 4.0]])\nprint(torch.sum(x))\nprint(torch.mean(x, dim=0))\nprint(torch.argmax(x, dim=1))",
+      "use_when": "Use for metrics, pooling, class prediction, and loss aggregation.",
+      "avoid_when": "Avoid reducing over the wrong axis when batch and feature dimensions differ.",
+      "decision_notes": "Problem Solved: Aggregates tensor values for losses, pooling, metrics, and predictions.\nReturn Value: Returns a reduced tensor or an index tensor for `argmax`.\nPerformance Notes: Reductions are efficient on accelerators, but precision matters for large accumulations.\nFramework Migration Notes: These are common replacements for framework-level metric aggregation and pooling operations.\nTensorFlow Equivalent: `tf.reduce_sum`, `tf.reduce_mean`, `tf.argmax`\nVersion Compatibility:\n- **Introduced**: Core API.\n- **Modern replacement**: Use `keepdim` intentionally for later broadcasting.\nSearch Metadata:\n- **Aliases**: Reduce, aggregate, pool\n- **Common Search Terms**: pytorch sum mean max argmax\n- **Keywords**: reduction, pooling, metric, aggregate\n- **Frequently Confused With**: `torch.topk`, `torch.amax`\nRelated APIs: `torch.amax`, `torch.amin`, `torch.max`, `torch.topk`\nRelated Models: bert, transformer\nRelated Patterns: training-loop",
+      "gotchas": [
+        "`argmax` returns indices, not values.",
+        "`keepdim=True` is often useful for broadcasting.",
+        "Integer tensors and float tensors behave differently in reductions.",
+        "Reductions over large tensors can be numerically sensitive.",
+        "Dimensionality mistakes are common in classification heads."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.sum.html"
+    },
+    {
+      "task": "In-place Tensor Operations",
+      "mental_trigger": "I need to update this tensor buffer directly.",
+      "syntax": "tensor.add_(other, alpha=1)\ntensor.copy_(src, non_blocking=False)",
+      "important_params": [
+        "other",
+        "alpha",
+        "src",
+        "non_blocking"
+      ],
+      "example": "import torch\n\nx = torch.zeros(3)\nx.add_(1)\ny = torch.ones(3)\nx.copy_(y)\nprint(x)",
+      "use_when": "Use for buffer updates, state tensors, and controlled performance optimizations.",
+      "avoid_when": "Avoid in-place updates on tensors tracked by autograd unless you understand graph constraints.",
+      "decision_notes": "Problem Solved: Updates tensor contents without allocating a new tensor, often for performance or state mutation.\nReturn Value: Returns the modified tensor.\nPerformance Notes: In-place updates can reduce allocations, but may increase correctness risk in training code.\nFramework Migration Notes: Use in-place operations sparingly compared with functional updates.\nTensorFlow Equivalent: No direct equivalent.\nVersion Compatibility:\n- **Introduced**: Core API.\n- **Modern replacement**: Prefer functional ops unless memory pressure justifies mutation.\nSearch Metadata:\n- **Aliases**: In-place update, mutate tensor\n- **Common Search Terms**: pytorch add_ copy_\n- **Keywords**: inplace, mutation, copy, buffer\n- **Frequently Confused With**: `tensor.add`, `tensor.clone`\nRelated APIs: `tensor.add`, `tensor.clone`, `tensor.detach`\nRelated Models: transformer\nRelated Patterns: checkpointing",
+      "gotchas": [
+        "In-place ops can break autograd history.",
+        "Aliasing can produce hard-to-debug side effects.",
+        "`copy_` may fail across incompatible devices.",
+        "Mutating shared tensors can affect unexpected consumers.",
+        "In-place ops often make code less composable."
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/tensors.html"
+    },
+    {
+      "task": "Contiguous Memory Layout",
+      "mental_trigger": "I need a tensor with contiguous storage for a later view or kernel.",
+      "syntax": "tensor.contiguous(memory_format=torch.contiguous_format)",
+      "important_params": [
+        "memory_format"
+      ],
+      "example": "import torch\n\nx = torch.randn(2, 3, 4).transpose(1, 2)\ny = x.contiguous()\nprint(y.is_contiguous())",
+      "use_when": "Use before `view()` or when a downstream op requires contiguous storage.",
+      "avoid_when": "Avoid calling it blindly if you do not need a contiguous copy.",
+      "decision_notes": "Problem Solved: Restores storage layout compatibility after transpose, permute, or slicing operations.\nReturn Value: Returns a contiguous tensor, possibly copying data.\nPerformance Notes: Use only when needed; unnecessary copies can reduce throughput.\nFramework Migration Notes: Layout fixes are often required when porting models with frequent axis changes.\nTensorFlow Equivalent: No direct equivalent.\nVersion Compatibility:\n- **Introduced**: Core API.\nSearch Metadata:\n- **Aliases**: Make contiguous, contiguous copy\n- **Common Search Terms**: pytorch contiguous view\n- **Keywords**: contiguous, layout, copy, storage\n- **Frequently Confused With**: `torch.reshape`, `torch.view`\nRelated APIs: `torch.view`, `torch.reshape`, `tensor.is_contiguous`\nRelated Models: vit, transformer\nRelated Patterns: training-loop",
+      "gotchas": [
+        "It may allocate a copy.",
+        "Non-contiguous tensors are common after axis reordering.",
+        "Contiguity matters for some low-level kernels.",
+        "Do not assume all ops preserve contiguity.",
+        "Excess copies can increase memory pressure."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/tensors.html"
+    },
+    {
+      "task": "Compute Tensor Gradients",
+      "mental_trigger": "I need gradients from a loss value.",
+      "syntax": "tensor.backward(gradient=None, retain_graph=None, create_graph=False, inputs=None)",
+      "important_params": [
+        "gradient",
+        "retain_graph",
+        "create_graph",
+        "inputs"
+      ],
+      "example": "import torch\n\nx = torch.tensor(2.0, requires_grad=True)\ny = x * x + 3 * x\ny.backward()\nprint(x.grad)",
+      "use_when": "Use after loss computation in custom training loops.",
+      "avoid_when": "Avoid when you only need forward execution; prefer `torch.inference_mode()`.",
+      "decision_notes": "Problem Solved: Computes derivatives for tensors involved in a scalar loss so parameters can be updated.\nReturn Value: Returns `None`; gradients are accumulated into leaf tensors with `requires_grad=True`.\nPerformance Notes: Backward is the dominant training cost; minimize graph retention and unnecessary tensor saves.\nFramework Migration Notes: Coming from TensorFlow, this replaces `tf.GradientTape().gradient(...)` in explicit training code.\nTensorFlow Equivalent: `tf.GradientTape`\nVersion Compatibility:\n- **Introduced**: Core autograd API.\n- **Modern replacement**: Use `torch.inference_mode()` for inference-only execution.\n- **Deprecated behavior to avoid**: Retaining graphs unnecessarily.\nSearch Metadata:\n- **Aliases**: backprop, backward pass\n- **Common Search Terms**: pytorch backward grad\n- **Keywords**: autograd, gradient, loss, backward\n- **Frequently Confused With**: `torch.autograd.grad`\nRelated APIs: `torch.autograd.backward`, `torch.no_grad`, `torch.amp.GradScaler`\nRelated Models: bert, transformer, gpt\nRelated Patterns: training-loop, gradient-accumulation",
+      "gotchas": [
+        "`backward()` requires a scalar output unless you pass `gradient`.",
+        "Gradients accumulate unless you clear them.",
+        "Calling backward twice on the same graph needs `retain_graph=True`.",
+        "Non-leaf tensors do not store `.grad` unless retained.",
+        "In-place ops can invalidate the graph."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.Tensor.backward.html"
+    },
+    {
+      "task": "Access Computed Gradients",
+      "mental_trigger": "I need the gradient value that was just computed.",
+      "syntax": "tensor.grad",
+      "important_params": [
+        "None"
+      ],
+      "example": "import torch\n\nx = torch.tensor(2.0, requires_grad=True)\ny = x * 5\ny.backward()\nprint(x.grad)",
+      "use_when": "Use to inspect or manually apply gradient-based updates.",
+      "avoid_when": "Avoid assuming `.grad` exists before backward or on non-leaf tensors.",
+      "decision_notes": "Problem Solved: Retrieves parameter or input gradients after backward execution for inspection or optimization.\nReturn Value: Returns a tensor gradient or `None`.\nPerformance Notes: Avoid storing gradient tensors longer than necessary in large models.\nFramework Migration Notes: This is the direct equivalent of reading accumulated gradients after tape execution.\nTensorFlow Equivalent: No direct equivalent.\nVersion Compatibility:\n- **Introduced**: Core autograd attribute.\n- **Modern replacement**: Reset gradients explicitly in each iteration.\nSearch Metadata:\n- **Aliases**: gradient buffer, parameter grad\n- **Common Search Terms**: pytorch tensor grad\n- **Keywords**: gradient, leaf tensor, backward\n- **Frequently Confused With**: `register_hook`, `retain_grad`\nRelated APIs: `tensor.backward`, `retain_grad`, `optimizer.zero_grad`\nRelated Models: transformer\nRelated Patterns: training-loop, gradient-accumulation",
+      "gotchas": [
+        "`.grad` is populated only after backward.",
+        "Gradients accumulate across steps unless reset.",
+        "Non-leaf tensors need `retain_grad()` to keep gradients.",
+        "`None` is not an error by itself.",
+        "Mixed precision may require unscaled gradients before inspection."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.Tensor.grad.html"
+    },
+    {
+      "task": "Detach Tensor from Computation Graph",
+      "mental_trigger": "I need to stop gradients from flowing through this tensor.",
+      "syntax": "tensor.detach()\ntensor.detach_()",
+      "important_params": [
+        "None"
+      ],
+      "example": "import torch\n\nx = torch.tensor(2.0, requires_grad=True)\ny = x * 3\nz = y.detach()\nprint(z.requires_grad)",
+      "use_when": "Use for logging, target tensors, and manual control over graph boundaries.",
+      "avoid_when": "Avoid detaching tensors that still need to contribute to training.",
+      "decision_notes": "Problem Solved: Stops gradient tracking so the tensor can be reused for inference, logging, or branching logic.\nReturn Value: Returns a tensor disconnected from the computation graph.\nPerformance Notes: Detaching is cheap and useful for reducing autograd graph size.\nFramework Migration Notes: This is similar to stopping gradient flow in other frameworks, but the storage sharing behavior matters.\nTensorFlow Equivalent: `tf.stop_gradient`\nVersion Compatibility:\n- **Introduced**: Core autograd API.\nSearch Metadata:\n- **Aliases**: stop gradient, detach graph\n- **Common Search Terms**: pytorch detach tensor\n- **Keywords**: autograd, graph, stop-gradient, inference\n- **Frequently Confused With**: `clone`, `no_grad`\nRelated APIs: `torch.no_grad`, `torch.inference_mode`, `tensor.clone`\nRelated Models: bert, transformer\nRelated Patterns: training-loop",
+      "gotchas": [
+        "Detached tensors share storage unless copied.",
+        "Detach does not move data or clone by itself.",
+        "In-place changes may affect the original storage.",
+        "Detach breaks gradient flow intentionally.",
+        "Use carefully in multi-branch models."
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.Tensor.detach.html"
+    },
+    {
+      "task": "Disable Gradient Calculation",
+      "mental_trigger": "I need this block to run without autograd overhead.",
+      "syntax": "torch.no_grad()",
+      "important_params": [
+        "None"
+      ],
+      "example": "import torch\n\nx = torch.randn(2, 3, requires_grad=True)\nwith torch.no_grad():\n    y = x * 2\nprint(y.requires_grad)",
+      "use_when": "Use during validation, metrics, and non-training tensor transforms.",
+      "avoid_when": "Avoid when computing losses intended for backward propagation.",
+      "decision_notes": "Problem Solved: Prevents graph construction during evaluation, preprocessing, or metrics computation.\nReturn Value: Returns a context manager.\nPerformance Notes: Reduces autograd memory overhead compared with training mode.\nFramework Migration Notes: Use in places where TensorFlow code would use inference-only execution or detached tensors.\nTensorFlow Equivalent: No direct equivalent.\nVersion Compatibility:\n- **Introduced**: Core API.\n- **Modern replacement**: Prefer `torch.inference_mode()` for pure inference paths.\nSearch Metadata:\n- **Aliases**: no grad, inference guard\n- **Common Search Terms**: pytorch no_grad\n- **Keywords**: autograd, evaluation, inference, context\n- **Frequently Confused With**: `torch.inference_mode`\nRelated APIs: `torch.inference_mode`, `tensor.detach`\nRelated Models: transformer, gpt\nRelated Patterns: training-loop",
+      "gotchas": [
+        "Only affects operations inside the context.",
+        "It does not change existing tensors’ `requires_grad` flags.",
+        "Nested contexts can be confusing in shared utility functions.",
+        "Inference-only code may benefit more from `inference_mode()`.",
+        "Accidentally wrapping training code stops gradient flow."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.no_grad.html"
+    },
+    {
+      "task": "Inference Mode Execution",
+      "mental_trigger": "I need the fastest safe inference path.",
+      "syntax": "torch.inference_mode()",
+      "important_params": [
+        "None"
+      ],
+      "example": "import torch\nimport torch.nn as nn\n\nmodel = nn.Linear(4, 2)\nx = torch.randn(3, 4)\n\nwith torch.inference_mode():\n    y = model(x)\nprint(y.shape)",
+      "use_when": "Use for production inference, warmup passes, and evaluation without gradient tracking.",
+      "avoid_when": "Avoid when you need to re-enter autograd on tensors created inside the block.",
+      "decision_notes": "Problem Solved: Executes forward passes with lower overhead than regular no-grad evaluation.\nReturn Value: Returns a context manager.\nPerformance Notes: Usually lower overhead than `no_grad()` for inference workloads.\nFramework Migration Notes: This is the preferred inference guard in modern PyTorch deployment code.\nTensorFlow Equivalent: No direct equivalent.\nVersion Compatibility:\n- **Introduced**: Modern PyTorch inference API.\n- **Replacement**: Prefer over `torch.no_grad()` for pure inference in 2.x code.\nSearch Metadata:\n- **Aliases**: inference guard, inference-only mode\n- **Common Search Terms**: pytorch inference_mode\n- **Keywords**: inference, autograd, fast-path, serving\n- **Frequently Confused With**: `torch.no_grad`\nRelated APIs: `torch.no_grad`, `torch.compile`, `torch.jit.script`\nRelated Models: transformer, gpt, llama\nRelated Patterns: checkpointing",
+      "gotchas": [
+        "Tensors created here are inference tensors with stricter semantics.",
+        "It is not a drop-in replacement for training code.",
+        "Some mutation patterns are restricted.",
+        "Do not use when gradients are required later.",
+        "It can expose latent stateful bugs in custom modules."
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization",
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.inference_mode.html"
+    },
+    {
+      "task": "Create Custom Autograd Function",
+      "mental_trigger": "I need to override how gradients are computed for this operation.",
+      "syntax": "torch.autograd.Function",
+      "important_params": [
+        "None"
+      ],
+      "example": "import torch\n\nclass SquareFn(torch.autograd.Function):\n    @staticmethod\n    def forward(ctx, x):\n        ctx.save_for_backward(x)\n        return x * x\n\n    @staticmethod\n    def backward(ctx, grad_output):\n        (x,) = ctx.saved_tensors\n        return grad_output * 2 * x\n\nx = torch.tensor(3.0, requires_grad=True)\ny = SquareFn.apply(x)\ny.backward()\nprint(x.grad)",
+      "use_when": "Use for custom ops, numerical shortcuts, or wrapping nonstandard kernels.",
+      "avoid_when": "Avoid when built-in autograd already covers the operation cleanly.",
+      "decision_notes": "Problem Solved: Implements differentiable operations with custom gradient behavior.\nReturn Value: Subclassing and calling `.apply()` returns tensors produced by the custom operation.\nPerformance Notes: Minimize saved tensors to reduce memory use.\nFramework Migration Notes: This is the escape hatch when framework primitives do not match your required gradient behavior.\nTensorFlow Equivalent: Custom gradient via `tf.custom_gradient`\nVersion Compatibility:\n- **Introduced**: Core autograd extension point.\nSearch Metadata:\n- **Aliases**: custom backward, custom gradient\n- **Common Search Terms**: pytorch custom autograd function\n- **Keywords**: autograd, function, backward, custom\n- **Frequently Confused With**: `register_hook`, `torch.func.grad`\nRelated APIs: `torch.autograd.grad`, `save_for_backward`, `register_hook`\nRelated Models: transformer\nRelated Patterns: training-loop, mixed-precision",
+      "gotchas": [
+        "Backward must return one gradient per input.",
+        "Save only tensors needed for backward.",
+        "Non-tensor inputs usually return `None` gradients.",
+        "Incorrect backward logic silently produces wrong training.",
+        "Custom functions are harder to compile and debug."
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/autograd.html#torch.autograd.Function"
+    },
+    {
+      "task": "Register Gradient Hook",
+      "mental_trigger": "I need to observe or adjust the gradient as it flows.",
+      "syntax": "tensor.register_hook(hook)",
+      "important_params": [
+        "hook"
+      ],
+      "example": "import torch\n\nx = torch.tensor(2.0, requires_grad=True)\n\ndef hook_fn(grad):\n    return grad * 0.5\n\nx.register_hook(hook_fn)\ny = x * 4\ny.backward()\nprint(x.grad)",
+      "use_when": "Use for gradient logging, custom scaling, or debugging training dynamics.",
+      "avoid_when": "Avoid when a simpler optimizer or loss formulation can express the same behavior.",
+      "decision_notes": "Problem Solved: Allows runtime inspection, logging, clipping, or transformation of gradients during backpropagation.\nReturn Value: Returns a hook handle.\nPerformance Notes: Use sparingly in large-scale training due to backward overhead.\nFramework Migration Notes: Equivalent functionality often requires custom gradient tape logic in other frameworks.\nTensorFlow Equivalent: No direct equivalent.\nVersion Compatibility:\n- **Introduced**: Core autograd hook API.\nSearch Metadata:\n- **Aliases**: grad hook, backward hook\n- **Common Search Terms**: pytorch register_hook gradient\n- **Keywords**: autograd, hook, gradient, inspect\n- **Frequently Confused With**: `retain_grad`, module hooks\nRelated APIs: `retain_grad`, `torch.autograd.Function`, `clip_grad_norm_`\nRelated Models: transformer, bert\nRelated Patterns: training-loop",
+      "gotchas": [
+        "Hook runs during backward, not forward.",
+        "Returned gradients replace the original gradient.",
+        "Hooks add runtime overhead.",
+        "Multiple hooks can interact in order-sensitive ways.",
+        "Hooks on non-leaf tensors require careful graph handling."
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.Tensor.register_hook.html"
+    },
+    {
+      "task": "Retain Intermediate Gradients",
+      "mental_trigger": "I need gradients for an intermediate tensor, not just parameters.",
+      "syntax": "tensor.retain_grad()",
+      "important_params": [
+        "None"
+      ],
+      "example": "import torch\n\nx = torch.tensor(2.0, requires_grad=True)\ny = x * 3\ny.retain_grad()\nz = y * 4\nz.backward()\nprint(y.grad)",
+      "use_when": "Use when inspecting hidden states, activations, or intermediate tensors.",
+      "avoid_when": "Avoid in production unless the extra memory cost is justified.",
+      "decision_notes": "Problem Solved: Makes intermediate gradient values available for debugging or custom analyses.\nReturn Value: Returns `None`.\nPerformance Notes: Use only for targeted inspection because retained gradients increase memory pressure.\nFramework Migration Notes: Useful when debugging gradient flow in complex custom graphs.\nTensorFlow Equivalent: No direct equivalent.\nVersion Compatibility:\n- **Introduced**: Core autograd feature.\nSearch Metadata:\n- **Aliases**: keep intermediate grad, retain activation grad\n- **Common Search Terms**: pytorch retain_grad\n- **Keywords**: autograd, intermediate, gradient, debug\n- **Frequently Confused With**: `register_hook`, `.grad`\nRelated APIs: `register_hook`, `.grad`, `backward`\nRelated Models: transformer, bert, gpt\nRelated Patterns: training-loop",
+      "gotchas": [
+        "Works only on tensors participating in autograd.",
+        "Increases memory usage.",
+        "Can slow backward on large graphs.",
+        "Non-leaf tensors normally drop `.grad`.",
+        "Often unnecessary outside debugging."
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.Tensor.retain_grad.html"
+    },
+    {
+      "task": "Composable Vectorized Autograd",
+      "mental_trigger": "I need to batch gradient computations or transform a pure function.",
+      "syntax": "torch.func.grad(func, argnums=0)\ntorch.func.vmap(func, in_dims=0, out_dims=0)",
+      "important_params": [
+        "func",
+        "argnums",
+        "in_dims",
+        "out_dims"
+      ],
+      "example": "import torch\n\ndef f(x):\n    return (x ** 2).sum()\n\ng = torch.func.grad(f)\nx = torch.randn(5)\nprint(g(x))\n\nbatched = torch.func.vmap(lambda t: t * 2)\nprint(batched(torch.randn(3, 4)).shape)",
+      "use_when": "Use for batched per-sample gradients, vectorized evaluation, and functional-style modeling.",
+      "avoid_when": "Avoid if your code depends heavily on mutable module state.",
+      "decision_notes": "Problem Solved: Applies gradient and vectorization transforms to functions without manual looped autograd code.\nReturn Value: Returns transformed callables.\nPerformance Notes: Can significantly reduce Python overhead for batched transforms.\nFramework Migration Notes: This is the closest PyTorch equivalent to combining gradient tape logic with vectorized mapping.\nTensorFlow Equivalent: No direct equivalent.\nVersion Compatibility:\n- **Introduced**: Modern functional API in PyTorch 2.x.\n- **Replacement**: Prefer over older functorch-style code.\nSearch Metadata:\n- **Aliases**: functional autograd, vectorized grad\n- **Common Search Terms**: pytorch func grad vmap\n- **Keywords**: autograd, vectorization, functional, batching\n- **Frequently Confused With**: `torch.autograd.grad`, manual loops\nRelated APIs: `torch.autograd.grad`, `torch.vmap`, `functional_call`\nRelated Models: transformer, bert\nRelated Patterns: training-loop",
+      "gotchas": [
+        "Functions should be as pure as possible.",
+        "State mutation can break transforms.",
+        "Shape mismatches become harder to debug.",
+        "Not every Python side effect is compatible with vectorization.",
+        "Some custom ops may not compose cleanly."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/func.html"
+    },
+    {
+      "task": "Linear Layer",
+      "mental_trigger": "I need a dense projection layer.",
+      "syntax": "torch.nn.Linear(in_features, out_features, bias=True, device=None, dtype=None)",
+      "important_params": [
+        "in_features",
+        "out_features",
+        "bias",
+        "device",
+        "dtype"
+      ],
+      "example": "import torch\nimport torch.nn as nn\n\nlayer = nn.Linear(4, 2)\nx = torch.randn(3, 4)\ny = layer(x)\nprint(y.shape)",
+      "use_when": "Use in classifier heads, MLP blocks, and projection layers.",
+      "avoid_when": "Avoid when spatial structure should be preserved; use convolution instead.",
+      "decision_notes": "Problem Solved: Projects feature vectors into a new representation for classifiers, regressors, and attention blocks.\nReturn Value: Returns an `nn.Module` that maps inputs of shape `(*, in_features)` to `(*, out_features)`.\nPerformance Notes: Linear layers benefit strongly from GPU acceleration and fused kernels.\nFramework Migration Notes: This is the direct analog of a fully connected layer in most frameworks.\nTensorFlow Equivalent: `tf.keras.layers.Dense`\nVersion Compatibility:\n- **Introduced**: Core module API.\n- **Modern replacement**: Same in 2.x; use explicit device/dtype where needed.\nSearch Metadata:\n- **Aliases**: Dense layer, fully connected layer\n- **Common Search Terms**: pytorch linear layer\n- **Keywords**: dense, projection, affine, module\n- **Frequently Confused With**: `nn.LazyLinear`, `torch.matmul`\nRelated APIs: `nn.LazyLinear`, `torch.matmul`, `nn.Sequential`\nRelated Models: bert, gpt, logistic-regression\nRelated Patterns: training-loop",
+      "gotchas": [
+        "Input feature dimension must match `in_features`.",
+        "Weights are initialized automatically, not zeroed.",
+        "Works on the last dimension of the input.",
+        "Mismatched dtype or device causes runtime errors.",
+        "Bias can be disabled explicitly."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.Linear.html"
+    },
+    {
+      "task": "1D Convolution",
+      "mental_trigger": "I need a convolution over a 1D sequence.",
+      "syntax": "torch.nn.Conv1d(in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros', device=None, dtype=None)",
+      "important_params": [
+        "in_channels",
+        "out_channels",
+        "kernel_size",
+        "stride",
+        "padding"
+      ],
+      "example": "import torch\nimport torch.nn as nn\n\nconv = nn.Conv1d(4, 8, kernel_size=3, padding=1)\nx = torch.randn(2, 4, 16)\ny = conv(x)\nprint(y.shape)",
+      "use_when": "Use for text, audio, sensor streams, or compact temporal feature extraction.",
+      "avoid_when": "Avoid when the input is image-like and should preserve two spatial axes; use `Conv2d`.",
+      "decision_notes": "Problem Solved: Processes sequential or signal-like inputs with learnable local filters.\nReturn Value: Returns an `nn.Module` producing 1D feature maps.\nPerformance Notes: Convolutions are highly optimized on GPU, but small batches may underutilize hardware.\nFramework Migration Notes: Use when replacing recurrent feature extractors with local temporal convolutions.\nTensorFlow Equivalent: `tf.keras.layers.Conv1D`\nVersion Compatibility:\n- **Introduced**: Core module API.\nSearch Metadata:\n- **Aliases**: temporal conv, 1D conv\n- **Common Search Terms**: pytorch conv1d\n- **Keywords**: convolution, sequence, channels, kernel\n- **Frequently Confused With**: `nn.Conv2d`, `nn.Conv3d`\nRelated APIs: `nn.Conv2d`, `nn.Conv3d`, `nn.MaxPool1d`\nRelated Models: transformer, bert\nRelated Patterns: training-loop",
+      "gotchas": [
+        "Input shape is `(N, C, L)`.",
+        "Channel count must match `in_channels`.",
+        "Padding and stride change output length.",
+        "`groups` changes how channels are connected.",
+        "Sequence length may shrink unexpectedly."
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.Conv1d.html"
+    },
+    {
+      "task": "2D Convolution",
+      "mental_trigger": "I need a convolution over height and width.",
+      "syntax": "torch.nn.Conv2d(in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros', device=None, dtype=None)",
+      "important_params": [
+        "in_channels",
+        "out_channels",
+        "kernel_size",
+        "stride",
+        "padding"
+      ],
+      "example": "import torch\nimport torch.nn as nn\n\nconv = nn.Conv2d(3, 16, kernel_size=3, padding=1)\nx = torch.randn(2, 3, 32, 32)\ny = conv(x)\nprint(y.shape)",
+      "use_when": "Use for image backbones, detectors, and feature extractors.",
+      "avoid_when": "Avoid when the problem is purely sequential; use 1D layers or attention.",
+      "decision_notes": "Problem Solved: Extracts local spatial features from images and feature maps.\nReturn Value: Returns an `nn.Module` that maps 4D image-like tensors to 4D outputs.\nPerformance Notes: Convolution throughput is sensitive to tensor layout and accelerator backend choice.\nFramework Migration Notes: This is the core building block for most vision backbones.\nTensorFlow Equivalent: `tf.keras.layers.Conv2D`\nVersion Compatibility:\n- **Introduced**: Core module API.\nSearch Metadata:\n- **Aliases**: spatial conv, image conv\n- **Common Search Terms**: pytorch conv2d\n- **Keywords**: convolution, image, spatial, feature map\n- **Frequently Confused With**: `nn.Conv1d`, `nn.Conv3d`\nRelated APIs: `nn.Conv1d`, `nn.MaxPool2d`, `nn.BatchNorm2d`\nRelated Models: vit\nRelated Patterns: training-loop",
+      "gotchas": [
+        "Input shape is `(N, C, H, W)`.",
+        "Channel order mistakes are common.",
+        "Output size depends on stride, padding, and dilation.",
+        "Grouped convolutions change weight layout.",
+        "Non-contiguous layout can affect downstream ops."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html"
+    },
+    {
+      "task": "3D Convolution",
+      "mental_trigger": "I need a convolution over depth, height, and width.",
+      "syntax": "torch.nn.Conv3d(in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros', device=None, dtype=None)",
+      "important_params": [
+        "in_channels",
+        "out_channels",
+        "kernel_size",
+        "stride",
+        "padding"
+      ],
+      "example": "import torch\nimport torch.nn as nn\n\nconv = nn.Conv3d(1, 4, kernel_size=3, padding=1)\nx = torch.randn(2, 1, 8, 16, 16)\ny = conv(x)\nprint(y.shape)",
+      "use_when": "Use for videos, medical volumes, or 3D feature grids.",
+      "avoid_when": "Avoid when 2D spatial structure is sufficient; 3D convolutions are more expensive.",
+      "decision_notes": "Problem Solved: Processes volumetric or spatiotemporal inputs with learnable 3D kernels.\nReturn Value: Returns an `nn.Module` for 5D input tensors.\nPerformance Notes: 3D convolution is memory intensive and often requires careful batch sizing.\nFramework Migration Notes: Use when extending vision pipelines to volumetric data.\nTensorFlow Equivalent: `tf.keras.layers.Conv3D`\nVersion Compatibility:\n- **Introduced**: Core module API.\nSearch Metadata:\n- **Aliases**: volumetric conv, 3D conv\n- **Common Search Terms**: pytorch conv3d\n- **Keywords**: convolution, volume, video, spatiotemporal\n- **Frequently Confused With**: `nn.Conv2d`\nRelated APIs: `nn.Conv2d`, `nn.MaxPool3d`\nRelated Patterns: training-loop",
+      "gotchas": [
+        "Input shape is `(N, C, D, H, W)`.",
+        "Memory usage grows quickly with volume size.",
+        "Output shape calculations are easy to misread.",
+        "Channel and depth dimensions are distinct.",
+        "Small batch sizes may reduce GPU efficiency."
+      ],
+      "related_workflows": [
+        "object-detection-pipeline"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.Conv3d.html"
+    },
+    {
+      "task": "Max Pooling 2D",
+      "mental_trigger": "I need to shrink spatial size by taking local maxima.",
+      "syntax": "torch.nn.MaxPool2d(kernel_size, stride=None, padding=0, dilation=1, return_indices=False, ceil_mode=False)",
+      "important_params": [
+        "kernel_size",
+        "stride",
+        "padding",
+        "ceil_mode"
+      ],
+      "example": "import torch\nimport torch.nn as nn\n\npool = nn.MaxPool2d(2)\nx = torch.randn(2, 3, 8, 8)\ny = pool(x)\nprint(y.shape)",
+      "use_when": "Use to reduce resolution in CNN backbones.",
+      "avoid_when": "Avoid when average behavior is more appropriate for feature aggregation.",
+      "decision_notes": "Problem Solved: Reduces feature-map resolution while preserving strong activations.\nReturn Value: Returns pooled feature maps, and optionally indices.\nPerformance Notes: Pooling is cheap compared with convolutions, but still affects memory traffic.\nFramework Migration Notes: This is a standard spatial downsampling primitive in vision models.\nTensorFlow Equivalent: `tf.keras.layers.MaxPool2D`\nVersion Compatibility:\n- **Introduced**: Core module API.\nSearch Metadata:\n- **Aliases**: max pool, spatial pooling\n- **Common Search Terms**: pytorch maxpool2d\n- **Keywords**: pooling, downsample, spatial, max\n- **Frequently Confused With**: `nn.AvgPool2d`\nRelated APIs: `nn.AvgPool2d`, `nn.AdaptiveAvgPool2d`\nRelated Patterns: training-loop",
+      "gotchas": [
+        "Spatial dimensions shrink based on kernel and stride.",
+        "`ceil_mode` changes output sizing.",
+        "Indices are only returned if requested.",
+        "Pooling can discard fine detail.",
+        "Shape calculation errors are common."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.MaxPool2d.html"
+    },
+    {
+      "task": "Average Pooling 2D",
+      "mental_trigger": "I need smooth spatial downsampling.",
+      "syntax": "torch.nn.AvgPool2d(kernel_size, stride=None, padding=0, ceil_mode=False, count_include_pad=True, divisor_override=None)",
+      "important_params": [
+        "kernel_size",
+        "stride",
+        "padding",
+        "count_include_pad"
+      ],
+      "example": "import torch\nimport torch.nn as nn\n\npool = nn.AvgPool2d(2)\nx = torch.randn(2, 3, 8, 8)\ny = pool(x)\nprint(y.shape)",
+      "use_when": "Use for smoothing or controlled downsampling.",
+      "avoid_when": "Avoid when you need activation-preserving downsampling; prefer max pooling.",
+      "decision_notes": "Problem Solved: Aggregates local neighborhoods by averaging values instead of taking maxima.\nReturn Value: Returns pooled feature maps.\nPerformance Notes: Typically inexpensive and straightforward on accelerators.\nFramework Migration Notes: Use where the model benefits from averaging rather than peak selection.\nTensorFlow Equivalent: `tf.keras.layers.AveragePooling2D`\nVersion Compatibility:\n- **Introduced**: Core module API.\nSearch Metadata:\n- **Aliases**: avg pool, mean pooling\n- **Common Search Terms**: pytorch avgpool2d\n- **Keywords**: pooling, downsample, average, spatial\n- **Frequently Confused With**: `nn.MaxPool2d`\nRelated APIs: `nn.MaxPool2d`, `nn.AdaptiveAvgPool2d`\nRelated Models: vit\nRelated Patterns: training-loop",
+      "gotchas": [
+        "Padding behavior affects the average.",
+        "Output size still depends on kernel and stride.",
+        "`count_include_pad` changes results.",
+        "Poorly chosen parameters can blur useful signals.",
+        "Often not interchangeable with max pooling."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.AvgPool2d.html"
+    },
+    {
+      "task": "Adaptive Average Pooling 2D",
+      "mental_trigger": "I need a fixed-size feature map from variable-size images.",
+      "syntax": "torch.nn.AdaptiveAvgPool2d(output_size)",
+      "important_params": [
+        "output_size"
+      ],
+      "example": "import torch\nimport torch.nn as nn\n\npool = nn.AdaptiveAvgPool2d((1, 1))\nx = torch.randn(2, 3, 11, 17)\ny = pool(x)\nprint(y.shape)",
+      "use_when": "Use before classifier heads or global pooling stages.",
+      "avoid_when": "Avoid when input resolution is already fixed and a normal pooling layer is sufficient.",
+      "decision_notes": "Problem Solved: Produces a consistent spatial output regardless of input resolution.\nReturn Value: Returns a tensor with the requested spatial size.\nPerformance Notes: Useful for reducing feature size before linear heads.\nFramework Migration Notes: This is a common replacement for hardcoded reshape logic before dense heads.\nTensorFlow Equivalent: `tf.keras.layers.GlobalAveragePooling2D` for `(1,1)` style usage\nVersion Compatibility:\n- **Introduced**: Core module API.\nSearch Metadata:\n- **Aliases**: global average pooling, adaptive pool\n- **Common Search Terms**: pytorch adaptiveavgpool2d\n- **Keywords**: pooling, fixed output, global, spatial\n- **Frequently Confused With**: `nn.AvgPool2d`\nRelated APIs: `nn.AvgPool2d`, `torch.flatten`\nRelated Models: vit\nRelated Patterns: training-loop",
+      "gotchas": [
+        "Output size is enforced exactly.",
+        "Works well for variable-resolution inputs.",
+        "Usually follows convolutional feature extraction.",
+        "Can hide resolution-dependent assumptions.",
+        "Misusing it can flatten useful spatial detail too early."
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [],
+      "visualization_equivalents": [],
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool2d.html"
     }
   ],
   "alternatives": [],

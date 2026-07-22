@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { BookOpen, Clock, X, BarChart3, Play, RotateCcw } from 'lucide-react';
+import { BookOpen, Clock, X, RotateCcw } from 'lucide-react';
 import {
   getContinueReading,
   dismissContinueReadingItem,
@@ -28,11 +28,6 @@ function getProgressTextColor(percent: number): string {
 
 export default function ContinueLearningWidget() {
   const [continueItems, setContinueItems] = useState<ContinueReadingItem[]>(() => getContinueReading());
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   const handleDismiss = (href: string) => {
     dismissContinueReadingItem(href);
@@ -44,7 +39,6 @@ export default function ContinueLearningWidget() {
     setContinueItems([]);
   };
 
-  if (!isMounted) return null;
   if (continueItems.length === 0) {
     return (
       <section className="rounded-xl border border-border bg-card mobile-card-padding space-y-3">

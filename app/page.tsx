@@ -16,7 +16,6 @@ import {
   getAllRegistryFamilyIds,
 } from "@/lib/data";
 import SearchBoxWrapper from "@/components/shared/SearchBoxWrapper";
-import ContentTypeBadge from "@/components/shared/ContentTypeBadge";
 import PersonalizedWidgets from "@/components/shared/PersonalizedWidgets";
 import RecentlyAddedWidgetServer from "@/components/shared/RecentlyAddedWidgetServer";
 import { formatRelativeTime } from "@/lib/format-date";

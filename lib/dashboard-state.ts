@@ -185,7 +185,7 @@ export function getFrequentlyUsed(limit = 5): HistoryItem[] {
   scored.sort((a, b) => b.score - a.score);
   
   // Return top items without the score property
-  return scored.slice(0, limit).map(({ score, ...item }) => item);
+  return scored.slice(0, limit);
 }
 
 // Widget preferences operations

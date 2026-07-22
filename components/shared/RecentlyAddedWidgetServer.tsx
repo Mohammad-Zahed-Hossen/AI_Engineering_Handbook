@@ -1,23 +1,9 @@
 import Link from 'next/link';
-import { Plus, ExternalLink, ArrowRight, Sparkles, Clock } from 'lucide-react';
-import { getRecentlyAdded, getContentHref, getSummaryForItem } from '@/lib/data';
+import { ArrowRight, Sparkles, Clock } from 'lucide-react';
+import { getRecentlyAdded, getContentHref } from '@/lib/data';
 import ContentTypeBadge from './ContentTypeBadge';
 import { formatRelativeTime } from '@/lib/format-date';
 
-function getTypeIcon(type: string): string {
-  const icons: Record<string, string> = {
-    package: '📦',
-    model: '🧠',
-    workflow: '🔄',
-    cheatsheet: '📝',
-    pattern: '🧩',
-    debug_guide: '🐛',
-    decision_guide: '🔀',
-    principle: '💡',
-    registry: '🗄️',
-  };
-  return icons[type] || '📄';
-}
 
 export default function RecentlyAddedWidgetServer() {
   const recentlyAdded = getRecentlyAdded(5);

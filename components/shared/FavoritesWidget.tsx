@@ -10,18 +10,11 @@ import { getContentTypeCardClasses } from '@/lib/content-type-meta';
 
 export default function FavoritesWidget() {
   const [favorites, setFavorites] = useState<FavoriteItem[]>(() => getFavorites());
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   const handleRemove = (href: string) => {
     removeFavorite(href);
     setFavorites(prev => prev.filter(f => f.href !== href));
   };
-
-  if (!isMounted) return null;
 
   return (
     <section className="rounded-xl border border-border bg-card mobile-card-padding space-y-3">

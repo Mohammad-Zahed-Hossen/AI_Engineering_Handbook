@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -280,7 +280,7 @@ export default function ProblemIndexDashboard({
 
 
   // Search logic helper
-  function matchesSearch(problem: Problem, query: string, categoryName: string) {
+  const matchesSearch = useCallback((problem: Problem, query: string, categoryName: string) => {
     if (!query) return true;
 
     // 1. Base details
@@ -354,7 +354,7 @@ export default function ProblemIndexDashboard({
     })) return true;
 
     return false;
-  }
+  }, []);
 
   // Filter & Sorting Logic
   const filteredTaxonomy = useMemo(() => {
@@ -437,7 +437,8 @@ export default function ProblemIndexDashboard({
     debugGuideMap,
     packageMap,
     registryMap,
-    decisionGuideMap
+    decisionGuideMap,
+    matchesSearch
   ]);
 
   const totalFilteredProblems = useMemo(() => {
