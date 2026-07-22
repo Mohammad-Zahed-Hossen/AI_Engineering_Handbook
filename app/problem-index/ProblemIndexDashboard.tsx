@@ -354,7 +354,15 @@ export default function ProblemIndexDashboard({
     })) return true;
 
     return false;
-  }, []);
+  }, [
+    modelMap,
+    patternMap,
+    debugGuideMap,
+    packageMap,
+    registryMap,
+    workflowMap,
+    decisionGuideMap
+  ]);
 
   // Filter & Sorting Logic
   const filteredTaxonomy = useMemo(() => {
@@ -432,12 +440,6 @@ export default function ProblemIndexDashboard({
     selectedCharacteristics,
     sortBy,
     workflowMap,
-    modelMap,
-    patternMap,
-    debugGuideMap,
-    packageMap,
-    registryMap,
-    decisionGuideMap,
     matchesSearch
   ]);
 

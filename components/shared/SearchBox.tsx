@@ -122,7 +122,12 @@ export default function SearchBox({
   const [query, setQuery] = useState(() => searchParams?.get('q') || '');
   const [activeIndex, setActiveIndex] = useState(0);
   const [focused, setFocused] = useState(!!searchParams?.get('q'));
-  const [recentSearches, setRecentSearches] = useState<string[]>(() => loadRecentSearches());
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setRecentSearches(loadRecentSearches());
+  }, []);
 
   const [searchIndex, setSearchIndex] = useState<SearchResult[]>(index);
   const [loading, setLoading] = useState(false);

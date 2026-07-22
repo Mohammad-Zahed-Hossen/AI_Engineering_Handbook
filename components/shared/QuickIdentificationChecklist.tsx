@@ -17,19 +17,23 @@ interface QuickIdentificationChecklistProps {
 
 export default function QuickIdentificationChecklist({ items, guideId, className }: QuickIdentificationChecklistProps) {
   const storageKey = `quick-identification-${guideId}`;
-  const [checkedItems, setCheckedItems] = useState<Set<number>>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(storageKey);
-      return stored ? new Set(JSON.parse(stored)) : new Set();
-    }
-    return new Set();
-  });
+  const [checkedItems, setCheckedItems] = useState<Set<number>>(new Set());
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCheckedItems(new Set(JSON.parse(stored)));
+    }
+    setIsLoaded(true);
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (isLoaded) {
       localStorage.setItem(storageKey, JSON.stringify(Array.from(checkedItems)));
     }
-  }, [checkedItems, storageKey]);
+  }, [checkedItems, storageKey, isLoaded]);
 
   const toggleItem = (idx: number) => {
     const newChecked = new Set(checkedItems);

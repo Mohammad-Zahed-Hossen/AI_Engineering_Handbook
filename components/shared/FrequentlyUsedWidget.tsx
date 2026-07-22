@@ -43,7 +43,7 @@ export default function FrequentlyUsedWidget() {
             <BarChart3 className="w-4 h-4 text-muted-foreground" />
           </div>
           <p className="text-xs text-muted-foreground">
-            No usage data yet. Visit content pages and they'll appear here for quick access.
+            No usage data yet. Visit content pages and they&apos;ll appear here for quick access.
           </p>
         </div>
       ) : (

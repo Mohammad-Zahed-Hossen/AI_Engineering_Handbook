@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Lightbulb, ArrowRight, Target } from 'lucide-react';
 import { getHistory, type ContentType } from '@/lib/dashboard-state';
 
@@ -145,11 +145,9 @@ export default function DashboardInsightsWidget() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {insights.map((insight) => {
           const Icon = insight.icon;
-          const bgColors = {
+          const bgColors: Record<string, string> = {
             focus: 'bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20',
-            gap: 'bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20',
             next: 'bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20',
-            resume: 'bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20',
           };
           
           return (

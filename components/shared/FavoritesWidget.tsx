@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { Star, Bookmark, Trash2 } from 'lucide-react';
 import { getFavorites, removeFavorite, type FavoriteItem } from '@/lib/dashboard-state';
