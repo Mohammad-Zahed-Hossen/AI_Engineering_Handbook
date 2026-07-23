@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { BookOpen, Clock, X, RotateCcw } from 'lucide-react';
 import {
@@ -27,7 +27,16 @@ function getProgressTextColor(percent: number): string {
 }
 
 export default function ContinueLearningWidget() {
-  const [continueItems, setContinueItems] = useState<ContinueReadingItem[]>(() => getContinueReading());
+  const [continueItems, setContinueItems] = useState<ContinueReadingItem[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setContinueItems(getContinueReading());
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) return null;
 
   const handleDismiss = (href: string) => {
     dismissContinueReadingItem(href);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { Lightbulb, ArrowRight, Target } from 'lucide-react';
 import { getHistory, type ContentType } from '@/lib/dashboard-state';
 
@@ -14,7 +14,10 @@ interface Insight {
 }
 
 export default function DashboardInsightsWidget() {
-  const insights = useMemo<Insight[]>(() => {
+  const [insights, setInsights] = useState<Insight[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
     const history = getHistory();
     
     const newInsights: Insight[] = [];
@@ -102,8 +105,12 @@ export default function DashboardInsightsWidget() {
       }
     }
     
-    return newInsights.slice(0, 4);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setInsights(newInsights.slice(0, 4));
+    setIsMounted(true);
   }, []);
+
+  if (!isMounted) return null;
 
   if (insights.length === 0) {
     return (

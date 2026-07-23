@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { BarChart3, CheckCircle2, Workflow, Cpu, Code, Lightbulb, FileCode2, Shield, Zap, Terminal, TrendingUp } from 'lucide-react';
 import { getHistory, getFavorites, type ContentType } from '@/lib/dashboard-state';
 
@@ -22,10 +22,13 @@ const CONTENT_TYPES: { type: ContentType; label: string; icon: React.ElementType
 ];
 
 export default function LearningProgressWidget() {
-  const stats = useMemo<Record<ContentType, ProgressStats>>(() => {
+  const [stats, setStats] = useState<Record<ContentType, ProgressStats>>({} as Record<ContentType, ProgressStats>);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
     const history = getHistory();
     const favorites = getFavorites();
-    
+
     const newStats: Record<ContentType, ProgressStats> = {} as Record<ContentType, ProgressStats>;
     
     CONTENT_TYPES.forEach(({ type }) => {
@@ -35,8 +38,12 @@ export default function LearningProgressWidget() {
       };
     });
     
-    return newStats;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setStats(newStats);
+    setIsMounted(true);
   }, []);
+
+  if (!isMounted) return null;
 
   const totalVisited = Object.values(stats).reduce((sum, s) => sum + s.visited, 0);
   const totalFavorited = Object.values(stats).reduce((sum, s) => sum + s.favorited, 0);

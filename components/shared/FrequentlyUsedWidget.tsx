@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Flame, BarChart3, TrendingUp } from 'lucide-react';
 import { getFrequentlyUsed } from '@/lib/dashboard-state';
@@ -13,7 +14,17 @@ function getVisitBarColor(visits: number): string {
 }
 
 export default function FrequentlyUsedWidget() {
-  const frequentlyUsed = getFrequentlyUsed(5);
+  const [frequentlyUsed, setFrequentlyUsed] = useState(() => [] as ReturnType<typeof getFrequentlyUsed>);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setFrequentlyUsed(getFrequentlyUsed(5));
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) return null;
+
   const maxVisits = frequentlyUsed.length > 0 ? Math.max(...frequentlyUsed.map(i => i.visitCount), 1) : 1;
 
   return (
