@@ -21,6 +21,39 @@ interface CheatsheetEntryProps {
   onToggle?: () => void;
 }
 
+function renderFormattedText(text: string, baseClassName: string = 'leading-relaxed') {
+  if (!text) return null;
+  const normalized = text.replace(/\\n/g, '\n');
+  const paragraphs = normalized.split(/\n+/).filter(Boolean);
+
+  if (paragraphs.length === 1 && !normalized.includes('**')) {
+    return <p className={baseClassName}>{text}</p>;
+  }
+
+  return (
+    <div className="space-y-2">
+      {paragraphs.map((p, i) => {
+        const parts = p.split(/(\*\*.*?\*\*)/g);
+        return (
+          <p key={i} className={baseClassName}>
+            {parts.map((part, j) => {
+              if (part.startsWith('**') && part.endsWith('**')) {
+                const boldContent = part.slice(2, -2);
+                return (
+                  <strong key={j} className="font-semibold text-foreground">
+                    {boldContent}
+                  </strong>
+                );
+              }
+              return part;
+            })}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function CheatsheetEntry({ entry, idx, id, codeBlock, open, onToggle }: CheatsheetEntryProps) {
   const [localExpanded, setLocalExpanded] = useState(false);
   const isControlled = open !== undefined;
@@ -82,9 +115,7 @@ export default function CheatsheetEntry({ entry, idx, id, codeBlock, open, onTog
                   cacheKey={`cheatsheet-${id}-trigger`}
                   fadeClass="from-emerald-500/5 dark:from-emerald-500/[0.01] to-transparent"
                 >
-                  <p className="text-muted-foreground leading-relaxed">
-                    {entry.trigger}
-                  </p>
+                  {renderFormattedText(entry.trigger, "text-muted-foreground leading-relaxed")}
                 </ExpandableText>
               </div>
             )}
@@ -100,9 +131,7 @@ export default function CheatsheetEntry({ entry, idx, id, codeBlock, open, onTog
                   maxLines={3}
                   cacheKey={`cheatsheet-${id}-notes`}
                 >
-                  <p className="text-muted-foreground leading-relaxed">
-                    {entry.minimal_notes}
-                  </p>
+                  {renderFormattedText(entry.minimal_notes, "text-muted-foreground leading-relaxed")}
                 </ExpandableText>
               </div>
             )}
@@ -119,9 +148,7 @@ export default function CheatsheetEntry({ entry, idx, id, codeBlock, open, onTog
                   cacheKey={`cheatsheet-${id}-bug`}
                   fadeClass="from-amber-500/5 dark:from-amber-500/[0.01] to-transparent"
                 >
-                  <p className="text-amber-900/80 dark:text-amber-200/80 leading-relaxed">
-                    {entry.common_bug}
-                  </p>
+                  {renderFormattedText(entry.common_bug, "text-amber-900/80 dark:text-amber-200/80 leading-relaxed")}
                 </ExpandableText>
               </div>
             )}

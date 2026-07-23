@@ -1,0 +1,260 @@
+{
+  "id": "quick_ref_tables",
+  "title": "PyTorch Cheatsheet: Production Tables",
+  "name": "PyTorch Cheatsheet: Production Tables",
+  "slug": "quick-ref-tables",
+  "description": "Fast reference tables for PyTorch tensor creation, shape operations, memory behavior, device transfers, data types, training modes, and export formats.",
+  "category": "cheatsheet",
+  "package": "pytorch",
+  "package_reference": "pytorch",
+  "version": "2.13.0",
+  "last_updated": "2026-07-23",
+  "created_at": "2026-07-23",
+  "updated_at": "2026-07-23",
+  "sources": [
+    "https://pytorch.org/docs/stable/index.html"
+  ],
+  "sections": [
+    {
+      "title": "Tensor Creation Matrix",
+      "description": "Guide API selection for creating PyTorch tensors based on memory allocation and source data semantics."
+    },
+    {
+      "title": "Tensor Shape Operations Matrix",
+      "description": "Compare shape manipulation APIs to choose operations matching memory contiguousness constraints."
+    },
+    {
+      "title": "Tensor Memory Behavior",
+      "description": "Define exact memory allocation and underlying storage sharing characteristics for core tensor ops."
+    },
+    {
+      "title": "Device Transfer Matrix",
+      "description": "Select optimal data movement pathways across CPU, CUDA, and Apple Silicon MPS devices."
+    },
+    {
+      "title": "dtype Conversion Matrix",
+      "description": "Evaluate numerical precision options to balance model memory usage, speed, and numerical stability."
+    },
+    {
+      "title": "Training Mode Matrix",
+      "description": "Determine operational state behavior for layers like Dropout and BatchNorm during training and evaluation."
+    },
+    {
+      "title": "Export Format Comparison",
+      "description": "Compare production deployment, compilation, and graph serialization options for PyTorch models."
+    },
+    {
+      "title": "TorchVision Weight Selection",
+      "description": "Navigate modern TorchVision weight loading options and associated preprocessing pipelines."
+    }
+  ],
+  "quick_reference_tables": [
+    {
+      "title": "Tensor Creation Matrix",
+      "headers": ["API", "Best Use", "Copies Data", "Shares Memory", "Typical Scenario"],
+      "rows": [
+        ["torch.tensor", "Convert Python sequences or scalars", "Yes (Always)", "No", "Constructing small ground-truth or scalar tensors"],
+        ["torch.as_tensor", "Efficient array or tensor conversion", "Conditional", "Conditional", "Converting data while avoiding redundant copies"],
+        ["torch.from_numpy", "Zero-copy conversion from NumPy", "No", "Yes", "Interfacing CPU NumPy arrays with PyTorch"],
+        ["torch.zeros", "Allocate tensor initialized to zeros", "N/A (New)", "No", "Initializing accumulators, masks, or hidden states"],
+        ["torch.ones", "Allocate tensor initialized to ones", "N/A (New)", "No", "Creating multiplier masks or baseline inputs"],
+        ["torch.empty", "Allocate uninitialized memory buffer", "N/A (New)", "No", "Allocating output buffers prior to in-place ops"],
+        ["torch.full", "Allocate tensor filled with constant", "N/A (New)", "No", "Populating attention masks with sentinel values"],
+        ["torch.rand", "Allocate uniform random data [0, 1)", "N/A (New)", "No", "Initializing weights or generating dummy inputs"],
+        ["torch.randn", "Allocate standard normal random data", "N/A (New)", "No", "Initializing neural network parameters or noise"],
+        ["torch.randint", "Allocate random integers in range", "N/A (New)", "No", "Sampling categorical target labels or indices"],
+        ["torch.arange", "Step-based integer sequence creation", "N/A (New)", "No", "Generating 1D position indices or step arrays"],
+        ["torch.linspace", "Evenly spaced float sequence creation", "N/A (New)", "No", "Constructing interpolation grids or time steps"]
+      ]
+    },
+    {
+      "title": "Tensor Shape Operations Matrix",
+      "headers": ["API", "Changes Shape", "View or Copy", "Requires Contiguous", "Best Use"],
+      "rows": [
+        ["view", "Yes", "View", "Yes", "Reshaping contiguous tensors without memory allocation"],
+        ["reshape", "Yes", "View (if possible) or Copy", "No", "Safe reshaping when memory layout is uncertain"],
+        ["flatten", "Yes", "View (if possible) or Copy", "No", "Collapsing spatial dimensions into feature vectors"],
+        ["squeeze", "Yes", "View", "No", "Removing dimensions of size 1"],
+        ["unsqueeze", "Yes", "View", "No", "Inserting singleton dimensions for broadcasting"],
+        ["permute", "Yes", "View", "No", "Reordering arbitrary tensor dimensions"],
+        ["transpose", "Yes", "View", "No", "Swapping exactly two tensor axes"],
+        ["expand", "Yes", "View", "No", "Zero-copy broadcasting along singleton axes"],
+        ["repeat", "Yes", "Copy", "No", "Physical memory duplication across dimensions"]
+      ]
+    },
+    {
+      "title": "Tensor Memory Behavior",
+      "headers": ["Operation", "Allocates Memory", "Shares Storage", "Writable", "Notes"],
+      "rows": [
+        ["view", "No", "Yes", "Yes", "In-place edits mutate original tensor storage"],
+        ["reshape", "Conditional", "Conditional", "Yes", "Allocates new block only if non-contiguous"],
+        ["clone", "Yes", "No", "Yes", "Duplicates data and records autograd history"],
+        ["contiguous", "Conditional", "Conditional", "Yes", "Returns self if already contiguous in memory"],
+        ["expand", "No", "Yes", "Read-only", "Multiple indices point to identical physical memory"],
+        ["repeat", "Yes", "No", "Yes", "Allocates fresh memory for duplicated elements"],
+        ["from_numpy", "No", "Yes", "Yes", "Direct pointer share with host NumPy buffer"],
+        ["as_tensor", "Conditional", "Conditional", "Yes", "Avoids allocation when input meets target specs"]
+      ]
+    },
+    {
+      "title": "Device Transfer Matrix",
+      "headers": ["API", "Target Device", "Creates Copy", "Typical Use"],
+      "rows": [
+        [".to()", "CPU / CUDA / MPS", "Conditional", "Unified device and precision conversion"],
+        [".cpu()", "Host CPU", "Conditional", "Fetching tensors back for CPU processing or I/O"],
+        [".cuda()", "NVIDIA GPU", "Conditional", "Direct offloading to explicit CUDA accelerator"],
+        [".mps()", "Apple Silicon GPU", "Conditional", "Direct offloading to Metal Performance Shaders"],
+        ["non_blocking=True", "Async Device Transfer", "No (Async Queue)", "Overlapping host-to-device transfers with compute"]
+      ]
+    },
+    {
+      "title": "dtype Conversion Matrix",
+      "headers": ["dtype", "Precision", "Memory", "Typical Use", "GPU Support"],
+      "rows": [
+        ["float64", "High (64-bit)", "8 bytes", "Scientific computing and precise loss terms", "Universal"],
+        ["float32", "Standard (32-bit)", "4 bytes", "Standard baseline for weights and activations", "Universal"],
+        ["float16", "Medium (16-bit)", "2 bytes", "AMP training on older Tensor Core hardware", "Tensor Cores"],
+        ["bfloat16", "Dynamic Range (16-bit)", "2 bytes", "Modern LLM and Transformer training or inference", "Ampere+ / MPS / CPU"],
+        ["int64", "Integral (64-bit)", "8 bytes", "Target labels, embedding indices, counters", "Universal"],
+        ["int32", "Integral (32-bit)", "4 bytes", "Memory-efficient index tensors and sparse layouts", "Universal"],
+        ["bool", "Logical (8-bit)", "1 byte", "Attention masking and conditional tensor indexing", "Universal"]
+      ]
+    },
+    {
+      "title": "Training Mode Matrix",
+      "headers": ["Feature", "Training", "Evaluation", "Tracks Gradients", "Updates BatchNorm", "Dropout Active", "Recommended Use"],
+      "rows": [
+        ["model.train()", "Active", "Disabled", "Yes", "Yes", "Yes", "Forward pass during gradient updates"],
+        ["model.eval()", "Disabled", "Active", "Yes (unless disabled)", "No", "No", "Validation and evaluation evaluation loops"],
+        ["torch.no_grad()", "Independent", "Independent", "No", "Unchanged", "Unchanged", "Validation steps where autograd is unneeded"],
+        ["torch.inference_mode()", "Independent", "Independent", "No", "Unchanged", "Unchanged", "High-performance inference and production serve"]
+      ]
+    },
+    {
+      "title": "Export Format Comparison",
+      "headers": ["Format", "Primary Use", "Recommended", "Production Status", "Notes"],
+      "rows": [
+        ["torch.compile", "Python In-Process JIT Acceleration", "Yes (Python)", "PyTorch 2.x Standard", "JIT compiles graphs using Triton and Inductor"],
+        ["torch.export", "Out-of-Python Serialization", "Yes (AOT/C++)", "Production Standard", "Generates clean ExportedProgram for C++ runtimes"],
+        ["TorchScript", "Legacy C++ Deployment", "No", "Legacy", "Replaced by torch.export for modern pipelines"],
+        ["ONNX", "Cross-Framework Interoperability", "Yes (Vendor)", "Industry Standard", "Export target for TensorRT, ONNX Runtime, OpenVINO"],
+        ["state_dict", "Native Weight Storage", "Yes (Weights)", "Standard Weights", "Python dictionary mapping parameters to tensors"]
+      ]
+    },
+    {
+      "title": "TorchVision Weight Selection",
+      "headers": ["Option", "Best Use", "Automatically Applies Transforms", "Recommended"],
+      "rows": [
+        ["Weights.DEFAULT", "Obtaining highest-accuracy pre-trained weights", "No (Query via .transforms())", "Yes (Best Practice)"],
+        ["Weights.<ENUM_NAME>", "Pinning explicit model weight versions", "No (Query via .transforms())", "Yes (Reproducibility)"],
+        ["pretrained=True", "Legacy model weight initialization", "No", "No (Deprecated)"],
+        ["weights=None", "Initializing model architecture from scratch", "No", "Yes (Custom Training)"]
+      ]
+    }
+  ],
+  "quick_references": [
+    {
+      "title": "Tensor Creation Matrix",
+      "headers": ["API", "Best Use", "Copies Data", "Shares Memory", "Typical Scenario"],
+      "rows": [
+        ["torch.tensor", "Convert Python sequences or scalars", "Yes (Always)", "No", "Constructing small ground-truth or scalar tensors"],
+        ["torch.as_tensor", "Efficient array or tensor conversion", "Conditional", "Conditional", "Converting data while avoiding redundant copies"],
+        ["torch.from_numpy", "Zero-copy conversion from NumPy", "No", "Yes", "Interfacing CPU NumPy arrays with PyTorch"],
+        ["torch.zeros", "Allocate tensor initialized to zeros", "N/A (New)", "No", "Initializing accumulators, masks, or hidden states"],
+        ["torch.ones", "Allocate tensor initialized to ones", "N/A (New)", "No", "Creating multiplier masks or baseline inputs"],
+        ["torch.empty", "Allocate uninitialized memory buffer", "N/A (New)", "No", "Allocating output buffers prior to in-place ops"],
+        ["torch.full", "Allocate tensor filled with constant", "N/A (New)", "No", "Populating attention masks with sentinel values"],
+        ["torch.rand", "Allocate uniform random data [0, 1)", "N/A (New)", "No", "Initializing weights or generating dummy inputs"],
+        ["torch.randn", "Allocate standard normal random data", "N/A (New)", "No", "Initializing neural network parameters or noise"],
+        ["torch.randint", "Allocate random integers in range", "N/A (New)", "No", "Sampling categorical target labels or indices"],
+        ["torch.arange", "Step-based integer sequence creation", "N/A (New)", "No", "Generating 1D position indices or step arrays"],
+        ["torch.linspace", "Evenly spaced float sequence creation", "N/A (New)", "No", "Constructing interpolation grids or time steps"]
+      ]
+    },
+    {
+      "title": "Tensor Shape Operations Matrix",
+      "headers": ["API", "Changes Shape", "View or Copy", "Requires Contiguous", "Best Use"],
+      "rows": [
+        ["view", "Yes", "View", "Yes", "Reshaping contiguous tensors without memory allocation"],
+        ["reshape", "Yes", "View (if possible) or Copy", "No", "Safe reshaping when memory layout is uncertain"],
+        ["flatten", "Yes", "View (if possible) or Copy", "No", "Collapsing spatial dimensions into feature vectors"],
+        ["squeeze", "Yes", "View", "No", "Removing dimensions of size 1"],
+        ["unsqueeze", "Yes", "View", "No", "Inserting singleton dimensions for broadcasting"],
+        ["permute", "Yes", "View", "No", "Reordering arbitrary tensor dimensions"],
+        ["transpose", "Yes", "View", "No", "Swapping exactly two tensor axes"],
+        ["expand", "Yes", "View", "No", "Zero-copy broadcasting along singleton axes"],
+        ["repeat", "Yes", "Copy", "No", "Physical memory duplication across dimensions"]
+      ]
+    },
+    {
+      "title": "Tensor Memory Behavior",
+      "headers": ["Operation", "Allocates Memory", "Shares Storage", "Writable", "Notes"],
+      "rows": [
+        ["view", "No", "Yes", "Yes", "In-place edits mutate original tensor storage"],
+        ["reshape", "Conditional", "Conditional", "Yes", "Allocates new block only if non-contiguous"],
+        ["clone", "Yes", "No", "Yes", "Duplicates data and records autograd history"],
+        ["contiguous", "Conditional", "Conditional", "Yes", "Returns self if already contiguous in memory"],
+        ["expand", "No", "Yes", "Read-only", "Multiple indices point to identical physical memory"],
+        ["repeat", "Yes", "No", "Yes", "Allocates fresh memory for duplicated elements"],
+        ["from_numpy", "No", "Yes", "Yes", "Direct pointer share with host NumPy buffer"],
+        ["as_tensor", "Conditional", "Conditional", "Yes", "Avoids allocation when input meets target specs"]
+      ]
+    },
+    {
+      "title": "Device Transfer Matrix",
+      "headers": ["API", "Target Device", "Creates Copy", "Typical Use"],
+      "rows": [
+        [".to()", "CPU / CUDA / MPS", "Conditional", "Unified device and precision conversion"],
+        [".cpu()", "Host CPU", "Conditional", "Fetching tensors back for CPU processing or I/O"],
+        [".cuda()", "NVIDIA GPU", "Conditional", "Direct offloading to explicit CUDA accelerator"],
+        [".mps()", "Apple Silicon GPU", "Conditional", "Direct offloading to Metal Performance Shaders"],
+        ["non_blocking=True", "Async Device Transfer", "No (Async Queue)", "Overlapping host-to-device transfers with compute"]
+      ]
+    },
+    {
+      "title": "dtype Conversion Matrix",
+      "headers": ["dtype", "Precision", "Memory", "Typical Use", "GPU Support"],
+      "rows": [
+        ["float64", "High (64-bit)", "8 bytes", "Scientific computing and precise loss terms", "Universal"],
+        ["float32", "Standard (32-bit)", "4 bytes", "Standard baseline for weights and activations", "Universal"],
+        ["float16", "Medium (16-bit)", "2 bytes", "AMP training on older Tensor Core hardware", "Tensor Cores"],
+        ["bfloat16", "Dynamic Range (16-bit)", "2 bytes", "Modern LLM and Transformer training or inference", "Ampere+ / MPS / CPU"],
+        ["int64", "Integral (64-bit)", "8 bytes", "Target labels, embedding indices, counters", "Universal"],
+        ["int32", "Integral (32-bit)", "4 bytes", "Memory-efficient index tensors and sparse layouts", "Universal"],
+        ["bool", "Logical (8-bit)", "1 byte", "Attention masking and conditional tensor indexing", "Universal"]
+      ]
+    },
+    {
+      "title": "Training Mode Matrix",
+      "headers": ["Feature", "Training", "Evaluation", "Tracks Gradients", "Updates BatchNorm", "Dropout Active", "Recommended Use"],
+      "rows": [
+        ["model.train()", "Active", "Disabled", "Yes", "Yes", "Yes", "Forward pass during gradient updates"],
+        ["model.eval()", "Disabled", "Active", "Yes (unless disabled)", "No", "No", "Validation and evaluation evaluation loops"],
+        ["torch.no_grad()", "Independent", "Independent", "No", "Unchanged", "Unchanged", "Validation steps where autograd is unneeded"],
+        ["torch.inference_mode()", "Independent", "Independent", "No", "Unchanged", "Unchanged", "High-performance inference and production serve"]
+      ]
+    },
+    {
+      "title": "Export Format Comparison",
+      "headers": ["Format", "Primary Use", "Recommended", "Production Status", "Notes"],
+      "rows": [
+        ["torch.compile", "Python In-Process JIT Acceleration", "Yes (Python)", "PyTorch 2.x Standard", "JIT compiles graphs using Triton and Inductor"],
+        ["torch.export", "Out-of-Python Serialization", "Yes (AOT/C++)", "Production Standard", "Generates clean ExportedProgram for C++ runtimes"],
+        ["TorchScript", "Legacy C++ Deployment", "No", "Legacy", "Replaced by torch.export for modern pipelines"],
+        ["ONNX", "Cross-Framework Interoperability", "Yes (Vendor)", "Industry Standard", "Export target for TensorRT, ONNX Runtime, OpenVINO"],
+        ["state_dict", "Native Weight Storage", "Yes (Weights)", "Standard Weights", "Python dictionary mapping parameters to tensors"]
+      ]
+    },
+    {
+      "title": "TorchVision Weight Selection",
+      "headers": ["Option", "Best Use", "Automatically Applies Transforms", "Recommended"],
+      "rows": [
+        ["Weights.DEFAULT", "Obtaining highest-accuracy pre-trained weights", "No (Query via .transforms())", "Yes (Best Practice)"],
+        ["Weights.<ENUM_NAME>", "Pinning explicit model weight versions", "No (Query via .transforms())", "Yes (Reproducibility)"],
+        ["pretrained=True", "Legacy model weight initialization", "No", "No (Deprecated)"],
+        ["weights=None", "Initializing model architecture from scratch", "No", "Yes (Custom Training)"]
+      ]
+    }
+  ],
+  "entries": []
+}

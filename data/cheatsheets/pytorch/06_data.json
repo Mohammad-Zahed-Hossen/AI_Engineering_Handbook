@@ -1,0 +1,225 @@
+{
+  "id": "06_data",
+  "title": "PyTorch Data Loading Cheatsheet",
+  "name": "PyTorch Data Loading Cheatsheet",
+  "slug": "data",
+  "description": "Fast reference for PyTorch datasets, dataloaders, streaming datasets, samplers, workers, and GPU transfer optimizations.",
+  "category": "cheatsheet",
+  "package": "pytorch",
+  "package_reference": "pytorch",
+  "version": "2.13.0",
+  "last_updated": "2026-07-23",
+  "created_at": "2026-07-23",
+  "updated_at": "2026-07-23",
+  "sources": [
+    "https://pytorch.org/docs/stable/data.html"
+  ],
+  "sections": [
+    {
+      "title": "Datasets",
+      "description": "Map-style and iterable-style dataset structures for structured, random-access, or sequential streaming data."
+    },
+    {
+      "title": "DataLoader Basics",
+      "description": "Fundamental components of the PyTorch DataLoader, including batching, shuffling, and dropping incomplete data batches."
+    },
+    {
+      "title": "DataLoader Customization",
+      "description": "Methods to customize sample collection, padding, and sequence alignment for downstream processing."
+    },
+    {
+      "title": "DataLoader Performance & Workers",
+      "description": "Techniques for accelerating data loading pipelines with multi-processing, prefetching, persistent workers, and unique worker seeds."
+    },
+    {
+      "title": "Samplers",
+      "description": "Strategic sample indexing tools including custom samplers, weighted random samplers, batch samplers, and distributed multi-GPU samplers."
+    },
+    {
+      "title": "Device Transfer Optimizations",
+      "description": "Performance-critical configurations for copying tensors from host CPU RAM to target GPU accelerator memory."
+    }
+  ],
+  "entries": [
+    {
+      "problem": "Create Custom Map-Style Dataset (Dataset)",
+      "trigger": "Use when you have a random-access dataset with a fixed size and known indices.",
+      "snippet": "import torch\nfrom torch.utils.data import Dataset\n\nclass CustomMapDataset(Dataset):\n    def __init__(self, data: torch.Tensor, targets: torch.Tensor):\n        self.data = data\n        self.targets = targets\n\n    def __len__(self) -> int:\n        return len(self.data)\n\n    def __getitem__(self, index: int):\n        return self.data[index], self.targets[index]\n\n# Example usage\nX = torch.randn(100, 10)\ny = torch.randint(0, 2, (100,))\ndataset = CustomMapDataset(X, y)\nprint(len(dataset), dataset[0][0].shape)",
+      "minimal_notes": "Map-style datasets must implement both __len__ and __getitem__ for index-based access. They allow efficient random access and easy shuffling with DataLoader.",
+      "common_bug": "**Issue:** TypeError: CustomMapDataset object is not subscriptable when passing the dataset to a DataLoader or accessing by index.\n\n**Cause:** Forgetting to implement the __getitem__ method in the custom dataset class.\n\n**Quick Fix:** Define def __getitem__(self, index): in your dataset class to return samples by index.",
+      "docs_url": "https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset",
+      "language": "python"
+    },
+    {
+      "problem": "Implement Dataset Length (__len__)",
+      "trigger": "Use when defining a map-style dataset to declare the total number of available samples.",
+      "snippet": "import torch\nfrom torch.utils.data import Dataset\n\nclass SizedDataset(Dataset):\n    def __init__(self, num_samples: int):\n        self.num_samples = num_samples\n        self.data = torch.randn(num_samples, 8)\n\n    def __len__(self) -> int:\n        return self.num_samples\n\n    def __getitem__(self, idx: int) -> torch.Tensor:\n        return self.data[idx]\n\ndataset = SizedDataset(num_samples=500)\nprint(len(dataset))",
+      "minimal_notes": "The __len__ method is called by len() and DataLoader to determine batch boundaries and dataset size. It must return an integer greater than or equal to zero.",
+      "common_bug": "**Issue:** TypeError: 'float' object cannot be interpreted as an integer during iteration.\n\n**Cause:** Returning a non-integer value, such as a floating-point calculation result, from __len__.\n\n**Quick Fix:** Wrap the length calculation result with int() inside __len__.",
+      "docs_url": "https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset",
+      "language": "python"
+    },
+    {
+      "problem": "Implement Dataset Item Retrieval (__getitem__)",
+      "trigger": "Use when fetching a single sample and its corresponding label at a given index.",
+      "snippet": "import torch\nfrom torch.utils.data import Dataset\n\nclass ItemRetrievalDataset(Dataset):\n    def __init__(self, features: torch.Tensor, labels: torch.Tensor):\n        self.features = features\n        self.labels = labels\n\n    def __len__(self) -> int:\n        return len(self.features)\n\n    def __getitem__(self, idx: int) -> dict[str, torch.Tensor]:\n        return {\n            \"feature\": self.features[idx],\n            \"label\": self.labels[idx],\n        }\n\ndataset = ItemRetrievalDataset(torch.randn(10, 4), torch.arange(10))\nsample = dataset[3]\nprint(sample[\"feature\"], sample[\"label\"])",
+      "minimal_notes": "__getitem__ handles on-the-fly transformations and sample loading. It can return standard Python data structures like tuples, dictionaries, or custom objects.",
+      "common_bug": "**Issue:** IndexError: index out of range when accessing dataset elements via DataLoader.\n\n**Cause:** __len__ returns a number larger than the actual underlying data container length.\n\n**Quick Fix:** Ensure __len__ precisely matches the size of the underlying data lists or tensors.",
+      "docs_url": "https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset",
+      "language": "python"
+    },
+    {
+      "problem": "Create Streaming Dataset (IterableDataset)",
+      "trigger": "Use when reading sequential, streaming, or ultra-large data that does not fit in memory or support random access.",
+      "snippet": "import torch\nfrom torch.utils.data import IterableDataset, DataLoader\nfrom typing import Iterator\n\nclass StreamDataset(IterableDataset):\n    def __init__(self, start: int, end: int):\n        self.start = start\n        self.end = end\n\n    def __iter__(self) -> Iterator[torch.Tensor]:\n        for i in range(self.start, self.end):\n            yield torch.tensor([i], dtype=torch.float32)\n\ndataset = StreamDataset(start=0, end=10)\nloader = DataLoader(dataset, batch_size=2)\nfor batch in loader:\n    print(batch)",
+      "minimal_notes": "IterableDataset requires implementing __iter__ to yield samples sequentially. It does not implement __len__ or __getitem__.",
+      "common_bug": "**Issue:** Duplicate data returned when using num_workers > 1.\n\n**Cause:** Each worker process receives a full copy of the iterator without work-splitting logic.\n\n**Quick Fix:** Partition the stream across workers using torch.utils.data.get_worker_info().",
+      "docs_url": "https://pytorch.org/docs/stable/data.html#torch.utils.data.IterableDataset",
+      "language": "python"
+    },
+    {
+      "problem": "Split Iterable Dataset Across Workers (get_worker_info)",
+      "trigger": "Use when streaming data with multi-process DataLoaders to prevent workers from yielding duplicate items.",
+      "snippet": "import math\nimport torch\nfrom torch.utils.data import IterableDataset, DataLoader, get_worker_info\nfrom typing import Iterator\n\nclass WorkerSplitDataset(IterableDataset):\n    def __init__(self, start: int, end: int):\n        self.start = start\n        self.end = end\n\n    def __iter__(self) -> Iterator[torch.Tensor]:\n        worker_info = get_worker_info()\n        if worker_info is None:\n            iter_start = self.start\n            iter_end = self.end\n        else:\n            per_worker = int(math.ceil((self.end - self.start) / float(worker_info.num_workers)))\n            worker_id = worker_info.id\n            iter_start = self.start + worker_id * per_worker\n            iter_end = min(iter_start + per_worker, self.end)\n\n        for i in range(iter_start, iter_end):\n            yield torch.tensor([i], dtype=torch.float32)\n\ndataset = WorkerSplitDataset(start=0, end=20)\nloader = DataLoader(dataset, batch_size=2, num_workers=2)\nfor batch in loader:\n    print(batch)",
+      "minimal_notes": "get_worker_info() returns None in the main process and worker details inside subprocesses. Splitting range logic inside __iter__ guarantees distinct partitions per worker.",
+      "common_bug": "**Issue:** Unbalanced workload or empty worker streams leading to early iterator termination.\n\n**Cause:** Naive integer division that skips remainder samples across worker partitions.\n\n**Quick Fix:** Use math.ceil or strided range splitting (range(start + worker_id, end, num_workers)) to distribute remainder items evenly.",
+      "docs_url": "https://pytorch.org/docs/stable/data.html#torch.utils.data.get_worker_info",
+      "language": "python"
+    },
+    {
+      "problem": "Create DataLoader (DataLoader)",
+      "trigger": "Use when combining a dataset with batching, shuffling, and multi-threaded loading options.",
+      "snippet": "import torch\nfrom torch.utils.data import TensorDataset, DataLoader\n\nX = torch.randn(100, 10)\ny = torch.randint(0, 2, (100,))\ndataset = TensorDataset(X, y)\n\ndataloader = DataLoader(\n    dataset=dataset,\n    batch_size=16,\n    shuffle=True,\n    num_workers=0,\n    drop_last=False\n)\n\nfor batch_x, batch_y in dataloader:\n    print(batch_x.shape, batch_y.shape)\n    break",
+      "minimal_notes": "DataLoader abstracts batch formation, iteration control, and multiprocess data fetching. It works with both map-style and iterable datasets.",
+      "common_bug": "**Issue:** ValueError: sampler option is mutually exclusive with shuffle.\n\n**Cause:** Setting shuffle=True while simultaneously passing a custom sampler.\n\n**Quick Fix:** Remove shuffle=True or set it to False when providing a custom sampler argument.",
+      "docs_url": "https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader",
+      "language": "python"
+    },
+    {
+      "problem": "Shuffle Dataset (shuffle)",
+      "trigger": "Use when randomizing sample order every epoch to prevent model bias and correlation during training.",
+      "snippet": "import torch\nfrom torch.utils.data import TensorDataset, DataLoader\n\ndataset = TensorDataset(torch.arange(10))\nloader = DataLoader(dataset, batch_size=5, shuffle=True)\n\nprint(\"Epoch 1:\")\nfor batch in loader:\n    print(batch[0].tolist())\n\nprint(\"Epoch 2:\")\nfor batch in loader:\n    print(batch[0].tolist())",
+      "minimal_notes": "Setting shuffle=True internally creates a RandomSampler for map-style datasets. It reshuffles the dataset indices at the start of each iteration loop.",
+      "common_bug": "**Issue:** Data order remains identical across training runs despite shuffle=True.\n\n**Cause:** Deterministic seeding without resetting seeds or using a fixed generator state across runs.\n\n**Quick Fix:** Omit manual seed calls inside the training loop or manage generator objects properly.",
+      "docs_url": "https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader",
+      "language": "python"
+    },
+    {
+      "problem": "Drop Incomplete Batches (drop_last)",
+      "trigger": "Use when your model requires fixed batch sizes or to prevent training instability on tiny tail batches.",
+      "snippet": "import torch\nfrom torch.utils.data import TensorDataset, DataLoader\n\ndataset = TensorDataset(torch.randn(10, 4))\nloader = DataLoader(dataset, batch_size=3, drop_last=True)\n\nfor batch in loader:\n    print(batch[0].shape)\n# Yields 3 batches of size 3, drops the final sample of size 1",
+      "minimal_notes": "When drop_last=True, any final batch smaller than batch_size is ignored. This guarantees uniform shape across all iterations.",
+      "common_bug": "**Issue:** Tensor shape error in BatchNorm layers during training step.\n\n**Cause:** The final batch has a size of 1, causing BatchNorm to crash during mean and variance calculation.\n\n**Quick Fix:** Set drop_last=True in DataLoader to discard incomplete tail batches.",
+      "docs_url": "https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader",
+      "language": "python"
+    },
+    {
+      "problem": "Customize Batch Collation (collate_fn)",
+      "trigger": "Use when custom logic is needed to stack individual dataset samples into a mini-batch.",
+      "snippet": "import torch\nfrom torch.utils.data import DataLoader, TensorDataset\n\ndef custom_collate(batch: list[tuple[torch.Tensor, torch.Tensor]]):\n    inputs = torch.stack([item[0] for item in batch])\n    targets = torch.stack([item[1] for item in batch])\n    return {\"inputs\": inputs, \"targets\": targets}\n\ndataset = TensorDataset(torch.randn(20, 5), torch.ones(20))\nloader = DataLoader(dataset, batch_size=4, collate_fn=custom_collate)\n\nfor batch in loader:\n    print(batch[\"inputs\"].shape, batch[\"targets\"].shape)\n    break",
+      "minimal_notes": "collate_fn accepts a list of samples returned by __getitem__ and combines them. Default collation converts lists of tensors to a single stacked tensor.",
+      "common_bug": "**Issue:** RuntimeError: stack expects each tensor to be equal size.\n\n**Cause:** Default collate_fn uses torch.stack, which fails when batch tensors have varying dimensions or lengths.\n\n**Quick Fix:** Supply a custom collate_fn to pad sequences or return lists/dictionaries.",
+      "docs_url": "https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader",
+      "language": "python"
+    },
+    {
+      "problem": "Enable Persistent Workers (persistent_workers)",
+      "trigger": "Use when multi-worker DataLoader overhead is high due to repeated worker process creation each epoch.",
+      "snippet": "import torch\nfrom torch.utils.data import TensorDataset, DataLoader\n\ndataset = TensorDataset(torch.randn(100, 8))\nloader = DataLoader(\n    dataset,\n    batch_size=10,\n    num_workers=2,\n    persistent_workers=True\n)\n\nfor epoch in range(2):\n    for batch in loader:\n        pass",
+      "minimal_notes": "persistent_workers=True keeps worker processes alive after a dataset has been consumed once. Requires num_workers > 0.",
+      "common_bug": "**Issue:** ValueError: persistent_workers option requires num_workers > 0.\n\n**Cause:** Setting persistent_workers=True while num_workers=0 (default single-process mode).\n\n**Quick Fix:** Ensure num_workers is set to 1 or higher when persistent_workers=True.",
+      "docs_url": "https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader",
+      "language": "python"
+    },
+    {
+      "problem": "Enable Prefetching (prefetch_factor)",
+      "trigger": "Use when worker processes are slow at loading data and GPU utilization suffers from batch retrieval latency.",
+      "snippet": "import torch\nfrom torch.utils.data import TensorDataset, DataLoader\n\ndataset = TensorDataset(torch.randn(1000, 16))\nloader = DataLoader(\n    dataset,\n    batch_size=32,\n    num_workers=2,\n    prefetch_factor=4\n)\n\nfor batch in loader:\n    pass",
+      "minimal_notes": "prefetch_factor defines how many batches are pre-loaded in advance by each worker process. Requires num_workers > 0.",
+      "common_bug": "**Issue:** Excessive CPU RAM consumption or OutOfMemoryError.\n\n**Cause:** Setting prefetch_factor too high with large batch sizes, causing queued batches to exhaust system memory.\n\n**Quick Fix:** Lower prefetch_factor (for example, to 2) or reduce batch_size.",
+      "docs_url": "https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader",
+      "language": "python"
+    },
+    {
+      "problem": "Sample with Custom Sampler (Sampler)",
+      "trigger": "Use when custom index sampling logic is needed, such as custom sequence ordering or domain-specific grouping.",
+      "snippet": "import torch\nfrom torch.utils.data import Sampler, TensorDataset, DataLoader\nfrom typing import Iterator\n\nclass ReverseSampler(Sampler[int]):\n    def __init__(self, data_source):\n        self.data_source = data_source\n\n    def __iter__(self) -> Iterator[int]:\n        return iter(range(len(self.data_source) - 1, -1, -1))\n\n    def __len__(self) -> int:\n        return len(self.data_source)\n\ndataset = TensorDataset(torch.arange(5))\nsampler = ReverseSampler(dataset)\nloader = DataLoader(dataset, batch_size=1, sampler=sampler)\n\nfor batch in loader:\n    print(batch[0].item())",
+      "minimal_notes": "A custom Sampler defines how indices are selected for dataset lookup. Inheriting classes must implement __iter__ yielding sequence indices.",
+      "common_bug": "**Issue:** TypeError: 'CustomSampler' object is not iterable or incomplete epoch sampling.\n\n**Cause:** Returning something other than an iterator from __iter__, or length mismatch in __len__.\n\n**Quick Fix:** Ensure __iter__ returns a valid iterator yielding integer index values.",
+      "docs_url": "https://pytorch.org/docs/stable/data.html#torch.utils.data.Sampler",
+      "language": "python"
+    },
+    {
+      "problem": "Sample with WeightedRandomSampler (WeightedRandomSampler)",
+      "trigger": "Use when training on imbalanced datasets to sample underrepresented classes more frequently.",
+      "snippet": "import torch\nfrom torch.utils.data import TensorDataset, DataLoader, WeightedRandomSampler\n\n# Imbalanced target labels: 8 zeros, 2 ones\ntargets = torch.tensor([0, 0, 0, 0, 0, 0, 0, 0, 1, 1])\nclass_counts = torch.bincount(targets)\nclass_weights = 1.0 / class_counts.float()\nsample_weights = class_weights[targets]\n\nsampler = WeightedRandomSampler(\n    weights=sample_weights,\n    num_samples=len(sample_weights),\n    replacement=True\n)\n\ndataset = TensorDataset(targets)\nloader = DataLoader(dataset, batch_size=2, sampler=sampler)\n\nfor batch in loader:\n    print(batch[0].tolist())",
+      "minimal_notes": "WeightedRandomSampler samples elements with specified probabilities using input tensor weights. replacement=True allows drawing the same sample multiple times per epoch.",
+      "common_bug": "**Issue:** IndexError or unexpected sampling behavior when calculating sample weights.\n\n**Cause:** Passing class weights directly instead of mapping individual sample weights for each dataset index.\n\n**Quick Fix:** Map class weights back to every element: sample_weights = class_weights[targets].",
+      "docs_url": "https://pytorch.org/docs/stable/data.html#torch.utils.data.WeightedRandomSampler",
+      "language": "python"
+    },
+    {
+      "problem": "Batch Samples with BatchSampler (BatchSampler)",
+      "trigger": "Use when you need precise control over batching index groups, such as grouping samples by dynamic sequence length.",
+      "snippet": "import torch\nfrom torch.utils.data import SequentialSampler, BatchSampler, TensorDataset, DataLoader\n\ndataset = TensorDataset(torch.arange(10))\nbase_sampler = SequentialSampler(dataset)\nbatch_sampler = BatchSampler(base_sampler, batch_size=3, drop_last=False)\n\nloader = DataLoader(dataset, batch_sampler=batch_sampler)\n\nfor batch in loader:\n    print(batch[0].tolist())",
+      "minimal_notes": "BatchSampler wraps another Sampler and yields lists of index batches. When using batch_sampler, do not set batch_size, shuffle, sampler, or drop_last on DataLoader.",
+      "common_bug": "**Issue:** ValueError: batch_sampler option is mutually exclusive with batch_size, shuffle, sampler, and drop_last.\n\n**Cause:** Explicitly passing batch_size or shuffle alongside batch_sampler in DataLoader.\n\n**Quick Fix:** Omit batch_size, shuffle, sampler, and drop_last from DataLoader when providing batch_sampler.",
+      "docs_url": "https://pytorch.org/docs/stable/data.html#torch.utils.data.BatchSampler",
+      "language": "python"
+    },
+    {
+      "problem": "Use DistributedSampler (DistributedSampler)",
+      "trigger": "Use when distributing map-style dataset samples across multiple processes or GPUs during Distributed Data Parallel (DDP) training.",
+      "snippet": "import torch\nfrom torch.utils.data import TensorDataset, DataLoader\nfrom torch.utils.data.distributed import DistributedSampler\n\ndataset = TensorDataset(torch.randn(100, 4))\n# Simulated DDP environment parameters\nworld_size = 2\nrank = 0\n\nsampler = DistributedSampler(\n    dataset,\n    num_replicas=world_size,\n    rank=rank,\n    shuffle=True\n)\n\nloader = DataLoader(dataset, batch_size=10, sampler=sampler)\n\n# Set epoch before every iteration to ensure proper shuffling across GPUs\nsampler.set_epoch(0)\nfor batch in loader:\n    print(batch[0].shape)\n    break",
+      "minimal_notes": "DistributedSampler partitions indices into 1 / world_size chunks per rank process. You must call sampler.set_epoch(epoch) before each epoch to maintain proper shuffling.",
+      "common_bug": "**Issue:** Identical mini-batches produced across epochs during multi-GPU training.\n\n**Cause:** Forgetting to invoke sampler.set_epoch(epoch) at the beginning of each epoch loop.\n\n**Quick Fix:** Add sampler.set_epoch(epoch) inside your training loop prior to dataset iteration.",
+      "docs_url": "https://pytorch.org/docs/stable/data.html#torch.utils.data.distributed.DistributedSampler",
+      "language": "python"
+    },
+    {
+      "problem": "Configure Multiple DataLoader Workers (num_workers)",
+      "trigger": "Use when asynchronous parallel process loading is needed to eliminate CPU data preparation bottlenecks.",
+      "snippet": "import torch\nfrom torch.utils.data import TensorDataset, DataLoader\n\ndataset = TensorDataset(torch.randn(500, 10))\nloader = DataLoader(\n    dataset,\n    batch_size=32,\n    num_workers=4,\n    pin_memory=True\n)\n\nfor batch in loader:\n    pass",
+      "minimal_notes": "num_workers > 0 spawns subprocesses to fetch data asynchronously. Balance num_workers against CPU core availability to prevent context-switching overhead.",
+      "common_bug": "**Issue:** Program hangs indefinitely during initialization or epoch end on Windows or macOS.\n\n**Cause:** Spawning worker subprocesses without using if __name__ == '__main__': entry point protection.\n\n**Quick Fix:** Wrap main script execution code inside if __name__ == '__main__':.",
+      "docs_url": "https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader",
+      "language": "python"
+    },
+    {
+      "problem": "Initialize Worker Seeds (worker_init_fn)",
+      "trigger": "Use when worker subprocesses generate random transformations that require deterministic or unique seeding per worker.",
+      "snippet": "import random\nimport numpy as np\nimport torch\nfrom torch.utils.data import TensorDataset, DataLoader\n\ndef seed_worker(worker_id: int) -> None:\n    worker_seed = torch.initial_seed() % 2**32\n    np.random.seed(worker_seed)\n    random.seed(worker_seed)\n\ng = torch.Generator()\ng.manual_seed(42)\n\ndataset = TensorDataset(torch.randn(50, 4))\nloader = DataLoader(\n    dataset,\n    batch_size=10,\n    num_workers=2,\n    worker_init_fn=seed_worker,\n    generator=g\n)\n\nfor batch in loader:\n    pass",
+      "minimal_notes": "worker_init_fn executes in each worker process prior to data loading. It ensures non-PyTorch random generators (like NumPy or Python random) are properly seeded per worker.",
+      "common_bug": "**Issue:** Identical random transformations produced across different worker processes.\n\n**Cause:** Non-PyTorch random state generators retain identical initial seeds across spawned worker processes.\n\n**Quick Fix:** Set Python and NumPy seeds inside worker_init_fn using torch.initial_seed().",
+      "docs_url": "https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader",
+      "language": "python"
+    },
+    {
+      "problem": "Batch Variable-Length Data (collate_fn)",
+      "trigger": "Use when handling sequences or images of differing sizes that require padding to form uniform tensors.",
+      "snippet": "import torch\nfrom torch.utils.data import DataLoader\nfrom torch.nn.utils.rnn import pad_sequence\n\ndef pad_collate(batch: list[torch.Tensor]) -> torch.Tensor:\n    return pad_sequence(batch, batch_first=True, padding_value=0.0)\n\n# Dataset returning variable-length 1D tensors\nsamples = [\n    torch.tensor([1.0, 2.0]),\n    torch.tensor([3.0, 4.0, 5.0]),\n    torch.tensor([6.0]),\n]\nloader = DataLoader(samples, batch_size=3, collate_fn=pad_collate)\n\nfor batch in loader:\n    print(batch.shape)  # torch.Size([3, 3])",
+      "minimal_notes": "pad_sequence combines dynamic-length 1D tensors into a padded rectangular tensor batch. Use batch_first=True to output batch dimensions at index 0.",
+      "common_bug": "**Issue:** RuntimeError: pad_sequence expects a list of 1D Tensors.\n\n**Cause:** Passing multidimensional tensors without flattening or incorrectly structured items to pad_sequence.\n\n**Quick Fix:** Squeeze or reshape individual items into 1D tensors before calling pad_sequence.",
+      "docs_url": "https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader",
+      "language": "python"
+    },
+    {
+      "problem": "Enable Pinned Memory (pin_memory)",
+      "trigger": "Use when accelerating host CPU memory to GPU device memory data transfers.",
+      "snippet": "import torch\nfrom torch.utils.data import TensorDataset, DataLoader\n\ndataset = TensorDataset(torch.randn(100, 10))\nloader = DataLoader(\n    dataset,\n    batch_size=16,\n    pin_memory=True,\n    num_workers=2\n)\n\nfor batch_x, in loader:\n    if torch.cuda.is_available():\n        batch_x = batch_x.to(\"cuda\", non_blocking=True)\n    print(batch_x.is_pinned())\n    break",
+      "minimal_notes": "pin_memory=True copies batch tensors into CUDA page-locked (pinned) memory on the CPU. Pinned memory enables direct DMA transfer to the GPU with non_blocking=True.",
+      "common_bug": "**Issue:** System slowdown or host RAM allocation failure.\n\n**Cause:** Pinning memory on systems with insufficient host RAM or allocating extremely large batches.\n\n**Quick Fix:** Ensure sufficient system RAM is available before enabling pin_memory=True.",
+      "docs_url": "https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader",
+      "language": "python"
+    },
+    {
+      "problem": "Transfer Batches Efficiently to Device (non_blocking=True)",
+      "trigger": "Use when transferring pinned CPU host memory tensors to GPU asynchronously to overlap data copy with GPU computation.",
+      "snippet": "import torch\nfrom torch.utils.data import TensorDataset, DataLoader\n\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\ndataset = TensorDataset(torch.randn(100, 10), torch.randint(0, 2, (100,)))\n\nloader = DataLoader(dataset, batch_size=20, pin_memory=True)\n\nfor inputs, targets in loader:\n    inputs = inputs.to(device, non_blocking=True)\n    targets = targets.to(device, non_blocking=True)\n    print(inputs.device, targets.device)\n    break",
+      "minimal_notes": "non_blocking=True performs asynchronous memory transfers only when the CPU tensor is pinned (pin_memory=True). Non-pinned tensors fall back to synchronous copies.",
+      "common_bug": "**Issue:** non_blocking=True provides no speedup during host-to-device transfers.\n\n**Cause:** The source CPU tensors were not created in or converted to pinned memory prior to to().\n\n**Quick Fix:** Set pin_memory=True in your DataLoader configuration.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.Tensor.to.html",
+      "language": "python"
+    }
+  ]
+}

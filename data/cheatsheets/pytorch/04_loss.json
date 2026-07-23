@@ -1,0 +1,190 @@
+{
+  "id": "04_loss",
+  "title": "PyTorch Loss Functions Cheatsheet",
+  "name": "PyTorch Loss Functions Cheatsheet",
+  "slug": "loss",
+  "description": "Fast reference for PyTorch loss functions, classification losses, regression losses, sequence/embedding losses, and loss configurations.",
+  "category": "cheatsheet",
+  "package": "pytorch",
+  "package_reference": "pytorch",
+  "version": "2.13.0",
+  "last_updated": "2026-07-23",
+  "created_at": "2026-07-23",
+  "updated_at": "2026-07-23",
+  "sources": [
+    "https://pytorch.org/docs/stable/nn.html#loss-functions"
+  ],
+  "sections": [
+    {
+      "title": "Classification Losses",
+      "description": "Loss functions for single-label, multi-label, and multi-class classification tasks."
+    },
+    {
+      "title": "Regression Losses",
+      "description": "Loss functions for continuous target prediction and regression models."
+    },
+    {
+      "title": "Sequence & Embedding Losses",
+      "description": "Loss functions for sequence alignment and embedding/metric representation learning."
+    },
+    {
+      "title": "Loss Configurations",
+      "description": "Common configuration parameters for loss calculation, weighting, ignoring indices, and label smoothing."
+    }
+  ],
+  "entries": [
+    {
+      "problem": "Compute Cross Entropy Loss (nn.CrossEntropyLoss)",
+      "trigger": "Use when training multi-class classification models directly on unnormalized network outputs (raw logits).",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Batch size 3, 5 classes\nlogits = torch.tensor([[2.0, 1.0, 0.1, 0.5, -0.2],\n                       [0.5, 3.1, 0.2, 0.1, 0.0],\n                       [0.1, 0.2, 2.8, 0.4, 0.5]], dtype=torch.float32)\ntargets = torch.tensor([0, 1, 2], dtype=torch.long)\n\ncriterion = nn.CrossEntropyLoss()\nloss = criterion(logits, targets)\nprint(f\"Loss: {loss.item():.4f}\")",
+      "minimal_notes": "nn.CrossEntropyLoss combines nn.LogSoftmax and nn.NLLLoss into a single, numerically stable class. Inputs must be raw logits, and target class indices must be integer tensors of dtype torch.long.",
+      "common_bug": "**Issue:** RuntimeError: expected scalar type Long but found Float or target value mismatch errors.\n\n**Cause:** Passing target labels as floating-point class indices instead of long integers.\n\n**Quick Fix:** Format class index targets as torch.long (or pass class probability floats matching input shape when training with soft target distributions).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html",
+      "language": "python"
+    },
+    {
+      "problem": "Compute Binary Cross Entropy with Logits (nn.BCEWithLogitsLoss)",
+      "trigger": "Use when measuring loss for binary classification or multi-label classification using raw, unscaled output logits.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Batch size 3, 2 binary attributes\nlogits = torch.tensor([[1.5, -0.8],\n                       [-0.2, 2.1],\n                       [0.8, -1.2]], dtype=torch.float32)\ntargets = torch.tensor([[1.0, 0.0],\n                        [0.0, 1.0],\n                        [1.0, 0.0]], dtype=torch.float32)\n\ncriterion = nn.BCEWithLogitsLoss()\nloss = criterion(logits, targets)\nprint(f\"Loss: {loss.item():.4f}\")",
+      "minimal_notes": "Combines a Sigmoid layer and BCELoss into a single class for superior numerical stability via the log-sum-exp trick. Inputs and targets must share identical shapes and torch.float32 data types.",
+      "common_bug": "**Issue:** Loss values are inaccurate or negative gradients occur during training.\n\n**Cause:** Applying an explicit torch.sigmoid() to network predictions before passing them into nn.BCEWithLogitsLoss.\n\n**Quick Fix:** Remove the explicit Sigmoid activation from your neural network output layer when using this loss.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.BCEWithLogitsLoss.html",
+      "language": "python"
+    },
+    {
+      "problem": "Compute Binary Cross Entropy (nn.BCELoss)",
+      "trigger": "Use for binary or multi-label classification when network outputs are already normalized probabilities between 0 and 1.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nprobs = torch.tensor([[0.82, 0.31],\n                      [0.15, 0.89],\n                      [0.69, 0.23]], dtype=torch.float32)\ntargets = torch.tensor([[1.0, 0.0],\n                        [0.0, 1.0],\n                        [1.0, 0.0]], dtype=torch.float32)\n\ncriterion = nn.BCELoss()\nloss = criterion(probs, targets)\nprint(f\"Loss: {loss.item():.4f}\")",
+      "minimal_notes": "Inputs must lie strictly within the range [0, 1] after being transformed by a Sigmoid function. Prefer nn.BCEWithLogitsLoss over nn.BCELoss to avoid log-of-zero numerical instability.",
+      "common_bug": "**Issue:** RuntimeError: value cannot be converted to type float without overflow or NaN loss values.\n\n**Cause:** Input probabilities contain values slightly outside [0, 1] or raw unnormalized logits were supplied.\n\n**Quick Fix:** Pass inputs through Sigmoid first, or switch directly to nn.BCEWithLogitsLoss using raw logits.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.BCELoss.html",
+      "language": "python"
+    },
+    {
+      "problem": "Compute Negative Log Likelihood Loss (nn.NLLLoss)",
+      "trigger": "Use for multi-class classification when your model explicitly outputs log-probabilities (e.g., via nn.LogSoftmax).",
+      "snippet": "import torch\nimport torch.nn as nn\n\nlog_probs = torch.tensor([[-0.22, -2.30, -3.21],\n                          [-1.60, -0.22, -2.30]], dtype=torch.float32)\ntargets = torch.tensor([0, 1], dtype=torch.long)\n\ncriterion = nn.NLLLoss()\nloss = criterion(log_probs, targets)\nprint(f\"Loss: {loss.item():.4f}\")",
+      "minimal_notes": "Expects log-probabilities as inputs rather than raw logits or standard probabilities. Targets must be class index integers of dtype torch.long.",
+      "common_bug": "**Issue:** Loss value output is negative or yields incorrect gradient optimization behavior.\n\n**Cause:** Passing raw logits or standard probabilities normalized by nn.Softmax instead of nn.LogSoftmax.\n\n**Quick Fix:** Apply nn.LogSoftmax(dim=-1) to model outputs before passing to NLLLoss, or switch directly to nn.CrossEntropyLoss.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html",
+      "language": "python"
+    },
+    {
+      "problem": "Compute Mean Squared Error Loss (nn.MSELoss)",
+      "trigger": "Use for continuous regression tasks where larger errors should be penalized quadratically.",
+      "snippet": "import torch\nimport torch.nn as nn\n\npredictions = torch.tensor([[2.5, 0.0], [1.1, -0.5]], dtype=torch.float32)\ntargets = torch.tensor([[3.0, -0.5], [1.0, 0.0]], dtype=torch.float32)\n\ncriterion = nn.MSELoss()\nloss = criterion(predictions, targets)\nprint(f\"Loss: {loss.item():.4f}\")",
+      "minimal_notes": "Measures element-wise mean squared error between predictions and targets. Predictions and targets must have matching shapes and floating-point data types.",
+      "common_bug": "**Issue:** UserWarning: Using a target size that is different to the input size leading to unexpected broadcast loss calculations.\n\n**Cause:** Passing a target tensor with shape (N,) while model predictions have shape (N, 1).\n\n**Quick Fix:** Reshape targets using targets.view_as(predictions) or targets.unsqueeze(-1) before computing loss.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.MSELoss.html",
+      "language": "python"
+    },
+    {
+      "problem": "Compute Mean Absolute Error Loss (nn.L1Loss)",
+      "trigger": "Use for regression tasks when you need robustness against outliers compared to quadratic penalization.",
+      "snippet": "import torch\nimport torch.nn as nn\n\npredictions = torch.tensor([[2.5, 0.0], [1.1, -0.5]], dtype=torch.float32)\ntargets = torch.tensor([[3.0, -0.5], [1.0, 0.0]], dtype=torch.float32)\n\ncriterion = nn.L1Loss()\nloss = criterion(predictions, targets)\nprint(f\"Loss: {loss.item():.4f}\")",
+      "minimal_notes": "Measures element-wise absolute difference, producing constant gradient magnitudes regardless of error size. Inputs and targets must share identical shapes.",
+      "common_bug": "**Issue:** Loss output is higher than expected due to unintended array broadcasting.\n\n**Cause:** Passing target tensor shape (N,) when prediction shape is (N, 1).\n\n**Quick Fix:** Align tensor shapes explicitly using targets = targets.reshape(predictions.shape) prior to computing loss.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.L1Loss.html",
+      "language": "python"
+    },
+    {
+      "problem": "Compute Huber Loss (nn.HuberLoss)",
+      "trigger": "Use for regression tasks to combine MSE smoothness for small errors with L1 robustness for large outliers.",
+      "snippet": "import torch\nimport torch.nn as nn\n\npredictions = torch.tensor([1.5, 3.0, 10.0], dtype=torch.float32)\ntargets = torch.tensor([1.0, 3.2, 2.0], dtype=torch.float32)\n\ncriterion = nn.HuberLoss(delta=1.0)\nloss = criterion(predictions, targets)\nprint(f\"Loss: {loss.item():.4f}\")",
+      "minimal_notes": "Uses squared error when absolute error is below delta and absolute error above delta. The delta parameter controls sensitivity to outliers.",
+      "common_bug": "**Issue:** Loss behaves like standard L1 loss or MSE loss continuously without desired hybrid behavior.\n\n**Cause:** Setting delta inappropriately relative to the scale of the target variable.\n\n**Quick Fix:** Scale target values or tune the delta parameter to match the scale where data points transition into outliers.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.HuberLoss.html",
+      "language": "python"
+    },
+    {
+      "problem": "Compute Smooth L1 Loss (nn.SmoothL1Loss)",
+      "trigger": "Use for bounding box regression and object detection models where stable gradient behavior is required.",
+      "snippet": "import torch\nimport torch.nn as nn\n\npredictions = torch.tensor([0.5, 1.2, 5.0], dtype=torch.float32)\ntargets = torch.tensor([0.0, 1.0, 1.0], dtype=torch.float32)\n\ncriterion = nn.SmoothL1Loss(beta=1.0)\nloss = criterion(predictions, targets)\nprint(f\"Loss: {loss.item():.4f}\")",
+      "minimal_notes": "Behaves like L2 loss for absolute errors below beta and L1 loss above beta. When beta=1.0, it is mathematically equivalent to nn.HuberLoss(delta=1.0).",
+      "common_bug": "**Issue:** Unstable gradients when absolute error values are small.\n\n**Cause:** Leaving beta at older legacy default values or setting beta close to zero.\n\n**Quick Fix:** Set beta explicitly (e.g., beta=1.0 or beta=1/9 depending on bounding box encoding scale).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.SmoothL1Loss.html",
+      "language": "python"
+    },
+    {
+      "problem": "Compute Connectionist Temporal Classification Loss (nn.CTCLoss)",
+      "trigger": "Use for alignment-free sequence prediction tasks such as speech recognition or optical character recognition (OCR).",
+      "snippet": "import torch\nimport torch.nn as nn\n\nT = 50      # Input sequence length\nC = 20      # Number of classes (including blank=0)\nN = 2       # Batch size\nS = 30      # Target sequence length\n\n# Log-probabilities tensor of shape (T, N, C)\nlog_probs = torch.randn(T, N, C).log_softmax(2).detach().requires_grad_()\n\n# Targets of shape (N, S) with class indices (excluding blank 0)\ntargets = torch.randint(low=1, high=C, size=(N, S), dtype=torch.long)\n\ninput_lengths = torch.full(size=(N,), fill_value=T, dtype=torch.long)\ntarget_lengths = torch.randint(low=10, high=S, size=(N,), dtype=torch.long)\n\ncriterion = nn.CTCLoss(blank=0)\nloss = criterion(log_probs, targets, input_lengths, target_lengths)\nprint(f\"Loss: {loss.item():.4f}\")",
+      "minimal_notes": "Expects input log-probabilities of shape (T, N, C) by default unless zero_infinity=True or batch_first=True is specified. Target values must exclude the blank index token (default index 0).",
+      "common_bug": "**Issue:** RuntimeError: Expected tensor for argument #1 'log_probs' to have scalar type Float or infinite loss returned.\n\n**Cause:** Input sequence length T is shorter than target sequence length for a batch item, or blank token indices overlap target classes.\n\n**Quick Fix:** Ensure input_lengths[i] >= target_lengths[i] and pass zero_infinity=True to handle transient edge cases cleanly.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.CTCLoss.html",
+      "language": "python"
+    },
+    {
+      "problem": "Compute KL Divergence Loss (nn.KLDivLoss)",
+      "trigger": "Use when measuring probability distribution divergence in tasks like knowledge distillation or variational autoencoders (VAEs).",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Log-probabilities for model predictions\nlog_probs = torch.tensor([[-0.5, -1.2, -2.1],\n                          [-0.1, -2.5, -3.0]], dtype=torch.float32)\n\n# Target probability distribution\ntarget_probs = torch.tensor([[0.6, 0.3, 0.1],\n                             [0.8, 0.1, 0.1]], dtype=torch.float32)\n\ncriterion = nn.KLDivLoss(reduction='batchmean')\nloss = criterion(log_probs, target_probs)\nprint(f\"Loss: {loss.item():.4f}\")",
+      "minimal_notes": "Input tensor must contain log-probabilities (e.g., from nn.LogSoftmax), while target tensor contains probabilities. Always use reduction='batchmean' to align with mathematical KL divergence definitions.",
+      "common_bug": "**Issue:** KL divergence loss returns negative or mathematically incorrect values.\n\n**Cause:** Passing raw probabilities to inputs or using default reduction='mean' which averages over all elements rather than batch items.\n\n**Quick Fix:** Apply torch.log_softmax to input predictions and initialize nn.KLDivLoss(reduction='batchmean').",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.KLDivLoss.html",
+      "language": "python"
+    },
+    {
+      "problem": "Compute Cosine Embedding Loss (nn.CosineEmbeddingLoss)",
+      "trigger": "Use for metric learning or representation learning to pull similar vectors together and push dissimilar vectors apart.",
+      "snippet": "import torch\nimport torch.nn as nn\n\ninput1 = torch.tensor([[0.5, 0.1, -0.2], [1.0, 0.0, 0.5]], dtype=torch.float32)\ninput2 = torch.tensor([[0.4, 0.2, -0.1], [-1.0, 0.2, 0.0]], dtype=torch.float32)\n\n# Target 1 for similar pairs, -1 for dissimilar pairs\ntarget = torch.tensor([1.0, -1.0], dtype=torch.float32)\n\ncriterion = nn.CosineEmbeddingLoss(margin=0.0)\nloss = criterion(input1, input2, target)\nprint(f\"Loss: {loss.item():.4f}\")",
+      "minimal_notes": "Measures similarity using cosine distance. Target values must be 1 (similar pair) or -1 (dissimilar pair) of floating-point dtype.",
+      "common_bug": "**Issue:** RuntimeError: Expected object of scalar type Float but got Long on target tensor.\n\n**Cause:** Supplying target flags as integer values ([1, -1] with torch.long) instead of floats.\n\n**Quick Fix:** Ensure target tensor is instantiated with dtype=torch.float32.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.CosineEmbeddingLoss.html",
+      "language": "python"
+    },
+    {
+      "problem": "Compute Triplet Margin Loss (nn.TripletMarginLoss)",
+      "trigger": "Use in metric learning models to ensure an anchor is closer to a positive sample than a negative sample by a specified margin.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nanchor = torch.tensor([[1.0, 2.0, 3.0], [0.5, 0.1, 0.2]], dtype=torch.float32)\npositive = torch.tensor([[1.1, 2.1, 2.9], [0.6, 0.0, 0.3]], dtype=torch.float32)\nnegative = torch.tensor([[2.0, 0.0, 0.0], [-0.5, 1.0, 0.8]], dtype=torch.float32)\n\ncriterion = nn.TripletMarginLoss(margin=1.0, p=2.0)\nloss = criterion(anchor, positive, negative)\nprint(f\"Loss: {loss.item():.4f}\")",
+      "minimal_notes": "Computes relative similarity using vector distances. Anchor, positive, and negative inputs must all have identical shape (N, D).",
+      "common_bug": "**Issue:** Model embeddings collapse or gradient vanishes during early training stages.\n\n**Cause:** Trivial negative sampling where all negative samples are easily distinguishable, making loss zero.\n\n**Quick Fix:** Implement hard or semi-hard triplet mining to feed non-trivial triplets into the loss function.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.TripletMarginLoss.html",
+      "language": "python"
+    },
+    {
+      "problem": "Compute Margin Ranking Loss (nn.MarginRankingLoss)",
+      "trigger": "Use for learning-to-rank tasks or pairwise ranking models to enforce that one input scores higher than another by a margin.",
+      "snippet": "import torch\nimport torch.nn as nn\n\ninput1 = torch.tensor([2.5, 1.0, 0.8], dtype=torch.float32)\ninput2 = torch.tensor([1.2, 1.5, 0.2], dtype=torch.float32)\n\n# 1 if input1 should rank higher than input2, -1 if lower\ntarget = torch.tensor([1.0, -1.0, 1.0], dtype=torch.float32)\n\ncriterion = nn.MarginRankingLoss(margin=0.5)\nloss = criterion(input1, input2, target)\nprint(f\"Loss: {loss.item():.4f}\")",
+      "minimal_notes": "Computes margin ranking loss between two inputs. Target values must strictly contain 1 or -1 values as floating-point tensors.",
+      "common_bug": "**Issue:** Ranking ranking loss calculation returns incorrect results or error regarding target values.\n\n**Cause:** Using 0 and 1 for target labels instead of 1 and -1.\n\n**Quick Fix:** Set target values strictly to 1.0 (input1 should be ranked higher) or -1.0 (input2 should be ranked higher).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.MarginRankingLoss.html",
+      "language": "python"
+    },
+    {
+      "problem": "Configure Loss Reduction (reduction='none' | 'mean' | 'sum')",
+      "trigger": "Use when you need element-wise losses for custom sample weighting, gradient accumulation, or per-sample inspection.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nlogits = torch.tensor([[1.5, 0.5], [0.1, 2.3]], dtype=torch.float32)\ntargets = torch.tensor([0, 1], dtype=torch.long)\n\n# Returns unreduced per-sample loss tensor\nloss_none = nn.CrossEntropyLoss(reduction='none')(logits, targets)\n\n# Returns average loss over batch\nloss_mean = nn.CrossEntropyLoss(reduction='mean')(logits, targets)\n\n# Returns summed loss over batch\nloss_sum = nn.CrossEntropyLoss(reduction='sum')(logits, targets)\n\nprint(f\"None: {loss_none}\\nMean: {loss_mean:.4f}\\nSum: {loss_sum:.4f}\")",
+      "minimal_notes": "reduction='none' preserves element-wise loss dimensions matching batch size. Default across PyTorch losses is reduction='mean'.",
+      "common_bug": "**Issue:** Backpropagating on reduction='none' tensor throws scalar output error.\n\n**Cause:** Calling .backward() directly on a multi-element loss tensor without specifying gradient weights or reducing first.\n\n**Quick Fix:** Reduce the tensor via .mean() or .sum() before calling .backward(), or pass matching gradient tensor weights.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Class Weights (weight)",
+      "trigger": "Use to handle severe class imbalance in classification tasks by penalizing errors on underrepresented classes.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# 3 classes: assign higher weight to rare class 2\nclass_weights = torch.tensor([1.0, 1.0, 5.0], dtype=torch.float32)\n\nlogits = torch.tensor([[2.0, 0.5, 0.1], [0.2, 0.1, 1.8]], dtype=torch.float32)\ntargets = torch.tensor([0, 2], dtype=torch.long)\n\ncriterion = nn.CrossEntropyLoss(weight=class_weights)\nloss = criterion(logits, targets)\nprint(f\"Weighted Loss: {loss.item():.4f}\")",
+      "minimal_notes": "Weights tensor must be a 1D FloatTensor with size equal to the number of classes C. The loss is normalized by the weighted sum of target occurrences when using reduction='mean'.",
+      "common_bug": "**Issue:** RuntimeError: weight tensor should be defined on the same device as the input or shape mismatch.\n\n**Cause:** Passing class weights tensor on CPU while logits and targets are on GPU, or incorrect weight tensor length.\n\n**Quick Fix:** Ensure class_weights = class_weights.to(device) matches target device and contains exactly C elements.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html",
+      "language": "python"
+    },
+    {
+      "problem": "Ignore Target Classes (ignore_index)",
+      "trigger": "Use during sequence tagging, segmentation, or padded NLP batches to exclude padding or void tokens from loss and gradient calculations.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Batch size 2, sequence length 3, 4 classes. Target index -100 is ignored.\nlogits = torch.randn(2, 4, 3, dtype=torch.float32)\ntargets = torch.tensor([[1, 2, -100], [0, -100, 3]], dtype=torch.long)\n\ncriterion = nn.CrossEntropyLoss(ignore_index=-100)\nloss = criterion(logits, targets)\nprint(f\"Loss (padding ignored): {loss.item():.4f}\")",
+      "minimal_notes": "ignore_index specifies a target integer value that contributes zero gradient and is omitted from loss averaging. Default ignore_index in nn.CrossEntropyLoss is -100.",
+      "common_bug": "**Issue:** IndexError: Target -100 is out of bounds when calculating classification metrics or loss.\n\n**Cause:** Using ignore_index target values in accuracy calculations without filtering them out first.\n\n**Quick Fix:** Mask target tensors using mask = targets != -100 before calculating custom evaluation metrics like accuracy.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Label Smoothing (label_smoothing)",
+      "trigger": "Use to regularize classification models by preventing overconfidence in logit predictions and improving generalization.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nlogits = torch.tensor([[3.0, 0.1, -1.0], [0.2, 2.5, 0.0]], dtype=torch.float32)\ntargets = torch.tensor([0, 1], dtype=torch.long)\n\n# Smooth target distributions by blending 10% uniform noise\ncriterion = nn.CrossEntropyLoss(label_smoothing=0.1)\nloss = criterion(logits, targets)\nprint(f\"Smoothed Loss: {loss.item():.4f}\")",
+      "minimal_notes": "Blends hard target one-hot vectors with uniform class distributions based on smoothing value epsilon in [0.0, 1.0]. Supported natively in nn.CrossEntropyLoss.",
+      "common_bug": "**Issue:** ValueError: label_smoothing must be between 0.0 and 1.0.\n\n**Cause:** Passing smoothing values outside the valid range or passing a negative float.\n\n**Quick Fix:** Keep label_smoothing values in a realistic regularization range such as 0.1 or 0.05.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html",
+      "language": "python"
+    }
+  ]
+}

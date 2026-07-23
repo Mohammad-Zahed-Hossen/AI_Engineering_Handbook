@@ -72,6 +72,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
+      style={{ backgroundColor: "rgb(9 9 11)" }}
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
      >
        <head>
@@ -80,7 +81,10 @@ export default function RootLayout({
          <link rel="alternate icon" href="/favicon.ico" sizes="any" />
          <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
        </head>
-       <body className="h-full flex overflow-hidden bg-background text-foreground text-sm leading-relaxed">
+       <body
+         className="h-full flex overflow-hidden bg-background text-foreground text-sm leading-relaxed"
+         style={{ backgroundColor: "rgb(9 9 11)" }}
+       >
          <PageVisitTracker />
         <ReadingProgress />
         <BackToTop />

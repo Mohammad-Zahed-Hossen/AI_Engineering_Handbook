@@ -1,0 +1,212 @@
+{
+  "id": "07_training",
+  "title": "PyTorch Training Utilities Cheatsheet",
+  "name": "PyTorch Training Utilities Cheatsheet",
+  "slug": "training",
+  "description": "Fast reference for PyTorch training utilities, model mode selection, gradient clipping, checkpoint serialization, parameter initialization, reproducibility seeding, code profiling, and module hook registration.",
+  "category": "cheatsheet",
+  "package": "pytorch",
+  "package_reference": "pytorch",
+  "version": "2.13.0",
+  "last_updated": "2026-07-23",
+  "created_at": "2026-07-23",
+  "updated_at": "2026-07-23",
+  "sources": [
+    "https://pytorch.org/docs/stable/nn.html",
+    "https://pytorch.org/docs/stable/optim.html"
+  ],
+  "sections": [
+    {
+      "title": "Model Mode Selection",
+      "description": "Configurations for model.train and model.eval to toggle dropout and batch normalization states correctly."
+    },
+    {
+      "title": "Gradient Clipping",
+      "description": "Standard methods to clip gradient norms and values in-place during backward passes to prevent optimization instability."
+    },
+    {
+      "title": "Checkpoint Serialization",
+      "description": "APIs and techniques for saving and restoring model parameters, optimizer states, epoch counts, and complete checkpoints."
+    },
+    {
+      "title": "Parameter Initialization",
+      "description": "Xavier, Kaiming, and constant initialization formulas to initialize module parameter tensors in-place."
+    },
+    {
+      "title": "Reproducibility Seeding",
+      "description": "APIs to seed CPU/GPU generators and enforce deterministic backend algorithms for run-to-run bitwise reproducibility."
+    },
+    {
+      "title": "Profiling",
+      "description": "Native profiling tools to measure CPU/CUDA execution timelines, operator durations, memory overheads, and label custom code blocks."
+    },
+    {
+      "title": "Module Hook Registration",
+      "description": "Techniques for registering forward, pre-forward, and backward hook callbacks on individual module layers."
+    }
+  ],
+  "entries": [
+    {
+      "problem": "Enable Training Mode (model.train)",
+      "trigger": "Use this API at the start of each training epoch to enable dropout layers and batch normalization parameter updates.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nclass SimpleModel(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.fc = nn.Linear(10, 2)\n        self.drop = nn.Dropout(0.5)\n\n    def forward(self, x):\n        return self.drop(self.fc(x))\n\nmodel = SimpleModel()\nmodel.train()\n\nx = torch.randn(4, 10)\noutput = model(x)\nprint(f\"Training mode active: {model.training}\")",
+      "minimal_notes": "Calling model.train() recursively sets the training attribute of all child submodules to True. It does not affect autograd gradient tracking; use torch.no_grad() separately to control gradient tracking.",
+      "common_bug": "**Issue:** Dropout layers continue zeroing out activations during evaluation and testing passes.\n\n**Cause:** Forgetting to call model.eval() before running validation, leaving the model in its default train() state.\n\n**Quick Fix:** Explicitly execute model.eval() before evaluation loops and model.train() before training loops.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.train",
+      "language": "python"
+    },
+    {
+      "problem": "Enable Evaluation Mode (model.eval)",
+      "trigger": "Use this API prior to running validation, testing, or inference to disable dropout and freeze batch normalization statistics.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nclass SimpleModel(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.fc = nn.Linear(10, 2)\n        self.drop = nn.Dropout(0.5)\n\n    def forward(self, x):\n        return self.drop(self.fc(x))\n\nmodel = SimpleModel()\nmodel.eval()\n\nx = torch.randn(4, 10)\nwith torch.no_grad():\n    output = model(x)\n\nprint(f\"Training mode active: {model.training}\")",
+      "minimal_notes": "model.eval() is equivalent to model.train(False) and recursively disables training behaviors across all submodules. It does not disable autograd, so pair it with with torch.no_grad(): for inference.",
+      "common_bug": "**Issue:** Model evaluation outputs vary nondeterministically between identical evaluation runs.\n\n**Cause:** Running inference while the model remains in training mode, causing dropout to randomly mask activations.\n\n**Quick Fix:** Always call model.eval() before running evaluation or inference passes.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.eval",
+      "language": "python"
+    },
+    {
+      "problem": "Clip Gradient Norm (torch.nn.utils.clip_grad_norm_)",
+      "trigger": "Use this API to prevent exploding gradients by scaling parameter gradients down when their combined norm exceeds a target threshold.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nmodel = nn.Linear(10, 2)\noptimizer = torch.optim.SGD(model.parameters(), lr=0.1)\nx = torch.randn(4, 10)\ntarget = torch.randn(4, 2)\n\nloss = nn.functional.mse_loss(model(x), target)\nloss.backward()\n\ntotal_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0, norm_type=2.0)\noptimizer.step()\n\nprint(f\"Clipped total gradient norm: {total_norm.item():.4f}\")",
+      "minimal_notes": "Call clip_grad_norm_ strictly between loss.backward() and optimizer.step(). The function modifies gradients in-place and returns the unclipped total norm.",
+      "common_bug": "**Issue:** clip_grad_norm_ has no effect on training stability or gradient magnitudes.\n\n**Cause:** Calling clip_grad_norm_ before loss.backward() when gradients are None, or after optimizer.step().\n\n**Quick Fix:** Place clip_grad_norm_ immediately after loss.backward() and before optimizer.step().",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html",
+      "language": "python"
+    },
+    {
+      "problem": "Clip Gradient Value (torch.nn.utils.clip_grad_value_)",
+      "trigger": "Use this API to clamp individual gradient elements within a specified interval to stabilize optimization.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nmodel = nn.Linear(10, 2)\noptimizer = torch.optim.SGD(model.parameters(), lr=0.1)\nx = torch.randn(4, 10)\ntarget = torch.randn(4, 2)\n\nloss = nn.functional.mse_loss(model(x), target)\nloss.backward()\n\ntorch.nn.utils.clip_grad_value_(model.parameters(), clip_value=0.5)\noptimizer.step()\n\ngrads = [p.grad for p in model.parameters() if p.grad is not None]\nprint(f\"Max grad absolute value: {grads[0].abs().max().item():.4f}\")",
+      "minimal_notes": "Clamps gradient values in-place to [-clip_value, clip_value]. Value clipping alters the direction of the gradient vector, unlike norm clipping which scales the entire vector uniformly.",
+      "common_bug": "**Issue:** Optimization trajectory becomes unstable on architecture types reliant on exact gradient directions.\n\n**Cause:** Using gradient value clipping instead of norm clipping on models like Transformers.\n\n**Quick Fix:** Use torch.nn.utils.clip_grad_norm_ when preserving gradient direction is essential.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_value_.html",
+      "language": "python"
+    },
+    {
+      "problem": "Save Model Parameters (torch.save)",
+      "trigger": "Use this API to serialize and save learned model weight state dictionaries to disk.",
+      "snippet": "import pathlib\nimport torch\nimport torch.nn as nn\n\nmodel = nn.Linear(10, 2)\nsave_path = pathlib.Path(\"model_weights.pt\")\n\ntorch.save(model.state_dict(), save_path)\nprint(f\"Saved state dict exists: {save_path.exists()}\")\n\nif save_path.exists():\n    save_path.unlink()",
+      "minimal_notes": "Always save model.state_dict() rather than the Python model object to prevent coupling saved files to specific source code directory structures. Use .pt or .pth file extensions by convention.",
+      "common_bug": "**Issue:** Loading saved weights fails with AttributeError or ModuleNotFoundError when moved to a different directory.\n\n**Cause:** Saving the entire model instance (torch.save(model, path)) which relies on unpickling exact class paths.\n\n**Quick Fix:** Save weight state dictionaries exclusively using torch.save(model.state_dict(), path).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.save.html",
+      "language": "python"
+    },
+    {
+      "problem": "Load Model Parameters (torch.load + load_state_dict)",
+      "trigger": "Use this API to restore learned weight tensors from a saved state dictionary into an instantiated PyTorch model.",
+      "snippet": "import pathlib\nimport torch\nimport torch.nn as nn\n\nmodel = nn.Linear(10, 2)\nsave_path = pathlib.Path(\"model_weights.pt\")\ntorch.save(model.state_dict(), save_path)\n\nnew_model = nn.Linear(10, 2)\nstate_dict = torch.load(save_path, weights_only=True)\nnew_model.load_state_dict(state_dict)\n\nprint(\"Weights successfully loaded into model\")\n\nif save_path.exists():\n    save_path.unlink()",
+      "minimal_notes": "Pass weights_only=True to torch.load to prevent arbitrary code execution during unpickling. Set strict=False in load_state_dict when performing partial weight loading for fine-tuning.",
+      "common_bug": "**Issue:** RuntimeError: Key(s) in state_dict do not match module keys during state loading.\n\n**Cause:** Loading state dicts saved from a DataParallel model wrapper directly into an unwrapped module without prefix matching.\n\n**Quick Fix:** Strip the module. key prefixes from the state dict dictionary before calling load_state_dict().",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.load_state_dict",
+      "language": "python"
+    },
+    {
+      "problem": "Save Complete Training Checkpoint",
+      "trigger": "Use this API to package model weights, optimizer states, epoch indices, and losses into a unified checkpoint artifact for training fault tolerance.",
+      "snippet": "import pathlib\nimport torch\nimport torch.nn as nn\n\nmodel = nn.Linear(10, 2)\noptimizer = torch.optim.Adam(model.parameters(), lr=0.001)\nepoch = 5\nloss = 0.25\n\ncheckpoint = {\n    \"epoch\": epoch,\n    \"model_state_dict\": model.state_dict(),\n    \"optimizer_state_dict\": optimizer.state_dict(),\n    \"loss\": loss,\n}\n\nsave_path = pathlib.Path(\"checkpoint.pt\")\ntorch.save(checkpoint, save_path)\nprint(f\"Complete checkpoint saved to {save_path}\")\n\nif save_path.exists():\n    save_path.unlink()",
+      "minimal_notes": "Saving optimizer states preserves momentum buffers and adaptive learning rate metrics required for seamless training resumption. Bundle custom training variables like learning rate schedulers into the same dictionary.",
+      "common_bug": "**Issue:** Loss spikes or learning rate restarts unexpectedly upon resuming training from a saved checkpoint.\n\n**Cause:** Saving only model.state_dict() without preserving optimizer.state_dict().\n\n**Quick Fix:** Save both model and optimizer state dictionaries within a dictionary structure.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.save.html",
+      "language": "python"
+    },
+    {
+      "problem": "Resume Training from Checkpoint",
+      "trigger": "Use this API to restore model weights, optimizer states, and epoch counters from a saved checkpoint file to resume an interrupted training run.",
+      "snippet": "import pathlib\nimport torch\nimport torch.nn as nn\n\nmodel = nn.Linear(10, 2)\noptimizer = torch.optim.Adam(model.parameters(), lr=0.001)\nsave_path = pathlib.Path(\"checkpoint.pt\")\n\ntorch.save({\n    \"epoch\": 5,\n    \"model_state_dict\": model.state_dict(),\n    \"optimizer_state_dict\": optimizer.state_dict(),\n    \"loss\": 0.25,\n}, save_path)\n\ncheckpoint = torch.load(save_path, weights_only=True)\nmodel.load_state_dict(checkpoint[\"model_state_dict\"])\noptimizer.load_state_dict(checkpoint[\"optimizer_state_dict\"])\nstart_epoch = checkpoint[\"epoch\"] + 1\n\nprint(f\"Resuming training from epoch {start_epoch}\")\n\nif save_path.exists():\n    save_path.unlink()",
+      "minimal_notes": "Move the model to its target compute device before passing saved optimizer state tensors to optimizer.load_state_dict(). Use weights_only=True in torch.load for safe deserialization.",
+      "common_bug": "**Issue:** Device mismatch errors when restoring checkpoints across different CPU/GPU environments.\n\n**Cause:** Optimizer state tensors remaining tied to original execution devices recorded during serialization.\n\n**Quick Fix:** Place the model onto its target device prior to restoring optimizer state dicts, or supply map_location to torch.load.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.load.html",
+      "language": "python"
+    },
+    {
+      "problem": "Initialize Xavier Weights (nn.init.xavier_uniform_ / xavier_normal_)",
+      "trigger": "Use this API to apply Glorot/Xavier initialization to layer weight matrices associated with symmetric activation functions like Sigmoid or Tanh.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nclass Model(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.fc = nn.Linear(10, 5)\n        self._init_weights()\n\n    def _init_weights(self):\n        nn.init.xavier_uniform_(self.fc.weight, gain=nn.init.calculate_gain('tanh'))\n        if self.fc.bias is not None:\n            nn.init.zeros_(self.fc.bias)\n\nmodel = Model()\nprint(f\"Weight std: {model.fc.weight.std().item():.4f}\")",
+      "minimal_notes": "Designed for network layers using symmetric activation functions to maintain activation variance across layers. Initialization routines with trailing underscores operate in-place on input tensors.",
+      "common_bug": "**Issue:** Poor training convergence when using Xavier initialization with ReLU activation layers.\n\n**Cause:** Xavier initialization assumes zero-centered activations and underestimates variance for rectified units.\n\n**Quick Fix:** Use Kaiming (He) initialization (nn.init.kaiming_uniform_) for network layers using ReLU or LeakyReLU activations.",
+      "docs_url": "https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.xavier_uniform",
+      "language": "python"
+    },
+    {
+      "problem": "Initialize Kaiming Weights (nn.init.kaiming_uniform_ / kaiming_normal_)",
+      "trigger": "Use this API to initialize layer weights preceding rectified activation functions like ReLU or LeakyReLU to prevent vanishing or exploding variance.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nclass Model(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.conv = nn.Conv2d(3, 16, kernel_size=3)\n        self._init_weights()\n\n    def _init_weights(self):\n        nn.init.kaiming_normal_(self.conv.weight, mode='fan_out', nonlinearity='relu')\n        if self.conv.bias is not None:\n            nn.init.zeros_(self.conv.bias)\n\nmodel = Model()\nprint(f\"Conv weight std: {model.conv.weight.std().item():.4f}\")",
+      "minimal_notes": "Set mode='fan_in' to preserve activation variance during forward passes or mode='fan_out' to preserve variance during backward passes. Match the nonlinearity argument to the specific layer activation.",
+      "common_bug": "**Issue:** Incorrect scaling variance leading to early training instability when using LeakyReLU.\n\n**Cause:** Failing to supply nonlinearity='leaky_relu' or omitting the negative slope argument a.\n\n**Quick Fix:** Pass nonlinearity='leaky_relu' and the matching a parameter to kaiming_normal_.",
+      "docs_url": "https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.kaiming_uniform",
+      "language": "python"
+    },
+    {
+      "problem": "Initialize Constant Values (nn.init.constant_ / zeros_ / ones_)",
+      "trigger": "Use this API to set layer parameter tensors—such as bias vectors or normalization weights—to fixed scalar values, zeros, or ones.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nclass Model(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.fc = nn.Linear(10, 5)\n        self._init_parameters()\n\n    def _init_parameters(self):\n        nn.init.constant_(self.fc.bias, val=0.01)\n        nn.init.ones_(self.fc.weight)\n\nmodel = Model()\nprint(f\"Bias value: {model.fc.bias[0].item():.2f}\")\nprint(f\"Weight value: {model.fc.weight[0, 0].item():.2f}\")",
+      "minimal_notes": "In-place parameter initialization functions modify parameter tensors directly without autograd history tracking. Constant initialization on weight matrices prevents symmetry breaking across neurons.",
+      "common_bug": "**Issue:** Neurons in a hidden layer compute identical feature representations throughout training.\n\n**Cause:** Initializing weight matrices with constant values, preventing network symmetry breaking.\n\n**Quick Fix:** Apply constant initializations strictly to bias vectors or specialized normalizations, using random initializations for weight matrices.",
+      "docs_url": "https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.constant",
+      "language": "python"
+    },
+    {
+      "problem": "Set Random Seed for Reproducibility (torch.manual_seed)",
+      "trigger": "Use this API to seed PyTorch CPU and CUDA random number generators to ensure reproducible weight initializations and execution outcomes.",
+      "snippet": "import random\nimport numpy as np\nimport torch\n\ndef set_seed(seed: int = 42) -> None:\n    random.seed(seed)\n    np.random.seed(seed)\n    torch.manual_seed(seed)\n    torch.cuda.manual_seed_all(seed)\n\nset_seed(42)\ntensor_a = torch.randn(2, 2)\n\nset_seed(42)\ntensor_b = torch.randn(2, 2)\n\nprint(f\"Tensors match: {torch.equal(tensor_a, tensor_b)}\")",
+      "minimal_notes": "torch.manual_seed seeds random generators across both CPU and CUDA devices in PyTorch. Ensure Python built-in random and NumPy seeds are set simultaneously for global reproducibility.",
+      "common_bug": "**Issue:** Multiprocess data loading or multi-GPU execution remains non-deterministic across independent runs.\n\n**Cause:** Omitting torch.cuda.manual_seed_all() or failing to seed DataLoader worker processes via worker_init_fn.\n\n**Quick Fix:** Call torch.cuda.manual_seed_all(seed) and pass a seed initialization function to DataLoader's worker_init_fn.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.manual_seed.html",
+      "language": "python"
+    },
+    {
+      "problem": "Enable Deterministic Algorithms (torch.use_deterministic_algorithms)",
+      "trigger": "Use this API to enforce deterministic operation execution across CUDA backends for strict bitwise run-to-run reproducibility.",
+      "snippet": "import torch\n\ntorch.manual_seed(42)\ntorch.use_deterministic_algorithms(True)\ntorch.backends.cudnn.deterministic = True\ntorch.backends.cudnn.benchmark = False\n\nx = torch.randn(4, 4)\ny = torch.matmul(x, x)\nprint(f\"Deterministic mode enabled: {torch.are_deterministic_algorithms_enabled()}\")",
+      "minimal_notes": "Enforcing deterministic algorithms can cause runtime errors for operations that lack deterministic GPU kernel variants unless warn_only=True is provided. Deterministic operations may reduce performance.",
+      "common_bug": "**Issue:** RuntimeError: ... does not have a deterministic implementation aborts execution during backward passes.\n\n**Cause:** Executing CUDA operations (such as non-deterministic scatter/gather operations) under strict deterministic enforcement.\n\n**Quick Fix:** Pass warn_only=True to torch.use_deterministic_algorithms(True, warn_only=True).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.use_deterministic_algorithms.html",
+      "language": "python"
+    },
+    {
+      "problem": "Profile PyTorch Code (torch.profiler.profile)",
+      "trigger": "Use this API to measure execution timelines, operation durations, and memory consumption across CPU and CUDA backends.",
+      "snippet": "import torch\nimport torch.nn as nn\nfrom torch.profiler import profile, ProfilerActivity\n\nmodel = nn.Linear(100, 10)\nx = torch.randn(16, 100)\n\nwith profile(\n    activities=[ProfilerActivity.CPU],\n    record_shapes=True,\n    profile_memory=True\n) as prof:\n    model(x)\n\nprint(prof.key_averages().table(sort_by=\"cpu_time_total\", row_limit=5))",
+      "minimal_notes": "Profiling adds execution overhead and memory footprint, so scope profiling context blocks to limited step ranges. Include ProfilerActivity.CUDA when profiling GPU execution.",
+      "common_bug": "**Issue:** Profiler tables display zero or unexpectedly small GPU kernel execution durations.\n\n**Cause:** Omitting ProfilerActivity.CUDA from the activities list, capturing CPU dispatch calls while ignoring asynchronous GPU kernel completion.\n\n**Quick Fix:** Include ProfilerActivity.CUDA in the activities argument array when profiling GPU operations.",
+      "docs_url": "https://pytorch.org/docs/stable/profiler.html#torch.profiler.profile",
+      "language": "python"
+    },
+    {
+      "problem": "Record Execution Regions (torch.profiler.record_function)",
+      "trigger": "Use this API to tag custom code blocks with descriptive labels inside PyTorch profiler execution traces.",
+      "snippet": "import torch\nimport torch.nn as nn\nfrom torch.profiler import profile, ProfilerActivity, record_function\n\nmodel = nn.Linear(10, 2)\nx = torch.randn(4, 10)\n\nwith profile(activities=[ProfilerActivity.CPU]) as prof:\n    with record_function(\"custom_preprocessing\"):\n        x_norm = x / x.norm(dim=1, keepdim=True)\n\n    with record_function(\"model_forward\"):\n        out = model(x_norm)\n\nprint(prof.key_averages().table(sort_by=\"cpu_time_total\", row_limit=5))",
+      "minimal_notes": "record_function attaches labelled blocks to profiler tables and trace visualizers. It has negligible execution overhead when the profiler is active and zero overhead when profiling is inactive.",
+      "common_bug": "**Issue:** Custom record_function labels fail to appear in summary profiler output tables.\n\n**Cause:** Executing record_function blocks outside an active torch.profiler.profile context manager.\n\n**Quick Fix:** Nest record_function context blocks directly inside an active with profile(...) block.",
+      "docs_url": "https://pytorch.org/docs/stable/profiler.html#torch.profiler.record_function",
+      "language": "python"
+    },
+    {
+      "problem": "Register Forward Hook (register_forward_hook)",
+      "trigger": "Use this API to inspect, log, or extract intermediate layer feature maps produced during a module's forward pass.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nmodel = nn.Sequential(\n    nn.Linear(10, 5),\n    nn.ReLU(),\n    nn.Linear(5, 2)\n)\n\nactivations = {}\n\ndef hook_fn(module, input, output):\n    activations[\"layer_1\"] = output.detach()\n\nhandle = model[0].register_forward_hook(hook_fn)\n\nx = torch.randn(2, 10)\nout = model(x)\n\nprint(f\"Captured layer output shape: {activations['layer_1'].shape}\")\nhandle.remove()",
+      "minimal_notes": "Forward hooks execute immediately after module.forward() evaluates its output. Call handle.remove() when the hook is no longer required to prevent memory leaks from retained module references.",
+      "common_bug": "**Issue:** Memory consumption accumulates across training iterations when recording layer outputs.\n\n**Cause:** Saving output tensors directly inside hook callbacks without calling .detach(), retaining computation graph references.\n\n**Quick Fix:** Call .detach() or .clone() on tensor arguments captured within forward hook callbacks.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_forward_hook",
+      "language": "python"
+    },
+    {
+      "problem": "Register Forward Pre-Hook (register_forward_pre_hook)",
+      "trigger": "Use this API to inspect or modify module inputs immediately before module.forward() executes.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nmodel = nn.Linear(10, 2)\n\ndef pre_hook_fn(module, args):\n    x = args[0]\n    return (x * 2.0,)\n\nhandle = model.register_forward_pre_hook(pre_hook_fn)\n\nx = torch.ones(1, 10)\nout = model(x)\n\nprint(f\"Output shape after modified input: {out.shape}\")\nhandle.remove()",
+      "minimal_notes": "Pre-hooks receive module inputs formatted as a tuple and may optionally return modified inputs as a tuple. Returned tuples must match the signature expected by the module's forward implementation.",
+      "common_bug": "**Issue:** TypeError or argument unpacking errors inside module forward execution after mutating inputs in a pre-hook.\n\n**Cause:** Returning a standalone tensor instead of a tuple from the forward pre-hook function.\n\n**Quick Fix:** Return modified inputs explicitly wrapped inside a tuple (e.g., return (modified_x,)).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_forward_pre_hook",
+      "language": "python"
+    },
+    {
+      "problem": "Register Full Backward Hook (register_full_backward_hook)",
+      "trigger": "Use this API to inspect or alter parameter and input gradient tensors computed during backward pass execution.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nmodel = nn.Linear(10, 2)\n\ndef backward_hook_fn(module, grad_input, grad_output):\n    print(f\"Grad output shape: {grad_output[0].shape}\")\n    print(f\"Grad input shape: {grad_input[0].shape}\")\n\nhandle = model.register_full_backward_hook(backward_hook_fn)\n\nx = torch.randn(2, 10, requires_grad=True)\nout = model(x)\nloss = out.sum()\nloss.backward()\n\nhandle.remove()",
+      "minimal_notes": "Use register_full_backward_hook instead of legacy register_backward_hook APIs. Hook parameters grad_input and grad_output are provided as tuples corresponding to layer inputs and outputs.",
+      "common_bug": "**Issue:** RuntimeError or unintended behavior when inspecting gradients across complex layer architectures.\n\n**Cause:** Using the deprecated register_backward_hook function, which exhibits buggy behavior on multi-input/output modules.\n\n**Quick Fix:** Replace legacy backward hooks with register_full_backward_hook.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_hook",
+      "language": "python"
+    }
+  ]
+}

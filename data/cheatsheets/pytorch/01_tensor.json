@@ -1,0 +1,301 @@
+{
+  "id": "01_tensor",
+  "title": "PyTorch Tensor Operations Cheatsheet",
+  "name": "PyTorch Tensor Operations Cheatsheet",
+  "slug": "tensor",
+  "description": "A production-oriented reference for PyTorch tensor creation, properties, reshaping, memory manipulation, and device placement.",
+  "category": "cheatsheet",
+  "package": "pytorch",
+  "package_reference": "pytorch",
+  "version": "2.13.0",
+  "last_updated": "2026-07-23",
+  "created_at": "2026-07-23",
+  "updated_at": "2026-07-23",
+  "sources": [
+    "https://pytorch.org/docs/stable/tensors.html"
+  ],
+  "sections": [
+    {
+      "title": "Tensor Creation",
+      "description": "Construct tensors from Python sequences, NumPy arrays, zero/one/constant filled buffers, uninitialized memory, or probability distributions."
+    },
+    {
+      "title": "Inspection",
+      "description": "Query tensor metadata such as shape, dtype, device, strides, and memory contiguity."
+    },
+    {
+      "title": "Shape Operations",
+      "description": "Reshape, flatten, squeeze, unsqueeze, permute, or transpose tensor dimensions."
+    },
+    {
+      "title": "Manipulation",
+      "description": "Enforce memory contiguity, clone memory, concatenate, stack, split, or gather tensor values."
+    },
+    {
+      "title": "Mathematics",
+      "description": "Perform element-wise arithmetic, matrix multiplication, and reduction operations."
+    },
+    {
+      "title": "Broadcasting",
+      "description": "Expand or repeat tensor dimensions with or without copying memory."
+    },
+    {
+      "title": "Device Management",
+      "description": "Transfer tensors between CPU/CUDA/MPS devices and manage precision casting."
+    }
+  ],
+  "entries": [
+    {
+      "problem": "Create Tensor from Python Sequence (torch.tensor)",
+      "trigger": "I need to convert a Python list or tuple into a PyTorch tensor with an explicit device or data type.",
+      "snippet": "import torch\n\ndata = [[1.0, 2.0], [3.0, 4.0]]\nx = torch.tensor(data, dtype=torch.float32, device=\"cpu\")\nprint(x)",
+      "minimal_notes": "Always constructs a new tensor by copying the underlying sequence data. Infers data type automatically if dtype is not provided.",
+      "common_bug": "**Issue:** Slower performance and high memory overhead when converting large Python lists inside training loops.\n\n**Cause:** Python lists store elements non-contiguously, forcing element-by-element iteration and memory allocation.\n\n**Quick Fix:** Convert the Python list to a NumPy array first or use pre-allocated tensors.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.tensor.html",
+      "language": "python"
+    },
+    {
+      "problem": "Create Tensor from Existing Data avoiding copies (torch.as_tensor)",
+      "trigger": "I want to wrap an existing array or tensor into a PyTorch tensor while preserving memory layout and avoiding redundant allocation.",
+      "snippet": "import numpy as np\nimport torch\n\narr = np.array([1, 2, 3])\nx = torch.as_tensor(arr, dtype=torch.int64)\nprint(x)",
+      "minimal_notes": "Avoids memory copy when the input is already a tensor or NumPy array matching target dtype and device. Allocates new memory only if data conversion or device movement is necessary.",
+      "common_bug": "**Issue:** Modifying the created tensor unexpectedly mutates the original source data array.\n\n**Cause:** torch.as_tensor shares underlying memory with NumPy arrays or existing tensors when no conversion occurs.\n\n**Quick Fix:** Call torch.clone() or use torch.tensor() if independent memory storage is required.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.as_tensor.html",
+      "language": "python"
+    },
+    {
+      "problem": "Create Tensor from NumPy Array with Zero-Copy (torch.from_numpy)",
+      "trigger": "I need to directly wrap a NumPy ndarray into a PyTorch tensor with zero-copy memory sharing.",
+      "snippet": "import numpy as np\nimport torch\n\nnp_arr = np.array([1.0, 2.0, 3.0], dtype=np.float32)\nx = torch.from_numpy(np_arr)\nprint(x)",
+      "minimal_notes": "Shares the same memory storage buffer between NumPy and PyTorch. The resulting tensor cannot be resized and is placed on the CPU device.",
+      "common_bug": "**Issue:** TypeError or unexpected mutation when passing non-writable or non-contiguous NumPy arrays.\n\n**Cause:** The input NumPy array is read-only or not stored in standard C-contiguous layout.\n\n**Quick Fix:** Pass np.ascontiguousarray(arr) or copy the array prior to calling torch.from_numpy.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.from_numpy.html",
+      "language": "python"
+    },
+    {
+      "problem": "Create Zero-Filled Tensor (torch.zeros / torch.zeros_like)",
+      "trigger": "I need to initialize a tensor completely filled with zero values for accumulators or buffers.",
+      "snippet": "import torch\n\nx = torch.zeros((2, 3), dtype=torch.float32)\nref = torch.empty((2, 3))\nx_like = torch.zeros_like(ref)\nprint(x)",
+      "minimal_notes": "Explicitly initializes every memory location to zero value. zeros_like mirrors the target tensor shape, data type, and device placement unless overridden.",
+      "common_bug": "**Issue:** High CPU or CUDA overhead when allocating zero buffers repeatedly inside loops.\n\n**Cause:** Instantiating new memory allocations on every iteration causes unnecessary memory fragmentation and kernel launch overhead.\n\n**Quick Fix:** Allocate the zero buffer once outside the loop and call tensor.zero_() to reset in place.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.zeros.html",
+      "language": "python"
+    },
+    {
+      "problem": "Create One-Filled Tensor (torch.ones / torch.ones_like)",
+      "trigger": "I need a tensor pre-filled entirely with value 1.0 for masking, scaling, or initialization.",
+      "snippet": "import torch\n\nx = torch.ones((2, 3), dtype=torch.float32)\nref = torch.empty((2, 3))\nx_like = torch.ones_like(ref)\nprint(x)",
+      "minimal_notes": "Allocates tensor memory and sets all values to one. Use ones_like to automatically match another tensor's attributes.",
+      "common_bug": "**Issue:** Incompatible data types when combining integer filled ones with floating point tensors.\n\n**Cause:** Default dtype without specification inherits integer type or default float type depending on global configuration.\n\n**Quick Fix:** Specify dtype=torch.float32 explicitly in the creator call.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.ones.html",
+      "language": "python"
+    },
+    {
+      "problem": "Create Uninitialized Tensor Memory (torch.empty / torch.empty_like)",
+      "trigger": "I need fast buffer allocation without paying the cost of memory initialization.",
+      "snippet": "import torch\n\nx = torch.empty((2, 3), dtype=torch.float32)\nref = torch.ones((2, 3))\nx_like = torch.empty_like(ref)\nprint(x.shape)",
+      "minimal_notes": "Allocates uninitialized storage memory instantly containing garbage values. Fastest tensor allocation method when you plan to immediately overwrite every entry.",
+      "common_bug": "**Issue:** NaN values or non-deterministic calculation results in model forward pass.\n\n**Cause:** Reading or performing math on uninitialized tensor memory before writing data into it.\n\n**Quick Fix:** Ensure every index is overwritten using copy or in-place ops before reading from the tensor.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.empty.html",
+      "language": "python"
+    },
+    {
+      "problem": "Create Constant-Filled Tensor (torch.full / torch.full_like)",
+      "trigger": "I need to allocate a tensor where every entry is initialized to a specific scalar value.",
+      "snippet": "import torch\n\nx = torch.full((2, 3), fill_value=3.14, dtype=torch.float32)\nref = torch.empty((2, 3))\nx_like = torch.full_like(ref, fill_value=-1.0)\nprint(x)",
+      "minimal_notes": "Fills all tensor entries with the provided scalar value. Automatically converts fill scalar to match requested tensor dtype.",
+      "common_bug": "**Issue:** Scalar truncation or loss of precision when setting floating point fill values.\n\n**Cause:** Default dtype inference when omitted might resolve to an integer tensor matching integer inputs.\n\n**Quick Fix:** Explicitly pass floating point data type like dtype=torch.float32.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.full.html",
+      "language": "python"
+    },
+    {
+      "problem": "Create Random Tensor (torch.rand / torch.randn / torch.randint)",
+      "trigger": "I need to initialize random tensor values using uniform, normal, or discrete integer distributions.",
+      "snippet": "import torch\n\nunif = torch.rand((2, 3))\nnorm = torch.randn((2, 3))\nints = torch.randint(low=0, high=10, size=(2, 3))\nprint(unif.shape, norm.shape, ints.shape)",
+      "minimal_notes": "rand samples Uniform(0, 1), randn samples Standard Normal(0, 1), and randint samples discrete integers. Always set PRNG seed for reproducible experiments.",
+      "common_bug": "**Issue:** Non-reproducible random initialization across model training runs.\n\n**Cause:** Calling random generation functions without fixing global or local PRNG seeds.\n\n**Quick Fix:** Use torch.manual_seed(42) or pass a explicit torch.Generator instance.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.rand.html",
+      "language": "python"
+    },
+    {
+      "problem": "Create Ranged Tensor Sequences (torch.arange / torch.linspace)",
+      "trigger": "I need to construct 1D sequence tensors with fixed steps or fixed point counts.",
+      "snippet": "import torch\n\nseq_step = torch.arange(start=0, end=10, step=2)\nseq_line = torch.linspace(start=0.0, end=1.0, steps=5)\nprint(seq_step, seq_line)",
+      "minimal_notes": "arange generates values in half-open interval [start, end) using a fixed step. linspace generates steps evenly spaced points across closed interval [start, end].",
+      "common_bug": "**Issue:** Off-by-one errors or floating point rounding precision bugs when specifying steps in arange.\n\n**Cause:** Floating point accumulation errors can cause the final boundary element to be unexpectedly included or excluded.\n\n**Quick Fix:** Use torch.linspace when specifying exact start, end, and point counts.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.arange.html",
+      "language": "python"
+    },
+    {
+      "problem": "Inspect Tensor Properties (shape, dtype, device, layout, ndim, numel, stride, is_contiguous)",
+      "trigger": "I need to inspect tensor metadata including dimensions, data type, storage layout, and memory stride.",
+      "snippet": "import torch\n\nx = torch.randn(2, 3, 4)\nprint(f\"Shape: {x.shape}, Dtype: {x.dtype}, Device: {x.device}\")\nprint(f\"Dims: {x.ndim}, Elements: {x.numel()}, Strides: {x.stride()}, Contiguous: {x.is_contiguous()}\")",
+      "minimal_notes": "shape returns a torch.Size tuple representing dimensions. stride shows memory step sizes required to move along each dimension.",
+      "common_bug": "**Issue:** Calling .size without invocation parentheses or treating property as method incorrectly.\n\n**Cause:** x.shape is an attribute property while x.size() is a method call, though both return torch.Size.\n\n**Quick Fix:** Standardize on property attributes like x.shape, x.dtype, and x.device.",
+      "docs_url": "https://pytorch.org/docs/stable/tensors.html",
+      "language": "python"
+    },
+    {
+      "problem": "Reshape Contiguous Tensor View (torch.view / view_as)",
+      "trigger": "I need to change tensor dimensions without copying memory or allocating new storage.",
+      "snippet": "import torch\n\nx = torch.arange(12)\nreshaped = x.view(3, 4)\nprint(reshaped.shape)",
+      "minimal_notes": "Returns a zero-copy view sharing original memory. Requires tensor to be memory contiguous before execution.",
+      "common_bug": "**Issue:** RuntimeError: view size is not compatible with input tensor's size and stride.\n\n**Cause:** Calling .view() on a non-contiguous tensor produced by operations like transpose or permute.\n\n**Quick Fix:** Call .contiguous() before calling .view(), or use torch.reshape().",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.Tensor.view.html",
+      "language": "python"
+    },
+    {
+      "problem": "Reshape Tensor with Copy/View Fallback (torch.reshape / reshape_as)",
+      "trigger": "I need to change tensor shape reliably regardless of whether underlying memory is contiguous.",
+      "snippet": "import torch\n\nx = torch.randn(2, 3).t()\nreshaped = torch.reshape(x, (6,))\nprint(reshaped.shape)",
+      "minimal_notes": "Returns a zero-copy view if tensor is contiguous, otherwise allocates a new contiguous copy. Safe fallback alternative to torch.view.",
+      "common_bug": "**Issue:** Invalidation of downstream gradient logic when expecting a shared memory view.\n\n**Cause:** torch.reshape quietly makes a memory copy when input memory is non-contiguous.\n\n**Quick Fix:** Use torch.view if shared memory behavior is required, or explicitly manage contiguity.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.reshape.html",
+      "language": "python"
+    },
+    {
+      "problem": "Flatten Tensor Dimensions (torch.flatten)",
+      "trigger": "I need to collapse a range of tensor dimensions into a single dimension, such as for linear layer inputs.",
+      "snippet": "import torch\n\nx = torch.randn(32, 3, 28, 28)\nflat = torch.flatten(x, start_dim=1)\nprint(flat.shape)",
+      "minimal_notes": "Flattens dimensions from start_dim to end_dim into a 1D sequence. Preserves batch dimensions when start_dim=1.",
+      "common_bug": "**Issue:** Accidentally flattening the batch dimension into feature vectors.\n\n**Cause:** Omitting start_dim defaults to flattening from dimension 0, collapsing everything to 1D.\n\n**Quick Fix:** Pass start_dim=1 when flattening spatial or feature dimensions for neural networks.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.flatten.html",
+      "language": "python"
+    },
+    {
+      "problem": "Squeeze and Unsqueeze Dimensions (torch.squeeze / torch.unsqueeze)",
+      "trigger": "I need to insert or remove dimensions of size 1 for shape alignment or broadcasting.",
+      "snippet": "import torch\n\nx = torch.randn(1, 3, 1, 5)\nsqueezed = torch.squeeze(x)\nunsqueezed = torch.unsqueeze(squeezed, dim=0)\nprint(squeezed.shape, unsqueezed.shape)",
+      "minimal_notes": "squeeze removes size 1 dimensions, while unsqueeze inserts a size 1 dimension at target index. Returns zero-copy views sharing underlying storage.",
+      "common_bug": "**Issue:** Unintended squeezing of batch dimensions when batch size dynamically equals 1.\n\n**Cause:** Calling torch.squeeze() without arguments removes all dimensions of size 1 across the tensor.\n\n**Quick Fix:** Always pass explicit dimension argument, for example torch.squeeze(x, dim=1).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.squeeze.html",
+      "language": "python"
+    },
+    {
+      "problem": "Permute and Transpose Dimensions (torch.permute / torch.transpose)",
+      "trigger": "I need to swap tensor axis order for channel alignment or matrix operations.",
+      "snippet": "import torch\n\nx = torch.randn(2, 3, 4)\npermuted = torch.permute(x, (2, 0, 1))\ntransposed = torch.transpose(x, 0, 2)\nprint(permuted.shape, transposed.shape)",
+      "minimal_notes": "transpose swaps exactly two dimensions. permute reorders all tensor dimensions according to provided index tuple. Returns a non-contiguous view.",
+      "common_bug": "**Issue:** Downstream memory operations fail after dimension permutation.\n\n**Cause:** Permuting or transposing changes tensor strides, rendering memory non-contiguous.\n\n**Quick Fix:** Chain .contiguous() immediately following .permute() or .transpose() if view operations follow.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.permute.html",
+      "language": "python"
+    },
+    {
+      "problem": "Enforce Memory Contiguity (torch.contiguous)",
+      "trigger": "I need to force non-contiguous memory storage into contiguous order in memory.",
+      "snippet": "import torch\n\nx = torch.randn(2, 3).t()\nprint(x.is_contiguous())\nx_contig = x.contiguous()\nprint(x_contig.is_contiguous())",
+      "minimal_notes": "Returns self if tensor is already contiguous, otherwise allocates new memory copy stored sequentially. Required prior to calling operations like .view().",
+      "common_bug": "**Issue:** Unnecessary memory allocation and slow performance inside performance critical loops.\n\n**Cause:** Calling .contiguous() on tensors that are already contiguous.\n\n**Quick Fix:** Check x.is_contiguous() before forcing contiguous calls or use torch.reshape.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.Tensor.contiguous.html",
+      "language": "python"
+    },
+    {
+      "problem": "Clone Tensor Memory and Storage (torch.clone)",
+      "trigger": "I need an independent copy of a tensor that preserves autograd computation graphs.",
+      "snippet": "import torch\n\nx = torch.randn(2, 2, requires_grad=True)\ny = torch.clone(x)\nloss = y.sum()\nloss.backward()\nprint(x.grad)",
+      "minimal_notes": "Allocates fresh underlying memory while preserving gradient flow back to original input tensor. Safer alternative to shallow copies or direct assignments.",
+      "common_bug": "**Issue:** Gradients leak into cloned variables or unexpected memory bloat occurs.\n\n**Cause:** Using torch.clone() when gradient tracking is unnecessary or detached memory was intended.\n\n**Quick Fix:** Use .detach().clone() when an isolated tensor completely outside the autograd graph is needed.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.clone.html",
+      "language": "python"
+    },
+    {
+      "problem": "Concatenate Tensors (torch.cat)",
+      "trigger": "I need to join multiple existing tensors along a specific existing dimension.",
+      "snippet": "import torch\n\na = torch.randn(2, 3)\nb = torch.randn(2, 3)\nout = torch.cat([a, b], dim=0)\nprint(out.shape)",
+      "minimal_notes": "Joins tensors along an existing dimension without creating new dimensions. All tensor shapes except target dim must match exactly.",
+      "common_bug": "**Issue:** RuntimeError: Sizes of tensor buffers must match except along dimension.\n\n**Cause:** Attempting to concatenate tensors whose non-concatenated dimensions do not align.\n\n**Quick Fix:** Verify shapes with tensor.shape and align dimensions using unsqueeze or broadcasting first.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.cat.html",
+      "language": "python"
+    },
+    {
+      "problem": "Stack Tensors (torch.stack)",
+      "trigger": "I need to combine multiple tensors along a brand new dimension.",
+      "snippet": "import torch\n\na = torch.randn(2, 3)\nb = torch.randn(2, 3)\nout = torch.stack([a, b], dim=0)\nprint(out.shape)",
+      "minimal_notes": "Creates a new dimension and stacks tensors along it. All input tensors must have identical shapes.",
+      "common_bug": "**Issue:** RuntimeError: stack expects each tensor to be equal size.\n\n**Cause:** Trying to stack tensors with differing shape sizes across any dimension.\n\n**Quick Fix:** Use torch.cat if joining along existing axes, or pad tensors to matching shapes.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.stack.html",
+      "language": "python"
+    },
+    {
+      "problem": "Split Tensor into Chunks (torch.split / torch.chunk)",
+      "trigger": "I need to divide a tensor into smaller sub-tensors along a dimension.",
+      "snippet": "import torch\n\nx = torch.randn(10, 3)\nsplits = torch.split(x, split_size_or_sections=4, dim=0)\nchunks = torch.chunk(x, chunks=3, dim=0)\nprint([s.shape for s in splits])",
+      "minimal_notes": "split divides into specific section sizes or uniform chunk sizes. chunk attempts to divide tensor into specified count of pieces. Returns memory views.",
+      "common_bug": "**Issue:** Unequal chunk sizes on final tensor slice.\n\n**Cause:** Tensor length along split dimension is not evenly divisible by requested chunk size.\n\n**Quick Fix:** Handle variable length final output chunk or pass explicit slice length list to torch.split.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.split.html",
+      "language": "python"
+    },
+    {
+      "problem": "Select and Gather Tensor Values (torch.index_select / torch.gather / torch.scatter / torch.take_along_dim)",
+      "trigger": "I need to collect or scatter elements using index tensors along target axes.",
+      "snippet": "import torch\n\nx = torch.tensor([[10, 20], [30, 40]])\nindices = torch.tensor([[0, 0], [1, 0]])\ngathered = torch.gather(x, dim=1, index=indices)\nprint(gathered)",
+      "minimal_notes": "gather extracts entries along dim specified by index tensor layout. index_select slices along a single dimension using 1D index array.",
+      "common_bug": "**Issue:** IndexError or shape mismatch during gather operations.\n\n**Cause:** Index tensor dimensionality or size does not match target input tensor dimensions.\n\n**Quick Fix:** Ensure index tensor has identical number of dimensions as input tensor before calling gather.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.gather.html",
+      "language": "python"
+    },
+    {
+      "problem": "Element-wise Arithmetic (add, sub, mul, div, add_)",
+      "trigger": "I need to perform basic element-wise mathematical operations with optional in-place modification.",
+      "snippet": "import torch\n\na = torch.tensor([1.0, 2.0])\nb = torch.tensor([3.0, 4.0])\nc = torch.add(a, b)\na.add_(b)\nprint(c, a)",
+      "minimal_notes": "Trailing underscores denote in-place ops like add_() that modify storage directly. Out-of-place operations allocate and return new tensors.",
+      "common_bug": "**Issue:** RuntimeError: a view of a leaf Variable that requires grad is being modified in-place.\n\n**Cause:** Executing in-place arithmetic (like add_) on gradient-tracking leaf tensors.\n\n**Quick Fix:** Use out-of-place operations (c = a + b) or disable gradient calculation when mutating.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.add.html",
+      "language": "python"
+    },
+    {
+      "problem": "Matrix Multiplication (torch.matmul / torch.mm / torch.bmm)",
+      "trigger": "I need to compute matrix multiplication, batch matrix products, or vector dot products.",
+      "snippet": "import torch\n\na = torch.randn(2, 3)\nb = torch.randn(3, 4)\nc = torch.matmul(a, b)\n\nbatch_a = torch.randn(10, 2, 3)\nbatch_b = torch.randn(10, 3, 4)\nbatch_c = torch.bmm(batch_a, batch_b)\nprint(c.shape, batch_c.shape)",
+      "minimal_notes": "mm handles strict 2D matrices, bmm handles 3D batch matrices, and matmul supports broadcasted multi-dimensional matrix products. Prefer matmul or @ operator for general code.",
+      "common_bug": "**Issue:** RuntimeError: Expected 2D tensor, got 3D tensor when calling torch.mm.\n\n**Cause:** Passing batched 3D tensors into non-batched matrix multiplication primitive torch.mm.\n\n**Quick Fix:** Use torch.bmm for explicitly 3D batches or torch.matmul for generalized dimension support.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.matmul.html",
+      "language": "python"
+    },
+    {
+      "problem": "Reduction Operations (torch.sum / torch.mean / torch.max / torch.min / torch.argmax)",
+      "trigger": "I need to aggregate tensor values across dimensions or locate extreme values.",
+      "snippet": "import torch\n\nx = torch.tensor([[1.0, 2.0], [3.0, 4.0]])\ntotal = torch.sum(x, dim=1, keepdim=True)\nmax_val, max_idx = torch.max(x, dim=1)\nprint(total.shape, max_val, max_idx)",
+      "minimal_notes": "Reductions accept dim to collapse specific axes. Pass keepdim=True to retain original dimension rank for clean broadcasting.",
+      "common_bug": "**Issue:** Broadcaster shape mismatch following reduction operations.\n\n**Cause:** Dimension reduction collapses target axis by default (keepdim=False), altering tensor rank.\n\n**Quick Fix:** Pass keepdim=True when planning to combine reduced tensor with original shape.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.sum.html",
+      "language": "python"
+    },
+    {
+      "problem": "Conditional Selection (torch.where / torch.meshgrid)",
+      "trigger": "I need element-wise conditional evaluation or multi-dimensional coordinate grids.",
+      "snippet": "import torch\n\ncond = torch.tensor([True, False, True])\nx = torch.tensor([1.0, 2.0, 3.0])\ny = torch.tensor([-1.0, -2.0, -3.0])\nout = torch.where(cond, x, y)\nprint(out)",
+      "minimal_notes": "where(condition, x, y) selects elements from x when true, otherwise y. Supports broad element-wise conditions and tensor broadcasting.",
+      "common_bug": "**Issue:** Unexpected output data types or device mismatch errors in conditional outputs.\n\n**Cause:** x and y tensors located on differing devices or having unaligned scalar data types.\n\n**Quick Fix:** Move x and y tensors to matching devices and align dtype parameters before calling where.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.where.html",
+      "language": "python"
+    },
+    {
+      "problem": "Expand Tensor without Copy (torch.expand / expand_as)",
+      "trigger": "I need to expand single-dimensional sizes without copying tensor memory.",
+      "snippet": "import torch\n\nx = torch.tensor([[1], [2], [3]])\nexpanded = x.expand(3, 4)\nprint(expanded.shape)",
+      "minimal_notes": "Creates a new view with expanded singleton dimensions by setting stride values to 0. Extremely fast with zero memory copy footprint.",
+      "common_bug": "**Issue:** RuntimeError: Expanding non-singleton dimension.\n\n**Cause:** Passing target dimension sizes that do not match existing tensor shape at non-singleton axes.\n\n**Quick Fix:** Only expand dimensions that currently have a size of 1, or use repeat for arbitrary copying.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.Tensor.expand.html",
+      "language": "python"
+    },
+    {
+      "problem": "Repeat Tensor with Memory Allocation (torch.repeat)",
+      "trigger": "I need to duplicate tensor data repeatedly along specified axes by allocating physical memory.",
+      "snippet": "import torch\n\nx = torch.tensor([1, 2, 3])\nrepeated = x.repeat(2, 3)\nprint(repeated.shape)",
+      "minimal_notes": "Copies tensor data physically along specified repetition counts. Unlike expand, allocates brand new underlying memory storage.",
+      "common_bug": "**Issue:** Excessive memory consumption or slow speed on large tensors.\n\n**Cause:** Using .repeat() when zero-copy broadcasting via .expand() or automatic broadcasting is sufficient.\n\n**Quick Fix:** Replace .repeat() with .expand() whenever memory duplication is not explicitly required.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.Tensor.repeat.html",
+      "language": "python"
+    },
+    {
+      "problem": "Device Placement and Dtype Conversion (to, cpu, cuda, mps, float, half, bfloat16, non_blocking)",
+      "trigger": "I need to move tensors between devices (CPU/CUDA/MPS) or convert primitive precision data types.",
+      "snippet": "import torch\n\nx = torch.randn(2, 3)\ndevice = \"cuda\" if torch.cuda.is_available() else \"cpu\"\nx_dev = x.to(device=device, dtype=torch.float16, non_blocking=True)\nprint(x_dev.device, x_dev.dtype)",
+      "minimal_notes": ".to() handles both device transfer and data type casting in a single call. Setting non_blocking=True enables asynchronous host-to-device memory transfers with pinned memory.",
+      "common_bug": "**Issue:** RuntimeError: Expected all tensors to be on the same device.\n\n**Cause:** Performing arithmetic operations between tensors residing on different devices (e.g., CPU and CUDA).\n\n**Quick Fix:** Ensure all operation operands are explicitly transferred to target device via .to(device).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.Tensor.to.html",
+      "language": "python"
+    }
+  ]
+}

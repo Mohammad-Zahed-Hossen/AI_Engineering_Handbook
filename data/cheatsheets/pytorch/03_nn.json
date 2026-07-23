@@ -1,0 +1,403 @@
+{
+  "id": "03_nn",
+  "title": "PyTorch NN Modules Cheatsheet",
+  "name": "PyTorch NN Modules Cheatsheet",
+  "slug": "nn",
+  "description": "Fast reference for PyTorch neural network modules, layers, activations, pooling, normalization, dropout, sequence models, embeddings, and transformers.",
+  "category": "cheatsheet",
+  "package": "pytorch",
+  "package_reference": "pytorch",
+  "version": "2.13.0",
+  "last_updated": "2026-07-23",
+  "created_at": "2026-07-23",
+  "updated_at": "2026-07-23",
+  "sources": [
+    "https://pytorch.org/docs/stable/nn.html"
+  ],
+  "sections": [
+    {
+      "title": "Linear Layers",
+      "description": "Dense and projection layer lookups for neural network architectures."
+    },
+    {
+      "title": "Convolution Layers",
+      "description": "1D, 2D, 3D and transposed convolution layer lookups for spatial/temporal representations."
+    },
+    {
+      "title": "Activation Functions",
+      "description": "ReLU, LeakyReLU, GELU, SiLU, Softmax and LogSoftmax activation lookups."
+    },
+    {
+      "title": "Pooling Layers",
+      "description": "Max, Average, and Adaptive pooling lookups for spatial downsampling."
+    },
+    {
+      "title": "Normalization Layers",
+      "description": "BatchNorm, LayerNorm, GroupNorm, and InstanceNorm layer lookups."
+    },
+    {
+      "title": "Dropout Layers",
+      "description": "Standard and Spatial Dropout layer lookups for model regularization."
+    },
+    {
+      "title": "Containers",
+      "description": "Sequential, ModuleList, ModuleDict, and ParameterList lookups for model composition and dynamic routing."
+    },
+    {
+      "title": "Embedding Layers",
+      "description": "Standard and Bag embedding lookups for categorical index mapping."
+    },
+    {
+      "title": "Attention & Transformer Layers",
+      "description": "Multi-Head and Scaled Dot Product Attention, Encoder, and Decoder block lookups."
+    },
+    {
+      "title": "Recurrent Layers",
+      "description": "RNN, GRU, and LSTM network block lookups for sequential data processing."
+    }
+  ],
+  "entries": [
+    {
+      "problem": "Create Fully Connected Layer (nn.Linear)",
+      "trigger": "Apply an affine linear transformation (y=xWT+b) to project feature dimensions in dense networks or classification heads.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Input shape: (batch_size, in_features)\nx = torch.randn(32, 128)\n\n# Linear layer mapping 128 features to 64 features\nlayer = nn.Linear(in_features=128, out_features=64, bias=True)\noutput = layer(x)\n\nprint(output.shape)  # torch.Size([32, 64])",
+      "minimal_notes": "nn.Linear operates on the last dimension of the input tensor, preserving all preceding batch/sequence dimensions. Weights are initialized using Kaiming Uniform by default.",
+      "common_bug": "**Issue:** RuntimeError: mat1 and mat2 shapes cannot be multiplied\n\n**Cause:** The input tensor's last dimension does not match in_features.\n\n**Quick Fix:** Ensure the input feature dimension matches in_features or reshape using x.view(batch_size, -1).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.Linear.html",
+      "language": "python"
+    },
+    {
+      "problem": "Create Lazy Linear Layer (nn.LazyLinear)",
+      "trigger": "Defer defining in_features until the first forward pass to automatically infer input dimensions from incoming tensors.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Input shape with arbitrary last dimension\nx = torch.randn(16, 256)\n\n# In_features is uninitialized until first call\nlayer = nn.LazyLinear(out_features=32)\noutput = layer(x)\n\nprint(output.shape)  # torch.Size([16, 32])\nprint(layer.in_features)  # 256",
+      "minimal_notes": "Parameters are initialized dynamically on the first forward call, requiring a dummy dry-run before initializing optimizers. Avoid using nn.LazyLinear when loading pretrained model state dicts directly.",
+      "common_bug": "**Issue:** ValueError: Optimizer got an empty parameter list\n\n**Cause:** Passing the model parameters to an optimizer before executing at least one forward pass to initialize lazy modules.\n\n**Quick Fix:** Pass a dummy input tensor through the network before instantiating torch.optim.Optimizer.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.LazyLinear.html",
+      "language": "python"
+    },
+    {
+      "problem": "Create 1D Convolution Layer (nn.Conv1d)",
+      "trigger": "Extract local 1D temporal or sequential features along a temporal axis for time-series, audio, or text representations.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Input shape: (batch_size, in_channels, sequence_length)\nx = torch.randn(8, 16, 100)\n\n# 1D Convolution over sequence\nconv1d = nn.Conv1d(\n    in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1\n)\noutput = conv1d(x)\n\nprint(output.shape)  # torch.Size([8, 32, 100])",
+      "minimal_notes": "Expects input in channel-first format (N, C, L). Output length is calculated as Lout = floor((Lin + 2 * padding - kernel_size) / stride + 1).",
+      "common_bug": "**Issue:** RuntimeError: Expected 3-dimensional input for 3-dimensional weight...\n\n**Cause:** Passing 2D input (batch_size, sequence_length) missing the channel dimension.\n\n**Quick Fix:** Unsqueeze or transpose the input tensor to ensure the channel dimension is at index 1 (N, C, L).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.Conv1d.html",
+      "language": "python"
+    },
+    {
+      "problem": "Create 2D Convolution Layer (nn.Conv2d)",
+      "trigger": "Extract spatial features from 2D structured grids like images, feature maps, or spectrograms.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Input shape: (batch_size, in_channels, height, width)\nx = torch.randn(4, 3, 64, 64)\n\n# 2D Convolution with padding to preserve spatial dimensions\nconv2d = nn.Conv2d(\n    in_channels=3, out_channels=64, kernel_size=3, stride=1, padding=1\n)\noutput = conv2d(x)\n\nprint(output.shape)  # torch.Size([4, 64, 64, 64])",
+      "minimal_notes": "Input must follow NCHW layout (batch_size, channels, height, width). Setting padding=\"same\" preserves spatial dimensions when stride=1.",
+      "common_bug": "**Issue:** Unexpected reduction in spatial resolution (height/width) in deeper networks.\n\n**Cause:** Forgetting to set padding when using kernel_size > 1 with stride=1.\n\n**Quick Fix:** Pass padding=kernel_size // 2 or padding=\"same\" to maintain equal input/output spatial dimensions.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html",
+      "language": "python"
+    },
+    {
+      "problem": "Create 3D Convolution Layer (nn.Conv3d)",
+      "trigger": "Extract spatio-temporal or volumetric features from 3D inputs such as video frames, CT scans, or medical volumes.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Input shape: (batch_size, in_channels, depth/frames, height, width)\nx = torch.randn(2, 3, 16, 112, 112)\n\n# 3D Convolution over video or volume\nconv3d = nn.Conv3d(\n    in_channels=3,\n    out_channels=32,\n    kernel_size=(3, 3, 3),\n    stride=1,\n    padding=(1, 1, 1),\n)\noutput = conv3d(x)\n\nprint(output.shape)  # torch.Size([2, 32, 16, 112, 112])",
+      "minimal_notes": "Input format requires 5D tensors (N, C, D, H, W). Memory usage scales rapidly with depth and spatial resolutions; consider channel-first memory layout optimizations.",
+      "common_bug": "**Issue:** RuntimeError: CUDA out of memory during training.\n\n**Cause:** 3D convolutions significantly increase activation memory due to the additional depth dimension.\n\n**Quick Fix:** Reduce batch size, lower temporal/spatial resolution, or use mixed precision (torch.amp).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.Conv3d.html",
+      "language": "python"
+    },
+    {
+      "problem": "Create Transposed Convolution Layer (nn.ConvTranspose2d / nn.ConvTranspose3d)",
+      "trigger": "Upsample feature map resolutions in generative models, autoencoders, or segmentation decoders via learnable transposed convolution.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Input shape: (batch_size, in_channels, height, width)\nx = torch.randn(4, 128, 16, 16)\n\n# Upsample spatial dimensions 2x\ndeconv = nn.ConvTranspose2d(\n    in_channels=128,\n    out_channels=64,\n    kernel_size=4,\n    stride=2,\n    padding=1,\n)\noutput = deconv(x)\n\nprint(output.shape)  # torch.Size([4, 64, 32, 32])",
+      "minimal_notes": "Transposed convolutions often produce checkerboard artifacts in output images. Using stride=2, kernel_size=4, and padding=1 yields exact 2x spatial upsampling.",
+      "common_bug": "**Issue:** Output dimensions do not match the expected upsampled size or produce checkerboard patterns.\n\n**Cause:** Incorrect pairing of kernel_size, stride, padding, and output_padding.\n\n**Quick Fix:** Calculate output shape as (I - 1) * stride - 2 * padding + kernel_size + output_padding. Alternatively, use nn.Upsample followed by nn.Conv2d.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.ConvTranspose2d.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply ReLU Activation (nn.ReLU)",
+      "trigger": "Introduce non-linearity by zeroing out negative input values (f(x)=max(0,x)).",
+      "snippet": "import torch\nimport torch.nn as nn\n\nx = torch.tensor([-2.0, -0.5, 0.0, 1.5, 3.0])\nrelu = nn.ReLU(inplace=False)\noutput = relu(x)\n\nprint(output)  # tensor([0.0, 0.0, 0.0, 1.5, 3.0])",
+      "minimal_notes": "Setting inplace=True modifies the input tensor in memory to reduce memory usage, but can cause gradient tracking issues if used in skip connections.",
+      "common_bug": "**Issue:** RuntimeError: Output with secondary uses was modified inplace\n\n**Cause:** Using inplace=True on a tensor required by residual/skip connections in autograd.\n\n**Quick Fix:** Set inplace=False or instantiate separate activation instances when gradients are tracked across branches.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Leaky ReLU Activation (nn.LeakyReLU)",
+      "trigger": "Mitigate the \"dying ReLU\" problem by allowing a small, non-zero gradient (f(x)=max(alpha*x,x)) for negative inputs.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nx = torch.tensor([-2.0, -0.5, 0.0, 1.5, 3.0])\n# Negative slope alpha set to 0.01\nleaky_relu = nn.LeakyReLU(negative_slope=0.01)\noutput = leaky_relu(x)\n\nprint(output)  # tensor([-0.0200, -0.0050,  0.0000,  1.5000,  3.0000])",
+      "minimal_notes": "Default negative_slope is 0.01. It preserves gradient flow through inactive neurons during backpropagation.",
+      "common_bug": "**Issue:** Unexpectedly large negative activation values destabilizing downstream layers.\n\n**Cause:** Setting negative_slope too high (e.g., > 0.2) without adjusting downstream normalization or initialization.\n\n**Quick Fix:** Keep negative_slope between 0.01 and 0.2.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.LeakyReLU.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply GELU Activation (nn.GELU)",
+      "trigger": "Apply smooth, Gaussian Error Linear Unit activation preferred in modern Transformer backbones (e.g., BERT, Vision Transformers).",
+      "snippet": "import torch\nimport torch.nn as nn\n\nx = torch.randn(2, 64)\n# Modern accurate or fast approximate GELU\ngelu = nn.GELU(approximate=\"none\")\noutput = gelu(x)\n\nprint(output.shape)  # torch.Size([2, 64])",
+      "minimal_notes": "Setting approximate='tanh' uses a faster approximation 0.5*x*(1+tanh(sqrt(2/pi)*(x+0.044715*x3))) suitable for optimization without accuracy degradation.",
+      "common_bug": "**Issue:** State dict key mismatch when loading legacy checkpoint weights using GELU approximations.\n\n**Cause:** Discrepancy between standard exact GELU (approximate=\"none\") and approximate variants.\n\n**Quick Fix:** Ensure approximate setting matches the checkpoint's architecture configuration.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.GELU.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply SiLU Activation (nn.SiLU)",
+      "trigger": "Apply Sigmoid Linear Unit (f(x)=x*sigmoid(x)), also known as Swish, commonly used in modern CNNs (ConvNeXt, EfficientNet) and LLM MLPs (LLaMA).",
+      "snippet": "import torch\nimport torch.nn as nn\n\nx = torch.randn(4, 128)\nsilu = nn.SiLU()\noutput = silu(x)\n\nprint(output.shape)  # torch.Size([4, 128])",
+      "minimal_notes": "SiLU is non-monotonic and smooth, outperforming ReLU in deep vision and language models. Supports optional inplace=True.",
+      "common_bug": "**Issue:** High memory consumption during backpropagation in deep networks.\n\n**Cause:** Storing intermediate activations for autograd without using inplace operation where safe.\n\n**Quick Fix:** Use nn.SiLU(inplace=True) in sequential modules where inputs are not referenced in skip connections.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.SiLU.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Softmax Activation (nn.Softmax)",
+      "trigger": "Convert unnormalized logits into a probability distribution summing to 1 along a specified dimension.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nlogits = torch.randn(2, 5)\n# Softmax over class dimension (dim=-1)\nsoftmax = nn.Softmax(dim=-1)\nprobs = softmax(logits)\n\nprint(probs.sum(dim=-1))  # tensor([1.0000, 1.0000])",
+      "minimal_notes": "Always explicitly specify the dim parameter. Do NOT use nn.Softmax before nn.CrossEntropyLoss, as nn.CrossEntropyLoss expects unnormalized logits.",
+      "common_bug": "**Issue:** Poor model performance or vanishing gradients during classification training.\n\n**Cause:** Applying nn.Softmax output directly into nn.CrossEntropyLoss (which applies LogSoftmax internally).\n\n**Quick Fix:** Remove nn.Softmax from the final layer when using nn.CrossEntropyLoss.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply LogSoftmax Activation (nn.LogSoftmax)",
+      "trigger": "Compute log-probabilities directly over logits for numerical stability when using nn.NLLLoss.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nlogits = torch.randn(2, 5)\n# Compute log probabilities along class axis\nlog_softmax = nn.LogSoftmax(dim=-1)\nlog_probs = log_softmax(logits)\n\nprint(log_probs.shape)  # torch.Size([2, 5])",
+      "minimal_notes": "LogSoftmax avoids underflow/overflow problems caused by taking torch.log(torch.softmax(x)). Mathematically equivalent to log(Softmax(x)).",
+      "common_bug": "**Issue:** Implicit parameter warning or unexpected behavior across batch dimension.\n\n**Cause:** Omitting the dim argument when initializing nn.LogSoftmax().\n\n**Quick Fix:** Always explicitly supply the target axis, typically dim=-1.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.LogSoftmax.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Max Pooling (nn.MaxPool2d)",
+      "trigger": "Downsample spatial feature maps by extracting the maximum value within a sliding window.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Input shape: (batch_size, channels, height, width)\nx = torch.randn(2, 64, 32, 32)\n# Halve spatial dimensions (32x32 -> 16x16)\npool = nn.MaxPool2d(kernel_size=2, stride=2)\noutput = pool(x)\n\nprint(output.shape)  # torch.Size([2, 64, 16, 16])",
+      "minimal_notes": "stride defaults to kernel_size if not specified. Max pooling provides translation invariance but discards fine spatial details.",
+      "common_bug": "**Issue:** Output spatial dimensions are smaller than intended due to floor division during rounding.\n\n**Cause:** Non-even spatial dimensions combined with default ceil_mode=False.\n\n**Quick Fix:** Set ceil_mode=True to use ceiling instead of floor for computing output shapes.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.MaxPool2d.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Average Pooling (nn.AvgPool2d)",
+      "trigger": "Downsample spatial feature maps by computing the mean value within a sliding local window.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Input shape: (batch_size, channels, height, width)\nx = torch.randn(2, 64, 32, 32)\npool = nn.AvgPool2d(kernel_size=2, stride=2, count_include_pad=False)\noutput = pool(x)\n\nprint(output.shape)  # torch.Size([2, 64, 16, 16])",
+      "minimal_notes": "Smooths spatial features compared to MaxPool2d. Set count_include_pad=False to prevent padded zero values from skewing average calculations along boundaries.",
+      "common_bug": "**Issue:** Artificially low values along image edges when using padding.\n\n**Cause:** Default count_include_pad=True includes zero-padded border regions in the division factor.\n\n**Quick Fix:** Pass count_include_pad=False when instantiating nn.AvgPool2d.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.AvgPool2d.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Adaptive Average Pooling (nn.AdaptiveAvgPool2d)",
+      "trigger": "Force feature maps to a fixed spatial target size (Hout,Wout) regardless of input tensor dimensions.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Variable spatial input size\nx = torch.randn(2, 512, 14, 14)\n# Force spatial output to (1, 1) for global average pooling\ngap = nn.AdaptiveAvgPool2d(output_size=(1, 1))\noutput = gap(x)\n\nprint(output.shape)  # torch.Size([2, 512, 1, 1])",
+      "minimal_notes": "Automatically computes dynamic stride and kernel sizes. Frequently used as a classifier neck (Global Average Pooling) to accept arbitrary input image resolutions.",
+      "common_bug": "**Issue:** RuntimeError when passing None as output target size incorrectly.\n\n**Cause:** Misunderstanding how None acts in tuple definitions (passing None preserves the original dimension, but passing invalid objects breaks instantiation).\n\n**Quick Fix:** Use (1, 1) for standard global average pooling, or (None, 7) to preserve original height while adapting width to 7.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool2d.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Adaptive Max Pooling (nn.AdaptiveMaxPool2d)",
+      "trigger": "Force feature maps to a fixed spatial target size (Hout,Wout) by extracting maximum values dynamically.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nx = torch.randn(2, 256, 28, 28)\n# Dynamically reduce spatial dimensions to (7, 7)\nadaptive_max = nn.AdaptiveMaxPool2d(output_size=(7, 7))\noutput = adaptive_max(x)\n\nprint(output.shape)  # torch.Size([2, 256, 7, 7])",
+      "minimal_notes": "Can optionally return max indices along with pooled values by setting return_indices=True, which is useful for nn.MaxUnpool2d.",
+      "common_bug": "**Issue:** ValueError: too many values to unpack when calling forward.\n\n**Cause:** Expecting a single tensor output while return_indices=True was passed during layer construction.\n\n**Quick Fix:** Unpack both tensors: output, indices = adaptive_max(x).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.AdaptiveMaxPool2d.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Batch Normalization (nn.BatchNorm1d / nn.BatchNorm2d)",
+      "trigger": "Normalize channel activations across the batch dimension to accelerate training stability in convolutional or dense networks.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# 2D BatchNorm input: (batch_size, num_features/channels, height, width)\nx = torch.randn(8, 64, 32, 32)\nbn = nn.BatchNorm2d(num_features=64)\noutput = bn(x)\n\nprint(output.shape)  # torch.Size([8, 64, 32, 32])",
+      "minimal_notes": "Maintains running mean and variance during training for use during evaluation (model.eval()). Requires batch size >1 during training to avoid zero-variance division errors.",
+      "common_bug": "**Issue:** ValueError: Expected more than 1 value per channel when training, got input size torch.Size([1, C, H, W])\n\n**Cause:** Passing a batch size of 1 in training mode (model.train()).\n\n**Quick Fix:** Drop last incomplete batch in DataLoader(drop_last=True) or switch to nn.GroupNorm / nn.LayerNorm.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Layer Normalization (nn.LayerNorm)",
+      "trigger": "Normalize features across channel/embedding dimensions independently for each individual sample (standard in Transformers and sequence models).",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Input shape: (batch_size, sequence_length, feature_dim)\nx = torch.randn(16, 50, 768)\n# Normalize over final feature dimension (768)\nln = nn.LayerNorm(normalized_shape=768)\noutput = ln(x)\n\nprint(output.shape)  # torch.Size([16, 50, 768])",
+      "minimal_notes": "Operates independently of batch size, making it suitable for online inference and small batch training. normalized_shape must match the trailing dimensions of the input tensor.",
+      "common_bug": "**Issue:** RuntimeError: Given normalized_shape=[768], expected input with shape [*, 768], but got input of shape [...]\n\n**Cause:** normalized_shape mismatch with trailing input tensor dimensions.\n\n**Quick Fix:** Pass normalized_shape matching x.shape[-1:] or list/tuple of target trailing dimensions.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.LayerNorm.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Group Normalization (nn.GroupNorm)",
+      "trigger": "Normalize features across divided groups of channels per sample, providing batch-size-independent normalization for vision models.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Input shape: (batch_size, channels, height, width)\nx = torch.randn(4, 32, 64, 64)\n# Divide 32 channels into 8 groups (4 channels per group)\ngn = nn.GroupNorm(num_groups=8, num_channels=32)\noutput = gn(x)\n\nprint(output.shape)  # torch.Size([4, 32, 64, 64])",
+      "minimal_notes": "num_channels must be strictly divisible by num_groups. Acts as LayerNorm when num_groups=1 and InstanceNorm when num_groups=num_channels.",
+      "common_bug": "**Issue:** ValueError: num_channels should be divisible by num_groups\n\n**Cause:** Setting num_groups to a value that does not evenly divide num_channels.\n\n**Quick Fix:** Adjust num_groups such that num_channels % num_groups == 0.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.GroupNorm.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Instance Normalization (nn.InstanceNorm2d)",
+      "trigger": "Normalize features independently per channel per sample, commonly used in style transfer and generative adversarial networks (GANs).",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Input shape: (batch_size, channels, height, width)\nx = torch.randn(2, 64, 128, 128)\n# Set affine=True if learnable gamma/beta parameters are required\ninst_norm = nn.InstanceNorm2d(num_features=64, affine=True)\noutput = inst_norm(x)\n\nprint(output.shape)  # torch.Size([2, 64, 128, 128])",
+      "minimal_notes": "Does not track running statistics across batches by default (track_running_stats=False). Learnable affine parameters (gamma, beta) are disabled by default unless affine=True.",
+      "common_bug": "**Issue:** Model fails to learn dynamic scale and shift transformations.\n\n**Cause:** affine=False by default in nn.InstanceNorm2d, leaving gamma and beta fixed at 1 and 0.\n\n**Quick Fix:** Explicitly pass affine=True during layer initialization if learnable parameters are needed.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.InstanceNorm2d.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Dropout (nn.Dropout)",
+      "trigger": "Zero out elements randomly during training with probability p to prevent feature co-adaptation and overfitting.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nx = torch.ones(2, 10)\n# Dropout probability p=0.5\ndropout = nn.Dropout(p=0.5)\n\ndropout.train()\nprint(dropout(x))  # Values scaled by 1/(1-p) = 2.0 or 0.0\n\ndropout.eval()\nprint(dropout(x))  # Passes through unchanged",
+      "minimal_notes": "Outputs are scaled by 1/(1-p) during training so that the expected sum remains unchanged. Has no effect when in evaluation mode (model.eval()).",
+      "common_bug": "**Issue:** Dropout continues zeroing out activations during testing or inference.\n\n**Cause:** Forgetting to call model.eval() before running inference.\n\n**Quick Fix:** Set model.eval() prior to validation or deployment execution.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.Dropout.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Spatial Dropout (nn.Dropout2d)",
+      "trigger": "Zero out entire feature map channels randomly rather than individual pixels to enforce channel-level feature independence in CNNs.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Input shape: (batch_size, channels, height, width)\nx = torch.ones(2, 4, 8, 8)\nspatial_dropout = nn.Dropout2d(p=0.5)\nspatial_dropout.train()\noutput = spatial_dropout(x)\n\nprint(output[0, :, 0, 0])  # Entire 2D channels are set to 0 or scaled",
+      "minimal_notes": "Expects 4D input tensors (N, C, H, W). If a channel is selected for dropout, the entire 2D feature map for that channel is zeroed out.",
+      "common_bug": "**Issue:** Passing 2D or 3D tensors into nn.Dropout2d.\n\n**Cause:** Input tensor format does not meet the expected 4D shape requirement (N, C, H, W).\n\n**Quick Fix:** Use standard nn.Dropout for 1D/2D tensors or reshape inputs to 4D before applying nn.Dropout2d.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.Dropout2d.html",
+      "language": "python"
+    },
+    {
+      "problem": "Build Sequential Models (nn.Sequential)",
+      "trigger": "Cascade layers sequentially in a chain where the output of each module is passed directly as input to the next.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nmodel = nn.Sequential(\n    nn.Linear(784, 128),\n    nn.ReLU(),\n    nn.Dropout(p=0.2),\n    nn.Linear(128, 10),\n)\nx = torch.randn(32, 784)\noutput = model(x)\n\nprint(output.shape)  # torch.Size([32, 10])",
+      "minimal_notes": "nn.Sequential accepts positional module arguments or an OrderedDict. It only supports single-input single-output flow; complex branching requires subclassing nn.Module.",
+      "common_bug": "**Issue:** TypeError: forward() takes 2 positional arguments but 3 were given\n\n**Cause:** Attempting to pass multiple tensor arguments through an nn.Sequential block.\n\n**Quick Fix:** Subclass nn.Module directly and implement custom routing in forward() for multi-argument modules.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html",
+      "language": "python"
+    },
+    {
+      "problem": "Manage Dynamic Layers (nn.ModuleList)",
+      "trigger": "Store submodules in a Python list structure while properly registering their parameters with PyTorch autograd.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nclass DynamicMLP(nn.Module):\n  def __init__(self, sizes):\n    super().__init__()\n    # Correct parameter registration for list of modules\n    self.layers = nn.ModuleList(\n        [nn.Linear(sizes[i], sizes[i + 1]) for i in range(len(sizes) - 1)]\n    )\n\n  def forward(self, x):\n    for layer in self.layers:\n      x = torch.relu(layer(x))\n    return x\n\nmodel = DynamicMLP([64, 128, 256, 10])\nx = torch.randn(8, 64)\nprint(model(x).shape)  # torch.Size([8, 10])",
+      "minimal_notes": "Standard Python list objects do not register child submodules or parameters when assigned as module attributes. nn.ModuleList does not implement its own forward() method.",
+      "common_bug": "**Issue:** Model parameters inside a list are missing from model.parameters() and optimizer state, so they do not update during training.\n\n**Cause:** Storing child modules inside a native Python list self.layers = [...] instead of nn.ModuleList.\n\n**Quick Fix:** Wrap module lists using self.layers = nn.ModuleList(...).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.ModuleList.html",
+      "language": "python"
+    },
+    {
+      "problem": "Manage Named Modules (nn.ModuleDict)",
+      "trigger": "Store submodules in a key-value dictionary mapping while maintaining autograd parameter tracking.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nclass MultiHeadBranch(nn.Module):\n  def __init__(self):\n    super().__init__()\n    self.heads = nn.ModuleDict({\n        'vision': nn.Linear(512, 10),\n        'text': nn.Linear(768, 10),\n    })\n\n  def forward(self, x, head_name):\n    return self.heads[head_name](x)\n\nmodel = MultiHeadBranch()\nx_text = torch.randn(4, 768)\noutput = model(x_text, head_name='text')\n\nprint(output.shape)  # torch.Size([4, 10])",
+      "minimal_notes": "Keys in nn.ModuleDict are ordered. Allows dynamic selection of execution branches at runtime while guaranteeing parameters are transferred to target execution devices (.to(device)).",
+      "common_bug": "**Issue:** Parameters are not moved to GPU when calling model.to(\"cuda\").\n\n**Cause:** Storing child modules inside standard Python dict attributes rather than nn.ModuleDict.\n\n**Quick Fix:** Use self.branches = nn.ModuleDict({...}) to ensure parameters register correctly.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.ModuleDict.html",
+      "language": "python"
+    },
+    {
+      "problem": "Register Learnable Parameters (nn.ParameterList / nn.ParameterDict)",
+      "trigger": "Store collections of raw learnable tensors (nn.Parameter) in list or dictionary formats with autograd tracking.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nclass CustomWeights(nn.Module):\n  def __init__(self, num_params, dim):\n    super().__init__()\n    # Register list of standalone raw weight tensors\n    self.params = nn.ParameterList(\n        [nn.Parameter(torch.randn(dim, dim)) for _ in range(num_params)]\n    )\n\n  def forward(self, x):\n    for p in self.params:\n      x = torch.matmul(x, p)\n    return x\n\nmodel = CustomWeights(num_params=3, dim=16)\nx = torch.randn(4, 16)\nprint(model(x).shape)  # torch.Size([4, 16])",
+      "minimal_notes": "nn.ParameterList and nn.ParameterDict hold raw nn.Parameter instances, whereas nn.ModuleList holds complete nn.Module instances.",
+      "common_bug": "**Issue:** Plain tensors added to Python lists are ignored by optimizers and do not compute gradients.\n\n**Cause:** Assigning non-parameter tensors or using non-PyTorch containers for custom weight collections.\n\n**Quick Fix:** Wrap tensors as nn.Parameter(tensor) and store them inside nn.ParameterList or nn.ParameterDict.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.ParameterList.html",
+      "language": "python"
+    },
+    {
+      "problem": "Create Embedding Layer (nn.Embedding)",
+      "trigger": "Map discrete categorical indices (e.g., token IDs) to dense feature vectors via index lookup.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Vocabulary size 1000, embedding dimension 64\nembedding = nn.Embedding(\n    num_embeddings=1000, embedding_dim=64, padding_idx=0\n)\n# Token index batch (batch_size=2, seq_len=4)\ninput_ids = torch.tensor([[1, 5, 2, 0], [42, 99, 0, 0]])\nembedded = embedding(input_ids)\n\nprint(embedded.shape)  # torch.Size([2, 4, 64])",
+      "minimal_notes": "Indices specified by padding_idx (e.g., padding_idx=0) remain uninitialized zero vectors and receive zero gradients during backpropagation.",
+      "common_bug": "**Issue:** IndexError: index out of range in self\n\n**Cause:** Passing an index value >=num_embeddings.\n\n**Quick Fix:** Ensure token vocabulary IDs are strictly within the range [0,num_embeddings-1].",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html",
+      "language": "python"
+    },
+    {
+      "problem": "Create EmbeddingBag Layer (nn.EmbeddingBag)",
+      "trigger": "Compute sums, means, or max reductions over sequences of categorical embeddings without instantiating intermediate 3D embedding tensors.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# EmbeddingBag with 1000 vocabulary items, 32 dims, mode=\"mean\"\nembedding_bag = nn.EmbeddingBag(\n    num_embeddings=1000, embedding_dim=32, mode='mean'\n)\n# 1D flattened input with offsets designating batch boundaries\ninput_ids = torch.tensor([1, 2, 4, 5, 42, 99])\noffsets = torch.tensor([0, 3])  # Sample 0 starts at idx 0, Sample 1 at idx 3\n\noutput = embedding_bag(input_ids, offsets)\nprint(output.shape)  # torch.Size([2, 32])",
+      "minimal_notes": "Significantly more memory-efficient and faster than nn.Embedding followed by torch.mean or torch.sum because it avoids intermediate tensor allocations.",
+      "common_bug": "**Issue:** RuntimeError: offsets must be 1D Tensor and start with 0\n\n**Cause:** Providing invalid format for the offsets positional argument in 1D input mode.\n\n**Quick Fix:** Ensure offsets is a 1D long tensor starting at 0, representing starting index positions of sequence samples.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Multi-Head Attention (nn.MultiheadAttention)",
+      "trigger": "Compute scaled dot-product attention across multiple representation heads for sequence-to-sequence modeling.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Query, Key, Value tensor shapes: (batch_size, seq_len, embed_dim)\nq = torch.randn(8, 20, 128)\nk = torch.randn(8, 30, 128)\nv = torch.randn(8, 30, 128)\n\nmha = nn.MultiheadAttention(embed_dim=128, num_heads=8, batch_first=True)\nattn_output, attn_weights = mha(q, k, v)\n\nprint(attn_output.shape)  # torch.Size([8, 20, 128])",
+      "minimal_notes": "embed_dim must be evenly divisible by num_heads. Default expected shape is (seq_len, batch_size, embed_dim) unless batch_first=True is explicitly set.",
+      "common_bug": "**Issue:** AssertionError: embed_dim must be divisible by num_heads\n\n**Cause:** Setting embed_dim to a value not divisible by num_heads.\n\n**Quick Fix:** Adjust num_heads or embed_dim so that embed_dim % num_heads == 0.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Scaled Dot Product Attention (torch.nn.functional.scaled_dot_product_attention)",
+      "trigger": "Execute high-performance multi-head attention leveraging optimized hardware kernels (FlashAttention or Memory-Efficient Attention).",
+      "snippet": "import torch\nimport torch.nn.functional as F\n\n# Query, Key, Value shapes: (batch_size, num_heads, seq_len, head_dim)\nq = torch.randn(4, 8, 64, 32, dtype=torch.float16, device=\"cuda\")\nk = torch.randn(4, 8, 64, 32, dtype=torch.float16, device=\"cuda\")\nv = torch.randn(4, 8, 64, 32, dtype=torch.float16, device=\"cuda\")\n\n# Automatically dispatches to FlashAttention if supported by GPU\noutput = F.scaled_dot_product_attention(q, k, v, is_causal=True)\n\nprint(output.shape)  # torch.Size([4, 8, 64, 32])",
+      "minimal_notes": "Expects pre-reshaped 4D tensors (B, H, L, E). Fused FlashAttention acceleration automatically activates when running on supported GPU hardware with fp16 or bf16 data types.",
+      "common_bug": "**Issue:** Unexpected performance degradation or fallback to slow C++ math backend.\n\n**Cause:** Input tensors are not contiguous, or inputs are using fp32 precision on architectures where FlashAttention requires fp16/bf16.\n\n**Quick Fix:** Ensure inputs use .contiguous() and torch.float16 or torch.bfloat16.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html",
+      "language": "python"
+    },
+    {
+      "problem": "Build Vanilla RNN (nn.RNN)",
+      "trigger": "Process sequential inputs using a basic recurrent neural network layer with Elman formulation.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Input shape: (batch_size, sequence_length, input_size)\nx = torch.randn(16, 10, 32)\n\nrnn = nn.RNN(\n    input_size=32, hidden_size=64, num_layers=2, batch_first=True, nonlinearity=\"tanh\"\n)\noutput, h_n = rnn(x)\n\nprint(output.shape)  # torch.Size([16, 10, 64]) (all hidden states)\nprint(h_n.shape)  # torch.Size([2, 16, 64]) (final hidden state per layer)",
+      "minimal_notes": "Vanilla RNN suffers heavily from vanishing and exploding gradients over long sequences. Set batch_first=True to use (batch, seq, feature) tensor layouts.",
+      "common_bug": "**Issue:** Incompatible input dimensions causing batch size and sequence length to be swapped.\n\n**Cause:** Default batch_first=False treats the 1st dimension as sequence length.\n\n**Quick Fix:** Always pass batch_first=True if your input data layout is (batch, sequence, feature).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.RNN.html",
+      "language": "python"
+    },
+    {
+      "problem": "Build GRU Network (nn.GRU)",
+      "trigger": "Process sequential data using Gated Recurrent Units to mitigate vanishing gradients with lower computational complexity than LSTM.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Input shape: (batch_size, sequence_length, input_size)\nx = torch.randn(8, 25, 64)\n\ngru = nn.GRU(\n    input_size=64,\n    hidden_size=128,\n    num_layers=1,\n    batch_first=True,\n    bidirectional=True,\n)\noutput, h_n = gru(x)\n\nprint(output.shape)  # torch.Size([8, 25, 256]) (num_directions * hidden_size)\nprint(h_n.shape)  # torch.Size([2, 8, 128])",
+      "minimal_notes": "When bidirectional=True, the output features double (hidden_size * 2), and the initial/final hidden states stack along the num_layers * num_directions dimension.",
+      "common_bug": "**Issue:** Shape mismatch during linear projections following a bidirectional GRU.\n\n**Cause:** Forgetting that bidirectional=True doubles the output channel feature size.\n\n**Quick Fix:** Multiply hidden_size by 2 when passing GRU output to subsequent dense layers: nn.Linear(hidden_size * 2, num_classes).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.GRU.html",
+      "language": "python"
+    },
+    {
+      "problem": "Build LSTM Network (nn.LSTM)",
+      "trigger": "Process sequential dependencies over long time horizons using Long Short-Term Memory networks with hidden and cell states.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Input shape: (batch_size, sequence_length, input_size)\nx = torch.randn(4, 50, 32)\n\nlstm = nn.LSTM(input_size=32, hidden_size=64, num_layers=2, batch_first=True)\noutput, (h_n, c_n) = lstm(x)\n\nprint(output.shape)  # torch.Size([4, 50, 64])\nprint(h_n.shape)  # torch.Size([2, 4, 64]) (last hidden state)\nprint(c_n.shape)  # torch.Size([2, 4, 64]) (last cell state)",
+      "minimal_notes": "Returns a tuple (output, (h_n, c_n)) where h_n is the final hidden state and c_n is the final cell state.",
+      "common_bug": "**Issue:** AttributeError: 'tuple' object has no attribute 'shape'\n\n**Cause:** Treating the second return value of nn.LSTM as a single tensor instead of a tuple (h_n, c_n).\n\n**Quick Fix:** Explicitly unpack both states: output, (h_n, c_n) = lstm(x).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.LSTM.html",
+      "language": "python"
+    },
+    {
+      "problem": "Build Transformer Encoder Layer (nn.TransformerEncoderLayer)",
+      "trigger": "Construct a single standard Transformer encoder block consisting of self-attention, layer normalization, and feed-forward MLP networks.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Input shape: (batch_size, seq_len, d_model)\nx = torch.randn(2, 16, 512)\n\nencoder_layer = nn.TransformerEncoderLayer(\n    d_model=512, nhead=8, dim_feedforward=2048, batch_first=True\n)\noutput = encoder_layer(x)\n\nprint(output.shape)  # torch.Size([2, 16, 512])",
+      "minimal_notes": "Setting norm_first=True applies LayerNorm prior to attention and feed-forward operations (Pre-LN Transformer), improving training stability in deep networks.",
+      "common_bug": "**Issue:** RuntimeError: expected scalar type Float but found Double or shape mismatches when batch_first is omitted.\n\n**Cause:** Discrepancy between tensor batch dimension placement when batch_first=False (default is False in older code).\n\n**Quick Fix:** Always explicitly supply batch_first=True when working with (batch, seq, feature) tensors.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoderLayer.html",
+      "language": "python"
+    },
+    {
+      "problem": "Build Transformer Encoder (nn.TransformerEncoder)",
+      "trigger": "Stack multiple nn.TransformerEncoderLayer instances into a full Transformer encoder stack.",
+      "snippet": "import torch\nimport torch.nn as nn\n\n# Define single layer block\nencoder_layer = nn.TransformerEncoderLayer(\n    d_model=256, nhead=4, batch_first=True\n)\n# Stack 6 encoder layers\ntransformer_encoder = nn.TransformerEncoder(\n    encoder_layer=encoder_layer, num_layers=6\n)\n\nx = torch.randn(4, 32, 256)\noutput = transformer_encoder(x)\n\nprint(output.shape)  # torch.Size([4, 32, 256])",
+      "minimal_notes": "Optionally accepts mask for causal attention or padding masks (src_key_padding_mask) to ignore pad tokens across sequences during training.",
+      "common_bug": "**Issue:** Attention computes over zero-padded tokens in dynamic batch sequences.\n\n**Cause:** Omitting src_key_padding_mask during forward execution.\n\n**Quick Fix:** Pass a boolean mask tensor src_key_padding_mask of shape (batch_size, sequence_length) where True indicates padding locations.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoder.html",
+      "language": "python"
+    },
+    {
+      "problem": "Build Transformer Decoder Layer (nn.TransformerDecoderLayer)",
+      "trigger": "Construct a single Transformer decoder block featuring causal self-attention, cross-attention over encoder outputs, and feed-forward MLPs.",
+      "snippet": "import torch\nimport torch.nn as nn\n\ntgt = torch.randn(2, 10, 512)  # Target sequence\nmemory = torch.randn(2, 20, 512)  # Encoder output\n\ndecoder_layer = nn.TransformerDecoderLayer(\n    d_model=512, nhead=8, batch_first=True\n)\noutput = decoder_layer(tgt, memory)\n\nprint(output.shape)  # torch.Size([2, 10, 512])",
+      "minimal_notes": "Requires two sequence inputs: target sequence tensor (tgt) and encoder output tensor (memory). Supports causal masking for autoregressive decoding.",
+      "common_bug": "**Issue:** Information leaks from future target tokens during autoregressive decoder training.\n\n**Cause:** Failing to supply a causal square target mask (tgt_mask) during forward execution.\n\n**Quick Fix:** Generate and supply a upper-triangular causal mask using nn.Transformer.generate_square_subsequent_mask(seq_len).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.TransformerDecoderLayer.html",
+      "language": "python"
+    },
+    {
+      "problem": "Build Transformer Decoder (nn.TransformerDecoder)",
+      "trigger": "Stack multiple nn.TransformerDecoderLayer instances to form a complete autoregressive or cross-attention Transformer decoder network.",
+      "snippet": "import torch\nimport torch.nn as nn\n\ndecoder_layer = nn.TransformerDecoderLayer(\n    d_model=256, nhead=8, batch_first=True\n)\ntransformer_decoder = nn.TransformerDecoder(\n    decoder_layer=decoder_layer, num_layers=4\n)\n\ntgt = torch.randn(2, 12, 256)\nmemory = torch.randn(2, 20, 256)\noutput = transformer_decoder(tgt, memory)\n\nprint(output.shape)  # torch.Size([2, 12, 256])",
+      "minimal_notes": "Used primarily in sequence-to-sequence tasks (translation, summarization) where decoder features attend to both target context and encoder memory.",
+      "common_bug": "**Issue:** RuntimeError: The shape of the 2D attn_mask is wrong\n\n**Cause:** Providing target or memory mask dimensions that do not match the target/memory sequence lengths.\n\n**Quick Fix:** Ensure tgt_mask is (tgt_len, tgt_len) and memory_mask is (tgt_len, src_len).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.TransformerDecoder.html",
+      "language": "python"
+    },
+    {
+      "problem": "Build Complete Transformer Model (nn.Transformer)",
+      "trigger": "Instantiate a complete encoder-decoder Transformer architecture in a single unified module.",
+      "snippet": "import torch\nimport torch.nn as nn\n\ntransformer = nn.Transformer(\n    d_model=512,\n    nhead=8,\n    num_encoder_layers=6,\n    num_decoder_layers=6,\n    batch_first=True,\n)\n\nsrc = torch.randn(2, 20, 512)  # Source sequence\ntgt = torch.randn(2, 10, 512)  # Target sequence\n\noutput = transformer(src, tgt)\n\nprint(output.shape)  # torch.Size([2, 10, 512])",
+      "minimal_notes": "Full sequence-to-sequence model containing paired encoder and decoder stacks. Customize with positional encodings and token embeddings for specific tasks.",
+      "common_bug": "**Issue:** Target sequence attends to future tokens during training evaluation.\n\n**Cause:** Omitting tgt_mask when calling the full nn.Transformer forward pass.\n\n**Quick Fix:** Pass tgt_mask=transformer.generate_square_subsequent_mask(tgt_len) during forward training calls.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html",
+      "language": "python"
+    }
+  ]
+}

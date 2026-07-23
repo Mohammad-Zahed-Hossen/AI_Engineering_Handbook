@@ -1,0 +1,195 @@
+{
+  "id": "08_distributed",
+  "title": "PyTorch Distributed Training Cheatsheet",
+  "name": "PyTorch Distributed Training Cheatsheet",
+  "slug": "distributed",
+  "description": "Fast reference for PyTorch distributed training, mixed precision (AMP), DDP, FSDP, multi-GPU communication, and torchrun launcher configuration.",
+  "category": "cheatsheet",
+  "package": "pytorch",
+  "package_reference": "pytorch",
+  "version": "2.13.0",
+  "last_updated": "2026-07-23",
+  "created_at": "2026-07-23",
+  "updated_at": "2026-07-23",
+  "sources": [
+    "https://docs.pytorch.org/docs/stable/distributed.html",
+    "https://docs.pytorch.org/docs/stable/amp.html"
+  ],
+  "sections": [
+    {
+      "title": "Mixed Precision (AMP)",
+      "description": "Configurations for Automatic Mixed Precision (AMP) inside training passes to lower memory footprint and speed up operations."
+    },
+    {
+      "title": "Distributed Initialization & Communication",
+      "description": "APIs to set up and manage collective process group clusters, synchronization barriers, and release network resources."
+    },
+    {
+      "title": "Distributed Parallelism (DDP & FSDP)",
+      "description": "Distributed modules including DistributedDataParallel (DDP) and FullyShardedDataParallel (FSDP) to scale training across multi-node multi-GPU hardware targets."
+    },
+    {
+      "title": "Distributed Launchers",
+      "description": "Utilities to parse topology information and deploy scripts in distributed environments using torchrun."
+    },
+    {
+      "title": "Distributed Boilerplates",
+      "description": "Complete production-grade script structures combining distributed data parallel, mixed precision, and distributed dataloaders."
+    }
+  ],
+  "entries": [
+    {
+      "problem": "Enable Automatic Mixed Precision (torch.amp.autocast)",
+      "trigger": "I need to accelerate model training or inference while lowering memory consumption by running operations in lower-precision formats.",
+      "snippet": "import torch\n\ndevice = \"cuda\" if torch.cuda.is_available() else \"cpu\"\nmodel = torch.nn.Linear(1024, 512).to(device)\nx = torch.randn(32, 1024, device=device)\n\nwith torch.amp.autocast(device_type=device):\n    output = model(x)\n    loss = output.sum()\n\nprint(output.dtype)",
+      "minimal_notes": "torch.amp.autocast automatically selects the optimal precision (e.g., FP16 or BF16) for ops inside its context manager while leaving precision-sensitive ops in FP32. It should wrap only the forward pass and loss computation, not the backward pass or optimizer step.",
+      "common_bug": "**Issue:** Operations inside torch.amp.autocast remain in torch.float32 despite autocast being enabled.\n\n**Cause:** Passing tensors created on CPU or an unsupported device while device_type is configured for CUDA.\n\n**Quick Fix:** Ensure input tensors and model weights are moved to the matching accelerator device before entering the autocast region.",
+      "docs_url": "https://docs.pytorch.org/docs/stable/amp.html",
+      "language": "python"
+    },
+    {
+      "problem": "Select AMP Device Type (device_type=\"cuda\" / \"cpu\")",
+      "trigger": "I need to configure mixed precision specifically for GPU acceleration or CPU execution across different hardware targets.",
+      "snippet": "import torch\n\ncuda_model = torch.nn.Linear(256, 128).to(\"cuda\")\ncuda_input = torch.randn(16, 256, device=\"cuda\")\n\nwith torch.amp.autocast(device_type=\"cuda\"):\n    cuda_out = cuda_model(cuda_input)\n\ncpu_model = torch.nn.Linear(256, 128).to(\"cpu\")\ncpu_input = torch.randn(16, 256, device=\"cpu\")\n\nwith torch.amp.autocast(device_type=\"cpu\", dtype=torch.bfloat16):\n    cpu_out = cpu_model(cpu_input)\n\nprint(cuda_out.dtype, cpu_out.dtype)",
+      "minimal_notes": "The device_type parameter explicitly defines the target accelerator or host (cuda, cpu, xpu) for op precision casting rules. CPU autocast typically defaults to torch.bfloat16, whereas CUDA supports both torch.float16 and torch.bfloat16.",
+      "common_bug": "**Issue:** RuntimeError: User specified device_type 'cuda', but CUDA is not available when running on a CPU-only machine.\n\n**Cause:** Hardcoding device_type=\"cuda\" without dynamically verifying GPU availability.\n\n**Quick Fix:** Extract the device string dynamically via tensor.device.type or torch.cuda.is_available().",
+      "docs_url": "https://docs.pytorch.org/docs/stable/amp.html",
+      "language": "python"
+    },
+    {
+      "problem": "Configure AMP Precision (dtype=torch.float16 / torch.bfloat16)",
+      "trigger": "I need to specify whether to use FP16 for speed on older GPUs or BF16 for dynamic range stability on modern accelerators and CPUs.",
+      "snippet": "import torch\n\ndevice = \"cuda\" if torch.cuda.is_available() else \"cpu\"\nmodel = torch.nn.Linear(512, 256).to(device)\nx = torch.randn(16, 512, device=device)\n\ntarget_dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16\n\nwith torch.amp.autocast(device_type=device, dtype=target_dtype):\n    output = model(x)\n\nprint(f\"Executed with precision: {output.dtype}\")",
+      "minimal_notes": "torch.float16 requires gradient scaling to avoid underflow, while torch.bfloat16 offers higher dynamic range and generally does not require gradient scaling. Modern GPUs (NVIDIA Ampere and newer) and modern CPUs support native BF16 execution.",
+      "common_bug": "**Issue:** Training destabilizes with NaN loss values when using torch.float16 without gradient scaling.\n\n**Cause:** FP16 has a narrow dynamic range, causing small gradients to underflow to zero during backward pass.\n\n**Quick Fix:** Use torch.amp.GradScaler when training with torch.float16 or switch to dtype=torch.bfloat16.",
+      "docs_url": "https://docs.pytorch.org/docs/stable/amp.html",
+      "language": "python"
+    },
+    {
+      "problem": "Scale Gradients (torch.amp.GradScaler)",
+      "trigger": "I need to prevent gradient underflow when training deep neural networks with FP16 automatic mixed precision.",
+      "snippet": "import torch\n\ndevice = \"cuda\" if torch.cuda.is_available() else \"cpu\"\nmodel = torch.nn.Linear(100, 10).to(device)\noptimizer = torch.optim.SGD(model.parameters(), lr=0.01)\nscaler = torch.amp.GradScaler(device=device, enabled=(device == \"cuda\"))\n\ninputs = torch.randn(16, 100, device=device)\ntargets = torch.randn(16, 10, device=device)\n\noptimizer.zero_grad()\nwith torch.amp.autocast(device_type=device, dtype=torch.float16):\n    outputs = model(inputs)\n    loss = torch.nn.functional.mse_loss(outputs, targets)\n\nscaler.scale(loss).backward()\nscaler.step(optimizer)\nscaler.update()",
+      "minimal_notes": "GradScaler multiplies the loss by a scale factor prior to backward pass to ensure small gradients do not underflow to zero. Deprecated device-specific aliases like torch.cuda.amp.GradScaler should be replaced with torch.amp.GradScaler(device=...).",
+      "common_bug": "**Issue:** Calling loss.backward() directly instead of scaler.scale(loss).backward() causes training divergence.\n\n**Cause:** Gradients remain unscaled, causing FP16 precision loss and gradient underflow.\n\n**Quick Fix:** Pass the loss tensor into scaler.scale(loss) prior to invoking .backward().",
+      "docs_url": "https://docs.pytorch.org/docs/stable/amp.html",
+      "language": "python"
+    },
+    {
+      "problem": "Unscale Gradients Before Clipping (GradScaler.unscale_)",
+      "trigger": "I need to inspect or clip model gradients while using gradient scaling during FP16 mixed precision training.",
+      "snippet": "import torch\n\ndevice = \"cuda\" if torch.cuda.is_available() else \"cpu\"\nmodel = torch.nn.Linear(128, 64).to(device)\noptimizer = torch.optim.Adam(model.parameters(), lr=0.001)\nscaler = torch.amp.GradScaler(device=device, enabled=(device == \"cuda\"))\n\nx = torch.randn(8, 128, device=device)\noptimizer.zero_grad()\n\nwith torch.amp.autocast(device_type=device, dtype=torch.float16):\n    loss = model(x).sum()\n\nscaler.scale(loss).backward()\n\nscaler.unscale_(optimizer)\ntorch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)\n\nscaler.step(optimizer)\nscaler.update()",
+      "minimal_notes": "GradScaler.unscale_ multiplies gradients by 1 / scale so that gradient norms accurately reflect actual parameter magnitudes before clipping. It must be called once per optimizer per iteration prior to explicit gradient modification or clipping.",
+      "common_bug": "**Issue:** RuntimeError: unscale_() has already been called on this optimizer since the last update() when calling unscale_ twice.\n\n**Cause:** Executing scaler.unscale_(optimizer) explicitly and having scaler.step(optimizer) attempt to unscale again automatically.\n\n**Quick Fix:** Call scaler.unscale_(optimizer) only once per step before clipping; scaler.step() safely skips unscaling if already unscaled.",
+      "docs_url": "https://docs.pytorch.org/docs/stable/notes/amp_examples.html",
+      "language": "python"
+    },
+    {
+      "problem": "Update GradScaler (GradScaler.step / GradScaler.update)",
+      "trigger": "I need to apply optimizer updates and dynamically adjust the gradient scaling factor based on the presence of Inf/NaN gradients.",
+      "snippet": "import torch\n\ndevice = \"cuda\" if torch.cuda.is_available() else \"cpu\"\nmodel = torch.nn.Linear(64, 32).to(device)\noptimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)\nscaler = torch.amp.GradScaler(device=device, enabled=(device == \"cuda\"))\n\nx = torch.randn(4, 64, device=device)\noptimizer.zero_grad()\n\nwith torch.amp.autocast(device_type=device, dtype=torch.float16):\n    loss = model(x).pow(2).sum()\n\nscaler.scale(loss).backward()\nscaler.step(optimizer)\nscaler.update()",
+      "minimal_notes": "scaler.step(optimizer) unscales gradients (if needed) and skips optimizer.step() if Inf/NaN gradients are detected. scaler.update() adjusts the scaling factor up or down for subsequent training iterations based on whether gradients contained non-finite values.",
+      "common_bug": "**Issue:** Gradient scale factor rapidly decreases to zero or model weights fail to update.\n\n**Cause:** Skipping scaler.update() at the end of the step, preventing GradScaler from adjusting its internal scale state.\n\n**Quick Fix:** Always call scaler.update() at the end of every optimization iteration after scaler.step(optimizer).",
+      "docs_url": "https://docs.pytorch.org/docs/stable/amp.html",
+      "language": "python"
+    },
+    {
+      "problem": "Initialize Distributed Process Group (torch.distributed.init_process_group)",
+      "trigger": "I need to establish inter-process communication across multiple processes or nodes for distributed training.",
+      "snippet": "import os\nimport torch\nimport torch.distributed as dist\n\ndef setup_distributed():\n    os.environ[\"MASTER_ADDR\"] = \"localhost\"\n    os.environ[\"MASTER_PORT\"] = \"29500\"\n    backend = \"nccl\" if torch.cuda.is_available() else \"gloo\"\n    dist.init_process_group(\n        backend=backend,\n        rank=int(os.environ.get(\"RANK\", \"0\")),\n        world_size=int(os.environ.get(\"WORLD_SIZE\", \"1\"))\n    )\n\nif __name__ == \"__main__\":\n    setup_distributed()\n    print(f\"Process initialized: rank {dist.get_rank()}\")\n    dist.destroy_process_group()",
+      "minimal_notes": "init_process_group initializes the default distributed process group and sets up collective communication backends (nccl for GPUs, gloo for CPUs). It must be called before executing any distributed communication primitives or initializing DDP/FSDP.",
+      "common_bug": "**Issue:** RuntimeError: Default process group has not been initialized when invoking distributed modules.\n\n**Cause:** Attempting to construct DistributedDataParallel or perform collective calls prior to calling init_process_group.\n\n**Quick Fix:** Invoke torch.distributed.init_process_group(...) at the very beginning of the worker script execution.",
+      "docs_url": "https://docs.pytorch.org/docs/stable/distributed.html",
+      "language": "python"
+    },
+    {
+      "problem": "Destroy Process Group (torch.distributed.destroy_process_group)",
+      "trigger": "I need to cleanly close distributed communication channels and release network resources upon script completion or teardown.",
+      "snippet": "import os\nimport torch\nimport torch.distributed as dist\n\ndef run_distributed_job():\n    os.environ[\"MASTER_ADDR\"] = \"localhost\"\n    os.environ[\"MASTER_PORT\"] = \"29501\"\n    backend = \"nccl\" if torch.cuda.is_available() else \"gloo\"\n    dist.init_process_group(\n        backend=backend,\n        rank=int(os.environ.get(\"RANK\", \"0\")),\n        world_size=int(os.environ.get(\"WORLD_SIZE\", \"1\"))\n    )\n    \n    try:\n        x = torch.ones(1, device=\"cuda\" if torch.cuda.is_available() else \"cpu\")\n        dist.all_reduce(x)\n    finally:\n        dist.destroy_process_group()\n\nif __name__ == \"__main__\":\n    run_distributed_job()",
+      "minimal_notes": "destroy_process_group releases backend resources, closes socket handles, and terminates communication contexts. Wrapping distributed workflows in try...finally guarantees proper cleanup even when errors occur during execution.",
+      "common_bug": "**Issue:** Training process hangs or leaks memory socket handles after an exception or job completion.\n\n**Cause:** Omitting destroy_process_group(), leaving active backend connections open across cluster processes.\n\n**Quick Fix:** Enclose all distributed execution logic in a try...finally block that calls dist.destroy_process_group() in finally.",
+      "docs_url": "https://docs.pytorch.org/docs/stable/distributed.html",
+      "language": "python"
+    },
+    {
+      "problem": "Synchronize Processes (torch.distributed.barrier)",
+      "trigger": "I need to force all distributed processes to pause execution until every rank in the process group reaches a specific checkpoint.",
+      "snippet": "import os\nimport torch\nimport torch.distributed as dist\n\ndef run():\n    os.environ[\"MASTER_ADDR\"] = \"localhost\"\n    os.environ[\"MASTER_PORT\"] = \"29502\"\n    backend = \"nccl\" if torch.cuda.is_available() else \"gloo\"\n    dist.init_process_group(\n        backend=backend,\n        rank=int(os.environ.get(\"RANK\", \"0\")),\n        world_size=int(os.environ.get(\"WORLD_SIZE\", \"1\"))\n    )\n\n    rank = dist.get_rank()\n    if rank == 0:\n        with open(\"/tmp/shared_dataset.txt\", \"w\") as f:\n            f.write(\"Dataset ready\")\n    \n    dist.barrier()\n    \n    with open(\"/tmp/shared_dataset.txt\", \"r\") as f:\n        data = f.read()\n\n    dist.destroy_process_group()\n\nif __name__ == \"__main__\":\n    run()",
+      "minimal_notes": "barrier blocks all processes in the target process group until every process has reached the barrier call. It is frequently used to coordinate file I/O operations, dataset downloading, or checkpointing across ranks.",
+      "common_bug": "**Issue:** Distributed script deadlocks indefinitely at dist.barrier().\n\n**Cause:** Executing dist.barrier() inside a conditional block (if rank == 0) that is not executed by all participating ranks.\n\n**Quick Fix:** Ensure dist.barrier() is called outside process-specific conditional branches so every process executes it simultaneously.",
+      "docs_url": "https://docs.pytorch.org/docs/stable/distributed.html",
+      "language": "python"
+    },
+    {
+      "problem": "Query Distributed Environment (get_rank, get_world_size, is_initialized)",
+      "trigger": "I need to check if distributed training is active and inspect the current process rank and total world size dynamically.",
+      "snippet": "import os\nimport torch\nimport torch.distributed as dist\n\ndef inspect_environment():\n    if not dist.is_initialized():\n        print(\"Distributed environment is not active.\")\n        return\n    \n    rank = dist.get_rank()\n    world_size = dist.get_world_size()\n    print(f\"Active distributed process: Rank {rank} of {world_size}\")\n\nif __name__ == \"__main__\":\n    os.environ[\"MASTER_ADDR\"] = \"localhost\"\n    os.environ[\"MASTER_PORT\"] = \"29503\"\n    backend = \"nccl\" if torch.cuda.is_available() else \"gloo\"\n    dist.init_process_group(\n        backend=backend,\n        rank=int(os.environ.get(\"RANK\", \"0\")),\n        world_size=int(os.environ.get(\"WORLD_SIZE\", \"1\"))\n    )\n    \n    inspect_environment()\n    dist.destroy_process_group()",
+      "minimal_notes": "is_initialized() checks whether the process group is active, while get_rank() and get_world_size() return process identity metadata. Querying these utilities allows writing rank-aware logic, such as restricting logging or checkpoint saving exclusively to rank 0.",
+      "common_bug": "**Issue:** RuntimeError: Default process group has not been initialized when calling get_rank().\n\n**Cause:** Attempting to query get_rank() or get_world_size() before calling init_process_group().\n\n**Quick Fix:** Always verify dist.is_initialized() before calling rank or world size query functions.",
+      "docs_url": "https://docs.pytorch.org/docs/stable/distributed.html",
+      "language": "python"
+    },
+    {
+      "problem": "Wrap Model with DistributedDataParallel (torch.nn.parallel.DistributedDataParallel)",
+      "trigger": "I need to parallelize data processing across multiple GPUs by replicating model parameters and synchronizing gradients.",
+      "snippet": "import os\nimport torch\nimport torch.nn as nn\nimport torch.distributed as dist\nfrom torch.nn.parallel import DistributedDataParallel as DDP\n\ndef setup_and_train():\n    os.environ[\"MASTER_ADDR\"] = \"localhost\"\n    os.environ[\"MASTER_PORT\"] = \"29504\"\n    local_rank = int(os.environ.get(\"LOCAL_RANK\", \"0\"))\n    \n    if torch.cuda.is_available():\n        torch.cuda.set_device(local_rank)\n        device = torch.device(\"cuda\", local_rank)\n        backend = \"nccl\"\n    else:\n        device = torch.device(\"cpu\")\n        backend = \"gloo\"\n        \n    dist.init_process_group(\n        backend=backend,\n        rank=int(os.environ.get(\"RANK\", \"0\")),\n        world_size=int(os.environ.get(\"WORLD_SIZE\", \"1\"))\n    )\n\n    model = nn.Linear(10, 5).to(device)\n    if device.type == \"cuda\":\n        ddp_model = DDP(model, device_ids=[local_rank], output_device=local_rank)\n    else:\n        ddp_model = DDP(model)\n\n    x = torch.randn(4, 10, device=device)\n    loss = ddp_model(x).sum()\n    loss.backward()\n\n    dist.destroy_process_group()\n\nif __name__ == \"__main__\":\n    setup_and_train()",
+      "minimal_notes": "DistributedDataParallel synchronizes gradients during the backward pass using all-reduce operations across worker processes. Each process must bind to a unique GPU device before constructing DDP to ensure correct memory placement and gradient reduction.",
+      "common_bug": "**Issue:** RuntimeError: Expected all tensors to be on the same device or severe slowdown in GPU communication.\n\n**Cause:** Passing model parameters residing on CPU or placing multiple DDP replicas onto a single default GPU without setting device_ids.\n\n**Quick Fix:** Move the base model to the specific local_rank GPU via torch.cuda.set_device(local_rank) and set device_ids=[local_rank].",
+      "docs_url": "https://docs.pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html",
+      "language": "python"
+    },
+    {
+      "problem": "Use DistributedSampler (torch.utils.data.distributed.DistributedSampler)",
+      "trigger": "I need to partition a dataset across multiple distributed workers so that each rank processes a unique, non-overlapping subset per epoch.",
+      "snippet": "import os\nimport torch\nfrom torch.utils.data import DataLoader, TensorDataset\nfrom torch.utils.data.distributed import DistributedSampler\nimport torch.distributed as dist\n\ndef run_sampler():\n    os.environ[\"MASTER_ADDR\"] = \"localhost\"\n    os.environ[\"MASTER_PORT\"] = \"29505\"\n    dist.init_process_group(\n        backend=\"gloo\",\n        rank=int(os.environ.get(\"RANK\", \"0\")),\n        world_size=int(os.environ.get(\"WORLD_SIZE\", \"1\"))\n    )\n\n    dataset = TensorDataset(torch.arange(100), torch.arange(100))\n    sampler = DistributedSampler(dataset, shuffle=True)\n    loader = DataLoader(dataset, batch_size=10, sampler=sampler)\n\n    for epoch in range(2):\n        sampler.set_epoch(epoch)\n        for x, y in loader:\n            pass\n\n    dist.destroy_process_group()\n\nif __name__ == \"__main__\":\n    run_sampler()",
+      "minimal_notes": "DistributedSampler restricts data loading to a subset of the dataset exclusive to the calling rank. Setting sampler.set_epoch(epoch) at the beginning of each epoch is required to ensure deterministic, epoch-specific shuffling across all processes.",
+      "common_bug": "**Issue:** Model sees the exact same sample ordering across every epoch during distributed training.\n\n**Cause:** Forgetting to call sampler.set_epoch(epoch) prior to iterating over the DataLoader loop.\n\n**Quick Fix:** Call sampler.set_epoch(epoch) at the start of every epoch loop before fetching batches from DataLoader.",
+      "docs_url": "https://docs.pytorch.org/docs/stable/data.html",
+      "language": "python"
+    },
+    {
+      "problem": "Wrap Model with FullyShardedDataParallel (torch.distributed.fsdp.FullyShardedDataParallel)",
+      "trigger": "I need to train massive parameter models that exceed single GPU memory capacity by sharding model weights, gradients, and optimizer states across processes.",
+      "snippet": "import os\nimport torch\nimport torch.nn as nn\nimport torch.distributed as dist\nfrom torch.distributed.fsdp import FullyShardedDataParallel as FSDP\n\ndef run_fsdp():\n    os.environ[\"MASTER_ADDR\"] = \"localhost\"\n    os.environ[\"MASTER_PORT\"] = \"29506\"\n    local_rank = int(os.environ.get(\"LOCAL_RANK\", \"0\"))\n    \n    if torch.cuda.is_available():\n        torch.cuda.set_device(local_rank)\n        device = torch.device(\"cuda\", local_rank)\n        backend = \"nccl\"\n    else:\n        device = torch.device(\"cpu\")\n        backend = \"gloo\"\n\n    dist.init_process_group(\n        backend=backend,\n        rank=int(os.environ.get(\"RANK\", \"0\")),\n        world_size=int(os.environ.get(\"WORLD_SIZE\", \"1\"))\n    )\n\n    model = nn.Sequential(nn.Linear(2048, 2048), nn.ReLU(), nn.Linear(2048, 1024)).to(device)\n    fsdp_model = FSDP(model)\n\n    x = torch.randn(8, 2048, device=device)\n    output = fsdp_model(x)\n    loss = output.sum()\n    loss.backward()\n\n    dist.destroy_process_group()\n\nif __name__ == \"__main__\":\n    run_fsdp()",
+      "minimal_notes": "FullyShardedDataParallel (FSDP) shards parameters, gradients, and optimizer states across data-parallel ranks according to ZeRO memory-reduction paradigms. It collects parameters on-demand during forward and backward passes and frees them immediately afterwards.",
+      "common_bug": "**Issue:** RuntimeError: FSDP requires the module to be on a CUDA device or high GPU memory overhead on rank 0.\n\n**Cause:** Passing an un-sharded model on CPU or failing to move the module to the target GPU prior to wrapping with FSDP.\n\n**Quick Fix:** Call torch.cuda.set_device(local_rank) and move the module to device before instantiating FSDP.",
+      "docs_url": "https://docs.pytorch.org/docs/stable/fsdp.html",
+      "language": "python"
+    },
+    {
+      "problem": "Save and Load FSDP Checkpoints (State Dict APIs)",
+      "trigger": "I need to aggregate sharded parameter states into a full checkpoint or restore sharded state dicts during FSDP model training.",
+      "snippet": "import os\nimport torch\nimport torch.nn as nn\nimport torch.distributed as dist\nfrom torch.distributed.fsdp import FullyShardedDataParallel as FSDP\nfrom torch.distributed.fsdp import StateDictType, FullStateDictConfig\n\ndef run_checkpointing():\n    os.environ[\"MASTER_ADDR\"] = \"localhost\"\n    os.environ[\"MASTER_PORT\"] = \"29507\"\n    local_rank = int(os.environ.get(\"LOCAL_RANK\", \"0\"))\n    \n    if torch.cuda.is_available():\n        torch.cuda.set_device(local_rank)\n        device = torch.device(\"cuda\", local_rank)\n        backend = \"nccl\"\n    else:\n        device = torch.device(\"cpu\")\n        backend = \"gloo\"\n\n    dist.init_process_group(\n        backend=backend,\n        rank=int(os.environ.get(\"RANK\", \"0\")),\n        world_size=int(os.environ.get(\"WORLD_SIZE\", \"1\"))\n    )\n\n    model = FSDP(nn.Linear(128, 64).to(device))\n    save_config = FullStateDictConfig(offload_to_cpu=True, rank0_only=True)\n    \n    with FSDP.state_dict_type(model, StateDictType.FULL_STATE_DICT, save_config):\n        state_dict = model.state_dict()\n        if dist.get_rank() == 0:\n            torch.save(state_dict, \"/tmp/fsdp_model.pt\")\n\n    dist.destroy_process_group()\n\nif __name__ == \"__main__\":\n    run_checkpointing()",
+      "minimal_notes": "FSDP.state_dict_type configures state dict generation to gather full un-sharded parameters (FULL_STATE_DICT) or keep sharded parameter references (SHARDED_STATE_DICT). Using offload_to_cpu=True and rank0_only=True prevents GPU Out-Of-Memory errors during full checkpoint gathering.",
+      "common_bug": "**Issue:** Out-Of-Memory (OOM) error during model.state_dict() call on large model instances.\n\n**Cause:** Gathering full parameter tensors onto GPU across all worker processes simultaneously.\n\n**Quick Fix:** Wrap model.state_dict() within FSDP.state_dict_type configured with offload_to_cpu=True and rank0_only=True.",
+      "docs_url": "https://docs.pytorch.org/docs/stable/fsdp.html",
+      "language": "python"
+    },
+    {
+      "problem": "Launch Distributed Training (torchrun)",
+      "trigger": "I need to execute a distributed multi-GPU training script across single or multi-node infrastructure without manual process management.",
+      "snippet": "torchrun --standalone --nproc-per-node=gpu train_script.py --batch-size 32",
+      "minimal_notes": "torchrun handles process spawning, rendezvous configuration, environment variable initialization (RANK, LOCAL_RANK, WORLD_SIZE), and fault tolerance. Using --standalone sets up single-node execution using a local rendezvous backend.",
+      "common_bug": "**Issue:** torchrun fails with address collision or port binding errors (Address already in use).\n\n**Cause:** Launching multiple distinct torchrun jobs on the same host node using default master ports.\n\n**Quick Fix:** Specify a unique port for each job using --master-port=29505 or setting MASTER_PORT.",
+      "docs_url": "https://docs.pytorch.org/docs/stable/elastic/run.html",
+      "language": "bash"
+    },
+    {
+      "problem": "Read Environment Variables (LOCAL_RANK, RANK, WORLD_SIZE)",
+      "trigger": "I need to parse topology details provided by distributed launcher frameworks like torchrun to set devices and rank-specific behaviors.",
+      "snippet": "import os\nimport torch\n\ndef parse_distributed_env():\n    local_rank = int(os.environ.get(\"LOCAL_RANK\", 0))\n    global_rank = int(os.environ.get(\"RANK\", 0))\n    world_size = int(os.environ.get(\"WORLD_SIZE\", 1))\n\n    if torch.cuda.is_available():\n        torch.cuda.set_device(local_rank)\n        device = torch.device(\"cuda\", local_rank)\n    else:\n        device = torch.device(\"cpu\")\n\n    return local_rank, global_rank, world_size, device\n\nif __name__ == \"__main__\":\n    l_rank, g_rank, w_size, dev = parse_distributed_env()\n    print(f\"Local Rank: {l_rank}, Global Rank: {g_rank}, World Size: {w_size}, Device: {dev}\")",
+      "minimal_notes": "LOCAL_RANK indicates the GPU index on the local node, RANK represents global process rank across all nodes, and WORLD_SIZE gives the total worker count. Reading these variables enables automatic device binding and cluster configuration when launching scripts via torchrun.",
+      "common_bug": "**Issue:** KeyError: 'LOCAL_RANK' when running script directly with python train.py.\n\n**Cause:** Script relies on launcher-injected environment variables without providing default fallback values.\n\n**Quick Fix:** Use os.environ.get(\"LOCAL_RANK\", \"0\") with sensible fallback defaults for single-process execution.",
+      "docs_url": "https://docs.pytorch.org/docs/stable/elastic/run.html",
+      "language": "python"
+    },
+    {
+      "problem": "Configure Multi-GPU Training Script",
+      "trigger": "I need a complete production-grade boilerplate script for multi-GPU distributed training combining DDP, AMP, and DistributedSampler.",
+      "snippet": "import os\nimport torch\nimport torch.nn as nn\nimport torch.distributed as dist\nfrom torch.nn.parallel import DistributedDataParallel as DDP\nfrom torch.utils.data import DataLoader, TensorDataset\nfrom torch.utils.data.distributed import DistributedSampler\n\ndef main():\n    local_rank = int(os.environ.get(\"LOCAL_RANK\", 0))\n    global_rank = int(os.environ.get(\"RANK\", 0))\n    world_size = int(os.environ.get(\"WORLD_SIZE\", 1))\n\n    if torch.cuda.is_available():\n        torch.cuda.set_device(local_rank)\n        device = torch.device(\"cuda\", local_rank)\n        backend = \"nccl\"\n    else:\n        device = torch.device(\"cpu\")\n        backend = \"gloo\"\n\n    dist.init_process_group(backend=backend, rank=global_rank, world_size=world_size)\n\n    dataset = TensorDataset(torch.randn(100, 10), torch.randn(100, 1))\n    sampler = DistributedSampler(dataset)\n    loader = DataLoader(dataset, batch_size=16, sampler=sampler)\n\n    model = nn.Linear(10, 1).to(device)\n    model = DDP(model, device_ids=[local_rank]) if device.type == \"cuda\" else DDP(model)\n    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)\n    scaler = torch.amp.GradScaler(device=device.type, enabled=(device.type == \"cuda\"))\n\n    for epoch in range(2):\n        sampler.set_epoch(epoch)\n        for x, y in loader:\n            x, y = x.to(device), y.to(device)\n            optimizer.zero_grad()\n            with torch.amp.autocast(device_type=device.type, dtype=torch.float16):\n                out = model(x)\n                loss = nn.functional.mse_loss(out, y)\n            scaler.scale(loss).backward()\n            scaler.step(optimizer)\n            scaler.update()\n\n    dist.destroy_process_group()\n\nif __name__ == \"__main__\":\n    main()",
+      "minimal_notes": "This end-to-end boilerplate integrates torch.distributed, DistributedDataParallel, DistributedSampler, and torch.amp. It represents the standard production workflow for multi-GPU scalable deep learning in PyTorch.",
+      "common_bug": "**Issue:** Deadlock or hanging at the beginning or end of training loops across multiple processes.\n\n**Cause:** Unbalanced data batches across ranks without proper handling or inconsistent distributed initialization parameters.\n\n**Quick Fix:** Ensure DistributedSampler divides data evenly, wrap forward/backward in torch.amp.autocast, and invoke dist.destroy_process_group().",
+      "docs_url": "https://docs.pytorch.org/docs/stable/distributed.html",
+      "language": "python"
+    }
+  ]
+}

@@ -1,0 +1,198 @@
+{
+  "id": "09_export",
+  "title": "PyTorch Export & Deployment Cheatsheet",
+  "name": "PyTorch Export & Deployment Cheatsheet",
+  "slug": "export",
+  "description": "Fast reference for PyTorch compilation, model exporting, TorchScript scripting and tracing, ONNX conversion, serialization, inference optimizations, and serving configurations.",
+  "category": "cheatsheet",
+  "package": "pytorch",
+  "package_reference": "pytorch",
+  "version": "2.13.0",
+  "last_updated": "2026-07-23",
+  "created_at": "2026-07-23",
+  "updated_at": "2026-07-23",
+  "sources": [
+    "https://pytorch.org/docs/stable/index.html"
+  ],
+  "sections": [
+    {
+      "title": "PyTorch Compile",
+      "description": "In-framework compilation tools using TorchDynamo and Inductor to speed up model runs via ahead-of-time compilation."
+    },
+    {
+      "title": "Export API",
+      "description": "Methods to trace and capture computational graphs as portable framework-agnostic ExportedProgram modules."
+    },
+    {
+      "title": "TorchScript",
+      "description": "Legacy scripting and tracing mechanisms to run PyTorch modules in C++ LibTorch runtimes without a Python interpreter."
+    },
+    {
+      "title": "ONNX Export",
+      "description": "Configurations for translating models into open standard ONNX format, supporting static and dynamic tensor shapes."
+    },
+    {
+      "title": "Serialization & Inference",
+      "description": "Core APIs to serialize states safely, reload weight parameters, and leverage fast read-only inference execution modes."
+    },
+    {
+      "title": "Production Serving",
+      "description": "Workflow packaging and service deployment configurations for deploying models via TorchServe."
+    }
+  ],
+  "entries": [
+    {
+      "problem": "Compile Model for Optimized Execution (torch.compile)",
+      "trigger": "I need to accelerate PyTorch model execution in production with JIT compilation.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nclass MyModel(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.linear = nn.Linear(10, 5)\n\n    def forward(self, x):\n        return self.linear(x)\n\nmodel = MyModel()\ncompiled_model = torch.compile(model)\nx = torch.randn(2, 10)\noutput = compiled_model(x)",
+      "minimal_notes": "torch.compile optimizes model graphs using TorchDynamo to capture graphs and generate optimized kernels. The first forward pass incurs a compilation warm-up overhead, but subsequent executions run significantly faster.",
+      "common_bug": "**Issue:** High initial latency or temporary freezing during the first forward pass.\n\n**Cause:** PyTorch JIT compiles model graphs on the first forward invocation.\n\n**Quick Fix:** Run a warm-up forward pass with dummy inputs during service initialization before exposing the model to live traffic.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.compile.html",
+      "language": "python"
+    },
+    {
+      "problem": "Configure Compilation Backend (backend)",
+      "trigger": "I need to select a specific compiler backend like Inductor or TensorRT for custom target hardware execution.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nclass MyModel(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.fc = nn.Linear(10, 5)\n\n    def forward(self, x):\n        return self.fc(x)\n\nmodel = MyModel()\ncompiled_model = torch.compile(model, backend=\"inductor\")\nx = torch.randn(4, 10)\noutput = compiled_model(x)",
+      "minimal_notes": "The default inductor backend targets Triton for NVIDIA/AMD GPUs and C++/OpenMP for CPUs. Alternative backends such as aot_eager or cudagraphs offer different trade-offs between compilation time and execution speed.",
+      "common_bug": "**Issue:** BackendNotSupportedError or build failure when selecting specialized backends.\n\n**Cause:** Required system dependencies or third-party compiler toolchains (such as Triton or TensorRT) are missing from the environment.\n\n**Quick Fix:** Install the missing compiler libraries or fall back to supported backends like backend=\"inductor\" or backend=\"aot_eager\".",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.compile.html",
+      "language": "python"
+    },
+    {
+      "problem": "Configure Compilation Mode (mode)",
+      "trigger": "I need to balance compilation time against runtime execution speed or memory overhead during deployment.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nclass MyModel(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.conv = nn.Conv2d(3, 16, kernel_size=3)\n\n    def forward(self, x):\n        return self.conv(x)\n\nmodel = MyModel()\ncompiled_model = torch.compile(model, mode=\"max-autotune\")\nx = torch.randn(1, 3, 32, 32)\noutput = compiled_model(x)",
+      "minimal_notes": "mode=\"default\" provides balanced compilation, mode=\"reduce-overhead\" uses CUDA graphs to minimize Python invocation overhead, and mode=\"max-autotune\" generates the fastest kernels at the cost of prolonged compile times. Use reduce-overhead for small batch latency-critical workloads.",
+      "common_bug": "**Issue:** Out-of-memory (OOM) errors during inference when using mode=\"reduce-overhead\".\n\n**Cause:** CUDA graphs allocate static memory buffers that remain reserved throughout the runtime lifecycle.\n\n**Quick Fix:** Use mode=\"default\" or mode=\"max-autotune\" if memory capacity is tightly constrained.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.compile.html",
+      "language": "python"
+    },
+    {
+      "problem": "Export Computation Graph (torch.export.export)",
+      "trigger": "I need a clean, framework-agnostic IR graph representation of my model for non-Python or C++ deployment runtimes.",
+      "snippet": "import torch\nimport torch.nn as nn\nfrom torch.export import export\n\nclass MyModel(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.fc = nn.Linear(8, 4)\n\n    def forward(self, x):\n        return self.fc(x)\n\nmodel = MyModel().eval()\nexample_inputs = (torch.randn(1, 8),)\nexported_program = export(model, example_inputs)",
+      "minimal_notes": "torch.export.export extracts a sound ExportedProgram computational graph with explicit input and output schemas. Unlike torch.compile, it generates a portable artifact meant to run independently outside Python runtime environments.",
+      "common_bug": "**Issue:** UserError stating graph capture failed due to dynamic control flow or un-guardable side effects.\n\n**Cause:** The model contains standard Python control flow statements dependent on concrete tensor values (such as if x.item() > 0:).\n\n**Quick Fix:** Refactor dynamic conditional logic using torch.cond or avoid unwrapping scalar tensor values during graph capture.",
+      "docs_url": "https://pytorch.org/docs/stable/export.html",
+      "language": "python"
+    },
+    {
+      "problem": "Save and Load ExportedProgram (torch.export.save / torch.export.load)",
+      "trigger": "I need to serialize an exported PyTorch computation graph to disk and reload it in a separate production process.",
+      "snippet": "import torch\nimport torch.nn as nn\nfrom torch.export import export, save, load\n\nclass MyModel(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.fc = nn.Linear(4, 2)\n\n    def forward(self, x):\n        return self.fc(x)\n\nmodel = MyModel().eval()\nexample_inputs = (torch.randn(1, 4),)\nexported_program = export(model, example_inputs)\n\nsave(exported_program, \"model.pt2\")\nloaded_program = load(\"model.pt2\")\noutput = loaded_program.module()(example_inputs[0])",
+      "minimal_notes": "torch.export.save and torch.export.load operate on .pt2 binary archives containing graph structure, weights, and extra metadata. Loaded artifacts do not require the original model source code to run inference.",
+      "common_bug": "**Issue:** TypeError or execution error when invoking the loaded object directly.\n\n**Cause:** Calling loaded_program(x) directly instead of accessing the callable graph via loaded_program.module().\n\n**Quick Fix:** Pass input tensors to loaded_program.module()(*inputs).",
+      "docs_url": "https://pytorch.org/docs/stable/export.html#saving-and-loading-an-exportedprogram",
+      "language": "python"
+    },
+    {
+      "problem": "Script a Model (torch.jit.script)",
+      "trigger": "I need to convert Python control flow (loops, branches) into a TorchScript module for deployment without Python.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nclass DynamicModel(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.fc = nn.Linear(5, 5)\n\n    def forward(self, x):\n        if x.sum() > 0:\n            return self.fc(x)\n        return x\n\nmodel = DynamicModel().eval()\nscripted_model = torch.jit.script(model)\noutput = scripted_model(torch.randn(1, 5))",
+      "minimal_notes": "torch.jit.script parses Python source code AST to preserve conditional statements and dynamic loops in TorchScript IR. It allows model execution in C++ LibTorch runtimes without tracing sample execution paths.",
+      "common_bug": "**Issue:** TorchScriptTypeInferenceError during the scripting step.\n\n**Cause:** Untyped variables or dynamic Python collections used inside the module methods.\n\n**Quick Fix:** Add explicit Python type hints (such as x: torch.Tensor or List[torch.Tensor]) to all class method signatures.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.jit.script.html",
+      "language": "python"
+    },
+    {
+      "problem": "Trace a Model (torch.jit.trace)",
+      "trigger": "I need to convert a model without dynamic control flow into TorchScript by recording sample inputs.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nclass StaticModel(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.fc = nn.Linear(10, 2)\n\n    def forward(self, x):\n        return self.fc(x)\n\nmodel = StaticModel().eval()\nexample_input = torch.randn(1, 10)\ntraced_model = torch.jit.trace(model, example_input)\noutput = traced_model(example_input)",
+      "minimal_notes": "torch.jit.trace runs sample inputs through the model and records every executed operation. Dynamic control flow statements (like if statements) are hardcoded into whichever path was taken during the single trace run.",
+      "common_bug": "**Issue:** Silent execution errors or incorrect output values when input branching conditions change during inference.\n\n**Cause:** Tracing flattens conditional logic based entirely on the example inputs provided during recording.\n\n**Quick Fix:** Use torch.jit.script instead of torch.jit.trace if your model relies on input-dependent conditional logic.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.jit.trace.html",
+      "language": "python"
+    },
+    {
+      "problem": "Save and Load TorchScript Model (torch.jit.save / torch.jit.load)",
+      "trigger": "I need to save a scripted or traced model to disk and reload it in Python or C++ runtime environments.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nclass MyModel(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.fc = nn.Linear(4, 2)\n\n    def forward(self, x):\n        return self.fc(x)\n\nmodel = torch.jit.script(MyModel().eval())\ntorch.jit.save(model, \"model.pt\")\n\nloaded_model = torch.jit.load(\"model.pt\")\noutput = loaded_model(torch.randn(1, 4))",
+      "minimal_notes": "TorchScript .pt archives contain bytecode, network parameters, and class definitions bundled together. They can be executed in C++ using LibTorch without importing Python libraries or source code files.",
+      "common_bug": "**Issue:** RuntimeError: Expected all tensors to be on the same device when invoking the loaded module.\n\n**Cause:** The loaded TorchScript module and input tensors reside on different target hardware devices (such as CPU vs CUDA).\n\n**Quick Fix:** Explicitly transfer the loaded model to the target device using loaded_model.to(\"cuda\").",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.jit.save.html",
+      "language": "python"
+    },
+    {
+      "problem": "Export Model to ONNX (torch.onnx.export)",
+      "trigger": "I need to convert a PyTorch model into ONNX format for deployment with TensorRT, ONNX Runtime, or OpenVINO.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nclass MyModel(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.fc = nn.Linear(10, 5)\n\n    def forward(self, x):\n        return self.fc(x)\n\nmodel = MyModel().eval()\ndummy_input = torch.randn(1, 10)\n\ntorch.onnx.export(\n    model,\n    dummy_input,\n    \"model.onnx\",\n    input_names=[\"input\"],\n    output_names=[\"output\"],\n    opset_version=17\n)",
+      "minimal_notes": "torch.onnx.export builds an ONNX computational graph by tracing sample inputs or parsing graph representations. Explicitly declare opset_version (such as 17 or higher) to ensure operator compatibility with downstream target runtimes.",
+      "common_bug": "**Issue:** Unsupported ONNX opset version or missing operator conversion errors.\n\n**Cause:** The model utilizes newer PyTorch ops that are absent in default or legacy ONNX opset versions.\n\n**Quick Fix:** Set opset_version=17 or higher in torch.onnx.export.",
+      "docs_url": "https://pytorch.org/docs/stable/onnx.html",
+      "language": "python"
+    },
+    {
+      "problem": "Configure Dynamic Shapes for ONNX Export",
+      "trigger": "I need an exported ONNX model to accept variable batch sizes or sequence lengths at inference time.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nclass MyModel(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.fc = nn.Linear(10, 5)\n\n    def forward(self, x):\n        return self.fc(x)\n\nmodel = MyModel().eval()\ndummy_input = torch.randn(1, 10)\n\ndynamic_axes = {\n    \"input\": {0: \"batch_size\"},\n    \"output\": {0: \"batch_size\"}\n}\n\ntorch.onnx.export(\n    model,\n    dummy_input,\n    \"dynamic_model.onnx\",\n    input_names=[\"input\"],\n    output_names=[\"output\"],\n    dynamic_axes=dynamic_axes,\n    opset_version=17\n)",
+      "minimal_notes": "Providing dynamic_axes explicitly designates specific tensor dimensions as dynamic variables instead of fixed integers. This allows ONNX engines to accept inputs with dynamic shape dimensions without throwing shape mismatch exceptions.",
+      "common_bug": "**Issue:** ONNX Runtime throws invalid shape errors when passing batch sizes different from the dummy input.\n\n**Cause:** Non-specified dynamic dimensions default to static shapes captured during the export trace pass.\n\n**Quick Fix:** Declare all variable dimensions (such as batch size or sequence length) inside the dynamic_axes mapping dictionary.",
+      "docs_url": "https://pytorch.org/docs/stable/onnx.html#dynamic-axes",
+      "language": "python"
+    },
+    {
+      "problem": "Save Model Weights (torch.save + state_dict)",
+      "trigger": "I need to save model parameters safely without locking the saved file to exact Python class definitions.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nclass MyModel(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.fc = nn.Linear(10, 2)\n\n    def forward(self, x):\n        return self.fc(x)\n\nmodel = MyModel()\ntorch.save(model.state_dict(), \"model_weights.pt\")",
+      "minimal_notes": "model.state_dict() returns a Python dictionary mapping layer names to their corresponding weight and bias tensors. Saving parameter dictionaries is the official recommended practice over saving full class instances directly.",
+      "common_bug": "**Issue:** AttributeError or ModuleNotFoundError when deserializing a model saved using torch.save(model).\n\n**Cause:** Direct module serialization relies on exact Python class paths, module directory structures, and pickle definitions.\n\n**Quick Fix:** Save weight dictionaries using torch.save(model.state_dict(), path) rather than serializing whole objects.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.save.html",
+      "language": "python"
+    },
+    {
+      "problem": "Load Model Weights (torch.load + load_state_dict)",
+      "trigger": "I need to load a saved weight dictionary into an instantiated model architecture.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nclass MyModel(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.fc = nn.Linear(10, 2)\n\n    def forward(self, x):\n        return self.fc(x)\n\nmodel = MyModel()\nstate_dict = torch.load(\"model_weights.pt\", weights_only=True)\nmodel.load_state_dict(state_dict)",
+      "minimal_notes": "Always set weights_only=True in torch.load to guard against arbitrary code execution security risks. The model structure must be instantiated before populating parameter tensors via load_state_dict().",
+      "common_bug": "**Issue:** Missing key(s) in state_dict or Unexpected key(s) error upon calling load_state_dict().\n\n**Cause:** Key name mismatches, often occurring when saving wrapped DataParallel or DistributedDataParallel models (which prepend a module. prefix).\n\n**Quick Fix:** Strip the module. prefix from state dictionary key names or save using model.module.state_dict().",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.load_state_dict",
+      "language": "python"
+    },
+    {
+      "problem": "Save and Load Training Checkpoint",
+      "trigger": "I need to save and restore complete training progress including model parameters, optimizer states, loss, and epoch count.",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\n\nmodel = nn.Linear(10, 2)\noptimizer = optim.Adam(model.parameters(), lr=0.001)\n\n# Save checkpoint\ncheckpoint = {\n    \"epoch\": 10,\n    \"model_state_dict\": model.state_dict(),\n    \"optimizer_state_dict\": optimizer.state_dict(),\n    \"loss\": 0.15,\n}\ntorch.save(checkpoint, \"checkpoint.pt\")\n\n# Load checkpoint\ncheckpoint = torch.load(\"checkpoint.pt\", weights_only=True)\nmodel.load_state_dict(checkpoint[\"model_state_dict\"])\noptimizer.load_state_dict(checkpoint[\"optimizer_state_dict\"])\nepoch = checkpoint[\"epoch\"]",
+      "minimal_notes": "Checkpoints capture state dictionaries across multiple training components inside a single structure. Preserving optimizer states preserves momentum and learning rate scheduling states upon resuming execution.",
+      "common_bug": "**Issue:** Training behaves erratically or resets learning rate momentum after restoring a checkpoint.\n\n**Cause:** Only saving model.state_dict() while omitting optimizer.state_dict().\n\n**Quick Fix:** Store and load both model.state_dict() and optimizer.state_dict() in the dictionary payload.",
+      "docs_url": "https://pytorch.org/docs/stable/notes/serialization.html#saving-loading-a-general-checkpoint-for-inference-or-resuming-training",
+      "language": "python"
+    },
+    {
+      "problem": "Enable Inference Mode (torch.inference_mode)",
+      "trigger": "I need maximum inference performance and minimal memory usage by disabling autograd and view tracking overhead.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nclass MyModel(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.fc = nn.Linear(10, 2)\n\n    def forward(self, x):\n        return self.fc(x)\n\nmodel = MyModel().eval()\nx = torch.randn(1, 10)\n\nwith torch.inference_mode():\n    output = model(x)",
+      "minimal_notes": "torch.inference_mode completely disables autograd tracking, tensor version counters, and graph bookkeeping. It yields superior execution efficiency compared to torch.no_grad().",
+      "common_bug": "**Issue:** RuntimeError: Inference tensors do not track version counter when performing in-place mutations outside the block.\n\n**Cause:** Tensors produced inside inference_mode cannot be mutated in-place outside of the active inference context block.\n\n**Quick Fix:** Avoid applying in-place modifications to tensors created within a torch.inference_mode() context.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.inference_mode.html",
+      "language": "python"
+    },
+    {
+      "problem": "Optimize Model for Inference (model.eval)",
+      "trigger": "I need to configure non-deterministic layers like Dropout and BatchNorm into deterministic evaluation mode.",
+      "snippet": "import torch\nimport torch.nn as nn\n\nclass Classifier(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.drop = nn.Dropout(0.5)\n        self.bn = nn.BatchNorm1d(10)\n        self.fc = nn.Linear(10, 2)\n\n    def forward(self, x):\n        return self.fc(self.drop(self.bn(x)))\n\nmodel = Classifier()\nmodel.eval()\n\nx = torch.randn(4, 10)\noutput = model(x)",
+      "minimal_notes": "model.eval() disables random element dropping in Dropout layers and forces BatchNorm layers to use frozen running statistics. It does not turn off gradient computation—use torch.inference_mode() alongside it.",
+      "common_bug": "**Issue:** Inconsistent or non-deterministic inference predictions across identical evaluation inputs.\n\n**Cause:** Forgetting to invoke model.eval() leaves Dropout layers active during inference passes.\n\n**Quick Fix:** Always explicitly execute model.eval() prior to running inference or exporting models.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.eval",
+      "language": "python"
+    },
+    {
+      "problem": "Package Model for TorchServe (torch-model-archiver)",
+      "trigger": "I need to bundle model weights, custom handler logic, and architecture definitions into a deployable .mar file.",
+      "snippet": "torch-model-archiver \\\n  --model-name my_model \\\n  --version 1.0 \\\n  --serialized-file model_weights.pt \\\n  --model-file model.py \\\n  --handler image_classifier \\\n  --export-path model_store",
+      "minimal_notes": "The torch-model-archiver CLI packages serialized weights, Python model definitions, and pre/post-processing handlers into a .mar model archive. Output archives are saved directly into the target --export-path directory.",
+      "common_bug": "**Issue:** TorchServe fails to load the archive with ModuleNotFoundError during server startup.\n\n**Cause:** Custom Python dependencies or submodules referenced in model.py were not included in the archiver command.\n\n**Quick Fix:** Pass additional helper scripts or custom Python dependencies using --extra-files path/to/helpers.py.",
+      "docs_url": "https://pytorch.org/serve/model_archiver.html",
+      "language": "bash"
+    },
+    {
+      "problem": "Serve Model with TorchServe",
+      "trigger": "I need to launch a production TorchServe instance with inference and management HTTP endpoints.",
+      "snippet": "torchserve \\\n  --start \\\n  --model-store model_store \\\n  --models my_model=my_model.mar \\\n  --ncs",
+      "minimal_notes": "torchserve initializes worker processes to handle prediction requests on port 8080 and management REST APIs on port 8081. The --ncs flag disables snapshot creation to minimize filesystem overhead during lightweight deployments.",
+      "common_bug": "**Issue:** Address already in use error during TorchServe initialization.\n\n**Cause:** Default HTTP ports (8080, 8081, or 8082) are occupied by other running processes on the host machine.\n\n**Quick Fix:** Define custom port numbers in a config.properties file or terminate the conflicting processes occupying those ports.",
+      "docs_url": "https://pytorch.org/serve/getting_started.html",
+      "language": "bash"
+    }
+  ]
+}

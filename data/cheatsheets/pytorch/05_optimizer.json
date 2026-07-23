@@ -1,0 +1,217 @@
+{
+  "id": "05_optimizer",
+  "title": "PyTorch Optimizer and Scheduler Cheatsheet",
+  "name": "PyTorch Optimizer and Scheduler Cheatsheet",
+  "slug": "optimizer",
+  "description": "Fast reference for PyTorch optimizers, schedulers, parameter groups, weight decay exclusion, and checkpointing optimizer state.",
+  "category": "cheatsheet",
+  "package": "pytorch",
+  "package_reference": "pytorch",
+  "version": "2.13.0",
+  "last_updated": "2026-07-23",
+  "created_at": "2026-07-23",
+  "updated_at": "2026-07-23",
+  "sources": [
+    "https://pytorch.org/docs/stable/optim.html"
+  ],
+  "sections": [
+    {
+      "title": "Optimizers",
+      "description": "Standard first-order, adaptive, and second-order optimization algorithms in PyTorch."
+    },
+    {
+      "title": "Parameter Group Configurations",
+      "description": "Techniques for setting layer-wise learning rates and excluding specific parameters from weight decay."
+    },
+    {
+      "title": "Learning Rate Schedulers",
+      "description": "Algorithms to adjust learning rates across training steps and epochs dynamically."
+    },
+    {
+      "title": "Optimizer Operations",
+      "description": "Core operational steps including resetting gradients, stepping updates, and loading/saving optimizer state."
+    }
+  ],
+  "entries": [
+    {
+      "problem": "Optimize with Stochastic Gradient Descent (optim.SGD)",
+      "trigger": "Use SGD when optimizing basic convex or non-convex models, often with momentum or Nesterov acceleration for computer vision baselines.",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\n\nmodel = nn.Linear(10, 2)\noptimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=1e-4)\n\nx = torch.randn(4, 10)\nloss = model(x).sum()\n\noptimizer.zero_grad()\nloss.backward()\noptimizer.step()",
+      "minimal_notes": "Momentum accelerates gradient vectors in the right directions, reducing oscillating updates. Setting nesterov=True requires momentum > 0 and dampening = 0.",
+      "common_bug": "**Issue:** ValueError: Nesterov momentum requires a momentum and zero dampening\n\n**Cause:** Setting nesterov=True without enabling momentum or while leaving default non-zero dampening.\n\n**Quick Fix:** Set momentum=0.9 and dampening=0 when passing nesterov=True.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.optim.SGD.html",
+      "language": "python"
+    },
+    {
+      "problem": "Optimize with Adam (optim.Adam)",
+      "trigger": "Use Adam for rapid convergence on complex architectures or dynamic tasks without extensive manual learning rate tuning.",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\n\nmodel = nn.Linear(10, 2)\noptimizer = optim.Adam(model.parameters(), lr=1e-3, betas=(0.9, 0.999), eps=1e-8)\n\nx = torch.randn(4, 10)\nloss = model(x).sum()\n\noptimizer.zero_grad()\nloss.backward()\noptimizer.step()",
+      "minimal_notes": "Adam computes adaptive learning rates for each parameter using first and second moment estimates. L2 regularization in Adam is coupled with gradient updates rather than decoupled weight decay.",
+      "common_bug": "**Issue:** Poor generalization when using weight_decay in Adam for transformers or deep networks.\n\n**Cause:** optim.Adam applies L2 penalty directly to gradients instead of performing true decoupled weight decay.\n\n**Quick Fix:** Switch to optim.AdamW if weight decay is needed with adaptive momentum.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.optim.Adam.html",
+      "language": "python"
+    },
+    {
+      "problem": "Optimize with AdamW (optim.AdamW)",
+      "trigger": "Use AdamW as the default adaptive optimizer for transformers and modern deep learning models requiring weight decay.",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\n\nmodel = nn.Linear(10, 2)\noptimizer = optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-2)\n\nx = torch.randn(4, 10)\nloss = model(x).sum()\n\noptimizer.zero_grad()\nloss.backward()\noptimizer.step()",
+      "minimal_notes": "AdamW implements decoupled weight decay, which decouples parameter decay from gradient momentum updates. This leads to superior regularization and generalization performance compared to standard Adam.",
+      "common_bug": "**Issue:** Unintended weight decay applied to bias or layer normalization parameters.\n\n**Cause:** Passing model.parameters() directly applies weight_decay to all parameters in the model.\n\n**Quick Fix:** Group parameters and set weight_decay=0.0 for 1D parameters like biases and LayerNorm scales.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.optim.AdamW.html",
+      "language": "python"
+    },
+    {
+      "problem": "Optimize with RMSprop (optim.RMSprop)",
+      "trigger": "Use RMSprop when training recurrent neural networks or handling non-stationary objectives where moving averages of squared gradients stabilize updates.",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\n\nmodel = nn.Linear(10, 2)\noptimizer = optim.RMSprop(model.parameters(), lr=0.01, alpha=0.99, momentum=0.9)\n\nx = torch.randn(4, 10)\nloss = model(x).sum()\n\noptimizer.zero_grad()\nloss.backward()\noptimizer.step()",
+      "minimal_notes": "The alpha parameter controls the smoothing constant for the moving average of squared gradients. Setting centered=True normalizes gradients by an estimate of their variance.",
+      "common_bug": "**Issue:** Loss explodes or updates become NaN during training with sparse gradients.\n\n**Cause:** Default eps=1e-8 may be too small, causing division by near-zero moving averages.\n\n**Quick Fix:** Increase eps to 1e-5 or lower the learning rate lr.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.optim.RMSprop.html",
+      "language": "python"
+    },
+    {
+      "problem": "Optimize with Adagrad (optim.Adagrad)",
+      "trigger": "Use Adagrad for sparse data features (such as text embeddings) where infrequent features require larger learning rate updates.",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\n\nmodel = nn.Embedding(100, 16)\noptimizer = optim.Adagrad(model.parameters(), lr=0.01, lr_decay=0.0, weight_decay=0.0)\n\nx = torch.tensor([1, 5, 20])\nloss = model(x).sum()\n\noptimizer.zero_grad()\nloss.backward()\noptimizer.step()",
+      "minimal_notes": "Adagrad accumulates the sum of squared historical gradients to scale learning rates per-parameter. The effective learning rate continually shrinks as training progresses, which can stall late-stage learning.",
+      "common_bug": "**Issue:** Training progress completely stalls early in training.\n\n**Cause:** Accumulated historical squared gradients grow too large, causing the effective learning rate to vanish.\n\n**Quick Fix:** Increase initial lr or switch to an adaptive optimizer with exponentially decaying memory like optim.Adam.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.optim.Adagrad.html",
+      "language": "python"
+    },
+    {
+      "problem": "Optimize with LBFGS (optim.LBFGS)",
+      "trigger": "Use LBFGS for deterministic optimization on small-scale, memory-constrained structural or scientific modeling tasks.",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\n\nmodel = nn.Linear(10, 2)\noptimizer = optim.LBFGS(model.parameters(), lr=1.0, max_iter=20)\n\nx = torch.randn(4, 10)\n\ndef closure():\n    optimizer.zero_grad()\n    output = model(x)\n    loss = output.sum()\n    loss.backward()\n    return loss\n\noptimizer.step(closure)",
+      "minimal_notes": "LBFGS is a quasi-Newton second-order optimization method that requires a callable closure to re-evaluate the model and loss function multiple times per step. It requires significant memory per parameter to track approximate Hessian history.",
+      "common_bug": "**Issue:** TypeError: step() missing 1 required positional argument: 'closure'\n\n**Cause:** Calling optimizer.step() without passing a closure evaluation function.\n\n**Quick Fix:** Define a closure function that clears gradients, calculates loss, executes loss.backward(), and returns loss, then pass it to optimizer.step(closure).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.optim.LBFGS.html",
+      "language": "python"
+    },
+    {
+      "problem": "Create Optimizer Parameter Groups (param_groups)",
+      "trigger": "Use parameter groups to apply distinct hyperparameters (like learning rates or weight decay) to different sets of module parameters.",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\n\nmodel = nn.Sequential(\n    nn.Linear(10, 20),\n    nn.ReLU(),\n    nn.Linear(20, 2)\n)\n\noptimizer = optim.Adam([\n    {'params': model[0].parameters(), 'lr': 1e-4},\n    {'params': model[2].parameters(), 'lr': 1e-3}\n], lr=1e-2)\n\nprint(optimizer.param_groups[0]['lr'])\nprint(optimizer.param_groups[1]['lr'])",
+      "minimal_notes": "optimizer.param_groups is a list of dictionaries containing individual parameter dicts alongside hyperparameter values. Top-level hyperparameter arguments passed to the optimizer constructor act as defaults for groups that do not specify them.",
+      "common_bug": "**Issue:** ValueError: some parameters appear in more than one parameter group\n\n**Cause:** Assigning the same parameter tensor to multiple parameter group dictionaries.\n\n**Quick Fix:** Ensure parameter sets passed to each dictionary in the param_groups list are mutually exclusive.",
+      "docs_url": "https://pytorch.org/docs/stable/optim.html#per-parameter-options",
+      "language": "python"
+    },
+    {
+      "problem": "Configure Different Learning Rates per Layer",
+      "trigger": "Use layer-wise learning rate decay or differential rates when fine-tuning pretrained models.",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\n\nclass Net(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.backbone = nn.Linear(10, 10)\n        self.head = nn.Linear(10, 2)\n\n    def forward(self, x):\n        return self.head(self.backbone(x))\n\nmodel = Net()\noptimizer = optim.AdamW([\n    {'params': model.backbone.parameters(), 'lr': 1e-5},\n    {'params': model.head.parameters(), 'lr': 1e-3}\n])\n\nfor group in optimizer.param_groups:\n    print(group['lr'])",
+      "minimal_notes": "Setting lower learning rates on early backbone layers prevents catastrophic forgetting of pretrained representations during transfer learning. Schedulers update all groups proportionally unless customized.",
+      "common_bug": "**Issue:** Backbone weights change drastically and ruin pretrained features during transfer learning.\n\n**Cause:** Using a single global high learning rate across the entire model instead of configuring separate parameter groups.\n\n**Quick Fix:** Separate backbone and head parameters into distinct parameter groups with lower lr assigned to the backbone.",
+      "docs_url": "https://pytorch.org/docs/stable/optim.html#per-parameter-options",
+      "language": "python"
+    },
+    {
+      "problem": "Exclude Parameters from Weight Decay",
+      "trigger": "Use parameter filtering to exclude 1D tensors (biases, batch norm / layer norm weights) from weight decay to prevent underfitting and training instability.",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\n\nmodel = nn.Sequential(\n    nn.Linear(10, 10),\n    nn.BatchNorm1d(10),\n    nn.Linear(10, 2)\n)\n\ndecay_params = [p for p in model.parameters() if p.ndim >= 2]\nno_decay_params = [p for p in model.parameters() if p.ndim < 2]\n\noptimizer = optim.AdamW([\n    {'params': decay_params, 'weight_decay': 0.01},\n    {'params': no_decay_params, 'weight_decay': 0.0}\n], lr=1e-3)",
+      "minimal_notes": "Standard regularization practices dictate applying weight decay only to 2D+ weight matrices (like convolutions and linear weights) while excluding biases and normalization parameters.",
+      "common_bug": "**Issue:** ValueError: optimizer got an empty parameter list\n\n**Cause:** Failing to correctly list or filter parameters, resulting in an empty list passed to a parameter group.\n\n**Quick Fix:** Ensure comprehension predicates correctly capture parameters and that no parameter group list is empty.",
+      "docs_url": "https://pytorch.org/docs/stable/optim.html#per-parameter-options",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Step Learning Rate Scheduler (StepLR)",
+      "trigger": "Use StepLR to decay the learning rate by a multiplicative factor gamma at fixed epoch intervals (step_size).",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.optim.lr_scheduler import StepLR\n\nmodel = nn.Linear(10, 2)\noptimizer = optim.SGD(model.parameters(), lr=0.1)\nscheduler = StepLR(optimizer, step_size=30, gamma=0.1)\n\nfor epoch in range(1, 40):\n    optimizer.step()\n    scheduler.step()\n\nprint(scheduler.get_last_lr())",
+      "minimal_notes": "scheduler.step() must be called after optimizer.step() at the end of each epoch. gamma defines the reduction multiplier.",
+      "common_bug": "**Issue:** Learning rate drops on epoch 0 before model training starts or fails to step properly.\n\n**Cause:** Calling scheduler.step() before optimizer.step() or at the start of the epoch loop.\n\n**Quick Fix:** Always execute optimizer.step() first, followed by scheduler.step() at the end of the epoch loop iteration.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.StepLR.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Multi-Step Learning Rate Scheduler (MultiStepLR)",
+      "trigger": "Use MultiStepLR to drop the learning rate at specific non-uniform milestone epochs during training.",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.optim.lr_scheduler import MultiStepLR\n\nmodel = nn.Linear(10, 2)\noptimizer = optim.SGD(model.parameters(), lr=0.1)\nscheduler = MultiStepLR(optimizer, milestones=[30, 80], gamma=0.1)\n\nfor epoch in range(1, 100):\n    optimizer.step()\n    scheduler.step()\n\nprint(scheduler.get_last_lr())",
+      "minimal_notes": "The milestones argument accepts a list of increasing epoch indices at which the learning rate drops. This scheduler is common in classical ImageNet training regimes.",
+      "common_bug": "**Issue:** Learning rate does not decrease at expected milestones.\n\n**Cause:** milestones list is unsorted or milestones are provided as relative step counts instead of absolute epoch numbers.\n\n**Quick Fix:** Provide milestones as an ascending list of integers corresponding to exact absolute epoch counts.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.MultiStepLR.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Cosine Annealing Scheduler (CosineAnnealingLR)",
+      "trigger": "Use CosineAnnealingLR to smoothly decay the learning rate to a minimum value following a cosine curve across total training steps.",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.optim.lr_scheduler import CosineAnnealingLR\n\nmodel = nn.Linear(10, 2)\noptimizer = optim.AdamW(model.parameters(), lr=1e-3)\nscheduler = CosineAnnealingLR(optimizer, T_max=100, eta_min=1e-6)\n\nfor epoch in range(1, 101):\n    optimizer.step()\n    scheduler.step()\n\nprint(scheduler.get_last_lr())",
+      "minimal_notes": "T_max represents the maximum number of iterations or epochs until eta_min is reached. Setting eta_min slightly above 0 prevents total optimization stalling at final steps.",
+      "common_bug": "**Issue:** Learning rate increases unexpectedly midway or reaches eta_min prematurely.\n\n**Cause:** Mismatch between T_max and total training epochs or stepping the scheduler multiple times per epoch.\n\n**Quick Fix:** Set T_max exactly equal to total planned training epochs when stepping once per epoch.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.CosineAnnealingLR.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Cosine Annealing with Warm Restarts (CosineAnnealingWarmRestarts)",
+      "trigger": "Use CosineAnnealingWarmRestarts (SGDR) to periodically reset the learning rate to escape local minima during long training runs.",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.optim.lr_scheduler import CosineAnnealingWarmRestarts\n\nmodel = nn.Linear(10, 2)\noptimizer = optim.AdamW(model.parameters(), lr=1e-3)\nscheduler = CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=2, eta_min=1e-6)\n\nfor epoch in range(1, 31):\n    optimizer.step()\n    scheduler.step()\n\nprint(scheduler.get_last_lr())",
+      "minimal_notes": "T_0 sets the number of iterations for the first restart period. T_mult scales the period duration after each restart.",
+      "common_bug": "**Issue:** Learning rate resets at unexpected epoch counts.\n\n**Cause:** Passing fractional step values or misunderstanding how T_mult scales restart periods.\n\n**Quick Fix:** Account for period expansion when calculating total epochs (e.g., T_0=10, T_mult=2 resets at epoch 10, 30, 70).",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.CosineAnnealingWarmRestarts.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Exponential Learning Rate Scheduler (ExponentialLR)",
+      "trigger": "Use ExponentialLR to decay the learning rate exponentially by a constant factor gamma at every epoch step.",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.optim.lr_scheduler import ExponentialLR\n\nmodel = nn.Linear(10, 2)\noptimizer = optim.SGD(model.parameters(), lr=0.1)\nscheduler = ExponentialLR(optimizer, gamma=0.95)\n\nfor epoch in range(1, 10):\n    optimizer.step()\n    scheduler.step()\n\nprint(scheduler.get_last_lr())",
+      "minimal_notes": "Learning rate is multiplied by gamma every epoch. Choose gamma close to 1.0 (e.g., 0.95 to 0.99) to avoid decaying the rate too rapidly.",
+      "common_bug": "**Issue:** Learning rate decays to near-zero within a few epochs.\n\n**Cause:** Setting gamma too low (e.g., 0.1 instead of 0.95).\n\n**Quick Fix:** Use high decimal values like gamma=0.98 for gentle continuous exponential decay.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ExponentialLR.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Linear Learning Rate Scheduler (LinearLR)",
+      "trigger": "Use LinearLR to linearly scale the learning rate up (warmup) or down (decay) over a fixed number of initial steps.",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.optim.lr_scheduler import LinearLR\n\nmodel = nn.Linear(10, 2)\noptimizer = optim.AdamW(model.parameters(), lr=1e-3)\nscheduler = LinearLR(optimizer, start_factor=0.1, end_factor=1.0, total_iters=10)\n\nfor step in range(10):\n    optimizer.step()\n    scheduler.step()\n\nprint(scheduler.get_last_lr())",
+      "minimal_notes": "start_factor and end_factor are multiplicative factors applied to the initial optimizer learning rate. total_iters specifies the total duration of the linear transition.",
+      "common_bug": "**Issue:** Learning rate continues linearly scaling beyond the intended warmup or decay window.\n\n**Cause:** Continuing to call scheduler.step() past total_iters without capping or chaining schedulers.\n\n**Quick Fix:** After total_iters, LinearLR maintains end_factor; chain it with another scheduler using SequentialLR if subsequent decay is needed.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.LinearLR.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Sequential Learning Rate Scheduling (SequentialLR)",
+      "trigger": "Use SequentialLR to chain multiple schedulers (e.g., linear warmup followed by cosine annealing decay) sequentially during training.",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.optim.lr_scheduler import LinearLR, CosineAnnealingLR, SequentialLR\n\nmodel = nn.Linear(10, 2)\noptimizer = optim.AdamW(model.parameters(), lr=1e-3)\n\nsched1 = LinearLR(optimizer, start_factor=0.1, total_iters=10)\nsched2 = CosineAnnealingLR(optimizer, T_max=90, eta_min=1e-6)\n\nscheduler = SequentialLR(optimizer, schedulers=[sched1, sched2], milestones=[10])\n\nfor epoch in range(100):\n    optimizer.step()\n    scheduler.step()\n\nprint(scheduler.get_last_lr())",
+      "minimal_notes": "milestones defines the exact step counts where control transitions to the next scheduler in the schedulers list. Individual sub-schedulers do not need manual stepping; step only the outer SequentialLR.",
+      "common_bug": "**Issue:** ValueError: milestone should be smaller than T_max or incorrect sub-scheduler stepping behavior.\n\n**Cause:** Calling step() on individual sub-schedulers directly instead of only calling scheduler.step().\n\n**Quick Fix:** Pass sub-schedulers to SequentialLR and call scheduler.step() solely on the parent SequentialLR instance.",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.SequentialLR.html",
+      "language": "python"
+    },
+    {
+      "problem": "Reduce Learning Rate on Plateau (ReduceLROnPlateau)",
+      "trigger": "Use ReduceLROnPlateau to dynamically drop learning rate when a validation metric (e.g., loss or accuracy) stops improving.",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.optim.lr_scheduler import ReduceLROnPlateau\n\nmodel = nn.Linear(10, 2)\noptimizer = optim.SGD(model.parameters(), lr=0.1)\nscheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5)\n\nval_loss = 0.5\nfor epoch in range(10):\n    optimizer.step()\n    scheduler.step(val_loss)\n\nprint(optimizer.param_groups[0]['lr'])",
+      "minimal_notes": "Unlike other schedulers, ReduceLROnPlateau.step() strictly requires passing a validation metric value. get_last_lr() is unavailable; inspect optimizer.param_groups[0]['lr'] directly.",
+      "common_bug": "**Issue:** TypeError: step() missing 1 required positional argument: 'metrics' or AttributeError: 'ReduceLROnPlateau' object has no attribute 'get_last_lr'\n\n**Cause:** Calling scheduler.step() without passing the validation loss metric, or calling scheduler.get_last_lr().\n\n**Quick Fix:** Pass validation metric to scheduler.step(val_loss) and inspect current learning rate via optimizer.param_groups[0]['lr'].",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ReduceLROnPlateau.html",
+      "language": "python"
+    },
+    {
+      "problem": "Reset Gradients (optimizer.zero_grad)",
+      "trigger": "Use zero_grad to clear parameter .grad attributes before executing the backward pass to prevent gradient accumulation across iterations.",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\n\nmodel = nn.Linear(10, 2)\noptimizer = optim.AdamW(model.parameters(), lr=1e-3)\n\nx = torch.randn(4, 10)\nloss = model(x).sum()\n\noptimizer.zero_grad(set_to_none=True)\nloss.backward()",
+      "minimal_notes": "Setting set_to_none=True deallocates gradient tensor memory instead of writing zero values, reducing memory overhead and improving execution speed.",
+      "common_bug": "**Issue:** Gradients accumulate across batches leading to explosive parameter updates and instability.\n\n**Cause:** Forgetting to call optimizer.zero_grad() before loss.backward() inside the training loop.\n\n**Quick Fix:** Always call optimizer.zero_grad(set_to_none=True) prior to calling loss.backward().",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.optim.Optimizer.zero_grad.html",
+      "language": "python"
+    },
+    {
+      "problem": "Update Model Parameters (optimizer.step)",
+      "trigger": "Use optimizer.step to update model weights based on computed .grad attributes after calling backward().",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\n\nmodel = nn.Linear(10, 2)\noptimizer = optim.SGD(model.parameters(), lr=0.01)\n\nx = torch.randn(4, 10)\nloss = model(x).sum()\n\noptimizer.zero_grad()\nloss.backward()\noptimizer.step()",
+      "minimal_notes": "optimizer.step() iterates over all parameter groups and updates tensors in-place using their accumulated .grad values and optimizer state.",
+      "common_bug": "**Issue:** Model parameters do not update during training iteration.\n\n**Cause:** Calling optimizer.step() before loss.backward(), meaning parameter .grad attributes are None or zero.\n\n**Quick Fix:** Ensure execution order is strictly: optimizer.zero_grad(), loss.backward(), and then optimizer.step().",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.optim.Optimizer.step.html",
+      "language": "python"
+    },
+    {
+      "problem": "Save and Restore Optimizer State (optimizer.state_dict / load_state_dict)",
+      "trigger": "Use state_dict and load_state_dict to serialize and restore optimizer hyperparameters and momentum buffers for checkpointing and resuming training.",
+      "snippet": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\n\nmodel = nn.Linear(10, 2)\noptimizer = optim.AdamW(model.parameters(), lr=1e-3)\n\nx = torch.randn(4, 10)\nloss = model(x).sum()\noptimizer.zero_grad()\nloss.backward()\noptimizer.step()\n\nstate = optimizer.state_dict()\n\nnew_optimizer = optim.AdamW(model.parameters(), lr=1e-3)\nnew_optimizer.load_state_dict(state)",
+      "minimal_notes": "An optimizer's state_dict contains hyperparameters and momentum/step buffers for each parameter. The model structure must match when loading a restored optimizer state dict.",
+      "common_bug": "**Issue:** ValueError: loaded state dict contains a parameter group that doesn't match the size of optimizer's group\n\n**Cause:** Restoring optimizer state dict into an optimizer instance constructed with a different model architecture or parameter group layout.\n\n**Quick Fix:** Instantiate the optimizer with the exact same model architecture and parameter group layout before calling load_state_dict().",
+      "docs_url": "https://pytorch.org/docs/stable/generated/torch.optim.Optimizer.load_state_dict.html",
+      "language": "python"
+    }
+  ]
+}

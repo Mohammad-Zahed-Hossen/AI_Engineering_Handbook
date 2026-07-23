@@ -14,7 +14,7 @@ export const CheatsheetEntrySchema = z.object({
 export const CheatsheetSchema = BaseMetaSchema.extend({
   // Cheatsheet-specific fields
   name: z.string(),
-  entries: z.array(CheatsheetEntrySchema).max(130, "Cheatsheet cannot have more than 130 entries"),
+  entries: z.array(CheatsheetEntrySchema).max(250, "Cheatsheet cannot have more than 250 entries"),
   
   // Reference back to package (per spec, cheatsheets must link back to package)
   package_reference: z.string().optional(),

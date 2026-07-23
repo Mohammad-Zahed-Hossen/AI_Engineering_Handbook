@@ -124,6 +124,54 @@ function getNormalizedSyntaxFunc(syntax: string): string {
   return lastPart;
 }
 
+interface ParsedParameter {
+  name: string;
+  typeOrDefault?: string;
+  description?: string;
+}
+
+function parseParameterString(paramStr: string): ParsedParameter {
+  if (!paramStr) return { name: '' };
+  
+  let clean = paramStr.trim();
+  if (clean.endsWith('.')) {
+    clean = clean.slice(0, -1).trim();
+  }
+
+  // Pattern 1: `param_name (type/default): description` or `param_name (type/default) — description`
+  const typedMatch = clean.match(/^(`?[a-zA-Z0-9_*.]+(?:\[.*?\])?`?)\s*\(([^)]+)\)\s*(?:[:—–]|\s-\s)\s*(.+)$/);
+  if (typedMatch) {
+    return {
+      name: typedMatch[1].replace(/^`|`$/g, '').trim(),
+      typeOrDefault: typedMatch[2].trim(),
+      description: typedMatch[3].trim()
+    };
+  }
+
+  // Pattern 2: `param_name: description` or `param_name — description` or `param_name - description`
+  const descMatch = clean.match(/^(`?[a-zA-Z0-9_*.]+(?:\[.*?\])?`?)\s*(?:[:—–]|\s-\s)\s*(.+)$/);
+  if (descMatch) {
+    return {
+      name: descMatch[1].replace(/^`|`$/g, '').trim(),
+      description: descMatch[2].trim()
+    };
+  }
+
+  // Pattern 3: `param_name (type/default)`
+  const typeOnlyMatch = clean.match(/^(`?[a-zA-Z0-9_*.]+(?:\[.*?\])?`?)\s*\(([^)]+)\)$/);
+  if (typeOnlyMatch) {
+    return {
+      name: typeOnlyMatch[1].replace(/^`|`$/g, '').trim(),
+      typeOrDefault: typeOnlyMatch[2].trim()
+    };
+  }
+
+  // Pattern 4: Simple parameter name
+  return {
+    name: clean.replace(/^`|`$/g, '')
+  };
+}
+
 export default function PackageTaskList({ tasks, packageName }: PackageTaskListProps) {
   const [expandedTasks, setExpandedTasks] = useState<Set<number>>(new Set());
 
@@ -181,11 +229,12 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
 
   // Search text for package tasks (combines all searchable fields)
   const getSearchText = useCallback((task: ResolvedTask): string => {
+    const rawParams = task.important_params || (task as any).important_parameters;
     return [
       task.task,
       task.mental_trigger,
       task.syntax,
-      task.important_params?.join(' '),
+      Array.isArray(rawParams) ? rawParams.join(' ') : '',
       task.gotchas?.join(' '),
     ].filter(Boolean).join(' ');
   }, []);
@@ -291,24 +340,62 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
                   )}
                 </div>
 
-                {/* Parameters - as chips */}
-                {task.important_params && task.important_params.length > 0 && (
-                  <div>
-                    <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
-                      Parameters
-                    </h4>
-                    <div className="flex flex-wrap gap-1">
-                      {task.important_params.map((param, paramIdx) => (
-                        <code
-                          key={paramIdx}
-                          className="px-1.5 py-0 rounded text-[9px] font-mono font-semibold bg-muted text-foreground border border-border select-all"
-                        >
-                          {param.replace(/\.$/, '')}
-                        </code>
-                      ))}
+                {/* Parameters - key-value cards / structured view */}
+                {(() => {
+                  const rawParams = task.important_params || (task as any).important_parameters;
+                  if (!rawParams || !Array.isArray(rawParams) || rawParams.length === 0) return null;
+
+                  const parsed = rawParams.map(parseParameterString);
+                  const hasAnyDescription = parsed.some(p => p.description || p.typeOrDefault);
+
+                  return (
+                    <div>
+                      <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                        <Sliders className="w-3 h-3 text-primary/70 shrink-0" />
+                        Parameters
+                      </h4>
+
+                      {hasAnyDescription ? (
+                        <div className="grid gap-1.5 sm:grid-cols-1">
+                          {parsed.map((param, paramIdx) => (
+                            <div
+                              key={paramIdx}
+                              className="flex flex-col sm:flex-row sm:items-baseline gap-1.5 sm:gap-2.5 p-2 rounded-lg bg-muted/20 dark:bg-muted/10 border border-border/60 hover:border-border transition-colors text-[11px]"
+                            >
+                              <div className="flex flex-wrap items-center gap-1.5 shrink-0">
+                                <code className="font-mono font-bold text-primary bg-primary/10 dark:bg-primary/15 px-1.5 py-0.5 rounded text-[10px] border border-primary/20 select-all">
+                                  {param.name}
+                                </code>
+                                {param.typeOrDefault && (
+                                  <span className="text-[9px] font-mono text-muted-foreground/80 bg-muted px-1.5 py-0.2 rounded border border-border/50">
+                                    {param.typeOrDefault}
+                                  </span>
+                                )}
+                              </div>
+
+                              {param.description && (
+                                <span className="text-muted-foreground leading-snug text-[11px] flex-1">
+                                  {param.description}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-1.5">
+                          {parsed.map((param, paramIdx) => (
+                            <code
+                              key={paramIdx}
+                              className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-muted/50 hover:bg-muted text-foreground border border-border/80 transition-colors select-all"
+                            >
+                              {param.name}
+                            </code>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* Decision Notes - Use/Avoid */}
                 {(task.use_when || task.avoid_when) && (

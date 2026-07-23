@@ -1,0 +1,194 @@
+{
+  "id": "10_torcevision",
+  "title": "TorchVision Cheatsheet Module Generation",
+  "name": "TorchVision Cheatsheet Module Generation",
+  "slug": "torchvision",
+  "description": "Fast reference for TorchVision datasets, image transformations and augmentations, pretrained models, weight selection, transfer learning backbone freezing, and feature extraction.",
+  "category": "cheatsheet",
+  "package": "pytorch",
+  "package_reference": "pytorch",
+  "version": "2.13.0",
+  "last_updated": "2026-07-23",
+  "created_at": "2026-07-23",
+  "updated_at": "2026-07-23",
+  "sources": [
+    "https://pytorch.org/vision/stable/index.html"
+  ],
+  "sections": [
+    {
+      "title": "Vision Datasets",
+      "description": "APIs to load benchmark vision datasets and custom image collections organized in folders."
+    },
+    {
+      "title": "Image Transformations",
+      "description": "Compose data preprocessing pipelines, tensor conversions, scaling, and stochastic vision augmentations."
+    },
+    {
+      "title": "Pretrained Models",
+      "description": "Load modern pre-trained models with default or specific weights and weight-specific input preprocessing pipelines."
+    },
+    {
+      "title": "Transfer Learning",
+      "description": "Techniques for freezing backbone layers, replacing classification heads, and selective layer fine-tuning."
+    },
+    {
+      "title": "Feature Extraction",
+      "description": "Symbolic tracing methods to extract intermediate feature activations and construct optimized embedding pipelines."
+    }
+  ],
+  "entries": [
+    {
+      "problem": "Load Built-in Vision Dataset (torchvision.datasets)",
+      "trigger": "I need to load a standard computer vision benchmark dataset for training or evaluation.",
+      "snippet": "import torchvision.transforms as T\nfrom torchvision.datasets import CIFAR10\n\ntransform = T.Compose([\n    T.ToTensor(),\n])\n\ndataset = CIFAR10(\n    root=\"./data\",\n    train=True,\n    download=True,\n    transform=transform,\n)\n\nimage, label = dataset[0]",
+      "minimal_notes": "Built-in datasets return a tuple of (image, target) for a given index. The transform callable runs on each PIL image before returning the sample.",
+      "common_bug": "**Issue:** TypeError: batch must contain tensors, numbers, dicts or lists; found <class 'PIL.Image.Image'>\n\n**Cause:** Passing a dataset directly to a DataLoader without applying T.ToTensor() in the transform pipeline.\n\n**Quick Fix:** Add T.ToTensor() (or v2.ToImage() with v2.ToDtype()) to your dataset transform argument.",
+      "docs_url": "https://pytorch.org/vision/stable/datasets.html",
+      "language": "python"
+    },
+    {
+      "problem": "Create Custom Image Dataset (torchvision.datasets.ImageFolder)",
+      "trigger": "I need to load a custom image dataset organized in class-based directory folders.",
+      "snippet": "import torchvision.transforms as T\nfrom torchvision.datasets import ImageFolder\n\ntransform = T.Compose([\n    T.Resize((224, 224)),\n    T.ToTensor(),\n])\n\ndataset = ImageFolder(\n    root=\"path/to/data/train\",\n    transform=transform,\n)\n\nclasses = dataset.classes\nclass_to_idx = dataset.class_to_idx",
+      "minimal_notes": "ImageFolder expects subdirectory names to represent individual class labels containing corresponding image files. Class indices are assigned alphabetically based on subfolder names.",
+      "common_bug": "**Issue:** RuntimeError: Found 0 files in subfolders of ...\n\n**Cause:** The root directory path does not contain class-named subdirectories, or images are placed directly in the root folder.\n\n**Quick Fix:** Structure the directory as root/class_a/img1.jpg and root/class_b/img2.jpg instead of placing images directly inside root.",
+      "docs_url": "https://pytorch.org/vision/stable/generated/torchvision.datasets.ImageFolder.html",
+      "language": "python"
+    },
+    {
+      "problem": "Download and Cache Dataset (download=True)",
+      "trigger": "I need to automatically download a dataset if missing from disk or reuse existing local files.",
+      "snippet": "import torchvision.transforms as T\nfrom torchvision.datasets import MNIST\n\ndataset = MNIST(\n    root=\"./data\",\n    train=True,\n    download=True,\n    transform=T.ToTensor(),\n)",
+      "minimal_notes": "Setting download=True checks if files exist in root and verifies integrity before downloading. If valid dataset files already exist, the download step is skipped automatically.",
+      "common_bug": "**Issue:** HTTPError or corrupt download errors during multi-process DataLoader execution.\n\n**Cause:** Multiple worker processes attempting to download the dataset to the same folder concurrently.\n\n**Quick Fix:** Instantiate the dataset with download=True once in the main process before initializing multi-process DataLoader workers.",
+      "docs_url": "https://pytorch.org/vision/stable/datasets.html",
+      "language": "python"
+    },
+    {
+      "problem": "Compose Image Transform Pipeline (torchvision.transforms.Compose)",
+      "trigger": "I need to chain multiple image transformations sequentially into a single callable transform pipeline.",
+      "snippet": "import torchvision.transforms as T\n\ntransform_pipeline = T.Compose([\n    T.Resize((256, 256)),\n    T.CenterCrop((224, 224)),\n    T.ToTensor(),\n    T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),\n])",
+      "minimal_notes": "Transforms in Compose execute sequentially in the exact order specified in the list. Transformations operating on PIL images must precede tensor conversion transforms like ToTensor.",
+      "common_bug": "**Issue:** TypeError: img should be PIL Image or Tensor. Got <class 'torch.Tensor'> inside PIL-based transform functions.\n\n**Cause:** Placing PIL-only transforms (such as Resize or CenterCrop) after ToTensor() in the Compose sequence.\n\n**Quick Fix:** Arrange PIL image transforms first, followed by ToTensor(), and end with tensor operations like Normalize.",
+      "docs_url": "https://pytorch.org/vision/stable/generated/torchvision.transforms.Compose.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Image Augmentation (RandomCrop, RandomHorizontalFlip, ColorJitter)",
+      "trigger": "I need to perform stochastic data augmentations to prevent overfitting during vision model training.",
+      "snippet": "import torchvision.transforms as T\n\ntrain_transform = T.Compose([\n    T.RandomResizedCrop(224, scale=(0.8, 1.0)),\n    T.RandomHorizontalFlip(p=0.5),\n    T.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),\n    T.ToTensor(),\n])",
+      "minimal_notes": "Stochastic augmentations produce different random transformations each time an image sample is fetched. Validation and test pipelines must omit random augmentations and use deterministic transforms.",
+      "common_bug": "**Issue:** Low validation accuracy and non-deterministic behavior during model evaluation.\n\n**Cause:** Applying random augmentations like RandomHorizontalFlip or ColorJitter to the validation or test dataset transform pipeline.\n\n**Quick Fix:** Separate training transforms with random augmentations from evaluation transforms that use deterministic operations like Resize and CenterCrop.",
+      "docs_url": "https://pytorch.org/vision/stable/transforms.html",
+      "language": "python"
+    },
+    {
+      "problem": "Convert Images to Tensor (ToTensor / PILToTensor)",
+      "trigger": "I need to convert PIL images or NumPy arrays into PyTorch image tensors.",
+      "snippet": "from PIL import Image\nimport torchvision.transforms as T\n\nimg = Image.new(\"RGB\", (224, 224), color=(255, 0, 0))\n\nto_tensor = T.ToTensor()\ntensor_scaled = to_tensor(img)\n\nto_pil_tensor = T.PILToTensor()\ntensor_unscaled = to_pil_tensor(img)",
+      "minimal_notes": "ToTensor() converts PIL images (0-255) to float tensors in [0.0, 1.0] with shape (C, H, W). PILToTensor() converts to torch.uint8 in [0, 255] without dtype conversion or scaling.",
+      "common_bug": "**Issue:** Model loss instability due to inputs containing integers [0, 255] instead of normalized floating point values [0.0, 1.0].\n\n**Cause:** Using PILToTensor() expecting scaled floats instead of ToTensor().\n\n**Quick Fix:** Use ToTensor() for float scaling to [0.0, 1.0], or explicitly cast dtypes using tensor.float() / 255.0 when using PILToTensor().",
+      "docs_url": "https://pytorch.org/vision/stable/generated/torchvision.transforms.ToTensor.html",
+      "language": "python"
+    },
+    {
+      "problem": "Normalize Image Tensor (Normalize)",
+      "trigger": "I need to standardize tensor channels using predefined mean and standard deviation vectors.",
+      "snippet": "import torch\nimport torchvision.transforms as T\n\nnormalize = T.Normalize(\n    mean=[0.485, 0.456, 0.406],\n    std=[0.229, 0.224, 0.225],\n)\n\nimage_tensor = torch.rand(3, 224, 224)\nnormalized_tensor = normalize(image_tensor)",
+      "minimal_notes": "Normalize operates directly on floating point tensors with shape (C, H, W) or (B, C, H, W). Channel values are transformed according to output = (input - mean) / std.",
+      "common_bug": "**Issue:** TypeError: img should be Tensor. Got <class 'PIL.Image.Image'>\n\n**Cause:** Applying Normalize before converting the PIL Image to a PyTorch tensor with ToTensor().\n\n**Quick Fix:** Ensure ToTensor() precedes Normalize in your transformation pipeline.",
+      "docs_url": "https://pytorch.org/vision/stable/generated/torchvision.transforms.Normalize.html",
+      "language": "python"
+    },
+    {
+      "problem": "Load Pretrained Model (torchvision.models)",
+      "trigger": "I need to instantiate a vision architecture initialized with modern official pretrained weights.",
+      "snippet": "import torchvision.models as models\n\nweights = models.ResNet50_Weights.DEFAULT\nmodel = models.resnet50(weights=weights)\nmodel.eval()",
+      "minimal_notes": "Using Weights.DEFAULT automatically fetches the highest accuracy pretrained weight variant available. Pretrained models must be switched to model.eval() mode for deterministic inference.",
+      "common_bug": "**Issue:** UserWarning: The parameter 'pretrained' is deprecated, please use 'weights' instead.\n\n**Cause:** Passing legacy keyword argument pretrained=True to vision model constructors.\n\n**Quick Fix:** Replace pretrained=True with weights=models.ResNet50_Weights.DEFAULT or specific weight Enum constants.",
+      "docs_url": "https://pytorch.org/vision/stable/models.html",
+      "language": "python"
+    },
+    {
+      "problem": "Create Model Without Pretrained Weights (weights=None)",
+      "trigger": "I need to instantiate a vision model architecture with random weight initialization for training from scratch.",
+      "snippet": "import torchvision.models as models\n\nmodel = models.resnet18(weights=None)",
+      "minimal_notes": "Passing weights=None initializes network parameters randomly according to architecture default initializers. This avoids downloading pretrained weight checkpoints when training from scratch.",
+      "common_bug": "**Issue:** Unintended downloading of heavy checkpoint files over network during architecture initialization.\n\n**Cause:** Omitting the weights argument, which in older API patterns or custom defaults could trigger weight downloads.\n\n**Quick Fix:** Pass weights=None explicitly when initializing models for random parameter training.",
+      "docs_url": "https://pytorch.org/vision/stable/models.html",
+      "language": "python"
+    },
+    {
+      "problem": "Load Official Weight Enum (Weights.DEFAULT)",
+      "trigger": "I need to select specific published pretrained weight variants or default weights for vision models.",
+      "snippet": "import torchvision.models as models\n\ndefault_weights = models.ResNet50_Weights.DEFAULT\nlegacy_weights = models.ResNet50_Weights.IMAGENET1K_V1\nv2_weights = models.ResNet50_Weights.IMAGENET1K_V2\n\nmodel = models.resnet50(weights=v2_weights)",
+      "minimal_notes": "Weight Enums provide strong typing, metadata access, and exact weight versioning for models. Calling .DEFAULT ensures access to the best available weights as TorchVision updates models.",
+      "common_bug": "**Issue:** AttributeError: type object 'ResNet50_Weights' has no attribute ...\n\n**Cause:** Misspelling the weight variant name or using obsolete weight naming conventions.\n\n**Quick Fix:** Inspect available enum attributes via list(models.ResNet50_Weights) or use models.ResNet50_Weights.DEFAULT.",
+      "docs_url": "https://pytorch.org/vision/stable/models.html",
+      "language": "python"
+    },
+    {
+      "problem": "Apply Weight-specific Preprocessing (weights.transforms())",
+      "trigger": "I need to apply the exact image preprocessing pipeline required by a specific pretrained weight checkpoint.",
+      "snippet": "from PIL import Image\nimport torchvision.models as models\n\nweights = models.EfficientNet_B0_Weights.DEFAULT\npreprocess = weights.transforms()\n\nimg = Image.new(\"RGB\", (300, 300))\ninput_tensor = preprocess(img).unsqueeze(0)",
+      "minimal_notes": "weights.transforms() returns the exact normalization, resizing, and cropping transforms matching the checkpoint's training setup. This eliminates manual guessing of image dimensions, crop ratios, or mean/std values.",
+      "common_bug": "**Issue:** Degraded model accuracy during inference despite using official pretrained weights.\n\n**Cause:** Using standard ResNet normalization parameters [0.485, 0.456, 0.406] for models that require different input sizes or scaling routines.\n\n**Quick Fix:** Construct the input preprocessing pipeline directly using weights.transforms() instead of hardcoding manual transforms.",
+      "docs_url": "https://pytorch.org/vision/stable/models.html",
+      "language": "python"
+    },
+    {
+      "problem": "Freeze Backbone Layers (requires_grad=False)",
+      "trigger": "I need to disable gradient computation for feature extractor layers during transfer learning.",
+      "snippet": "import torchvision.models as models\n\nmodel = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)\n\nfor param in model.parameters():\n    param.requires_grad = False",
+      "minimal_notes": "Setting param.requires_grad = False prevents parameter updates and gradient accumulation during backward passes. Freezing backbone weights preserves pretrained feature representations and accelerates training time.",
+      "common_bug": "**Issue:** Backbone weights are updated and pretrained features are corrupted during transfer learning training.\n\n**Cause:** Freezing parameters after passing model.parameters() to the optimizer constructor.\n\n**Quick Fix:** Set requires_grad = False on layers before instantiating the optimizer, or pass filter(lambda p: p.requires_grad, model.parameters()) to the optimizer.",
+      "docs_url": "https://pytorch.org/vision/stable/models.html",
+      "language": "python"
+    },
+    {
+      "problem": "Replace Classification Head",
+      "trigger": "I need to adapt a pretrained model output dimension to match a custom target dataset class count.",
+      "snippet": "import torch.nn as nn\nimport torchvision.models as models\n\nmodel = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)\n\nnum_features = model.fc.in_features\nnum_classes = 10\n\nmodel.fc = nn.Linear(num_features, num_classes)",
+      "minimal_notes": "Replacing the final linear layer re-initializes gradients for that layer automatically (requires_grad=True). Check model attribute names as heads vary between architectures (fc for ResNet, classifier for MobileNet/VGG, heads for ViT).",
+      "common_bug": "**Issue:** AttributeError: 'ResNet' object has no attribute 'classifier' or shape mismatch during forward pass.\n\n**Cause:** Accessing the wrong classification head attribute name for the given model architecture family.\n\n**Quick Fix:** Inspect model structure to identify head attribute (model.fc for ResNet, model.classifier for MobileNet/DenseNet/VGG, model.heads for ViT).",
+      "docs_url": "https://pytorch.org/vision/stable/models.html",
+      "language": "python"
+    },
+    {
+      "problem": "Fine-tune Selected Layers",
+      "trigger": "I need to selectively unfreeze specific deep layers while keeping early feature extractors frozen.",
+      "snippet": "import torch\nimport torchvision.models as models\n\nmodel = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)\n\nfor param in model.parameters():\n    param.requires_grad = False\n\nfor param in model.layer4.parameters():\n    param.requires_grad = True\n\nmodel.fc = torch.nn.Linear(model.fc.in_features, 5)\n\ntrainable_params = [p for p in model.parameters() if p.requires_grad]\noptimizer = torch.optim.AdamW(trainable_params, lr=1e-4)",
+      "minimal_notes": "Fine-tuning deeper layers allows the network to adapt high-level abstract features to custom target domains. Ensure the optimizer receives only parameters where requires_grad is True to avoid unnecessary computations.",
+      "common_bug": "**Issue:** ValueError: optimizer got an empty parameter list or updating unintended frozen parameters.\n\n**Cause:** Passing an unfiltered parameter list containing no trainable parameters to the optimizer.\n\n**Quick Fix:** Filter parameters using [p for p in model.parameters() if p.requires_grad] when instantiating the optimizer.",
+      "docs_url": "https://pytorch.org/vision/stable/models.html",
+      "language": "python"
+    },
+    {
+      "problem": "Extract Intermediate Features (torchvision.models.feature_extraction.create_feature_extractor)",
+      "trigger": "I need to capture feature activation maps from internal layer nodes of a vision model.",
+      "snippet": "import torch\nimport torchvision.models as models\nfrom torchvision.models.feature_extraction import create_feature_extractor\n\nmodel = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)\n\nreturn_nodes = {\n    \"layer2\": \"feat_layer2\",\n    \"layer4\": \"feat_layer4\",\n}\n\nfeature_extractor = create_feature_extractor(model, return_nodes=return_nodes)\n\nx = torch.randn(1, 3, 224, 224)\nfeatures = feature_extractor(x)",
+      "minimal_notes": "create_feature_extractor uses PyTorch FX symbolic tracing to construct a new graph module returning requested intermediate activations. Unused computational graph branches downstream are pruned automatically.",
+      "common_bug": "**Issue:** KeyError or FX tracing failure when specifying non-existent node names.\n\n**Cause:** Guessing node names based on module attribute paths instead of tracing the model computation graph.\n\n**Quick Fix:** Use get_graph_node_names(model) to inspect exact node names before passing them to return_nodes.",
+      "docs_url": "https://pytorch.org/vision/stable/feature_extraction.html",
+      "language": "python"
+    },
+    {
+      "problem": "Inspect Available Feature Nodes (get_graph_node_names)",
+      "trigger": "I need to discover the exact graph node strings available for feature extraction in a model.",
+      "snippet": "import torchvision.models as models\nfrom torchvision.models.feature_extraction import get_graph_node_names\n\nmodel = models.resnet18(weights=None)\n\ntrain_nodes, eval_nodes = get_graph_node_names(model)\n\nprint(\"Eval nodes sample:\", eval_nodes[:10])",
+      "minimal_notes": "get_graph_node_names traces the model in both train and eval modes, returning two lists of trace node names. Node names correspond to individual graph execution steps, including functional operations.",
+      "common_bug": "**Issue:** Mismatch in node names or structure between training and evaluation forward passes.\n\n**Cause:** Models containing conditional logic or mode-dependent submodules (like Dropout or BatchNorm) during tracing.\n\n**Quick Fix:** Use node names from eval_nodes when creating feature extractors intended for evaluation or inference pipelines.",
+      "docs_url": "https://pytorch.org/vision/stable/feature_extraction.html",
+      "language": "python"
+    },
+    {
+      "problem": "Build Feature Extraction Pipeline",
+      "trigger": "I need a complete pipeline to preprocess images, pass them through a feature extractor, and collect embeddings.",
+      "snippet": "import torch\nfrom PIL import Image\nimport torchvision.models as models\nfrom torchvision.models.feature_extraction import create_feature_extractor\n\nweights = models.ResNet50_Weights.DEFAULT\nmodel = models.resnet50(weights=weights).eval()\n\nfeature_extractor = create_feature_extractor(\n    model,\n    return_nodes={\"avgpool\": \"embedding\"}\n)\n\npreprocess = weights.transforms()\n\nimg = Image.new(\"RGB\", (224, 224))\ninput_tensor = preprocess(img).unsqueeze(0)\n\nwith torch.no_grad():\n    outputs = feature_extractor(input_tensor)\n    embedding = outputs[\"embedding\"].flatten(start_dim=1)",
+      "minimal_notes": "Combining weights.transforms(), create_feature_extractor, and torch.no_grad() creates an optimized inference pipeline. Flattening the feature map tensor converts spatial activation maps into 1D feature embeddings per image sample.",
+      "common_bug": "**Issue:** Out-of-memory errors or slow performance when extracting features over large image batches.\n\n**Cause:** Forgetting torch.no_grad() or leaving model in train() mode, causing autograd memory retention.\n\n**Quick Fix:** Set model.eval() and wrap feature extraction calls inside with torch.no_grad(): block.",
+      "docs_url": "https://pytorch.org/vision/stable/feature_extraction.html",
+      "language": "python"
+    }
+  ]
+}
