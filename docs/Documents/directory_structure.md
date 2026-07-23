@@ -22,7 +22,6 @@
       - app/decision-guides/[id]/page.tsx
     - app/decision-guides/page.tsx
   - app/error.tsx
-  - app/favicon.ico
   - app/globals.css
   - app/layout.tsx
   - app/not-found.tsx
@@ -435,6 +434,7 @@
       - docs/knowledge/package/numpy/
       - docs/knowledge/package/pandas/
       - docs/knowledge/package/plotly_express/
+      - docs/knowledge/package/pytorch/
       - docs/knowledge/package/scikit-learn/
       - docs/knowledge/package/seaborn/
     - docs/knowledge/pattern/
@@ -643,12 +643,16 @@
 - package.json
 - postcss.config.mjs
 - public/
-  - public/file.svg
-  - public/globe.svg
-  - public/next.svg
+  - public/AENS_LOGO.png
+  - public/AENS_LOGO.svg
+  - public/apple-touch-icon.png
+  - public/favicon.ico
+  - public/icon-192-maskable.png
+  - public/icon-192.png
+  - public/icon-512-maskable.png
+  - public/icon-512.png
+  - public/manifest.json
   - public/search-index.json
-  - public/vercel.svg
-  - public/window.svg
 - README.md
 - scripts/
   - scripts/archive/

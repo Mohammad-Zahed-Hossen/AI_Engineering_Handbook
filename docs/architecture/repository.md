@@ -27,7 +27,6 @@ ai_priority: 4
 ├─ tsconfig.json
 ├─ app/
 │  ├─ error.tsx
-│  ├─ favicon.ico
 │  ├─ globals.css
 │  ├─ layout.tsx
 │  ├─ not-found.tsx
@@ -464,12 +463,16 @@ ai_priority: 4
 │        ├─ related.ts
 │        └─ schema.ts
 ├─ public/
-│  ├─ file.svg
-│  ├─ globe.svg
-│  ├─ next.svg
-│  ├─ search-index.json
-│  ├─ vercel.svg
-│  └─ window.svg
+│  ├─ AENS_LOGO.png
+│  ├─ AENS_LOGO.svg
+│  ├─ apple-touch-icon.png
+│  ├─ favicon.ico
+│  ├─ icon-192-maskable.png
+│  ├─ icon-192.png
+│  ├─ icon-512-maskable.png
+│  ├─ icon-512.png
+│  ├─ manifest.json
+│  └─ search-index.json
 ├─ scripts/
 │  ├─ archive/
 │  │  └─ migrate-to-v2.ts

@@ -6,7 +6,7 @@ export default function SearchPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground mb-2">Search Results</h1>
         <p className="text-sm text-muted-foreground">
-          Find packages, models, workflows, cheatsheets, and more across the AI Engineering Handbook.
+          Find packages, models, workflows, cheatsheets, and more across AENS.
         </p>
       </div>
       

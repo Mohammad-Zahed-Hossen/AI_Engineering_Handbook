@@ -1,0 +1,1614 @@
+{
+  "id": "pytorch",
+  "module_name": "06_data",
+  "module_title": "Data Loading & Input Pipelines",
+  "slug": "06_data",
+  "tasks": [
+    {
+      "task": "Create Map-Style Dataset (torch.utils.data.Dataset)",
+      "problem_solved": "Custom datasets require a structured interface to map integer keys to individual data items loaded from memory or disk on demand.",
+      "mental_trigger": "I need to wrap my custom disk-based dataset into an indexed PyTorch class that allows random access by integer index.",
+      "syntax": "class CustomDataset(torch.utils.data.Dataset):  \n    def __init__(self, *args, **kwargs):  \n        pass\n\n    def __len__(self) -> int:  \n        pass\n\n    def __getitem__(self, idx: int) -> tuple[torch.Tensor, ...]:  \n        pass",
+      "important_parameters": [
+        "idx: The integer index corresponding to the requested sample."
+      ],
+      "important_params": [
+        "idx: The integer index corresponding to the requested sample."
+      ],
+      "return_value": "An instance of torch.utils.data.Dataset supporting indexed lookup (dataset[idx]) and length determination (len(dataset)).",
+      "example": "import torch  \nfrom torch.utils.data import Dataset\n\nclass SyntheticImageDataset(Dataset):  \n    def __init__(self, num_samples: int = 100, num_features: int = 16):  \n        self.data = torch.randn(num_samples, num_features)  \n        self.labels = torch.randint(0, 2, (num_samples,))\n\n    def __len__(self) -> int:  \n        return len(self.data)\n\n    def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:  \n        return self.data[idx], self.labels[idx]\n\ndataset = SyntheticImageDataset(num_samples=50, num_features=8)  \nx, y = dataset[0]  \nprint(f\"Dataset length: {len(dataset)}\")  \nprint(f\"Sample shape: {x.shape}, Label: {y}\")",
+      "use_when": "Your dataset fits entirely in memory, or can be indexed directly on disk with efficient random access lookup by index.",
+      "avoid_when": "Your data source is a continuous stream, or is too large to index with a deterministic length, or comes from a streaming remote socket.",
+      "gotchas": [
+        "Forgetting to implement __len__() prevents len(dataset) and DataLoader random sampling from working.",
+        "Heavy I/O inside __getitem__() without caching slows down training during every epoch.",
+        "Returning non-tensor types or mismatched structures makes custom batch collation difficult."
+      ],
+      "performance_notes": "Keep __getitem__() fast and lightweight. Do not perform expensive global data preprocessing inside __getitem__(); perform precomputation during dataset initialization whenever possible.",
+      "related_apis": [
+        "torch.utils.data.DataLoader",
+        "torch.utils.data.TensorDataset",
+        "torch.utils.data.IterableDataset"
+      ],
+      "framework_migration_notes": "In TensorFlow, this is similar to tf.data.Dataset.from_tensor_slices or extending a generator, but PyTorch map-style datasets explicitly rely on integer indexing.",
+      "tensorflow_equivalent": "Dataset → tf.data.Dataset",
+      "framework_equivalent": "Dataset → tf.data.Dataset",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Map Dataset",
+          "Indexable Dataset",
+          "PyTorch Custom Dataset"
+        ],
+        "search_terms": [
+          "how to write torch dataset",
+          "custom dataset len getitem",
+          "map style dataset pytorch"
+        ],
+        "keywords": [
+          "dataset",
+          "map-style",
+          "indexing",
+          "getitem",
+          "len"
+        ],
+        "confused_with": [
+          "IterableDataset vs Dataset",
+          "TensorDataset vs Dataset"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "yolo"
+      ],
+      "related_patterns": [
+        "device-placement",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "dataloader"
+      ],
+      "related_cheatsheet": [
+        "dataloader"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.Dataset",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.Dataset"
+    },
+    {
+      "task": "Create Iterable Dataset (torch.utils.data.IterableDataset)",
+      "problem_solved": "Streaming data sequentially from remote storage or databases where random indexing is impossible or prohibitively expensive.",
+      "mental_trigger": "I need to stream huge files, web archives, or continuous database reads where indexing samples upfront is impossible.",
+      "syntax": "class CustomIterableDataset(torch.utils.data.IterableDataset):  \n    def __init__(self, *args, **kwargs):  \n        pass\n\n    def __iter__(self) -> typing.Iterator[tuple[torch.Tensor, ...]]:  \n        pass",
+      "important_parameters": [
+        "None directly on the base class signature; __iter__ yields data items one by one."
+      ],
+      "important_params": [
+        "None directly on the base class signature; __iter__ yields data items one by one."
+      ],
+      "return_value": "An instance of torch.utils.data.IterableDataset that can be iterated over using a standard Python for loop or passed directly to a DataLoader.",
+      "example": "import math  \nimport torch  \nfrom torch.utils.data import IterableDataset, DataLoader, get_worker_info\n\nclass StreamingNumbersDataset(IterableDataset):  \n    def __init__(self, start: int = 0, end: int = 100):  \n        self.start = start  \n        self.end = end\n\n    def __iter__(self):  \n        worker_info = get_worker_info()  \n        if worker_info is None:  \n            iter_start = self.start  \n            iter_end = self.end  \n        else:  \n            per_worker = int(math.ceil((self.end - self.start) / float(worker_info.num_workers)))  \n            worker_id = worker_info.id  \n            iter_start = self.start + worker_id * per_worker  \n            iter_end = min(iter_start + per_worker, self.end)\n\n        for i in range(iter_start, iter_end):  \n            yield torch.tensor([float(i)], dtype=torch.float32)\n\ndataset = StreamingNumbersDataset(start=0, end=20)  \nloader = DataLoader(dataset, batch_size=4, num_workers=2)  \nfor batch in loader:  \n    print(\"Batch:\", batch.squeeze(-1).tolist())",
+      "use_when": "Working with large-scale streaming pipelines, web scale archives like WebDataset, or database cursors where index lookup is impractical.",
+      "avoid_when": "The dataset is small enough for random access indexing, or when you require global random shuffling across epochs.",
+      "gotchas": [
+        "Multi-process loading without manual worker splitting causes every worker process to yield duplicate samples.",
+        "Using shuffle=True in a DataLoader with an IterableDataset raises a ValueError.",
+        "len() is not implemented by default and calling it causes a TypeError."
+      ],
+      "performance_notes": "Iterable datasets eliminate memory overhead required to store index maps. Ensure worker splitting logic in __iter__() evenly distributes data stream ranges.",
+      "related_apis": [
+        "torch.utils.data.Dataset",
+        "torch.utils.data.ChainDataset",
+        "torch.utils.data.get_worker_info"
+      ],
+      "framework_migration_notes": "Maps directly to tf.data.Dataset.from_generator or streamed dataset pipelines in TensorFlow.",
+      "tensorflow_equivalent": "IterableDataset → tf.data.Dataset.from_generator",
+      "framework_equivalent": "IterableDataset → tf.data.Dataset.from_generator",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Streaming Dataset",
+          "Stream Dataset",
+          "Iterable Data Source"
+        ],
+        "search_terms": [
+          "iterable dataset multi worker duplication",
+          "pytorch streaming dataset",
+          "stream webdataset"
+        ],
+        "keywords": [
+          "iterable",
+          "stream",
+          "iterator",
+          "generator",
+          "webdataset"
+        ],
+        "confused_with": [
+          "Dataset vs IterableDataset",
+          "ChainDataset vs ConcatDataset"
+        ]
+      },
+      "related_models": [
+        "llama",
+        "gpt",
+        "deepseek",
+        "qwen"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "dataloader"
+      ],
+      "related_cheatsheet": [
+        "dataloader"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.IterableDataset",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.IterableDataset"
+    },
+    {
+      "task": "Build TensorDataset (torch.utils.data.TensorDataset)",
+      "problem_solved": "Wrapping existing in-memory tensors into a standard dataset without writing a custom dataset class.",
+      "mental_trigger": "I already have features and targets loaded as PyTorch tensors in memory, and I need to pass them quickly to a DataLoader.",
+      "syntax": "torch.utils.data.TensorDataset(*tensors: torch.Tensor)",
+      "important_parameters": [
+        "*tensors: Tensors that have the same size along the first dimension (batch/length dimension)."
+      ],
+      "important_params": [
+        "*tensors: Tensors that have the same size along the first dimension (batch/length dimension)."
+      ],
+      "return_value": "A map-style TensorDataset where indexing dataset[i] returns a tuple containing the i-th slice of each tensor.",
+      "example": "import torch  \nfrom torch.utils.data import TensorDataset, DataLoader\n\nfeatures = torch.randn(100, 10)  \nlabels = torch.randint(0, 2, (100,))  \nweights = torch.rand(100)\n\ndataset = TensorDataset(features, labels, weights)  \nloader = DataLoader(dataset, batch_size=16, shuffle=True)\n\nfor x_batch, y_batch, w_batch in loader:  \n    print(f\"Batch shapes: x={x_batch.shape}, y={y_batch.shape}, w={w_batch.shape}\")  \n    break",
+      "use_when": "Rapid prototyping, unit testing, or working with datasets small enough to reside entirely in CPU or GPU RAM as tensors.",
+      "avoid_when": "Datasets are too large to fit in RAM, or images must be decoded dynamically from disk on every iteration.",
+      "gotchas": [
+        "Input tensors must match exact length along dimension 0, or TensorDataset initialization raises an error.",
+        "Passing GPU tensors to TensorDataset while using num_workers \\> 0 causes multi-processing context crashes.",
+        "Memory usage remains high because all dataset tensors are retained in RAM simultaneously."
+      ],
+      "performance_notes": "Extremely fast slice indexing with zero I/O overhead. Keep input tensors in pinned CPU memory if aiming for high-speed transfer to GPU.",
+      "related_apis": [
+        "torch.utils.data.Dataset",
+        "torch.utils.data.DataLoader"
+      ],
+      "framework_migration_notes": "Directly equivalent to tf.data.Dataset.from_tensor_slices((features, labels)).",
+      "tensorflow_equivalent": "TensorDataset → tf.data.Dataset.from_tensor_slices",
+      "framework_equivalent": "TensorDataset → tf.data.Dataset.from_tensor_slices",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "In-memory Tensor Dataset",
+          "Simple Tensor Dataset"
+        ],
+        "search_terms": [
+          "combine tensors into dataset pytorch",
+          "tensordataset example",
+          "quick pytorch dataset from tensor"
+        ],
+        "keywords": [
+          "tensordataset",
+          "tensor",
+          "in-memory",
+          "simple dataset"
+        ],
+        "confused_with": [
+          "Dataset vs TensorDataset",
+          "Subset vs TensorDataset"
+        ]
+      },
+      "related_models": [
+        "logistic-regression",
+        "random-forest",
+        "xgboost",
+        "resnet"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "dataloader"
+      ],
+      "related_cheatsheet": [
+        "dataloader"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.TensorDataset",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.TensorDataset"
+    },
+    {
+      "task": "Combine Multiple Datasets (torch.utils.data.ConcatDataset / torch.utils.data.ChainDataset)",
+      "problem_solved": "Merging distinct map-style or iterable dataset objects sequentially into a single unified dataset pipeline.",
+      "mental_trigger": "I have multiple dataset splits or separate data directories that I want to concatenate and treat as one big dataset.",
+      "syntax": "# For map-style datasets  \ntorch.utils.data.ConcatDataset(datasets: typing.Iterable[torch.utils.data.Dataset])\n\n# For iterable datasets  \ntorch.utils.data.ChainDataset(datasets: typing.Iterable[torch.utils.data.IterableDataset])",
+      "important_parameters": [
+        "datasets: A list or iterable containing dataset objects to concatenate sequentially."
+      ],
+      "important_params": [
+        "datasets: A list or iterable containing dataset objects to concatenate sequentially."
+      ],
+      "return_value": "A composite dataset (ConcatDataset or ChainDataset) that exposes the aggregated contents of all supplied child datasets.",
+      "example": "import torch  \nfrom torch.utils.data import TensorDataset, ConcatDataset, ChainDataset, IterableDataset\n\n# 1. Map-style concatenation  \nds1 = TensorDataset(torch.randn(50, 4), torch.zeros(50))  \nds2 = TensorDataset(torch.randn(30, 4), torch.ones(30))\n\nconcat_ds = ConcatDataset([ds1, ds2])  \nprint(f\"ConcatDataset length: {len(concat_ds)}\")  # Output: 80\n\n# 2. Iterable chaining  \nclass DummyIterable(IterableDataset):  \n    def __init__(self, val: int):  \n        self.val = val  \n    def __iter__(self):  \n        yield torch.tensor([self.val])\n\nchain_ds = ChainDataset([DummyIterable(1), DummyIterable(2)])  \nprint(\"ChainDataset samples:\", [x.item() for x in chain_ds])",
+      "use_when": "Combining multiple data sources, combining domain-specific datasets, or joining distinct training splits into a single master dataset.",
+      "avoid_when": "Mixing map-style datasets with iterable datasets in the same wrapper, or when weighted/interleaved sampling between datasets is required.",
+      "gotchas": [
+        "Combining datasets whose __getitem__ methods return inconsistent tuple shapes or dict keys breaks batch collation.",
+        "Passing map-style datasets to ChainDataset ignores indexing and causes errors during iteration.",
+        "ConcatDataset cumulative length recalculation occurs at initialization; modifying underlying dataset sizes dynamically leads to out-of-bounds errors."
+      ],
+      "performance_notes": "ConcatDataset uses binary search over precalculated cumulative sizes to route index lookups efficiently in O(log N) time where N is the number of concatenated datasets.",
+      "related_apis": [
+        "torch.utils.data.Subset",
+        "torch.utils.data.Dataset",
+        "torch.utils.data.IterableDataset"
+      ],
+      "framework_migration_notes": "Matches tf.data.Dataset.concatenate in TensorFlow.",
+      "tensorflow_equivalent": "ConcatDataset / ChainDataset → tf.data.Dataset.concatenate",
+      "framework_equivalent": "ConcatDataset / ChainDataset → tf.data.Dataset.concatenate",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Merge Datasets",
+          "Combine Datasets",
+          "Concatenate Datasets"
+        ],
+        "search_terms": [
+          "combine multiple datasets pytorch",
+          "concatdataset usage",
+          "chain dataset iterable"
+        ],
+        "keywords": [
+          "concatdataset",
+          "chaindataset",
+          "combine",
+          "merge",
+          "dataset"
+        ],
+        "confused_with": [
+          "ConcatDataset vs ChainDataset",
+          "ConcatDataset vs Subset"
+        ]
+      },
+      "related_models": [
+        "bert",
+        "roberta",
+        "vit",
+        "llama"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "dataloader"
+      ],
+      "related_cheatsheet": [
+        "dataloader"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.ConcatDataset",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.ConcatDataset"
+    },
+    {
+      "task": "Create Dataset Subsets (torch.utils.data.Subset / torch.utils.data.random_split)",
+      "problem_solved": "Splitting a master dataset into distinct training, validation, and testing partitions without duplicating data on disk or in memory.",
+      "mental_trigger": "I need to split my main dataset randomly into 80% train and 20% validation sets, or extract specific sample indices.",
+      "syntax": "# Manual subset creation  \ntorch.utils.data.Subset(dataset: torch.utils.data.Dataset, indices: typing.Sequence[int])\n\n# Random dataset splitting  \ntorch.utils.data.random_split(  \n    dataset: torch.utils.data.Dataset,  \n    lengths: typing.Sequence[int | float],  \n    generator: torch.Generator | None = None  \n)",
+      "important_parameters": [
+        "dataset: The source map-style dataset to split or index into.",
+        "lengths: Sequence of lengths or fractional proportions (e.g., [0.8, 0.2]) summing to 1.0 or to total length.",
+        "generator: Optional torch.Generator for reproducible random splits.",
+        "indices: Explicit sequence of integer indices to include in the subset."
+      ],
+      "important_params": [
+        "dataset: The source map-style dataset to split or index into.",
+        "lengths: Sequence of lengths or fractional proportions (e.g., [0.8, 0.2]) summing to 1.0 or to total length.",
+        "generator: Optional torch.Generator for reproducible random splits.",
+        "indices: Explicit sequence of integer indices to include in the subset."
+      ],
+      "return_value": "A Subset instance or list of Subset instances referencing selected indices of the target dataset.",
+      "example": "import torch  \nfrom torch.utils.data import TensorDataset, Subset, random_split\n\nfull_dataset = TensorDataset(torch.arange(100))\n\n# Method 1: Explicit Subset by indices  \neven_subset = Subset(full_dataset, indices=[i for i in range(100) if i % 2 == 0])  \nprint(f\"Even subset size: {len(even_subset)}\")\n\n# Method 2: Random split with fixed seed  \ngenerator = torch.Generator().manual_seed(42)  \ntrain_set, val_set = random_split(full_dataset, [0.8, 0.2], generator=generator)  \nprint(f\"Train size: {len(train_set)}, Val size: {len(val_set)}\")",
+      "use_when": "Partitioning raw datasets into train, validation, and test subsets with controlled randomness and full reproducibility.",
+      "avoid_when": "Splitting large streaming datasets, as random_split requires map-style datasets supporting index lookups and length calculation.",
+      "gotchas": [
+        "Passing floating-point fractions to random_split whose sum is not equal to 1.0 raises a ValueError.",
+        "Re-instantiating random_split across runs without setting a seed generator creates inconsistent data splits across experiments.",
+        "Data transformations attached directly to the base dataset apply identically across all subsets unless handled explicitly."
+      ],
+      "performance_notes": "Subset does not copy underlying tensor memory; it maintains lightweight index arrays pointing to original entries.",
+      "related_apis": [
+        "torch.utils.data.Dataset",
+        "torch.utils.data.ConcatDataset"
+      ],
+      "framework_migration_notes": "Roughly equivalent to tf.data.Dataset.take and tf.data.Dataset.skip combined, or scikit-learn's train_test_split.",
+      "tensorflow_equivalent": "random_split → tf.data.Dataset.take and skip (or scikit-learn train_test_split)",
+      "framework_equivalent": "random_split → tf.data.Dataset.take and skip (or scikit-learn train_test_split)",
+      "version_compatibility": "PyTorch 1.13+ added support for passing fractional lengths (e.g. [0.8, 0.2]) directly into random_split.",
+      "search_metadata": {
+        "aliases": [
+          "Data Splitter",
+          "Train Val Splitter",
+          "Dataset Subsetting"
+        ],
+        "search_terms": [
+          "train val split pytorch dataset",
+          "random_split seed pytorch",
+          "pytorch subset example"
+        ],
+        "keywords": [
+          "subset",
+          "random_split",
+          "train-val-split",
+          "partition"
+        ],
+        "confused_with": [
+          "random_split vs RandomSampler",
+          "Subset vs TensorDataset"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "yolo"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "dataloader"
+      ],
+      "related_cheatsheet": [
+        "dataloader"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.random_split",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.random_split"
+    },
+    {
+      "task": "Create DataLoader (torch.utils.data.DataLoader)",
+      "problem_solved": "Iterating over a dataset with configurable batching, multi-worker process parallelization, automatic memory pinning, and sample shuffling.",
+      "mental_trigger": "I have a dataset object and need a high-performance iterator that provides batched tensors ready for model training.",
+      "syntax": "torch.utils.data.DataLoader(  \n    dataset: torch.utils.data.Dataset,  \n    batch_size: int | None = 1,  \n    shuffle: bool | None = False,  \n    sampler: torch.utils.data.Sampler | None = None,  \n    batch_sampler: torch.utils.data.Sampler | None = None,  \n    num_workers: int = 0,  \n    collate_fn: typing.Callable | None = None,  \n    pin_memory: bool = False,  \n    drop_last: bool = False,  \n    timeout: float = 0,  \n    worker_init_fn: typing.Callable | None = None,  \n    multiprocessing_context: str | None = None,  \n    generator: torch.Generator | None = None,  \n    *,  \n    prefetch_factor: int | None = None,  \n    persistent_workers: bool = False,  \n    pin_memory_device: str = \"\"  \n)",
+      "important_parameters": [
+        "dataset: Target dataset instance to load data from.",
+        "batch_size: Number of samples per batch to load (default: 1).",
+        "shuffle: Set to True to reshuffle data at every epoch (default: False).",
+        "num_workers: How many subprocesses to use for data loading (default: 0 for main process).",
+        "pin_memory: If True, copies tensors to page-locked memory for fast host-to-GPU transfers."
+      ],
+      "important_params": [
+        "dataset: Target dataset instance to load data from.",
+        "batch_size: Number of samples per batch to load (default: 1).",
+        "shuffle: Set to True to reshuffle data at every epoch (default: False).",
+        "num_workers: How many subprocesses to use for data loading (default: 0 for main process).",
+        "pin_memory: If True, copies tensors to page-locked memory for fast host-to-GPU transfers."
+      ],
+      "return_value": "A DataLoader iterator that yields batched tensors according to specified configurations.",
+      "example": "import torch  \nfrom torch.utils.data import TensorDataset, DataLoader\n\nfeatures = torch.randn(100, 8)  \nlabels = torch.randint(0, 2, (100,))  \ndataset = TensorDataset(features, labels)\n\nloader = DataLoader(  \n    dataset=dataset,  \n    batch_size=16,  \n    shuffle=True,  \n    num_workers=0,  \n    drop_last=False  \n)\n\nfor batch_idx, (x_batch, y_batch) in enumerate(loader):  \n    print(f\"Batch {batch_idx}: X={x_batch.shape}, Y={y_batch.shape}\")",
+      "use_when": "Standard data loading pipeline creation for deep learning model training, validation, or evaluation loops.",
+      "avoid_when": "You need low-level custom threading outside standard multiprocessing or are executing tiny single-tensor micro-benchmarks.",
+      "gotchas": [
+        "Setting shuffle=True while passing a custom sampler or batch_sampler raises a ValueError.",
+        "Using num_workers \\> 0 on Windows without protecting code execution with if __name__ == '__main__': leads to process spawning crashes.",
+        "Excessive num_workers value leads to high CPU memory consumption and multiprocessing overhead thrashing."
+      ],
+      "performance_notes": "DataLoader decouples data fetching from model training execution. Tuning num_workers, pin_memory, and prefetch_factor maximizes GPU saturation.",
+      "related_apis": [
+        "torch.utils.data.Dataset",
+        "torch.utils.data.Sampler"
+      ],
+      "framework_migration_notes": "Replaces tf.data.Dataset batching, prefetching, and mapping execution steps in TensorFlow workflows.",
+      "tensorflow_equivalent": "DataLoader → tf.data.Dataset (batch, prefetch, and num_parallel_calls)",
+      "framework_equivalent": "DataLoader → tf.data.Dataset (batch, prefetch, and num_parallel_calls)",
+      "version_compatibility": "pin_memory_device parameter added in PyTorch 1.12 to enable pinning memory directly to targeted CUDA devices.",
+      "search_metadata": {
+        "aliases": [
+          "Data Loader",
+          "PyTorch DataLoader",
+          "Batch Iterator"
+        ],
+        "search_terms": [
+          "pytorch dataloader parameters",
+          "dataloader shuffle num_workers",
+          "create dataloader pytorch"
+        ],
+        "keywords": [
+          "dataloader",
+          "batch_size",
+          "shuffle",
+          "num_workers",
+          "pin_memory"
+        ],
+        "confused_with": [
+          "DataLoader vs Dataset",
+          "Sampler vs DataLoader"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "yolo",
+        "llama"
+      ],
+      "related_patterns": [
+        "device-placement",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "dataloader"
+      ],
+      "related_cheatsheet": [
+        "dataloader"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.DataLoader",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.DataLoader"
+    },
+    {
+      "task": "Configure Batch Loading (batch_size, drop_last)",
+      "problem_solved": "Managing batch aggregation dimensions and handling uneven partial trailing batches at epoch boundaries.",
+      "mental_trigger": "I want to specify batch sizes and discard small partial batches at the end of an epoch to prevent batch normalization instability or tensor shape mismatches.",
+      "syntax": "torch.utils.data.DataLoader(  \n    dataset,  \n    batch_size=32,  \n    drop_last=True,  \n    ...  \n)",
+      "important_parameters": [
+        "batch_size: Integer number of samples per batch (default: 1). Set to None to disable automatic batching.",
+        "drop_last: Set to True to drop the last incomplete batch if dataset size is not divisible by batch_size."
+      ],
+      "important_params": [
+        "batch_size: Integer number of samples per batch (default: 1). Set to None to disable automatic batching.",
+        "drop_last: Set to True to drop the last incomplete batch if dataset size is not divisible by batch_size."
+      ],
+      "return_value": "A DataLoader yielding tensor batches of uniform dimensions across all iterations when drop_last=True.",
+      "example": "import torch  \nfrom torch.utils.data import TensorDataset, DataLoader\n\ndataset = TensorDataset(torch.arange(10))  # 10 items total\n\n# Case 1: drop_last=False (Default)  \nloader_keep = DataLoader(dataset, batch_size=4, drop_last=False)  \nprint(\"Keep last batch sizes:\", [b[0].shape[0] for b in loader_keep])  # Output: [4, 4, 2]\n\n# Case 2: drop_last=True  \nloader_drop = DataLoader(dataset, batch_size=4, drop_last=True)  \nprint(\"Drop last batch sizes:\", [b[0].shape[0] for b in loader_drop])  # Output: [4, 4]",
+      "use_when": "Models require fixed static tensor shapes, or when batch statistics calculations (like in BatchNorm) fail on single-sample remaining batches.",
+      "avoid_when": "Evaluating test metrics where every single dataset sample must be predicted and accounted for precisely.",
+      "gotchas": [
+        "Discarding trailing samples with drop_last=True during testing or inference distorts evaluation coverage metrics.",
+        "Setting batch_size=None disables automatic collation, forcing individual samples to be returned directly.",
+        "Combining drop_last=True with a dataset smaller than batch_size yields zero batches per epoch."
+      ],
+      "performance_notes": "Fixed static batch sizes maintain memory footprint predictability and prevent unnecessary CUDA kernel recompilations.",
+      "related_apis": [
+        "torch.utils.data.DataLoader",
+        "torch.utils.data.BatchSampler"
+      ],
+      "framework_migration_notes": "Maps to tf.data.Dataset.batch(batch_size, drop_remainder=True) in TensorFlow.",
+      "tensorflow_equivalent": "drop_last=True → drop_remainder=True in tf.data.Dataset.batch",
+      "framework_equivalent": "drop_last=True → drop_remainder=True in tf.data.Dataset.batch",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Batch Size Configuration",
+          "Drop Remainder",
+          "Drop Partial Batch"
+        ],
+        "search_terms": [
+          "drop_last pytorch dataloader",
+          "handle uneven batch sizes pytorch",
+          "fixed batch size loader"
+        ],
+        "keywords": [
+          "batch_size",
+          "drop_last",
+          "drop_remainder",
+          "partial batch"
+        ],
+        "confused_with": [
+          "batch_size vs BatchSampler",
+          "drop_last vs Sampler"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "yolo",
+        "bert"
+      ],
+      "related_patterns": [
+        "device-placement",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "dataloader"
+      ],
+      "related_cheatsheet": [
+        "dataloader"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.DataLoader",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.DataLoader"
+    },
+    {
+      "task": "Shuffle Dataset Samples (shuffle)",
+      "problem_solved": "Randomizing sample presentation order across epochs to prevent model memorization and break temporal order bias.",
+      "mental_trigger": "I need to randomize my training samples every epoch so the neural network does not learn order-dependent biases.",
+      "syntax": "torch.utils.data.DataLoader(  \n    dataset,  \n    shuffle=True,  \n    generator=torch.Generator().manual_seed(42),  \n    ...  \n)",
+      "important_parameters": [
+        "shuffle: Set True to enable index shuffling before every epoch start (default: False).",
+        "generator: torch.Generator object used to control index permutations reproducibly."
+      ],
+      "important_params": [
+        "shuffle: Set True to enable index shuffling before every epoch start (default: False).",
+        "generator: torch.Generator object used to control index permutations reproducibly."
+      ],
+      "return_value": "A DataLoader instance that yields data in randomized permutations each pass through the dataset.",
+      "example": "import torch  \nfrom torch.utils.data import TensorDataset, DataLoader\n\ndataset = TensorDataset(torch.arange(10))\n\ngen = torch.Generator().manual_seed(123)  \nloader = DataLoader(dataset, batch_size=5, shuffle=True, generator=gen)\n\nprint(\"Epoch 1:\")  \nfor batch in loader:  \n    print(batch[0].tolist())\n\nprint(\"Epoch 2:\")  \nfor batch in loader:  \n    print(batch[0].tolist())",
+      "use_when": "Training machine learning models on ordered datasets or multi-class vision/NLP training splits.",
+      "avoid_when": "Iterating over evaluation/test sets, time-series data where temporal order must be strictly preserved, or when using an IterableDataset.",
+      "gotchas": [
+        "Passing shuffle=True alongside a custom sampler parameter causes a ValueError runtime failure.",
+        "Attempting shuffle=True on an IterableDataset raises an explicit invalid configuration error.",
+        "Not sharing a reproducible generator makes multi-run debugging and regression tracking difficult."
+      ],
+      "performance_notes": "shuffle=True internally constructs a RandomSampler that generates random integer permutations per epoch with minimal CPU overhead.",
+      "related_apis": [
+        "torch.utils.data.RandomSampler",
+        "torch.Generator"
+      ],
+      "framework_migration_notes": "Equivalent to calling tf.data.Dataset.shuffle(buffer_size) in TensorFlow pipelines.",
+      "tensorflow_equivalent": "shuffle=True → tf.data.Dataset.shuffle(buffer_size)",
+      "framework_equivalent": "shuffle=True → tf.data.Dataset.shuffle(buffer_size)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Dataset Shuffler",
+          "Permute Samples",
+          "Randomize Samples"
+        ],
+        "search_terms": [
+          "shuffle true pytorch dataloader",
+          "reproducible shuffling pytorch",
+          "dataloader set seed shuffle"
+        ],
+        "keywords": [
+          "shuffle",
+          "generator",
+          "random",
+          "permutation",
+          "reproducibility"
+        ],
+        "confused_with": [
+          "shuffle=True vs RandomSampler",
+          "shuffle vs WeightedRandomSampler"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "yolo"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "dataloader"
+      ],
+      "related_cheatsheet": [
+        "dataloader"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.DataLoader",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.DataLoader"
+    },
+    {
+      "task": "Customize Batch Assembly (collate_fn)",
+      "problem_solved": "Customizing how individual raw dataset samples are aggregated into structured mini-batch tensors.",
+      "mental_trigger": "My dataset yields variable-length sequences, dictionaries, or custom objects, and I need custom logic to group them into a batch.",
+      "syntax": "def custom_collate_fn(batch: list[typing.Any]) -> typing.Any:  \n    # batch is a list of items returned by dataset[i]  \n    pass\n\nDataLoader(dataset, collate_fn=custom_collate_fn)",
+      "important_parameters": [
+        "batch: A Python list containing individual sample items produced by calling __getitem__ on the dataset."
+      ],
+      "important_params": [
+        "batch: A Python list containing individual sample items produced by calling __getitem__ on the dataset."
+      ],
+      "return_value": "Custom batched structures (tensors, dictionaries, customdataclasses) constructed according to user-defined logic.",
+      "example": "import torch  \nfrom torch.utils.data import Dataset, DataLoader\n\nclass TextDataset(Dataset):  \n    def __getitem__(self, idx):  \n        # Samples have varying lengths  \n        lengths = [3, 5, 2, 6]  \n        return torch.ones(lengths[idx % len(lengths)], dtype=torch.long) * (idx + 1)  \n      \n    def __len__(self):  \n        return 8\n\ndef pad_collate_fn(batch):  \n    # Find max length in this batch  \n    max_len = max(len(item) for item in batch)  \n    padded_batch = []  \n    masks = []  \n      \n    for item in batch:  \n        pad_size = max_len - len(item)  \n        padded = torch.cat([item, torch.zeros(pad_size, dtype=torch.long)])  \n        mask = torch.cat([torch.ones(len(item)), torch.zeros(pad_size)])  \n        padded_batch.append(padded)  \n        masks.append(mask)  \n          \n    return torch.stack(padded_batch), torch.stack(masks)\n\nloader = DataLoader(TextDataset(), batch_size=3, collate_fn=pad_collate_fn)  \nfor x, mask in loader:  \n    print(\"Padded Batch:\\n\", x)  \n    print(\"Mask:\\n\", mask)  \n    break",
+      "use_when": "Dealing with variable-length sequences, multimodal outputs, or custom dictionary data keys requiring padding or stacking.",
+      "avoid_when": "Dataset samples are uniformly sized fixed-shape tensors, where default PyTorch tensor stacking works without customization.",
+      "gotchas": [
+        "Performing complex, non-vectorized Python loop transformations inside collate_fn creates data loading bottlenecks.",
+        "Forgetting to account for edge cases (such as single-item batches or empty elements) leads to silent training crashes.",
+        "Returning non-tensor types prevents automatic pin_memory CUDA transfer acceleration from working."
+      ],
+      "performance_notes": "collate_fn runs on CPU worker processes. Vectorize array operations with numpy or torch operations to avoid blocking GPU compute streams.",
+      "related_apis": [
+        "torch.utils.data.default_collate",
+        "torch.nn.utils.rnn.pad_sequence"
+      ],
+      "framework_migration_notes": "Replaces custom mapping functions passed to tf.data.Dataset.map or padded_batch in TensorFlow pipelines.",
+      "tensorflow_equivalent": "collate_fn → tf.data.Dataset.padded_batch or custom map function",
+      "framework_equivalent": "collate_fn → tf.data.Dataset.padded_batch or custom map function",
+      "version_compatibility": "PyTorch standard library provides torch.utils.data.default_collate to extend default behavior cleanly.",
+      "search_metadata": {
+        "aliases": [
+          "Custom Collation Function",
+          "Batch Assembly Function",
+          "Custom Batching"
+        ],
+        "search_terms": [
+          "custom collate_fn pytorch example",
+          "pad variable length batch collate_fn",
+          "pytorch dataloader collate"
+        ],
+        "keywords": [
+          "collate_fn",
+          "padding",
+          "batching",
+          "default_collate",
+          "variable-length"
+        ],
+        "confused_with": [
+          "collate_fn vs Dataset.__getitem__",
+          "default_collate vs pad_sequence"
+        ]
+      },
+      "related_models": [
+        "bert",
+        "roberta",
+        "t5",
+        "gpt",
+        "llama"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "dataloader"
+      ],
+      "related_cheatsheet": [
+        "dataloader"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.DataLoader",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.DataLoader"
+    },
+    {
+      "task": "Sample Dataset with Custom Samplers (Sampler / SequentialSampler / RandomSampler)",
+      "problem_solved": "Customizing index traversal strategies over map-style datasets during DataLoader iteration.",
+      "mental_trigger": "I want to control the exact sequence or logic used to pull sample indices from my dataset.",
+      "syntax": "# Base Sampler Class  \nclass CustomSampler(torch.utils.data.Sampler[int]):  \n    def __iter__(self) -> typing.Iterator[int]:  \n        pass  \n    def __len__(self) -> int:  \n        pass\n\n# Standard Built-ins  \ntorch.utils.data.SequentialSampler(data_source)  \ntorch.utils.data.RandomSampler(data_source, replacement=False, num_samples=None)",
+      "important_parameters": [
+        "data_source: Dataset from which samples are drawn.",
+        "replacement: If True, samples are drawn with replacement (default: False).",
+        "num_samples: Total number of samples to draw (defaults to len(data_source))."
+      ],
+      "important_params": [
+        "data_source: Dataset from which samples are drawn.",
+        "replacement: If True, samples are drawn with replacement (default: False).",
+        "num_samples: Total number of samples to draw (defaults to len(data_source))."
+      ],
+      "return_value": "An iterable Sampler instance yielding integer index references into the underlying dataset.",
+      "example": "import torch  \nfrom torch.utils.data import Dataset, DataLoader, Sampler, RandomSampler\n\nclass ReverseSampler(Sampler):  \n    def __init__(self, data_source):  \n        self.data_source = data_source\n\n    def __iter__(self):  \n        return iter(range(len(self.data_source) - 1, -1, -1))\n\n    def __len__(self):  \n        return len(self.data_source)\n\nclass SimpleDataset(Dataset):  \n    def __len__(self):  \n        return 6  \n    def __getitem__(self, idx):  \n        return idx\n\ndataset = SimpleDataset()  \nloader = DataLoader(dataset, batch_size=2, sampler=ReverseSampler(dataset))\n\nprint(\"Reverse Sampler output:\")  \nfor batch in loader:  \n    print(batch.tolist())",
+      "use_when": "Order of element access must be explicitly constrained (e.g. curriculum learning, sequential time series, or index filtering).",
+      "avoid_when": "Default dataset sequential iteration or standard shuffle=True randomized behavior is sufficient.",
+      "gotchas": [
+        "Passing both shuffle=True and a custom sampler to DataLoader raises an explicit configuration ValueError.",
+        "Forgetting to implement __len__() on a custom Sampler prevents proper DataLoader batch iteration calculation.",
+        "Implementing infinite length samplers without num_samples caps can cause endless training loop hangs."
+      ],
+      "performance_notes": "Custom samplers execute on the main process to dictate index sequences. Avoid heavy blocking computations inside __iter__.",
+      "related_apis": [
+        "torch.utils.data.BatchSampler",
+        "torch.utils.data.WeightedRandomSampler"
+      ],
+      "framework_migration_notes": "Replaces custom index selection generators in TensorFlow input pipelines.",
+      "tensorflow_equivalent": "Sampler → Custom index generation logic in tf.data",
+      "framework_equivalent": "Sampler → Custom index generation logic in tf.data",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Index Sampler",
+          "Custom Indexer",
+          "Data Sequence Sampler"
+        ],
+        "search_terms": [
+          "custom sampler pytorch dataloader",
+          "sequential sampler example",
+          "pytorch random sampler replacement"
+        ],
+        "keywords": [
+          "sampler",
+          "sequential",
+          "random",
+          "indices",
+          "iteration"
+        ],
+        "confused_with": [
+          "Sampler vs BatchSampler",
+          "Sampler vs Dataset"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "yolo"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "dataloader"
+      ],
+      "related_cheatsheet": [
+        "dataloader"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.Sampler",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.Sampler"
+    },
+    {
+      "task": "Balance Classes using Weighted Sampling (WeightedRandomSampler)",
+      "problem_solved": "Mitigating class imbalance during training by sampling underrepresented classes with higher relative probability.",
+      "mental_trigger": "My training set is heavily imbalanced (e.g. 90% positive, 10% negative) and I need each batch to draw samples proportionally to compensate.",
+      "syntax": "torch.utils.data.WeightedRandomSampler(  \n    weights: typing.Sequence[float],  \n    num_samples: int,  \n    replacement: bool = True,  \n    generator: torch.Generator | None = None  \n)",
+      "important_parameters": [
+        "weights: Sequence of individual sample weights (length equals dataset total samples).",
+        "num_samples: Number of samples to draw in total per epoch pass.",
+        "replacement: Draw samples with replacement (True is required for oversampling minority classes)."
+      ],
+      "important_params": [
+        "weights: Sequence of individual sample weights (length equals dataset total samples).",
+        "num_samples: Number of samples to draw in total per epoch pass.",
+        "replacement: Draw samples with replacement (True is required for oversampling minority classes)."
+      ],
+      "return_value": "A WeightedRandomSampler that yields dataset indices drawn according to the specified sample probabilities.",
+      "example": "import torch  \nfrom torch.utils.data import TensorDataset, DataLoader, WeightedRandomSampler\n\n# Imbalanced dataset: 8 samples of class 0, 2 samples of class 1  \nlabels = torch.tensor([0, 0, 0, 0, 0, 0, 0, 0, 1, 1])  \ndataset = TensorDataset(labels)\n\n# Compute class weights (inverse class frequency)  \nclass_counts = torch.bincount(labels)  \nclass_weights = 1.0 / class_counts.float()\n\n# Assign weight to each individual sample based on its class label  \nsample_weights = class_weights[labels]\n\nsampler = WeightedRandomSampler(  \n    weights=sample_weights,  \n    num_samples=len(sample_weights),  \n    replacement=True  \n)\n\nloader = DataLoader(dataset, batch_size=4, sampler=sampler)\n\nfor batch in loader:  \n    print(\"Sampled Batch Class Labels:\", batch[0].tolist())  \n    break",
+      "use_when": "Training models on imbalanced datasets where rare classes must be oversampled without manually duplicating files on disk.",
+      "avoid_when": "Evaluating model validation/test performance, where true real-world class distributions must be preserved.",
+      "gotchas": [
+        "weights array length must equal the total sample count of the dataset, not the number of classes.",
+        "Setting replacement=False while num_samples exceeds class counts raises a runtime sample error.",
+        "Passing shuffle=True to DataLoader alongside WeightedRandomSampler raises an explicit configuration error."
+      ],
+      "performance_notes": "WeightedRandomSampler uses torch.multinomial internally. Calculating sample weights once upfront avoids per-epoch CPU overhead.",
+      "related_apis": [
+        "torch.multinomial",
+        "torch.utils.data.Sampler"
+      ],
+      "framework_migration_notes": "Maps roughly to tf.data.Dataset.sample_from_datasets in TensorFlow input pipelines.",
+      "tensorflow_equivalent": "WeightedRandomSampler → tf.data.Dataset.sample_from_datasets (approximate use case)",
+      "framework_equivalent": "WeightedRandomSampler → tf.data.Dataset.sample_from_datasets (approximate use case)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Imbalanced Data Sampler",
+          "Oversampling Sampler",
+          "Class Weight Sampler"
+        ],
+        "search_terms": [
+          "solve class imbalance pytorch",
+          "weighted random sampler example",
+          "oversample minority class dataloader"
+        ],
+        "keywords": [
+          "weighted",
+          "imbalance",
+          "oversampling",
+          "multinomial",
+          "class-weights"
+        ],
+        "confused_with": [
+          "WeightedRandomSampler vs loss function weight parameter",
+          "WeightedRandomSampler vs RandomSampler"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "yolo",
+        "logistic-regression"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "dataloader"
+      ],
+      "related_cheatsheet": [
+        "dataloader"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.WeightedRandomSampler",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.WeightedRandomSampler"
+    },
+    {
+      "task": "Partition Data with BatchSampler (BatchSampler)",
+      "problem_solved": "Wrapping an existing sampler to yield pre-grouped lists of indices (batches) rather than individual sample indices.",
+      "mental_trigger": "I want my sampler to organize data indices directly into batches so I can handle complex batching logic (e.g. grouping similar lengths).",
+      "syntax": "torch.utils.data.BatchSampler(  \n    sampler: torch.utils.data.Sampler[int],  \n    batch_size: int,  \n    drop_last: bool  \n)",
+      "important_parameters": [
+        "sampler: Base Sampler instance dictating individual index generation order.",
+        "batch_size: Number of individual indices to group together per batch list.",
+        "drop_last: Set True to discard trailing batch lists smaller than batch_size."
+      ],
+      "important_params": [
+        "sampler: Base Sampler instance dictating individual index generation order.",
+        "batch_size: Number of individual indices to group together per batch list.",
+        "drop_last: Set True to discard trailing batch lists smaller than batch_size."
+      ],
+      "return_value": "A BatchSampler instance yielding lists of integers representing complete mini-batch index groupings.",
+      "example": "import torch  \nfrom torch.utils.data import SequentialSampler, BatchSampler, TensorDataset, DataLoader\n\ndataset = TensorDataset(torch.arange(20))  \nbase_sampler = SequentialSampler(dataset)\n\n# Wrap base sampler in a BatchSampler  \nbatch_sampler = BatchSampler(base_sampler, batch_size=6, drop_last=False)\n\nfor batch_indices in batch_sampler:  \n    print(\"Batch Indices Group:\", batch_indices)\n\n# Usage with DataLoader  \nloader = DataLoader(dataset, batch_sampler=batch_sampler)  \nfor batch in loader:  \n    print(\"DataLoader Batch Shape:\", batch[0].shape)  \n    break",
+      "use_when": "You need full control over batch construction, such as sequence length bucket batching or custom multi-sample grouping strategies.",
+      "avoid_when": "Standard batch_size and shuffle arguments in DataLoader are sufficient for your task.",
+      "gotchas": [
+        "Passing batch_sampler to DataLoader requires setting batch_size=1 (or leaving it default), shuffle=False, and drop_last=False.",
+        "Setting drop_last=True on BatchSampler drops indices before collation, altering epoch dataset coverage.",
+        "Confusing BatchSampler output with raw tensors; BatchSampler yields index lists, not data batches."
+      ],
+      "performance_notes": "Pre-grouping indices in BatchSampler reduces index communication overhead between main process and multi-worker loading processes.",
+      "related_apis": [
+        "torch.utils.data.Sampler",
+        "torch.utils.data.DataLoader"
+      ],
+      "framework_migration_notes": "Equivalent to tf.data.Dataset.window or custom batch indexing pipelines in TensorFlow.",
+      "tensorflow_equivalent": "BatchSampler → tf.data.Dataset.batch / window operations",
+      "framework_equivalent": "BatchSampler → tf.data.Dataset.batch / window operations",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Batch Index Sampler",
+          "Grouped Index Sampler"
+        ],
+        "search_terms": [
+          "batchsampler pytorch example",
+          "bucket batching sampler",
+          "batch_sampler dataloader usage"
+        ],
+        "keywords": [
+          "batchsampler",
+          "sampler",
+          "batching",
+          "grouping",
+          "indices"
+        ],
+        "confused_with": [
+          "BatchSampler vs Sampler",
+          "batch_sampler vs batch_size"
+        ]
+      },
+      "related_models": [
+        "bert",
+        "roberta",
+        "t5",
+        "gpt",
+        "llama"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "dataloader"
+      ],
+      "related_cheatsheet": [
+        "dataloader"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.BatchSampler",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.BatchSampler"
+    },
+    {
+      "task": "Build Distributed Data Pipeline (DistributedSampler)",
+      "problem_solved": "Partitioning dataset samples across multiple GPUs or nodes in Distributed Data Parallel (DDP) training to prevent duplicate processing.",
+      "mental_trigger": "I am training a model using PyTorch Distributed Data Parallel (DDP) and each GPU must receive an exclusive slice of the dataset per epoch.",
+      "syntax": "torch.utils.data.distributed.DistributedSampler(  \n    dataset: torch.utils.data.Dataset,  \n    num_replicas: int | None = None,  \n    rank: int | None = None,  \n    shuffle: bool = True,  \n    seed: int = 0,  \n    drop_last: bool = False  \n)",
+      "important_parameters": [
+        "dataset: Target map-style dataset to partition across processes.",
+        "num_replicas: Total number of distributed processes (defaults to world size).",
+        "rank: Process rank of current GPU worker (defaults to global process rank).",
+        "shuffle: If True, reshuffles dataset indices using specified epoch seed (default: True).",
+        "seed: Base random seed used for deterministic distributed index shuffling."
+      ],
+      "important_params": [
+        "dataset: Target map-style dataset to partition across processes.",
+        "num_replicas: Total number of distributed processes (defaults to world size).",
+        "rank: Process rank of current GPU worker (defaults to global process rank).",
+        "shuffle: If True, reshuffles dataset indices using specified epoch seed (default: True).",
+        "seed: Base random seed used for deterministic distributed index shuffling."
+      ],
+      "return_value": "A DistributedSampler yielding process-specific sub-sets of dataset indices.",
+      "example": "import torch  \nfrom torch.utils.data import TensorDataset, DataLoader  \nfrom torch.utils.data.distributed import DistributedSampler\n\n# Mocking a distributed setup (Rank 0 of 2 total GPUs)  \nworld_size = 2  \ncurrent_rank = 0\n\ndataset = TensorDataset(torch.arange(20))\n\nsampler = DistributedSampler(  \n    dataset=dataset,  \n    num_replicas=world_size,  \n    rank=current_rank,  \n    shuffle=True,  \n    seed=42  \n)\n\nloader = DataLoader(dataset, batch_size=4, sampler=sampler)\n\n# CRITICAL step: set epoch per iteration pass  \nsampler.set_epoch(0)\n\nprint(f\"Rank {current_rank} samples for Epoch 0:\")  \nfor batch in loader:  \n    print(batch[0].tolist())",
+      "use_when": "Multi-GPU or multi-node training setups operating under torch.nn.parallel.DistributedDataParallel.",
+      "avoid_when": "Single GPU training or CPU-only local execution environments.",
+      "gotchas": [
+        "Forgetting to call sampler.set_epoch(epoch) before every epoch iteration results in identical batch ordering across all epochs.",
+        "Passing shuffle=True to DataLoader alongside DistributedSampler causes a runtime parameter conflict error.",
+        "Not matching drop_last across all ranks leads to distributed process hangs due to imbalanced batch count execution."
+      ],
+      "performance_notes": "DistributedSampler divides dataset indices deterministically with zero cross-process network communication overhead during data fetching.",
+      "related_apis": [
+        "torch.nn.parallel.DistributedDataParallel",
+        "torch.distributed"
+      ],
+      "framework_migration_notes": "Replaces tf.distribute.Strategy.experimental_distribute_dataset in TensorFlow multi-GPU pipelines.",
+      "tensorflow_equivalent": "DistributedSampler → tf.distribute.Strategy.experimental_distribute_dataset",
+      "framework_equivalent": "DistributedSampler → tf.distribute.Strategy.experimental_distribute_dataset",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "DDP Data Sampler",
+          "Multi-GPU Sampler",
+          "Distributed Data Loader"
+        ],
+        "search_terms": [
+          "distributed sampler set_epoch",
+          "ddp sampler pytorch",
+          "multi gpu dataset partition"
+        ],
+        "keywords": [
+          "distributed",
+          "ddp",
+          "distributed_sampler",
+          "rank",
+          "world_size",
+          "set_epoch"
+        ],
+        "confused_with": [
+          "DistributedSampler vs RandomSampler",
+          "set_epoch requirement"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "llama",
+        "deepseek"
+      ],
+      "related_patterns": [
+        "device-placement",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "dataloader"
+      ],
+      "related_cheatsheet": [
+        "dataloader"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.distributed.DistributedSampler",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.distributed.DistributedSampler"
+    },
+    {
+      "task": "Configure Multi-Process Data Loading (num_workers)",
+      "problem_solved": "Parallelizing data loading and transformations across CPU worker subprocesses to eliminate GPU starvation bottlenecks.",
+      "mental_trigger": "My GPU utilization is low because single-threaded CPU sample preparation cannot fetch data fast enough.",
+      "syntax": "torch.utils.data.DataLoader(  \n    dataset,  \n    num_workers=4,  \n    multiprocessing_context=None,  \n    ...  \n)",
+      "important_parameters": [
+        "num_workers: Number of dedicated CPU worker subprocesses (default: 0, meaning loading occurs in main thread).",
+        "multiprocessing_context: Execution context used to spawn processes ('fork', 'spawn', or 'forkserver')."
+      ],
+      "important_params": [
+        "num_workers: Number of dedicated CPU worker subprocesses (default: 0, meaning loading occurs in main thread).",
+        "multiprocessing_context: Execution context used to spawn processes ('fork', 'spawn', or 'forkserver')."
+      ],
+      "return_value": "A multiprocessing-enabled DataLoader that executes dataset fetching concurrently across background worker processes.",
+      "example": "import time  \nimport torch  \nfrom torch.utils.data import Dataset, DataLoader\n\nclass SlowDataset(Dataset):  \n    def __len__(self):  \n        return 16  \n      \n    def __getitem__(self, idx):  \n        time.sleep(0.05)  # Simulate expensive disk I/O or augmentations  \n        return torch.tensor([idx])\n\nif __name__ == \"__main__\":  \n    dataset = SlowDataset()  \n      \n    # Measure multi-worker speedup  \n    start_time = time.time()  \n    loader = DataLoader(dataset, batch_size=4, num_workers=4)  \n    for _ in loader:  \n        pass  \n    elapsed = time.time() - start_time  \n    print(f\"4 Workers Time Elapsed: {elapsed:.2f} seconds\")",
+      "use_when": "Data transformation, image augmentation, or disk I/O causes training bottlenecks and GPU stays under-utilized.",
+      "avoid_when": "Dataset is small and fully in memory, or when running small unit tests where process spawning overhead outweighs I/O time.",
+      "gotchas": [
+        "On Windows/macOS, code initiating num_workers \\> 0 must be enclosed inside if __name__ == '__main__': to prevent infinite process creation.",
+        "Setting num_workers higher than available physical CPU core counts degrades performance through context switching thrashing.",
+        "Forking processes with CUDA initialized inside background workers leads to CUDA driver crash failures."
+      ],
+      "performance_notes": "A typical starting baseline for num_workers is 2-4 worker processes per active GPU device present in the host system.",
+      "related_apis": [
+        "torch.utils.data.get_worker_info",
+        "multiprocessing"
+      ],
+      "framework_migration_notes": "Maps to num_parallel_calls parameter inside tf.data.Dataset.map operations in TensorFlow.",
+      "tensorflow_equivalent": "num_workers → num_parallel_calls in tf.data.Dataset.map / prefetch",
+      "framework_equivalent": "num_workers → num_parallel_calls in tf.data.Dataset.map / prefetch",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Multiprocess Loader",
+          "DataLoader Worker Threads",
+          "Parallel Data Loading"
+        ],
+        "search_terms": [
+          "num_workers setting pytorch",
+          "num_workers windows crash main",
+          "optimal num_workers pytorch"
+        ],
+        "keywords": [
+          "num_workers",
+          "multiprocessing",
+          "subprocess",
+          "workers",
+          "speedup"
+        ],
+        "confused_with": [
+          "num_workers vs thread count",
+          "fork vs spawn contexts"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "yolo",
+        "bert"
+      ],
+      "related_patterns": [
+        "device-placement",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "dataloader"
+      ],
+      "related_cheatsheet": [
+        "dataloader"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.DataLoader",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.DataLoader"
+    },
+    {
+      "task": "Initialize Worker Processes (worker_init_fn, get_worker_info)",
+      "problem_solved": "Configuring worker process state individually to set unique random seeds or manage process-specific resources (like database connections).",
+      "mental_trigger": "I need every data loader worker process to generate distinct random augmentations and open its own database client instance.",
+      "syntax": "# Worker initialization signature  \ndef worker_init_fn(worker_id: int) -> None:  \n    pass\n\n# Retrieve worker metadata inside dataset  \ntorch.utils.data.get_worker_info()",
+      "important_parameters": [
+        "worker_id: Integer identifier assigned to the spawning worker process (0 to num_workers - 1)."
+      ],
+      "important_params": [
+        "worker_id: Integer identifier assigned to the spawning worker process (0 to num_workers - 1)."
+      ],
+      "return_value": "get_worker_info() returns a WorkerInfo object containing fields: id, num_workers, seed, and dataset.",
+      "example": "import random  \nimport torch  \nfrom torch.utils.data import IterableDataset, DataLoader, get_worker_info\n\ndef custom_worker_init(worker_id):  \n    worker_info = get_worker_info()  \n    # Set unique random seed per worker process  \n    base_seed = worker_info.seed  \n    random.seed(base_seed + worker_id)\n\nclass WorkerAwareDataset(IterableDataset):  \n    def __iter__(self):  \n        worker_info = get_worker_info()  \n        worker_id = worker_info.id if worker_info else 0  \n        rand_val = random.randint(100, 999)  \n        yield torch.tensor([worker_id, rand_val])\n\nif __name__ == \"__main__\":  \n    dataset = WorkerAwareDataset()  \n    loader = DataLoader(  \n        dataset,  \n        batch_size=1,  \n        num_workers=2,  \n        worker_init_fn=custom_worker_init  \n    )  \n    for batch in loader:  \n        print(\"Worker Output (ID, Random Val):\", batch.squeeze(0).tolist())",
+      "use_when": "Initializing thread-unsafe network handles, opening distinct file pointers per process, or seeding random number generators uniquely.",
+      "avoid_when": "Single-threaded execution (num_workers=0), where worker initialization logic never fires.",
+      "gotchas": [
+        "Without setting seeds in worker_init_fn, standard Python random and NumPy generate identical random sequences across all workers.",
+        "Attempting to call get_worker_info() outside background worker execution returns None.",
+        "Sharing a single file pointer across workers without resetting inside worker_init_fn causes thread corruption."
+      ],
+      "performance_notes": "worker_init_fn runs once per worker process creation, avoiding per-batch initialization overhead.",
+      "related_apis": [
+        "torch.utils.data.get_worker_info",
+        "torch.initial_seed"
+      ],
+      "framework_migration_notes": "Replaces worker-level initializers in TensorFlow or custom Python multiprocessing pools.",
+      "tensorflow_equivalent": "worker_init_fn → Custom process initializer in tf.data pipelines",
+      "framework_equivalent": "worker_init_fn → Custom process initializer in tf.data pipelines",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Worker Initialization",
+          "Seed Workers",
+          "Worker Info Query"
+        ],
+        "search_terms": [
+          "worker_init_fn numpy random seed pytorch",
+          "get_worker_info example",
+          "initialize DB in worker dataloader"
+        ],
+        "keywords": [
+          "worker_init_fn",
+          "get_worker_info",
+          "worker_id",
+          "seeding",
+          "numpy seed"
+        ],
+        "confused_with": [
+          "worker_init_fn vs Dataset.__init__",
+          "worker_info vs global seeds"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "yolo",
+        "bert"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "dataloader"
+      ],
+      "related_cheatsheet": [
+        "dataloader"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.get_worker_info",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.get_worker_info"
+    },
+    {
+      "task": "Enable Persistent Worker Processes (persistent_workers, prefetch_factor)",
+      "problem_solved": "Maintaining worker process life cycles across epoch transitions and controlling the volume of batches pre-fetched ahead of consumption.",
+      "mental_trigger": "My training pauses at the start of every epoch because worker processes are destroyed and re-created repeatedly.",
+      "syntax": "torch.utils.data.DataLoader(  \n    dataset,  \n    num_workers=4,  \n    prefetch_factor=2,  \n    persistent_workers=True,  \n    ...  \n)",
+      "important_parameters": [
+        "persistent_workers: If True, data loader will not shut down worker processes after a dataset has been consumed once.",
+        "prefetch_factor: Number of batches loaded in advance by each worker process (default: 2). Required to be None if num_workers=0."
+      ],
+      "important_params": [
+        "persistent_workers: If True, data loader will not shut down worker processes after a dataset has been consumed once.",
+        "prefetch_factor: Number of batches loaded in advance by each worker process (default: 2). Required to be None if num_workers=0."
+      ],
+      "return_value": "A performance-optimized DataLoader keeping worker processes alive persistently between training epoch loops.",
+      "example": "import torch  \nfrom torch.utils.data import TensorDataset, DataLoader\n\nif __name__ == \"__main__\":  \n    dataset = TensorDataset(torch.randn(100, 10))  \n      \n    loader = DataLoader(  \n        dataset,  \n        batch_size=10,  \n        num_workers=2,  \n        prefetch_factor=3,  \n        persistent_workers=True  \n    )  \n      \n    print(\"Epoch 1 Iteration:\")  \n    for batch in loader:  \n        pass  # Workers stay alive after loop completion  \n          \n    print(\"Epoch 2 Iteration (Zero Process Spawning Delay):\")  \n    for batch in loader:  \n        pass",
+      "use_when": "Training across many short epochs where process spawning overhead causes noticeable delays between epochs.",
+      "avoid_when": "Memory resources are severely constrained, as persistent workers hold dataset state in RAM permanently throughout training.",
+      "gotchas": [
+        "Setting prefetch_factor while num_workers=0 raises an explicit configuration ValueError.",
+        "Using high prefetch_factor values on large batches leads to out-of-memory (OOM) host RAM spikes.",
+        "Setting persistent_workers=True without num_workers \\> 0 has no effect."
+      ],
+      "performance_notes": "persistent_workers=True eliminates setup and teardown overhead across epochs. prefetch_factor balances RAM buffer size against I/O throughput speed.",
+      "related_apis": [
+        "torch.utils.data.DataLoader"
+      ],
+      "framework_migration_notes": "Equivalent to tf.data.Dataset.prefetch(buffer_size) configuration behavior in TensorFlow.",
+      "tensorflow_equivalent": "prefetch_factor / persistent_workers → tf.data.Dataset.prefetch",
+      "framework_equivalent": "prefetch_factor / persistent_workers → tf.data.Dataset.prefetch",
+      "version_compatibility": "persistent_workers parameter added in PyTorch 1.7. prefetch_factor default shifted to 2 in PyTorch 1.8+.",
+      "search_metadata": {
+        "aliases": [
+          "Persistent Data Workers",
+          "DataLoader Prefetching",
+          "Keep Workers Alive"
+        ],
+        "search_terms": [
+          "persistent_workers pytorch dataloader",
+          "prefetch_factor optimal value",
+          "dataset slowdown between epochs"
+        ],
+        "keywords": [
+          "persistent_workers",
+          "prefetch_factor",
+          "epoch slowdown",
+          "worker lifespan"
+        ],
+        "confused_with": [
+          "prefetch_factor vs batch_size",
+          "persistent_workers vs background threads"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "llama"
+      ],
+      "related_patterns": [
+        "device-placement",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "dataloader"
+      ],
+      "related_cheatsheet": [
+        "dataloader"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.DataLoader",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.DataLoader"
+    },
+    {
+      "task": "Enable Pinned Memory for GPU Transfer (pin_memory, pin_memory_device)",
+      "problem_solved": "Allocating batched CPU tensors in page-locked (pinned) memory to accelerate host-to-GPU data transfer speeds via Direct Memory Access (DMA).",
+      "mental_trigger": "I want to maximize my CPU-to-GPU tensor copying speed using pinned memory buffers.",
+      "syntax": "torch.utils.data.DataLoader(  \n    dataset,  \n    pin_memory=True,  \n    pin_memory_device=\"cuda:0\",  \n    ...  \n)",
+      "important_parameters": [
+        "pin_memory: When True, returned data batches are placed in pinned (page-locked) host RAM memory.",
+        "pin_memory_device: Target CUDA device string for automatic memory allocation optimization (default: \"\")."
+      ],
+      "important_params": [
+        "pin_memory: When True, returned data batches are placed in pinned (page-locked) host RAM memory.",
+        "pin_memory_device: Target CUDA device string for automatic memory allocation optimization (default: \"\")."
+      ],
+      "return_value": "A DataLoader yielding host tensors tagged with .is_pinned() == True.",
+      "example": "import torch  \nfrom torch.utils.data import TensorDataset, DataLoader\n\ndataset = TensorDataset(torch.randn(100, 16))\n\n# Check host memory pinning behavior  \nloader = DataLoader(  \n    dataset,  \n    batch_size=32,  \n    pin_memory=True  \n)\n\nfor batch, in loader:  \n    print(\"Is batch tensor pinned in host memory?\", batch.is_pinned())  \n    if torch.cuda.is_available():  \n        gpu_tensor = batch.to(\"cuda\", non_blocking=True)  \n        print(\"Tensor successfully transferred to GPU.\")  \n    break",
+      "use_when": "Training models on CUDA GPU acceleration devices where CPU-to-GPU memory transfer overhead limits training throughput.",
+      "avoid_when": "Training strictly on CPU hardware, or when system host RAM is severely constrained (pinned memory cannot be paged to swap disk).",
+      "gotchas": [
+        "pin_memory=True provides no speed benefit when training solely on CPU devices.",
+        "Pinning custom non-tensor Python objects causes default collation to fail unless custom pinning methods are implemented.",
+        "Excessive pinned memory allocations can degrade overall system host OS memory stability."
+      ],
+      "performance_notes": "Page-locked host memory enables non-blocking asynchronous DMA transfers directly to GPU VRAM, bypassing host OS virtual memory paging checks.",
+      "related_apis": [
+        "torch.Tensor.pin_memory",
+        "torch.Tensor.is_pinned",
+        "torch.Tensor.to"
+      ],
+      "framework_migration_notes": "Replaces explicit memory locking mechanisms in low-level CUDA APIs or framework data pipelines.",
+      "tensorflow_equivalent": "pin_memory → Handled transparently by GPU memory allocators in tf.data",
+      "framework_equivalent": "pin_memory → Handled transparently by GPU memory allocators in tf.data",
+      "version_compatibility": "pin_memory_device parameter introduced in PyTorch 1.12 to support target-specific CUDA allocation routing.",
+      "search_metadata": {
+        "aliases": [
+          "Page-Locked Memory",
+          "DataLoader Memory Pinning",
+          "DMA Acceleration"
+        ],
+        "search_terms": [
+          "pin_memory true pytorch",
+          "is_pinned dataloader",
+          "pin_memory_device usage"
+        ],
+        "keywords": [
+          "pin_memory",
+          "pin_memory_device",
+          "is_pinned",
+          "page-locked",
+          "dma"
+        ],
+        "confused_with": [
+          "pin_memory vs non_blocking",
+          "CPU RAM allocation vs GPU VRAM allocation"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "yolo",
+        "llama"
+      ],
+      "related_patterns": [
+        "device-placement",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "dataloader"
+      ],
+      "related_cheatsheet": [
+        "dataloader"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.DataLoader",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.DataLoader"
+    },
+    {
+      "task": "Optimize Asynchronous Host-to-Device Transfer (non_blocking=True)",
+      "problem_solved": "Overlapping host-to-device CUDA tensor memory transfers with GPU neural network execution streams.",
+      "mental_trigger": "I want my batch transfers to GPU (tensor.to('cuda')) to execute asynchronously without blocking main CPU execution streams.",
+      "syntax": "torch.Tensor.to(  \n    device: torch.device | str,  \n    non_blocking: bool = True  \n)",
+      "important_parameters": [
+        "device: Destination compute device (e.g., 'cuda', 'cuda:0').",
+        "non_blocking: When True and source tensor is in pinned memory, transfer executes asynchronously relative to CPU host."
+      ],
+      "important_params": [
+        "device: Destination compute device (e.g., 'cuda', 'cuda:0').",
+        "non_blocking: When True and source tensor is in pinned memory, transfer executes asynchronously relative to CPU host."
+      ],
+      "return_value": "A new torch.Tensor allocated on the target device, transferred asynchronously without blocking CPU execution.",
+      "example": "import torch  \nfrom torch.utils.data import TensorDataset, DataLoader\n\n# Setup pinned memory dataset loader  \ndataset = TensorDataset(torch.randn(1000, 64))  \nloader = DataLoader(dataset, batch_size=64, pin_memory=True)\n\nif torch.cuda.is_available():  \n    device = torch.device(\"cuda\")  \n      \n    for batch_x, in loader:  \n        # Asynchronous transfer from host to GPU device  \n        batch_x_gpu = batch_x.to(device, non_blocking=True)  \n          \n        # Computation queued asynchronously on GPU stream  \n        output = batch_x_gpu * 2.0  \n        break  \n    print(\"Asynchronous host-to-device transfer complete.\")  \nelse:  \n    print(\"CUDA unavailable; skipping GPU transfer example.\")",
+      "use_when": "Transferring tensors from host CPU memory to GPU VRAM inside training or inference loops.",
+      "avoid_when": "Target tensor was not created in pinned memory (pin_memory=True), as non_blocking=True falls back silently to synchronous copying.",
+      "gotchas": [
+        "Setting non_blocking=True on non-pinned host tensors silently executes a blocking synchronous transfer.",
+        "Accessing non-blocking target tensors on CPU immediately after transfer forces explicit stream synchronization waits.",
+        "Expecting non-blocking behavior during GPU-to-CPU transfers without pinned destination memory."
+      ],
+      "performance_notes": "Combines with pin_memory=True to overlap host-to-device copying with current CUDA compute stream execution, hiding transfer latency.",
+      "related_apis": [
+        "torch.Tensor.to",
+        "torch.Tensor.pin_memory",
+        "torch.cuda.Stream"
+      ],
+      "framework_migration_notes": "Matches non-blocking device placement behavior in TensorFlow tf.device operations.",
+      "tensorflow_equivalent": "non_blocking=True → Handled automatically in tf.data prefetch to GPU",
+      "framework_equivalent": "non_blocking=True → Handled automatically in tf.data prefetch to GPU",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Asynchronous Memory Copy",
+          "Non-Blocking Host-to-Device Transfer"
+        ],
+        "search_terms": [
+          "non_blocking=True pytorch to device",
+          "overlap host to device transfer pytorch",
+          "async tensor transfer"
+        ],
+        "keywords": [
+          "non_blocking",
+          "cuda",
+          "pinned memory",
+          "host-to-device",
+          "async"
+        ],
+        "confused_with": [
+          "non_blocking vs asynchronous CUDA streams",
+          "to(device) vs cuda()"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "yolo",
+        "llama"
+      ],
+      "related_patterns": [
+        "device-placement",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "dataloader"
+      ],
+      "related_cheatsheet": [
+        "dataloader"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/tensors.html%23torch.Tensor.to",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/tensors.html%23torch.Tensor.to"
+    },
+    {
+      "task": "Handle Variable-Length Batches (collate_fn, padding strategies)",
+      "problem_solved": "Standardizing variable-length sequences or uneven dimensional samples into uniform batch tensor shapes required for parallel model computation.",
+      "mental_trigger": "My NLP token sequences or audio signals have varying lengths, and I need to pad them dynamically to match the longest item in each batch.",
+      "syntax": "torch.nn.utils.rnn.pad_sequence(  \n    sequences: typing.Sequence[torch.Tensor],  \n    batch_first: bool = False,  \n    padding_value: float = 0.0  \n)",
+      "important_parameters": [
+        "sequences: List of 1D tensors with variable sequence lengths.",
+        "batch_first: If True, output shape is (batch_size, max_seq_len), otherwise (max_seq_len, batch_size).",
+        "padding_value: Scalar value used for padding trailing tensor positions (default: 0.0)."
+      ],
+      "important_params": [
+        "sequences: List of 1D tensors with variable sequence lengths.",
+        "batch_first: If True, output shape is (batch_size, max_seq_len), otherwise (max_seq_len, batch_size).",
+        "padding_value: Scalar value used for padding trailing tensor positions (default: 0.0)."
+      ],
+      "return_value": "A contiguous padded tensor aggregating all variable-length sequence inputs into a uniform 2D/3D tensor shape.",
+      "example": "import torch  \nfrom torch.utils.data import DataLoader  \nfrom torch.nn.utils.rnn import pad_sequence\n\n# Dataset returning variable length 1D sequence tensors  \nsequences_data = [  \n    torch.tensor([1, 2, 3]),  \n    torch.tensor([4, 5]),  \n    torch.tensor([6, 7, 8, 9])  \n]\n\ndef pad_batch_collate(batch):  \n    # Pad sequences dynamically per batch  \n    padded_tensors = pad_sequence(batch, batch_first=True, padding_value=0)  \n    # Generate attention mask (1 for real tokens, 0 for padded positions)  \n    lengths = [len(seq) for seq in batch]  \n    mask = torch.arange(padded_tensors.size(1))[None, :] < torch.tensor(lengths)[:, None]  \n    return padded_tensors, mask.long()\n\nloader = DataLoader(sequences_data, batch_size=2, collate_fn=pad_batch_collate)\n\nfor padded_x, attention_mask in loader:  \n    print(\"Padded Batch Tensor:\\n\", padded_x)  \n    print(\"Attention Mask Tensor:\\n\", attention_mask)  \n    break",
+      "use_when": "Batching text sequences, time-series signals, audio waveforms, or graph node features with variable sequence lengths.",
+      "avoid_when": "All input dataset items possess identical static shapes (like fixed-size image classification tensors).",
+      "gotchas": [
+        "Global static padding to a fixed max length across all dataset items wastes computational FLOPs compared to dynamic per-batch padding.",
+        "Setting batch_first=False unexpectedly flips batch dimensions to (seq_len, batch_size), causing transformer shape mismatches.",
+        "Padding with values that conflict with real token IDs (e.g. padding with 0 when 0 is a valid word token)."
+      ],
+      "performance_notes": "Dynamic padding inside collate_fn pads sequences to the maximum length present in *that specific batch*, significantly reducing computational memory footprint.",
+      "related_apis": [
+        "torch.nn.utils.rnn.pad_sequence",
+        "torch.nn.utils.rnn.pack_padded_sequence"
+      ],
+      "framework_migration_notes": "Replaces tf.keras.utils.pad_sequences or tf.data.Dataset.padded_batch in TensorFlow.",
+      "tensorflow_equivalent": "pad_sequence → tf.data.Dataset.padded_batch",
+      "framework_equivalent": "pad_sequence → tf.data.Dataset.padded_batch",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Dynamic Batch Padding",
+          "Dynamic Sequence Collation",
+          "Variable Batch Handler"
+        ],
+        "search_terms": [
+          "pad variable length sequence pytorch",
+          "pad_sequence collate_fn example",
+          "dynamic padding dataloader"
+        ],
+        "keywords": [
+          "pad_sequence",
+          "variable-length",
+          "padding",
+          "collate_fn",
+          "batch_first"
+        ],
+        "confused_with": [
+          "pad_sequence vs static padding",
+          "batch_first=True vs batch_first=False"
+        ]
+      },
+      "related_models": [
+        "bert",
+        "roberta",
+        "t5",
+        "bart",
+        "gpt",
+        "llama"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "dataloader"
+      ],
+      "related_cheatsheet": [
+        "dataloader"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.nn.utils.rnn.pad_sequence.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.utils.rnn.pad_sequence.html"
+    },
+    {
+      "task": "Tune DataLoader Performance and Debug Loading Bottlenecks",
+      "problem_solved": "Identifying data pipeline bottlenecks, eliminating CPU/GPU starvation, and systematically tuning performance parameters.",
+      "mental_trigger": "My GPU utility drops periodically to 0% and I need to diagnose whether my data loading pipeline is the bottleneck.",
+      "syntax": "# System performance tuning pattern  \nDataLoader(  \n    dataset,  \n    batch_size=64,  \n    num_workers=4,  \n    pin_memory=True,  \n    persistent_workers=True,  \n    prefetch_factor=2  \n)",
+      "important_parameters": [
+        "Combine num_workers, pin_memory, persistent_workers, and prefetch_factor to form an optimal high-throughput input pipeline."
+      ],
+      "important_params": [
+        "Combine num_workers, pin_memory, persistent_workers, and prefetch_factor to form an optimal high-throughput input pipeline."
+      ],
+      "return_value": "A fully tuned input pipeline that delivers zero GPU starvation delay between iteration steps.",
+      "example": "import time  \nimport torch  \nfrom torch.utils.data import Dataset, DataLoader\n\nclass BenchmarkDataset(Dataset):  \n    def __len__(self):  \n        return 200  \n    def __getitem__(self, idx):  \n        # Simulate small disk read / augmentation delay  \n        _ = torch.randn(100, 100)  \n        return torch.randn(32)\n\ndef benchmark_loader(loader):  \n    start = time.perf_counter()  \n    for _ in loader:  \n        pass  \n    return time.perf_counter() - start\n\nif __name__ == \"__main__\":  \n    dataset = BenchmarkDataset()  \n      \n    # Baseline setup: single threaded  \n    unoptimized = DataLoader(dataset, batch_size=16, num_workers=0)  \n    time_unoptimized = benchmark_loader(unoptimized)  \n    print(f\"Unoptimized Loader Time: {time_unoptimized:.4f}s\")  \n      \n    # Optimized setup: tuned multi-worker persistent pipeline  \n    optimized = DataLoader(  \n        dataset,  \n        batch_size=16,  \n        num_workers=2,  \n        pin_memory=True,  \n        persistent_workers=True,  \n        prefetch_factor=2  \n    )  \n    time_optimized = benchmark_loader(optimized)  \n    print(f\"Optimized Loader Time: {time_optimized:.4f}s\")",
+      "use_when": "Profiling deep learning pipelines to resolve GPU starvation and maximize host-to-device streaming throughput.",
+      "avoid_when": "Running small debugging experiments or synthetic single-batch unit tests.",
+      "gotchas": [
+        "Increasing num_workers beyond CPU limits causes system RAM exhaustion and process context switching thrashing.",
+        "Over-prefetching large batches via high prefetch_factor leads to host system Out-Of-Memory (OOM) crashes.",
+        "Failing to benchmark data pipeline isolated from model forward/backward pass makes identifying true bottlenecks impossible."
+      ],
+      "performance_notes": "Isolate data loader throughput using simple timer loops without model iteration to establish pure I/O baseline limits.",
+      "related_apis": [
+        "torch.utils.data.DataLoader",
+        "torch.profiler"
+      ],
+      "framework_migration_notes": "Equivalent to applying tf.data.AUTOTUNE optimization principles in TensorFlow pipelines.",
+      "tensorflow_equivalent": "Pipeline Tuning → tf.data.AUTOTUNE optimization",
+      "framework_equivalent": "Pipeline Tuning → tf.data.AUTOTUNE optimization",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "DataLoader Profiling",
+          "Pipeline Optimization",
+          "Eliminate GPU Starvation"
+        ],
+        "search_terms": [
+          "benchmark dataloader speed pytorch",
+          "fix low gpu utilization dataloader",
+          "dataloader bottlenecks profiling"
+        ],
+        "keywords": [
+          "performance",
+          "profiling",
+          "optimization",
+          "bottleneck",
+          "throughput",
+          "gpu starvation"
+        ],
+        "confused_with": [
+          "Model execution bottlenecks vs Data loading I/O bottlenecks"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "yolo",
+        "bert",
+        "llama"
+      ],
+      "related_patterns": [
+        "device-placement",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "dataloader"
+      ],
+      "related_cheatsheet": [
+        "dataloader"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.DataLoader",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.DataLoader"
+    }
+  ]
+}

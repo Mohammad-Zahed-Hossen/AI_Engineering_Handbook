@@ -49,7 +49,7 @@ export default function TopBar({
           />
         </div>
         <span className="hidden sm:inline text-xs font-semibold text-foreground font-sans shrink-0">
-          AI Engineering Handbook
+          AENS
         </span>
       </div>
       <div className="flex-1 min-w-0 flex justify-center">

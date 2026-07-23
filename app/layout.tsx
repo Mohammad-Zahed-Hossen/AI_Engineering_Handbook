@@ -34,8 +34,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Engineering Handbook",
+  title: "AENS",
   description: "Personal AI Engineering Knowledge System",
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/AENS_LOGO.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" }
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "AENS",
+  },
 };
 
 export default function RootLayout({
@@ -63,6 +76,9 @@ export default function RootLayout({
      >
        <head>
          <ThemeScript />{/* Theme script for preventing flash of unstyled content */}
+         <link rel="icon" href="/AENS_LOGO.svg" type="image/svg+xml" />
+         <link rel="alternate icon" href="/favicon.ico" sizes="any" />
+         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
        </head>
        <body className="h-full flex overflow-hidden bg-background text-foreground text-sm leading-relaxed">
          <PageVisitTracker />

@@ -1,0 +1,1593 @@
+{
+  "id": "pytorch",
+  "module_name": "05_optimizer",
+  "module_title": "Optimizer and Scheduler Tasks",
+  "slug": "05_optimizer",
+  "tasks": [
+    {
+      "task": "Optimize Model with Stochastic Gradient Descent (optim.SGD)",
+      "problem_solved": "Updates model parameters using stochastic gradient descent with optional momentum, dampening, and Nesterov acceleration to minimize loss.",
+      "mental_trigger": "I need a classic, memory-efficient optimizer with momentum for training computer vision models or fine-tuning stable baselines.",
+      "syntax": "torch.optim.SGD(  \n    params,  \n    lr=required,  \n    momentum=0,  \n    dampening=0,  \n    weight_decay=0,  \n    nesterov=False,  \n    *,  \n    maximize=False,  \n    foreach=None,  \n    differentiable=False,  \n    fused=None  \n)",
+      "important_parameters": [
+        "lr (float): Learning rate. Required parameter.",
+        "momentum (float, default=0): Momentum factor accelerating SGD in the relevant direction and dampening oscillations.",
+        "weight_decay (float, default=0): Weight decay factor (*L*2​ penalty).",
+        "nesterov (bool, default=False): Enables Nesterov momentum. Requires momentum \\> 0 and dampening = 0.",
+        "fused (bool, default=None): Executes a fused CUDA kernel for faster parameter updates when training on GPU."
+      ],
+      "important_params": [
+        "lr (float): Learning rate. Required parameter.",
+        "momentum (float, default=0): Momentum factor accelerating SGD in the relevant direction and dampening oscillations.",
+        "weight_decay (float, default=0): Weight decay factor (*L*2​ penalty).",
+        "nesterov (bool, default=False): Enables Nesterov momentum. Requires momentum \\> 0 and dampening = 0.",
+        "fused (bool, default=None): Executes a fused CUDA kernel for faster parameter updates when training on GPU."
+      ],
+      "return_value": "An instance of torch.optim.SGD initialized with specified parameter groups and hyperparameters.",
+      "example": "import torch  \nimport torch.nn as nn\n\n# Define a minimal model and synthetic data  \nmodel = nn.Linear(10, 2)  \noptimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=1e-4)\n\nx = torch.randn(4, 10)  \ny = torch.randint(0, 2, (4,))  \ncriterion = nn.CrossEntropyLoss()\n\n# Single optimization step  \noptimizer.zero_grad()  \nloss = criterion(model(x), y)  \nloss.backward()  \noptimizer.step()",
+      "use_when": "Training standard vision models like ResNet from scratch where SGD with momentum often generalizes better than adaptive optimizers.\nYou need minimal memory overhead per parameter (SGD retains at most one buffer for momentum).",
+      "avoid_when": "Training architectures with sparse gradients or complex loss landscapes, such as Transformers or LLMs.\nQuick prototyping where adaptive learning rate algorithms require less initial learning rate tuning.",
+      "gotchas": [
+        "Setting nesterov=True without setting momentum \\> 0 causes an explicit runtime error.",
+        "*L*2​ regularization in PyTorch SGD acts directly as weight decay on gradients, which can interact unexpectedly with momentum buffers if dampening is non-zero.",
+        "lr must be explicitly provided; unlike Adam, SGD does not have a default learning rate in PyTorch."
+      ],
+      "performance_notes": "Low memory overhead: requires zero extra state memory without momentum, and only 1 state buffer per parameter when momentum is enabled.\nUsing fused=True on CUDA significantly speeds up the update step by avoiding multiple kernel launches.",
+      "related_apis": [
+        "torch.optim.Adam",
+        "torch.optim.AdamW",
+        "torch.optim.RMSprop"
+      ],
+      "framework_migration_notes": "In TensorFlow/Keras, tf.keras.optimizers.SGD handles both standard momentum and Nesterov momentum similarly. However, PyTorch SGD requires setting dampening=0 when nesterov=True.",
+      "tensorflow_equivalent": "optim.SGD → tf.keras.optimizers.SGD",
+      "framework_equivalent": "optim.SGD → tf.keras.optimizers.SGD",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "SGD",
+          "Stochastic Gradient Descent",
+          "PyTorch SGD"
+        ],
+        "search_terms": [
+          "pytorch sgd momentum",
+          "nesterov sgd pytorch",
+          "sgd weight decay"
+        ],
+        "keywords": [
+          "optimizer",
+          "sgd",
+          "momentum",
+          "nesterov",
+          "vision"
+        ],
+        "confused_with": [
+          "optim.Adam (adaptive rates vs fixed rate with momentum)",
+          "optim.AdamW (decoupled weight decay vs *L*2​ regularization)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "yolo",
+        "logistic-regression"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.optim.SGD.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.optim.SGD.html"
+    },
+    {
+      "task": "Optimize Model with Adam (optim.Adam)",
+      "problem_solved": "Computes adaptive learning rates for each parameter using first and second moment estimates of gradients.",
+      "mental_trigger": "I need an adaptive optimizer that works out-of-the-box for general deep learning tasks without heavy hyperparameter tuning.",
+      "syntax": "torch.optim.Adam(  \n    params,  \n    lr=0.001,  \n    betas=(0.9, 0.999),  \n    eps=1e-08,  \n    weight_decay=0,  \n    amsgrad=False,  \n    *,  \n    foreach=None,  \n    maximize=False,  \n    capturable=False,  \n    differentiable=False,  \n    fused=None  \n)",
+      "important_parameters": [
+        "lr (float, default=1e-3): Learning rate.",
+        "betas (Tuple[float, float], default=(0.9, 0.999)): Coefficients used for computing running averages of gradient and its square.",
+        "eps (float, default=1e-8): Term added to denominator for numerical stability.",
+        "weight_decay (float, default=0): *L*2​ penalty coefficient added directly to gradients.",
+        "amsgrad (bool, default=False): Uses the AMSGrad variant keeping the maximum of past squared gradients."
+      ],
+      "important_params": [
+        "lr (float, default=1e-3): Learning rate.",
+        "betas (Tuple[float, float], default=(0.9, 0.999)): Coefficients used for computing running averages of gradient and its square.",
+        "eps (float, default=1e-8): Term added to denominator for numerical stability.",
+        "weight_decay (float, default=0): *L*2​ penalty coefficient added directly to gradients.",
+        "amsgrad (bool, default=False): Uses the AMSGrad variant keeping the maximum of past squared gradients."
+      ],
+      "return_value": "An instance of torch.optim.Adam initialized with target parameters and adaptive learning rate state.",
+      "example": "import torch  \nimport torch.nn as nn\n\nmodel = nn.Linear(10, 2)  \noptimizer = torch.optim.Adam(model.parameters(), lr=1e-3, betas=(0.9, 0.999), eps=1e-8)\n\nx = torch.randn(4, 10)  \ny = torch.randint(0, 2, (4,))  \ncriterion = nn.CrossEntropyLoss()\n\noptimizer.zero_grad()  \nloss = criterion(model(x), y)  \nloss.backward()  \noptimizer.step()",
+      "use_when": "Training dense neural networks or MLPs where gradient scales vary significantly across layers.\nPrototyping baseline models where manual learning rate tuning for SGD is too slow.",
+      "avoid_when": "Training models with weight decay applied, where AdamW should be used instead.\nMemory-constrained training environments, as Adam maintains two state buffers per parameter.",
+      "gotchas": [
+        "Using weight_decay in standard Adam applies *L*2​ regularization directly to gradients, which suppresses the effective weight decay rate for parameters with large gradient history.",
+        "Adam memory usage is high: requires double the memory of parameter tensors to store *mt*​ (first moment) and *vt*​ (second moment) buffers."
+      ],
+      "performance_notes": "High memory overhead: requires 2 additional state tensors per trainable parameter (e.g., 8 bytes per parameter in FP32).\nfused=True on CUDA leverages multi-tensor updates to minimize overhead from launch latencies.",
+      "related_apis": [
+        "torch.optim.AdamW",
+        "torch.optim.Adamax",
+        "torch.optim.RMSprop"
+      ],
+      "framework_migration_notes": "Matches tf.keras.optimizers.Adam. In PyTorch, if weight decay is needed, explicitly prefer torch.optim.AdamW.",
+      "tensorflow_equivalent": "optim.Adam → tf.keras.optimizers.Adam",
+      "framework_equivalent": "optim.Adam → tf.keras.optimizers.Adam",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Adam",
+          "Adaptive Moment Estimation"
+        ],
+        "search_terms": [
+          "pytorch adam optimizer",
+          "adam learning rate",
+          "adam eps setting"
+        ],
+        "keywords": [
+          "optimizer",
+          "adam",
+          "adaptive",
+          "first-moment",
+          "second-moment"
+        ],
+        "confused_with": [
+          "optim.AdamW (standard *L*2​ penalty vs decoupled weight decay)"
+        ]
+      },
+      "related_models": [
+        "bert",
+        "roberta",
+        "t5",
+        "gpt"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.optim.Adam.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.optim.Adam.html"
+    },
+    {
+      "task": "Optimize Model with AdamW (optim.AdamW)",
+      "problem_solved": "Decouples weight decay regularization from gradient updates in Adam, ensuring proper regularization regardless of gradient magnitude scaling.",
+      "mental_trigger": "I need an optimizer for Transformers or modern neural networks that applies true weight decay alongside adaptive gradient scaling.",
+      "syntax": "torch.optim.AdamW(  \n    params,  \n    lr=0.001,  \n    betas=(0.9, 0.999),  \n    eps=1e-08,  \n    weight_decay=0.01,  \n    amsgrad=False,  \n    *,  \n    maximize=False,  \n    foreach=None,  \n    capturable=False,  \n    differentiable=False,  \n    fused=None  \n)",
+      "important_parameters": [
+        "lr (float, default=1e-3): Learning rate.",
+        "betas (Tuple[float, float], default=(0.9, 0.999)): Moving average coefficients for first and second moments.",
+        "weight_decay (float, default=1e-2): Decoupled weight decay coefficient applied directly to parameters.",
+        "eps (float, default=1e-8): Stability constant added to denominator.",
+        "fused (bool, default=None): Fused CUDA implementation for accelerating model step times."
+      ],
+      "important_params": [
+        "lr (float, default=1e-3): Learning rate.",
+        "betas (Tuple[float, float], default=(0.9, 0.999)): Moving average coefficients for first and second moments.",
+        "weight_decay (float, default=1e-2): Decoupled weight decay coefficient applied directly to parameters.",
+        "eps (float, default=1e-8): Stability constant added to denominator.",
+        "fused (bool, default=None): Fused CUDA implementation for accelerating model step times."
+      ],
+      "return_value": "An instance of torch.optim.AdamW configured for decoupled weight decay optimization.",
+      "example": "import torch  \nimport torch.nn as nn\n\nmodel = nn.Sequential(  \n    nn.Linear(768, 768),  \n    nn.ReLU(),  \n    nn.Linear(768, 10)  \n)\n\n# Exclude bias and LayerNorm parameters from weight decay  \nno_decay = ['bias', 'LayerNorm.weight', 'norm.weight']  \noptimizer_grouped_parameters = [  \n    {  \n        'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)],  \n        'weight_decay': 0.01,  \n    },  \n    {  \n        'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)],  \n        'weight_decay': 0.0,  \n    },  \n]\n\noptimizer = torch.optim.AdamW(optimizer_grouped_parameters, lr=5e-5)",
+      "use_when": "Training or fine-tuning Transformer-based models (BERT, ViT, LLaMA, GPT).\nUsing non-zero weight decay with adaptive optimizers to ensure correct regularization strength.",
+      "avoid_when": "Training sparse parameters where Adagrad or standard SGD is better suited.\nMemory constraints forbid maintaining two moment state tensors per parameter.",
+      "gotchas": [
+        "Setting weight_decay=0 makes AdamW mathematically equivalent to standard Adam.",
+        "Applying weight decay to bias parameters or layer normalization weights can lead to underfitting or instability; always separate them into parameter groups with weight_decay=0."
+      ],
+      "performance_notes": "Shares memory requirements with Adam: stores 2 additional FP32 tensors per parameter.\nfused=True yields significant execution speedups on NVIDIA GPUs when supported.",
+      "related_apis": [
+        "torch.optim.Adam",
+        "torch.optim.SGD"
+      ],
+      "framework_migration_notes": "Replaces tf.keras.optimizers.AdamW. Make sure to pass non-zero weight_decay to benefit from the decoupled formulation.",
+      "tensorflow_equivalent": "optim.AdamW → tf.keras.optimizers.AdamW",
+      "framework_equivalent": "optim.AdamW → tf.keras.optimizers.AdamW",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "AdamW",
+          "Decoupled Weight Decay Adam"
+        ],
+        "search_terms": [
+          "pytorch adamw",
+          "adam vs adamw",
+          "adamw transformer weight decay"
+        ],
+        "keywords": [
+          "adamw",
+          "decoupled-weight-decay",
+          "transformer",
+          "llm",
+          "vit"
+        ],
+        "confused_with": [
+          "optim.Adam (Adam calculates *L*2​ decay inside gradient update; AdamW subtracts decay directly from weights)"
+        ]
+      },
+      "related_models": [
+        "vit",
+        "transformer",
+        "bert",
+        "roberta",
+        "t5",
+        "bart",
+        "gpt",
+        "llama",
+        "qwen",
+        "gemma",
+        "deepseek"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder",
+        "transfer-learning-for-vision",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide",
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.optim.AdamW.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.optim.AdamW.html"
+    },
+    {
+      "task": "Optimize Model with RMSprop (optim.RMSprop)",
+      "problem_solved": "Divides learning rate by an exponentially decaying average of squared gradients to resolve rapidly diminishing learning rates in non-stationary problems.",
+      "mental_trigger": "I need an adaptive optimizer for recurrent networks or reinforcement learning tasks where loss landscapes change over time.",
+      "syntax": "torch.optim.RMSprop(  \n    params,  \n    lr=0.01,  \n    alpha=0.99,  \n    eps=1e-08,  \n    weight_decay=0,  \n    momentum=0,  \n    centered=False,  \n    foreach=None,  \n    maximize=False,  \n    differentiable=False  \n)",
+      "important_parameters": [
+        "lr (float, default=1e-2): Learning rate.",
+        "alpha (float, default=0.99): Smoothing constant for moving average of squared gradients.",
+        "eps (float, default=1e-8): Term added to denominator for numerical stability.",
+        "momentum (float, default=0): Momentum factor.",
+        "centered (bool, default=False): If True, computes centered RMSprop where gradients are normalized by estimation of variance."
+      ],
+      "important_params": [
+        "lr (float, default=1e-2): Learning rate.",
+        "alpha (float, default=0.99): Smoothing constant for moving average of squared gradients.",
+        "eps (float, default=1e-8): Term added to denominator for numerical stability.",
+        "momentum (float, default=0): Momentum factor.",
+        "centered (bool, default=False): If True, computes centered RMSprop where gradients are normalized by estimation of variance."
+      ],
+      "return_value": "An instance of torch.optim.RMSprop initialized with parameters and exponential moving average buffers.",
+      "example": "import torch  \nimport torch.nn as nn\n\nmodel = nn.GRU(10, 20, batch_first=True)  \noptimizer = torch.optim.RMSprop(model.parameters(), lr=0.001, alpha=0.99, momentum=0.9)\n\nx = torch.randn(2, 5, 10)  \nout, _ = model(x)  \nloss = out.sum()\n\noptimizer.zero_grad()  \nloss.backward()  \noptimizer.step()",
+      "use_when": "Training Recurrent Neural Networks (RNNs, LSTMs, GRUs).\nImplementing Reinforcement Learning algorithms (e.g., A2C, DQN).",
+      "avoid_when": "Fine-tuning large language models or modern vision transformers where AdamW is standard.\nGradient updates require explicit decoupled weight decay.",
+      "gotchas": [
+        "Default learning rate is 0.01, which is much higher than Adam's default (0.001) and often causes divergence if not reduced.",
+        "Setting centered=True provides more stable training, but requires storing an extra buffer for average gradients."
+      ],
+      "performance_notes": "Memory overhead: Stores 1 extra state buffer (square gradient average) when uncentered, 2 state buffers when centered or when momentum is non-zero.",
+      "related_apis": [
+        "torch.optim.Adam",
+        "torch.optim.Adagrad"
+      ],
+      "framework_migration_notes": "Matches tf.keras.optimizers.RMSprop. Parameter alpha in PyTorch maps to rho in TensorFlow RMSprop.",
+      "tensorflow_equivalent": "optim.RMSprop → tf.keras.optimizers.RMSprop",
+      "framework_equivalent": "optim.RMSprop → tf.keras.optimizers.RMSprop",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "RMSprop",
+          "Root Mean Squared Propagation"
+        ],
+        "search_terms": [
+          "pytorch rmsprop",
+          "rmsprop vs adam",
+          "rmsprop alpha parameter"
+        ],
+        "keywords": [
+          "optimizer",
+          "rmsprop",
+          "recurrent",
+          "reinforcement-learning"
+        ],
+        "confused_with": [
+          "optim.Adagrad (Adagrad accumulates all squared gradients; RMSprop uses an exponential moving average)"
+        ]
+      },
+      "related_models": [
+        "logistic-regression"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.optim.RMSprop.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.optim.RMSprop.html"
+    },
+    {
+      "task": "Optimize Model with Adagrad (optim.Adagrad)",
+      "problem_solved": "Adapts the learning rate individually to parameters, performing larger updates for infrequent parameters and smaller updates for frequent parameters.",
+      "mental_trigger": "I need an optimizer specifically designed for sparse data, sparse features, or text embedding layers where gradients are frequently zero.",
+      "syntax": "torch.optim.Adagrad(  \n    params,  \n    lr=0.01,  \n    lr_decay=0,  \n    weight_decay=0,  \n    initial_accumulator_value=0,  \n    eps=1e-10,  \n    *,  \n    foreach=None,  \n    maximize=False,  \n    differentiable=False,  \n    fused=None  \n)",
+      "important_parameters": [
+        "lr (float, default=1e-2): Learning rate.",
+        "lr_decay (float, default=0): Learning rate decay rate.",
+        "weight_decay (float, default=0): Weight decay (*L*2​ penalty).",
+        "initial_accumulator_value (float, default=0): Starting value for sum of squared gradients.",
+        "eps (float, default=1e-10): Term added to denominator for numerical stability."
+      ],
+      "important_params": [
+        "lr (float, default=1e-2): Learning rate.",
+        "lr_decay (float, default=0): Learning rate decay rate.",
+        "weight_decay (float, default=0): Weight decay (*L*2​ penalty).",
+        "initial_accumulator_value (float, default=0): Starting value for sum of squared gradients.",
+        "eps (float, default=1e-10): Term added to denominator for numerical stability."
+      ],
+      "return_value": "An instance of torch.optim.Adagrad targeting the designated parameter tensors.",
+      "example": "import torch  \nimport torch.nn as nn\n\nembedding = nn.EmbeddingBag(1000, 16, mode='sum')  \noptimizer = torch.optim.Adagrad(embedding.parameters(), lr=0.05)\n\ninput_ids = torch.tensor([1, 2, 4, 5], dtype=torch.long)  \noffsets = torch.tensor([0, 2], dtype=torch.long)\n\noptimizer.zero_grad()  \noutput = embedding(input_ids, offsets)  \nloss = output.sum()  \nloss.backward()  \noptimizer.step()",
+      "use_when": "Training models with sparse embeddings or bag-of-words text inputs.\nHandling extreme sparse gradient features where parameter updates happen infrequently.",
+      "avoid_when": "Training deep continuous neural networks (CNNs, Transformers) over many epochs, because accumulated squared gradients continually grow in the denominator, forcing the learning rate to shrink to zero.",
+      "gotchas": [
+        "Learning rate monotonically decreases during training because accumulated squared gradients only accumulate positive values in the denominator.",
+        "Default learning rate (0.01) is often too low or too high depending on the sparsity scale."
+      ],
+      "performance_notes": "Low state overhead compared to Adam: maintains only 1 accumulated squared gradient tensor per parameter.",
+      "related_apis": [
+        "torch.optim.Adamax",
+        "torch.optim.RMSprop"
+      ],
+      "framework_migration_notes": "Matches tf.keras.optimizers.Adagrad.",
+      "tensorflow_equivalent": "optim.Adagrad → tf.keras.optimizers.Adagrad",
+      "framework_equivalent": "optim.Adagrad → tf.keras.optimizers.Adagrad",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Adagrad",
+          "Adaptive Gradient Algorithm"
+        ],
+        "search_terms": [
+          "pytorch adagrad",
+          "adagrad sparse gradients",
+          "adagrad embedding optimizer"
+        ],
+        "keywords": [
+          "optimizer",
+          "adagrad",
+          "sparse",
+          "embeddings"
+        ],
+        "confused_with": [
+          "optim.RMSprop (RMSprop prevents learning rate decay to zero by using a moving average instead of monotonic sum)"
+        ]
+      },
+      "related_models": [
+        "logistic-regression"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.optim.Adagrad.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.optim.Adagrad.html"
+    },
+    {
+      "task": "Optimize Model with Adamax (optim.Adamax)",
+      "problem_solved": "A variant of Adam based on the infinity norm (*L*∞​), stabilizing gradient updates when parameters receive large sporadic gradients.",
+      "mental_trigger": "I need a variant of Adam that is more resilient to extreme gradient spikes or large embedding updates.",
+      "syntax": "torch.optim.Adamax(  \n    params,  \n    lr=0.002,  \n    betas=(0.9, 0.999),  \n    eps=1e-08,  \n    weight_decay=0,  \n    *,  \n    foreach=None,  \n    maximize=False,  \n    differentiable=False  \n)",
+      "important_parameters": [
+        "lr (float, default=2e-3): Learning rate.",
+        "betas (Tuple[float, float], default=(0.9, 0.999)): Coefficients for computing running average of gradient and maximum gradient magnitude.",
+        "eps (float, default=1e-8): Numerical stability term.",
+        "weight_decay (float, default=0): *L*2​ regularization penalty."
+      ],
+      "important_params": [
+        "lr (float, default=2e-3): Learning rate.",
+        "betas (Tuple[float, float], default=(0.9, 0.999)): Coefficients for computing running average of gradient and maximum gradient magnitude.",
+        "eps (float, default=1e-8): Numerical stability term.",
+        "weight_decay (float, default=0): *L*2​ regularization penalty."
+      ],
+      "return_value": "An instance of torch.optim.Adamax.",
+      "example": "import torch  \nimport torch.nn as nn\n\nmodel = nn.Linear(10, 2)  \noptimizer = torch.optim.Adamax(model.parameters(), lr=0.002, betas=(0.9, 0.999))\n\nx = torch.randn(4, 10)  \ny = torch.randint(0, 2, (4,))  \ncriterion = nn.CrossEntropyLoss()\n\noptimizer.zero_grad()  \nloss = criterion(model(x), y)  \nloss.backward()  \noptimizer.step()",
+      "use_when": "Training models where gradients exhibit extreme norm outliers or instability under Adam.\nProcessing models with large scale embeddings or sparse updates requiring bound variance.",
+      "avoid_when": "Fine-tuning standard Pretrained Language Models (LLMs) or Vision Transformers where AdamW hyperparameter defaults are heavily benchmarked.",
+      "gotchas": [
+        "Default learning rate is 0.002 (unlike Adam's 0.001).",
+        "Does not decouple weight decay automatically like AdamW."
+      ],
+      "performance_notes": "Stores 2 moment tensors per parameter, similar to standard Adam memory footprints.",
+      "related_apis": [
+        "torch.optim.Adam",
+        "torch.optim.AdamW"
+      ],
+      "framework_migration_notes": "Matches tf.keras.optimizers.Adamax.",
+      "tensorflow_equivalent": "optim.Adamax → tf.keras.optimizers.Adamax",
+      "framework_equivalent": "optim.Adamax → tf.keras.optimizers.Adamax",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Adamax",
+          "Adam Infinity Norm"
+        ],
+        "search_terms": [
+          "pytorch adamax",
+          "adamax vs adam",
+          "infinity norm adam"
+        ],
+        "keywords": [
+          "optimizer",
+          "adamax",
+          "infinity-norm",
+          "adaptive"
+        ],
+        "confused_with": [
+          "optim.Adam (Adam uses *L*2​ norm for variance estimation, Adamax uses *L*∞​ norm)"
+        ]
+      },
+      "related_models": [
+        "bert",
+        "gpt"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.optim.Adamax.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.optim.Adamax.html"
+    },
+    {
+      "task": "Reset Accumulated Gradients (optimizer.zero_grad)",
+      "problem_solved": "Clears parameter gradients (.grad attributes) before computing backpropagation for the current iteration, preventing unexpected gradient accumulation across iterations.",
+      "mental_trigger": "I am starting a new optimization iteration and must wipe old gradients before calling loss.backward().",
+      "syntax": "optimizer.zero_grad(set_to_none=True)",
+      "important_parameters": [
+        "set_to_none (bool, default=True in modern workflows): When set to True, sets .grad to None instead of filling existing tensors with zeros, saving memory bandwidth and execution overhead."
+      ],
+      "important_params": [
+        "set_to_none (bool, default=True in modern workflows): When set to True, sets .grad to None instead of filling existing tensors with zeros, saving memory bandwidth and execution overhead."
+      ],
+      "return_value": "None. Mutates parameter .grad attributes in place.",
+      "example": "import torch  \nimport torch.nn as nn\n\nmodel = nn.Linear(5, 1)  \noptimizer = torch.optim.SGD(model.parameters(), lr=0.01)\n\nx = torch.randn(2, 5)  \nloss = model(x).sum()\n\n# Reset gradients explicitly setting them to None for optimal performance  \noptimizer.zero_grad(set_to_none=True)  \nloss.backward()  \noptimizer.step()",
+      "use_when": "Before calling loss.backward() in every training step (unless intentionally implementing gradient accumulation).",
+      "avoid_when": "Accumulating gradients across multiple micro-batches (call zero_grad only once every *N* steps after optimizer.step()).",
+      "gotchas": [
+        "Forgetting to call zero_grad() causes gradients from consecutive batches to sum together, rapidly causing exploding gradients.",
+        "If set_to_none=True is used, .grad is None until backward() is called. Downstream code checking .grad.shape before backward() will raise an AttributeError."
+      ],
+      "performance_notes": "set_to_none=True avoids memory write operations (deallocates or sets references to None) and improves update step efficiency.",
+      "related_apis": [
+        "torch.Tensor.backward",
+        "torch.optim.Optimizer.step"
+      ],
+      "framework_migration_notes": "In PyTorch, gradients accumulate by default. In TensorFlow/Keras, GradientTape computes gradients explicitly without manual reset unless low-level custom loops are used.",
+      "tensorflow_equivalent": "optimizer.zero_grad → Preparation step before tape.gradient() (conceptually)",
+      "framework_equivalent": "optimizer.zero_grad → Preparation step before tape.gradient() (conceptually)",
+      "version_compatibility": "set_to_none=True became available in PyTorch 1.7 and is recommended for PyTorch 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "zero_grad",
+          "clear gradients",
+          "reset gradients"
+        ],
+        "search_terms": [
+          "pytorch zero_grad set_to_none",
+          "when to call zero_grad",
+          "gradient accumulation zero_grad"
+        ],
+        "keywords": [
+          "zero_grad",
+          "gradient",
+          "memory",
+          "parameter",
+          "backward"
+        ],
+        "confused_with": [
+          "optimizer.step (zeroing gradients vs executing the weight update)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert",
+        "llama"
+      ],
+      "related_patterns": [
+        "gradient-accumulation",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.optim.Optimizer.zero_grad.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.optim.Optimizer.zero_grad.html"
+    },
+    {
+      "task": "Update Model Parameters (optimizer.step)",
+      "problem_solved": "Applies accumulated parameter gradients to update model weight values according to the optimizer's specific update rule.",
+      "mental_trigger": "I calculated gradients with loss.backward() and now need to update my model weights.",
+      "syntax": "optimizer.step(closure=None)",
+      "important_parameters": [
+        "closure (Callable, optional): A closure function that re-evaluates the model and returns the loss. Required by second-order optimizers like LBFGS."
+      ],
+      "important_params": [
+        "closure (Callable, optional): A closure function that re-evaluates the model and returns the loss. Required by second-order optimizers like LBFGS."
+      ],
+      "return_value": "Optional loss value if a closure function is provided; otherwise returns None.",
+      "example": "import torch  \nimport torch.nn as nn\n\nmodel = nn.Linear(5, 1)  \noptimizer = torch.optim.SGD(model.parameters(), lr=0.01)\n\nx = torch.randn(2, 5)  \ntarget = torch.randn(2, 1)  \ncriterion = nn.MSELoss()\n\n# Zero grad -> Forward -> Backward -> Step  \noptimizer.zero_grad(set_to_none=True)  \noutput = model(x)  \nloss = criterion(output, target)  \nloss.backward()\n\n# Perform parameter update  \noptimizer.step()",
+      "use_when": "Updating model parameters at every batch step, or after completing a gradient accumulation cycle.",
+      "avoid_when": "Parameter .grad attributes are None or contain NaN/Inf values (e.g., during mixed precision scaling, check scaler.step() or clip gradients first).",
+      "gotchas": [
+        "Calling optimizer.step() before loss.backward() results in a no-op because .grad attributes are empty or unset.",
+        "Calling scheduler.step() before optimizer.step() triggers PyTorch user warnings in recent versions. Always execute optimizer.step() before scheduler.step()."
+      ],
+      "performance_notes": "optimizer.step() performance scales linearly with parameter count. Using fused=True or foreach=True optimizers minimizes launch overhead on CUDA devices.",
+      "related_apis": [
+        "torch.optim.Optimizer.zero_grad",
+        "torch.nn.utils.clip_grad_norm_"
+      ],
+      "framework_migration_notes": "Maps to optimizer.apply_gradients(zip(grads, vars)) in TensorFlow low-level training routines.",
+      "tensorflow_equivalent": "optimizer.step → optimizer.apply_gradients",
+      "framework_equivalent": "optimizer.step → optimizer.apply_gradients",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "step",
+          "update weights",
+          "optimizer step"
+        ],
+        "search_terms": [
+          "pytorch optimizer step",
+          "optimizer.step order",
+          "scheduler before step"
+        ],
+        "keywords": [
+          "step",
+          "update",
+          "parameters",
+          "gradient",
+          "optimizer"
+        ],
+        "confused_with": [
+          "scheduler.step (updating weights vs updating learning rate)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert",
+        "llama"
+      ],
+      "related_patterns": [
+        "gradient-accumulation",
+        "learning-rate-scheduling"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.optim.Optimizer.step.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.optim.Optimizer.step.html"
+    },
+    {
+      "task": "Configure Multiple Parameter Groups",
+      "problem_solved": "Assigns different hyperparameters (such as distinct learning rates or weight decay factors) to different subsets of model parameters within a single optimizer instance.",
+      "mental_trigger": "I need to optimize different parts of my model (e.g., backbone vs head, weights vs biases) with different learning rates or weight decay settings.",
+      "syntax": "optimizer = torch.optim.AdamW([  \n    {'params': group1_params, 'lr': 1e-4, 'weight_decay': 0.01},  \n    {'params': group2_params, 'lr': 1e-3, 'weight_decay': 0.0}  \n])",
+      "important_parameters": [
+        "params (iterable of Tensors or dicts): Parameter dicts containing a required 'params' key mapped to an iterable of parameters, alongside overriding hyperparameter keys."
+      ],
+      "important_params": [
+        "params (iterable of Tensors or dicts): Parameter dicts containing a required 'params' key mapped to an iterable of parameters, alongside overriding hyperparameter keys."
+      ],
+      "return_value": "An instance of torch.optim.Optimizer configured with an internal param_groups list.",
+      "example": "import torch  \nimport torch.nn as nn\n\nclass CustomModel(nn.Module):  \n    def __init__(self):  \n        super().__init__()  \n        self.backbone = nn.Linear(10, 10)  \n        self.head = nn.Linear(10, 2)\n\nmodel = CustomModel()\n\n# Define parameter groups with distinct learning rates  \nparam_groups = [  \n    {'params': model.backbone.parameters(), 'lr': 1e-4},  \n    {'params': model.head.parameters(), 'lr': 1e-2}  \n]\n\noptimizer = torch.optim.AdamW(param_groups, weight_decay=0.01)\n\n# Verify groups  \nfor i, group in enumerate(optimizer.param_groups):  \n    print(f\"Group {i}: params_count={len(group['params'])}, lr={group['lr']}\")",
+      "use_when": "Transfer learning: fine-tuning a pretrained backbone with a lower learning rate while training a new head with a higher learning rate.\nDisabling weight decay for biases and LayerNorm/BatchNorm weights while applying it to 2D weight matrices.",
+      "avoid_when": "All model parameters share uniform learning rates and weight decay settings.",
+      "gotchas": [
+        "Every model parameter must appear at most once across all parameter groups. Overlapping parameters cause gradient updates to be applied multiple times or corrupt state.",
+        "If a hyperparameter key is omitted from a group dictionary, it falls back to the top-level optimizer keyword default."
+      ],
+      "performance_notes": "Modest administrative overhead. Having dozens of distinct parameter groups adds negligible computational time during optimizer.step().",
+      "related_apis": [
+        "torch.optim.Optimizer.add_param_group"
+      ],
+      "framework_migration_notes": "In TensorFlow/Keras, parameter-specific hyperparameters usually require custom training steps or wrappers. PyTorch natively supports this through dictionary lists in Optimizer.__init__.",
+      "tensorflow_equivalent": "No direct equivalent. Custom training loops required in TensorFlow.",
+      "framework_equivalent": "No direct equivalent. Custom training loops required in TensorFlow.",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Parameter Groups",
+          "Optimizer Param Groups",
+          "Layer-wise Learning Rates"
+        ],
+        "search_terms": [
+          "pytorch param_groups",
+          "different learning rate for layers pytorch",
+          "exclude bias from weight decay"
+        ],
+        "keywords": [
+          "param_groups",
+          "parameter-groups",
+          "fine-tuning",
+          "transfer-learning"
+        ],
+        "confused_with": [
+          "model.parameters() (passing all parameters uniformly vs splitting into dictionaries)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "roberta",
+        "llama"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "transfer-learning-for-vision",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/optim.html%23per-parameter-options",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/optim.html%23per-parameter-options"
+    },
+    {
+      "task": "Freeze and Exclude Parameters from Optimization",
+      "problem_solved": "Prevents specific parameter tensors from receiving gradient updates by setting requires_grad=False and omitting them from the optimizer parameter list, saving compute and memory.",
+      "mental_trigger": "I am doing transfer learning or feature extraction and want to freeze the pretrained layers completely.",
+      "syntax": "for param in model.backbone.parameters():  \n    param.requires_grad = False\n\noptimizer = torch.optim.AdamW(  \n    filter(lambda p: p.requires_grad, model.parameters()),  \n    lr=1e-3  \n)",
+      "important_parameters": [
+        "filter(predicate, iterable): Python standard filter function used to extract parameters where requires_grad evaluates to True."
+      ],
+      "important_params": [
+        "filter(predicate, iterable): Python standard filter function used to extract parameters where requires_grad evaluates to True."
+      ],
+      "return_value": "An optimizer instance containing references only to trainable parameters.",
+      "example": "import torch  \nimport torch.nn as nn\n\nclass TransferModel(nn.Module):  \n    def __init__(self):  \n        super().__init__()  \n        self.feature_extractor = nn.Linear(10, 10)  \n        self.classifier = nn.Linear(10, 2)\n\nmodel = TransferModel()\n\n# Freeze feature extractor  \nfor param in model.feature_extractor.parameters():  \n    param.requires_grad = False\n\n# Pass only trainable parameters to optimizer  \ntrainable_params = [p for p in model.parameters() if p.requires_grad]  \noptimizer = torch.optim.SGD(trainable_params, lr=0.01)\n\nprint(f\"Total params: {len(list(model.parameters()))}, Trainable params in optimizer: {len(optimizer.param_groups[0]['params'])}\")",
+      "use_when": "Feature extraction in vision or NLP where base backbone weights must remain frozen.\nParameter-Efficient Fine-Tuning (PEFT / LoRA) where frozen base weights do not require optimizer state memory.",
+      "avoid_when": "Full fine-tuning where all parameters require end-to-end gradient updates.",
+      "gotchas": [
+        "If you set requires_grad=False *after* creating the optimizer, the optimizer still holds references to those parameters in its state and will waste memory tracking them. Always filter before initializing the optimizer.",
+        "Unfrozen layers placed after frozen layers still require standard backpropagation to compute upstream gradients."
+      ],
+      "performance_notes": "Excluding frozen parameters from the optimizer eliminates memory allocations for momentum and moment buffers (e.g., saving 8 bytes per parameter for Adam).",
+      "related_apis": [
+        "torch.Tensor.requires_grad_",
+        "torch.nn.Module.requires_grad_"
+      ],
+      "framework_migration_notes": "In TensorFlow, setting layer.trainable = False dynamically excludes weights from compile step updates. In PyTorch, filtering must explicitly pass p.requires_grad to the optimizer.",
+      "tensorflow_equivalent": "layer.trainable = False → param.requires_grad = False + filter in optimizer",
+      "framework_equivalent": "layer.trainable = False → param.requires_grad = False + filter in optimizer",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Freeze layers",
+          "exclude parameters",
+          "freeze weights pytorch"
+        ],
+        "search_terms": [
+          "pytorch freeze parameters optimizer",
+          "requires_grad false optimizer",
+          "filter trainable parameters"
+        ],
+        "keywords": [
+          "freeze",
+          "requires_grad",
+          "transfer-learning",
+          "peft",
+          "lora"
+        ],
+        "confused_with": [
+          "torch.no_grad() (disabling autograd globally vs disabling parameter updates permanently)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "llama"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "transfer-learning-for-vision",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/notes/autograd.html%23excluding-subgraphs-from-backward",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/notes/autograd.html%23excluding-subgraphs-from-backward"
+    },
+    {
+      "task": "Apply Different Learning Rates to Parameter Groups",
+      "problem_solved": "Modifies learning rates across parameter groups dynamically or statically during or after initialization.",
+      "mental_trigger": "I want to inspect or adjust individual learning rates per parameter group during my custom training loop.",
+      "syntax": "for param_group in optimizer.param_groups:  \n    param_group['lr'] = new_lr",
+      "important_parameters": [
+        "param_group['lr'] (float): The specific learning rate scalar assigned to a parameter group dictionary."
+      ],
+      "important_params": [
+        "param_group['lr'] (float): The specific learning rate scalar assigned to a parameter group dictionary."
+      ],
+      "return_value": "None. Updates param_groups dictionaries in place.",
+      "example": "import torch  \nimport torch.nn as nn\n\nmodel = nn.Sequential(  \n    nn.Linear(10, 5),  \n    nn.Linear(5, 2)  \n)\n\noptimizer = torch.optim.SGD([  \n    {'params': model[0].parameters(), 'lr': 0.01},  \n    {'params': model[1].parameters(), 'lr': 0.1}  \n])\n\n# Scale down learning rates by factor of 0.5 manually  \nfor i, param_group in enumerate(optimizer.param_groups):  \n    param_group['lr'] *= 0.5  \n    print(f\"Group {i} updated LR: {param_group['lr']}\")",
+      "use_when": "Implementing custom learning rate warmup or decay policies that cannot be represented by standard lr_scheduler classes.\nAdjusting layer-wise learning rate decay (LLRD) for deep Transformers.",
+      "avoid_when": "Standard PyTorch schedulers (e.g., CosineAnnealingLR) already provide the needed decay schedule.",
+      "gotchas": [
+        "Overwriting param_group['lr'] directly while an lr_scheduler is active will cause the scheduler to overwrite your manual changes on its next .step().",
+        "Ensure every group intended for rate modification is explicitly targeted by key or index."
+      ],
+      "performance_notes": "In-place list mutation with negligible compute footprint.",
+      "related_apis": [
+        "torch.optim.lr_scheduler",
+        "torch.optim.Optimizer.add_param_group"
+      ],
+      "framework_migration_notes": "Directly accesses the internal param_groups list, a pattern native to PyTorch.",
+      "tensorflow_equivalent": "optimizer.learning_rate.assign(new_lr) → param_group['lr'] = new_lr",
+      "framework_equivalent": "optimizer.learning_rate.assign(new_lr) → param_group['lr'] = new_lr",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Change learning rate",
+          "custom lr schedule",
+          "set learning rate manually"
+        ],
+        "search_terms": [
+          "pytorch change lr dynamically",
+          "modify param_groups lr",
+          "set optimizer learning rate"
+        ],
+        "keywords": [
+          "learning-rate",
+          "param_groups",
+          "dynamic-lr",
+          "optimization"
+        ],
+        "confused_with": [
+          "lr_scheduler.step() (automated scheduling vs direct manual dictionary assignment)"
+        ]
+      },
+      "related_models": [
+        "bert",
+        "roberta",
+        "vit",
+        "llama"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling"
+      ],
+      "related_workflows": [
+        "transfer-learning-for-vision",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/optim.html",
+      "official_docs": "https://pytorch.org/docs/stable/optim.html"
+    },
+    {
+      "task": "Save and Restore Optimizer State (optimizer.state_dict / load_state_dict)",
+      "problem_solved": "Serializes and restores optimizer state buffers (such as momentum and step counters) to ensure exact training resumption across checkpoints.",
+      "mental_trigger": "I am saving a training checkpoint to disk and must save the optimizer's momentum and step state alongside model weights.",
+      "syntax": "# Save state  \nstate = optimizer.state_dict()\n\n# Load state  \noptimizer.load_state_dict(state)",
+      "important_parameters": [
+        "state_dict (dict): Dictionary containing optimizer hyperparameters (param_groups) and current optimization state buffers (state)."
+      ],
+      "important_params": [
+        "state_dict (dict): Dictionary containing optimizer hyperparameters (param_groups) and current optimization state buffers (state)."
+      ],
+      "return_value": "optimizer.state_dict() returns a Python dictionary containing full optimizer state. load_state_dict() returns None.",
+      "example": "import torch  \nimport torch.nn as nn  \nimport tempfile\n\nmodel = nn.Linear(5, 2)  \noptimizer = torch.optim.Adam(model.parameters(), lr=0.001)\n\n# Perform dummy step to populate optimizer state buffers  \nx = torch.randn(2, 5)  \nloss = model(x).sum()  \noptimizer.zero_grad()  \nloss.backward()  \noptimizer.step()\n\n# Save optimizer checkpoint  \ncheckpoint_path = tempfile.mktemp()  \ntorch.save({'optimizer_state': optimizer.state_dict()}, checkpoint_path)\n\n# Restore optimizer state into a new optimizer instance  \nnew_optimizer = torch.optim.Adam(model.parameters(), lr=0.001)  \ncheckpoint = torch.load(checkpoint_path, weights_only=True)  \nnew_optimizer.load_state_dict(checkpoint['optimizer_state'])\n\nprint(f\"Restored state step counter: {new_optimizer.state[model.weight]['step']}\")",
+      "use_when": "Saving regular training checkpoints for fault-tolerant cluster training or job resumption.\nPre-allocating training states across distributed GPU ranks.",
+      "avoid_when": "Saving model weights exclusively for inference (inference does not require optimizer states).",
+      "gotchas": [
+        "Always move model parameters to the target device (e.g., model.to('cuda')) *before* calling optimizer.load_state_dict(). Otherwise, optimizer state tensors remain on CPU.",
+        "Loading state dict into an optimizer with a different model architecture or mismatched parameter group structure will raise a ValueError."
+      ],
+      "performance_notes": "Saving optimizer state dicts for Adam doubles checkpoint file size relative to model weights because Adam stores 2 state float tensors per parameter.",
+      "related_apis": [
+        "torch.save",
+        "torch.load",
+        "nn.Module.state_dict"
+      ],
+      "framework_migration_notes": "Similar to saving checkpoint objects in TensorFlow via tf.train.Checkpoint.",
+      "tensorflow_equivalent": "ckpt.save() / ckpt.restore() → optimizer.state_dict() / optimizer.load_state_dict()",
+      "framework_equivalent": "ckpt.save() / ckpt.restore() → optimizer.state_dict() / optimizer.load_state_dict()",
+      "version_compatibility": "Use torch.load(..., weights_only=True) in modern PyTorch releases to avoid unsafe unpickling security risks.",
+      "search_metadata": {
+        "aliases": [
+          "save optimizer",
+          "load optimizer state",
+          "optimizer checkpointing"
+        ],
+        "search_terms": [
+          "pytorch load_state_dict optimizer",
+          "resume training optimizer state",
+          "optimizer state_dict cuda device"
+        ],
+        "keywords": [
+          "state_dict",
+          "load_state_dict",
+          "checkpointing",
+          "serialization",
+          "momentum"
+        ],
+        "confused_with": [
+          "model.state_dict() (model weight dictionary vs optimizer state dictionary)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert",
+        "llama",
+        "gpt"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.optim.Optimizer.state_dict.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.optim.Optimizer.state_dict.html"
+    },
+    {
+      "task": "Apply Step Learning Rate Scheduler (lr_scheduler.StepLR)",
+      "problem_solved": "Decays the learning rate of each parameter group by gamma every step_size epochs.",
+      "mental_trigger": "I want to drop my learning rate by a fixed factor (e.g., multiply by 0.1) every fixed number of epochs (e.g., every 30 epochs).",
+      "syntax": "torch.optim.lr_scheduler.StepLR(  \n    optimizer,  \n    step_size,  \n    gamma=0.1,  \n    last_epoch=-1,  \n    verbose='deprecated'  \n)",
+      "important_parameters": [
+        "optimizer (Optimizer): Wrapped optimizer instance.",
+        "step_size (int): Period of learning rate decay in epoch count.",
+        "gamma (float, default=0.1): Multiplicative factor of learning rate decay.",
+        "last_epoch (int, default=-1): The index of last epoch when resuming training."
+      ],
+      "important_params": [
+        "optimizer (Optimizer): Wrapped optimizer instance.",
+        "step_size (int): Period of learning rate decay in epoch count.",
+        "gamma (float, default=0.1): Multiplicative factor of learning rate decay.",
+        "last_epoch (int, default=-1): The index of last epoch when resuming training."
+      ],
+      "return_value": "An instance of StepLR tracking the specified optimizer.",
+      "example": "import torch  \nimport torch.nn as nn\n\nmodel = nn.Linear(10, 2)  \noptimizer = torch.optim.SGD(model.parameters(), lr=0.1)  \nscheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.1)\n\nfor epoch in range(5):  \n    optimizer.step()  \n    scheduler.step()  \n    print(f\"Epoch {epoch+1} LR: {scheduler.get_last_lr()[0]:.4f}\")",
+      "use_when": "Classical vision model training (e.g., standard ResNet baselines) where step decay at fixed epoch intervals is standard practice.",
+      "avoid_when": "Smoother continuous decay schedules (like Cosine Annealing) achieve better final convergence.\nLearning rate decay should be tied to validation metric performance rather than epoch count.",
+      "gotchas": [
+        "Always call scheduler.step() *after* optimizer.step(). Calling it before optimizer.step() results in skipping the initial learning rate step.",
+        "Calling get_lr() directly is discouraged; use scheduler.get_last_lr() to fetch current rates reliably."
+      ],
+      "performance_notes": "Negligible overhead. Performs basic scalar multiplication at epoch boundaries.",
+      "related_apis": [
+        "torch.optim.lr_scheduler.MultiStepLR",
+        "torch.optim.lr_scheduler.ExponentialLR"
+      ],
+      "framework_migration_notes": "Equivalent to tf.keras.optimizers.schedules.ExponentialDecay with discrete staircase steps.",
+      "tensorflow_equivalent": "lr_scheduler.StepLR → tf.keras.optimizers.schedules.ExponentialDecay(staircase=True)",
+      "framework_equivalent": "lr_scheduler.StepLR → tf.keras.optimizers.schedules.ExponentialDecay(staircase=True)",
+      "version_compatibility": "The verbose argument is deprecated in PyTorch 2.2+; inspect learning rates via get_last_lr() instead.",
+      "search_metadata": {
+        "aliases": [
+          "StepLR",
+          "step decay",
+          "step learning rate scheduler"
+        ],
+        "search_terms": [
+          "pytorch StepLR example",
+          "StepLR epoch placement",
+          "step_size gamma pytorch"
+        ],
+        "keywords": [
+          "step-lr",
+          "scheduler",
+          "step_size",
+          "gamma",
+          "decay"
+        ],
+        "confused_with": [
+          "lr_scheduler.MultiStepLR (fixed equal interval decay vs custom non-uniform epoch milestones)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "yolo"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.StepLR.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.StepLR.html"
+    },
+    {
+      "task": "Apply Multi-Step Learning Rate Scheduler (lr_scheduler.MultiStepLR)",
+      "problem_solved": "Decays the learning rate by gamma once the epoch number reaches one of the specified milestone thresholds.",
+      "mental_trigger": "I want to drop the learning rate at custom non-equidistant epoch milestones (e.g., at epoch 80, epoch 120, and epoch 150).",
+      "syntax": "torch.optim.lr_scheduler.MultiStepLR(  \n    optimizer,  \n    milestones,  \n    gamma=0.1,  \n    last_epoch=-1,  \n    verbose='deprecated'  \n)",
+      "important_parameters": [
+        "optimizer (Optimizer): Wrapped optimizer.",
+        "milestones (iterable of ints): List of epoch indices when learning rate drops occur. Must be sorted.",
+        "gamma (float, default=0.1): Multiplicative decay factor.",
+        "last_epoch (int, default=-1): Index of last epoch when resuming training."
+      ],
+      "important_params": [
+        "optimizer (Optimizer): Wrapped optimizer.",
+        "milestones (iterable of ints): List of epoch indices when learning rate drops occur. Must be sorted.",
+        "gamma (float, default=0.1): Multiplicative decay factor.",
+        "last_epoch (int, default=-1): Index of last epoch when resuming training."
+      ],
+      "return_value": "An instance of MultiStepLR.",
+      "example": "import torch  \nimport torch.nn as nn\n\nmodel = nn.Linear(10, 2)  \noptimizer = torch.optim.SGD(model.parameters(), lr=0.1)  \n# Drop LR at epoch 2 and epoch 4  \nscheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[2, 4], gamma=0.1)\n\nfor epoch in range(5):  \n    optimizer.step()  \n    scheduler.step()  \n    print(f\"Epoch {epoch+1} LR: {scheduler.get_last_lr()[0]:.4f}\")",
+      "use_when": "Domain-specific training regimes where standard equal step intervals perform worse than scheduled late drops.",
+      "avoid_when": "Epoch progression is non-deterministic or when continuous scheduling policies (e.g., Cosine) provide better generalization.",
+      "gotchas": [
+        "milestones list elements must be strictly increasing integers. Unsorted lists result in skipped decay points."
+      ],
+      "performance_notes": "Negligible overhead. Performs milestone comparison check once per epoch.",
+      "related_apis": [
+        "torch.optim.lr_scheduler.StepLR",
+        "torch.optim.lr_scheduler.CosineAnnealingLR"
+      ],
+      "framework_migration_notes": "In TensorFlow, implemented using tf.keras.optimizers.schedules.PiecewiseConstantDecay.",
+      "tensorflow_equivalent": "lr_scheduler.MultiStepLR → tf.keras.optimizers.schedules.PiecewiseConstantDecay",
+      "framework_equivalent": "lr_scheduler.MultiStepLR → tf.keras.optimizers.schedules.PiecewiseConstantDecay",
+      "version_compatibility": "The verbose argument is deprecated in PyTorch 2.2+.",
+      "search_metadata": {
+        "aliases": [
+          "MultiStepLR",
+          "multistep decay",
+          "milestone learning rate"
+        ],
+        "search_terms": [
+          "pytorch MultiStepLR milestones",
+          "drop lr at specific epochs pytorch"
+        ],
+        "keywords": [
+          "multistep",
+          "milestones",
+          "scheduler",
+          "decay",
+          "learning-rate"
+        ],
+        "confused_with": [
+          "lr_scheduler.StepLR (StepLR uses equal interval steps; MultiStepLR accepts custom milestone lists)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "yolo"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.MultiStepLR.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.MultiStepLR.html"
+    },
+    {
+      "task": "Apply Exponential Learning Rate Scheduler (lr_scheduler.ExponentialLR)",
+      "problem_solved": "Decays the learning rate of each parameter group continuously by a multiplicative factor gamma at every epoch step.",
+      "mental_trigger": "I want a smooth exponential drop in learning rate at every single epoch.",
+      "syntax": "torch.optim.lr_scheduler.ExponentialLR(  \n    optimizer,  \n    gamma,  \n    last_epoch=-1,  \n    verbose='deprecated'  \n)",
+      "important_parameters": [
+        "optimizer (Optimizer): Wrapped optimizer.",
+        "gamma (float): Multiplicative factor of learning rate decay per epoch step (e.g., 0.95).",
+        "last_epoch (int, default=-1): Index of last epoch when resuming training."
+      ],
+      "important_params": [
+        "optimizer (Optimizer): Wrapped optimizer.",
+        "gamma (float): Multiplicative factor of learning rate decay per epoch step (e.g., 0.95).",
+        "last_epoch (int, default=-1): Index of last epoch when resuming training."
+      ],
+      "return_value": "An instance of ExponentialLR.",
+      "example": "import torch  \nimport torch.nn as nn\n\nmodel = nn.Linear(10, 2)  \noptimizer = torch.optim.Adam(model.parameters(), lr=0.01)  \nscheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)\n\nfor epoch in range(4):  \n    optimizer.step()  \n    scheduler.step()  \n    print(f\"Epoch {epoch+1} LR: {scheduler.get_last_lr()[0]:.5f}\")",
+      "use_when": "Continuous decay is desired over discrete step drops, particularly in smooth convergence setups or long training runs.",
+      "avoid_when": "High decay rates (e.g., gamma=0.1) are used, which shrink the learning rate to near-zero within very few epochs.",
+      "gotchas": [
+        "gamma values must be close to 1.0 (e.g., 0.95–0.99). A small gamma causes premature decay before convergence."
+      ],
+      "performance_notes": "Negligible overhead. Performs scalar multiplication step per epoch.",
+      "related_apis": [
+        "torch.optim.lr_scheduler.StepLR",
+        "torch.optim.lr_scheduler.CosineAnnealingLR"
+      ],
+      "framework_migration_notes": "Maps to tf.keras.optimizers.schedules.ExponentialDecay with continuous updates (staircase=False).",
+      "tensorflow_equivalent": "lr_scheduler.ExponentialLR → tf.keras.optimizers.schedules.ExponentialDecay(staircase=False)",
+      "framework_equivalent": "lr_scheduler.ExponentialLR → tf.keras.optimizers.schedules.ExponentialDecay(staircase=False)",
+      "version_compatibility": "The verbose parameter is deprecated in PyTorch 2.2+.",
+      "search_metadata": {
+        "aliases": [
+          "ExponentialLR",
+          "exponential decay scheduler"
+        ],
+        "search_terms": [
+          "pytorch ExponentialLR example",
+          "smooth learning rate decay pytorch"
+        ],
+        "keywords": [
+          "exponential",
+          "decay",
+          "scheduler",
+          "continuous",
+          "learning-rate"
+        ],
+        "confused_with": [
+          "lr_scheduler.StepLR (StepLR drops at intervals; ExponentialLR drops exponentially every step)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ExponentialLR.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ExponentialLR.html"
+    },
+    {
+      "task": "Apply Cosine Annealing Scheduler (lr_scheduler.CosineAnnealingLR)",
+      "problem_solved": "Modulates the learning rate using a cosine schedule between eta_max (initial rate) and eta_min over T_max epochs or steps.",
+      "mental_trigger": "I want a smooth cosine decay schedule that gently decreases learning rate to near zero at the end of training.",
+      "syntax": "torch.optim.lr_scheduler.CosineAnnealingLR(  \n    optimizer,  \n    T_max,  \n    eta_min=0,  \n    last_epoch=-1,  \n    verbose='deprecated'  \n)",
+      "important_parameters": [
+        "optimizer (Optimizer): Wrapped optimizer.",
+        "T_max (int): Maximum number of iterations or epochs until minimum learning rate is reached.",
+        "eta_min (float, default=0): Minimum learning rate floor.",
+        "last_epoch (int, default=-1): Index of last epoch when resuming training."
+      ],
+      "important_params": [
+        "optimizer (Optimizer): Wrapped optimizer.",
+        "T_max (int): Maximum number of iterations or epochs until minimum learning rate is reached.",
+        "eta_min (float, default=0): Minimum learning rate floor.",
+        "last_epoch (int, default=-1): Index of last epoch when resuming training."
+      ],
+      "return_value": "An instance of CosineAnnealingLR.",
+      "example": "import torch  \nimport torch.nn as nn\n\nmodel = nn.Linear(10, 2)  \noptimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)\n\n# Schedule over 10 total epochs with minimum LR of 1e-6  \nepochs = 10  \nscheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs, eta_min=1e-6)\n\nfor epoch in range(epochs):  \n    optimizer.step()  \n    scheduler.step()  \n    print(f\"Epoch {epoch+1} LR: {scheduler.get_last_lr()[0]:.6f}\")",
+      "use_when": "Training Vision Transformers, Modern CNNs, or LLMs where smooth continuous decay provides optimal generalization.",
+      "avoid_when": "Total training step budget (T_max) is unknown or dynamically changing during training.",
+      "gotchas": [
+        "If training continues beyond T_max steps, the cosine curve restarts and increases the learning rate back toward initial lr. Set T_max exactly equal to total planned epochs/steps.",
+        "T_max can represent total epochs (if stepping per epoch) or total batch steps (if stepping per batch); keep the step call location consistent."
+      ],
+      "performance_notes": "Negligible compute overhead. Evaluates simple mathematical trigonometric expression per step.",
+      "related_apis": [
+        "torch.optim.lr_scheduler.CosineAnnealingWarmRestarts",
+        "torch.optim.lr_scheduler.OneCycleLR"
+      ],
+      "framework_migration_notes": "Maps to tf.keras.optimizers.schedules.CosineDecay.",
+      "tensorflow_equivalent": "lr_scheduler.CosineAnnealingLR → tf.keras.optimizers.schedules.CosineDecay",
+      "framework_equivalent": "lr_scheduler.CosineAnnealingLR → tf.keras.optimizers.schedules.CosineDecay",
+      "version_compatibility": "The verbose argument is deprecated in PyTorch 2.2+.",
+      "search_metadata": {
+        "aliases": [
+          "CosineAnnealingLR",
+          "cosine decay",
+          "cosine scheduler pytorch"
+        ],
+        "search_terms": [
+          "pytorch CosineAnnealingLR T_max",
+          "cosine decay learning rate example",
+          "eta_min cosine schedule"
+        ],
+        "keywords": [
+          "cosine",
+          "annealing",
+          "scheduler",
+          "decay",
+          "transformer",
+          "vision"
+        ],
+        "confused_with": [
+          "CosineAnnealingWarmRestarts (single decay wave vs repeating restart cycles)",
+          "OneCycleLR (cosine decay only vs warmup phase followed by decay)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "yolo",
+        "bert",
+        "roberta",
+        "llama"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.CosineAnnealingLR.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.CosineAnnealingLR.html"
+    },
+    {
+      "task": "Apply Reduce-on-Plateau Scheduler (lr_scheduler.ReduceLROnPlateau)",
+      "problem_solved": "Reduces the learning rate by a factor when a monitored validation metric stops improving for a specified number of evaluation patience epochs.",
+      "mental_trigger": "I want my learning rate to drop automatically whenever my validation loss stops decreasing.",
+      "syntax": "torch.optim.lr_scheduler.ReduceLROnPlateau(  \n    optimizer,  \n    mode='min',  \n    factor=0.1,  \n    patience=10,  \n    threshold=0.0001,  \n    threshold_mode='rel',  \n    cooldown=0,  \n    min_lr=0,  \n    eps=1e-08,  \n    verbose='deprecated'  \n)",
+      "important_parameters": [
+        "optimizer (Optimizer): Wrapped optimizer.",
+        "mode (str, default='min'): One of 'min' (decay when metric stops decreasing) or 'max' (decay when metric stops increasing).",
+        "factor (float, default=0.1): Factor by which learning rate will be reduced (*new*_*lr*=*lr*×*factor*).",
+        "patience (int, default=10): Number of evaluation checks with no improvement before learning rate is reduced.",
+        "min_lr (float or list, default=0): Lower bound on learning rate scalar."
+      ],
+      "important_params": [
+        "optimizer (Optimizer): Wrapped optimizer.",
+        "mode (str, default='min'): One of 'min' (decay when metric stops decreasing) or 'max' (decay when metric stops increasing).",
+        "factor (float, default=0.1): Factor by which learning rate will be reduced (*new*_*lr*=*lr*×*factor*).",
+        "patience (int, default=10): Number of evaluation checks with no improvement before learning rate is reduced.",
+        "min_lr (float or list, default=0): Lower bound on learning rate scalar."
+      ],
+      "return_value": "An instance of ReduceLROnPlateau.",
+      "example": "import torch  \nimport torch.nn as nn\n\nmodel = nn.Linear(10, 2)  \noptimizer = torch.optim.SGD(model.parameters(), lr=0.1)  \nscheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=2)\n\n# Simulated validation loss curve plateauing  \nval_losses = [1.0, 0.8, 0.8, 0.8, 0.8]\n\nfor epoch, val_loss in enumerate(val_losses):  \n    optimizer.step()  \n    # Must pass validation metric to scheduler.step()  \n    scheduler.step(val_loss)  \n    print(f\"Epoch {epoch+1} Val Loss: {val_loss:.1f}, LR: {optimizer.param_groups[0]['lr']:.4f}\")",
+      "use_when": "Long training regimes where automated metric-driven rate drops eliminate trial-and-error fixed schedule tuning.",
+      "avoid_when": "Batch-level scheduling or deterministic cosine schedules are required.",
+      "gotchas": [
+        "Unlike all other schedulers, ReduceLROnPlateau.step() requires a validation metric argument (e.g., scheduler.step(val_loss)). Calling scheduler.step() without arguments raises a TypeError.",
+        "ReduceLROnPlateau does not subclass _LRScheduler, so methods like get_last_lr() do not exist; read optimizer.param_groups[0]['lr'] directly."
+      ],
+      "performance_notes": "Minimal overhead. Executes simple comparative checks against metric history array.",
+      "related_apis": [
+        "torch.optim.lr_scheduler.StepLR"
+      ],
+      "framework_migration_notes": "Maps to tf.keras.callbacks.ReduceLROnPlateau in TensorFlow/Keras.",
+      "tensorflow_equivalent": "lr_scheduler.ReduceLROnPlateau → tf.keras.callbacks.ReduceLROnPlateau",
+      "framework_equivalent": "lr_scheduler.ReduceLROnPlateau → tf.keras.callbacks.ReduceLROnPlateau",
+      "version_compatibility": "The verbose argument is deprecated in PyTorch 2.2+.",
+      "search_metadata": {
+        "aliases": [
+          "ReduceLROnPlateau",
+          "reduce lr on plateau",
+          "adaptive metric scheduler"
+        ],
+        "search_terms": [
+          "pytorch ReduceLROnPlateau example",
+          "step validation loss plateau",
+          "patience metric scheduler"
+        ],
+        "keywords": [
+          "plateau",
+          "patience",
+          "val_loss",
+          "adaptive",
+          "metric",
+          "scheduler"
+        ],
+        "confused_with": [
+          "Standard _LRScheduler subclasses (ReduceLROnPlateau requires passing metric value to step())"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "yolo",
+        "logistic-regression"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "semantic-segmentation-pipeline"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ReduceLROnPlateau.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ReduceLROnPlateau.html"
+    },
+    {
+      "task": "Apply One-Cycle Learning Rate Policy (lr_scheduler.OneCycleLR)",
+      "problem_solved": "Warms up learning rate from an initial low value to a peak max_lr, then decays it to a tiny minimum value, enabling Super-Convergence and faster training.",
+      "mental_trigger": "I want to train my model fast using Leslie Smith's 1cycle policy with learning rate warmup and cosine decay per batch step.",
+      "syntax": "torch.optim.lr_scheduler.OneCycleLR(  \n    optimizer,  \n    max_lr,  \n    total_steps=None,  \n    epochs=None,  \n    steps_per_epoch=None,  \n    pct_start=0.3,  \n    anneal_strategy='cos',  \n    cycle_momentum=True,  \n    base_momentum=0.85,  \n    max_momentum=0.95,  \n    div_factor=25.0,  \n    final_div_factor=10000.0,  \n    last_epoch=-1,  \n    verbose='deprecated'  \n)",
+      "important_parameters": [
+        "optimizer (Optimizer): Wrapped optimizer.",
+        "max_lr (float or list): Upper learning rate boundary in the cycle.",
+        "total_steps (int, optional): Total number of batch steps in training.",
+        "steps_per_epoch (int, optional): Number of batch steps per epoch (required if total_steps is omitted).",
+        "epochs (int, optional): Number of training epochs.",
+        "pct_start (float, default=0.3): Percentage of cycle spent increasing learning rate."
+      ],
+      "important_params": [
+        "optimizer (Optimizer): Wrapped optimizer.",
+        "max_lr (float or list): Upper learning rate boundary in the cycle.",
+        "total_steps (int, optional): Total number of batch steps in training.",
+        "steps_per_epoch (int, optional): Number of batch steps per epoch (required if total_steps is omitted).",
+        "epochs (int, optional): Number of training epochs.",
+        "pct_start (float, default=0.3): Percentage of cycle spent increasing learning rate."
+      ],
+      "return_value": "An instance of OneCycleLR.",
+      "example": "import torch  \nimport torch.nn as nn\n\nmodel = nn.Linear(10, 2)  \noptimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9)\n\n# OneCycleLR is updated every BATCH step, not epoch  \nepochs = 2  \nsteps_per_epoch = 3  \nscheduler = torch.optim.lr_scheduler.OneCycleLR(  \n    optimizer,  \n    max_lr=0.1,  \n    steps_per_epoch=steps_per_epoch,  \n    epochs=epochs  \n)\n\nfor epoch in range(epochs):  \n    for step in range(steps_per_epoch):  \n        optimizer.step()  \n        scheduler.step() # Called inside step loop!  \n        print(f\"Step {epoch*steps_per_epoch + step + 1} LR: {scheduler.get_last_lr()[0]:.4f}\")",
+      "use_when": "Fast model training where Super-Convergence allows training in far fewer total epochs.\nFine-tuning vision models or training small-to-medium models from scratch efficiently.",
+      "avoid_when": "Continual learning or open-ended training where total step count is non-deterministic.",
+      "gotchas": [
+        "OneCycleLR.step() must be called after every batch step, not once per epoch. Calling it per epoch leads to index out-of-bounds or premature schedule exhaustion.",
+        "Setting cycle_momentum=True with optimizers that do not support momentum (like standard Adam without momentum attributes) raises an error; set cycle_momentum=False for those optimizers."
+      ],
+      "performance_notes": "Negligible step cost. Updates both momentum and learning rate attributes per iteration.",
+      "related_apis": [
+        "torch.optim.lr_scheduler.CosineAnnealingLR",
+        "torch.optim.lr_scheduler.CyclicLR"
+      ],
+      "framework_migration_notes": "No native single-class equivalent in TensorFlow Keras; requires custom schedule implementation or TensorFlow Addons.",
+      "tensorflow_equivalent": "No direct native Keras equivalent.",
+      "framework_equivalent": "No direct native Keras equivalent.",
+      "version_compatibility": "The verbose parameter is deprecated in PyTorch 2.2+.",
+      "search_metadata": {
+        "aliases": [
+          "OneCycleLR",
+          "1cycle policy",
+          "super convergence scheduler"
+        ],
+        "search_terms": [
+          "pytorch OneCycleLR example",
+          "OneCycleLR steps_per_epoch",
+          "max_lr onecycle pytorch"
+        ],
+        "keywords": [
+          "onecycle",
+          "super-convergence",
+          "warmup",
+          "schedule",
+          "momentum"
+        ],
+        "confused_with": [
+          "lr_scheduler.CosineAnnealingLR (OneCycle incorporates explicit warmup phase and momentum annealing alongside LR decay)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "yolo",
+        "bert"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.OneCycleLR.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.OneCycleLR.html"
+    },
+    {
+      "task": "Inspect and Modify Optimizer Learning Rates",
+      "problem_solved": "Provides explicit techniques to query, print, and adjust individual or global learning rates directly from an active optimizer instance.",
+      "mental_trigger": "I want to print the current learning rate for logging or debug why my learning rate is not changing.",
+      "syntax": "# Inspect current learning rates across all parameter groups  \ncurrent_lrs = [group['lr'] for group in optimizer.param_groups]\n\n# Modify learning rate for group 0  \noptimizer.param_groups[0]['lr'] = new_learning_rate",
+      "important_parameters": [
+        "param_groups (list of dicts): Internal list holding parameter references and active hyperparameters per group."
+      ],
+      "important_params": [
+        "param_groups (list of dicts): Internal list holding parameter references and active hyperparameters per group."
+      ],
+      "return_value": "A Python list of float learning rates when inspecting, or None when modifying in place.",
+      "example": "import torch  \nimport torch.nn as nn\n\nmodel = nn.Linear(5, 2)  \noptimizer = torch.optim.Adam(model.parameters(), lr=1e-3)\n\n# Function to query current learning rates  \ndef get_lrs(opt):  \n    return [g['lr'] for g in opt.param_groups]\n\nprint(f\"Initial LR: {get_lrs(optimizer)}\")\n\n# Adjust learning rate dynamically  \nfor g in optimizer.param_groups:  \n    g['lr'] = 5e-4\n\nprint(f\"Modified LR: {get_lrs(optimizer)}\")",
+      "use_when": "Implementing custom metric logging callbacks (e.g., streaming rates to TensorBoard or Weights & Biases).\nDebugging learning rate behavior when combined with external schedulers.",
+      "avoid_when": "Manually altering rates while an active _LRScheduler controls rates on every epoch step.",
+      "gotchas": [
+        "Inspecting scheduler.get_last_lr() returns the rate calculated during the previous scheduler step, which may differ from optimizer.param_groups[0]['lr'] if manual modifications occurred afterward."
+      ],
+      "performance_notes": "Zero performance cost. Accesses in-memory list elements directly.",
+      "related_apis": [
+        "torch.optim.lr_scheduler"
+      ],
+      "framework_migration_notes": "In PyTorch, learning rates are plain Python float variables stored in optimizer.param_groups[i]['lr']. In TensorFlow, they are often tracked as tf.Variable objects.",
+      "tensorflow_equivalent": "optimizer.learning_rate.numpy() → optimizer.param_groups[0]['lr']",
+      "framework_equivalent": "optimizer.learning_rate.numpy() → optimizer.param_groups[0]['lr']",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "get learning rate",
+          "print current lr",
+          "inspect optimizer lr"
+        ],
+        "search_terms": [
+          "how to get current learning rate pytorch",
+          "print learning rate optimizer",
+          "modify param_groups lr"
+        ],
+        "keywords": [
+          "learning-rate",
+          "inspect",
+          "debug",
+          "param_groups",
+          "logging"
+        ],
+        "confused_with": [
+          "scheduler.get_last_lr() (reading scheduler state vs reading true live optimizer state)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert",
+        "llama"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/optim.html",
+      "official_docs": "https://pytorch.org/docs/stable/optim.html"
+    },
+    {
+      "task": "Perform Gradient Clipping Before Optimizer Step (nn.utils.clip_grad_norm_ / clip_grad_value_)",
+      "problem_solved": "Clips gradient norms or individual gradient values before updating parameters, preventing exploding gradients in deep architectures, RNNs, and LLMs.",
+      "mental_trigger": "My model loss is outputting NaN or exploding during training, and I need to cap gradient magnitudes.",
+      "syntax": "# Clip by total L2 norm across parameters  \ntorch.nn.utils.clip_grad_norm_(  \n    parameters,  \n    max_norm,  \n    norm_type=2.0,  \n    error_if_nonfinite=False,  \n    foreach=None  \n)\n\n# Clip by elementwise value threshold  \ntorch.nn.utils.clip_grad_value_(  \n    parameters,  \n    clip_value  \n)",
+      "important_parameters": [
+        "parameters (Iterable[Tensor]): Tensors with computed gradients to clip.",
+        "max_norm (float): Maximum norm threshold for gradient clipping.",
+        "norm_type (float, default=2.0): Type of *p*-norm used (e.g., 2 for *L*2​ norm, float('inf') for *L*∞​).",
+        "clip_value (float): Maximum allowable elementwise threshold value.",
+        "error_if_nonfinite (bool, default=False): Raises an error if total norm is NaN or Inf."
+      ],
+      "important_params": [
+        "parameters (Iterable[Tensor]): Tensors with computed gradients to clip.",
+        "max_norm (float): Maximum norm threshold for gradient clipping.",
+        "norm_type (float, default=2.0): Type of *p*-norm used (e.g., 2 for *L*2​ norm, float('inf') for *L*∞​).",
+        "clip_value (float): Maximum allowable elementwise threshold value.",
+        "error_if_nonfinite (bool, default=False): Raises an error if total norm is NaN or Inf."
+      ],
+      "return_value": "clip_grad_norm_ returns the total norm of parameters as a single float scalar Tensor before clipping. clip_grad_value_ returns None.",
+      "example": "import torch  \nimport torch.nn as nn\n\nmodel = nn.Linear(10, 2)  \noptimizer = torch.optim.SGD(model.parameters(), lr=0.1)\n\nx = torch.randn(4, 10)  \ny = torch.randint(0, 2, (4,))  \ncriterion = nn.CrossEntropyLoss()\n\noptimizer.zero_grad(set_to_none=True)  \nloss = criterion(model(x), y)  \nloss.backward()\n\n# Clip gradient norms to max 1.0 BEFORE optimizer step  \ntotal_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  \noptimizer.step()\n\nprint(f\"Gradient norm before clipping: {total_norm:.4f}\")",
+      "use_when": "Training Transformers, LLMs, or RNNs prone to unstable gradient spikes.\nMixed precision training where gradient scaling prevents extreme unbounded gradients.",
+      "avoid_when": "Optimizing simple convex or stable shallow networks where gradient clipping slows convergence unnecessarily.",
+      "gotchas": [
+        "Order matters strictly: Always call clip_grad_norm_ after loss.backward() and before optimizer.step(). Calling it after optimizer.step() has zero effect on parameter updates.",
+        "When using mixed precision (torch.amp.GradScaler), unscale gradients using scaler.unscale_(optimizer) *before* calling clip_grad_norm_."
+      ],
+      "performance_notes": "Involves computing norms across all model parameters, incurring GPU memory access costs. foreach=True leverages multi-tensor kernels to reduce latency.",
+      "related_apis": [
+        "torch.optim.Optimizer.step",
+        "torch.Tensor.backward"
+      ],
+      "framework_migration_notes": "Maps to tf.clip_by_global_norm in TensorFlow low-level training routines.",
+      "tensorflow_equivalent": "nn.utils.clip_grad_norm_ → tf.clip_by_global_norm",
+      "framework_equivalent": "nn.utils.clip_grad_norm_ → tf.clip_by_global_norm",
+      "version_compatibility": "error_if_nonfinite was introduced in PyTorch 1.9 to catch exploding instabilities early.",
+      "search_metadata": {
+        "aliases": [
+          "clip_grad_norm_",
+          "gradient clipping",
+          "clip gradients pytorch"
+        ],
+        "search_terms": [
+          "pytorch clip_grad_norm_ placement",
+          "gradient clipping max_norm",
+          "clip_grad_norm_ vs clip_grad_value_"
+        ],
+        "keywords": [
+          "gradient-clipping",
+          "max_norm",
+          "exploding-gradients",
+          "transformer",
+          "stabilization"
+        ],
+        "confused_with": [
+          "clip_grad_value_ (clip_grad_norm_ scales all gradients proportionally based on vector norm; clip_grad_value_ hard-clamps individual element values independently)"
+        ]
+      },
+      "related_models": [
+        "bert",
+        "roberta",
+        "t5",
+        "bart",
+        "gpt",
+        "llama",
+        "qwen",
+        "gemma",
+        "deepseek"
+      ],
+      "related_patterns": [
+        "gradient-accumulation",
+        "mixed-precision",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide",
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html"
+    }
+  ]
+}

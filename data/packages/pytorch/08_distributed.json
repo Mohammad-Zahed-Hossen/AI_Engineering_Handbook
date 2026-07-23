@@ -1,0 +1,1395 @@
+{
+  "id": "pytorch",
+  "module_name": "08_distributed",
+  "module_title": "Distributed Training & Mixed Precision",
+  "slug": "08_distributed",
+  "tasks": [
+    {
+      "task": "Enable Automatic Mixed Precision (torch.amp.autocast)",
+      "problem_solved": "Accelerate neural network execution and reduce GPU memory consumption by automatically casting tensor operations to lower precision formats.",
+      "mental_trigger": "I want to speed up model forward passes and fit larger batch sizes on GPU without re-casting tensors manually.",
+      "syntax": "torch.amp.autocast(device_type, enabled=True, dtype=None, cache_enabled=True)",
+      "important_parameters": [
+        "device_type: String specifying the target accelerator device type (such as 'cuda', 'cpu', or 'mps').",
+        "enabled: Boolean flag indicating whether autocasting is active within the context block.",
+        "dtype: The lower-precision target data type (such as torch.float16 or torch.bfloat16).",
+        "cache_enabled: Boolean controlling whether intermediate weight/tensor re-casting results are cached for performance."
+      ],
+      "important_params": [
+        "device_type: String specifying the target accelerator device type (such as 'cuda', 'cpu', or 'mps').",
+        "enabled: Boolean flag indicating whether autocasting is active within the context block.",
+        "dtype: The lower-precision target data type (such as torch.float16 or torch.bfloat16).",
+        "cache_enabled: Boolean controlling whether intermediate weight/tensor re-casting results are cached for performance."
+      ],
+      "return_value": "A context manager or decorator that enforces automatic precision selection for operations executed within its scope.",
+      "example": "import torch  \nimport torch.nn as nn\n\n# Define model and input on GPU  \nmodel = nn.Linear(100, 10).cuda()  \nx = torch.randn(32, 100, device=\"cuda\")\n\n# Execute forward pass under CUDA Automatic Mixed Precision  \nwith torch.amp.autocast(device_type=\"cuda\", dtype=torch.float16):  \n    output = model(x)  \n    loss = output.sum()\n\nprint(f\"Output dtype: {output.dtype}\")",
+      "use_when": "Training or evaluating deep learning models on modern GPUs or accelerators supporting float16/bfloat16.\nOptimizing GPU memory usage to allow for larger batch sizes or higher input resolutions.",
+      "avoid_when": "Running on legacy hardware that lacks native float16/bfloat16 hardware acceleration.\nPerforming numerical operations highly sensitive to reduced precision, such as matrix inversions or custom loss functions prone to underflow.",
+      "gotchas": [
+        "Forgetting to scope only the forward pass and loss computation, which can cause unexpected casting issues during optimization.",
+        "Assuming operations like Softmax or Loss calculations run in float16 when PyTorch automatically promotes them to float32 for safety.",
+        "Using torch.cuda.amp.autocast instead of the modern unified torch.amp.autocast(device_type=\"cuda\")."
+      ],
+      "performance_notes": "Reduces GPU memory usage up to 50% and improves compute throughput significantly on Tensor Core architectures.",
+      "related_apis": [
+        "torch.amp.GradScaler",
+        "torch.cuda.amp.autocast"
+      ],
+      "framework_migration_notes": "Replaces explicit manual model casting or global mixed precision policy contexts used in other frameworks.",
+      "tensorflow_equivalent": "tf.keras.mixed_precision.Policy",
+      "framework_equivalent": "tf.keras.mixed_precision.Policy",
+      "version_compatibility": "PyTorch 2.0 introduced the unified torch.amp.autocast(device_type=...) API replacing torch.cuda.amp.autocast.",
+      "search_metadata": {
+        "aliases": [
+          "autocast",
+          "torch.cuda.amp.autocast"
+        ],
+        "search_terms": [
+          "pytorch autocast",
+          "how to use mixed precision pytorch",
+          "amp autocast cuda"
+        ],
+        "keywords": [
+          "mixed precision",
+          "autocast",
+          "fp16",
+          "bf16",
+          "amp"
+        ],
+        "confused_with": [
+          "torch.inference_mode",
+          "torch.no_grad"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "bert",
+        "llama"
+      ],
+      "related_patterns": [
+        "mixed-precision",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "distributed"
+      ],
+      "related_cheatsheet": [
+        "distributed"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide",
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/amp.html%23torch.amp.autocast",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/amp.html%23torch.amp.autocast"
+    },
+    {
+      "task": "Configure Device-Specific Autocast (device_type, dtype)",
+      "problem_solved": "Fine-tune precision selection across different hardware accelerators (CUDA, CPU, MPS) and data types (float16, bfloat16).",
+      "mental_trigger": "I need to use bfloat16 on Ampere GPUs or configure autocast specifically for CPU execution.",
+      "syntax": "torch.amp.autocast(device_type, dtype=None)",
+      "important_parameters": [
+        "device_type: String specifying hardware target ('cuda', 'cpu', 'mps').",
+        "dtype: Specific lower-precision data type (torch.bfloat16, torch.float16)."
+      ],
+      "important_params": [
+        "device_type: String specifying hardware target ('cuda', 'cpu', 'mps').",
+        "dtype: Specific lower-precision data type (torch.bfloat16, torch.float16)."
+      ],
+      "return_value": "An accelerator-specific context manager tailored to chosen hardware precision capabilities.",
+      "example": "import torch  \nimport torch.nn as nn\n\nmodel = nn.Linear(50, 10)  \nx = torch.randn(16, 50)\n\n# Configure device-specific autocast for CPU execution using bfloat16  \nwith torch.amp.autocast(device_type=\"cpu\", dtype=torch.bfloat16):  \n    out = model(x)\n\nprint(f\"CPU Autocast output dtype: {out.dtype}\")",
+      "use_when": "Running models on modern hardware supporting bfloat16 to avoid loss scaling requirements.\nDeploying mixed precision inference on CPU or Apple Silicon MPS targets.",
+      "avoid_when": "Requesting bfloat16 on older GPUs that lack hardware acceleration for it, resulting in slow emulation.\nExecuting float16 on CPU hardware without explicit native FP16 vector support.",
+      "gotchas": [
+        "Requesting float16 on CPU, which is unsupported for efficient computation and may raise errors or fall back slowly.",
+        "Mixing device types between model parameters and the autocast context scope.",
+        "Expecting bfloat16 to require GradScaler, when bfloat16 dynamic range typically makes loss scaling unnecessary."
+      ],
+      "performance_notes": "bfloat16 provides the same dynamic range as float32, eliminating underflow issues while delivering lower-precision speeds.",
+      "related_apis": [
+        "torch.amp.autocast",
+        "torch.cuda.is_bf16_supported"
+      ],
+      "framework_migration_notes": "TensorFlow manages policy globally via set_global_policy, whereas PyTorch configures it per context block.",
+      "tensorflow_equivalent": "tf.keras.mixed_precision.Policy(\"mixed_bfloat16\")",
+      "framework_equivalent": "tf.keras.mixed_precision.Policy(\"mixed_bfloat16\")",
+      "version_compatibility": "CPU bfloat16 autocast stabilized in PyTorch 1.12. MPS device support was added in PyTorch 2.1.",
+      "search_metadata": {
+        "aliases": [
+          "device autocast",
+          "bf16 autocast"
+        ],
+        "search_terms": [
+          "pytorch bfloat16 autocast",
+          "autocast device_type cpu",
+          "cuda bf16 autocast"
+        ],
+        "keywords": [
+          "bfloat16",
+          "device_type",
+          "cpu autocast",
+          "cuda autocast"
+        ],
+        "confused_with": [
+          "torch.set_default_dtype"
+        ]
+      },
+      "related_models": [
+        "transformer",
+        "gpt",
+        "llama",
+        "qwen",
+        "deepseek"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "distributed"
+      ],
+      "related_cheatsheet": [
+        "distributed"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide",
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/amp.html%23autocasting",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/amp.html%23autocasting"
+    },
+    {
+      "task": "Scale Gradients with GradScaler (torch.amp.GradScaler)",
+      "problem_solved": "Prevent underflow of float16 small gradient values by multiplying the loss by a scale factor before computing gradients.",
+      "mental_trigger": "My float16 training loss becomes NaN or gradients underflow to zero during backpropagation.",
+      "syntax": "torch.amp.GradScaler(device='cuda', init_scale=65536.0, growth_factor=2.0, backoff_factor=0.5, growth_interval=2000, enabled=True)",
+      "important_parameters": [
+        "device: String or device instance specifying hardware target ('cuda').",
+        "init_scale: Initial loss scaling factor applied to output loss.",
+        "growth_factor: Multiplicative factor used to increase scale when no overflow occurs.",
+        "backoff_factor: Multiplicative factor used to reduce scale when gradient overflow occurs.",
+        "growth_interval: Number of consecutive steps without overflow before increasing the loss scale."
+      ],
+      "important_params": [
+        "device: String or device instance specifying hardware target ('cuda').",
+        "init_scale: Initial loss scaling factor applied to output loss.",
+        "growth_factor: Multiplicative factor used to increase scale when no overflow occurs.",
+        "backoff_factor: Multiplicative factor used to reduce scale when gradient overflow occurs.",
+        "growth_interval: Number of consecutive steps without overflow before increasing the loss scale."
+      ],
+      "return_value": "An instance of GradScaler that wraps loss scaling, step execution, and scale adjustment.",
+      "example": "import torch  \nimport torch.nn as nn\n\nmodel = nn.Linear(10, 2).cuda()  \noptimizer = torch.optim.SGD(model.parameters(), lr=0.01)  \nscaler = torch.amp.GradScaler(\"cuda\")\n\nx = torch.randn(8, 10, device=\"cuda\")  \noptimizer.zero_grad()\n\nwith torch.amp.autocast(device_type=\"cuda\", dtype=torch.float16):  \n    loss = model(x).sum()\n\nscaler.scale(loss).backward()  \nscaler.step(optimizer)  \nscaler.update()",
+      "use_when": "Training models using FP16 precision with torch.amp.autocast.\nProtecting low-magnitude gradients from flushing to zero under reduced float16 dynamic range.",
+      "avoid_when": "Training exclusively with bfloat16 or float32, where scale adjustments add unnecessary overhead.",
+      "gotchas": [
+        "Calling optimizer.step() directly instead of scaler.step(optimizer).",
+        "Omitting scaler.update() at the end of every training iteration.",
+        "Using GradScaler when training with bfloat16 where scaling is not required.",
+        "Calling scaler.scale() multiple times on the same loss without gradient accumulation awareness."
+      ],
+      "performance_notes": "Minimal runtime overhead while preventing FP16 gradient underflow and avoiding numerical instability.",
+      "related_apis": [
+        "torch.amp.autocast",
+        "scaler.unscale_",
+        "scaler.step"
+      ],
+      "framework_migration_notes": "Maps directly to TensorFlow's LossScaleOptimizer wrapper.",
+      "tensorflow_equivalent": "tf.keras.mixed_precision.LossScaleOptimizer",
+      "framework_equivalent": "tf.keras.mixed_precision.LossScaleOptimizer",
+      "version_compatibility": "PyTorch 2.3 unified torch.cuda.amp.GradScaler into torch.amp.GradScaler(device=...).",
+      "search_metadata": {
+        "aliases": [
+          "GradScaler",
+          "torch.cuda.amp.GradScaler"
+        ],
+        "search_terms": [
+          "pytorch gradscaler",
+          "how to use gradscaler",
+          "fp16 gradient scaling"
+        ],
+        "keywords": [
+          "gradscaler",
+          "gradient scaling",
+          "loss scale",
+          "underflow",
+          "fp16"
+        ],
+        "confused_with": [
+          "torch.nn.utils.clip_grad_norm_"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "yolo",
+        "bert",
+        "roberta"
+      ],
+      "related_patterns": [
+        "mixed-precision",
+        "gradient-accumulation"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "distributed"
+      ],
+      "related_cheatsheet": [
+        "distributed"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide",
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/amp.html%23torch.amp.GradScaler",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/amp.html%23torch.amp.GradScaler"
+    },
+    {
+      "task": "Handle Gradient Overflow and Dynamic Loss Scaling (GradScaler.update, unscale_)",
+      "problem_solved": "Inspect unscaled gradients safely, clip them properly, and skip optimizer steps when gradient inf/NaN overflows occur.",
+      "mental_trigger": "I need to apply gradient clipping or custom gradient modifications while using GradScaler.",
+      "syntax": "scaler.unscale_(optimizer)",
+      "important_parameters": [
+        "optimizer: The PyTorch optimizer whose parameter gradients need to be unscaled."
+      ],
+      "important_params": [
+        "optimizer: The PyTorch optimizer whose parameter gradients need to be unscaled."
+      ],
+      "return_value": "None. Modifies optimizer parameter gradients in-place by dividing them by the current scale factor.",
+      "example": "import torch  \nimport torch.nn as nn\n\nmodel = nn.Linear(10, 2).cuda()  \noptimizer = torch.optim.Adam(model.parameters(), lr=0.001)  \nscaler = torch.amp.GradScaler(\"cuda\")\n\nx = torch.randn(8, 10, device=\"cuda\")  \noptimizer.zero_grad()\n\nwith torch.amp.autocast(device_type=\"cuda\", dtype=torch.float16):  \n    loss = model(x).sum()\n\nscaler.scale(loss).backward()\n\n# Unscale gradients before performing gradient clipping  \nscaler.unscale_(optimizer)  \ntorch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)\n\n# Step optimizer safely; skips parameter update if inf/NaN detected  \nscaler.step(optimizer)  \nscaler.update()",
+      "use_when": "Applying gradient clipping (clip_grad_norm_ or clip_grad_value_) during FP16 training with GradScaler.\nInspecting raw gradient magnitudes during FP16 training loops.",
+      "avoid_when": "Calling scaler.unscale_() twice within the same iteration for the same optimizer, which raises a runtime error.",
+      "gotchas": [
+        "Clipping gradients before calling scaler.unscale_(), which clips scaled values and ruins threshold logic.",
+        "Calling scaler.unscale_() after scaler.step(optimizer) has already occurred.",
+        "Mutating gradients manually without unscaling them first."
+      ],
+      "performance_notes": "scaler.step(optimizer) checks for inf/NaN in gradients and skips optimizer parameter updates automatically if overflow occurs.",
+      "related_apis": [
+        "torch.amp.GradScaler",
+        "torch.nn.utils.clip_grad_norm_"
+      ],
+      "framework_migration_notes": "Equivalent to managing dynamic scale adjustments in custom Keras train steps.",
+      "tensorflow_equivalent": "tf.keras.mixed_precision.LossScaleOptimizer.unscale_gradients",
+      "framework_equivalent": "tf.keras.mixed_precision.LossScaleOptimizer.unscale_gradients",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "unscale_",
+          "gradscaler overflow"
+        ],
+        "search_terms": [
+          "pytorch gradient clipping with gradscaler",
+          "scaler unscale_ optimizer",
+          "handle gradient overflow pytorch"
+        ],
+        "keywords": [
+          "unscale_",
+          "gradient clipping",
+          "inf nan overflow",
+          "dynamic loss scaling"
+        ],
+        "confused_with": [
+          "torch.nn.utils.clip_grad_norm_"
+        ]
+      },
+      "related_models": [
+        "bert",
+        "roberta",
+        "t5",
+        "gpt",
+        "llama"
+      ],
+      "related_patterns": [
+        "mixed-precision",
+        "gradient-accumulation"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "distributed"
+      ],
+      "related_cheatsheet": [
+        "distributed"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/amp.html%23gradient-scaling",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/amp.html%23gradient-scaling"
+    },
+    {
+      "task": "Initialize Distributed Process Group (torch.distributed.init_process_group)",
+      "problem_solved": "Establish the communication backend and world configuration required for multi-GPU or multi-node training.",
+      "mental_trigger": "I need to connect multiple GPUs or workers together into a single distributed cluster.",
+      "syntax": "torch.distributed.init_process_group(backend, init_method=None, timeout=datetime.timedelta(seconds=1800), world_size=-1, rank=-1, store=None, group_name='', device_id=None)",
+      "important_parameters": [
+        "backend: Communication backend to use ('nccl' for CUDA GPUs, 'gloo' for CPU).",
+        "init_method: URL specifying how to discover peers (such as 'env://').",
+        "world_size: Total number of processes participating in the group.",
+        "rank: Unique global integer identifier of the current process.",
+        "timeout: Timeout duration for operations executed against the process group."
+      ],
+      "important_params": [
+        "backend: Communication backend to use ('nccl' for CUDA GPUs, 'gloo' for CPU).",
+        "init_method: URL specifying how to discover peers (such as 'env://').",
+        "world_size: Total number of processes participating in the group.",
+        "rank: Unique global integer identifier of the current process.",
+        "timeout: Timeout duration for operations executed against the process group."
+      ],
+      "return_value": "None. Initializes the global default distributed process group context.",
+      "example": "import os  \nimport torch  \nimport torch.distributed as dist\n\ndef setup_distributed():  \n    os.environ[\"MASTER_ADDR\"] = \"localhost\"  \n    os.environ[\"MASTER_PORT\"] = \"12355\"  \n    dist.init_process_group(  \n        backend=\"nccl\" if torch.cuda.is_available() else \"gloo\",  \n        rank=0,  \n        world_size=1  \n    )\n\nsetup_distributed()  \nprint(f\"Distributed initialized: {dist.is_initialized()}\")  \ndist.destroy_process_group()",
+      "use_when": "Starting any distributed multi-GPU or multi-node PyTorch training session using DDP, FSDP, or collective operations.",
+      "avoid_when": "Running single-process execution on a single hardware device.",
+      "gotchas": [
+        "Using backend nccl on CPU-only machines, which causes initialization failures (use gloo for CPU).",
+        "Mismatched world_size or rank across different launched worker processes.",
+        "Forgetting to destroy the process group via dist.destroy_process_group() at script teardown."
+      ],
+      "performance_notes": "nccl backend provides maximum bandwidth utilization over NVLink and InfiniBand inter-connects.",
+      "related_apis": [
+        "torch.distributed.destroy_process_group",
+        "torch.distributed.is_initialized"
+      ],
+      "framework_migration_notes": "Replaces tf.distribute.cluster_resolver.TFClusterResolver initialization routines.",
+      "tensorflow_equivalent": "tf.distribute.MultiWorkerMirroredStrategy",
+      "framework_equivalent": "tf.distribute.MultiWorkerMirroredStrategy",
+      "version_compatibility": "PyTorch 2.0+ supports passing device_id directly during init to reduce CUDA context initialization overhead.",
+      "search_metadata": {
+        "aliases": [
+          "init_process_group",
+          "dist.init_process_group"
+        ],
+        "search_terms": [
+          "pytorch init_process_group",
+          "how to set up pytorch distributed",
+          "nccl init process group"
+        ],
+        "keywords": [
+          "distributed",
+          "init_process_group",
+          "nccl",
+          "gloo",
+          "process group"
+        ],
+        "confused_with": [
+          "torch.multiprocessing.spawn"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "gpt",
+        "llama"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "distributed"
+      ],
+      "related_cheatsheet": [
+        "distributed"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/distributed.html%23torch.distributed.init_process_group",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/distributed.html%23torch.distributed.init_process_group"
+    },
+    {
+      "task": "Configure Distributed Environment Variables (MASTER_ADDR, MASTER_PORT, RANK, WORLD_SIZE)",
+      "problem_solved": "Supply networking parameters and process identity to PyTorch processes without hardcoding arguments in code.",
+      "mental_trigger": "I need my script to discover its rank, node address, and cluster size automatically from environment variables set by launchers.",
+      "syntax": "import os\n\nos.environ[\"MASTER_ADDR\"] = \"127.0.0.1\"  \nos.environ[\"MASTER_PORT\"] = \"29500\"  \nos.environ[\"RANK\"] = \"0\"  \nos.environ[\"WORLD_SIZE\"] = \"1\"  \nos.environ[\"LOCAL_RANK\"] = \"0\"",
+      "important_parameters": [
+        "MASTER_ADDR: IP address or hostname of the rank 0 master node.",
+        "MASTER_PORT: Free TCP port on the master node for communication setup.",
+        "RANK: Global rank identifier of the process across all nodes.",
+        "WORLD_SIZE: Total number of processes executing across the cluster.",
+        "LOCAL_RANK: Local GPU index of the process on its current node."
+      ],
+      "important_params": [
+        "MASTER_ADDR: IP address or hostname of the rank 0 master node.",
+        "MASTER_PORT: Free TCP port on the master node for communication setup.",
+        "RANK: Global rank identifier of the process across all nodes.",
+        "WORLD_SIZE: Total number of processes executing across the cluster.",
+        "LOCAL_RANK: Local GPU index of the process on its current node."
+      ],
+      "return_value": "None. Configures environment context for auto-detection during process group initialization.",
+      "example": "import os  \nimport torch  \nimport torch.distributed as dist\n\n# Set environment variables for single-node local execution test  \nos.environ[\"MASTER_ADDR\"] = \"127.0.0.1\"  \nos.environ[\"MASTER_PORT\"] = \"29500\"  \nos.environ[\"RANK\"] = \"0\"  \nos.environ[\"WORLD_SIZE\"] = \"1\"  \nos.environ[\"LOCAL_RANK\"] = \"0\"\n\n# Reads rank, world_size, master_addr, master_port automatically from environment  \ndist.init_process_group(backend=\"gloo\")  \nprint(f\"Rank {dist.get_rank()} of {dist.get_world_size()} initialized.\")  \ndist.destroy_process_group()",
+      "use_when": "Launching distributed scripts via torchrun, Slurm, Kubernetes, or custom orchestration tools.",
+      "avoid_when": "Hardcoding fixed IP addresses or rank integers inside reusable application source code.",
+      "gotchas": [
+        "Using an occupied port for MASTER_PORT, causing bind errors during startup.",
+        "Confusing RANK (global rank across all nodes) with LOCAL_RANK (GPU index on current node).",
+        "Forgetting to export variables in multi-node shell scripts before invoking PyTorch."
+      ],
+      "performance_notes": "Zero runtime performance impact, ensures standard launch orchestration across varied clusters.",
+      "related_apis": [
+        "torch.distributed.init_process_group",
+        "torchrun"
+      ],
+      "framework_migration_notes": "Similar to setting TF_CONFIG environment variable in distributed TensorFlow.",
+      "tensorflow_equivalent": "TF_CONFIG",
+      "framework_equivalent": "TF_CONFIG",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "MASTER_ADDR",
+          "LOCAL_RANK",
+          "distributed env vars"
+        ],
+        "search_terms": [
+          "pytorch MASTER_ADDR MASTER_PORT",
+          "pytorch LOCAL_RANK environment variable",
+          "distributed env variables torch"
+        ],
+        "keywords": [
+          "MASTER_ADDR",
+          "MASTER_PORT",
+          "RANK",
+          "WORLD_SIZE",
+          "LOCAL_RANK"
+        ],
+        "confused_with": [
+          "CUDA_VISIBLE_DEVICES"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "transformer",
+        "llama"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "distributed"
+      ],
+      "related_cheatsheet": [
+        "distributed"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/distributed.html%23environment-variable-initialization",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/distributed.html%23environment-variable-initialization"
+    },
+    {
+      "task": "Synchronize Processes (torch.distributed.barrier)",
+      "problem_solved": "Block execution across all distributed worker processes until every process in the group reaches the synchronization barrier.",
+      "mental_trigger": "I need process 0 to download a dataset or save a checkpoint before any other worker continues.",
+      "syntax": "torch.distributed.barrier(group=None, async_op=False, device_ids=None)",
+      "important_parameters": [
+        "group: Process group to synchronize. Defaults to global world group.",
+        "async_op: Boolean flag indicating whether operation should be non-blocking.",
+        "device_ids: List of CUDA device IDs for GPU barrier synchronization under NCCL."
+      ],
+      "important_params": [
+        "group: Process group to synchronize. Defaults to global world group.",
+        "async_op: Boolean flag indicating whether operation should be non-blocking.",
+        "device_ids: List of CUDA device IDs for GPU barrier synchronization under NCCL."
+      ],
+      "return_value": "A Work handle if async_op=True, otherwise None.",
+      "example": "import os  \nimport torch  \nimport torch.distributed as dist\n\nos.environ[\"MASTER_ADDR\"] = \"127.0.0.1\"  \nos.environ[\"MASTER_PORT\"] = \"29501\"  \nos.environ[\"RANK\"] = \"0\"  \nos.environ[\"WORLD_SIZE\"] = \"1\"\n\ndist.init_process_group(backend=\"gloo\")\n\nif dist.get_rank() == 0:  \n    print(\"Rank 0 preparing dataset assets...\")\n\n# Ensure all processes wait for Rank 0 completion  \ndist.barrier()  \nprint(f\"Rank {dist.get_rank()} passed synchronization barrier.\")  \ndist.destroy_process_group()",
+      "use_when": "Synchronizing file system operations, dataset downloads, or checkpoint creation across distributed processes.",
+      "avoid_when": "Placing barriers inside tight inner training loops, which causes excessive inter-node latency overhead.",
+      "gotchas": [
+        "Placing a barrier inside a conditional block (if rank == 0: dist.barrier()), which causes infinite deadlocks.",
+        "Differing barrier timeout settings across nodes leading to unhandled timeout exceptions."
+      ],
+      "performance_notes": "Forces execution sync across nodes. Unnecessary calls degrade scaling efficiency.",
+      "related_apis": [
+        "torch.distributed.all_reduce",
+        "torch.distributed.init_process_group"
+      ],
+      "framework_migration_notes": "Similar to cross-replica barrier synchronization points in TensorFlow distribution strategies.",
+      "tensorflow_equivalent": "tf.distribute.StrategyExtended.experimental_run_steps_on_step",
+      "framework_equivalent": "tf.distribute.StrategyExtended.experimental_run_steps_on_step",
+      "version_compatibility": "PyTorch 2.0+ supports device_ids parameter for GPU-accelerated barrier operations under NCCL.",
+      "search_metadata": {
+        "aliases": [
+          "dist.barrier",
+          "process barrier"
+        ],
+        "search_terms": [
+          "pytorch distributed barrier",
+          "dist.barrier deadlock",
+          "synchronize processes pytorch"
+        ],
+        "keywords": [
+          "barrier",
+          "synchronization",
+          "deadlock",
+          "process sync"
+        ],
+        "confused_with": [
+          "torch.cuda.synchronize"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "transformer",
+        "llama"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "distributed"
+      ],
+      "related_cheatsheet": [
+        "distributed"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/distributed.html%23torch.distributed.barrier",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/distributed.html%23torch.distributed.barrier"
+    },
+    {
+      "task": "Wrap Models with DistributedDataParallel (torch.nn.parallel.DistributedDataParallel)",
+      "problem_solved": "Replicate a model across multiple processes and automatically synchronize gradients during the backward pass using efficient all-reduce operations.",
+      "mental_trigger": "I need to scale my training across multiple GPUs by distributing distinct data batches to each GPU.",
+      "syntax": "torch.nn.parallel.DistributedDataParallel(module, device_ids=None, output_device=None, dim=0, broadcast_buffers=True, find_unused_parameters=False)",
+      "important_parameters": [
+        "module: The PyTorch nn.Module to be parallelized across processes.",
+        "device_ids: List of CUDA device IDs for target process (such as [local_rank]).",
+        "output_device: Target device location for forward pass outputs.",
+        "find_unused_parameters: Traverses computation graph to find uncomputed parameters (set True only for dynamic graphs).",
+        "broadcast_buffers: Enables synchronizing module buffers (like BatchNorm statistics) at step start."
+      ],
+      "important_params": [
+        "module: The PyTorch nn.Module to be parallelized across processes.",
+        "device_ids: List of CUDA device IDs for target process (such as [local_rank]).",
+        "output_device: Target device location for forward pass outputs.",
+        "find_unused_parameters: Traverses computation graph to find uncomputed parameters (set True only for dynamic graphs).",
+        "broadcast_buffers: Enables synchronizing module buffers (like BatchNorm statistics) at step start."
+      ],
+      "return_value": "A wrapped DistributedDataParallel module transparently synchronizing gradients during backward().",
+      "example": "import os  \nimport torch  \nimport torch.nn as nn  \nimport torch.distributed as dist  \nfrom torch.nn.parallel import DistributedDataParallel as DDP\n\nos.environ[\"MASTER_ADDR\"] = \"127.0.0.1\"  \nos.environ[\"MASTER_PORT\"] = \"29502\"  \nos.environ[\"RANK\"] = \"0\"  \nos.environ[\"WORLD_SIZE\"] = \"1\"\n\ndist.init_process_group(backend=\"gloo\")\n\nmodel = nn.Linear(10, 2)  \nddp_model = DDP(model)\n\nx = torch.randn(4, 10)  \nloss = ddp_model(x).sum()  \nloss.backward()\n\nprint(\"DDP forward and backward pass executed successfully.\")  \ndist.destroy_process_group()",
+      "use_when": "Scaling data-parallel model training across single-node or multi-node GPUs.",
+      "avoid_when": "Models do not fit into single GPU VRAM (use FSDP instead), or single-threaded single-GPU training.",
+      "gotchas": [
+        "Setting find_unused_parameters=True unnecessarily, which incurs substantial performance overhead.",
+        "Accessing model custom attributes directly on ddp_model instead of ddp_model.module.",
+        "Using DataParallel (DP) instead of DistributedDataParallel (DDP) for multi-GPU training."
+      ],
+      "performance_notes": "Overlaps gradient communication with backward computation using bucketed all-reduce for linear scaling.",
+      "related_apis": [
+        "torch.nn.DataParallel",
+        "torch.distributed.fsdp.FullyShardedDataParallel"
+      ],
+      "framework_migration_notes": "Direct replacement for tf.distribute.MirroredStrategy or MultiWorkerMirroredStrategy.",
+      "tensorflow_equivalent": "tf.distribute.MultiWorkerMirroredStrategy",
+      "framework_equivalent": "tf.distribute.MultiWorkerMirroredStrategy",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "DDP",
+          "DistributedDataParallel"
+        ],
+        "search_terms": [
+          "pytorch DDP example",
+          "how to use DistributedDataParallel",
+          "ddp vs dataparallel"
+        ],
+        "keywords": [
+          "DDP",
+          "DistributedDataParallel",
+          "all-reduce",
+          "data parallel"
+        ],
+        "confused_with": [
+          "torch.nn.DataParallel"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "yolo",
+        "bert",
+        "roberta"
+      ],
+      "related_patterns": [
+        "memory-efficient-training",
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "distributed"
+      ],
+      "related_cheatsheet": [
+        "distributed"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html"
+    },
+    {
+      "task": "Configure Distributed Sampler for DDP (DistributedSampler)",
+      "problem_solved": "Partition a dataset into non-overlapping chunks across distributed processes to ensure each process sees distinct samples per epoch.",
+      "mental_trigger": "I need each GPU in my DDP cluster to process a unique subset of the dataset without overlapping.",
+      "syntax": "torch.utils.data.distributed.DistributedSampler(dataset, num_replicas=None, rank=None, shuffle=True, seed=0, drop_last=False)",
+      "important_parameters": [
+        "dataset: The PyTorch Dataset instance to be partitioned.",
+        "num_replicas: Total process count (defaults to world size).",
+        "rank: Current process rank (defaults to current global rank).",
+        "shuffle: Boolean flag enabling dataset index shuffling each epoch.",
+        "drop_last: Drops tail data samples to ensure equal division across ranks."
+      ],
+      "important_params": [
+        "dataset: The PyTorch Dataset instance to be partitioned.",
+        "num_replicas: Total process count (defaults to world size).",
+        "rank: Current process rank (defaults to current global rank).",
+        "shuffle: Boolean flag enabling dataset index shuffling each epoch.",
+        "drop_last: Drops tail data samples to ensure equal division across ranks."
+      ],
+      "return_value": "A sampler instance that yields dataset indices assigned to the current process rank.",
+      "example": "import torch  \nfrom torch.utils.data import TensorDataset, DataLoader  \nfrom torch.utils.data.distributed import DistributedSampler\n\ndataset = TensorDataset(torch.arange(100))\n\n# Simulating worker rank 0 out of 2 replicas  \nsampler = DistributedSampler(dataset, num_replicas=2, rank=0, shuffle=True)  \nloader = DataLoader(dataset, batch_size=10, sampler=sampler)\n\n# Must set epoch in training loop for proper shuffling  \nsampler.set_epoch(0)  \nfor batch in loader:  \n    pass\n\nprint(f\"Number of batches for rank 0: {len(loader)}\")",
+      "use_when": "Feeding data to DataLoader instances in multi-GPU DDP/FSDP training setups.",
+      "avoid_when": "Running single-process data loading, or using custom iterable datasets that manage sharding internally.",
+      "gotchas": [
+        "Forgetting to call sampler.set_epoch(epoch) at the start of every epoch, causing identical data ordering each epoch.",
+        "Setting shuffle=True in both DataLoader and DistributedSampler (causes conflicting errors; disable shuffle in DataLoader when using a sampler)."
+      ],
+      "performance_notes": "Zero memory overhead, ensures balanced workload distribution across workers.",
+      "related_apis": [
+        "torch.utils.data.DataLoader",
+        "torch.nn.parallel.DistributedDataParallel"
+      ],
+      "framework_migration_notes": "Replaces tf.data.Dataset.shard() in distributed TensorFlow pipelines.",
+      "tensorflow_equivalent": "tf.data.Dataset.shard",
+      "framework_equivalent": "tf.data.Dataset.shard",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "DistributedSampler",
+          "sampler.set_epoch"
+        ],
+        "search_terms": [
+          "pytorch DistributedSampler set_epoch",
+          "how to partition dataset pytorch ddp",
+          "distributed data loading"
+        ],
+        "keywords": [
+          "DistributedSampler",
+          "set_epoch",
+          "data partitioning",
+          "sharding"
+        ],
+        "confused_with": [
+          "RandomSampler"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "roberta"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "distributed"
+      ],
+      "related_cheatsheet": [
+        "distributed"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.distributed.DistributedSampler",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/data.html%23torch.utils.data.distributed.DistributedSampler"
+    },
+    {
+      "task": "Save and Restore DDP Checkpoints",
+      "problem_solved": "Save model weights and optimizer states safely from rank 0 without corrupting checkpoints or causing I/O race conditions across ranks.",
+      "mental_trigger": "I need to save a single checkpoint during distributed training and reload it cleanly.",
+      "syntax": "torch.save(ddp_model.module.state_dict(), filepath)  \nmodel.load_state_dict(torch.load(filepath, map_location=device))",
+      "important_parameters": [
+        "state_dict: Model state dictionary obtained from underlying module (ddp_model.module.state_dict()).",
+        "filepath: Target file path for disk saving/loading.",
+        "map_location: String or dict mapping tensor storage locations upon reloading."
+      ],
+      "important_params": [
+        "state_dict: Model state dictionary obtained from underlying module (ddp_model.module.state_dict()).",
+        "filepath: Target file path for disk saving/loading.",
+        "map_location: String or dict mapping tensor storage locations upon reloading."
+      ],
+      "return_value": "None. Performs serial file I/O operations for model serialization.",
+      "example": "import os  \nimport torch  \nimport torch.nn as nn  \nimport torch.distributed as dist  \nfrom torch.nn.parallel import DistributedDataParallel as DDP\n\nos.environ[\"MASTER_ADDR\"] = \"127.0.0.1\"  \nos.environ[\"MASTER_PORT\"] = \"29503\"  \nos.environ[\"RANK\"] = \"0\"  \nos.environ[\"WORLD_SIZE\"] = \"1\"\n\ndist.init_process_group(backend=\"gloo\")  \nmodel = nn.Linear(5, 2)  \nddp_model = DDP(model)\n\n# Save checkpoint from rank 0 using underlying module  \nif dist.get_rank() == 0:  \n    checkpoint = {\"model_state\": ddp_model.module.state_dict()}  \n    torch.save(checkpoint, \"checkpoint.pt\")\n\ndist.barrier()\n\n# Load checkpoint on specific device map  \nif os.path.exists(\"checkpoint.pt\"):  \n    ckpt = torch.load(\"checkpoint.pt\", map_location=\"cpu\")  \n    ddp_model.module.load_state_dict(ckpt[\"model_state\"])  \n    if dist.get_rank() == 0:  \n        os.remove(\"checkpoint.pt\")\n\ndist.destroy_process_group()",
+      "use_when": "Saving training progress, best model metrics, or optimizer states in multi-GPU DDP training setups.",
+      "avoid_when": "Working with sharded model architectures like FSDP where state dicts must be gathered or saved asynchronously (use torch.distributed.checkpoint for FSDP).",
+      "gotchas": [
+        "Saving ddp_model.state_dict() directly instead of ddp_model.module.state_dict(), causing state keys to be prefixed with module..",
+        "Writing files concurrently from every rank, leading to disk write race conditions and corrupted files.",
+        "Failing to pass map_location when reloading weights on devices with different GPU indices."
+      ],
+      "performance_notes": "Saving from rank 0 only avoids disk I/O bottlenecks across multi-node filesystems.",
+      "related_apis": [
+        "torch.save",
+        "torch.load",
+        "DistributedDataParallel.module"
+      ],
+      "framework_migration_notes": "Similar to tf.train.Checkpoint saving from worker 0 only.",
+      "tensorflow_equivalent": "tf.train.CheckpointManager",
+      "framework_equivalent": "tf.train.CheckpointManager",
+      "version_compatibility": "torch.distributed.checkpoint (DCP) was introduced in PyTorch 2.0 as an alternative unified checkpointing API.",
+      "search_metadata": {
+        "aliases": [
+          "DDP checkpoint",
+          "ddp model saving"
+        ],
+        "search_terms": [
+          "how to save ddp model pytorch",
+          "pytorch save ddp state_dict",
+          "ddp module state_dict"
+        ],
+        "keywords": [
+          "checkpoint",
+          "ddp.module",
+          "map_location",
+          "state_dict"
+        ],
+        "confused_with": [
+          "torch.distributed.checkpoint"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "roberta"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "distributed"
+      ],
+      "related_cheatsheet": [
+        "distributed"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/notes/ddp.html%23save-load-checkpoints",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/notes/ddp.html%23save-load-checkpoints"
+    },
+    {
+      "task": "Wrap Models with FullyShardedDataParallel (torch.distributed.fsdp.FullyShardedDataParallel)",
+      "problem_solved": "Shard model parameters, gradients, and optimizer states across distributed workers to train giant models exceeding single GPU VRAM.",
+      "mental_trigger": "My model parameters and optimizer states are too large to fit on a single GPU even with FP16/BF16 precision.",
+      "syntax": "torch.distributed.fsdp.FullyShardedDataParallel(module, sharding_strategy=None, cpu_offload=None, auto_wrap_policy=None, device_id=None)",
+      "important_parameters": [
+        "module: Target neural network module to wrap and shard.",
+        "sharding_strategy: Defines sharding behavior (FULL_SHARD, SHARD_GRAD_OP, HYBRID_SHARD).",
+        "cpu_offload: Configures parameter offloading to CPU RAM (CPUOffload(offload_params=True)).",
+        "auto_wrap_policy: Policy dictating recursive sub-module layer wrapping rules.",
+        "device_id: Target CUDA device for process placement."
+      ],
+      "important_params": [
+        "module: Target neural network module to wrap and shard.",
+        "sharding_strategy: Defines sharding behavior (FULL_SHARD, SHARD_GRAD_OP, HYBRID_SHARD).",
+        "cpu_offload: Configures parameter offloading to CPU RAM (CPUOffload(offload_params=True)).",
+        "auto_wrap_policy: Policy dictating recursive sub-module layer wrapping rules.",
+        "device_id: Target CUDA device for process placement."
+      ],
+      "return_value": "An FSDP wrapped module that dynamically shards and gathers layers during forward and backward passes.",
+      "example": "import os  \nimport torch  \nimport torch.nn as nn  \nimport torch.distributed as dist  \nfrom torch.distributed.fsdp import FullyShardedDataParallel as FSDP\n\nos.environ[\"MASTER_ADDR\"] = \"127.0.0.1\"  \nos.environ[\"MASTER_PORT\"] = \"29504\"  \nos.environ[\"RANK\"] = \"0\"  \nos.environ[\"WORLD_SIZE\"] = \"1\"\n\ndist.init_process_group(backend=\"gloo\")\n\nmodel = nn.Sequential(nn.Linear(100, 100), nn.ReLU(), nn.Linear(100, 10))  \nfsdp_model = FSDP(model)\n\nx = torch.randn(8, 100)  \noutput = fsdp_model(x)  \nloss = output.sum()  \nloss.backward()\n\nprint(\"FSDP forward and backward execution complete.\")  \ndist.destroy_process_group()",
+      "use_when": "Training large language models (LLMs) or large vision transformers that exceed individual GPU memory limits.",
+      "avoid_when": "Small models that fit easily on a single GPU with standard DDP (DDP incurs less communication overhead for small models).",
+      "gotchas": [
+        "Wrapping large models without an auto_wrap_policy, causing the entire network to be treated as a single monolithic block and preventing layered memory savings.",
+        "Attempting to access sub-module parameters directly before unsharding them with FSDP.summon_full_params."
+      ],
+      "performance_notes": "Reduces memory consumption proportionally to world size (1/*N*), enabling multi-billion parameter model training with modest network overhead.",
+      "related_apis": [
+        "torch.nn.parallel.DistributedDataParallel",
+        "torch.distributed.fsdp.ShardingStrategy"
+      ],
+      "framework_migration_notes": "Equivalent to DeepSpeed ZeRO stage 3 or Jax/Flax mesh parallelism strategies.",
+      "tensorflow_equivalent": "No direct equivalent.",
+      "framework_equivalent": "No direct equivalent.",
+      "version_compatibility": "PyTorch 2.0+ significantly improved FSDP performance, memory efficiency, and native transformer auto-wrap policies.",
+      "search_metadata": {
+        "aliases": [
+          "FSDP",
+          "FullyShardedDataParallel"
+        ],
+        "search_terms": [
+          "pytorch FSDP example",
+          "how to use FullyShardedDataParallel",
+          "fsdp auto wrap policy"
+        ],
+        "keywords": [
+          "FSDP",
+          "FullyShardedDataParallel",
+          "ZeRO-3",
+          "sharding",
+          "llm training"
+        ],
+        "confused_with": [
+          "DistributedDataParallel"
+        ]
+      },
+      "related_models": [
+        "transformer",
+        "t5",
+        "gpt",
+        "llama",
+        "qwen",
+        "gemma",
+        "deepseek"
+      ],
+      "related_patterns": [
+        "memory-efficient-training",
+        "device-placement"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "distributed"
+      ],
+      "related_cheatsheet": [
+        "distributed"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide",
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/fsdp.html",
+      "official_docs": "https://pytorch.org/docs/stable/fsdp.html"
+    },
+    {
+      "task": "Configure FSDP Sharding Strategies",
+      "problem_solved": "Choose the ideal trade-off between communication frequency and VRAM memory footprint by configuring FSDP sharding modes.",
+      "mental_trigger": "I need to optimize training throughput by choosing between full sharding, gradient-only sharding, or hybrid node sharding.",
+      "syntax": "from torch.distributed.fsdp import FullyShardedDataParallel as FSDP, ShardingStrategy\n\nfsdp_model = FSDP(model, sharding_strategy=ShardingStrategy.FULL_SHARD)",
+      "important_parameters": [
+        "sharding_strategy: Strategy enum choice (FULL_SHARD, SHARD_GRAD_OP, NO_SHARD, HYBRID_SHARD).",
+        "cpu_offload: CPU parameter offload settings.",
+        "backward_prefetch: Overlaps backward computation with parameter gathering (BackwardPrefetch.BACKWARD_PRE or BACKWARD_POST)."
+      ],
+      "important_params": [
+        "sharding_strategy: Strategy enum choice (FULL_SHARD, SHARD_GRAD_OP, NO_SHARD, HYBRID_SHARD).",
+        "cpu_offload: CPU parameter offload settings.",
+        "backward_prefetch: Overlaps backward computation with parameter gathering (BackwardPrefetch.BACKWARD_PRE or BACKWARD_POST)."
+      ],
+      "return_value": "Configured FSDP module instance operating under the selected sharding behavior.",
+      "example": "import os  \nimport torch  \nimport torch.nn as nn  \nimport torch.distributed as dist  \nfrom torch.distributed.fsdp import (  \n    FullyShardedDataParallel as FSDP,  \n    ShardingStrategy,  \n)\n\nos.environ[\"MASTER_ADDR\"] = \"127.0.0.1\"  \nos.environ[\"MASTER_PORT\"] = \"29505\"  \nos.environ[\"RANK\"] = \"0\"  \nos.environ[\"WORLD_SIZE\"] = \"1\"\n\ndist.init_process_group(backend=\"gloo\")\n\nmodel = nn.Linear(20, 10)  \n# SHARD_GRAD_OP shards gradients and optimizer states, keeping weights intact during forward  \nfsdp_model = FSDP(model, sharding_strategy=ShardingStrategy.SHARD_GRAD_OP)\n\nprint(f\"Configured strategy: {fsdp_model.sharding_strategy}\")  \ndist.destroy_process_group()",
+      "use_when": "Tuning large-scale training performance on high-bandwidth or low-bandwidth node interconnects.",
+      "avoid_when": "Single-GPU setups or when standard DDP provides higher throughput without memory bottlenecks.",
+      "gotchas": [
+        "Using FULL_SHARD on slow network interconnects (e.g., standard Ethernet), causing severe communication bottlenecks.",
+        "Misconfiguring HYBRID_SHARD without setting proper process groups across intra-node and inter-node boundaries."
+      ],
+      "performance_notes": "FULL_SHARD minimizes memory (ZeRO-3 equivalent). SHARD_GRAD_OP reduces communication overhead by retaining parameters in forward pass (ZeRO-2 equivalent).",
+      "related_apis": [
+        "torch.distributed.fsdp.ShardingStrategy",
+        "FullyShardedDataParallel"
+      ],
+      "framework_migration_notes": "Maps to DeepSpeed ZeRO stages: FULL_SHARD = ZeRO-3, SHARD_GRAD_OP = ZeRO-2, NO_SHARD = DDP.",
+      "tensorflow_equivalent": "No direct equivalent.",
+      "framework_equivalent": "No direct equivalent.",
+      "version_compatibility": "HYBRID_SHARD was stabilized in PyTorch 2.0 to optimize multi-node setups with fast intra-node NVLink and slower inter-node networking.",
+      "search_metadata": {
+        "aliases": [
+          "ShardingStrategy",
+          "FULL_SHARD",
+          "SHARD_GRAD_OP"
+        ],
+        "search_terms": [
+          "pytorch fsdp sharding strategy",
+          "FULL_SHARD vs SHARD_GRAD_OP",
+          "hybrid shard fsdp"
+        ],
+        "keywords": [
+          "sharding strategy",
+          "FULL_SHARD",
+          "SHARD_GRAD_OP",
+          "HYBRID_SHARD",
+          "ZeRO"
+        ],
+        "confused_with": [
+          "torch.distributed.tensor.parallel"
+        ]
+      },
+      "related_models": [
+        "transformer",
+        "gpt",
+        "llama",
+        "qwen",
+        "deepseek"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "distributed"
+      ],
+      "related_cheatsheet": [
+        "distributed"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide",
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/fsdp.html%23torch.distributed.fsdp.ShardingStrategy",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/fsdp.html%23torch.distributed.fsdp.ShardingStrategy"
+    },
+    {
+      "task": "Save and Load FSDP Checkpoints",
+      "problem_solved": "Gather distributed parameter shards into a unified full state dict or manage sharded state dicts efficiently for saving and resuming FSDP training.",
+      "mental_trigger": "I need to save a trained FSDP model checkpoint either as a consolidated file or directly in distributed sharded format.",
+      "syntax": "from torch.distributed.fsdp import FullyShardedDataParallel as FSDP, StateDictType, FullStateDictConfig\n\nsave_policy = FullStateDictConfig(offload_to_cpu=True, rank0_only=True)  \nwith FSDP.state_dict_type(fsdp_model, StateDictType.FULL_STATE_DICT, save_policy):  \n    cpu_state = fsdp_model.state_dict()",
+      "important_parameters": [
+        "fsdp_model: The wrapped FSDP module.",
+        "state_dict_type: Type enum (FULL_STATE_DICT, LOCAL_STATE_DICT, SHARDED_STATE_DICT).",
+        "state_dict_config: Configuration class (FullStateDictConfig or ShardedStateDictConfig)."
+      ],
+      "important_params": [
+        "fsdp_model: The wrapped FSDP module.",
+        "state_dict_type: Type enum (FULL_STATE_DICT, LOCAL_STATE_DICT, SHARDED_STATE_DICT).",
+        "state_dict_config: Configuration class (FullStateDictConfig or ShardedStateDictConfig)."
+      ],
+      "return_value": "Context manager configuring state dictionary extraction mode.",
+      "example": "import os  \nimport torch  \nimport torch.nn as nn  \nimport torch.distributed as dist  \nfrom torch.distributed.fsdp import (  \n    FullyShardedDataParallel as FSDP,  \n    StateDictType,  \n    FullStateDictConfig,  \n)\n\nos.environ[\"MASTER_ADDR\"] = \"127.0.0.1\"  \nos.environ[\"MASTER_PORT\"] = \"29506\"  \nos.environ[\"RANK\"] = \"0\"  \nos.environ[\"WORLD_SIZE\"] = \"1\"\n\ndist.init_process_group(backend=\"gloo\")\n\nmodel = nn.Linear(10, 2)  \nfsdp_model = FSDP(model)\n\nsave_policy = FullStateDictConfig(offload_to_cpu=True, rank0_only=True)  \nwith FSDP.state_dict_type(fsdp_model, StateDictType.FULL_STATE_DICT, save_policy):  \n    cpu_state = fsdp_model.state_dict()  \n    if dist.get_rank() == 0:  \n        torch.save(cpu_state, \"fsdp_model.pt\")\n\nif os.path.exists(\"fsdp_model.pt\") and dist.get_rank() == 0:  \n    os.remove(\"fsdp_model.pt\")\n\ndist.destroy_process_group()",
+      "use_when": "Saving multi-billion parameter FSDP models for deployment or multi-node training resumes.",
+      "avoid_when": "Standard non-sharded PyTorch modules (use standard torch.save instead).",
+      "gotchas": [
+        "Calling fsdp_model.state_dict() without setting FSDP.state_dict_type, leading to OOM or incomplete parameter states.",
+        "Gathering FULL_STATE_DICT on GPU without setting offload_to_cpu=True, causing immediate Host/GPU OOM crashes for large models.",
+        "Forgetting rank0_only=True when saving full state dicts, causing all nodes to write redundant files simultaneously."
+      ],
+      "performance_notes": "SHARDED_STATE_DICT combined with torch.distributed.checkpoint (DCP) allows fast, non-blocking parallel I/O across multi-node clusters.",
+      "related_apis": [
+        "torch.distributed.checkpoint",
+        "torch.distributed.fsdp.StateDictType"
+      ],
+      "framework_migration_notes": "Replaces custom parameter gathering code used in older distributed frameworks.",
+      "tensorflow_equivalent": "No direct equivalent.",
+      "framework_equivalent": "No direct equivalent.",
+      "version_compatibility": "torch.distributed.checkpoint (DCP) became the recommended approach for FSDP sharded checkpointing in PyTorch 2.1+.",
+      "search_metadata": {
+        "aliases": [
+          "fsdp save checkpoint",
+          "FullStateDictConfig"
+        ],
+        "search_terms": [
+          "how to save FSDP model pytorch",
+          "fsdp state_dict_type",
+          "FSDP offload_to_cpu rank0_only"
+        ],
+        "keywords": [
+          "FSDP",
+          "FULL_STATE_DICT",
+          "SHARDED_STATE_DICT",
+          "checkpointing",
+          "offload_to_cpu"
+        ],
+        "confused_with": [
+          "torch.save"
+        ]
+      },
+      "related_models": [
+        "transformer",
+        "gpt",
+        "llama",
+        "qwen",
+        "deepseek"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "distributed"
+      ],
+      "related_cheatsheet": [
+        "distributed"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/fsdp.html%23saving-and-loading-process",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/fsdp.html%23saving-and-loading-process"
+    },
+    {
+      "task": "Launch Distributed Training with torchrun",
+      "problem_solved": "Automatically handle process creation, environment variable assignment, and process failure recovery for multi-GPU training jobs.",
+      "mental_trigger": "I want to launch a distributed script across 4 GPUs on my machine without manually writing multiprocessing spawn code.",
+      "syntax": "torchrun --nnodes=1 --nproc_per_node=NUM_GPUS script.py [args...]",
+      "important_parameters": [
+        "--nproc_per_node: Number of worker processes to spawn per compute node (typically equals GPU count).",
+        "--nnodes: Total number of physical compute nodes involved in execution.",
+        "--rdzv_backend: Rendezvous backend for worker process discovery ('c10d').",
+        "--rdzv_endpoint: IP address and port of the rendezvous coordinator.",
+        "--max_restarts: Maximum number of automatic worker restart attempts upon failure."
+      ],
+      "important_params": [
+        "--nproc_per_node: Number of worker processes to spawn per compute node (typically equals GPU count).",
+        "--nnodes: Total number of physical compute nodes involved in execution.",
+        "--rdzv_backend: Rendezvous backend for worker process discovery ('c10d').",
+        "--rdzv_endpoint: IP address and port of the rendezvous coordinator.",
+        "--max_restarts: Maximum number of automatic worker restart attempts upon failure."
+      ],
+      "return_value": "Command line utility execution process spawning worker instances.",
+      "example": "# Running the launcher from command line:  \n# torchrun --standalone --nproc_per_node=4 train.py --batch_size 32\n\nimport os  \nimport torch  \nimport torch.distributed as dist\n\ndef main():  \n    # Environment variables set automatically by torchrun  \n    dist.init_process_group(backend=\"gloo\")  \n    local_rank = int(os.environ.get(\"LOCAL_RANK\", 0))  \n    print(f\"Running worker process on local rank {local_rank}\")  \n    dist.destroy_process_group()\n\nif __name__ == \"__main__\":  \n    main()",
+      "use_when": "Launching any production DDP or FSDP script on single-node or multi-node clusters.",
+      "avoid_when": "Interactive debugging in Jupyter notebooks where torch.multiprocessing.spawn or manual process initiation is required.",
+      "gotchas": [
+        "Hardcoding RANK or WORLD_SIZE inside dist.init_process_group() when using torchrun, overriding torchrun environment variables.",
+        "Using deprecated python -m torch.distributed.launch instead of torchrun.",
+        "Forgetting to bind LOCAL_RANK to torch.cuda.set_device(local_rank)."
+      ],
+      "performance_notes": "Eliminates Python GIL limitations by executing independent OS processes for each GPU.",
+      "related_apis": [
+        "torch.distributed.init_process_group",
+        "torch.multiprocessing.spawn"
+      ],
+      "framework_migration_notes": "Replaces tf.estimator or torch.distributed.launch CLI utilities.",
+      "tensorflow_equivalent": "tf.distribute.run",
+      "framework_equivalent": "tf.distribute.run",
+      "version_compatibility": "torchrun fully replaced torch.distributed.launch in PyTorch 1.10+.",
+      "search_metadata": {
+        "aliases": [
+          "torchrun",
+          "torch.distributed.launch"
+        ],
+        "search_terms": [
+          "how to use torchrun",
+          "torchrun nproc_per_node",
+          "launch pytorch ddp script"
+        ],
+        "keywords": [
+          "torchrun",
+          "nproc_per_node",
+          "distributed launch",
+          "standalone"
+        ],
+        "confused_with": [
+          "python -m torch.distributed.launch"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "gpt",
+        "llama"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "distributed"
+      ],
+      "related_cheatsheet": [
+        "distributed"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/elastic/run.html",
+      "official_docs": "https://pytorch.org/docs/stable/elastic/run.html"
+    },
+    {
+      "task": "Configure Multi-Node Training (torchrun rendezvous options)",
+      "problem_solved": "Coordinate distributed process initialization across multiple distinct compute nodes using dynamic rendezvous protocols.",
+      "mental_trigger": "I need to expand my training job from 1 node (8 GPUs) to 4 nodes (32 GPUs) across my network cluster.",
+      "syntax": "torchrun --nnodes=NUM_NODES --nproc_per_node=GPUS_PER_NODE --node_rank=NODE_INDEX --rdzv_id=JOB_ID --rdzv_backend=c10d --rdzv_endpoint=MASTER_NODE_IP:29500 script.py",
+      "important_parameters": [
+        "--nnodes: Total number of physical machines in the cluster.",
+        "--nproc_per_node: Number of processes to spawn on each individual node.",
+        "--node_rank: Unique index identifier for current node (0 to NUM_NODES - 1).",
+        "--rdzv_id: Unique string or integer job identifier.",
+        "--rdzv_endpoint: Host IP and port of primary coordinator node (MASTER_IP:PORT)."
+      ],
+      "important_params": [
+        "--nnodes: Total number of physical machines in the cluster.",
+        "--nproc_per_node: Number of processes to spawn on each individual node.",
+        "--node_rank: Unique index identifier for current node (0 to NUM_NODES - 1).",
+        "--rdzv_id: Unique string or integer job identifier.",
+        "--rdzv_endpoint: Host IP and port of primary coordinator node (MASTER_IP:PORT)."
+      ],
+      "return_value": "Multi-node process coordinator managing node auto-discovery and fault tolerance.",
+      "example": "# Execute on Master Node (Node 0, IP: 192.168.1.100):  \ntorchrun \\  \n    --nnodes=2 \\  \n    --nproc_per_node=8 \\  \n    --node_rank=0 \\  \n    --rdzv_id=12345 \\  \n    --rdzv_backend=c10d \\  \n    --rdzv_endpoint=192.168.1.100:29500 \\  \n    train.py\n\n# Execute on Worker Node (Node 1):  \ntorchrun \\  \n    --nnodes=2 \\  \n    --nproc_per_node=8 \\  \n    --node_rank=1 \\  \n    --rdzv_id=12345 \\  \n    --rdzv_backend=c10d \\  \n    --rdzv_endpoint=192.168.1.100:29500 \\  \n    train.py",
+      "use_when": "Running large-scale training jobs across clusters of multiple GPU servers.",
+      "avoid_when": "Single-node training setups (use --standalone option instead).",
+      "gotchas": [
+        "Network firewalls blocking communication on the specified --rdzv_endpoint port.",
+        "Discrepancies in --rdzv_id or network arguments across nodes causing rendezvous timeout failures.",
+        "Differing code or PyTorch package versions across master and worker nodes."
+      ],
+      "performance_notes": "Enables elastic fault tolerance and efficient multi-node scaling when paired with high-speed InfiniBand networking.",
+      "related_apis": [
+        "torchrun",
+        "torch.distributed.init_process_group"
+      ],
+      "framework_migration_notes": "Similar to configuring multi-worker cluster specs in Slurm or Kubernetes.",
+      "tensorflow_equivalent": "TF_CONFIG",
+      "framework_equivalent": "TF_CONFIG",
+      "version_compatibility": "Modern PyTorch c10d rendezvous backend replaced etcd dependency for reliable serverless dynamic discovery.",
+      "search_metadata": {
+        "aliases": [
+          "multi-node torchrun",
+          "rdzv_endpoint"
+        ],
+        "search_terms": [
+          "pytorch multi node training torchrun",
+          "rdzv_endpoint torchrun",
+          "multi node ddp setup"
+        ],
+        "keywords": [
+          "multi-node",
+          "rendezvous",
+          "rdzv_endpoint",
+          "c10d",
+          "torchrun"
+        ],
+        "confused_with": [
+          "Single-node torchrun --standalone"
+        ]
+      },
+      "related_models": [
+        "transformer",
+        "gpt",
+        "llama",
+        "qwen",
+        "deepseek"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "distributed"
+      ],
+      "related_cheatsheet": [
+        "distributed"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/elastic/run.html%23multinode-launch",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/elastic/run.html%23multinode-launch"
+    },
+    {
+      "task": "Perform Collective Communication (all_reduce, broadcast, all_gather)",
+      "problem_solved": "Share, aggregate, or synchronize tensor data directly across distributed workers without passing through a central server.",
+      "mental_trigger": "I need to average loss values or aggregate evaluation metrics across all GPUs during training.",
+      "syntax": "torch.distributed.all_reduce(tensor, op=torch.distributed.ReduceOp.SUM, group=None, async_op=False)  \ntorch.distributed.broadcast(tensor, src=0, group=None, async_op=False)  \ntorch.distributed.all_gather(tensor_list, tensor, group=None, async_op=False)",
+      "important_parameters": [
+        "tensor: Target tensor to communicate or reduce.",
+        "op: Reduction operation enum (ReduceOp.SUM, ReduceOp.PRODUCT, ReduceOp.MIN, ReduceOp.MAX).",
+        "src: Source rank integer for broadcast operation.",
+        "tensor_list: Destination list of tensors to hold gathered outputs for all_gather.",
+        "async_op: Boolean flag indicating whether the operation is non-blocking."
+      ],
+      "important_params": [
+        "tensor: Target tensor to communicate or reduce.",
+        "op: Reduction operation enum (ReduceOp.SUM, ReduceOp.PRODUCT, ReduceOp.MIN, ReduceOp.MAX).",
+        "src: Source rank integer for broadcast operation.",
+        "tensor_list: Destination list of tensors to hold gathered outputs for all_gather.",
+        "async_op: Boolean flag indicating whether the operation is non-blocking."
+      ],
+      "return_value": "Work object if async_op=True, else None. Modifies tensors in-place.",
+      "example": "import os  \nimport torch  \nimport torch.distributed as dist\n\nos.environ[\"MASTER_ADDR\"] = \"127.0.0.1\"  \nos.environ[\"MASTER_PORT\"] = \"29507\"  \nos.environ[\"RANK\"] = \"0\"  \nos.environ[\"WORLD_SIZE\"] = \"1\"\n\ndist.init_process_group(backend=\"gloo\")\n\n# All-Reduce example: Summing values across ranks  \ntensor = torch.tensor([1.0, 2.0])  \ndist.all_reduce(tensor, op=dist.ReduceOp.SUM)\n\n# All-Gather example: Gathering tensors from all ranks  \ntensor_list = [torch.zeros_like(tensor) for _ in range(dist.get_world_size())]  \ndist.all_gather(tensor_list, tensor)\n\nprint(f\"Gathered tensors: {tensor_list}\")  \ndist.destroy_process_group()",
+      "use_when": "Aggregating evaluation metrics, broadcasting initial hyperparameter seeds, or implementing custom parallel primitives.",
+      "avoid_when": "Standard gradient synchronization handled automatically by DDP or FSDP.",
+      "gotchas": [
+        "Forgetting that all_reduce modifies the input tensor in-place.",
+        "Mismatched tensor shapes across ranks during all_gather operations, leading to segmentation faults or collective hangs.",
+        "Executing collective operations in different orders across different processes, leading to deadlocks."
+      ],
+      "performance_notes": "Implemented via highly optimized NCCL ring and tree algorithms to maximize NVLink interconnect bandwidth.",
+      "related_apis": [
+        "torch.distributed.all_reduce",
+        "torch.distributed.all_gather_into_tensor",
+        "torch.distributed.broadcast"
+      ],
+      "framework_migration_notes": "Maps directly to MPI or Horovod collective operations.",
+      "tensorflow_equivalent": "tf.distribute.StrategyExtended.reduce_to",
+      "framework_equivalent": "tf.distribute.StrategyExtended.reduce_to",
+      "version_compatibility": "all_gather_into_tensor was introduced in PyTorch 1.12 to replace all_gather with higher efficiency memory allocation.",
+      "search_metadata": {
+        "aliases": [
+          "all_reduce",
+          "all_gather",
+          "dist.broadcast"
+        ],
+        "search_terms": [
+          "pytorch all_reduce example",
+          "how to all_gather tensors pytorch",
+          "pytorch collective communication"
+        ],
+        "keywords": [
+          "all_reduce",
+          "all_gather",
+          "broadcast",
+          "collective communication",
+          "NCCL"
+        ],
+        "confused_with": [
+          "torch.gather"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "bert",
+        "llama"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "distributed"
+      ],
+      "related_cheatsheet": [
+        "distributed"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/distributed.html%23collective-functions",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/distributed.html%23collective-functions"
+    },
+    {
+      "task": "Debug and Monitor Distributed Training Failures",
+      "problem_solved": "Identify network hangs, unhandled process exceptions, host timeouts, or silent deadlocks during distributed training executions.",
+      "mental_trigger": "My distributed job freezes indefinitely without printing an error message or throwing a stack trace.",
+      "syntax": "import os\n\nos.environ[\"TORCH_DISTRIBUTED_DEBUG\"] = \"DETAIL\"  \nos.environ[\"TORCH_CPP_LOG_LEVEL\"] = \"INFO\"  \nos.environ[\"NCCL_DEBUG\"] = \"INFO\"",
+      "important_parameters": [
+        "TORCH_DISTRIBUTED_DEBUG: Controls PyTorch distributed debug logging ('OFF', 'INFO', 'DETAIL').",
+        "NCCL_DEBUG: Controls underlying NVIDIA NCCL library log verbosity ('WARN', 'INFO').",
+        "NCCL_DEBUG_SUBSYS: Specifies sub-components to monitor ('INIT', 'COLL', 'ENV').",
+        "TORCH_NCCL_ASYNC_ERROR_HANDLING: Toggles async error handling behavior for failed GPU kernels."
+      ],
+      "important_params": [
+        "TORCH_DISTRIBUTED_DEBUG: Controls PyTorch distributed debug logging ('OFF', 'INFO', 'DETAIL').",
+        "NCCL_DEBUG: Controls underlying NVIDIA NCCL library log verbosity ('WARN', 'INFO').",
+        "NCCL_DEBUG_SUBSYS: Specifies sub-components to monitor ('INIT', 'COLL', 'ENV').",
+        "TORCH_NCCL_ASYNC_ERROR_HANDLING: Toggles async error handling behavior for failed GPU kernels."
+      ],
+      "return_value": "Diagnostic log traces emitted to standard stdout/stderr streams.",
+      "example": "import os  \nimport torch  \nimport torch.distributed as dist\n\n# Enable detailed distributed tracing before process group initialization  \nos.environ[\"TORCH_DISTRIBUTED_DEBUG\"] = \"DETAIL\"  \nos.environ[\"NCCL_DEBUG\"] = \"INFO\"\n\nos.environ[\"MASTER_ADDR\"] = \"127.0.0.1\"  \nos.environ[\"MASTER_PORT\"] = \"29508\"  \nos.environ[\"RANK\"] = \"0\"  \nos.environ[\"WORLD_SIZE\"] = \"1\"\n\ndist.init_process_group(backend=\"gloo\")  \nprint(\"Distributed process group initialized with debug logging active.\")  \ndist.destroy_process_group()",
+      "use_when": "Diagnosing deadlocks, hangs, NCCL ring initialization failures, or unused parameter warnings in DDP.",
+      "avoid_when": "Running high-throughput production jobs where verbose NCCL debug logs saturate console output.",
+      "gotchas": [
+        "Leaving TORCH_DISTRIBUTED_DEBUG=DETAIL enabled during production runs, which adds overhead to graph analysis.",
+        "Ignoring NCCL network interface selection flags (NCCL_SOCKET_IFNAME) on multi-interface clusters."
+      ],
+      "performance_notes": "Diagnostic logging increases latency slightly. Turn off debug environment variables after issue resolution.",
+      "related_apis": [
+        "torch.distributed.monitored_barrier",
+        "torch.distributed.init_process_group"
+      ],
+      "framework_migration_notes": "Similar to TF_CPP_MIN_LOG_LEVEL debugging in TensorFlow distributed setups.",
+      "tensorflow_equivalent": "TF_CPP_MIN_LOG_LEVEL",
+      "framework_equivalent": "TF_CPP_MIN_LOG_LEVEL",
+      "version_compatibility": "PyTorch 2.0+ introduced TORCH_NCCL_ASYNC_ERROR_HANDLING=1 enabled by default to prevent indefinite hangs on CUDA errors.",
+      "search_metadata": {
+        "aliases": [
+          "TORCH_DISTRIBUTED_DEBUG",
+          "NCCL_DEBUG",
+          "debug distributed pytorch"
+        ],
+        "search_terms": [
+          "pytorch distributed freeze debug",
+          "TORCH_DISTRIBUTED_DEBUG detail",
+          "nccl debug info"
+        ],
+        "keywords": [
+          "debugging",
+          "TORCH_DISTRIBUTED_DEBUG",
+          "NCCL_DEBUG",
+          "deadlock",
+          "hangs"
+        ],
+        "confused_with": [
+          "torch.autograd.set_detect_anomaly"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "transformer",
+        "llama"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "distributed"
+      ],
+      "related_cheatsheet": [
+        "distributed"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/distributed.html%23troubleshooting",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/distributed.html%23troubleshooting"
+    }
+  ]
+}

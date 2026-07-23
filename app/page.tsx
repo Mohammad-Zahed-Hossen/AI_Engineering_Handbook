@@ -98,7 +98,7 @@ export default function Home() {
               </span>
             </div>
             <h1 className="text-lg sm:text-xl lg:text-2xl font-extrabold text-foreground tracking-tight">
-              AI Engineering Handbook
+              AENS
             </h1>
             <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-2xl">
               A production-ready reference catalog for package syntax, neural network architectures, 

@@ -1,0 +1,1438 @@
+{
+  "id": "pytorch",
+  "module_name": "09_export",
+  "module_title": "Model Export & Deployment",
+  "slug": "09_export",
+  "tasks": [
+    {
+      "task": "Compile Models with torch.compile",
+      "problem_solved": "Speeds up PyTorch model inference and training execution without requiring model architecture rewrites by compiling PyTorch code into optimized C++ or Triton kernels using TorchDynamo and Inductor.",
+      "mental_trigger": "I want to accelerate my PyTorch 2.x model execution on GPU or CPU using a single decorator or wrapper function.",
+      "syntax": "torch.compile(  \n    model=None,  \n    *,  \n    fullgraph=False,  \n    dynamic=None,  \n    backend=\"inductor\",  \n    mode=None,  \n    options=None,  \n    disable=False  \n)",
+      "important_parameters": [
+        "model (Callable or nn.Module): The PyTorch module or function to compile.",
+        "fullgraph (bool): If True, requires the model to compile into a single unified graph with zero graph breaks; throws an error if Python control flow causes a split.",
+        "dynamic (bool or None): Enables or disables dynamic shape tracking. If None, automatically detects dynamic dimensions when shape changes occur.",
+        "backend (str or Callable): Specifies the compilation backend. Default is \"inductor\", which generates fast C++/Triton kernels.",
+        "mode (str or None): Preset optimization targets such as \"default\", \"reduce-overhead\", or \"max-autotune\"."
+      ],
+      "important_params": [
+        "model (Callable or nn.Module): The PyTorch module or function to compile.",
+        "fullgraph (bool): If True, requires the model to compile into a single unified graph with zero graph breaks; throws an error if Python control flow causes a split.",
+        "dynamic (bool or None): Enables or disables dynamic shape tracking. If None, automatically detects dynamic dimensions when shape changes occur.",
+        "backend (str or Callable): Specifies the compilation backend. Default is \"inductor\", which generates fast C++/Triton kernels.",
+        "mode (str or None): Preset optimization targets such as \"default\", \"reduce-overhead\", or \"max-autotune\"."
+      ],
+      "return_value": "Returns an OptimizedModule instance that wraps the original module and transparently compiles graphs during execution.",
+      "example": "import torch  \nimport torch.nn as nn\n\nclass ToyModel(nn.Module):  \n    def __init__(self):  \n        super().__init__()  \n        self.fc1 = nn.Linear(10, 20)  \n        self.relu = nn.ReLU()  \n        self.fc2 = nn.Linear(20, 5)\n\n    def forward(self, x):  \n        return self.fc2(self.relu(self.fc1(x)))\n\nmodel = ToyModel().eval()  \nx = torch.randn(2, 10)\n\ncompiled_model = torch.compile(model)\n\nwith torch.inference_mode():  \n    output = compiled_model(x)\n\nprint(\"Output shape:\", output.shape)",
+      "use_when": "Deploying PyTorch 2.x models in Python environments where high throughput and low execution latency are needed.\nTraining large deep learning models where kernel fusion reduces memory bandwidth pressure.\nEliminating Python interpreter overhead in complex network loops.",
+      "avoid_when": "Deploying into non-Python environments like C++ bare-metal binaries or edge embedded devices without Python runtimes (use torch.export or ONNX instead).\nExecuting rapid single-pass interactive scripts where compilation overhead outweighs runtime savings.",
+      "gotchas": [
+        "Cold-start latency occurs during the first forward pass while Triton or C++ compilation takes place.",
+        "Graph breaks happen when code encounters unsupported Python constructs, printing warnings and falling back to eager evaluation.",
+        "Re-compilations trigger if input shapes change unpredictably and dynamic is set to False.",
+        "CUDA memory usage temporarily spikes during graph generation and autotuning passes."
+      ],
+      "performance_notes": "mode=\"max-autotune\" provides maximum latency reduction but increases initial warm-up compile time substantially.\nKernel fusion combines multiple element-wise operations into single GPU kernels, dramatically saving DRAM bandwidth.",
+      "related_apis": [
+        "torch.export.export",
+        "torch.jit.trace",
+        "torch.inference_mode"
+      ],
+      "framework_migration_notes": "When migrating from TensorFlow tf.function or JAX jax.jit, torch.compile provides similar execution tracing and kernel fusion. Unlike older PyTorch tracing, it seamlessly falls back to Python when non-traceable constructs appear rather than crashing or silently failing.",
+      "tensorflow_equivalent": "torch.compile → tf.function (approximate)",
+      "framework_equivalent": "torch.compile → tf.function (approximate)",
+      "version_compatibility": "Introduced in PyTorch 2.0. In PyTorch 2.1+, dynamic shape support and Triton kernel codegen stability were significantly improved.",
+      "search_metadata": {
+        "aliases": [
+          "torch.compile",
+          "TorchDynamo",
+          "TorchInductor"
+        ],
+        "search_terms": [
+          "PyTorch 2.0 compile",
+          "speed up model inference",
+          "fuse kernels PyTorch"
+        ],
+        "keywords": [
+          "compile",
+          "inductor",
+          "dynamo",
+          "JIT",
+          "graph fusion"
+        ],
+        "confused_with": [
+          "torch.compile vs torch.jit.script",
+          "torch.compile vs torch.export"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "yolo",
+        "bert",
+        "roberta",
+        "t5",
+        "gpt",
+        "llama"
+      ],
+      "related_patterns": [
+        "device-placement",
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "deployment"
+      ],
+      "related_cheatsheet": [
+        "deployment"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide",
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.compile.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.compile.html"
+    },
+    {
+      "task": "Configure Compilation Backends and Modes (backend, mode, dynamic, fullgraph)",
+      "problem_solved": "Allows precise control over PyTorch compilation strategies to balance initial compile-time latency, runtime memory consumption, and dynamic batch execution across different deployment hardware.",
+      "mental_trigger": "I need to configure torch.compile to optimize latency versus memory or handle dynamic batch sizes without triggering repeated re-compilations.",
+      "syntax": "torch.compile(  \n    model,  \n    backend=\"inductor\",  \n    mode=\"default\",  \n    dynamic=True,  \n    fullgraph=False,  \n    options=None  \n)",
+      "important_parameters": [
+        "backend (str): Target execution backend (for example, \"inductor\", \"aot_eager\", \"cudagraphs\", or \"onnxrt\").",
+        "mode (str): Tuning presets (\"default\", \"reduce-overhead\", \"max-autotune\", or \"max-autotune-no-cudagraphs\").",
+        "dynamic (bool): Forces dynamic shape tracing to prevent re-compilation when tensor dimensions change across batches.",
+        "fullgraph (bool): Raises an error if any graph break occurs, ensuring the graph is completely captured.",
+        "options (dict): Backend-specific key-value flags passed directly to Inductor or compiler backends."
+      ],
+      "important_params": [
+        "backend (str): Target execution backend (for example, \"inductor\", \"aot_eager\", \"cudagraphs\", or \"onnxrt\").",
+        "mode (str): Tuning presets (\"default\", \"reduce-overhead\", \"max-autotune\", or \"max-autotune-no-cudagraphs\").",
+        "dynamic (bool): Forces dynamic shape tracing to prevent re-compilation when tensor dimensions change across batches.",
+        "fullgraph (bool): Raises an error if any graph break occurs, ensuring the graph is completely captured.",
+        "options (dict): Backend-specific key-value flags passed directly to Inductor or compiler backends."
+      ],
+      "return_value": "An OptimizedModule configured with specified backend compilation passes and graph capture constraints.",
+      "example": "import torch  \nimport torch.nn as nn\n\nclass ConvNet(nn.Module):  \n    def __init__(self):  \n        super().__init__()  \n        self.conv = nn.Conv2d(3, 16, 3, padding=1)  \n        self.bn = nn.BatchNorm2d(16)  \n        self.relu = nn.ReLU()\n\n    def forward(self, x):  \n        return self.relu(self.bn(self.conv(x)))\n\nmodel = ConvNet().eval()\n\ncompiled_model = torch.compile(  \n    model,  \n    backend=\"inductor\",  \n    mode=\"max-autotune\",  \n    dynamic=True,  \n    fullgraph=False  \n)\n\nx = torch.randn(4, 3, 32, 32)  \nwith torch.inference_mode():  \n    out = compiled_model(x)\n\nprint(\"Compiled inference successful, output shape:\", out.shape)",
+      "use_when": "Handling real-world production serving pipelines where input batch sizes or token lengths vary per request.\nEliminating framework overhead in small model inference using CUDA Graphs via mode=\"reduce-overhead\".\nBenchmarking ceiling throughput across different hardware targets.",
+      "avoid_when": "Prototyping model architectures interactively where fast feedback loops are required.\nRunning on resource-constrained host machines with limited CPU RAM for autotuning.",
+      "gotchas": [
+        "mode=\"reduce-overhead\" uses CUDA Graphs, which requires static memory allocation and can cause high GPU memory footprint.",
+        "Setting fullgraph=True on models containing third-party library calls or unsupported Python features will throw UserError.",
+        "Extreme autotuning (max-autotune) can significantly lengthen deployment build times."
+      ],
+      "performance_notes": "dynamic=True trades off a small amount of static shape optimization quality to avoid runtime re-compilation penalties when input shapes fluctuate.\nCUDA Graph modes eliminate CPU launcher latency completely, yielding massive speedups for small batch sizes.",
+      "related_apis": [
+        "torch.compile",
+        "torch._dynamo.list_backends"
+      ],
+      "framework_migration_notes": "mode=\"reduce-overhead\" in PyTorch functions similarly to XLA compilation modes in TensorFlow where CPU launch overhead is removed by building static execution schedules.",
+      "tensorflow_equivalent": "torch.compile(..., mode=\"max-autotune\") → tf.function(experimental_compile=True)",
+      "framework_equivalent": "torch.compile(..., mode=\"max-autotune\") → tf.function(experimental_compile=True)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Inductor modes",
+          "dynamic compilation",
+          "fullgraph compilation"
+        ],
+        "search_terms": [
+          "torch.compile dynamic shapes",
+          "reduce-overhead torch.compile",
+          "fullgraph PyTorch"
+        ],
+        "keywords": [
+          "inductor",
+          "backend",
+          "mode",
+          "dynamic",
+          "fullgraph",
+          "cudagraphs"
+        ],
+        "confused_with": [
+          "dynamic=True vs static shape exports"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "yolo",
+        "bert",
+        "llama",
+        "deepseek"
+      ],
+      "related_patterns": [
+        "device-placement",
+        "mixed-precision",
+        "kv-cache"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "deployment"
+      ],
+      "related_cheatsheet": [
+        "deployment"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide",
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.compile.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.compile.html"
+    },
+    {
+      "task": "Export Stable Graphs with torch.export.export",
+      "problem_solved": "Captures a fully traced, hardware-agnostic intermediate representation (ExportedProgram) of a PyTorch model for out-of-Python deployment in C++ or mobile runtimes.",
+      "mental_trigger": "I need a clean graph export of my model with guaranteed dynamic shapes for export to C++, mobile, or edge environments.",
+      "syntax": "torch.export.export(  \n    mod,  \n    args,  \n    kwargs=None,  \n    *,  \n    dynamic_shapes=None,  \n    strict=True  \n)",
+      "important_parameters": [
+        "mod (nn.Module or Callable): The module or function to trace into a stable graph.",
+        "args (Tuple[Any, ...]): Example positional input arguments.",
+        "kwargs (Dict[str, Any] or None): Example keyword input arguments.",
+        "dynamic_shapes (Dict or Tuple or None): Specifications mapping input dimensions to dynamic range symbols (Dim).",
+        "strict (bool): If True, enforces strict tracing without non-PyTorch side effects."
+      ],
+      "important_params": [
+        "mod (nn.Module or Callable): The module or function to trace into a stable graph.",
+        "args (Tuple[Any, ...]): Example positional input arguments.",
+        "kwargs (Dict[str, Any] or None): Example keyword input arguments.",
+        "dynamic_shapes (Dict or Tuple or None): Specifications mapping input dimensions to dynamic range symbols (Dim).",
+        "strict (bool): If True, enforces strict tracing without non-PyTorch side effects."
+      ],
+      "return_value": "An ExportedProgram object containing the underlying torch.fx.GraphModule, model parameters, buffers, and explicit input or output schemas.",
+      "example": "import torch  \nimport torch.nn as nn  \nfrom torch.export import export, Dim\n\nclass Classifier(nn.Module):  \n    def __init__(self):  \n        super().__init__()  \n        self.fc = nn.Linear(16, 4)\n\n    def forward(self, x):  \n        return self.fc(x)\n\nmodel = Classifier().eval()\n\nbatch_size = Dim(\"batch\", min=1, max=1024)  \ndynamic_shapes = {\"x\": {0: batch_size}}\n\nexample_input = (torch.randn(2, 16),)  \nexported_program = export(model, example_input, dynamic_shapes=dynamic_shapes)\n\nprint(\"ExportedProgram successfully created:\")  \nprint(type(exported_program))",
+      "use_when": "Target runtimes do not support Python dependencies (for example, Executorch, C++ LibTorch, ONNX converters).\nSound mathematical graph extraction with functionalized ops and explicitly tracked parameters is required.\nValidating graph structure prior to custom compiler backend lowerings.",
+      "avoid_when": "Quick, in-process Python optimization is sufficient (use torch.compile instead).\nWorking with legacy PyTorch codebases that rely heavily on TorchScript constructs.",
+      "gotchas": [
+        "Unlike torch.compile, torch.export does not allow graph breaks; uncaptured Python side effects cause export failures.",
+        "Inputs and outputs must be PyTorch Tensors or primitive types structured inside standard Python containers.",
+        "Guard violations occur during runtime execution if dynamic inputs exceed defined Dim constraints."
+      ],
+      "performance_notes": "ExportedProgram functionalizes parameters and buffers, creating clean entry points for memory planning and custom execution graphs.\nEnables downstream edge compilers to perform memory reuse analysis before model deployment.",
+      "related_apis": [
+        "torch.export.save",
+        "torch.export.load",
+        "torch.export.Dim"
+      ],
+      "framework_migration_notes": "torch.export.export serves as PyTorch 2.x's modern counterpart to TensorFlow's SavedModel export, producing a standardized, sound graph representation without requiring Python execution.",
+      "tensorflow_equivalent": "torch.export.export → SavedModel export",
+      "framework_equivalent": "torch.export.export → SavedModel export",
+      "version_compatibility": "Introduced in PyTorch 2.1 as the foundational export API for PyTorch 2.x ecosystem targets.",
+      "search_metadata": {
+        "aliases": [
+          "torch.export",
+          "ExportedProgram",
+          "PT2 Export"
+        ],
+        "search_terms": [
+          "export PyTorch graph without Python",
+          "PyTorch export stable graph",
+          "ExportedProgram"
+        ],
+        "keywords": [
+          "export",
+          "dynamic_shapes",
+          "Dim",
+          "sound graph",
+          "functionalization"
+        ],
+        "confused_with": [
+          "torch.export vs TorchScript",
+          "torch.export vs torch.compile"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "bert",
+        "llama"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "deployment"
+      ],
+      "related_cheatsheet": [
+        "deployment"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/export.html",
+      "official_docs": "https://pytorch.org/docs/stable/export.html"
+    },
+    {
+      "task": "Save and Load Exported Programs (torch.export.save / torch.export.load)",
+      "problem_solved": "Persists and reloads exported PyTorch graphs (ExportedProgram artifacts) to and from disk for deployment across non-Python runtime environments or independent microservices.",
+      "mental_trigger": "I need to serialize my exported PyTorch 2.x program artifact to disk and load it back safely in production.",
+      "syntax": "torch.export.save(exported_program, f)  \ntorch.export.load(f)",
+      "important_parameters": [
+        "exported_program (ExportedProgram): The program instance produced by torch.export.export.",
+        "f (str, pathlib.Path, or file-like object): Destination or source file path (typically with .pt2 extension)."
+      ],
+      "important_params": [
+        "exported_program (ExportedProgram): The program instance produced by torch.export.export.",
+        "f (str, pathlib.Path, or file-like object): Destination or source file path (typically with .pt2 extension)."
+      ],
+      "return_value": "torch.export.save returns None. torch.export.load returns an ExportedProgram instance.",
+      "example": "import pathlib  \nimport torch  \nimport torch.nn as nn  \nfrom torch.export import export, save, load\n\nclass SimpleModule(nn.Module):  \n    def __init__(self):  \n        super().__init__()  \n        self.layer = nn.Linear(8, 8)\n\n    def forward(self, x):  \n        return self.layer(x)\n\nmodel = SimpleModule().eval()  \nexample_input = (torch.randn(1, 8),)  \nexported_prog = export(model, example_input)\n\nfile_path = pathlib.Path(\"exported_model.pt2\")\n\nsave(exported_prog, file_path)\n\nloaded_prog = load(file_path)  \nres = loaded_prog.module()(torch.randn(1, 8))\n\nprint(\"Loaded module inference shape:\", res.shape)\n\nif file_path.exists():  \n    file_path.unlink()",
+      "use_when": "Saving model graph representations produced in CI/CD pipelines for decoupled production deployment.\nShipping pre-compiled export graphs to edge runtimes like ExecuTorch.\nArchiving functionalized graph structures alongside trained parameter states.",
+      "avoid_when": "Storing uncompiled PyTorch checkpoint files during intermediate training epochs (use torch.save state dictionaries instead).\nWorking with legacy TorchScript runtime loaders.",
+      "gotchas": [
+        "Loading a .pt2 file requires a PyTorch runtime version compatible with the schema version used during export.",
+        "Standard torch.load cannot read .pt2 archives generated by torch.export.save."
+      ],
+      "performance_notes": "The .pt2 format packages graph structure, parameter weights, and custom metadata into an efficient zip container to minimize disk footprint and load latency.",
+      "related_apis": [
+        "torch.export.export",
+        "torch.save",
+        "torch.load"
+      ],
+      "framework_migration_notes": "Compares directly to loading a TensorFlow SavedModel folder or .pb graph definition file.",
+      "tensorflow_equivalent": "torch.export.save → tf.saved_model.save\ntorch.export.load → tf.saved_model.load",
+      "framework_equivalent": "torch.export.save → tf.saved_model.save\ntorch.export.load → tf.saved_model.load",
+      "version_compatibility": "Introduced in PyTorch 2.1. File format schemas are stabilized for PyTorch 2.x releases.",
+      "search_metadata": {
+        "aliases": [
+          "torch.export.save",
+          "torch.export.load",
+          ".pt2 format"
+        ],
+        "search_terms": [
+          "save ExportedProgram",
+          "load pt2 file",
+          "serialize PyTorch export"
+        ],
+        "keywords": [
+          "export",
+          "save",
+          "load",
+          "pt2",
+          "ExportedProgram"
+        ],
+        "confused_with": [
+          "torch.save vs torch.export.save"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "bert",
+        "llama"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "deployment"
+      ],
+      "related_cheatsheet": [
+        "deployment"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/export.html%23saving-and-loading-an-exportedprogram",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/export.html%23saving-and-loading-an-exportedprogram"
+    },
+    {
+      "task": "Script Models with torch.jit.script",
+      "problem_solved": "Converts PyTorch module code with dynamic Python control flow (such as if statements or for loops) into a TorchScript ScriptModule using static AST inspection without requiring explicit dummy trace inputs.",
+      "mental_trigger": "My model contains data-dependent Python loops or if/else branches that must be preserved when exporting to a C++ deployment runtime.",
+      "syntax": "torch.jit.script(obj, optimize=None, _frames_up=0)",
+      "important_parameters": [
+        "obj (nn.Module or Callable): The module, function, or class to inspect and compile into TorchScript IR.",
+        "optimize (bool or None): Enables default TorchScript JIT optimization passes."
+      ],
+      "important_params": [
+        "obj (nn.Module or Callable): The module, function, or class to inspect and compile into TorchScript IR.",
+        "optimize (bool or None): Enables default TorchScript JIT optimization passes."
+      ],
+      "return_value": "A ScriptModule or ScriptFunction containing the compiled TorchScript Intermediate Representation (IR).",
+      "example": "import torch  \nimport torch.nn as nn\n\nclass DynamicControlFlowModel(nn.Module):  \n    def __init__(self):  \n        super().__init__()  \n        self.fc = nn.Linear(5, 5)\n\n    def forward(self, x, flag: bool):  \n        if flag:  \n            return self.fc(x) * 2.0  \n        return self.fc(x)\n\nmodel = DynamicControlFlowModel().eval()  \nscripted_model = torch.jit.script(model)\n\nx = torch.randn(1, 5)  \nout_true = scripted_model(x, True)  \nout_false = scripted_model(x, False)\n\nprint(\"Scripted output (True):\", out_true.shape)  \nprint(\"Scripted output (False):\", out_false.shape)",
+      "use_when": "Preserving dynamic Python control flow (if, while, for) inside the exported module graph.\nDeploying legacy models to LibTorch C++ environments where PyTorch 2.x torch.export is not available.",
+      "avoid_when": "Deploying modern PyTorch 2.x models where torch.compile or torch.export is supported.\nCompiling code relying on unsupported Python libraries (for example, NumPy or SciPy) inside forward().",
+      "gotchas": [
+        "TorchScript implements a subset of Python; unsupported Python features or dynamic typing cause compilation errors.",
+        "Type annotations (for example, x: torch.Tensor, flag: bool) are strictly enforced in function signatures.",
+        "Modifying Python dictionary types with mixed value types inside forward() can trigger AST parser failures."
+      ],
+      "performance_notes": "ScriptModule eliminates Python interpreter overhead in C++ hosting applications.\nJIT optimization passes perform operator fusion and dead-code elimination automatically.",
+      "related_apis": [
+        "torch.jit.trace",
+        "torch.jit.save",
+        "torch.jit.freeze"
+      ],
+      "framework_migration_notes": "TorchScript scripting inspects Python AST code directly. This differs from TensorFlow 1.x graph construction while offering functionality similar to @tf.function AutoGraph parsing.",
+      "tensorflow_equivalent": "torch.jit.script → No direct equivalent.",
+      "framework_equivalent": "torch.jit.script → No direct equivalent.",
+      "version_compatibility": "Legacy TorchScript stack is fully supported for backwards compatibility, but PyTorch 2.x recommends torch.compile and torch.export for new deployments.",
+      "search_metadata": {
+        "aliases": [
+          "torch.jit.script",
+          "ScriptModule",
+          "TorchScript scripting"
+        ],
+        "search_terms": [
+          "script PyTorch model",
+          "TorchScript dynamic control flow",
+          "JIT script"
+        ],
+        "keywords": [
+          "jit",
+          "script",
+          "control flow",
+          "AST",
+          "ScriptModule"
+        ],
+        "confused_with": [
+          "torch.jit.script vs torch.jit.trace",
+          "torch.jit.script vs torch.compile"
+        ]
+      },
+      "related_models": [
+        "transformer",
+        "bert",
+        "roberta",
+        "t5",
+        "bart",
+        "gpt"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "deployment"
+      ],
+      "related_cheatsheet": [
+        "deployment"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/generated/torch.jit.script.html",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/generated/torch.jit.script.html"
+    },
+    {
+      "task": "Trace Models with torch.jit.trace",
+      "problem_solved": "Records exact tensor operations executed during a forward pass with dummy inputs to create a TorchScript static computation graph.",
+      "mental_trigger": "I need a lightweight TorchScript graph for a feed-forward model without dynamic control flow for deployment in C++.",
+      "syntax": "torch.jit.trace(  \n    func,  \n    example_inputs,  \n    check_trace=True,  \n    check_tolerance=1e-05,  \n    check_inputs=None,  \n    strict=True  \n)",
+      "important_parameters": [
+        "func (Callable or nn.Module): The module or function to trace.",
+        "example_inputs (Tuple or Tensor): Example tensor inputs passed to record operations.",
+        "check_trace (bool): Verifies whether the traced graph matches execution outputs on second evaluation.",
+        "check_tolerance (float): Numerical comparison threshold used during trace verification.",
+        "strict (bool): Forces tracer to warn or fail when non-tensor variables or side effects are present."
+      ],
+      "important_params": [
+        "func (Callable or nn.Module): The module or function to trace.",
+        "example_inputs (Tuple or Tensor): Example tensor inputs passed to record operations.",
+        "check_trace (bool): Verifies whether the traced graph matches execution outputs on second evaluation.",
+        "check_tolerance (float): Numerical comparison threshold used during trace verification.",
+        "strict (bool): Forces tracer to warn or fail when non-tensor variables or side effects are present."
+      ],
+      "return_value": "A ScriptModule containing the traced static computation graph.",
+      "example": "import torch  \nimport torch.nn as nn\n\nclass FeedForward(nn.Module):  \n    def __init__(self):  \n        super().__init__()  \n        self.net = nn.Sequential(  \n            nn.Linear(10, 20),  \n            nn.ReLU(),  \n            nn.Linear(20, 2)  \n        )\n\n    def forward(self, x):  \n        return self.net(x)\n\nmodel = FeedForward().eval()  \ndummy_input = torch.randn(1, 10)\n\ntraced_model = torch.jit.trace(model, dummy_input)\n\nout = traced_model(torch.randn(4, 10))  \nprint(\"Traced inference shape:\", out.shape)",
+      "use_when": "Exporting standard feed-forward networks, CNNs, or static transformer layers with zero control flow branching.\nGenerating quick JIT graphs without adding strict Python type annotations.",
+      "avoid_when": "Models contain input-dependent if conditions or dynamic loops (the tracer ignores unexecuted branches silently).\nTracing operations that depend on non-Tensor Python primitives (for example, len(x) or int(x[0])).",
+      "gotchas": [
+        "Dynamic control flow is silently baked into static constants based on the dummy input values provided during tracing.",
+        "Tensor shape dimensions can become hardcoded unless written cleanly with dynamic tensor indexing.",
+        "TracerWarning is suppressed by default in some environments, masking silently broken dynamic behavior."
+      ],
+      "performance_notes": "Traced graphs remove Python runtime latency and enable LibTorch execution in C++ host environments.",
+      "related_apis": [
+        "torch.jit.script",
+        "torch.jit.save",
+        "torch.onnx.export"
+      ],
+      "framework_migration_notes": "Functions identically to tracing behaviors in older TensorFlow tf.compat.v1.keras.backend.get_session() graph extraction pipelines.",
+      "tensorflow_equivalent": "torch.jit.trace → tf.function (tracing mode)",
+      "framework_equivalent": "torch.jit.trace → tf.function (tracing mode)",
+      "version_compatibility": "Legacy API maintained for backwards compatibility across all PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "torch.jit.trace",
+          "JIT tracing"
+        ],
+        "search_terms": [
+          "trace PyTorch model",
+          "torch.jit.trace dummy input",
+          "ScriptModule trace"
+        ],
+        "keywords": [
+          "jit",
+          "trace",
+          "static graph",
+          "dummy_inputs",
+          "ScriptModule"
+        ],
+        "confused_with": [
+          "torch.jit.trace vs torch.jit.script"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "yolo",
+        "logistic-regression"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "deployment"
+      ],
+      "related_cheatsheet": [
+        "deployment"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/generated/torch.jit.trace.html",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/generated/torch.jit.trace.html"
+    },
+    {
+      "task": "Save and Load TorchScript Models (torch.jit.save / torch.jit.load)",
+      "problem_solved": "Persists TorchScript models (ScriptModule) to standalone disk files and reloads them in Python or C++ LibTorch applications.",
+      "mental_trigger": "I need to write my scripted or traced TorchScript model to disk and load it in a C++ deployment binary or Python inference service.",
+      "syntax": "torch.jit.save(m, f, _extra_files=None)  \ntorch.jit.load(f, map_location=None, _extra_files=None)",
+      "important_parameters": [
+        "m (ScriptModule): The TorchScript module to serialize.",
+        "f (str, pathlib.Path, or file-like object): Output or input file path (typically .pt or .pth).",
+        "map_location (str, torch.device, or dict): Remaps storage locations (for example, \"cpu\", \"cuda:0\").",
+        "_extra_files (dict): Map of filename keys to byte buffers for attaching custom metadata during serialization."
+      ],
+      "important_params": [
+        "m (ScriptModule): The TorchScript module to serialize.",
+        "f (str, pathlib.Path, or file-like object): Output or input file path (typically .pt or .pth).",
+        "map_location (str, torch.device, or dict): Remaps storage locations (for example, \"cpu\", \"cuda:0\").",
+        "_extra_files (dict): Map of filename keys to byte buffers for attaching custom metadata during serialization."
+      ],
+      "return_value": "torch.jit.save returns None. torch.jit.load returns a ScriptModule object.",
+      "example": "import pathlib  \nimport torch  \nimport torch.nn as nn\n\nclass SimpleNet(nn.Module):  \n    def __init__(self):  \n        super().__init__()  \n        self.fc = nn.Linear(4, 2)\n\n    def forward(self, x):  \n        return self.fc(x)\n\nmodel = SimpleNet().eval()  \ntraced = torch.jit.trace(model, torch.randn(1, 4))\n\nfile_path = pathlib.Path(\"model_jit.pt\")\n\ntorch.jit.save(traced, file_path)\n\nloaded_jit = torch.jit.load(file_path, map_location=\"cpu\")  \nout = loaded_jit(torch.randn(2, 4))\n\nprint(\"Inference on loaded TorchScript model successful:\", out.shape)\n\nif file_path.exists():  \n    file_path.unlink()",
+      "use_when": "Archiving traced or scripted TorchScript models for C++ deployment.\nServing models via legacy TorchServe versions or LibTorch wrappers.",
+      "avoid_when": "Loading standard Python module weights stored as raw state_dict dictionaries (use torch.load instead).\nWorking with new PyTorch 2.x ExportedProgram artifacts (use torch.export.load instead).",
+      "gotchas": [
+        "Loading a TorchScript model on a system without a GPU requires explicitly specifying map_location=\"cpu\".",
+        "Unpickling errors occur if the saved .pt file was produced by standard torch.save(model) rather than torch.jit.save."
+      ],
+      "performance_notes": "Saved TorchScript models bundle weight tensors and graph bytecode together into a single zip file for simple deployment distribution.",
+      "related_apis": [
+        "torch.jit.script",
+        "torch.jit.trace",
+        "torch.jit.freeze"
+      ],
+      "framework_migration_notes": "Maps directly to loading serialized C++ models in TensorFlow (SavedModel or frozen graph .pb files).",
+      "tensorflow_equivalent": "torch.jit.save → tf.saved_model.save\ntorch.jit.load → tf.saved_model.load",
+      "framework_equivalent": "torch.jit.save → tf.saved_model.save\ntorch.jit.load → tf.saved_model.load",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "torch.jit.save",
+          "torch.jit.load",
+          "ScriptModule save"
+        ],
+        "search_terms": [
+          "save TorchScript model",
+          "load pt file LibTorch",
+          "torch.jit.save extra files"
+        ],
+        "keywords": [
+          "jit",
+          "save",
+          "load",
+          "ScriptModule",
+          "archive"
+        ],
+        "confused_with": [
+          "torch.jit.save vs torch.save"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "yolo",
+        "bert"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "deployment"
+      ],
+      "related_cheatsheet": [
+        "deployment"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/generated/torch.jit.save.html",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/generated/torch.jit.save.html"
+    },
+    {
+      "task": "Freeze TorchScript Models (torch.jit.freeze)",
+      "problem_solved": "Inlines model parameters and attributes as immutable constants into the ScriptModule graph structure, enabling aggressive compiler optimizations like constant folding and dead-code elimination.",
+      "mental_trigger": "I want to turn module weight parameters into graph constants to optimize TorchScript model latency and reduce overhead.",
+      "syntax": "torch.jit.freeze(  \n    mod,  \n    preserved_attrs=None,  \n    optimize_numerics=True  \n)",
+      "important_parameters": [
+        "mod (ScriptModule): The TorchScript module to freeze.",
+        "preserved_attrs (List[str] or None): Names of module attributes or submodules that must remain modifiable.",
+        "optimize_numerics (bool): Enables numerical optimizations such as fusing adjacent linear operations."
+      ],
+      "important_params": [
+        "mod (ScriptModule): The TorchScript module to freeze.",
+        "preserved_attrs (List[str] or None): Names of module attributes or submodules that must remain modifiable.",
+        "optimize_numerics (bool): Enables numerical optimizations such as fusing adjacent linear operations."
+      ],
+      "return_value": "A frozen ScriptModule with parameter weights baked in as immutable graph constants.",
+      "example": "import torch  \nimport torch.nn as nn\n\nclass FrozenModel(nn.Module):  \n    def __init__(self):  \n        super().__init__()  \n        self.fc = nn.Linear(8, 4)\n\n    def forward(self, x):  \n        return self.fc(x)\n\nmodel = FrozenModel().eval()  \nscripted = torch.jit.script(model)\n\nfrozen_scripted = torch.jit.freeze(scripted)\n\nout = frozen_scripted(torch.randn(2, 8))  \nprint(\"Frozen ScriptModule output shape:\", out.shape)",
+      "use_when": "Finalizing a TorchScript model for production inference where weight updates will never occur.\nShrinking graph execution overhead in real-time edge or server deployment pipelines.",
+      "avoid_when": "Further fine-tuning, training, or online adaptation of weights is needed.\nModule attributes must be updated dynamically during inference.",
+      "gotchas": [
+        "Once frozen, module weights cannot be updated via load_state_dict().",
+        "Accessing non-preserved internal attributes after freezing throws an exception."
+      ],
+      "performance_notes": "Enables conv-batchnorm folding and constant propagation across graph nodes, reducing runtime latency and memory consumption.",
+      "related_apis": [
+        "torch.jit.script",
+        "torch.jit.trace"
+      ],
+      "framework_migration_notes": "Equivalent to freezing variables into constants in TensorFlow 1.x (freeze_graph.py) or converting variables to constants in TensorFlow 2.x (tf.compat.v1.graph_util.convert_variables_to_constants_v2).",
+      "tensorflow_equivalent": "torch.jit.freeze → tf.compat.v1.graph_util.convert_variables_to_constants_v2",
+      "framework_equivalent": "torch.jit.freeze → tf.compat.v1.graph_util.convert_variables_to_constants_v2",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "torch.jit.freeze",
+          "freeze TorchScript"
+        ],
+        "search_terms": [
+          "optimize TorchScript model",
+          "freeze PyTorch parameters",
+          "fold batchnorm TorchScript"
+        ],
+        "keywords": [
+          "jit",
+          "freeze",
+          "constants",
+          "constant folding",
+          "conv-batchnorm fusion"
+        ],
+        "confused_with": [
+          "torch.jit.freeze vs model.eval()"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "yolo",
+        "bert"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "deployment"
+      ],
+      "related_cheatsheet": [
+        "deployment"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide",
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/generated/torch.jit.freeze.html",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/generated/torch.jit.freeze.html"
+    },
+    {
+      "task": "Export Models to ONNX (torch.onnx.export)",
+      "problem_solved": "Converts PyTorch models into Open Neural Network Exchange (ONNX) format for deployment on third-party inference engines like ONNX Runtime, TensorRT, or OpenVINO.",
+      "mental_trigger": "I need to export my PyTorch model to ONNX format to run on ONNX Runtime or TensorRT.",
+      "syntax": "torch.onnx.export(  \n    model,  \n    args,  \n    f,  \n    export_params=True,  \n    verbose=False,  \n    training=torch.onnx.TrainingMode.EVAL,  \n    input_names=None,  \n    output_names=None,  \n    operator_export_type=torch.onnx.OperatorExportTypes.ONNX,  \n    opset_version=None,  \n    do_constant_folding=True,  \n    dynamic_axes=None,  \n    keep_initializers_as_inputs=None,  \n    custom_opsets=None,  \n    export_modules_as_functions=False  \n)",
+      "important_parameters": [
+        "model (nn.Module, torch.jit.ScriptModule, or torch.export.ExportedProgram): Model to export.",
+        "args (Tuple or Tensor): Dummy input tensors matching forward arguments.",
+        "f (str, pathlib.Path, or file-like object): Destination file path (for example, model.onnx).",
+        "opset_version (int): Target ONNX operator set version (for example, 17).",
+        "do_constant_folding (bool): Fuses pre-calculable constant expressions during export."
+      ],
+      "important_params": [
+        "model (nn.Module, torch.jit.ScriptModule, or torch.export.ExportedProgram): Model to export.",
+        "args (Tuple or Tensor): Dummy input tensors matching forward arguments.",
+        "f (str, pathlib.Path, or file-like object): Destination file path (for example, model.onnx).",
+        "opset_version (int): Target ONNX operator set version (for example, 17).",
+        "do_constant_folding (bool): Fuses pre-calculable constant expressions during export."
+      ],
+      "return_value": "None. Writes the ONNX protobuf representation to file destination f.",
+      "example": "import pathlib  \nimport torch  \nimport torch.nn as nn\n\nclass VisionBlock(nn.Module):  \n    def __init__(self):  \n        super().__init__()  \n        self.conv = nn.Conv2d(3, 16, kernel_size=3, padding=1)  \n        self.relu = nn.ReLU()\n\n    def forward(self, x):  \n        return self.relu(self.conv(x))\n\nmodel = VisionBlock().eval()  \ndummy_input = torch.randn(1, 3, 224, 224)  \nonnx_path = pathlib.Path(\"model.onnx\")\n\ntorch.onnx.export(  \n    model,  \n    dummy_input,  \n    onnx_path,  \n    opset_version=17,  \n    input_names=[\"input\"],  \n    output_names=[\"output\"],  \n    do_constant_folding=True  \n)\n\nprint(\"ONNX model generated successfully:\", onnx_path.exists())\n\nif onnx_path.exists():  \n    onnx_path.unlink()",
+      "use_when": "Cross-platform production serving using ONNX Runtime across diverse hardware (CPU, CUDA, DirectML, OpenVINO).\nConverting models to NVIDIA TensorRT or Apple CoreML formats.",
+      "avoid_when": "Deploying purely within PyTorch-native Python or C++ LibTorch infrastructure.\nWorking with complex custom C++ CUDNN ops without registered ONNX mappings.",
+      "gotchas": [
+        "Failing to set model.eval() before export bakes training-mode dropout and batchnorm behavior into the ONNX graph.",
+        "Choosing an outdated opset_version causes missing operator mapping errors for modern layers.",
+        "Dynamic control flow branches can be collapsed into static execution if traced naively."
+      ],
+      "performance_notes": "do_constant_folding=True reduces graph execution overhead by computing static node math prior to serialization.",
+      "related_apis": [
+        "torch.onnx.dynamo_export",
+        "torch.jit.trace"
+      ],
+      "framework_migration_notes": "Equivalent to exporting Keras/TensorFlow models to ONNX using tf2onnx.",
+      "tensorflow_equivalent": "torch.onnx.export → tf2onnx / ONNX export",
+      "framework_equivalent": "torch.onnx.export → tf2onnx / ONNX export",
+      "version_compatibility": "PyTorch 2.1+ introduced torch.onnx.dynamo_export based on TorchDynamo analysis, complementing traditional TorchScript-based ONNX export.",
+      "search_metadata": {
+        "aliases": [
+          "torch.onnx.export",
+          "ONNX export",
+          "PyTorch to ONNX"
+        ],
+        "search_terms": [
+          "export PyTorch to ONNX",
+          "ONNX opset version",
+          "PyTorch ONNX export example"
+        ],
+        "keywords": [
+          "onnx",
+          "export",
+          "opset",
+          "constant_folding",
+          "protobuf"
+        ],
+        "confused_with": [
+          "torch.onnx.export vs torch.export.export"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "yolo",
+        "bert",
+        "roberta"
+      ],
+      "related_patterns": [
+        "device-placement",
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "deployment"
+      ],
+      "related_cheatsheet": [
+        "deployment"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/onnx.html",
+      "official_docs": "https://pytorch.org/docs/stable/onnx.html"
+    },
+    {
+      "task": "Configure Dynamic Shapes and Export Options",
+      "problem_solved": "Configures ONNX models to accept dynamic batch sizes, variable sequence lengths, or changing spatial image dimensions at inference time using dynamic_axes.",
+      "mental_trigger": "My ONNX model needs to process variable input batch sizes or text sequence lengths during serving without fixed shape constraints.",
+      "syntax": "torch.onnx.export(  \n    model,  \n    dummy_input,  \n    onnx_path,  \n    opset_version=17,  \n    input_names=[\"input\"],  \n    output_names=[\"output\"],  \n    dynamic_axes={  \n        \"input\": {0: \"batch_size\", 1: \"seq_len\"},  \n        \"output\": {0: \"batch_size\"}  \n    }  \n)",
+      "important_parameters": [
+        "dynamic_axes (Dict[str, Dict[int, str]] or Dict[str, List[int]]): Mapping of input/output names to dictionary indices specifying dynamic dimension labels.",
+        "input_names (List[str]): List of input tensor names used in the output graph.",
+        "output_names (List[str]): List of output tensor names used in the output graph.",
+        "opset_version (int): Target ONNX specification release number."
+      ],
+      "important_params": [
+        "dynamic_axes (Dict[str, Dict[int, str]] or Dict[str, List[int]]): Mapping of input/output names to dictionary indices specifying dynamic dimension labels.",
+        "input_names (List[str]): List of input tensor names used in the output graph.",
+        "output_names (List[str]): List of output tensor names used in the output graph.",
+        "opset_version (int): Target ONNX specification release number."
+      ],
+      "return_value": "None. Generates an ONNX model protobuf file containing parameterized shape symbols.",
+      "example": "import pathlib  \nimport torch  \nimport torch.nn as nn\n\nclass TextEncoder(nn.Module):  \n    def __init__(self):  \n        super().__init__()  \n        self.embedding = nn.Embedding(1000, 32)  \n        self.fc = nn.Linear(32, 16)\n\n    def forward(self, x):  \n        return self.fc(self.embedding(x))\n\nmodel = TextEncoder().eval()  \ndummy_input = torch.randint(0, 1000, (2, 16))  \nonnx_path = pathlib.Path(\"dynamic_text.onnx\")\n\ntorch.onnx.export(  \n    model,  \n    dummy_input,  \n    onnx_path,  \n    opset_version=17,  \n    input_names=[\"input_ids\"],  \n    output_names=[\"logits\"],  \n    dynamic_axes={  \n        \"input_ids\": {0: \"batch_size\", 1: \"sequence_length\"},  \n        \"logits\": {0: \"batch_size\", 1: \"sequence_length\"}  \n    }  \n)\n\nprint(\"Dynamic ONNX model created:\", onnx_path.exists())\n\nif onnx_path.exists():  \n    onnx_path.unlink()",
+      "use_when": "Microservices require dynamic batching across incoming user requests.\nNLP transformers process sentences with varying token sequence lengths.\nVision pipelines process images of arbitrary input resolution.",
+      "avoid_when": "Deploying on hardware targets (like some edge DSPs or fixed FPGA runtimes) that strictly require fixed static memory layouts.",
+      "gotchas": [
+        "Dynamic axes configurations must match corresponding output shape relationships or runtime shape mismatch errors occur.",
+        "Unspecified dynamic axes remain hardcoded to the shape dimensions of the dummy tensor provided during export."
+      ],
+      "performance_notes": "Engines like TensorRT require optimization profiles specifying minimum, optimal, and maximum shape bounds for dynamic dimensions.",
+      "related_apis": [
+        "torch.onnx.export",
+        "torch.export.Dim"
+      ],
+      "framework_migration_notes": "Maps directly to dynamic shape dimensions specified in TensorFlow TensorSpec(shape=[None, ...]) exports.",
+      "tensorflow_equivalent": "dynamic_axes → tf.TensorSpec(shape=[None, ...])",
+      "framework_equivalent": "dynamic_axes → tf.TensorSpec(shape=[None, ...])",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "ONNX dynamic_axes",
+          "dynamic batching ONNX"
+        ],
+        "search_terms": [
+          "PyTorch ONNX dynamic shapes",
+          "variable batch size ONNX export",
+          "dynamic_axes example"
+        ],
+        "keywords": [
+          "onnx",
+          "dynamic_axes",
+          "batch_size",
+          "sequence_length",
+          "variable shapes"
+        ],
+        "confused_with": [
+          "dynamic_axes in ONNX vs dynamic_shapes in torch.export"
+        ]
+      },
+      "related_models": [
+        "bert",
+        "roberta",
+        "t5",
+        "bart",
+        "gpt",
+        "yolo"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder",
+        "object-detection-pipeline"
+      ],
+      "related_cheatsheets": [
+        "deployment"
+      ],
+      "related_cheatsheet": [
+        "deployment"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/onnx.html%23onnx-export-options",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/onnx.html%23onnx-export-options"
+    },
+    {
+      "task": "Validate ONNX Models with ONNX Runtime",
+      "problem_solved": "Verifies graph validity, numerical parity, and output precision matching between exported ONNX artifacts and original PyTorch models using onnxruntime.InferenceSession.",
+      "mental_trigger": "I need to test my exported ONNX model in ONNX Runtime and verify its outputs match PyTorch within acceptable tolerance.",
+      "syntax": "import onnxruntime as ort\n\nsession = ort.InferenceSession(  \n    path_or_bytes,  \n    providers=[\"CPUExecutionProvider\"]  \n)  \noutputs = session.run(output_names, input_feed)",
+      "important_parameters": [
+        "path_or_bytes (str, pathlib.Path, or bytes): Path to exported .onnx file.",
+        "providers (List[str]): List of execution backends (for example, ['CUDAExecutionProvider', 'CPUExecutionProvider']).",
+        "input_feed (Dict[str, np.ndarray]): Dictionary mapping input layer names to NumPy array inputs.",
+        "output_names (List[str] or None): List of target output node names; None retrieves all outputs."
+      ],
+      "important_params": [
+        "path_or_bytes (str, pathlib.Path, or bytes): Path to exported .onnx file.",
+        "providers (List[str]): List of execution backends (for example, ['CUDAExecutionProvider', 'CPUExecutionProvider']).",
+        "input_feed (Dict[str, np.ndarray]): Dictionary mapping input layer names to NumPy array inputs.",
+        "output_names (List[str] or None): List of target output node names; None retrieves all outputs."
+      ],
+      "return_value": "A list of NumPy arrays corresponding to model output nodes.",
+      "example": "import pathlib  \nimport numpy as np  \nimport torch  \nimport torch.nn as nn  \nimport onnxruntime as ort\n\nclass Classifier(nn.Module):  \n    def __init__(self):  \n        super().__init__()  \n        self.fc = nn.Linear(10, 2)\n\n    def forward(self, x):  \n        return self.fc(x)\n\nmodel = Classifier().eval()  \nx_torch = torch.randn(1, 10)  \nonnx_file = pathlib.Path(\"test_val.onnx\")\n\ntorch.onnx.export(  \n    model,  \n    x_torch,  \n    onnx_file,  \n    opset_version=17,  \n    input_names=[\"input\"],  \n    output_names=[\"output\"]  \n)\n\nsession = ort.InferenceSession(str(onnx_file), providers=[\"CPUExecutionProvider\"])  \nort_inputs = {session.get_inputs()[0].name: x_torch.numpy()}  \nort_outs = session.run(None, ort_inputs)\n\ntorch_out = model(x_torch).detach().numpy()  \nnp.testing.assert_allclose(torch_out, ort_outs[0], rtol=1e-03, atol=1e-05)\n\nprint(\"ONNX model numerical parity validated successfully!\")\n\nif onnx_file.exists():  \n    onnx_file.unlink()",
+      "use_when": "Automated CI/CD testing pipelines validating exported ONNX model correctness.\nCatching precision drift or operator divergence prior to production serving.",
+      "avoid_when": "Rapidly iterating on pure PyTorch code without immediate ONNX deployment goals.",
+      "gotchas": [
+        "Input names passed in input_feed must match the string names specified during torch.onnx.export.",
+        "ONNX Runtime expects standard NumPy arrays rather than PyTorch CUDA tensors.",
+        "Minor floating point differences (for example, 10−5) can occur due to operator fusion or reordered floating-point math."
+      ],
+      "performance_notes": "InferenceSession initialization overhead can be high; reuse session instances across requests in production serving.",
+      "related_apis": [
+        "torch.onnx.export"
+      ],
+      "framework_migration_notes": "Uses standard ONNX Runtime Python APIs applicable across TensorFlow, PyTorch, and JAX exports.",
+      "tensorflow_equivalent": "onnxruntime.InferenceSession → tf.lite.Interpreter (conceptually)",
+      "framework_equivalent": "onnxruntime.InferenceSession → tf.lite.Interpreter (conceptually)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "ONNX validation",
+          "onnxruntime.InferenceSession",
+          "ONNX parity testing"
+        ],
+        "search_terms": [
+          "validate ONNX model Python",
+          "ONNX Runtime PyTorch output check",
+          "assert_allclose ONNX"
+        ],
+        "keywords": [
+          "onnx",
+          "onnxruntime",
+          "InferenceSession",
+          "parity",
+          "testing"
+        ],
+        "confused_with": [
+          "ONNX model validation vs onnx.check_model graph check"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "yolo",
+        "bert"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "deployment"
+      ],
+      "related_cheatsheet": [
+        "deployment"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://onnxruntime.ai/docs/api/python/api_summary.html",
+      "official_docs": "https://onnxruntime.ai/docs/api/python/api_summary.html"
+    },
+    {
+      "task": "Save and Load Model Weights (torch.save / torch.load)",
+      "problem_solved": "Persists model parameters (state_dict) or complete Python module instances to disk and restores them safely across Python environments.",
+      "mental_trigger": "I need to save my model's trained weight parameters to a file and load them into a fresh model instance later.",
+      "syntax": "torch.save(  \n    obj,  \n    f,  \n    pickle_module=pickle,  \n    pickle_protocol=DEFAULT_PROTOCOL,  \n    _use_new_zipfile_serialization=True  \n)\n\ntorch.load(  \n    f,  \n    map_location=None,  \n    weights_only=True  \n)",
+      "important_parameters": [
+        "obj (Object): State dictionary or Python object to serialize.",
+        "f (str, pathlib.Path, or file-like object): Output file path (.pt or .pth).",
+        "map_location (str, torch.device, or Callable): Re-maps storage allocations (for example, \"cpu\" or \"cuda:0\").",
+        "weights_only (bool): Restricts unpickling to tensors, primitive types, and dictionaries to prevent arbitrary code execution vulnerabilities."
+      ],
+      "important_params": [
+        "obj (Object): State dictionary or Python object to serialize.",
+        "f (str, pathlib.Path, or file-like object): Output file path (.pt or .pth).",
+        "map_location (str, torch.device, or Callable): Re-maps storage allocations (for example, \"cpu\" or \"cuda:0\").",
+        "weights_only (bool): Restricts unpickling to tensors, primitive types, and dictionaries to prevent arbitrary code execution vulnerabilities."
+      ],
+      "return_value": "torch.save returns None. torch.load returns deserialized objects or state dictionaries.",
+      "example": "import pathlib  \nimport torch  \nimport torch.nn as nn\n\nclass Net(nn.Module):  \n    def __init__(self):  \n        super().__init__()  \n        self.fc = nn.Linear(5, 2)\n\n    def forward(self, x):  \n        return self.fc(x)\n\nmodel = Net()  \nfile_path = pathlib.Path(\"weights.pt\")\n\ntorch.save(model.state_dict(), file_path)\n\nnew_model = Net()  \nstate_dict = torch.load(file_path, map_location=\"cpu\", weights_only=True)  \nnew_model.load_state_dict(state_dict)\n\nprint(\"Model weights loaded successfully!\")\n\nif file_path.exists():  \n    file_path.unlink()",
+      "use_when": "Saving trained model parameter weights for deployment or fine-tuning.\nAlways favor saving model.state_dict() over pickling entire nn.Module classes.",
+      "avoid_when": "Serialization targets out-of-Python deployments (use torch.export or ONNX instead).",
+      "gotchas": [
+        "Pickling full models (torch.save(model)) breaks if source class definitions or package file paths are refactored.",
+        "Setting weights_only=False when loading untrusted checkpoint files poses security risks via unpickling vulnerabilities.",
+        "Loading GPU checkpoints without setting map_location=\"cpu\" fails on CPU-only instances."
+      ],
+      "performance_notes": "_use_new_zipfile_serialization=True (default since PyTorch 1.6) uses a ZIP container to allow memory-mapped tensor loading.",
+      "related_apis": [
+        "torch.nn.Module.state_dict",
+        "torch.nn.Module.load_state_dict"
+      ],
+      "framework_migration_notes": "Maps to saving weight files in TensorFlow (model.save_weights).",
+      "tensorflow_equivalent": "torch.save → tf.train.Checkpoint / model.save_weights",
+      "framework_equivalent": "torch.save → tf.train.Checkpoint / model.save_weights",
+      "version_compatibility": "PyTorch 2.4+ changed default loading behavior to enforce weights_only=True for improved security.",
+      "search_metadata": {
+        "aliases": [
+          "torch.save",
+          "torch.load",
+          "weight serialization"
+        ],
+        "search_terms": [
+          "save model state_dict",
+          "load PyTorch weights safely",
+          "weights_only PyTorch load"
+        ],
+        "keywords": [
+          "save",
+          "load",
+          "state_dict",
+          "weights_only",
+          "map_location"
+        ],
+        "confused_with": [
+          "torch.save vs torch.jit.save",
+          "full model save vs state_dict save"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "yolo",
+        "bert",
+        "llama"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "deployment"
+      ],
+      "related_cheatsheet": [
+        "deployment"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.save.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.save.html"
+    },
+    {
+      "task": "Save and Restore Training Checkpoints",
+      "problem_solved": "Captures complete, multi-component training state snapshots (epoch, model state, optimizer state, scheduler state, loss history) for fault-tolerant training resumes.",
+      "mental_trigger": "I need to save a complete training checkpoint containing model weights, optimizer state, epoch count, and loss metrics to resume training seamlessly.",
+      "syntax": "checkpoint = {  \n    \"epoch\": epoch,  \n    \"model_state_dict\": model.state_dict(),  \n    \"optimizer_state_dict\": optimizer.state_dict(),  \n    \"loss\": loss  \n}  \ntorch.save(checkpoint, filepath)\n\ncheckpoint = torch.load(filepath, map_location=device, weights_only=True)",
+      "important_parameters": [
+        "obj (dict): Structured dictionary containing all state tracking components.",
+        "f (str or Path): Checkpoint archive destination.",
+        "map_location (str or device): Target computing device for tensor deserialization.",
+        "weights_only (bool): Restricts unpickling to standard metadata collections and tensors."
+      ],
+      "important_params": [
+        "obj (dict): Structured dictionary containing all state tracking components.",
+        "f (str or Path): Checkpoint archive destination.",
+        "map_location (str or device): Target computing device for tensor deserialization.",
+        "weights_only (bool): Restricts unpickling to standard metadata collections and tensors."
+      ],
+      "return_value": "Serialized checkpoint archive written to disk.",
+      "example": "import pathlib  \nimport torch  \nimport torch.nn as nn  \nimport torch.optim as optim\n\nmodel = nn.Linear(10, 2)  \noptimizer = optim.SGD(model.parameters(), lr=0.01)  \ncheckpoint_path = pathlib.Path(\"checkpoint.pt\")\n\ncheckpoint = {  \n    \"epoch\": 5,  \n    \"model_state_dict\": model.state_dict(),  \n    \"optimizer_state_dict\": optimizer.state_dict(),  \n    \"loss\": 0.245  \n}  \ntorch.save(checkpoint, checkpoint_path)\n\nloaded_ckpt = torch.load(checkpoint_path, map_location=\"cpu\", weights_only=True)  \nmodel.load_state_dict(loaded_ckpt[\"model_state_dict\"])  \noptimizer.load_state_dict(loaded_ckpt[\"optimizer_state_dict\"])  \nstart_epoch = loaded_ckpt[\"epoch\"]\n\nprint(f\"Resumed successfully from epoch {start_epoch}\")\n\nif checkpoint_path.exists():  \n    checkpoint_path.unlink()",
+      "use_when": "Long-running distributed training jobs vulnerable to preemptions or cloud instance spot terminations.\nInterrupted multi-stage training workflows requiring exact state reconstruction.",
+      "avoid_when": "Preparing finalized model artifacts solely for inference serving (strip optimizer states to minimize file size).",
+      "gotchas": [
+        "Forgetting to save learning rate scheduler or loss scaler state dicts causes subtle training discrepancies upon resumption.",
+        "Loading optimizer state dicts across different device types without proper map_location handling triggers CUDA errors."
+      ],
+      "performance_notes": "Saving full checkpoints including Adam momentum buffers doubles file storage requirements relative to raw model weights.",
+      "related_apis": [
+        "torch.save",
+        "torch.load",
+        "torch.optim.Optimizer.state_dict"
+      ],
+      "framework_migration_notes": "Provides exact structural equivalence to TensorFlow tf.train.Checkpoint dictionary management.",
+      "tensorflow_equivalent": "torch.save(checkpoint_dict) → tf.train.Checkpoint",
+      "framework_equivalent": "torch.save(checkpoint_dict) → tf.train.Checkpoint",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "PyTorch training checkpoints",
+          "checkpointing"
+        ],
+        "search_terms": [
+          "save resume training PyTorch",
+          "save optimizer state dict",
+          "complete training checkpoint"
+        ],
+        "keywords": [
+          "checkpoint",
+          "optimizer_state_dict",
+          "model_state_dict",
+          "resume",
+          "epoch"
+        ],
+        "confused_with": [
+          "Model weights saving vs full training checkpoint saving"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "bert",
+        "llama",
+        "deepseek"
+      ],
+      "related_patterns": [
+        "device-placement",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "deployment"
+      ],
+      "related_cheatsheet": [
+        "deployment"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/notes/serialization.html%23saving-loading-a-general-checkpoint-for-inference-or-resuming-training",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/notes/serialization.html%23saving-loading-a-general-checkpoint-for-inference-or-resuming-training"
+    },
+    {
+      "task": "Manage state_dict for Models and Optimizers",
+      "problem_solved": "Provides mechanisms to inspect, filter, rename, or transfer module weight dictionaries (state_dict) for fine-tuning, transfer learning, and parameter manipulation.",
+      "mental_trigger": "I need to extract parameter dictionaries, strip module. key prefixes from DistributedDataParallel models, or remap layer weights.",
+      "syntax": "state_dict = model.state_dict(destination=None, prefix=\"\", keep_vars=False)  \nmissing_keys, unexpected_keys = model.load_state_dict(state_dict, strict=True)",
+      "important_parameters": [
+        "strict (bool): Enforces exact name matching between state dictionary keys and target module parameters.",
+        "prefix (str): String prefix prepended to all dictionary parameter keys during extraction.",
+        "keep_vars (bool): Returns internal torch.Tensor parameters directly instead of detached copies."
+      ],
+      "important_params": [
+        "strict (bool): Enforces exact name matching between state dictionary keys and target module parameters.",
+        "prefix (str): String prefix prepended to all dictionary parameter keys during extraction.",
+        "keep_vars (bool): Returns internal torch.Tensor parameters directly instead of detached copies."
+      ],
+      "return_value": "state_dict() returns an OrderedDict mapping layer key names to parameter tensors. load_state_dict() returns a NamedTuple containing missing_keys and unexpected_keys.",
+      "example": "import torch  \nimport torch.nn as nn\n\nclass Baseline(nn.Module):  \n    def __init__(self):  \n        super().__init__()  \n        self.feature_extractor = nn.Linear(10, 8)  \n        self.classifier = nn.Linear(8, 2)\n\n    def forward(self, x):  \n        return self.classifier(self.feature_extractor(x))\n\nmodel = Baseline()  \nraw_state_dict = model.state_dict()\n\n# Simulate removing DDP 'module.' prefix from parameter keys  \nprefixed_dict = {f\"module.{k}\": v for k, v in raw_state_dict.items()}  \nclean_dict = {k.replace(\"module.\", \"\"): v for k, v in prefixed_dict.items()}\n\nnew_model = Baseline()  \nmissing, unexpected = new_model.load_state_dict(clean_dict, strict=True)\n\nprint(\"Missing keys:\", missing)  \nprint(\"Unexpected keys:\", unexpected)",
+      "use_when": "Removing parameter key prefixes added by torch.nn.DataParallel or DistributedDataParallel.\nPerforming transfer learning where backbone layers are remapped while classification heads are replaced.\nSelectively loading parameter subsets during warm-starting experiments.",
+      "avoid_when": "Serializing full TorchScript graphs where parameter weights are already embedded within graph structures.",
+      "gotchas": [
+        "Setting strict=False suppresses missing or unexpected key errors, potentially leaving target weights uninitialized.",
+        "Incompatible tensor shapes between saved dictionary parameters and newly initialized module layers throw runtime errors during loading."
+      ],
+      "performance_notes": "Modifying dictionary references in-place prevents duplicating memory footprints when remapping giant parameters across LLMs.",
+      "related_apis": [
+        "torch.nn.Module.load_state_dict",
+        "torch.save"
+      ],
+      "framework_migration_notes": "PyTorch state_dict objects are standard Python OrderedDict instances containing raw tensors, offering more direct flexibility than TensorFlow variable trackable trees.",
+      "tensorflow_equivalent": "model.state_dict() → model.get_weights() / tf.train.Checkpoint",
+      "framework_equivalent": "model.state_dict() → model.get_weights() / tf.train.Checkpoint",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "state_dict",
+          "PyTorch state dictionary",
+          "parameter dictionary"
+        ],
+        "search_terms": [
+          "remove module prefix state_dict",
+          "load_state_dict strict False",
+          "inspect model state_dict"
+        ],
+        "keywords": [
+          "state_dict",
+          "load_state_dict",
+          "strict",
+          "missing_keys",
+          "unexpected_keys"
+        ],
+        "confused_with": [
+          "state_dict vs model.parameters()"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "yolo",
+        "bert",
+        "llama"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "transfer-learning-for-vision",
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "deployment"
+      ],
+      "related_cheatsheet": [
+        "deployment"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/generated/torch.nn.Module.html%23torch.nn.Module.state_dict",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/generated/torch.nn.Module.html%23torch.nn.Module.state_dict"
+    },
+    {
+      "task": "Build Production Inference Pipeline (model.eval + torch.inference_mode)",
+      "problem_solved": "Disables autograd engine overhead, disables dropout layers, and switches batch normalization to evaluation mode for low-latency production inference.",
+      "mental_trigger": "I need to set up a production inference context that completely disables gradient tracking and configures modules like dropout and batchnorm for evaluation.",
+      "syntax": "model.eval()\n\nwith torch.inference_mode():  \n    outputs = model(inputs)",
+      "important_parameters": [
+        "mode (bool): Flag enabling or disabling inference mode (defaults to True)."
+      ],
+      "important_params": [
+        "mode (bool): Flag enabling or disabling inference mode (defaults to True)."
+      ],
+      "return_value": "model.eval() returns the module instance. torch.inference_mode() context manager or decorator yields zero-autograd execution scope.",
+      "example": "import torch  \nimport torch.nn as nn\n\nclass InferenceNet(nn.Module):  \n    def __init__(self):  \n        super().__init__()  \n        self.drop = nn.Dropout(0.5)  \n        self.fc = nn.Linear(10, 2)\n\n    def forward(self, x):  \n        return self.fc(self.drop(x))\n\nmodel = InferenceNet()  \nmodel.eval()\n\ninput_data = torch.randn(4, 10)\n\nwith torch.inference_mode():  \n    logits = model(input_data)\n\nprint(\"Inference output shape:\", logits.shape)  \nprint(\"Requires grad:\", logits.requires_grad)",
+      "use_when": "Running model inference in production environments.\nPrefer torch.inference_mode over torch.no_grad for better latency and memory optimization.",
+      "avoid_when": "Computing gradients for input optimization, adversarial attacks, or saliency map creation.",
+      "gotchas": [
+        "model.eval() and torch.inference_mode() perform distinct tasks: model.eval() changes layer execution behavior (for example, dropout rate to 0), whereas torch.inference_mode() turns off autograd tracking. Both are required.",
+        "Tensors created inside torch.inference_mode() cannot be mutated outside the context block or used in subsequent autograd computations."
+      ],
+      "performance_notes": "torch.inference_mode() provides lower computational overhead than torch.no_grad() by disabling view tracking and version counter updates completely.",
+      "related_apis": [
+        "torch.no_grad",
+        "torch.enable_grad"
+      ],
+      "framework_migration_notes": "Combines the functionality of setting training flags false in Keras (learning_phase=0) with tf.stop_gradient evaluation contexts.",
+      "tensorflow_equivalent": "model.eval() + torch.inference_mode() → model(x, training=False)",
+      "framework_equivalent": "model.eval() + torch.inference_mode() → model(x, training=False)",
+      "version_compatibility": "torch.inference_mode was introduced in PyTorch 1.9 to supersede torch.no_grad for dedicated inference workloads.",
+      "search_metadata": {
+        "aliases": [
+          "torch.inference_mode",
+          "model.eval()",
+          "PyTorch inference context"
+        ],
+        "search_terms": [
+          "PyTorch inference pipeline",
+          "difference model.eval and inference_mode",
+          "speed up inference PyTorch"
+        ],
+        "keywords": [
+          "inference_mode",
+          "eval",
+          "no_grad",
+          "autograd",
+          "dropout"
+        ],
+        "confused_with": [
+          "model.eval() vs torch.no_grad()",
+          "torch.inference_mode() vs torch.no_grad()"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "yolo",
+        "bert",
+        "llama",
+        "deepseek"
+      ],
+      "related_patterns": [
+        "device-placement",
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "deployment"
+      ],
+      "related_cheatsheet": [
+        "deployment"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide",
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/generated/torch.inference_mode.html",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/generated/torch.inference_mode.html"
+    },
+    {
+      "task": "Optimize Inference Device Placement and Precision",
+      "problem_solved": "Maximizes inference throughput and minimizes GPU memory footprint using Automatic Mixed Precision (torch.autocast) alongside optimized asynchronous memory transfers.",
+      "mental_trigger": "I want to optimize my inference pipeline by running half-precision arithmetic (FP16 or BF16) and placing tensors efficiently on compute devices.",
+      "syntax": "x = x.to(device, non_blocking=True)\n\nwith torch.autocast(device_type=device.type, dtype=torch.float16):  \n    output = model(x)",
+      "important_parameters": [
+        "device_type (str): Target accelerator computing device (for example, \"cuda\", \"cpu\", or \"mps\").",
+        "dtype (torch.dtype): Reduced precision computational format (torch.float16 or torch.bfloat16).",
+        "non_blocking (bool): When True, attempts asynchronous host-to-device transfers overlapping with CPU computation."
+      ],
+      "important_params": [
+        "device_type (str): Target accelerator computing device (for example, \"cuda\", \"cpu\", or \"mps\").",
+        "dtype (torch.dtype): Reduced precision computational format (torch.float16 or torch.bfloat16).",
+        "non_blocking (bool): When True, attempts asynchronous host-to-device transfers overlapping with CPU computation."
+      ],
+      "return_value": "Context manager establishing mixed precision casting rules across matrix operations within the scope block.",
+      "example": "import torch  \nimport torch.nn as nn\n\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n\nclass HeavyModel(nn.Module):  \n    def __init__(self):  \n        super().__init__()  \n        self.fc = nn.Linear(128, 64)\n\n    def forward(self, x):  \n        return self.fc(x)\n\nmodel = HeavyModel().to(device).eval()  \ninputs = torch.randn(8, 128, device=device)\n\nwith torch.inference_mode():  \n    with torch.autocast(device_type=device.type, dtype=torch.float16, enabled=(device.type == \"cuda\")):  \n        outputs = model(inputs)\n\nprint(\"Output tensor device:\", outputs.device)  \nprint(\"Output tensor dtype:\", outputs.dtype)",
+      "use_when": "Deploying memory-intensive deep learning models on modern GPU architectures with Tensor Cores (NVIDIA Ampere, Hopper, Ada Lovelace).\nIncreasing serving throughput by halving GPU VRAM bandwidth footprint.",
+      "avoid_when": "Deploying legacy hardware lacking hardware-accelerated FP16/BF16 matrix execution units.\nOperating models highly sensitive to underflow or numerical precision loss in output heads.",
+      "gotchas": [
+        "non_blocking=True requires source host tensors to be stored in pinned host memory via .pin_memory().",
+        "Executing FP16 on older GPU architectures without Tensor Cores can lead to slower execution compared to FP32."
+      ],
+      "performance_notes": "Using BF16 or FP16 cuts memory bandwidth saturation by 50% and doubles available Tensor Core execution ops per second.",
+      "related_apis": [
+        "torch.autocast",
+        "torch.Tensor.pin_memory",
+        "torch.Tensor.to"
+      ],
+      "framework_migration_notes": "Corresponds to Keras mixed precision policies (tf.keras.mixed_precision.set_global_policy('mixed_float16')).",
+      "tensorflow_equivalent": "torch.autocast → tf.keras.mixed_precision.Policy",
+      "framework_equivalent": "torch.autocast → tf.keras.mixed_precision.Policy",
+      "version_compatibility": "Unified torch.autocast(device_type=...) syntax introduced in PyTorch 1.10, replacing deprecated device-specific autocast calls.",
+      "search_metadata": {
+        "aliases": [
+          "torch.autocast",
+          "mixed precision inference",
+          "device placement"
+        ],
+        "search_terms": [
+          "PyTorch mixed precision inference",
+          "autocast FP16 PyTorch",
+          "non_blocking CUDA transfer"
+        ],
+        "keywords": [
+          "autocast",
+          "float16",
+          "bfloat16",
+          "non_blocking",
+          "pin_memory"
+        ],
+        "confused_with": [
+          "FP16 autocast vs full FP16 model casting (model.half())"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "yolo",
+        "bert",
+        "llama",
+        "qwen",
+        "gemma",
+        "deepseek"
+      ],
+      "related_patterns": [
+        "device-placement",
+        "mixed-precision",
+        "kv-cache"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "deployment"
+      ],
+      "related_cheatsheet": [
+        "deployment"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide",
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/amp.html",
+      "official_docs": "https://pytorch.org/docs/stable/amp.html"
+    },
+    {
+      "task": "Deploy Models with TorchServe",
+      "problem_solved": "Packages PyTorch models into standardized Model Archive (.mar) files and serves them with REST and gRPC endpoints, dynamic batching, logging, and worker lifecycle management using TorchServe.",
+      "mental_trigger": "I need to bundle my model into a .mar archive and serve it on TorchServe for enterprise REST or gRPC serving pipelines.",
+      "syntax": "torch-model-archiver \\  \n  --model-name <name> \\  \n  --version <ver> \\  \n  --model-file <file.py> \\  \n  --serialized-file <weights.pt> \\  \n  --handler <handler.py> \\  \n  --export-path <dir>\n\ntorchserve --start --model-store <dir> --models <name>=<name>.mar",
+      "important_parameters": [
+        "--model-name (str): Service identifier for generated .mar archive.",
+        "--version (str): Version string for model tracking.",
+        "--model-file (str): Path to model class architecture Python script.",
+        "--serialized-file (str): Path to trained parameter weights (.pt or .pth).",
+        "--handler (str): Path to custom request handler script or built-in handler name (for example, \"image_classifier\")."
+      ],
+      "important_params": [
+        "--model-name (str): Service identifier for generated .mar archive.",
+        "--version (str): Version string for model tracking.",
+        "--model-file (str): Path to model class architecture Python script.",
+        "--serialized-file (str): Path to trained parameter weights (.pt or .pth).",
+        "--handler (str): Path to custom request handler script or built-in handler name (for example, \"image_classifier\")."
+      ],
+      "return_value": "A serialized .mar file consumable by TorchServe runtime instances.",
+      "example": "# Custom TorchServe Handler Example (handler.py)  \nimport torch  \nfrom ts.torch_handler.base_handler import BaseHandler\n\nclass ProductionHandler(BaseHandler):  \n    def __init__(self):  \n        super().__init__()\n\n    def preprocess(self, data):  \n        tensor_list = []  \n        for row in data:  \n            input_bytes = row.get(\"data\") or row.get(\"body\")  \n            if isinstance(input_bytes, (bytes, bytearray)):  \n                tensor = torch.randn(1, 10)  \n            else:  \n                tensor = torch.randn(1, 10)  \n            tensor_list.append(tensor)  \n        return torch.cat(tensor_list, dim=0)\n\n    def inference(self, model_input):  \n        with torch.inference_mode():  \n            return self.model(model_input)\n\n    def postprocess(self, inference_output):  \n        return inference_output.tolist()",
+      "use_when": "Deploying production-ready microservices managed via enterprise Kubernetes clusters or AWS SageMaker.\nRequiring built-in metrics, multi-worker scaling, dynamic request batching, and management endpoints out-of-the-box.",
+      "avoid_when": "Deploying simple single-process embedded applications where lightweight FastAPI wrappers are sufficient.\nExporting standalone client-side applications on mobile or edge devices.",
+      "gotchas": [
+        "Custom handlers must properly format output types into JSON-serializable Python lists or dictionaries.",
+        "Mismatches between Python package dependencies in the host environment and .mar archiver build environments lead to runtime module import errors."
+      ],
+      "performance_notes": "TorchServe supports worker-level parallelism across multi-GPU nodes and configures dynamic batching intervals to maximize batch utilization under heavy request loads.",
+      "related_apis": [
+        "torch.save",
+        "torch.jit.save"
+      ],
+      "framework_migration_notes": "TorchServe is PyTorch's official production serving engine, serving a role equivalent to TensorFlow Serving in the TF ecosystem.",
+      "tensorflow_equivalent": "TorchServe → TensorFlow Serving",
+      "framework_equivalent": "TorchServe → TensorFlow Serving",
+      "version_compatibility": "Maintained as an independent open-source project co-developed by AWS and the PyTorch Foundation.",
+      "search_metadata": {
+        "aliases": [
+          "TorchServe",
+          "torch-model-archiver",
+          ".mar archive"
+        ],
+        "search_terms": [
+          "deploy PyTorch model TorchServe",
+          "torch-model-archiver example",
+          "custom handler TorchServe"
+        ],
+        "keywords": [
+          "torchserve",
+          "mar",
+          "model-archiver",
+          "handler",
+          "rest",
+          "grpc"
+        ],
+        "confused_with": [
+          "TorchServe vs FastAPI custom serving wrapper"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "yolo",
+        "bert",
+        "roberta"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "deployment"
+      ],
+      "related_cheatsheet": [
+        "deployment"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/serve/",
+      "official_docs": "https://pytorch.org/serve/"
+    }
+  ]
+}

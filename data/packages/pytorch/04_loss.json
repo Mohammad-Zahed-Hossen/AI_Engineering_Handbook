@@ -1,0 +1,1316 @@
+{
+  "id": "pytorch",
+  "module_name": "04_loss",
+  "module_title": "Loss Functions",
+  "slug": "04_loss",
+  "tasks": [
+    {
+      "task": "Compute Cross Entropy Loss (nn.CrossEntropyLoss)",
+      "problem_solved": "Measures the divergence between unnormalized model predictions (logits) and target labels for multi-class classification tasks.",
+      "mental_trigger": "I need a numerically stable loss for multi-class classification using unnormalized logits.",
+      "syntax": "torch.nn.CrossEntropyLoss(  \n    weight=None,  \n    size_average=None,  \n    ignore_index=-100,  \n    reduce=None,  \n    reduction='mean',  \n    label_smoothing=0.0  \n)",
+      "important_parameters": [
+        "weight: A manual rescaling weight given to each class as a 1D tensor of shape (C,).",
+        "ignore_index: Specifies a target value that is ignored and does not contribute to the input gradient.",
+        "reduction: Specifies the reduction to apply to the output ('none', 'mean', 'sum').",
+        "label_smoothing: A float in [0.0, 1.0] specifying the amount of label smoothing regularization."
+      ],
+      "important_params": [
+        "weight: A manual rescaling weight given to each class as a 1D tensor of shape (C,).",
+        "ignore_index: Specifies a target value that is ignored and does not contribute to the input gradient.",
+        "reduction: Specifies the reduction to apply to the output ('none', 'mean', 'sum').",
+        "label_smoothing: A float in [0.0, 1.0] specifying the amount of label smoothing regularization."
+      ],
+      "return_value": "A scalar float tensor if reduction='mean' or 'sum', or a tensor matching target shape if reduction='none'.",
+      "example": "import torch  \nimport torch.nn as nn\n\nlogits = torch.tensor([[2.1, 0.5, -0.8], [0.1, 3.2, 0.4]], dtype=torch.float32)  \ntargets = torch.tensor([0, 1], dtype=torch.int64)\n\ncriterion = nn.CrossEntropyLoss()  \nloss = criterion(logits, targets)\n\nprint(f\"Loss: {loss.item():.4f}\")",
+      "use_when": "Training multi-class classification models where each input belongs to exactly one class.\nComputing loss directly from raw model logits without applying softmax manually.\nRegularizing classification models via label smoothing to prevent overconfidence.",
+      "avoid_when": "Outputting probabilities that have already passed through a Softmax layer (use nn.NLLLoss with LogSoftmax instead).\nWorking with multi-label problems where classes are not mutually exclusive (use nn.BCEWithLogitsLoss).",
+      "gotchas": [
+        "Applying nn.Softmax before CrossEntropyLoss causes incorrect gradients because CrossEntropyLoss implicitly applies LogSoftmax internally.",
+        "Passing target tensors with floating-point class index dtypes causes type errors. Class index targets must be torch.int64 (Long).",
+        "Expecting target tensor shape to match logits shape when using class index targets. Target shape must omit the class dimension C.",
+        "Using label_smoothing \\> 0.0 with class index targets and expecting one-hot matrix output without checking internal broadcasting behavior."
+      ],
+      "performance_notes": "PyTorch fuses the softmax calculation with the cross-entropy computation in CUDA kernels, significantly improving numerical stability and throughput.\nUnreduced losses (reduction='none') retain intermediate memory, which increases peak VRAM usage during training.",
+      "related_apis": [
+        "torch.nn.functional.cross_entropy",
+        "torch.nn.NLLLoss",
+        "torch.nn.LogSoftmax"
+      ],
+      "framework_migration_notes": "When migrating from TensorFlow/Keras, nn.CrossEntropyLoss combines both tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True) and label smoothing functionality into a single module.",
+      "tensorflow_equivalent": "nn.CrossEntropyLoss → tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)",
+      "framework_equivalent": "nn.CrossEntropyLoss → tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "CrossEntropy",
+          "SoftmaxLoss",
+          "CE Loss"
+        ],
+        "search_terms": [
+          "pytorch cross entropy loss",
+          "multiclass classification loss",
+          "logit cross entropy"
+        ],
+        "keywords": [
+          "cross-entropy",
+          "logits",
+          "multi-class",
+          "label-smoothing",
+          "classification"
+        ],
+        "confused_with": [
+          "nn.NLLLoss",
+          "nn.BCELoss"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "bert",
+        "roberta",
+        "llama"
+      ],
+      "related_patterns": [
+        "mixed-precision",
+        "gradient-accumulation"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "loss-functions"
+      ],
+      "related_cheatsheet": [
+        "loss-functions"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html"
+    },
+    {
+      "task": "Compute Binary Cross Entropy Loss (nn.BCELoss)",
+      "problem_solved": "Measures the binary cross-entropy between target probabilities and predicted probabilities for binary classification tasks.",
+      "mental_trigger": "I need binary classification loss when my model already outputs probabilities between 0 and 1.",
+      "syntax": "torch.nn.BCELoss(  \n    weight=None,  \n    size_average=None,  \n    reduce=None,  \n    reduction='mean'  \n)",
+      "important_parameters": [
+        "weight: A manual rescaling weight given to the loss of each batch element as a tensor matching input shape.",
+        "reduction: Specifies the reduction to apply ('none', 'mean', 'sum')."
+      ],
+      "important_params": [
+        "weight: A manual rescaling weight given to the loss of each batch element as a tensor matching input shape.",
+        "reduction: Specifies the reduction to apply ('none', 'mean', 'sum')."
+      ],
+      "return_value": "A scalar float tensor by default, or a tensor matching input shape if reduction='none'.",
+      "example": "import torch  \nimport torch.nn as nn\n\nprobabilities = torch.tensor([0.8, 0.2, 0.9], dtype=torch.float32)  \ntargets = torch.tensor([1.0, 0.0, 1.0], dtype=torch.float32)\n\ncriterion = nn.BCELoss()  \nloss = criterion(probabilities, targets)\n\nprint(f\"Loss: {loss.item():.4f}\")",
+      "use_when": "Working with pipeline architectures that explicitly require probability outputs in [0, 1] prior to loss evaluation.\nCalculating custom probability bounds or operating inside constrained sub-networks.",
+      "avoid_when": "Training standard binary classification neural networks from raw logits (use nn.BCEWithLogitsLoss instead for numerical stability).",
+      "gotchas": [
+        "Input probabilities outside the [0.0, 1.0] range trigger runtime assertions or yield NaN values due to unconstrained log evaluation.",
+        "Target dtype must match prediction dtype (torch.float32), passing integer targets causes type errors.",
+        "BCELoss is vulnerable to underflow when probabilities approach 0.0 or 1.0 unless clamped manually."
+      ],
+      "performance_notes": "Lacks the fused log-sum-exp kernel optimization present in BCEWithLogitsLoss, making it slower and numerically less stable on CUDA hardware.",
+      "related_apis": [
+        "torch.nn.BCEWithLogitsLoss",
+        "torch.nn.functional.binary_cross_entropy",
+        "torch.sigmoid"
+      ],
+      "framework_migration_notes": "Maps to TensorFlow's BinaryCrossentropy with from_logits=False.",
+      "tensorflow_equivalent": "nn.BCELoss → tf.keras.losses.BinaryCrossentropy(from_logits=False)",
+      "framework_equivalent": "nn.BCELoss → tf.keras.losses.BinaryCrossentropy(from_logits=False)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "BCE",
+          "BinaryCrossEntropy"
+        ],
+        "search_terms": [
+          "pytorch bce loss",
+          "binary loss probabilities",
+          "sigmoid cross entropy"
+        ],
+        "keywords": [
+          "bce",
+          "binary-classification",
+          "probabilities",
+          "sigmoid"
+        ],
+        "confused_with": [
+          "nn.BCEWithLogitsLoss",
+          "nn.CrossEntropyLoss"
+        ]
+      },
+      "related_models": [
+        "logistic-regression",
+        "resnet"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "loss-functions"
+      ],
+      "related_cheatsheet": [
+        "loss-functions"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.nn.BCELoss.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.BCELoss.html"
+    },
+    {
+      "task": "Compute Binary Cross Entropy with Logits (nn.BCEWithLogitsLoss)",
+      "problem_solved": "Combines a Sigmoid layer and Binary Cross Entropy loss in one single class for numerical stability in binary and multi-label classification.",
+      "mental_trigger": "I need a stable loss function for binary or multi-label classification directly from unnormalized logits.",
+      "syntax": "torch.nn.BCEWithLogitsLoss(  \n    weight=None,  \n    size_average=None,  \n    reduce=None,  \n    reduction='mean',  \n    pos_weight=None  \n)",
+      "important_parameters": [
+        "weight: Rescaling weight array matching the target batch shape.",
+        "pos_weight: Weight of positive examples to balance precision and recall. Must be a 1D or broadcastable tensor.",
+        "reduction: Specifies output reduction behavior ('none', 'mean', 'sum')."
+      ],
+      "important_params": [
+        "weight: Rescaling weight array matching the target batch shape.",
+        "pos_weight: Weight of positive examples to balance precision and recall. Must be a 1D or broadcastable tensor.",
+        "reduction: Specifies output reduction behavior ('none', 'mean', 'sum')."
+      ],
+      "return_value": "A scalar float tensor if reduction='mean' or 'sum', or a tensor matching input shape if reduction='none'.",
+      "example": "import torch  \nimport torch.nn as nn\n\nlogits = torch.tensor([1.5, -2.0, 3.0], dtype=torch.float32)  \ntargets = torch.tensor([1.0, 0.0, 1.0], dtype=torch.float32)\n\npos_weight = torch.tensor([1.5])  \ncriterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)  \nloss = criterion(logits, targets)\n\nprint(f\"Loss: {loss.item():.4f}\")",
+      "use_when": "Performing binary classification from raw, unnormalized model outputs.\nTraining multi-label classification models where each target sample can belong to multiple independent classes.\nHandling positive/negative class imbalance via the pos_weight parameter.",
+      "avoid_when": "Model output targets are mutually exclusive across classes (use nn.CrossEntropyLoss).\nPredictions are already transformed by torch.sigmoid.",
+      "gotchas": [
+        "Applying torch.sigmoid to network outputs before passing them into BCEWithLogitsLoss leads to double sigmoid application and incorrect loss values.",
+        "Target tensors must be floating-point tensors matching the shape of input logits, not long/integer label tensors.",
+        "pos_weight size must match the number of target classes to broadcast correctly across batch dimensions."
+      ],
+      "performance_notes": "Employs the log-sum-exp trick to prevent numerical overflow/underflow during exponentiation.\nNative CUDA kernels fuse the sigmoid activation and cross-entropy reduction steps, minimizing memory bandwidth bottlenecks.",
+      "related_apis": [
+        "torch.nn.BCELoss",
+        "torch.nn.functional.binary_cross_entropy_with_logits"
+      ],
+      "framework_migration_notes": "Maps directly to TensorFlow's BinaryCrossentropy with from_logits=True.",
+      "tensorflow_equivalent": "nn.BCEWithLogitsLoss → tf.keras.losses.BinaryCrossentropy(from_logits=True)",
+      "framework_equivalent": "nn.BCEWithLogitsLoss → tf.keras.losses.BinaryCrossentropy(from_logits=True)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "BCEWithLogits",
+          "Numerically Stable BCE"
+        ],
+        "search_terms": [
+          "pytorch bce with logits",
+          "multi-label classification loss",
+          "pos_weight bce"
+        ],
+        "keywords": [
+          "bce",
+          "logits",
+          "sigmoid",
+          "multi-label",
+          "pos_weight"
+        ],
+        "confused_with": [
+          "nn.BCELoss",
+          "nn.CrossEntropyLoss"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "yolo",
+        "bert",
+        "roberta",
+        "logistic-regression"
+      ],
+      "related_patterns": [
+        "mixed-precision",
+        "gradient-accumulation"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "loss-functions"
+      ],
+      "related_cheatsheet": [
+        "loss-functions"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.nn.BCEWithLogitsLoss.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.BCEWithLogitsLoss.html"
+    },
+    {
+      "task": "Compute Negative Log Likelihood Loss (nn.NLLLoss)",
+      "problem_solved": "Computes negative log likelihood loss between log-probabilities and target indices, useful for models that explicitly output log-probabilities.",
+      "mental_trigger": "My model explicitly outputs log-probabilities (like LogSoftmax) and I need to calculate classification loss.",
+      "syntax": "torch.nn.NLLLoss(  \n    weight=None,  \n    size_average=None,  \n    ignore_index=-100,  \n    reduce=None,  \n    reduction='mean'  \n)",
+      "important_parameters": [
+        "weight: 1D manual class weighting tensor of shape (C,).",
+        "ignore_index: Specifies a target class index to ignore in gradient updates.",
+        "reduction: Reduction mode ('none', 'mean', 'sum')."
+      ],
+      "important_params": [
+        "weight: 1D manual class weighting tensor of shape (C,).",
+        "ignore_index: Specifies a target class index to ignore in gradient updates.",
+        "reduction: Reduction mode ('none', 'mean', 'sum')."
+      ],
+      "return_value": "A scalar float tensor if reduced, or a tensor matching target shape if reduction='none'.",
+      "example": "import torch  \nimport torch.nn as nn\n\nlog_probs = torch.tensor([[-0.2, -1.8, -3.1], [-2.5, -0.1, -2.9]], dtype=torch.float32)  \ntargets = torch.tensor([0, 1], dtype=torch.int64)\n\ncriterion = nn.NLLLoss()  \nloss = criterion(log_probs, targets)\n\nprint(f\"Loss: {loss.item():.4f}\")",
+      "use_when": "Model final layers explicitly use nn.LogSoftmax due to architectural constraints or custom output requirements.\nImplementing sequence generation tasks where log-probabilities are extracted at each decoding step.",
+      "avoid_when": "Inputs are raw logits (use nn.CrossEntropyLoss instead to leverage fused CUDA operations).\nInputs are standard unlogged probabilities in range [0, 1].",
+      "gotchas": [
+        "Input tensors must contain log-probabilities (negative numbers), passing unlogged probabilities produces negative loss values.",
+        "Target indices must be integers (torch.int64) within range [0, C-1]."
+      ],
+      "performance_notes": "NLLLoss simply gathers negative values at specified target indices.\nComputing LogSoftmax and NLLLoss separately is slower than calling a single fused CrossEntropyLoss.",
+      "related_apis": [
+        "torch.nn.LogSoftmax",
+        "torch.nn.CrossEntropyLoss",
+        "torch.nn.functional.nll_loss"
+      ],
+      "framework_migration_notes": "Equivalent to using tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False) on log-probability tensors or taking elementwise gathering in TensorFlow.",
+      "tensorflow_equivalent": "nn.NLLLoss → tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False)",
+      "framework_equivalent": "nn.NLLLoss → tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "NLL",
+          "Negative Log Likelihood"
+        ],
+        "search_terms": [
+          "pytorch nll loss",
+          "log softmax loss",
+          "negative log likelihood"
+        ],
+        "keywords": [
+          "nll",
+          "log-softmax",
+          "classification",
+          "target-indices"
+        ],
+        "confused_with": [
+          "nn.CrossEntropyLoss",
+          "nn.KLDivLoss"
+        ]
+      },
+      "related_models": [
+        "bert",
+        "gpt",
+        "t5"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "loss-functions"
+      ],
+      "related_cheatsheet": [
+        "loss-functions"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html"
+    },
+    {
+      "task": "Compute Multi-Class Margin Loss (nn.MultiMarginLoss)",
+      "problem_solved": "Computes a multi-class hinge loss (margin-based classification) optimizing margins between the correct target class score and non-target class scores.",
+      "mental_trigger": "I need a margin-based SVM-like hinge loss for multi-class classification problems.",
+      "syntax": "torch.nn.MultiMarginLoss(  \n    p=1,  \n    margin=1.0,  \n    weight=None,  \n    size_average=None,  \n    reduce=None,  \n    reduction='mean'  \n)",
+      "important_parameters": [
+        "p: Norm degree for margin computation. Must be 1 or 2 (default is 1).",
+        "margin: Margin value threshold (default is 1.0).",
+        "weight: 1D class weighting tensor of shape (C,).",
+        "reduction: Reduction behavior ('none', 'mean', 'sum')."
+      ],
+      "important_params": [
+        "p: Norm degree for margin computation. Must be 1 or 2 (default is 1).",
+        "margin: Margin value threshold (default is 1.0).",
+        "weight: 1D class weighting tensor of shape (C,).",
+        "reduction: Reduction behavior ('none', 'mean', 'sum')."
+      ],
+      "return_value": "A scalar float tensor if reduced, or tensor of shape (N,) if reduction='none'.",
+      "example": "import torch  \nimport torch.nn as nn\n\nlogits = torch.tensor([[1.5, 0.2, -0.5], [0.1, 2.3, 0.8]], dtype=torch.float32)  \ntargets = torch.tensor([0, 1], dtype=torch.int64)\n\ncriterion = nn.MultiMarginLoss(p=1, margin=1.0)  \nloss = criterion(logits, targets)\n\nprint(f\"Loss: {loss.item():.4f}\")",
+      "use_when": "Training large-margin classifier models (e.g., neural SVMs).\nRequiring clear separation margins between decision boundaries for multi-class tasks.",
+      "avoid_when": "Training standard probabilistic neural networks where calibrated output probabilities are required.",
+      "gotchas": [
+        "Input must be a 2D tensor of shape (N, C). Higher dimensional inputs are not supported natively without flattening.",
+        "Parameter p only accepts values 1 or 2, supplying other values throws runtime errors."
+      ],
+      "performance_notes": "Evaluates pairwise differences across all non-target classes for each sample, making its complexity scale linearly with class count *C*.",
+      "related_apis": [
+        "torch.nn.MultiLabelMarginLoss",
+        "torch.nn.MarginRankingLoss"
+      ],
+      "framework_migration_notes": "No direct equivalent in standard Keras/TensorFlow loss modules.",
+      "tensorflow_equivalent": "No direct equivalent.",
+      "framework_equivalent": "No direct equivalent.",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "MultiClassHingeLoss",
+          "SVM Loss"
+        ],
+        "search_terms": [
+          "pytorch multiclass margin loss",
+          "hinge loss multiclass",
+          "svm neural net loss"
+        ],
+        "keywords": [
+          "hinge",
+          "margin",
+          "svm",
+          "multiclass"
+        ],
+        "confused_with": [
+          "nn.MultiLabelMarginLoss",
+          "nn.MarginRankingLoss"
+        ]
+      },
+      "related_models": [
+        "logistic-regression",
+        "resnet"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "loss-functions"
+      ],
+      "related_cheatsheet": [
+        "loss-functions"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.nn.MultiMarginLoss.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.MultiMarginLoss.html"
+    },
+    {
+      "task": "Compute Multi-Label Margin Loss (nn.MultiLabelMarginLoss)",
+      "problem_solved": "Computes a hinge loss for multi-label classification tasks where an input sample can belong to multiple target classes simultaneously.",
+      "mental_trigger": "I need a margin-based hinge loss for samples that have variable numbers of correct labels.",
+      "syntax": "torch.nn.MultiLabelMarginLoss(  \n    size_average=None,  \n    reduce=None,  \n    reduction='mean'  \n)",
+      "important_parameters": [
+        "reduction: Reduction mode to apply across the batch ('none', 'mean', 'sum')."
+      ],
+      "important_params": [
+        "reduction: Reduction mode to apply across the batch ('none', 'mean', 'sum')."
+      ],
+      "return_value": "A scalar float tensor if reduced, or tensor of shape (N,) if reduction='none'.",
+      "example": "import torch  \nimport torch.nn as nn\n\nlogits = torch.tensor([[0.1, 2.5, 3.1, -0.4], [1.2, -0.5, 0.2, 2.0]], dtype=torch.float32)  \ntargets = torch.tensor([[2, 1, -1, -1], [0, 3, -1, -1]], dtype=torch.int64)\n\ncriterion = nn.MultiLabelMarginLoss()  \nloss = criterion(logits, targets)\n\nprint(f\"Loss: {loss.item():.4f}\")",
+      "use_when": "Optimizing multi-label ranking models using a hinge-based criterion.\nTarget label arrays have variable lengths padded with negative integers (specifically -1).",
+      "avoid_when": "Optimizing multi-label targets using binary probabilities (use nn.BCEWithLogitsLoss).",
+      "gotchas": [
+        "Targets must be integer class indices padded with -1 to signal the end of valid target classes for that sample.",
+        "Unpadded targets or using float probabilities instead of index sequences generates incorrect loss computations."
+      ],
+      "performance_notes": "Computes sum of differences between non-target scores and target scores, leading to quadratic pairing checks per sample in worst cases.",
+      "related_apis": [
+        "torch.nn.MultiMarginLoss",
+        "torch.nn.BCEWithLogitsLoss"
+      ],
+      "framework_migration_notes": "No direct equivalent in standard TensorFlow.",
+      "tensorflow_equivalent": "No direct equivalent.",
+      "framework_equivalent": "No direct equivalent.",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "MultiLabelHinge"
+        ],
+        "search_terms": [
+          "pytorch multilabel margin loss",
+          "margin loss multiple labels",
+          "multi label hinge"
+        ],
+        "keywords": [
+          "multilabel",
+          "margin",
+          "hinge",
+          "ranking"
+        ],
+        "confused_with": [
+          "nn.MultiMarginLoss",
+          "nn.BCEWithLogitsLoss"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "loss-functions"
+      ],
+      "related_cheatsheet": [
+        "loss-functions"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.nn.MultiLabelMarginLoss.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.MultiLabelMarginLoss.html"
+    },
+    {
+      "task": "Compute Mean Squared Error Loss (nn.MSELoss)",
+      "problem_solved": "Measures the mean squared difference (*L*2​ norm squared) between element predictions and target regression values.",
+      "mental_trigger": "I need a standard loss function for continuous regression tasks.",
+      "syntax": "torch.nn.MSELoss(  \n    size_average=None,  \n    reduce=None,  \n    reduction='mean'  \n)",
+      "important_parameters": [
+        "reduction: Reduction mode applied to the output ('none', 'mean', 'sum')."
+      ],
+      "important_params": [
+        "reduction: Reduction mode applied to the output ('none', 'mean', 'sum')."
+      ],
+      "return_value": "Scalar float tensor by default, or tensor matching input shape if reduction='none'.",
+      "example": "import torch  \nimport torch.nn as nn\n\npredictions = torch.tensor([2.5, 0.0, 1.4], dtype=torch.float32)  \ntargets = torch.tensor([3.0, -0.5, 1.0], dtype=torch.float32)\n\ncriterion = nn.MSELoss()  \nloss = criterion(predictions, targets)\n\nprint(f\"Loss: {loss.item():.4f}\")",
+      "use_when": "Training standard continuous regression models where target variables are Gaussian distributed.\nPenalizing large errors more heavily than small errors due to quadratic scaling.",
+      "avoid_when": "Datasets contain extreme outliers that disproportionately distort model gradients (use nn.HuberLoss or nn.L1Loss).",
+      "gotchas": [
+        "Predictions and targets must have matching shapes. Broadcasting between (N, 1) and (N,) can silently fail to error and yield invalid scalar loss.",
+        "Dtypes must match (torch.float32 or torch.float64). Mixing floats and integers causes runtime errors."
+      ],
+      "performance_notes": "Highly optimized elementwise CUDA kernel operations with minimal compute overhead.",
+      "related_apis": [
+        "torch.nn.L1Loss",
+        "torch.nn.SmoothL1Loss",
+        "torch.nn.functional.mse_loss"
+      ],
+      "framework_migration_notes": "Directly matches TensorFlow's MeanSquaredError.",
+      "tensorflow_equivalent": "nn.MSELoss → tf.keras.losses.MeanSquaredError",
+      "framework_equivalent": "nn.MSELoss → tf.keras.losses.MeanSquaredError",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "MSE",
+          "L2 Loss"
+        ],
+        "search_terms": [
+          "pytorch mse loss",
+          "mean squared error",
+          "l2 regression loss"
+        ],
+        "keywords": [
+          "mse",
+          "l2",
+          "regression",
+          "squared-error"
+        ],
+        "confused_with": [
+          "nn.L1Loss",
+          "nn.SmoothL1Loss"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "xgboost"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "loss-functions"
+      ],
+      "related_cheatsheet": [
+        "loss-functions"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.nn.MSELoss.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.MSELoss.html"
+    },
+    {
+      "task": "Compute Mean Absolute Error Loss (nn.L1Loss)",
+      "problem_solved": "Measures the average absolute difference (*L*1​ norm) between elementwise predictions and target values.",
+      "mental_trigger": "I need a regression loss function that is robust against outliers.",
+      "syntax": "torch.nn.L1Loss(  \n    size_average=None,  \n    reduce=None,  \n    reduction='mean'  \n)",
+      "important_parameters": [
+        "reduction: Reduction mode applied ('none', 'mean', 'sum')."
+      ],
+      "important_params": [
+        "reduction: Reduction mode applied ('none', 'mean', 'sum')."
+      ],
+      "return_value": "Scalar float tensor by default, or tensor matching input shape if reduction='none'.",
+      "example": "import torch  \nimport torch.nn as nn\n\npredictions = torch.tensor([2.5, 0.0, 1.4], dtype=torch.float32)  \ntargets = torch.tensor([3.0, -0.5, 1.0], dtype=torch.float32)\n\ncriterion = nn.L1Loss()  \nloss = criterion(predictions, targets)\n\nprint(f\"Loss: {loss.item():.4f}\")",
+      "use_when": "Dataset regression targets contain significant noise or extreme outliers.\nL1 regularization behavior is required directly on target predictions.",
+      "avoid_when": "Smooth differentiability around zero error is required for fine-grained convergence (use nn.SmoothL1Loss or nn.HuberLoss).",
+      "gotchas": [
+        "Derivatives at zero error are discontinuous, which can cause oscillation around optimal values during late training stages.",
+        "Unintended broadcasting occurs if input shape is (N, 1) and target shape is (N,)."
+      ],
+      "performance_notes": "Elementwise absolute value evaluation is lightweight and fast on GPU devices.",
+      "related_apis": [
+        "torch.nn.MSELoss",
+        "torch.nn.SmoothL1Loss",
+        "torch.nn.functional.l1_loss"
+      ],
+      "framework_migration_notes": "Directly matches TensorFlow's MeanAbsoluteError.",
+      "tensorflow_equivalent": "nn.L1Loss → tf.keras.losses.MeanAbsoluteError",
+      "framework_equivalent": "nn.L1Loss → tf.keras.losses.MeanAbsoluteError",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "MAE",
+          "L1 Loss"
+        ],
+        "search_terms": [
+          "pytorch l1 loss",
+          "mean absolute error",
+          "mae regression"
+        ],
+        "keywords": [
+          "l1",
+          "mae",
+          "absolute-error",
+          "regression",
+          "robust"
+        ],
+        "confused_with": [
+          "nn.MSELoss",
+          "nn.SmoothL1Loss"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "yolo"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "object-detection-pipeline"
+      ],
+      "related_cheatsheets": [
+        "loss-functions"
+      ],
+      "related_cheatsheet": [
+        "loss-functions"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.nn.L1Loss.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.L1Loss.html"
+    },
+    {
+      "task": "Compute Smooth L1 Loss (nn.SmoothL1Loss)",
+      "problem_solved": "Uses squared error for small absolute errors below a threshold and absolute error for large errors, combining benefits of *L*1​ and *L*2​ losses.",
+      "mental_trigger": "I need a loss that behaves like MSE for small errors and L1 for large errors.",
+      "syntax": "torch.nn.SmoothL1Loss(  \n    size_average=None,  \n    reduce=None,  \n    reduction='mean',  \n    beta=1.0  \n)",
+      "important_parameters": [
+        "beta: Threshold parameter defining the transition point from *L*2​ to *L*1​ loss (default is 1.0).",
+        "reduction: Reduction mode ('none', 'mean', 'sum')."
+      ],
+      "important_params": [
+        "beta: Threshold parameter defining the transition point from *L*2​ to *L*1​ loss (default is 1.0).",
+        "reduction: Reduction mode ('none', 'mean', 'sum')."
+      ],
+      "return_value": "Scalar float tensor by default, or tensor matching input shape if reduction='none'.",
+      "example": "import torch  \nimport torch.nn as nn\n\npredictions = torch.tensor([0.2, 2.5], dtype=torch.float32)  \ntargets = torch.tensor([0.0, 0.5], dtype=torch.float32)\n\ncriterion = nn.SmoothL1Loss(beta=1.0)  \nloss = criterion(predictions, targets)\n\nprint(f\"Loss: {loss.item():.4f}\")",
+      "use_when": "Training object detection bounding box regressors (e.g., Fast R-CNN, Faster R-CNN).\nRequiring stability against outliers while preserving smooth gradients near zero.",
+      "avoid_when": "Unscaled standard Huber loss formulation is explicitly required by academic specifications (use nn.HuberLoss).",
+      "gotchas": [
+        "Changing beta alters the scaling of gradients for large errors unless compensated.",
+        "Setting beta=0 makes SmoothL1Loss degenerate into standard L1Loss."
+      ],
+      "performance_notes": "Computes conditional branches elementwise inside CUDA kernels without memory movement overhead.",
+      "related_apis": [
+        "torch.nn.HuberLoss",
+        "torch.nn.L1Loss",
+        "torch.nn.MSELoss"
+      ],
+      "framework_migration_notes": "Maps to tf.keras.losses.Huber(delta=beta) with identical mathematical properties.",
+      "tensorflow_equivalent": "nn.SmoothL1Loss → tf.keras.losses.Huber(delta=beta)",
+      "framework_equivalent": "nn.SmoothL1Loss → tf.keras.losses.Huber(delta=beta)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Fast R-CNN Loss",
+          "Smooth L1"
+        ],
+        "search_terms": [
+          "pytorch smooth l1 loss",
+          "bounding box regression loss",
+          "smooth l1 vs huber"
+        ],
+        "keywords": [
+          "smooth-l1",
+          "beta",
+          "huber",
+          "regression",
+          "object-detection"
+        ],
+        "confused_with": [
+          "nn.HuberLoss",
+          "nn.L1Loss"
+        ]
+      },
+      "related_models": [
+        "yolo",
+        "resnet"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "object-detection-pipeline"
+      ],
+      "related_cheatsheets": [
+        "loss-functions"
+      ],
+      "related_cheatsheet": [
+        "loss-functions"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.nn.SmoothL1Loss.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.SmoothL1Loss.html"
+    },
+    {
+      "task": "Compute Huber Loss (nn.HuberLoss)",
+      "problem_solved": "Computes Huber loss, a robust regression loss function less sensitive to outliers than MSE.",
+      "mental_trigger": "I need standard Huber loss with a configurable delta threshold for robust regression.",
+      "syntax": "torch.nn.HuberLoss(  \n    reduction='mean',  \n    delta=1.0  \n)",
+      "important_parameters": [
+        "delta: Threshold parameter where loss transitions from quadratic to linear (default is 1.0).",
+        "reduction: Output reduction mode ('none', 'mean', 'sum')."
+      ],
+      "important_params": [
+        "delta: Threshold parameter where loss transitions from quadratic to linear (default is 1.0).",
+        "reduction: Output reduction mode ('none', 'mean', 'sum')."
+      ],
+      "return_value": "Scalar float tensor by default, or tensor matching input shape if reduction='none'.",
+      "example": "import torch  \nimport torch.nn as nn\n\npredictions = torch.tensor([1.0, 3.5], dtype=torch.float32)  \ntargets = torch.tensor([1.2, 1.0], dtype=torch.float32)\n\ncriterion = nn.HuberLoss(delta=1.0)  \nloss = criterion(predictions, targets)\n\nprint(f\"Loss: {loss.item():.4f}\")",
+      "use_when": "Training robust regression models requiring strict adherence to standard mathematical Huber definitions.\nHandling variable noise distributions across target variables.",
+      "avoid_when": "Working with legacy object detection architectures that specifically expect SmoothL1Loss beta-scaling conventions.",
+      "gotchas": [
+        "HuberLoss scales the linear region differently than SmoothL1Loss when delta != 1.0.",
+        "delta must strictly be a positive floating-point number."
+      ],
+      "performance_notes": "Fused CUDA implementation avoids extra branch allocations during forward and backward passes.",
+      "related_apis": [
+        "torch.nn.SmoothL1Loss",
+        "torch.nn.MSELoss",
+        "torch.nn.functional.huber_loss"
+      ],
+      "framework_migration_notes": "Directly maps to TensorFlow's tf.keras.losses.Huber(delta=delta).",
+      "tensorflow_equivalent": "nn.HuberLoss → tf.keras.losses.Huber(delta=delta)",
+      "framework_equivalent": "nn.HuberLoss → tf.keras.losses.Huber(delta=delta)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Huber"
+        ],
+        "search_terms": [
+          "pytorch huber loss",
+          "robust regression loss",
+          "huber delta"
+        ],
+        "keywords": [
+          "huber",
+          "delta",
+          "robust",
+          "regression"
+        ],
+        "confused_with": [
+          "nn.SmoothL1Loss",
+          "nn.MSELoss"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "yolo",
+        "xgboost"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "object-detection-pipeline"
+      ],
+      "related_cheatsheets": [
+        "loss-functions"
+      ],
+      "related_cheatsheet": [
+        "loss-functions"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.nn.HuberLoss.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.HuberLoss.html"
+    },
+    {
+      "task": "Compute Connectionist Temporal Classification Loss (nn.CTCLoss)",
+      "problem_solved": "Calculates loss between continuous sequence probabilities and target sequences without explicit alignment supervision.",
+      "mental_trigger": "I need sequence alignment loss for speech recognition or OCR without frame-level labels.",
+      "syntax": "torch.nn.CTCLoss(  \n    blank=0,  \n    reduction='mean',  \n    zero_infinity=False  \n)",
+      "important_parameters": [
+        "blank: Index of the blank label in the vocabulary (default is 0).",
+        "reduction: Reduction mode ('none', 'mean', 'sum').",
+        "zero_infinity: Whether to zero out infinite losses caused by impossibly short target lengths."
+      ],
+      "important_params": [
+        "blank: Index of the blank label in the vocabulary (default is 0).",
+        "reduction: Reduction mode ('none', 'mean', 'sum').",
+        "zero_infinity: Whether to zero out infinite losses caused by impossibly short target lengths."
+      ],
+      "return_value": "Scalar float tensor by default, or tensor of shape (N,) if reduction='none'.",
+      "example": "import torch  \nimport torch.nn as nn\n\nT, N, C = 50, 2, 20  \nlog_probs = torch.randn(T, N, C).log_softmax(2)\n\ntargets = torch.tensor([[1, 2, 3, 4], [2, 3, 1, 0]], dtype=torch.int64)  \ninput_lengths = torch.tensor([50, 50], dtype=torch.int64)  \ntarget_lengths = torch.tensor([4, 3], dtype=torch.int64)\n\ncriterion = nn.CTCLoss(blank=0, zero_infinity=True)  \nloss = criterion(log_probs, targets, input_lengths, target_lengths)\n\nprint(f\"Loss: {loss.item():.4f}\")",
+      "use_when": "Training end-to-end speech recognition models (e.g., Wav2Letter).\nTraining optical character recognition (OCR) or scene text recognition networks.",
+      "avoid_when": "Frame-level explicit alignments are already available in training datasets.",
+      "gotchas": [
+        "Input log probabilities shape must be (T, N, C) (Time, Batch, Classes) by default unless zero_infinity or explicit flags alter shape expectations.",
+        "input_lengths must be greater than or equal to target_lengths for every sample, otherwise alignment fails and produces infinite loss.",
+        "Forgetting zero_infinity=True can result in NaN gradients destabilizing training if target sequences exceed input sequence bounds."
+      ],
+      "performance_notes": "Uses dynamic programming backends in C++ / CUDA. Fused dynamic programming kernels consume considerable workspace memory for long time steps *T*.",
+      "related_apis": [
+        "torch.nn.functional.ctc_loss"
+      ],
+      "framework_migration_notes": "Maps directly to tf.nn.ctc_loss in TensorFlow.",
+      "tensorflow_equivalent": "nn.CTCLoss → tf.nn.ctc_loss",
+      "framework_equivalent": "nn.CTCLoss → tf.nn.ctc_loss",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "CTC Loss",
+          "Connectionist Temporal Classification"
+        ],
+        "search_terms": [
+          "pytorch ctc loss",
+          "ocr sequence loss",
+          "speech recognition loss"
+        ],
+        "keywords": [
+          "ctc",
+          "sequence",
+          "ocr",
+          "speech",
+          "alignment"
+        ],
+        "confused_with": [
+          "nn.CrossEntropyLoss"
+        ]
+      },
+      "related_models": [
+        "transformer"
+      ],
+      "related_patterns": [
+        "mixed-precision",
+        "gradient-accumulation"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "loss-functions"
+      ],
+      "related_cheatsheet": [
+        "loss-functions"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.nn.CTCLoss.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.CTCLoss.html"
+    },
+    {
+      "task": "Compute KL Divergence Loss (nn.KLDivLoss)",
+      "problem_solved": "Measures Kullback-Leibler divergence between continuous probability distributions.",
+      "mental_trigger": "I need to measure how much one probability distribution diverges from a target distribution (e.g., knowledge distillation, VAEs).",
+      "syntax": "torch.nn.KLDivLoss(  \n    size_average=None,  \n    reduce=None,  \n    reduction='mean',  \n    log_target=False  \n)",
+      "important_parameters": [
+        "reduction: Reduction mode ('none', 'mean', 'batchmean', 'sum').",
+        "log_target: Specifies whether target tensor is passed in log space (default is False)."
+      ],
+      "important_params": [
+        "reduction: Reduction mode ('none', 'mean', 'batchmean', 'sum').",
+        "log_target: Specifies whether target tensor is passed in log space (default is False)."
+      ],
+      "return_value": "Scalar float tensor by default, or tensor matching input shape if reduction='none'.",
+      "example": "import torch  \nimport torch.nn as nn\n\nlog_probs = torch.tensor([[-1.2, -0.4], [-0.8, -0.6]], dtype=torch.float32)  \ntargets = torch.tensor([[0.3, 0.7], [0.4, 0.6]], dtype=torch.float32)\n\ncriterion = nn.KLDivLoss(reduction='batchmean')  \nloss = criterion(log_probs, targets)\n\nprint(f\"Loss: {loss.item():.4f}\")",
+      "use_when": "Training teacher-student models for knowledge distillation.\nOptimizing variational autoencoders (VAEs) or probabilistic output layers.",
+      "avoid_when": "Inputs are raw logits rather than log-probabilities (apply nn.LogSoftmax first).",
+      "gotchas": [
+        "Input tensor MUST be log-probabilities (e.g. output from LogSoftmax). Passing raw probabilities generates mathematically invalid divergence values.",
+        "PyTorch standard reduction='mean' does not match true mathematical KL divergence over batches. Use reduction='batchmean' to align with mathematical expectations.",
+        "If log_target=False, target values must be valid probabilities summing to 1 across class dimensions."
+      ],
+      "performance_notes": "Elementwise evaluation is fast, but failing to pass log targets directly can require redundant log operations.",
+      "related_apis": [
+        "torch.nn.LogSoftmax",
+        "torch.nn.functional.kl_div"
+      ],
+      "framework_migration_notes": "Maps to TensorFlow's tf.keras.losses.KLDivergence().",
+      "tensorflow_equivalent": "nn.KLDivLoss → tf.keras.losses.KLDivergence()",
+      "framework_equivalent": "nn.KLDivLoss → tf.keras.losses.KLDivergence()",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "KL Loss",
+          "Kullback-Leibler Divergence"
+        ],
+        "search_terms": [
+          "pytorch kl divergence loss",
+          "distillation loss",
+          "kldiv batchmean"
+        ],
+        "keywords": [
+          "kl-divergence",
+          "distillation",
+          "vae",
+          "log-probabilities",
+          "batchmean"
+        ],
+        "confused_with": [
+          "nn.NLLLoss",
+          "nn.CrossEntropyLoss"
+        ]
+      },
+      "related_models": [
+        "bert",
+        "gpt",
+        "vit"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "loss-functions"
+      ],
+      "related_cheatsheet": [
+        "loss-functions"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.nn.KLDivLoss.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.KLDivLoss.html"
+    },
+    {
+      "task": "Compute Cosine Embedding Loss (nn.CosineEmbeddingLoss)",
+      "problem_solved": "Measures whether two input vectors are similar or dissimilar using cosine distance based on a ground truth binary flag.",
+      "mental_trigger": "I need a loss function to measure visual or textual vector embedding similarity using cosine distance.",
+      "syntax": "torch.nn.CosineEmbeddingLoss(  \n    margin=0.0,  \n    size_average=None,  \n    reduce=None,  \n    reduction='mean'  \n)",
+      "important_parameters": [
+        "margin: Margin value between 0 and 1 (default is 0.0).",
+        "reduction: Reduction mode ('none', 'mean', 'sum')."
+      ],
+      "important_params": [
+        "margin: Margin value between 0 and 1 (default is 0.0).",
+        "reduction: Reduction mode ('none', 'mean', 'sum')."
+      ],
+      "return_value": "Scalar float tensor by default, or 1D tensor of shape (N,) if reduction='none'.",
+      "example": "import torch  \nimport torch.nn as nn\n\nx1 = torch.tensor([[1.0, 2.0, 3.0], [0.5, 0.1, 2.0]], dtype=torch.float32)  \nx2 = torch.tensor([[1.1, 2.1, 2.9], [-0.5, 0.2, 0.1]], dtype=torch.float32)  \ny = torch.tensor([1, -1], dtype=torch.int64)\n\ncriterion = nn.CosineEmbeddingLoss(margin=0.5)  \nloss = criterion(x1, x2, y)\n\nprint(f\"Loss: {loss.item():.4f}\")",
+      "use_when": "Training Siamese networks for metric learning or pair similarity.\nLearning vector representations where directional orientation matters more than magnitude.",
+      "avoid_when": "Distances require Euclidean geometry measures rather than cosine orientation.",
+      "gotchas": [
+        "Target indicator values *y* must strictly be 1 (similar) or -1 (dissimilar). Passing 0 leads to incorrect loss masking.",
+        "Inputs *x*1​ and *x*2​ must have identical shapes."
+      ],
+      "performance_notes": "Cosine distance calculation requires normalizing inputs internally, which involves inverse square root operations. Pre-normalizing input embeddings can reduce compute overhead.",
+      "related_apis": [
+        "torch.nn.functional.cosine_similarity",
+        "torch.nn.TripletMarginLoss",
+        "torch.nn.MarginRankingLoss"
+      ],
+      "framework_migration_notes": "No direct single module equivalent in standard TensorFlow loss libraries.",
+      "tensorflow_equivalent": "No direct equivalent.",
+      "framework_equivalent": "No direct equivalent.",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Cosine Distance Loss",
+          "Pairwise Cosine Loss"
+        ],
+        "search_terms": [
+          "pytorch cosine embedding loss",
+          "siamese similarity loss",
+          "cosine distance metric"
+        ],
+        "keywords": [
+          "cosine",
+          "similarity",
+          "embeddings",
+          "siamese",
+          "metric-learning"
+        ],
+        "confused_with": [
+          "nn.MarginRankingLoss",
+          "nn.TripletMarginLoss"
+        ]
+      },
+      "related_models": [
+        "bert",
+        "roberta",
+        "resnet"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "loss-functions"
+      ],
+      "related_cheatsheet": [
+        "loss-functions"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.nn.CosineEmbeddingLoss.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.CosineEmbeddingLoss.html"
+    },
+    {
+      "task": "Compute Triplet Margin Loss (nn.TripletMarginLoss)",
+      "problem_solved": "Computes triplet loss given anchor, positive, and negative embedding tensors to enforce distance margins in embedding spaces.",
+      "mental_trigger": "I need to pull anchor-positive embeddings closer together while pushing anchor-negative embeddings apart.",
+      "syntax": "torch.nn.TripletMarginLoss(  \n    margin=1.0,  \n    p=2.0,  \n    eps=1e-06,  \n    swap=False,  \n    size_average=None,  \n    reduce=None,  \n    reduction='mean'  \n)",
+      "important_parameters": [
+        "margin: Non-negative threshold margin for separation (default is 1.0).",
+        "p: Norm degree for distance estimation (default is 2.0).",
+        "swap: Enables distance swap comparison between positive and negative embeddings.",
+        "reduction: Reduction mode ('none', 'mean', 'sum')."
+      ],
+      "important_params": [
+        "margin: Non-negative threshold margin for separation (default is 1.0).",
+        "p: Norm degree for distance estimation (default is 2.0).",
+        "swap: Enables distance swap comparison between positive and negative embeddings.",
+        "reduction: Reduction mode ('none', 'mean', 'sum')."
+      ],
+      "return_value": "Scalar float tensor by default, or 1D tensor of shape (N,) if reduction='none'.",
+      "example": "import torch  \nimport torch.nn as nn\n\nanchor = torch.tensor([[1.0, 2.0]], dtype=torch.float32)  \npositive = torch.tensor([[1.1, 2.1]], dtype=torch.float32)  \nnegative = torch.tensor([[4.0, 5.0]], dtype=torch.float32)\n\ncriterion = nn.TripletMarginLoss(margin=1.0, p=2.0)  \nloss = criterion(anchor, positive, negative)\n\nprint(f\"Loss: {loss.item():.4f}\")",
+      "use_when": "Training face recognition, metric learning, or fine-grained visual search models.\nBuilding relative embedding representations using triplet mining strategies.",
+      "avoid_when": "Ground truth data consists of pairwise binary labels rather than explicit triplets.",
+      "gotchas": [
+        "Anchor, positive, and negative tensors must have identical shapes.",
+        "Collapsing representations occur if hard-negative mining is omitted during data selection."
+      ],
+      "performance_notes": "Involves computing pairwise distances across three input tensors simultaneously; memory scale grows linearly with embedding dimension size *D*.",
+      "related_apis": [
+        "torch.nn.CosineEmbeddingLoss",
+        "torch.nn.MarginRankingLoss",
+        "torch.nn.functional.triplet_margin_loss"
+      ],
+      "framework_migration_notes": "Maps conceptually to TensorFlow Addons tfa.losses.TripletSemiHardLoss or custom Keras triplet implementations.",
+      "tensorflow_equivalent": "No direct equivalent.",
+      "framework_equivalent": "No direct equivalent.",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Triplet Loss"
+        ],
+        "search_terms": [
+          "pytorch triplet margin loss",
+          "triplet loss face recognition",
+          "anchor positive negative loss"
+        ],
+        "keywords": [
+          "triplet",
+          "anchor",
+          "positive",
+          "negative",
+          "metric-learning"
+        ],
+        "confused_with": [
+          "nn.CosineEmbeddingLoss",
+          "nn.MarginRankingLoss"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "transfer-learning-for-vision",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "loss-functions"
+      ],
+      "related_cheatsheet": [
+        "loss-functions"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.nn.TripletMarginLoss.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.TripletMarginLoss.html"
+    },
+    {
+      "task": "Compute Margin Ranking Loss (nn.MarginRankingLoss)",
+      "problem_solved": "Measures ranking loss between two inputs given a target label indicating which input should rank higher.",
+      "mental_trigger": "I need a pairwise ranking loss to optimize relative order between two scoring inputs.",
+      "syntax": "torch.nn.MarginRankingLoss(  \n    margin=0.0,  \n    size_average=None,  \n    reduce=None,  \n    reduction='mean'  \n)",
+      "important_parameters": [
+        "margin: Non-negative ranking margin threshold (default is 0.0).",
+        "reduction: Reduction mode ('none', 'mean', 'sum')."
+      ],
+      "important_params": [
+        "margin: Non-negative ranking margin threshold (default is 0.0).",
+        "reduction: Reduction mode ('none', 'mean', 'sum')."
+      ],
+      "return_value": "Scalar float tensor by default, or tensor matching input shape if reduction='none'.",
+      "example": "import torch  \nimport torch.nn as nn\n\ninput1 = torch.tensor([2.5, 1.2], dtype=torch.float32)  \ninput2 = torch.tensor([1.0, 3.0], dtype=torch.float32)  \ntarget = torch.tensor([1, -1], dtype=torch.int64)\n\ncriterion = nn.MarginRankingLoss(margin=0.5)  \nloss = criterion(input1, input2, target)\n\nprint(f\"Loss: {loss.item():.4f}\")",
+      "use_when": "Training ranking models (e.g., search relevance ranking, recommendation systems).\nOptimizing pairwise score preferences.",
+      "avoid_when": "Task requires absolute regression value targets rather than relative preference scores.",
+      "gotchas": [
+        "Target values *y* must strictly be 1 or -1. Passing values like 0 creates mathematically invalid rank penalties.",
+        "input1, input2, and target must all share identical shapes."
+      ],
+      "performance_notes": "Highly efficient elementwise subtraction and clamping kernel operation on CUDA devices.",
+      "related_apis": [
+        "torch.nn.CosineEmbeddingLoss",
+        "torch.nn.TripletMarginLoss"
+      ],
+      "framework_migration_notes": "No direct standard equivalent in core TensorFlow loss package.",
+      "tensorflow_equivalent": "No direct equivalent.",
+      "framework_equivalent": "No direct equivalent.",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Pairwise Ranking Loss"
+        ],
+        "search_terms": [
+          "pytorch margin ranking loss",
+          "learning to rank loss",
+          "pairwise ranking loss"
+        ],
+        "keywords": [
+          "ranking",
+          "margin",
+          "pairwise",
+          "preference"
+        ],
+        "confused_with": [
+          "nn.MarginRankingLoss",
+          "nn.CosineEmbeddingLoss"
+        ]
+      },
+      "related_models": [
+        "bert",
+        "roberta"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "loss-functions"
+      ],
+      "related_cheatsheet": [
+        "loss-functions"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.nn.MarginRankingLoss.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.MarginRankingLoss.html"
+    },
+    {
+      "task": "Configure Loss Reduction Behavior (reduction='none' | 'mean' | 'sum')",
+      "problem_solved": "Controls how unreduced per-element or per-sample losses are aggregated across batches for custom loss masking, normalization, or sample weighting.",
+      "mental_trigger": "I need per-sample losses to apply dynamic masks or custom normalization prior to aggregating.",
+      "syntax": "torch.nn.modules.loss._Loss(  \n    reduction='none' | 'mean' | 'sum'  \n)",
+      "important_parameters": [
+        "reduction: String parameter accepting 'none' (no reduction), 'mean' (sum divided by element count), or 'sum' (sum across elements)."
+      ],
+      "important_params": [
+        "reduction: String parameter accepting 'none' (no reduction), 'mean' (sum divided by element count), or 'sum' (sum across elements)."
+      ],
+      "return_value": "Unreduced loss tensor matching input dimensions when set to 'none', or a scalar tensor when set to 'mean' or 'sum'.",
+      "example": "import torch  \nimport torch.nn as nn\n\nlogits = torch.tensor([[2.0, 0.5], [0.1, 1.5]], dtype=torch.float32)  \ntargets = torch.tensor([0, 1], dtype=torch.int64)  \nsample_mask = torch.tensor([1.0, 0.0], dtype=torch.float32)\n\ncriterion = nn.CrossEntropyLoss(reduction='none')  \nunreduced_loss = criterion(logits, targets)\n\nmasked_loss = (unreduced_loss * sample_mask).sum() / sample_mask.sum()  \nprint(f\"Masked Loss: {masked_loss.item():.4f}\")",
+      "use_when": "Implementing sequence padding masks where loss from padding tokens must be excluded manually.\nPerforming per-sample loss re-weighting, hard example mining, or multi-task loss balance.",
+      "avoid_when": "Standard batch mean reduction without custom masking is sufficient for training.",
+      "gotchas": [
+        "Using reduction='none' consumes significantly more memory during backward passes because full gradient shapes are retained in memory.",
+        "Manually calculating mean across masked tensors using standard tensor.mean() divides by total elements instead of valid non-masked elements."
+      ],
+      "performance_notes": "'mean' and 'sum' reductions perform atomic accumulation in GPU kernels, avoiding secondary tensor creation overhead.",
+      "related_apis": [
+        "torch.nn.CrossEntropyLoss",
+        "torch.nn.BCEWithLogitsLoss",
+        "torch.nn.MSELoss"
+      ],
+      "framework_migration_notes": "Maps to reduction=tf.keras.losses.Reduction.NONE | SUM | SUM_OVER_BATCH_SIZE in TensorFlow.",
+      "tensorflow_equivalent": "reduction='none' → tf.keras.losses.Reduction.NONE\nreduction='sum' → tf.keras.losses.Reduction.SUM\nreduction='mean' → tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE",
+      "framework_equivalent": "reduction='none' → tf.keras.losses.Reduction.NONE\nreduction='sum' → tf.keras.losses.Reduction.SUM\nreduction='mean' → tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Loss Reduction Mode",
+          "Loss Aggregation"
+        ],
+        "search_terms": [
+          "pytorch reduction none",
+          "loss per sample",
+          "pytorch custom loss masking"
+        ],
+        "keywords": [
+          "reduction",
+          "none",
+          "mean",
+          "sum",
+          "masking"
+        ],
+        "confused_with": [
+          "Custom sample weighting arguments"
+        ]
+      },
+      "related_models": [
+        "bert",
+        "gpt",
+        "yolo",
+        "resnet"
+      ],
+      "related_patterns": [
+        "mixed-precision",
+        "gradient-accumulation"
+      ],
+      "related_workflows": [
+        "object-detection-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "loss-functions"
+      ],
+      "related_cheatsheet": [
+        "loss-functions"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/nn.html%23loss-functions",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/nn.html%23loss-functions"
+    },
+    {
+      "task": "Apply Class and Sample Weighting (weight, pos_weight, ignore_index)",
+      "problem_solved": "Handles severe class imbalance, positive class emphasis, and padding token suppression directly within PyTorch loss modules.",
+      "mental_trigger": "I need to handle severe class imbalance or ignore padding tokens during loss computation.",
+      "syntax": "# For Multi-class Cross Entropy  \ntorch.nn.CrossEntropyLoss(weight=class_weights, ignore_index=pad_idx)\n\n# For Binary / Multi-label BCE  \ntorch.nn.BCEWithLogitsLoss(pos_weight=pos_weights)",
+      "important_parameters": [
+        "weight: Rescaling tensor of shape (C,) assigning manual weight to each class.",
+        "pos_weight: Rescaling tensor for positive classes in binary cross entropy.",
+        "ignore_index: Class index value skipped completely during loss calculation and backpropagation."
+      ],
+      "important_params": [
+        "weight: Rescaling tensor of shape (C,) assigning manual weight to each class.",
+        "pos_weight: Rescaling tensor for positive classes in binary cross entropy.",
+        "ignore_index: Class index value skipped completely during loss calculation and backpropagation."
+      ],
+      "return_value": "Scalar float tensor representing the weighted reduced loss value across valid elements.",
+      "example": "import torch  \nimport torch.nn as nn\n\n# Class weighting & ignore_index in CrossEntropyLoss  \nclass_weights = torch.tensor([0.2, 0.8], dtype=torch.float32)  \nce_criterion = nn.CrossEntropyLoss(weight=class_weights, ignore_index=-100)\n\nlogits = torch.tensor([[2.0, 0.5], [0.1, 1.5], [1.0, 1.0]], dtype=torch.float32)  \ntargets = torch.tensor([0, 1, -100], dtype=torch.int64)  \nce_loss = ce_criterion(logits, targets)\n\n# Positive class weighting in BCEWithLogitsLoss  \npos_weight = torch.tensor([3.0], dtype=torch.float32)  \nbce_criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)\n\nbce_logits = torch.tensor([1.2, -0.5], dtype=torch.float32)  \nbce_targets = torch.tensor([1.0, 0.0], dtype=torch.float32)  \nbce_loss = bce_criterion(bce_logits, bce_targets)\n\nprint(f\"CE Loss: {ce_loss.item():.4f}, BCE Loss: {bce_loss.item():.4f}\")",
+      "use_when": "Training on datasets with heavy class imbalance (e.g., fraud detection, rare medical anomalies).\nProcessing variable-length sequences where padding tokens (e.g. index -100) must not contribute to gradients.",
+      "avoid_when": "Dataset classes are balanced and uniform loss weighting is appropriate.",
+      "gotchas": [
+        "Target entries set to ignore_index must be integer indices within class range or equal to ignore_index. Passing negative values other than ignore_index throws index errors.",
+        "weight tensors must reside on the same GPU device and share floating-point dtype with model inputs.",
+        "Normalization behavior with class weights reduces by weighted denominator sum rather than raw batch size, which can alter learning rate scaling expectations."
+      ],
+      "performance_notes": "ignore_index masking is performed inside the CUDA kernel without extra memory allocation.",
+      "related_apis": [
+        "torch.nn.CrossEntropyLoss",
+        "torch.nn.BCEWithLogitsLoss",
+        "torch.nn.NLLLoss"
+      ],
+      "framework_migration_notes": "weight and ignore_index correspond conceptually to sample_weight matrices or masked loss layers in TensorFlow. pos_weight corresponds to pos_weight in tf.nn.sigmoid_cross_entropy_with_logits.",
+      "tensorflow_equivalent": "CrossEntropyLoss(weight) → tf.keras.losses.CategoricalCrossentropy() with sample_weight\nBCEWithLogitsLoss(pos_weight) → tf.nn.sigmoid_cross_entropy_with_logits(pos_weight=pos_weight)",
+      "framework_equivalent": "CrossEntropyLoss(weight) → tf.keras.losses.CategoricalCrossentropy() with sample_weight\nBCEWithLogitsLoss(pos_weight) → tf.nn.sigmoid_cross_entropy_with_logits(pos_weight=pos_weight)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Class Weights",
+          "Positive Weighting",
+          "Mask Index"
+        ],
+        "search_terms": [
+          "pytorch class weights cross entropy",
+          "ignore_index cross entropy",
+          "pos_weight bce logits"
+        ],
+        "keywords": [
+          "weights",
+          "pos_weight",
+          "ignore_index",
+          "class-imbalance",
+          "padding"
+        ],
+        "confused_with": [
+          "Custom manual tensor masking"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert",
+        "yolo",
+        "logistic-regression"
+      ],
+      "related_patterns": [
+        "mixed-precision",
+        "gradient-accumulation"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder",
+        "semantic-segmentation-pipeline"
+      ],
+      "related_cheatsheets": [
+        "loss-functions"
+      ],
+      "related_cheatsheet": [
+        "loss-functions"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html"
+    }
+  ]
+}

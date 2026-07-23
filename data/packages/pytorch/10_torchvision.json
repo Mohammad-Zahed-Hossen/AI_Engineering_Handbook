@@ -1,0 +1,1273 @@
+{
+  "id": "pytorch",
+  "module_name": "10_torchvision",
+  "module_title": "TorchVision & Computer Vision Utilities",
+  "slug": "10_torchvision",
+  "tasks": [
+    {
+      "task": "Load Built-in Vision Datasets (torchvision.datasets)",
+      "problem_solved": "Instantiating standard benchmark computer vision datasets, such as CIFAR10, MNIST, or ImageNet, without manual web scraping or writing custom file parsing logic.",
+      "mental_trigger": "I need a standard benchmark vision dataset ready for training or testing.",
+      "syntax": "torchvision.datasets.CIFAR10(  \n    root,  \n    train=True,  \n    transform=None,  \n    target_transform=None,  \n    download=False  \n)",
+      "important_parameters": [
+        "root: Directory path where the dataset exists or will be downloaded.",
+        "train: If True, loads the training split; if False, loads the test split.",
+        "transform: Callable transform that takes a raw PIL image/Tensor and returns a transformed version.",
+        "target_transform: Callable transform that takes the target label and transforms it.",
+        "download: If True, downloads the dataset from the internet if it is not already present in root."
+      ],
+      "important_params": [
+        "root: Directory path where the dataset exists or will be downloaded.",
+        "train: If True, loads the training split; if False, loads the test split.",
+        "transform: Callable transform that takes a raw PIL image/Tensor and returns a transformed version.",
+        "target_transform: Callable transform that takes the target label and transforms it.",
+        "download: If True, downloads the dataset from the internet if it is not already present in root."
+      ],
+      "return_value": "A torch.utils.data.Dataset instance yielding (image, label) tuples.",
+      "example": "import torchvision.datasets as datasets  \nimport torchvision.transforms as transforms\n\n# Define basic transform pipeline  \ntransform_pipeline = transforms.Compose([  \n    transforms.ToTensor(),  \n    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  \n])\n\n# Load standard CIFAR-10 dataset  \ntrain_dataset = datasets.CIFAR10(  \n    root=\"./data\",  \n    train=True,  \n    transform=transform_pipeline,  \n    download=True  \n)\n\nimage, label = train_dataset[0]  \nprint(f\"Dataset size: {len(train_dataset)}\")  \nprint(f\"Sample tensor shape: {image.shape}, Label index: {label}\")",
+      "use_when": "Evaluating models against standard vision benchmarks or prototyping architectures on established datasets.",
+      "avoid_when": "Working with custom proprietary imagery organized in non-standard directory structures or production databases.",
+      "gotchas": [
+        "Setting download=True concurrently across multiple worker processes in distributed training can corrupt files due to race conditions.",
+        "Standard built-in datasets return PIL images by default if transform is None, which will crash PyTorch layers expecting Tensors.",
+        "Large datasets like ImageNet require manual registration and file downloading prior to instantiation due to license restrictions."
+      ],
+      "performance_notes": "Loading datasets directly from slow spinning disks or over network storage creates severe CPU bottlenecks during training loops. Store local caches on fast SSD storage.",
+      "related_apis": [
+        "torch.utils.data.DataLoader",
+        "torchvision.datasets.ImageFolder",
+        "torchvision.datasets.FakeData"
+      ],
+      "framework_migration_notes": "In Keras, vision benchmarks are accessed via tf.keras.datasets, which return in-memory NumPy arrays. TorchVision datasets return a map-style Dataset object that streams elements dynamically via DataLoader.",
+      "tensorflow_equivalent": "torchvision.datasets.CIFAR10 → tf.keras.datasets.cifar10.load_data / tensorflow_datasets.load",
+      "framework_equivalent": "torchvision.datasets.CIFAR10 → tf.keras.datasets.cifar10.load_data / tensorflow_datasets.load",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Built-in datasets",
+          "benchmark vision datasets",
+          "torchvision benchmark data"
+        ],
+        "search_terms": [
+          "torchvision datasets load cifar10 mnist download dataset"
+        ],
+        "keywords": [
+          "torchvision",
+          "datasets",
+          "benchmark",
+          "cifar10",
+          "mnist",
+          "dataloader"
+        ],
+        "confused_with": [
+          "torchvision.datasets.ImageFolder (used for custom local folders vs built-in benchmarks)"
+        ]
+      },
+      "related_models": [
+        "resnet"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "torchvision"
+      ],
+      "related_cheatsheet": [
+        "torchvision"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/vision/stable/datasets.html",
+      "official_docs": "https://pytorch.org/vision/stable/datasets.html"
+    },
+    {
+      "task": "Create Custom Image Dataset using ImageFolder",
+      "problem_solved": "Converting a disk directory of images organized into class subfolders into a PyTorch dataset that automatically maps subfolder names to integer class indices.",
+      "mental_trigger": "My custom image dataset is organized on disk as root/class_name/image.png.",
+      "syntax": "torchvision.datasets.ImageFolder(  \n    root,  \n    transform=None,  \n    target_transform=None,  \n    loader=torchvision.datasets.folder.default_loader,  \n    is_valid_file=None  \n)",
+      "important_parameters": [
+        "root: Root directory path containing subdirectories organized by class name.",
+        "transform: Callable transform pipeline applied to image inputs.",
+        "target_transform: Callable transform pipeline applied to target label indices.",
+        "loader: Function used to load an image given its file path (defaults to PIL Image open).",
+        "is_valid_file: Optional function that takes a file path and checks if it should be included."
+      ],
+      "important_params": [
+        "root: Root directory path containing subdirectories organized by class name.",
+        "transform: Callable transform pipeline applied to image inputs.",
+        "target_transform: Callable transform pipeline applied to target label indices.",
+        "loader: Function used to load an image given its file path (defaults to PIL Image open).",
+        "is_valid_file: Optional function that takes a file path and checks if it should be included."
+      ],
+      "return_value": "An ImageFolder dataset instance yielding (sample, target) tuples, with internal attributes .classes and .class_to_idx.",
+      "example": "import os  \nimport tempfile  \nfrom PIL import Image  \nimport torchvision.datasets as datasets  \nimport torchvision.transforms as transforms\n\n# Setup mock directory structure: root/class_a and root/class_b  \nwith tempfile.TemporaryDirectory() as tmp_dir:  \n    class_a_dir = os.path.join(tmp_dir, \"cats\")  \n    class_b_dir = os.path.join(tmp_dir, \"dogs\")  \n    os.makedirs(class_a_dir, exist_ok=True)  \n    os.makedirs(class_b_dir, exist_ok=True)\n\n    # Save dummy images  \n    Image.new(\"RGB\", (32, 32), color=\"red\").save(os.path.join(class_a_dir, \"cat1.png\"))  \n    Image.new(\"RGB\", (32, 32), color=\"blue\").save(os.path.join(class_b_dir, \"dog1.png\"))\n\n    # Instantiate ImageFolder  \n    dataset = datasets.ImageFolder(  \n        root=tmp_dir,  \n        transform=transforms.ToTensor()  \n    )\n\n    print(f\"Discovered classes: {dataset.classes}\")  \n    print(f\"Class mapping: {dataset.class_to_idx}\")  \n    image_tensor, class_idx = dataset[0]  \n    print(f\"Sample tensor shape: {image_tensor.shape}, Class Index: {class_idx}\")",
+      "use_when": "Your training data is laid out in standard class-keyed directory structures on local storage.",
+      "avoid_when": "Images are stored in single combined directories with labels in external CSV or JSON metadata files, or when loading images from a database or cloud object storage.",
+      "gotchas": [
+        "Class indices are assigned alphabetically by folder name, not by numerical or creation order.",
+        "Non-image hidden files like macOS .DS_Store inside class directories can crash loading unless filtered using is_valid_file.",
+        "If a class subfolder is empty, ImageFolder throws an explicit runtime error upon initialization."
+      ],
+      "performance_notes": "Scanning deep directory trees with hundreds of thousands of individual image files on disk causes high startup latency. Pre-indexing or converting datasets into fast storage formats improves loading speed.",
+      "related_apis": [
+        "torchvision.datasets.DatasetFolder",
+        "torch.utils.data.DataLoader"
+      ],
+      "framework_migration_notes": "Direct substitute for Keras directory loading utility. In PyTorch, class index maps are stored explicitly in the dataset object under dataset.class_to_idx.",
+      "tensorflow_equivalent": "torchvision.datasets.ImageFolder → tf.keras.utils.image_dataset_from_directory",
+      "framework_equivalent": "torchvision.datasets.ImageFolder → tf.keras.utils.image_dataset_from_directory",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "ImageFolder",
+          "custom directory dataset",
+          "folder dataset"
+        ],
+        "search_terms": [
+          "torchvision imagefolder custom image dataset directory class labels"
+        ],
+        "keywords": [
+          "torchvision",
+          "imagefolder",
+          "dataset",
+          "directory structure",
+          "classes"
+        ],
+        "confused_with": [
+          "DatasetFolder (general folder dataset that supports arbitrary file extensions, whereas ImageFolder is specifically for images)"
+        ]
+      },
+      "related_models": [
+        "resnet"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "torchvision"
+      ],
+      "related_cheatsheet": [
+        "torchvision"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/vision/stable/generated/torchvision.datasets.ImageFolder.html",
+      "official_docs": "https://pytorch.org/vision/stable/generated/torchvision.datasets.ImageFolder.html"
+    },
+    {
+      "task": "Download and Cache TorchVision Datasets",
+      "problem_solved": "Automating the initial download and local filesystem caching of benchmark datasets while preventing redundant network transfers on subsequent runs.",
+      "mental_trigger": "I want to safely pull and cache benchmark datasets on local disk across multi-GPU or repeated runs.",
+      "syntax": "dataset = torchvision.datasets.MNIST(  \n    root=\"./data\",  \n    train=True,  \n    download=True  \n)",
+      "important_parameters": [
+        "root: Folder path where data files will be downloaded and verified.",
+        "download: Boolean flag forcing automatic check, download, and archive extraction if files are missing locally."
+      ],
+      "important_params": [
+        "root: Folder path where data files will be downloaded and verified.",
+        "download: Boolean flag forcing automatic check, download, and archive extraction if files are missing locally."
+      ],
+      "return_value": "An initialized PyTorch Dataset instance backed by verified local cached files.",
+      "example": "import os  \nimport torchvision.datasets as datasets  \nimport torchvision.transforms as transforms\n\ncache_directory = \"./cached_data\"\n\n# First call downloads and extracts dataset to cache_directory  \nmnist_train = datasets.MNIST(  \n    root=cache_directory,  \n    train=True,  \n    transform=transforms.ToTensor(),  \n    download=True  \n)\n\nprint(f\"Dataset successfully loaded. Total samples: {len(mnist_train)}\")  \nprint(f\"Data stored in local directory: {os.path.abspath(cache_directory)}\")",
+      "use_when": "Configuring reproducible automated experiments, CI testing environments, or local development notebooks.",
+      "avoid_when": "Executing multi-process distributed training jobs on cluster environments without locking download synchronization across nodes.",
+      "gotchas": [
+        "Concurrent process downloads across multi-GPU environments will attempt to write to the same path simultaneously, causing corrupt archives.",
+        "Interrupted downloads leave incomplete files in root, causing subsequent initializations to fail checksum validation.",
+        "Default remote servers for legacy datasets occasionally experience downtime or rate-limiting."
+      ],
+      "performance_notes": "Set download locations to fast local NVMe storage across cluster nodes to avoid filesystem network congestion across distributed nodes.",
+      "related_apis": [
+        "torchvision.datasets.CIFAR10",
+        "torchvision.datasets.MNIST",
+        "torchvision.datasets.FashionMNIST"
+      ],
+      "framework_migration_notes": "Matches TensorFlow Datasets caching logic. Ensure file permissions allow local disk writing in restricted containerized environments.",
+      "tensorflow_equivalent": "download=True → tf.keras.utils.get_file / download parameter in tensorflow_datasets",
+      "framework_equivalent": "download=True → tf.keras.utils.get_file / download parameter in tensorflow_datasets",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Dataset caching",
+          "auto download dataset",
+          "dataset root cache"
+        ],
+        "search_terms": [
+          "torchvision download dataset cache root local path"
+        ],
+        "keywords": [
+          "torchvision",
+          "download",
+          "cache",
+          "mnist",
+          "cifar10",
+          "dataset"
+        ],
+        "confused_with": [
+          "Manual wget dataset downloading workflows"
+        ]
+      },
+      "related_models": [
+        "resnet"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "torchvision"
+      ],
+      "related_cheatsheet": [
+        "torchvision"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/vision/stable/datasets.html",
+      "official_docs": "https://pytorch.org/vision/stable/datasets.html"
+    },
+    {
+      "task": "Build Image Preprocessing Pipelines (torchvision.transforms.Compose)",
+      "problem_solved": "Chaining deterministic image processing steps like resizing, center cropping, and tensor normalization into a single callable transform pipeline.",
+      "mental_trigger": "I need to standardize raw PIL or Tensor images into normalized tensors before feeding them to a model.",
+      "syntax": "torchvision.transforms.Compose(transforms)",
+      "important_parameters": [
+        "transforms: List of callable transform objects executed sequentially in order."
+      ],
+      "important_params": [
+        "transforms: List of callable transform objects executed sequentially in order."
+      ],
+      "return_value": "A single callable Compose object that processes input images sequentially through all configured steps.",
+      "example": "import torch  \nfrom PIL import Image  \nimport torchvision.transforms as transforms\n\n# Define standard ImageNet validation pipeline  \nval_transform = transforms.Compose([  \n    transforms.Resize(256),  \n    transforms.CenterCrop(224),  \n    transforms.ToTensor(),  \n    transforms.Normalize(  \n        mean=[0.485, 0.456, 0.406],  \n        std=[0.229, 0.224, 0.225]  \n    )  \n])\n\n# Process raw image  \nraw_image = Image.new(\"RGB\", (500, 400), color=\"green\")  \nprocessed_tensor = val_transform(raw_image)\n\nprint(f\"Processed tensor shape: {processed_tensor.shape}\")  \nprint(f\"Min value: {processed_tensor.min():.2f}, Max value: {processed_tensor.max():.2f}\")",
+      "use_when": "Building standardized input preprocessing pipelines for image evaluation and inference.",
+      "avoid_when": "Working with complex multi-input pipelines that require shared spatial augmentations across images and bounding boxes (use torchvision.transforms.v2 instead).",
+      "gotchas": [
+        "Placing Normalize before ToTensor throws an exception because Normalize expects a PyTorch Tensor, not a PIL image.",
+        "Applying training transforms (like random flipping or cropping) inside validation or evaluation pipelines corrupts evaluation reproducibility.",
+        "Attempting to pass ToTensor() to inputs that are already Tensors produces unexpected scaling behavior or errors."
+      ],
+      "performance_notes": "Executes CPU-bound transformations sequentially. For high-throughput production pipelines, consider migrating to GPU-accelerated v2 transforms.",
+      "related_apis": [
+        "torchvision.transforms.Resize",
+        "torchvision.transforms.ToTensor",
+        "torchvision.transforms.Normalize"
+      ],
+      "framework_migration_notes": "Equivalent to chaining tf.keras.layers inside a preprocessing Sequential layer.",
+      "tensorflow_equivalent": "torchvision.transforms.Compose → tf.keras.Sequential preprocessing",
+      "framework_equivalent": "torchvision.transforms.Compose → tf.keras.Sequential preprocessing",
+      "version_compatibility": "v1 Compose remains standard for legacy PIL workflows, but v2 Compose is recommended for PyTorch 2.x production pipelines.",
+      "search_metadata": {
+        "aliases": [
+          "Compose transforms",
+          "torchvision transform pipeline",
+          "image preprocessing"
+        ],
+        "search_terms": [
+          "torchvision transforms compose resize totensor normalize"
+        ],
+        "keywords": [
+          "torchvision",
+          "transforms",
+          "compose",
+          "preprocessing",
+          "normalize",
+          "totensor"
+        ],
+        "confused_with": [
+          "torchvision.transforms.v2.Compose (the updated API handling bounding boxes and masks)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "torchvision"
+      ],
+      "related_cheatsheet": [
+        "torchvision"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/vision/stable/generated/torchvision.transforms.Compose.html",
+      "official_docs": "https://pytorch.org/vision/stable/generated/torchvision.transforms.Compose.html"
+    },
+    {
+      "task": "Apply Data Augmentation Transforms",
+      "problem_solved": "Injecting stochastic spatial and photometric variations into training images to improve model generalization and prevent overfitting.",
+      "mental_trigger": "My vision model is overfitting, so I need random flips, rotations, and color shifts on training images.",
+      "syntax": "torchvision.transforms.Compose([  \n    torchvision.transforms.RandomResizedCrop(224),  \n    torchvision.transforms.RandomHorizontalFlip(p=0.5),  \n    torchvision.transforms.ColorJitter(brightness=0.2, contrast=0.2)  \n])",
+      "important_parameters": [
+        "size: Output crop size passed to spatial transforms like RandomResizedCrop.",
+        "p: Probability of applying a stochastic transform (e.g., RandomHorizontalFlip(p=0.5)).",
+        "brightness / contrast: Fluctuation factors for photometric jitter."
+      ],
+      "important_params": [
+        "size: Output crop size passed to spatial transforms like RandomResizedCrop.",
+        "p: Probability of applying a stochastic transform (e.g., RandomHorizontalFlip(p=0.5)).",
+        "brightness / contrast: Fluctuation factors for photometric jitter."
+      ],
+      "return_value": "A composite transform callable that yields stochastically transformed images on each call.",
+      "example": "from PIL import Image  \nimport torchvision.transforms as transforms\n\ntrain_transform = transforms.Compose([  \n    transforms.RandomResizedCrop(224, scale=(0.8, 1.0)),  \n    transforms.RandomHorizontalFlip(p=0.5),  \n    transforms.RandomRotation(degrees=15),  \n    transforms.ColorJitter(brightness=0.2, contrast=0.2),  \n    transforms.ToTensor(),  \n    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  \n])\n\nraw_image = Image.new(\"RGB\", (300, 300), color=\"blue\")  \naugmented_tensor = train_transform(raw_image)\n\nprint(f\"Augmented tensor shape: {augmented_tensor.shape}\")",
+      "use_when": "Training deep neural vision backbones on small or medium-sized datasets to prevent memorization and over-fitting.",
+      "avoid_when": "Processing test, validation, or inference images where deterministic input representations are strictly required.",
+      "gotchas": [
+        "Applying aggressive cropping or rotations can destroy crucial semantic content or invert orientation-sensitive classes (e.g., digit 6 vs 9).",
+        "Unintentionally including stochastic transforms in validation datasets causes evaluation metrics to fluctuate randomly across epochs.",
+        "Color jitter applied with excessive scale parameters can destroy domain-specific color cues."
+      ],
+      "performance_notes": "Stochastic spatial transforms computed on CPU can become a bottleneck during training. Keep data loading pipelines heavily parallelized with multi-process DataLoaders.",
+      "related_apis": [
+        "torchvision.transforms.RandomResizedCrop",
+        "torchvision.transforms.RandomHorizontalFlip",
+        "torchvision.transforms.ColorJitter"
+      ],
+      "framework_migration_notes": "In Keras, augmentations are often specified directly inside model layers (e.g., tf.keras.layers.RandomFlip). In TorchVision, augmentations are traditionally applied inside the Dataset transform pipeline prior to batch collating.",
+      "tensorflow_equivalent": "torchvision.transforms.RandomHorizontalFlip → tf.keras.layers.RandomFlip",
+      "framework_equivalent": "torchvision.transforms.RandomHorizontalFlip → tf.keras.layers.RandomFlip",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Data augmentation",
+          "image augmentations",
+          "torchvision random transforms"
+        ],
+        "search_terms": [
+          "torchvision data augmentation randomresizedcrop randomhorizontalflip colorjitter"
+        ],
+        "keywords": [
+          "torchvision",
+          "augmentation",
+          "randomresizedcrop",
+          "colorjitter",
+          "flip",
+          "transforms"
+        ],
+        "confused_with": [
+          "Deterministic preprocessing transforms like CenterCrop and Resize"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "torchvision"
+      ],
+      "related_cheatsheet": [
+        "torchvision"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/vision/stable/transforms.html",
+      "official_docs": "https://pytorch.org/vision/stable/transforms.html"
+    },
+    {
+      "task": "Use Modern Tensor Transforms (torchvision.transforms.v2)",
+      "problem_solved": "Executing fast, batchable, GPU-accelerated transformations that automatically handle images, bounding boxes, segmentation masks, and keypoints simultaneously.",
+      "mental_trigger": "I need fast, GPU-compatible transforms that handle both images and detection/segmentation targets together.",
+      "syntax": "import torchvision.transforms.v2 as v2\n\ntransform = v2.Compose([  \n    v2.ToImage(),  \n    v2.ToDtype(torch.float32, scale=True),  \n    v2.RandomResizedCrop(size=(224, 224), antialias=True),  \n    v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  \n])",
+      "important_parameters": [
+        "scale: In v2.ToDtype, setting scale=True automatically scales integer values in [0, 255] to floating point values in [0.0, 1.0].",
+        "antialias: Controls anti-aliasing during resizing operations.",
+        "size: Target dimensions for spatial transformations."
+      ],
+      "important_params": [
+        "scale: In v2.ToDtype, setting scale=True automatically scales integer values in [0, 255] to floating point values in [0.0, 1.0].",
+        "antialias: Controls anti-aliasing during resizing operations.",
+        "size: Target dimensions for spatial transformations."
+      ],
+      "return_value": "A high-performance callable pipeline that processes standard Tensors and TorchVision TVTensors (BoundingBoxes, Masks, Images).",
+      "example": "import torch  \nimport torchvision.transforms.v2 as v2  \nfrom torchvision.tv_tensors import BoundingBoxes, BoundingBoxFormat\n\n# Define modern v2 pipeline  \nv2_transform = v2.Compose([  \n    v2.ToImage(),  \n    v2.ToDtype(torch.float32, scale=True),  \n    v2.RandomHorizontalFlip(p=1.0), # Force flip for demonstration  \n    v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  \n])\n\n# Raw tensor image and bounding box  \nimg_tensor = torch.randint(0, 256, (3, 100, 100), dtype=torch.uint8)  \nboxes = BoundingBoxes([[10, 10, 50, 50]], format=BoundingBoxFormat.XYXY, canvas_size=(100, 100))\n\n# Simultaneously transform image and bounding box  \ntransformed_img, transformed_boxes = v2_transform(img_tensor, boxes)\n\nprint(f\"Transformed Image shape: {transformed_img.shape}\")  \nprint(f\"Original Box: {boxes}\")  \nprint(f\"Flipped Box: {transformed_boxes}\")",
+      "use_when": "Building modern PyTorch 2.x object detection, semantic segmentation, or high-throughput batch-augmented vision training pipelines on GPU.",
+      "avoid_when": "Maintaining legacy PyTorch codebases constrained strictly to pure PIL image inputs and PyTorch 1.x dependencies.",
+      "gotchas": [
+        "Mixing legacy v1 transforms with v2 transforms inside the same Compose object can produce unexpected type errors or silent array formatting bugs.",
+        "Passing standard PyTorch Tensors representing bounding boxes without wrapping them in tv_tensors.BoundingBoxes prevents automatic coordinate transformations.",
+        "Forgetting v2.SanitizeBoundingBoxes after spatial transformations can leave invalid or zero-area bounding boxes in target labels."
+      ],
+      "performance_notes": "v2 transforms support native CUDA batch execution, dramatically eliminating CPU preprocessing bottlenecks when executed directly on GPU.",
+      "related_apis": [
+        "torchvision.transforms.v2.Compose",
+        "torchvision.tv_tensors.BoundingBoxes",
+        "torchvision.tv_tensors.Mask"
+      ],
+      "framework_migration_notes": "Replaces legacy v1 torchvision transforms. Provides unified multi-target augmentation equivalent to modern object detection frameworks like KerasCV.",
+      "tensorflow_equivalent": "torchvision.transforms.v2 → KerasCV preprocessing layers / tf.data target-aware transforms",
+      "framework_equivalent": "torchvision.transforms.v2 → KerasCV preprocessing layers / tf.data target-aware transforms",
+      "version_compatibility": "Introduced in TorchVision 0.15. v2 is the standard recommended transform API for modern PyTorch 2.x applications.",
+      "search_metadata": {
+        "aliases": [
+          "Transforms v2",
+          "TVTensors transforms",
+          "GPU image transforms"
+        ],
+        "search_terms": [
+          "torchvision transforms v2 boundingboxes masks gpu augmentations"
+        ],
+        "keywords": [
+          "torchvision",
+          "v2",
+          "transforms",
+          "tv_tensors",
+          "boundingboxes",
+          "gpu"
+        ],
+        "confused_with": [
+          "Legacy torchvision.transforms (v1)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "yolo"
+      ],
+      "related_patterns": [
+        "device-placement",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline",
+        "semantic-segmentation-pipeline"
+      ],
+      "related_cheatsheets": [
+        "torchvision"
+      ],
+      "related_cheatsheet": [
+        "torchvision"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide",
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/vision/stable/transforms.html",
+      "official_docs": "https://pytorch.org/vision/stable/transforms.html"
+    },
+    {
+      "task": "Load Pretrained Vision Models (torchvision.models)",
+      "problem_solved": "Instantiating standard vision architectures initialized with state-of-the-art pretrained weights for immediate inference or downstream transfer learning.",
+      "mental_trigger": "I need a pre-trained ResNet or Vision Transformer backbone with official ImageNet weights.",
+      "syntax": "torchvision.models.resnet50(  \n    weights=torchvision.models.ResNet50_Weights.DEFAULT  \n)",
+      "important_parameters": [
+        "weights: Weight enum instance (e.g., ResNet50_Weights.DEFAULT or ResNet50_Weights.IMAGENET1K_V2) specifying the weight checkpoint."
+      ],
+      "important_params": [
+        "weights: Weight enum instance (e.g., ResNet50_Weights.DEFAULT or ResNet50_Weights.IMAGENET1K_V2) specifying the weight checkpoint."
+      ],
+      "return_value": "An initialized nn.Module vision model instance loaded with state-of-the-art pretrained parameters.",
+      "example": "import torch  \nimport torchvision.models as models\n\n# Load pretrained ResNet-50 using official Weight enums  \nweights = models.ResNet50_Weights.DEFAULT  \nmodel = models.resnet50(weights=weights)\n\n# Set model to evaluation mode  \nmodel.eval()\n\n# Synthetic input batch matching standard ImageNet dims (B, C, H, W)  \ndummy_input = torch.randn(1, 3, 224, 224)\n\nwith torch.no_grad():  \n    output_logits = model(dummy_input)\n\nprint(f\"Model architecture loaded: {model.__class__.__name__}\")  \nprint(f\"Output shape: {output_logits.shape}\")  # Should be [1, 1000]",
+      "use_when": "Performing image classification, feature extraction, or preparing backbones for downstream task fine-tuning.",
+      "avoid_when": "Training completely custom vision architectures on non-natural domain datasets (like medical imagery or radar data) from scratch.",
+      "gotchas": [
+        "Using the deprecated string syntax pretrained=True triggers deprecation warnings and prevents access to improved modern weight versions.",
+        "Forgetting to set model.eval() before running inference leaves BatchNorm and Dropout layers in training mode, producing incorrect outputs.",
+        "Input tensors must be preprocessed using the exact normalization parameters corresponding to the chosen weights instance."
+      ],
+      "performance_notes": "Model weights are downloaded from remote servers on first load and cached locally in \\~/.cache/torch/hub/checkpoints. Ensure disk space is available.",
+      "related_apis": [
+        "torchvision.models.resnet50",
+        "torchvision.models.vit_b_16",
+        "torchvision.models.ResNet50_Weights"
+      ],
+      "framework_migration_notes": "Replaces tf.keras.applications.ResNet50(weights='imagenet'). PyTorch explicit Weight Enums guarantee type safety and clear provenance over string aliases.",
+      "tensorflow_equivalent": "torchvision.models.resnet50(weights=...) → tf.keras.applications.ResNet50(weights='imagenet')",
+      "framework_equivalent": "torchvision.models.resnet50(weights=...) → tf.keras.applications.ResNet50(weights='imagenet')",
+      "version_compatibility": "The pretrained=True parameter was officially deprecated in TorchVision 0.13 and replaced with the weights enum API.",
+      "search_metadata": {
+        "aliases": [
+          "Pretrained vision models",
+          "torchvision pretrained backbone",
+          "load resnet"
+        ],
+        "search_terms": [
+          "torchvision models resnet50 pretrained weights enum imagenet"
+        ],
+        "keywords": [
+          "torchvision",
+          "models",
+          "pretrained",
+          "resnet50",
+          "weights",
+          "imagenet"
+        ],
+        "confused_with": [
+          "pretrained=True (the legacy, deprecated string parameter syntax)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "torchvision"
+      ],
+      "related_cheatsheet": [
+        "torchvision"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/vision/stable/models.html",
+      "official_docs": "https://pytorch.org/vision/stable/models.html"
+    },
+    {
+      "task": "Create Models without Pretrained Weights",
+      "problem_solved": "Instantiating standard computer vision neural network architectures with randomly initialized weights for training from scratch or custom domain alignment.",
+      "mental_trigger": "I need a standard Vision model architecture initialized from scratch with random weights.",
+      "syntax": "torchvision.models.resnet50(weights=None)",
+      "important_parameters": [
+        "weights: Explicitly pass None to instantiate the architecture without fetching or loading pretrained parameter checkpoints."
+      ],
+      "important_params": [
+        "weights: Explicitly pass None to instantiate the architecture without fetching or loading pretrained parameter checkpoints."
+      ],
+      "return_value": "An nn.Module vision network initialized with default PyTorch random weight distributions.",
+      "example": "import torch  \nimport torchvision.models as models\n\n# Create ResNet-50 with uninitialized random weights  \nuninitialized_model = models.resnet50(weights=None)\n\n# Input matching custom shape or standard shape  \ninput_batch = torch.randn(2, 3, 224, 224)  \noutput_logits = uninitialized_model(input_batch)\n\nprint(f\"Model initialized with random weights: {type(uninitialized_model).__name__}\")  \nprint(f\"Output shape: {output_logits.shape}\")",
+      "use_when": "Training vision backbones on massive custom datasets where pretraining on ImageNet offers no domain advantage, or when establishing baseline benchmarks.",
+      "avoid_when": "Working with small custom datasets, where training from scratch leads to severe overfitting and poor convergence.",
+      "gotchas": [
+        "Passing weights=None uses PyTorch default layer initializations (e.g., Kaiming uniform), which may require custom re-initialization depending on your training setup.",
+        "Training deep vision architectures like Vision Transformers (ViT) from scratch without pretrained weights requires extremely large datasets and warm-up learning rate schedules."
+      ],
+      "performance_notes": "Instantaneous instantiation time since no remote weight checkpoints need to be fetched over the network.",
+      "related_apis": [
+        "torchvision.models.get_model",
+        "torch.nn.init"
+      ],
+      "framework_migration_notes": "Matches tf.keras.applications.ResNet50(weights=None).",
+      "tensorflow_equivalent": "weights=None → tf.keras.applications.ResNet50(weights=None)",
+      "framework_equivalent": "weights=None → tf.keras.applications.ResNet50(weights=None)",
+      "version_compatibility": "Passing weights=None is the modern standard across all PyTorch 2.x releases.",
+      "search_metadata": {
+        "aliases": [
+          "Random initialization vision model",
+          "uninitialized resnet",
+          "model from scratch"
+        ],
+        "search_terms": [
+          "torchvision models resnet50 weights None random initialization from scratch"
+        ],
+        "keywords": [
+          "torchvision",
+          "models",
+          "weights",
+          "None",
+          "random",
+          "scratch"
+        ],
+        "confused_with": [
+          "Passing no parameters in legacy releases (which defaulted to uninitialized, but now requires explicit weights=None for clarity)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "torchvision"
+      ],
+      "related_cheatsheet": [
+        "torchvision"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/vision/stable/models.html",
+      "official_docs": "https://pytorch.org/vision/stable/models.html"
+    },
+    {
+      "task": "Use Official Model Weights (Weights Enums)",
+      "problem_solved": "Selecting specific model weight versions, training recipe variants, and metadata programmatically via type-safe enum classes.",
+      "mental_trigger": "I need to explicitly specify which exact pre-training weights or checkpoint version to load.",
+      "syntax": "from torchvision.models import ResNet50_Weights\n\nweights = ResNet50_Weights.IMAGENET1K_V2",
+      "important_parameters": [
+        "DEFAULT: Enum alias pointing always to the best available weights for a given architecture.",
+        "IMAGENET1K_V1 / IMAGENET1K_V2: Specific recipe-bound weight checkpoints."
+      ],
+      "important_params": [
+        "DEFAULT: Enum alias pointing always to the best available weights for a given architecture.",
+        "IMAGENET1K_V1 / IMAGENET1K_V2: Specific recipe-bound weight checkpoints."
+      ],
+      "return_value": "A Weights enum member containing model parameters, preprocessing transforms, accuracy metrics, and class categories.",
+      "example": "from torchvision.models import ResNet50_Weights, resnet50\n\n# Select modern V2 weights recipe explicitly  \nweights_enum = ResNet50_Weights.IMAGENET1K_V2\n\n# Inspect weight metadata  \nprint(f\"Weight Enum Name: {weights_enum.name}\")  \nprint(f\"Acc@1 on ImageNet: {weights_enum.meta['min_size']}\")  \nprint(f\"Categories count: {len(weights_enum.meta['categories'])}\")\n\n# Instantiate model with selected explicit enum  \nmodel = resnet50(weights=weights_enum)",
+      "use_when": "Ensuring deterministic reproducibility across production releases or when evaluating performance differences across different training recipes.",
+      "avoid_when": "Hardcoding string paths manually to downloaded .pth files when official TorchVision managed enums are readily available.",
+      "gotchas": [
+        "Relying strictly on DEFAULT in long-term production systems can cause silent behavior changes if TorchVision updates DEFAULT to a newer weight checkpoint version in future package releases.",
+        "Accessing categories directly without loading or verifying the enum produces attribute errors."
+      ],
+      "performance_notes": "Weight Enums contain structured metadata in memory, enabling metadata queries (like target classes) without forcing model weight instantiation into GPU memory.",
+      "related_apis": [
+        "torchvision.models.get_model_weights",
+        "torchvision.models.ResNet50_Weights"
+      ],
+      "framework_migration_notes": "Replaces string-based weight identifiers (like 'imagenet'). Enum objects bind weights directly to their mandatory preprocessing transforms and metadata.",
+      "tensorflow_equivalent": "ResNet50_Weights.DEFAULT → 'imagenet' string identifier in tf.keras.applications",
+      "framework_equivalent": "ResNet50_Weights.DEFAULT → 'imagenet' string identifier in tf.keras.applications",
+      "version_compatibility": "Introduced in TorchVision 0.13 to standardize weight management and metadata tracking.",
+      "search_metadata": {
+        "aliases": [
+          "Weights enum",
+          "ResNet50_Weights",
+          "torchvision weight metadata"
+        ],
+        "search_terms": [
+          "torchvision Weights enum ResNet50_Weights DEFAULT IMAGENET1K_V2"
+        ],
+        "keywords": [
+          "torchvision",
+          "weights",
+          "enum",
+          "metadata",
+          "imagenet",
+          "resnet50"
+        ],
+        "confused_with": [
+          "Plain string weight descriptors like \"IMAGENET1K_V1\""
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "torchvision"
+      ],
+      "related_cheatsheet": [
+        "torchvision"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/vision/stable/models.html%23model-weights",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/vision/stable/models.html%23model-weights"
+    },
+    {
+      "task": "Apply Built-in Weight Transforms (weights.transforms())",
+      "problem_solved": "Automatically retrieving the exact preprocessing transform pipeline tied directly to a selected pretrained weight checkpoint.",
+      "mental_trigger": "I want the exact preprocessing transforms required for my chosen pretrained model weight checkpoint.",
+      "syntax": "transforms = ResNet50_Weights.DEFAULT.transforms()",
+      "important_parameters": [
+        "None. The method reads parameters directly from the enum's internal metadata."
+      ],
+      "important_params": [
+        "None. The method reads parameters directly from the enum's internal metadata."
+      ],
+      "return_value": "A callable ImageClassification transform object configured with exact image dimensions, cropping ratios, mean, and standard deviation parameters.",
+      "example": "from PIL import Image  \nimport torchvision.models as models\n\n# Fetch official weight enum  \nweights = models.ResNet50_Weights.DEFAULT\n\n# Generate bound preprocessing transform pipeline  \npreprocess_pipeline = weights.transforms()\n\nprint(f\"Associated transforms: {preprocess_pipeline}\")\n\n# Preprocess raw PIL image  \ndummy_img = Image.new(\"RGB\", (500, 500), color=\"yellow\")  \ninput_tensor = preprocess_pipeline(dummy_img)\n\nprint(f\"Preprocessed Input Tensor shape: {input_tensor.shape}\")",
+      "use_when": "Preprocessing input imagery for pretrained vision models to eliminate manual preprocessing mismatches.",
+      "avoid_when": "Building custom training data augmentation pipelines, where training-specific random perturbations (like RandomHorizontalFlip) are required.",
+      "gotchas": [
+        "Using generic 224x224 image normalization for modern weight checkpoints (like V2 or modern Vision Transformers) that were trained at larger resolutions (e.g., 232x232 or 384x384) degrades inference accuracy.",
+        "Built-in weight transforms are intended for inference and validation; they do not include random training data augmentations."
+      ],
+      "performance_notes": "weights.transforms() returns highly optimized, JIT-compatible evaluation transform pipelines.",
+      "related_apis": [
+        "torchvision.models.ResNet50_Weights",
+        "torchvision.transforms.Compose"
+      ],
+      "framework_migration_notes": "Eliminates manual usage of functions like tf.keras.applications.resnet50.preprocess_input by attaching transforms directly to weight objects.",
+      "tensorflow_equivalent": "weights.transforms() → tf.keras.applications.resnet.preprocess_input",
+      "framework_equivalent": "weights.transforms() → tf.keras.applications.resnet.preprocess_input",
+      "version_compatibility": "Introduced in TorchVision 0.13 alongside the Weight Enums API.",
+      "search_metadata": {
+        "aliases": [
+          "Weight transforms",
+          "weights.transforms()",
+          "model auto preprocess"
+        ],
+        "search_terms": [
+          "torchvision weights transforms auto preprocessing resnet50"
+        ],
+        "keywords": [
+          "torchvision",
+          "weights",
+          "transforms",
+          "preprocessing",
+          "resnet50",
+          "evaluation"
+        ],
+        "confused_with": [
+          "Manually written torchvision.transforms.Compose pipelines"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "torchvision"
+      ],
+      "related_cheatsheet": [
+        "torchvision"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/vision/stable/models.html%23model-weights",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/vision/stable/models.html%23model-weights"
+    },
+    {
+      "task": "Freeze Backbone Layers for Transfer Learning",
+      "problem_solved": "Preventing parameter updates on lower feature extraction layers during transfer learning to preserve learned visual representations and accelerate training.",
+      "mental_trigger": "I want to fix early backbone layer weights so only my custom classification head learns during early epochs.",
+      "syntax": "for param in model.parameters():  \n    param.requires_grad = False",
+      "important_parameters": [
+        "requires_grad: Boolean flag on PyTorch Tensors. Setting to False excludes parameters from autograd gradient computation and optimizer updates."
+      ],
+      "important_params": [
+        "requires_grad: Boolean flag on PyTorch Tensors. Setting to False excludes parameters from autograd gradient computation and optimizer updates."
+      ],
+      "return_value": "None. Mutates parameters in-place.",
+      "example": "import torchvision.models as models\n\n# Load pretrained model  \nmodel = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)\n\n# Freeze all backbone layers  \nfor param in model.parameters():  \n    param.requires_grad = False\n\n# Inspect status of first layer  \nfirst_param = next(model.parameters())  \nprint(f\"First backbone layer requires_grad: {first_param.requires_grad}\")\n\n# Verify frozen parameter count vs total  \ntrainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)  \ntotal_params = sum(p.numel() for p in model.parameters())  \nprint(f\"Trainable parameters: {trainable_params} / {total_params}\")",
+      "use_when": "Training custom classifiers on small datasets where updating backbone layers would cause catastrophic overfitting.",
+      "avoid_when": "Fine-tuning on massive domain-specific datasets where end-to-end parameter adaptation improves overall task performance.",
+      "gotchas": [
+        "Forgetting to set requires_grad = True on newly attached classification heads leaves the entire network frozen, preventing learning.",
+        "Freezing parameters does not automatically stop BatchNorm running statistics from updating during model.train(). Use model.eval() on frozen submodules if running statistics updates must be disabled."
+      ],
+      "performance_notes": "Disabling requires_grad reduces GPU memory usage and speeds up backward passes significantly because backward gradients are not computed for frozen layers.",
+      "related_apis": [
+        "torch.Tensor.requires_grad",
+        "torch.nn.Module.named_parameters"
+      ],
+      "framework_migration_notes": "Equivalent to setting layer.trainable = False in Keras.",
+      "tensorflow_equivalent": "param.requires_grad = False → layer.trainable = False",
+      "framework_equivalent": "param.requires_grad = False → layer.trainable = False",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Freeze backbone",
+          "lock parameters",
+          "disable gradients transfer learning"
+        ],
+        "search_terms": [
+          "torchvision freeze backbone layers requires_grad false transfer learning"
+        ],
+        "keywords": [
+          "torchvision",
+          "freeze",
+          "backbone",
+          "requires_grad",
+          "parameters",
+          "transfer learning"
+        ],
+        "confused_with": [
+          "Putting the model in model.eval() mode (which alters layer behavior like Dropout/BatchNorm, but does not toggle autograd tracking)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "torchvision"
+      ],
+      "related_cheatsheet": [
+        "torchvision"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/notes/autograd.html%23locally-disabling-gradient-computation",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/notes/autograd.html%23locally-disabling-gradient-computation"
+    },
+    {
+      "task": "Fine-tune Pretrained Models",
+      "problem_solved": "Adapting a pretrained vision backbone to a new target domain by selectively unfreezing upper layers and training with differential learning rates.",
+      "mental_trigger": "I need to train both the new classifier and upper backbone layers on my target domain dataset.",
+      "syntax": "# Differential learning rates per parameter group  \noptimizer = torch.optim.AdamW([  \n    {\"params\": backbone_params, \"lr\": 1e-5},  \n    {\"params\": head_params, \"lr\": 1e-3}  \n])",
+      "important_parameters": [
+        "params: Dict or list specifying distinct parameter groups and group-specific hyper-parameters like learning rates (lr)."
+      ],
+      "important_params": [
+        "params: Dict or list specifying distinct parameter groups and group-specific hyper-parameters like learning rates (lr)."
+      ],
+      "return_value": "Configured optimizer configured for fine-tuning parameter groups at different learning speeds.",
+      "example": "import torch  \nimport torch.nn as nn  \nimport torchvision.models as models\n\n# Load model and replace head  \nmodel = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)  \nmodel.fc = nn.Linear(model.fc.in_features, 5)  # 5 custom classes\n\n# Separate backbone and new head parameters  \nbackbone_params = []  \nhead_params = []\n\nfor name, param in model.named_parameters():  \n    if \"fc\" in name:  \n        head_params.append(param)  \n    else:  \n        param.requires_grad = True  # Enable fine-tuning  \n        backbone_params.append(param)\n\n# Pass parameter groups with differential learning rates to optimizer  \noptimizer = torch.optim.AdamW([  \n    {\"params\": backbone_params, \"lr\": 1e-5},  # Lower rate for pretrained backbone  \n    {\"params\": head_params, \"lr\": 1e-3}       # Higher rate for new classifier  \n])\n\nprint(f\"Configured optimizer with {len(optimizer.param_groups)} parameter groups.\")",
+      "use_when": "Adapting pre-trained backbones to target tasks where domain features differ moderately from ImageNet.",
+      "avoid_when": "Dataset size is extremely small (where updating backbone weights causes severe overfitting) or identical to ImageNet.",
+      "gotchas": [
+        "Using high learning rates on pretrained backbone layers causes catastrophic forgetting, destroying pre-trained representations.",
+        "Unfreezing all backbone layers immediately in early training epochs can destabilize gradient steps due to large initial loss values from random head weights."
+      ],
+      "performance_notes": "Fine-tuning backbone layers requires computing gradients for all unfrozen parameters, increasing GPU memory requirements and epoch durations compared to fixed feature extraction.",
+      "related_apis": [
+        "torch.optim.AdamW",
+        "torch.nn.Module.named_parameters"
+      ],
+      "framework_migration_notes": "In Keras, differential learning rates often require custom optimizers or training loops. PyTorch native optimizers cleanly accept parameter dictionaries with custom learning rates out of the box.",
+      "tensorflow_equivalent": "Parameter groups in PyTorch Optimizer → Custom learning rate multipliers or separate optimizers in tf.keras",
+      "framework_equivalent": "Parameter groups in PyTorch Optimizer → Custom learning rate multipliers or separate optimizers in tf.keras",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Fine-tuning vision model",
+          "differential learning rates",
+          "backbone adaptation"
+        ],
+        "search_terms": [
+          "torchvision fine tune pretrained model differential learning rate parameter groups"
+        ],
+        "keywords": [
+          "torchvision",
+          "fine-tuning",
+          "optimizer",
+          "differential lr",
+          "parameter groups"
+        ],
+        "confused_with": [
+          "Feature extraction (where backbone parameters remain permanently frozen)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "torchvision"
+      ],
+      "related_cheatsheet": [
+        "torchvision"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html",
+      "official_docs": "https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html"
+    },
+    {
+      "task": "Replace Classification Heads",
+      "problem_solved": "Modifying the final fully connected classification layer of a pretrained vision model to match the class count of a custom target dataset.",
+      "mental_trigger": "The model output defaults to 1000 classes, but my dataset has a different number of classes.",
+      "syntax": "# For ResNet architecture  \nmodel.fc = torch.nn.Linear(model.fc.in_features, num_classes)\n\n# For Vision Transformer (ViT) architecture  \nmodel.heads.head = torch.nn.Linear(model.heads.head.in_features, num_classes)",
+      "important_parameters": [
+        "in_features: Number of incoming channels/features from the final backbone representation layer.",
+        "out_features: Number of target classes for the new classification task."
+      ],
+      "important_params": [
+        "in_features: Number of incoming channels/features from the final backbone representation layer.",
+        "out_features: Number of target classes for the new classification task."
+      ],
+      "return_value": "None. Replaces the target classification layer in-place.",
+      "example": "import torch.nn as nn  \nimport torchvision.models as models\n\n# 1. Replace head on ResNet-50  \nresnet = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)  \nnum_target_classes = 10  \nresnet.fc = nn.Linear(resnet.fc.in_features, num_target_classes)\n\nprint(f\"Updated ResNet FC head: {resnet.fc}\")\n\n# 2. Replace head on EfficientNet-B0  \nefficientnet = models.efficientnet_b0(weights=models.EfficientNet_B0_Weights.DEFAULT)  \nefficientnet.classifier[1] = nn.Linear(efficientnet.classifier[1].in_features, num_target_classes)\n\nprint(f\"Updated EfficientNet classifier head: {efficientnet.classifier}\")",
+      "use_when": "Adapting standard TorchVision classification models to custom datasets with arbitrary class counts.",
+      "avoid_when": "Using feature extraction pipelines that bypass classification layers completely to yield raw embedding vectors.",
+      "gotchas": [
+        "Assuming all TorchVision vision architectures name their final classification layer fc. Layer attribute names vary across model families (e.g., model.fc in ResNet, model.classifier in EfficientNet/MobileNet, model.heads.head in ViT).",
+        "Failing to preserve in_features when constructing the replacement nn.Linear layer produces matrix multiplication shape mismatch runtime errors."
+      ],
+      "performance_notes": "Newly attached head layers are randomly initialized and require gradient updates during early training epochs.",
+      "related_apis": [
+        "torch.nn.Linear",
+        "torch.nn.Sequential"
+      ],
+      "framework_migration_notes": "Direct equivalent to replacing or appending a dense layer on top of a Keras base model.",
+      "tensorflow_equivalent": "model.fc = nn.Linear(...) → tf.keras.layers.Dense(num_classes)",
+      "framework_equivalent": "model.fc = nn.Linear(...) → tf.keras.layers.Dense(num_classes)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Replace final layer",
+          "change output classes",
+          "custom classification head"
+        ],
+        "search_terms": [
+          "torchvision replace classifier head resnet fc linear num_classes"
+        ],
+        "keywords": [
+          "torchvision",
+          "classifier",
+          "head",
+          "fc",
+          "num_classes",
+          "linear"
+        ],
+        "confused_with": [
+          "Appending additional layers without removing original 1000-class output layers"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "torchvision"
+      ],
+      "related_cheatsheet": [
+        "torchvision"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html",
+      "official_docs": "https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html"
+    },
+    {
+      "task": "Extract Intermediate Features (create_feature_extractor)",
+      "problem_solved": "Tapping into internal layer activations across intermediate backbone stages of a vision network without altering model architecture source code.",
+      "mental_trigger": "I need access to layer 2 and layer 4 feature maps for multi-scale feature alignment or loss functions.",
+      "syntax": "from torchvision.models.feature_extraction import create_feature_extractor\n\nfeature_extractor = create_feature_extractor(  \n    model,  \n    return_nodes={'layer1': 'feat1', 'layer4': 'feat2'}  \n)",
+      "important_parameters": [
+        "model: Target nn.Module vision model.",
+        "return_nodes: Dictionary mapping internal graph node names to user-defined dictionary output keys."
+      ],
+      "important_params": [
+        "model: Target nn.Module vision model.",
+        "return_nodes: Dictionary mapping internal graph node names to user-defined dictionary output keys."
+      ],
+      "return_value": "An execution wrapper module returning a dictionary of feature tensors keyed by return_nodes aliases.",
+      "example": "import torch  \nimport torchvision.models as models  \nfrom torchvision.models.feature_extraction import create_feature_extractor, get_graph_node_names\n\n# Instantiate model  \nmodel = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)\n\n# Map internal layer nodes to output keys  \nreturn_nodes = {  \n    'layer1.2.act3': 'scale_1',  \n    'layer2.3.act3': 'scale_2',  \n    'layer3.5.act3': 'scale_3'  \n}\n\nfeature_extractor = create_feature_extractor(model, return_nodes=return_nodes)\n\n# Forward pass with dummy input  \nx = torch.randn(1, 3, 224, 224)  \nfeatures = feature_extractor(x)\n\nfor key, tensor in features.items():  \n    print(f\"Extracted feature '{key}' shape: {tensor.shape}\")",
+      "use_when": "Building multi-scale detection heads (like FPN), computing perceptual loss functions, or extracting intermediate representation maps.",
+      "avoid_when": "Only extracting the single final output embedding vector (use nn.Identity() or backbone stripping instead).",
+      "gotchas": [
+        "Passing invalid string node names causes runtime key errors. Use get_graph_node_names(model) to inspect exact internal node identifiers.",
+        "Retaining extracted intermediate feature maps across forward passes without detaching gradients causes GPU memory leaks."
+      ],
+      "performance_notes": "create_feature_extractor uses FX tracing to prune unused downstream network branches automatically, reducing compute time and memory usage.",
+      "related_apis": [
+        "torchvision.models.feature_extraction.create_feature_extractor",
+        "torchvision.models.feature_extraction.get_graph_node_names"
+      ],
+      "framework_migration_notes": "Replaces creating intermediate tf.keras.Model(inputs=..., outputs=[...]) functional extraction graphs in Keras.",
+      "tensorflow_equivalent": "create_feature_extractor → tf.keras.Model(inputs=base.input, outputs=[layer1.output, layer2.output])",
+      "framework_equivalent": "create_feature_extractor → tf.keras.Model(inputs=base.input, outputs=[layer1.output, layer2.output])",
+      "version_compatibility": "Introduced in TorchVision 0.11 and powered by PyTorch FX graph tracing.",
+      "search_metadata": {
+        "aliases": [
+          "Intermediate feature extraction",
+          "create_feature_extractor",
+          "FX node extraction"
+        ],
+        "search_terms": [
+          "torchvision feature extraction create_feature_extractor return_nodes intermediate feature maps"
+        ],
+        "keywords": [
+          "torchvision",
+          "feature_extraction",
+          "create_feature_extractor",
+          "fx",
+          "nodes"
+        ],
+        "confused_with": [
+          "Registering forward hooks manually using register_forward_hook"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit"
+      ],
+      "related_patterns": [
+        "feature-fusion",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "object-detection-pipeline",
+        "semantic-segmentation-pipeline"
+      ],
+      "related_cheatsheets": [
+        "torchvision"
+      ],
+      "related_cheatsheet": [
+        "torchvision"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/vision/stable/feature_extraction.html",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/vision/stable/feature_extraction.html"
+    },
+    {
+      "task": "Extract Backbone Features for Downstream Tasks",
+      "problem_solved": "Converting a classification network into a feature extractor that outputs feature vectors or dense feature maps for downstream tasks like clustering or similarity search.",
+      "mental_trigger": "I need a feature vector embedding from an image for similarity search or clustering.",
+      "syntax": "# Replace final classification head with identity module  \nmodel.fc = torch.nn.Identity()",
+      "important_parameters": [
+        "None. nn.Identity acts as a no-op pass-through module."
+      ],
+      "important_params": [
+        "None. nn.Identity acts as a no-op pass-through module."
+      ],
+      "return_value": "An nn.Module whose forward pass yields raw latent feature embeddings instead of classification logits.",
+      "example": "import torch  \nimport torch.nn as nn  \nimport torchvision.models as models\n\n# Load pretrained ResNet  \nmodel = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)\n\n# Replace final fully connected classification layer with Identity  \nmodel.fc = nn.Identity()  \nmodel.eval()\n\n# Forward pass to extract 2048-dimensional feature embedding  \ndummy_input = torch.randn(2, 3, 224, 224)\n\nwith torch.no_grad():  \n    embeddings = model(dummy_input)\n\nprint(f\"Extracted embedding batch shape: {embeddings.shape}\")  # Should be [2, 2048]",
+      "use_when": "Generating image embeddings for vector search databases, image retrieval, zero-shot metric learning, or downstream linear probing.",
+      "avoid_when": "Extracting intermediate multi-scale feature maps from inside early backbone stages (use create_feature_extractor instead).",
+      "gotchas": [
+        "Forgetting to set model.eval() leaves Dropout or BatchNorm active during embedding generation, producing non-deterministic embedding vectors for identical input images.",
+        "Assuming nn.Identity() works for all models; architectures with multi-layer classifier heads (e.g., EfficientNet, ViT) require targeted replacement of the internal linear projection block."
+      ],
+      "performance_notes": "Bypassing final classification layer matrix operations slightly decreases memory usage and forward pass latency.",
+      "related_apis": [
+        "torch.nn.Identity",
+        "torchvision.models.feature_extraction.create_feature_extractor"
+      ],
+      "framework_migration_notes": "Equivalent to stripping the top layer in Keras via include_top=False. In PyTorch, setting the classification head layer to nn.Identity() is the standard idiom.",
+      "tensorflow_equivalent": "include_top=False → model.fc = nn.Identity()",
+      "framework_equivalent": "include_top=False → model.fc = nn.Identity()",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Image embeddings extractor",
+          "strip classification head",
+          "identity feature extractor"
+        ],
+        "search_terms": [
+          "torchvision extract backbone features embeddings nn.Identity resnet fc"
+        ],
+        "keywords": [
+          "torchvision",
+          "embeddings",
+          "feature extraction",
+          "Identity",
+          "backbone"
+        ],
+        "confused_with": [
+          "create_feature_extractor (used for multi-scale intermediate layer extraction)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "torchvision"
+      ],
+      "related_cheatsheet": [
+        "torchvision"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://pytorch.org/vision/stable/models.html",
+      "official_docs": "https://pytorch.org/vision/stable/models.html"
+    },
+    {
+      "task": "Inspect Available TorchVision Models",
+      "problem_solved": "Programmatically querying, listing, and dynamically instantiating vision model architectures and official weight checkpoints within pipeline scripts or tools.",
+      "mental_trigger": "I need to programmatically query available vision models and weight checkpoints in my pipeline.",
+      "syntax": "import torchvision.models as models\n\n# List available architectures  \nall_models = models.list_models()\n\n# Instantiate dynamically  \nmodel = models.get_model(\"resnet50\", weights=\"DEFAULT\")",
+      "important_parameters": [
+        "module: Optional module filter passed to list_models() to filter models by category.",
+        "name: String name of the model architecture passed to get_model()."
+      ],
+      "important_params": [
+        "module: Optional module filter passed to list_models() to filter models by category.",
+        "name: String name of the model architecture passed to get_model()."
+      ],
+      "return_value": "list_models() returns a list of string model names; get_model() returns an initialized nn.Module instance.",
+      "example": "import torchvision.models as models\n\n# List all available ResNet variant models  \nresnet_variants = models.list_models(module=models)  \nfiltered_resnets = [m for m in resnet_variants if \"resnet\" in m]\n\nprint(f\"Discovered ResNet variants: {filtered_resnets[:5]}\")\n\n# Dynamically construct model using string identifier  \nmodel_name = \"resnet18\"  \ndynamic_model = models.get_model(model_name, weights=\"DEFAULT\")\n\nprint(f\"Dynamically loaded model type: {type(dynamic_model).__name__}\")",
+      "use_when": "Building configurable computer vision training frameworks, model hubs, or automated benchmarking suites driven by external configuration files.",
+      "avoid_when": "Constructing models with static, known architecture requirements in production application code.",
+      "gotchas": [
+        "Model name strings passed to get_model() are case-sensitive and must match exact naming conventions listed by list_models().",
+        "Passing string aliases for weights (e.g., weights=\"DEFAULT\") works with get_model(), but explicit Weight Enums are preferred for type safety."
+      ],
+      "performance_notes": "Lightweight utility operations with zero overhead during actual model training loops.",
+      "related_apis": [
+        "torchvision.models.list_models",
+        "torchvision.models.get_model",
+        "torchvision.models.get_weight"
+      ],
+      "framework_migration_notes": "Provides dynamic instantiation capabilities similar to model hub registries in TensorFlow/KerasCV.",
+      "tensorflow_equivalent": "torchvision.models.get_model → tf.keras.applications dynamic factory wrappers",
+      "framework_equivalent": "torchvision.models.get_model → tf.keras.applications dynamic factory wrappers",
+      "version_compatibility": "Introduced in TorchVision 0.14 to standardize programmatic model discovery and construction.",
+      "search_metadata": {
+        "aliases": [
+          "List torchvision models",
+          "get_model factory",
+          "query available backbones"
+        ],
+        "search_terms": [
+          "torchvision list_models get_model dynamic model discovery available architectures"
+        ],
+        "keywords": [
+          "torchvision",
+          "list_models",
+          "get_model",
+          "discovery",
+          "factory"
+        ],
+        "confused_with": [
+          "Static imports like from torchvision.models import resnet50"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "torchvision"
+      ],
+      "related_cheatsheet": [
+        "torchvision"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/vision/stable/models.html%23model-creation-api",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/vision/stable/models.html%23model-creation-api"
+    },
+    {
+      "task": "Compare Common Vision Architectures for Transfer Learning",
+      "problem_solved": "Evaluating trade-offs between inference latency, accuracy, parameter count, and memory footprint across ConvNets and Vision Transformers for transfer learning.",
+      "mental_trigger": "I need to pick the optimal vision architecture for my latency and accuracy constraints.",
+      "syntax": "from torchvision.models import get_model_weights, get_model\n\nweights = get_model_weights(\"resnet50\").DEFAULT  \nprint(weights.meta)",
+      "important_parameters": [
+        "meta: Dictionary containing official benchmark metrics including Top-1/Top-5 accuracy, parameter counts, and recommended input resolutions."
+      ],
+      "important_params": [
+        "meta: Dictionary containing official benchmark metrics including Top-1/Top-5 accuracy, parameter counts, and recommended input resolutions."
+      ],
+      "return_value": "Metadata dictionary describing official performance characteristics for a given model architecture and weight pair.",
+      "example": "import torchvision.models as models\n\n# Benchmark comparison targets  \ncandidate_models = [\"resnet50\", \"efficientnet_b0\", \"vit_b_16\"]\n\nprint(f\"{'Model':<18} | {'Params (M)':<10} | {'Top-1 Acc':<10} | {'Recipe'}\")  \nprint(\"-\" * 55)\n\nfor name in candidate_models:  \n    weights_enum = models.get_model_weights(name).DEFAULT  \n    meta = weights_enum.meta  \n      \n    num_params = meta.get(\"num_params\", 0) / 1e6  \n    acc = meta.get(\"_metrics\", {}).get(\"ImageNet-1K\", {}).get(\"acc@1\", 0.0)  \n    recipe = meta.get(\"recipe\", \"N/A\")  \n      \n    print(f\"{name:<18} | {num_params:<10.2f} | {acc:<10.2f} | {recipe}\")",
+      "use_when": "Selecting architectural backbones during system design based on explicit deployment constraints (such as edge device latency or maximum top-1 accuracy).",
+      "avoid_when": "Evaluating fine-tuning performance on highly specialized non-natural domains without running actual empirical validation experiments.",
+      "gotchas": [
+        "Top-1 accuracy metrics published in weights.meta reflect ImageNet benchmark performance; downstream performance on target domain tasks may vary.",
+        "Vision Transformers (ViTs) often achieve high accuracy but require significantly higher memory resources and batch sizes during fine-tuning compared to efficient ConvNets."
+      ],
+      "performance_notes": "Model parameters and resolution metadata allow engineers to calculate memory footprints before loading weights into GPU VRAM.",
+      "related_apis": [
+        "torchvision.models.get_model_weights",
+        "torchvision.models.ResNet50_Weights",
+        "torchvision.models.ViT_B_16_Weights"
+      ],
+      "framework_migration_notes": "Simplifies cross-architecture comparisons by embedding official benchmark metadata directly into TorchVision python APIs.",
+      "tensorflow_equivalent": "get_model_weights(name).DEFAULT.meta → Manual lookup in Keras Applications documentation tables",
+      "framework_equivalent": "get_model_weights(name).DEFAULT.meta → Manual lookup in Keras Applications documentation tables",
+      "version_compatibility": "Introduced alongside the managed Weight Enums API in TorchVision 0.13.",
+      "search_metadata": {
+        "aliases": [
+          "Compare vision backbones",
+          "model trade-offs",
+          "resnet vs vit vs efficientnet"
+        ],
+        "search_terms": [
+          "torchvision compare models resnet vit efficientnet latency parameters top1 accuracy"
+        ],
+        "keywords": [
+          "torchvision",
+          "architecture",
+          "resnet",
+          "vit",
+          "efficientnet",
+          "compare",
+          "metadata"
+        ],
+        "confused_with": [
+          "Empirical benchmarking on custom dataset splits"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "transfer-learning-for-vision",
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "torchvision"
+      ],
+      "related_cheatsheet": [
+        "torchvision"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide",
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/vision/stable/models.html",
+      "official_docs": "https://pytorch.org/vision/stable/models.html"
+    }
+  ]
+}

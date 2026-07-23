@@ -1,0 +1,1536 @@
+{
+  "id": "pytorch",
+  "module_name": "02_autograd",
+  "module_title": "Autograd",
+  "slug": "02_autograd",
+  "tasks": [
+    {
+      "task": "Enable Gradient Tracking (requires_grad)",
+      "problem_solved": "Configures PyTorch tensors to record operations performed on them, forming a Directed Acyclic Graph (DAG) required for dynamic reverse-mode automatic differentiation.",
+      "mental_trigger": "I need PyTorch to track operations on a newly created input or weight tensor so I can compute derivatives during the backward pass.",
+      "syntax": "torch.tensor(data, requires_grad=True, dtype=None, device=None)  \n# Or setting the attribute post-creation:  \ntensor.requires_grad = True",
+      "important_parameters": [
+        "requires_grad (bool): Whether operations on this tensor should be recorded in the computation graph. Default is False.",
+        "dtype (torch.dtype, optional): Datatype of the tensor. Floating point and complex types support gradient tracking; integer types do not.",
+        "device (torch.device, optional): Hardware device (e.g., 'cpu', 'cuda')."
+      ],
+      "important_params": [
+        "requires_grad (bool): Whether operations on this tensor should be recorded in the computation graph. Default is False.",
+        "dtype (torch.dtype, optional): Datatype of the tensor. Floating point and complex types support gradient tracking; integer types do not.",
+        "device (torch.device, optional): Hardware device (e.g., 'cpu', 'cuda')."
+      ],
+      "return_value": "A torch.Tensor object with its .requires_grad attribute set to True and its .grad_fn initialized or ready to track downstream operations.",
+      "example": "import torch\n\n# Enable tracking during tensor creation  \nx = torch.tensor([1.5, 2.5], requires_grad=True)\n\n# Compute downstream result  \ny = x ** 2 + 3.0  \nz = y.mean()\n\nprint(f\"x requires_grad: {x.requires_grad}\")  \nprint(f\"z requires_grad: {z.requires_grad}\")  \nprint(f\"z grad_fn: {z.grad_fn}\")",
+      "use_when": "Initializing trainable model parameters manually.\nCreating input tensors when computing input-level gradients (e.g., adversarial attacks, saliency maps).\nConverting non-differentiable data into differentiable computational roots.",
+      "avoid_when": "Loading frozen pretrained weights where parameters should not be updated.\nSetting up inference or validation loops where tracking wastes memory and compute.\nWorking with integer or boolean tensors, which cannot track gradients.",
+      "gotchas": [
+        "Assigning requires_grad=True on non-floating-point tensors (e.g., torch.int64) raises a RuntimeError.",
+        "Changing .requires_grad = True in-place on a non-leaf tensor that already has history is disallowed; use .requires_grad_() or recreate the tensor.",
+        "Any operation involving at least one input with requires_grad=True produces an output with requires_grad=True."
+      ],
+      "performance_notes": "Enabling gradient tracking constructs dynamic graph nodes during every forward operation, increasing CPU/GPU host overhead.\nTensors with requires_grad=True hold references to intermediate activations, increasing memory footprint until backward execution or graph destruction.",
+      "related_apis": [
+        "torch.Tensor.requires_grad_",
+        "torch.Tensor.is_leaf",
+        "torch.no_grad"
+      ],
+      "framework_migration_notes": "From NumPy: NumPy arrays do not track history. Wrap NumPy arrays using torch.from_numpy(arr).requires_grad_() to introduce automatic differentiation.",
+      "tensorflow_equivalent": "tf.Variable(..., trainable=True)\n# Or within context:\ntf.GradientTape().watch(tensor)",
+      "framework_equivalent": "tf.Variable(..., trainable=True)\n# Or within context:\ntf.GradientTape().watch(tensor)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Enable autograd",
+          "track gradients",
+          "set requires_grad"
+        ],
+        "search_terms": [
+          "pytorch enable gradients",
+          "tensor requires_grad true",
+          "autograd tracking"
+        ],
+        "keywords": [
+          "autograd",
+          "gradient tracking",
+          "computational graph",
+          "requires_grad"
+        ],
+        "confused_with": [
+          "requires_grad_ (in-place method vs property setting)",
+          "retain_grad (retaining intermediate gradients)"
+        ]
+      },
+      "related_models": [
+        "logistic-regression",
+        "resnet",
+        "transformer"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.Tensor.requires_grad_.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.Tensor.requires_grad_.html"
+    },
+    {
+      "task": "Disable Gradient Tracking (requires_grad_)",
+      "problem_solved": "Modifies an existing tensor in-place to toggle its gradient tracking status off, detaching it from future autograd graph tracking.",
+      "mental_trigger": "I want to freeze specific layers or weights in-place so they no longer update during backpropagation.",
+      "syntax": "tensor.requires_grad_(requires_grad=True)",
+      "important_parameters": [
+        "requires_grad (bool): If False, disables gradient tracking for this tensor in-place. Default is True."
+      ],
+      "important_params": [
+        "requires_grad (bool): If False, disables gradient tracking for this tensor in-place. Default is True."
+      ],
+      "return_value": "The modified torch.Tensor instance (in-place operation).",
+      "example": "import torch\n\n# Initialize weight tensor with tracking enabled  \nweight = torch.randn(3, 3, requires_grad=True)\n\n# Freeze weight tensor for fine-tuning  \nweight.requires_grad_(False)\n\nprint(f\"Weight tracking enabled: {weight.requires_grad}\")\n\n# Verify downstream graph inclusion  \noutput = weight @ torch.randn(3, 1)  \nprint(f\"Output has grad_fn: {output.grad_fn is not None}\")",
+      "use_when": "Freezing backbone layers during transfer learning or multi-stage model training.\nDisabling gradients on specific model parameters dynamically during alternate optimization steps (e.g., GAN training).",
+      "avoid_when": "Disabling tracking for an entire forward block; use torch.no_grad() or torch.inference_mode() context managers instead.\nCalling on intermediate tensors inside a active computation graph; in-place modification of non-leaf tensors with history will raise an error.",
+      "gotchas": [
+        "requires_grad_(False) on a leaf tensor prevents future operations from building graph links, but it does not erase previously recorded gradients stored in .grad.",
+        "Attempting requires_grad_(False) on a tensor generated by an operation (non-leaf) raises a RuntimeError: *\"you can only change requires_grad flags of leaf variables\"*."
+      ],
+      "performance_notes": "In-place disabling eliminates gradient context node creation for subsequent operations involving this tensor, reducing memory consumption and forward step latency.",
+      "related_apis": [
+        "torch.Tensor.requires_grad",
+        "torch.Tensor.detach_",
+        "torch.no_grad"
+      ],
+      "framework_migration_notes": "From TensorFlow: Similar to setting layer.trainable = False on specific model layers in Keras/TensorFlow.",
+      "tensorflow_equivalent": "tf.Variable.assign(trainable=False) / setting trainable=False on tf.keras.layers",
+      "framework_equivalent": "tf.Variable.assign(trainable=False) / setting trainable=False on tf.keras.layers",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Freeze weights in-place",
+          "disable requires_grad",
+          "requires_grad_"
+        ],
+        "search_terms": [
+          "pytorch freeze layer in place",
+          "tensor requires_grad_ false",
+          "disable tracking tensor"
+        ],
+        "keywords": [
+          "in-place",
+          "freeze parameters",
+          "requires_grad_",
+          "autograd"
+        ],
+        "confused_with": [
+          "detach_ (removes tensor from history vs setting tracking flag)",
+          "requires_grad (property vs in-place method)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert",
+        "llama"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "transfer-learning-for-vision",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.Tensor.requires_grad_.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.Tensor.requires_grad_.html"
+    },
+    {
+      "task": "Create Leaf Tensors for Optimization",
+      "problem_solved": "Establishes root nodes in the autograd computation graph that can explicitly store computed gradients in their .grad attributes after backpropagation.",
+      "mental_trigger": "I need to construct primary input or parameter tensors that will hold accumulated gradients when .backward() completes.",
+      "syntax": "torch.tensor(data, requires_grad=True)  \n# Or creating from factory functions:  \ntorch.ones(size, requires_grad=True)  \ntorch.randn(size, requires_grad=True)",
+      "important_parameters": [
+        "data / size: Input data array or structural shape.",
+        "requires_grad (bool): Set to True to mark the created tensor as a root node that tracks gradients.",
+        "dtype (torch.dtype, optional): Floating-point or complex type.",
+        "device (torch.device, optional): Hardware target."
+      ],
+      "important_params": [
+        "data / size: Input data array or structural shape.",
+        "requires_grad (bool): Set to True to mark the created tensor as a root node that tracks gradients.",
+        "dtype (torch.dtype, optional): Floating-point or complex type.",
+        "device (torch.device, optional): Hardware target."
+      ],
+      "return_value": "A leaf torch.Tensor where is_leaf == True and grad_fn == None.",
+      "example": "import torch\n\n# Explicitly create a leaf tensor via factory function  \nweights = torch.randn(5, 5, requires_grad=True)\n\n# Derive a non-leaf tensor through an operation  \nactivations = weights * 2.0\n\nprint(f\"weights.is_leaf: {weights.is_leaf}, grad_fn: {weights.grad_fn}\")  \nprint(f\"activations.is_leaf: {activations.is_leaf}, grad_fn: {activations.grad_fn}\")",
+      "use_when": "Manually defining custom model parameters outside of torch.nn.Parameter.\nDefining optimization targets for custom optimization solvers or input space optimization.",
+      "avoid_when": "Constructing intermediate variables within network forward passes; operations automatically create non-leaf nodes.\nProcessing input data batches where gradients for inputs are not required.",
+      "gotchas": [
+        "Any tensor created directly by the user (not returned by an operation) is a leaf tensor. If requires_grad=True, it accumulates .grad.",
+        "A tensor created via an operation (e.g., a = b + c) is not a leaf tensor. Its gradients are cleared after .backward() unless retain_grad() is called.",
+        "Performing an in-place operation on a leaf tensor that requires grad will raise a RuntimeError during backward pass."
+      ],
+      "performance_notes": "Leaf tensors with requires_grad=True persist throughout training cycles, holding memory for both their data and their accumulated .grad buffers.",
+      "related_apis": [
+        "torch.Tensor.is_leaf",
+        "torch.nn.Parameter",
+        "torch.Tensor.detach"
+      ],
+      "framework_migration_notes": "From TensorFlow: Equivalent to creating a tf.Variable which implicitly acts as a trainable root node in tf.GradientTape.",
+      "tensorflow_equivalent": "tf.Variable(initial_value, trainable=True)",
+      "framework_equivalent": "tf.Variable(initial_value, trainable=True)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Leaf variable creation",
+          "autograd root node",
+          "differentiable parameter creation"
+        ],
+        "search_terms": [
+          "pytorch leaf tensor",
+          "make leaf node pytorch",
+          "leaf variable autograd"
+        ],
+        "keywords": [
+          "leaf tensor",
+          "is_leaf",
+          "root node",
+          "autograd",
+          "parameter"
+        ],
+        "confused_with": [
+          "torch.nn.Parameter (wrapper around leaf tensors that auto-registers with nn.Module)"
+        ]
+      },
+      "related_models": [
+        "logistic-regression",
+        "xgboost"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/tensors.html%23torch.Tensor.is_leaf",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/tensors.html%23torch.Tensor.is_leaf"
+    },
+    {
+      "task": "Inspect Gradient Requirement (requires_grad, is_leaf)",
+      "problem_solved": "Evaluates the autograd properties of tensors to verify whether they track gradients and whether they act as leaf nodes in the active computation graph.",
+      "mental_trigger": "I need to debug why gradients are missing or why memory is leaking by checking if a tensor is a leaf node and tracking gradients.",
+      "syntax": "tensor.requires_grad  # Returns bool  \ntensor.is_leaf        # Returns bool  \ntensor.grad_fn        # Returns Node object or None",
+      "important_parameters": [
+        "None (property accesses)."
+      ],
+      "important_params": [
+        "None (property accesses)."
+      ],
+      "return_value": "> * **requires_grad** (bool): True if tensor tracks history.  \n> * **is_leaf** (bool): True if created directly by user (or initialized without graph history).  \n> * **grad_fn** (torch.autograd.Function or None): Reference to the operation that produced the tensor. None for leaf tensors.",
+      "example": "import torch\n\n# Create a leaf tensor  \nx = torch.tensor([2.0], requires_grad=True)\n\n# Derive non-leaf tensors  \ny = x ** 3  \nz = y + 5\n\ndef inspect_tensor(name, t):  \n    print(f\"[{name}] requires_grad={t.requires_grad}, is_leaf={t.is_leaf}, grad_fn={t.grad_fn}\")\n\ninspect_tensor(\"x\", x)  \ninspect_tensor(\"y\", y)  \ninspect_tensor(\"z\", z)",
+      "use_when": "Debugging NoneType issues when reading .grad after backward().\nDiagnosing memory leaks caused by unwanted graph construction on intermediate variables.\nVerifying model layer freezing logic in test suites.",
+      "avoid_when": "Inside performance-critical inner loops where overhead from property access or string logging is undesirable.",
+      "gotchas": [
+        "All tensors with requires_grad=False are leaf tensors by definition (is_leaf=True), even if derived from operations.",
+        "A tensor created via x.detach() creates a new leaf tensor with requires_grad=False.",
+        "Intermediate tensors have is_leaf=False and requires_grad=True. Their .grad will remain None after backward() unless retain_grad() was called prior to backpropagation."
+      ],
+      "performance_notes": "Checking properties is lightweight and carries zero runtime overhead on computation graphs.",
+      "related_apis": [
+        "torch.Tensor.retain_grad",
+        "torch.Tensor.grad",
+        "torch.Tensor.grad_fn"
+      ],
+      "framework_migration_notes": "From TensorFlow: Analogous to checking variable.trainable and inspecting symbolic graph execution tapes in TensorFlow 2.x.",
+      "tensorflow_equivalent": "tensor.trainable / checking if tensor is in tape._watchers",
+      "framework_equivalent": "tensor.trainable / checking if tensor is in tape._watchers",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Check leaf tensor",
+          "inspect grad_fn",
+          "verify graph node"
+        ],
+        "search_terms": [
+          "check if tensor is leaf pytorch",
+          "pytorch check requires_grad",
+          "debug grad_fn"
+        ],
+        "keywords": [
+          "requires_grad",
+          "is_leaf",
+          "grad_fn",
+          "graph inspection",
+          "debugging"
+        ],
+        "confused_with": [
+          "Tensor.grad (stores actual computed gradient array vs requires_grad which indicates tracking capability)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "transformer"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/tensors.html%23torch.Tensor.is_leaf",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/tensors.html%23torch.Tensor.is_leaf"
+    },
+    {
+      "task": "Compute Gradients with Backward (Tensor.backward)",
+      "problem_solved": "Executes dynamic reverse-mode automatic differentiation starting from a scalar node, populating the .grad attributes of all ancestor leaf tensors in the computation graph.",
+      "mental_trigger": "I have computed a scalar loss value and need to backpropagate derivatives through the entire neural network graph.",
+      "syntax": "tensor.backward(gradient=None, retain_graph=None, create_graph=False, inputs=None)",
+      "important_parameters": [
+        "gradient (torch.Tensor, optional): Gradient vector matching tensor shape if tensor is non-scalar. Required for vector outputs; defaults to torch.tensor(1.0) for scalars.",
+        "retain_graph (bool, optional): If False, graph buffers are freed after backward pass. Must be set to True if invoking backward multiple times on the same graph.",
+        "create_graph (bool, optional): If True, creates a graph of the backward operations, enabling higher-order derivative computation (e.g., Hessian-vector products). Default is False.",
+        "inputs (sequence of Tensor, optional): Leaf tensors whose .grad attributes will be populated. Non-target tensors are bypassed."
+      ],
+      "important_params": [
+        "gradient (torch.Tensor, optional): Gradient vector matching tensor shape if tensor is non-scalar. Required for vector outputs; defaults to torch.tensor(1.0) for scalars.",
+        "retain_graph (bool, optional): If False, graph buffers are freed after backward pass. Must be set to True if invoking backward multiple times on the same graph.",
+        "create_graph (bool, optional): If True, creates a graph of the backward operations, enabling higher-order derivative computation (e.g., Hessian-vector products). Default is False.",
+        "inputs (sequence of Tensor, optional): Leaf tensors whose .grad attributes will be populated. Non-target tensors are bypassed."
+      ],
+      "return_value": "None. Populates .grad attributes on leaf tensors in-place.",
+      "example": "import torch\n\n# Define leaf variables  \nw = torch.tensor([2.0, 3.0], requires_grad=True)  \nx = torch.tensor([4.0, 5.0])\n\n# Compute forward loss (scalar)  \nloss = (w * x).sum()\n\n# Compute gradients  \nloss.backward()\n\nprint(f\"w.grad: {w.grad}\")  # d(loss)/dw = x = [4.0, 5.0]",
+      "use_when": "Standard training iteration step to calculate parameter gradients from a scalar loss.\nComputing Jacobians or custom gradient steps by supplying explicit vector values to gradient.",
+      "avoid_when": "Computing gradients for specific outputs without mutating .grad attributes; use torch.autograd.grad instead.\nRunning inference or evaluation loops.",
+      "gotchas": [
+        "Calling .backward() on a non-scalar tensor without providing the gradient argument raises a RuntimeError: *\"grad can be implicitly created only for scalar outputs\"*.",
+        "Re-executing .backward() without setting retain_graph=True raises a RuntimeError stating that the graph buffers have already been freed.",
+        "Gradients accumulate into .grad buffers via addition; failing to zero gradients between iterations leads to incorrect updates."
+      ],
+      "performance_notes": "backward() frees intermediate activation tensors immediately after consumption unless retain_graph=True is specified, keeping peak VRAM usage optimized.\nSetting create_graph=True doubles memory overhead as the gradient step itself constructs graph nodes.",
+      "related_apis": [
+        "torch.autograd.grad",
+        "torch.optim.Optimizer.zero_grad",
+        "torch.Tensor.retain_grad"
+      ],
+      "framework_migration_notes": "From TensorFlow: loss.backward() replaces tape.gradient(loss, model.trainable_variables) with implicit storage in .grad instead of explicit variable assignment.",
+      "tensorflow_equivalent": "tape.gradient(target, sources)",
+      "framework_equivalent": "tape.gradient(target, sources)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Backprop",
+          "compute gradients",
+          "execute backward pass",
+          "backward()"
+        ],
+        "search_terms": [
+          "pytorch loss.backward()",
+          "execute autograd",
+          "compute vector jacobian product"
+        ],
+        "keywords": [
+          "backward",
+          "autograd",
+          "reverse-mode AD",
+          "backpropagation",
+          "gradients"
+        ],
+        "confused_with": [
+          "torch.autograd.grad (returns gradients as tuples without mutating .grad attributes)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "yolo",
+        "bert",
+        "llama"
+      ],
+      "related_patterns": [
+        "memory-efficient-training",
+        "gradient-accumulation"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.Tensor.backward.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.Tensor.backward.html"
+    },
+    {
+      "task": "Compute Gradients with torch.autograd.grad",
+      "problem_solved": "Computes and directly returns gradients of outputs with respect to specified inputs without mutating the .grad attributes of leaf tensors.",
+      "mental_trigger": "I want to calculate derivatives for specific tensors without touching the .grad attributes or affecting the optimizer's state.",
+      "syntax": "torch.autograd.grad(  \n    outputs,  \n    inputs,  \n    grad_outputs=None,  \n    retain_graph=None,  \n    create_graph=False,  \n    allow_unused=False  \n)",
+      "important_parameters": [
+        "outputs (Tensor or sequence of Tensor): Tensors whose derivatives are taken.",
+        "inputs (Tensor or sequence of Tensor): Tensors with respect to which gradients are computed.",
+        "grad_outputs (Tensor or sequence of Tensor, optional): Vector for vector-Jacobian product. Mandatory if outputs are non-scalar.",
+        "retain_graph (bool, optional): Retains graph for additional backward passes.",
+        "create_graph (bool, optional): Enables higher-order gradient graphs.",
+        "allow_unused (bool, optional): If False, raises error if specified input is not part of the graph. Default is False."
+      ],
+      "important_params": [
+        "outputs (Tensor or sequence of Tensor): Tensors whose derivatives are taken.",
+        "inputs (Tensor or sequence of Tensor): Tensors with respect to which gradients are computed.",
+        "grad_outputs (Tensor or sequence of Tensor, optional): Vector for vector-Jacobian product. Mandatory if outputs are non-scalar.",
+        "retain_graph (bool, optional): Retains graph for additional backward passes.",
+        "create_graph (bool, optional): Enables higher-order gradient graphs.",
+        "allow_unused (bool, optional): If False, raises error if specified input is not part of the graph. Default is False."
+      ],
+      "return_value": "A tuple of torch.Tensor objects corresponding to derivatives for each tensor provided in inputs.",
+      "example": "import torch\n\nx = torch.tensor([3.0], requires_grad=True)  \ny = x ** 3\n\n# Compute dy/dx directly  \ngrads = torch.autograd.grad(outputs=y, inputs=x, create_graph=True)[0]  \nprint(f\"First derivative (dy/dx): {grads.item()}\")\n\n# Compute second derivative d2y/dx2 using returned gradient node  \nsecond_grad = torch.autograd.grad(outputs=grads, inputs=x)[0]  \nprint(f\"Second derivative (d2y/dx2): {second_grad.item()}\")\n\n# Verify leaf grad remains untouched  \nprint(f\"x.grad is None: {x.grad is None}\")",
+      "use_when": "Calculating higher-order derivatives (e.g., physics-informed neural networks (PINNs), penalty loss terms like WGAN-GP).\nComputing Jacobians or sensitivity metrics without side effects on optimizer parameters.",
+      "avoid_when": "Standard training steps where loss.backward() and optimizer.step() are standard.",
+      "gotchas": [
+        "If an input in inputs has no functional connection to outputs and allow_unused=False (default), PyTorch raises a RuntimeError.",
+        "Intermediate graph nodes created without create_graph=True cannot be differentiated again."
+      ],
+      "performance_notes": "Bypasses parameter .grad allocation and lock steps, making it memory-efficient for target-specific functional derivative calculations.",
+      "related_apis": [
+        "torch.Tensor.backward",
+        "torch.autograd.functional.jacobian",
+        "torch.autograd.functional.hessian"
+      ],
+      "framework_migration_notes": "From TensorFlow: Matches tape.gradient(target, sources) functional style, where gradients are returned directly rather than stored on object properties.",
+      "tensorflow_equivalent": "tf.GradientTape.gradient(target, sources)",
+      "framework_equivalent": "tf.GradientTape.gradient(target, sources)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Functional gradient computation",
+          "higher order gradients",
+          "autograd.grad"
+        ],
+        "search_terms": [
+          "pytorch autograd grad example",
+          "compute derivative without mutating grad",
+          "functional backprop pytorch"
+        ],
+        "keywords": [
+          "autograd.grad",
+          "functional autograd",
+          "higher-order derivatives",
+          "jacobian"
+        ],
+        "confused_with": [
+          "Tensor.backward (mutates leaf .grad in-place vs returning tuple)"
+        ]
+      },
+      "related_models": [
+        "transformer",
+        "deepseek"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.autograd.grad.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.autograd.grad.html"
+    },
+    {
+      "task": "Accumulate Gradients Across Backward Passes",
+      "problem_solved": "Simulates larger effective training batch sizes by accumulating gradients over multiple small micro-batches before executing an optimization update step.",
+      "mental_trigger": "My model causes Out-Of-Memory (OOM) errors at my target batch size, so I need to run multiple smaller passes and sum gradients before stepping the optimizer.",
+      "syntax": "# Iterative loop behavior  \nloss = loss / accumulation_steps  \nloss.backward()  # Adds gradients into existing .grad buffers",
+      "important_parameters": [
+        "accumulation_steps (int): Number of micro-batches processed prior to triggering optimizer.step() and optimizer.zero_grad()."
+      ],
+      "important_params": [
+        "accumulation_steps (int): Number of micro-batches processed prior to triggering optimizer.step() and optimizer.zero_grad()."
+      ],
+      "return_value": "None. Successive backward calls accumulate values directly into existing .grad tensor allocations via in-place addition (g*new*​=g*old*​+∇loss).",
+      "example": "import torch  \nimport torch.nn as nn\n\nmodel = nn.Linear(10, 2)  \noptimizer = torch.optim.SGD(model.parameters(), lr=0.01)  \naccumulation_steps = 4\n\n# Zero gradients initially  \noptimizer.zero_grad()\n\nfor i in range(accumulation_steps):  \n    dummy_input = torch.randn(8, 10)  \n    output = model(dummy_input)  \n    loss = output.sum() / accumulation_steps  # Normalize loss scale  \n      \n    # Accumulate gradients (does NOT overwrite .grad)  \n    loss.backward()\n\n# Perform parameter update after accumulating 4 micro-batches  \noptimizer.step()  \noptimizer.zero_grad()  \nprint(\"Accumulation cycle complete. Gradients applied and cleared.\")",
+      "use_when": "Training large language models, vision transformers, or high-resolution vision pipelines on memory-constrained GPUs.\nMatching baseline paper performance that requires multi-GPU batch sizes on single-card workstations.",
+      "avoid_when": "Operating within sufficient hardware memory bounds; standard batch processing exhibits better GPU tensor core utilization.",
+      "gotchas": [
+        "Forgetting to scale/normalize the loss (loss / accumulation_steps) results in effective gradient magnitudes scaling linearly with accumulation step count, causing optimization divergence.",
+        "Calling optimizer.zero_grad() inside the micro-batch loop erases accumulated gradients prematurely.",
+        "Batch normalization layers behave differently when batch sizes shrink during micro-batch splits; switch to GroupNorm or LayerNorm for gradient-accumulated training."
+      ],
+      "performance_notes": "Keeps peak VRAM usage tied to the micro-batch size while providing mathematical equivalence to large-batch gradient steps (excluding non-stationary norm layer statistics).",
+      "related_apis": [
+        "torch.Tensor.backward",
+        "torch.optim.Optimizer.zero_grad"
+      ],
+      "framework_migration_notes": "From TensorFlow: TensorFlow requires manual gradient summation loops when using custom GradientTape loops. PyTorch autograd handles summation natively upon repeated .backward() execution.",
+      "tensorflow_equivalent": "# In TF: manually summing list of gradients across tape iterations\n[accum_grad[i].assign_add(g) for i, g in enumerate(grads)]",
+      "framework_equivalent": "# In TF: manually summing list of gradients across tape iterations\n[accum_grad[i].assign_add(g) for i, g in enumerate(grads)]",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Gradient accumulation",
+          "micro-batching",
+          "large batch simulation"
+        ],
+        "search_terms": [
+          "pytorch gradient accumulation example",
+          "simulate large batch size",
+          "loss backward accumulate"
+        ],
+        "keywords": [
+          "gradient accumulation",
+          "micro-batches",
+          "memory management",
+          "backward"
+        ],
+        "confused_with": [
+          "torch.autograd.grad (returns gradients directly rather than accumulating)"
+        ]
+      },
+      "related_models": [
+        "bert",
+        "roberta",
+        "t5",
+        "bart",
+        "gpt",
+        "llama",
+        "qwen",
+        "gemma",
+        "deepseek"
+      ],
+      "related_patterns": [
+        "gradient-accumulation",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide",
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.Tensor.backward.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.Tensor.backward.html"
+    },
+    {
+      "task": "Reset Gradients Before Backward (optimizer.zero_grad, Tensor.grad = None)",
+      "problem_solved": "Clears residual gradient values stored in leaf parameters from previous training steps to prevent accidental gradient accumulation across distinct training iterations.",
+      "mental_trigger": "I am starting a new training iteration and must reset parameter gradients to zero before computing the next backward pass.",
+      "syntax": "optimizer.zero_grad(set_to_none=True)  \n# Or manually clearing a single tensor:  \ntensor.grad = None",
+      "important_parameters": [
+        "set_to_none (bool): If True, sets parameter .grad attributes to None instead of filling existing tensors with zeros. Default in modern PyTorch best practices is True."
+      ],
+      "important_params": [
+        "set_to_none (bool): If True, sets parameter .grad attributes to None instead of filling existing tensors with zeros. Default in modern PyTorch best practices is True."
+      ],
+      "return_value": "None. Modifies parameter .grad attributes in-place.",
+      "example": "import torch  \nimport torch.nn as nn\n\nlayer = nn.Linear(5, 1)  \nx = torch.randn(2, 5)\n\n# Step 1: Perform first backward  \nloss1 = layer(x).sum()  \nloss1.backward()  \nprint(f\"Grad before reset: {layer.weight.grad[0, :2]}\")\n\n# Step 2: Reset using set_to_none=True  \nlayer.zero_grad(set_to_none=True)  \nprint(f\"Grad after zero_grad: {layer.weight.grad}\")\n\n# Step 3: Perform second backward cleanly  \nloss2 = layer(x).sum()  \nloss2.backward()  \nprint(f\"Grad after second backward: {layer.weight.grad[0, :2]}\")",
+      "use_when": "At the beginning or end of every training iteration loop.\nPrior to running auxiliary loss backward passes that require isolated gradient tracking.",
+      "avoid_when": "Performing multi-step gradient accumulation across micro-batches (where clearing should occur only after the optimizer step).",
+      "gotchas": [
+        "Forgetting to reset gradients causes new gradients to sum with previous steps, causing gradient explosion within a few iterations.",
+        "Using set_to_none=False allocates and retains zero-filled memory buffers for .grad, consuming unnecessary VRAM between backward passes."
+      ],
+      "performance_notes": "Setting set_to_none=True yields modest memory and performance improvements:\nEliminates write operations needed to zero memory buffers.\nAllows memory allocators to manage empty allocations efficiently.\nModern PyTorch optimizers update parameters efficiently when handling None gradients.",
+      "related_apis": [
+        "torch.optim.Optimizer.zero_grad",
+        "torch.Tensor.grad"
+      ],
+      "framework_migration_notes": "From TensorFlow: TensorFlow GradientTape resets context automatically when exiting its block. PyTorch requires explicit zeroing due to its persistent attribute design.",
+      "tensorflow_equivalent": "# TensorFlow implicit resetting via tape context re-instantiation\nwith tf.GradientTape() as tape:\n...",
+      "framework_equivalent": "# TensorFlow implicit resetting via tape context re-instantiation\nwith tf.GradientTape() as tape:\n...",
+      "version_compatibility": "set_to_none=True became available in PyTorch 1.7 and is recommended in PyTorch 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Zero gradients",
+          "clear grads",
+          "reset grad attribute",
+          "set_to_none"
+        ],
+        "search_terms": [
+          "pytorch zero_grad set_to_none",
+          "clear gradients tensor grad None",
+          "reset parameter gradients"
+        ],
+        "keywords": [
+          "zero_grad",
+          "set_to_none",
+          "gradient reset",
+          "memory optimization"
+        ],
+        "confused_with": [
+          "detach() (breaks graph history vs clearing output gradient buffers)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "gpt",
+        "llama"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.optim.Optimizer.zero_grad.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.optim.Optimizer.zero_grad.html"
+    },
+    {
+      "task": "Access Computed Gradients (Tensor.grad)",
+      "problem_solved": "Retrieves accumulated gradient values stored inside leaf tensors following a .backward() execution pass.",
+      "mental_trigger": "I want to inspect, log, clip, or analyze computed gradient magnitudes for specific model parameters after backpropagation.",
+      "syntax": "gradient_tensor = tensor.grad",
+      "important_parameters": [
+        "None (property access)."
+      ],
+      "important_params": [
+        "None (property access)."
+      ],
+      "return_value": "A torch.Tensor containing accumulated derivatives matching the shape and device of tensor, or None if gradients have not been computed or tracked.",
+      "example": "import torch\n\nx = torch.tensor([2.0, -3.0], requires_grad=True)  \ny = (x ** 2).sum()\n\ny.backward()\n\n# Access computed gradient (d(y)/dx = 2x)  \nx_grad = x.grad\n\nprint(f\"Tensor values: {x}\")  \nprint(f\"Computed grads: {x_grad}\")  \nprint(f\"Grad norm: {torch.linalg.vector_norm(x_grad):.4f}\")",
+      "use_when": "Implementing custom gradient clipping, logging metrics to TensorBoard/Weights\\&Biases, or analyzing exploding/vanishing gradient problems.\nBuilding custom optimization routines outside standard torch.optim classes.",
+      "avoid_when": "Attempting to retrieve gradients for intermediate (non-leaf) tensors without first calling retain_grad() (will return None).",
+      "gotchas": [
+        "Modifying .grad in-place without wrapping operations in with torch.no_grad(): can cause unexpected autograd state behavior.",
+        "If .backward() has not been called, or if requires_grad=False, .grad returns None. Accessing methods on None raises an AttributeError."
+      ],
+      "performance_notes": "Accessing .grad returns a direct reference to the internal gradient buffer; no memory allocation or copying takes place.",
+      "related_apis": [
+        "torch.Tensor.retain_grad",
+        "torch.nn.utils.clip_grad_norm_",
+        "torch.autograd.grad"
+      ],
+      "framework_migration_notes": "From TensorFlow: Replaces accessing returned lists from tape.gradient(target, sources).",
+      "tensorflow_equivalent": "grads = tape.gradient(loss, model.trainable_variables)",
+      "framework_equivalent": "grads = tape.gradient(loss, model.trainable_variables)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Inspect gradient",
+          "read tensor.grad",
+          "parameter gradient property"
+        ],
+        "search_terms": [
+          "pytorch access tensor grad",
+          "check parameter gradient value",
+          "grad is None pytorch"
+        ],
+        "keywords": [
+          "grad",
+          "gradient access",
+          "parameter inspection",
+          "leaf tensor"
+        ],
+        "confused_with": [
+          "torch.autograd.grad (function calculating derivatives vs property holding buffer)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert",
+        "llama"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.Tensor.grad.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.Tensor.grad.html"
+    },
+    {
+      "task": "Retain Intermediate Gradients (retain_grad)",
+      "problem_solved": "Enables gradient buffer retention for non-leaf tensors in the computation graph, allowing their .grad attributes to persist after .backward() completes.",
+      "mental_trigger": "I need to inspect gradients on intermediate layer activations (non-leaf tensors) for debugging or custom loss calculation.",
+      "syntax": "intermediate_tensor.retain_grad()",
+      "important_parameters": [
+        "None."
+      ],
+      "important_params": [
+        "None."
+      ],
+      "return_value": "None. Marks the intermediate tensor to preserve its computed gradient allocation during backward processing.",
+      "example": "import torch\n\nx = torch.tensor([3.0], requires_grad=True)  # Leaf tensor  \ny = x ** 2                                   # Non-leaf intermediate tensor  \nz = y * 5                                    # Non-leaf output tensor\n\n# Instruct PyTorch not to discard y's gradient buffer  \ny.retain_grad()\n\nz.backward()\n\nprint(f\"x.grad (leaf): {x.grad}\")  \nprint(f\"y.grad (intermediate retained): {y.grad}\")  \nprint(f\"z.grad (output non-retained): {z.grad}\")",
+      "use_when": "Feature map visualization techniques (e.g., Grad-CAM) requiring activation-level gradients.\nDebugging vanishing or exploding gradients deep inside complex network architectures.",
+      "avoid_when": "Running standard production training loops where intermediate activation gradients are unnecessary; retain_grad increases VRAM allocation.",
+      "gotchas": [
+        "Calling retain_grad() must occur before invoking .backward(). Calling it post-backward has no effect on cleared buffers.",
+        "Retaining gradients prevents the garbage collection of intermediate buffers during backpropagation, leading to higher VRAM usage."
+      ],
+      "performance_notes": "Modifies autograd memory reclamation routines. Retained buffers stay allocated in VRAM until explicitly set to None or until the parent python scope dies.",
+      "related_apis": [
+        "torch.Tensor.is_leaf",
+        "torch.Tensor.register_hook",
+        "torch.Tensor.grad"
+      ],
+      "framework_migration_notes": "From TensorFlow: Equivalent to explicitly instructing persistent gradient tapes (tf.GradientTape(persistent=True)) to track non-variable intermediate tensors.",
+      "tensorflow_equivalent": "tape.watch(intermediate_tensor)",
+      "framework_equivalent": "tape.watch(intermediate_tensor)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Keep non-leaf grad",
+          "retain intermediate tensor gradient",
+          "retain_grad"
+        ],
+        "search_terms": [
+          "pytorch grad is None intermediate tensor",
+          "retain_grad example",
+          "inspect layer activation gradients"
+        ],
+        "keywords": [
+          "retain_grad",
+          "intermediate tensors",
+          "non-leaf nodes",
+          "autograd memory"
+        ],
+        "confused_with": [
+          "retain_graph (keeps computation graph structure vs retaining specific tensor gradient buffer)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "yolo"
+      ],
+      "related_patterns": [
+        "feature-fusion",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.Tensor.retain_grad.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.Tensor.retain_grad.html"
+    },
+    {
+      "task": "Detect Gradient Availability and Missing Gradients",
+      "problem_solved": "Identifies why a tensor's .grad property evaluates to None after a backward pass, helping troubleshoot broken gradient flows.",
+      "mental_trigger": "My model parameters aren't updating because param.grad is None. I need to diagnose where the graph broke.",
+      "syntax": "if tensor.grad is None:  \n    # Diagnose graph connectivity and settings  \n    has_tracking = tensor.requires_grad  \n    is_leaf_node = tensor.is_leaf  \n    has_creator = tensor.grad_fn is not None",
+      "important_parameters": [
+        "None."
+      ],
+      "important_params": [
+        "None."
+      ],
+      "return_value": "Diagnostic status booleans indicating graph detach points or non-leaf gradient discard states.",
+      "example": "import torch\n\nx = torch.tensor([2.0], requires_grad=True)\n\n# Graph Break Scenario: Convert to numpy accidentally or usage of non-differentiable ops  \nintermediate = x.detach() * 3  # detached!  \nloss = intermediate.sum()\n\nif loss.requires_grad:  \n    loss.backward()  \nelse:  \n    print(\"Graph broken! Loss does not track gradients.\")\n\nprint(f\"x.grad status: {x.grad}\")  # Returns None because chain was broken",
+      "use_when": "Automated unit tests testing custom layer forward implementations.\nDebugging frozen components or broken backward flows during novel model development.",
+      "avoid_when": "Production operational passes (adds unnecessary runtime assert checks).",
+      "gotchas": [
+        "Intermediate tensors (is_leaf=False) naturally return .grad = None after .backward() unless retain_grad() is explicitly called. This is expected behavior, not a broken graph.",
+        "Non-differentiable operations (e.g., torch.argmax, indexing with boolean masks, integer casting) silently break gradient history tracking."
+      ],
+      "performance_notes": "Purely diagnostic checking; carries no VRAM overhead.",
+      "related_apis": [
+        "torch.Tensor.is_leaf",
+        "torch.Tensor.requires_grad",
+        "torch.Tensor.grad_fn"
+      ],
+      "framework_migration_notes": "From TensorFlow: Replaces debugging missing variables in tape.gradient() return tuples where None signifies non-watched or disconnected variables.",
+      "tensorflow_equivalent": "# Inspecting returned None values in tf.GradientTape\ngrads = tape.gradient(loss, vars)  # Contains None for disconnected vars",
+      "framework_equivalent": "# Inspecting returned None values in tf.GradientTape\ngrads = tape.gradient(loss, vars)  # Contains None for disconnected vars",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Debug grad None",
+          "check missing gradients",
+          "diagnose graph break"
+        ],
+        "search_terms": [
+          "pytorch tensor grad is None",
+          "fix broken gradient flow",
+          "why is param.grad none"
+        ],
+        "keywords": [
+          "missing gradients",
+          "grad None",
+          "graph break",
+          "autograd debugging"
+        ],
+        "confused_with": [
+          "retain_grad (solution for intermediate tensors vs diagnosing leaf detachment)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "transformer"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.Tensor.grad.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.Tensor.grad.html"
+    },
+    {
+      "task": "Register Tensor Gradient Hook (register_hook)",
+      "problem_solved": "Attaches a custom callback function directly to a tensor node in the autograd graph, executing automatically whenever its gradient is calculated during backpropagation.",
+      "mental_trigger": "I want to modify, clip, scale, or log a specific tensor's gradient on-the-fly during the backward pass without altering model source code.",
+      "syntax": "handle = tensor.register_hook(hook_fn)  \n# hook_fn signature:  \n# hook_fn(grad) -\\> Tensor or None",
+      "important_parameters": [
+        "hook_fn (Callable): A user-defined callback that accepts grad as an argument. It can return None (leaving gradient unmodified) or a new Tensor replacing the computed gradient."
+      ],
+      "important_params": [
+        "hook_fn (Callable): A user-defined callback that accepts grad as an argument. It can return None (leaving gradient unmodified) or a new Tensor replacing the computed gradient."
+      ],
+      "return_value": "A RemovableHandle object (handle). Call handle.remove() to deactivate the hook.",
+      "example": "import torch\n\nx = torch.tensor([2.0, -4.0], requires_grad=True)  \ny = x ** 2  \nz = y.sum()\n\n# Define a hook that clips gradients to positive values only  \ndef clamp_grad_hook(grad):  \n    return torch.clamp(grad, min=0.0)\n\n# Register hook on intermediate tensor y  \nhandle = y.register_hook(clamp_grad_hook)\n\nz.backward()\n\nprint(f\"x.grad after hook intervention: {x.grad}\")\n\n# Clean up hook  \nhandle.remove()",
+      "use_when": "Implementing custom gradient modifications (e.g., Gradient Reversal Layers in domain adaptation networks).\nInjecting localized gradient logging, telemetry, or debugging probes.",
+      "avoid_when": "Global parameter gradient clipping; use torch.nn.utils.clip_grad_norm_ or optimizer wrappers instead.",
+      "gotchas": [
+        "Returning a tensor with a different shape or dtype from hook_fn causes a RuntimeError during backward propagation.",
+        "In-place modification of the incoming grad argument inside the hook can corrupt state; always return a modified copy if altering values."
+      ],
+      "performance_notes": "Hook execution introduces Python function call overhead inside C++ autograd execution. Avoid excessive hooks in high-throughput training pipelines.",
+      "related_apis": [
+        "torch.nn.Module.register_full_backward_hook",
+        "torch.Tensor.retain_grad"
+      ],
+      "framework_migration_notes": "From TensorFlow: Similar to using custom gradient functions defined via @tf.custom_gradient.",
+      "tensorflow_equivalent": "# Achieved using tf.custom_gradient or tf.register_gradient",
+      "framework_equivalent": "# Achieved using tf.custom_gradient or tf.register_gradient",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Tensor hook",
+          "backward hook",
+          "gradient callback",
+          "register_hook"
+        ],
+        "search_terms": [
+          "pytorch register_hook example",
+          "modify gradient on the fly",
+          "custom tensor gradient hook"
+        ],
+        "keywords": [
+          "register_hook",
+          "gradient hook",
+          "autograd callback",
+          "RemovableHandle"
+        ],
+        "confused_with": [
+          "register_full_backward_hook (registered on nn.Module vs directly on Tensor)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "yolo"
+      ],
+      "related_patterns": [
+        "feature-fusion",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.Tensor.register_hook.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.Tensor.register_hook.html"
+    },
+    {
+      "task": "Register Module Forward Hook (register_forward_hook)",
+      "problem_solved": "Attaches a callback to a torch.nn.Module that triggers automatically after forward() executes, capturing layer inputs and outputs.",
+      "mental_trigger": "I need to inspect, record, or modify intermediate feature representations inside a neural network without modifying its forward() codebase.",
+      "syntax": "handle = module.register_forward_hook(hook_fn, always_call=False)  \n# hook_fn signature:  \n# hook_fn(module, args, output) -\\> Tensor or None",
+      "important_parameters": [
+        "hook_fn (Callable): Function called with (module, input_args, output). Returning a value overrides the layer output.",
+        "always_call (bool, optional): If True, hook executes even if an exception occurs during forward pass. Default is False."
+      ],
+      "important_params": [
+        "hook_fn (Callable): Function called with (module, input_args, output). Returning a value overrides the layer output.",
+        "always_call (bool, optional): If True, hook executes even if an exception occurs during forward pass. Default is False."
+      ],
+      "return_value": "A RemovableHandle object. Call handle.remove() to unregister.",
+      "example": "import torch  \nimport torch.nn as nn\n\nclass SimpleNet(nn.Module):  \n    def __init__(self):  \n        super().__init__()  \n        self.fc = nn.Linear(4, 2)\n\n    def forward(self, x):  \n        return self.fc(x)\n\nnet = SimpleNet()  \nfeatures = {}\n\n# Define forward hook to store activation  \ndef get_activation(name):  \n    def hook(module, input, output):  \n        features[name] = output.detach()  \n    return hook\n\n# Attach hook to fc layer  \nhandle = net.fc.register_forward_hook(get_activation('fc_layer'))\n\nx = torch.randn(1, 4)  \n_ = net(x)\n\nprint(f\"Captured activation shape: {features['fc_layer'].shape}\")  \nhandle.remove()",
+      "use_when": "Extracting intermediate feature representations for downstream tasks, perceptual losses, or activation logging.\nImplementing network visualization and neural architecture analysis tools.",
+      "avoid_when": "Tensors returned by forward hooks intended for feature extraction should be detached (.detach()); otherwise, unneeded autograd graphs stay pinned in VRAM.",
+      "gotchas": [
+        "Modifying returned output in-place inside a forward hook affects all subsequent layers down the computational line.",
+        "Forgetting to call handle.remove() when hooks are created dynamically within loops leads to memory leaks and multiple calls per step."
+      ],
+      "performance_notes": "Forward hooks incur minimal CPU overhead per invocation, but storing non-detached outputs retains active forward computation graphs in VRAM.",
+      "related_apis": [
+        "torch.nn.Module.register_forward_pre_hook",
+        "torch.nn.Module.register_full_backward_hook"
+      ],
+      "framework_migration_notes": "From TensorFlow: Similar to Keras intermediate layer output extraction via tf.keras.Model(inputs, outputs=layer.output).",
+      "tensorflow_equivalent": "intermediate_model = tf.keras.Model(inputs=model.input, outputs=model.get_layer(name).output)",
+      "framework_equivalent": "intermediate_model = tf.keras.Model(inputs=model.input, outputs=model.get_layer(name).output)",
+      "version_compatibility": "always_call parameter introduced in PyTorch 2.0.",
+      "search_metadata": {
+        "aliases": [
+          "Forward hook",
+          "layer activation hook",
+          "feature extractor hook"
+        ],
+        "search_terms": [
+          "pytorch extract intermediate layers forward hook",
+          "save layer activations pytorch",
+          "register_forward_hook"
+        ],
+        "keywords": [
+          "register_forward_hook",
+          "module hook",
+          "feature extraction",
+          "activations"
+        ],
+        "confused_with": [
+          "register_forward_pre_hook (runs BEFORE forward execution vs AFTER)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "yolo",
+        "bert"
+      ],
+      "related_patterns": [
+        "feature-fusion"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/generated/torch.nn.Module.register_forward_hook.html",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/generated/torch.nn.Module.register_forward_hook.html"
+    },
+    {
+      "task": "Register Module Backward Hook (register_full_backward_hook)",
+      "problem_solved": "Attaches a callback to a torch.nn.Module that fires whenever gradients with respect to module inputs and outputs are evaluated during backpropagation.",
+      "mental_trigger": "I want to monitor or adjust gradients flowing through an entire nn.Module layer during backward execution.",
+      "syntax": "handle = module.register_full_backward_hook(hook_fn)  \n# hook_fn signature:  \n# hook_fn(module, grad_input, grad_output) -\\> tuple(Tensor) or None",
+      "important_parameters": [
+        "hook_fn (Callable): Function signature accepting (module, grad_input, grad_output). Returning a tuple replaces input gradients flowing upstream."
+      ],
+      "important_params": [
+        "hook_fn (Callable): Function signature accepting (module, grad_input, grad_output). Returning a tuple replaces input gradients flowing upstream."
+      ],
+      "return_value": "A RemovableHandle object used for unhooking via handle.remove().",
+      "example": "import torch  \nimport torch.nn as nn\n\nlayer = nn.Linear(3, 2)\n\ndef backward_hook(module, grad_input, grad_output):  \n    print(f\"[Backward Hook] Module: {module.__class__.__name__}\")  \n    print(f\"  grad_output shape: {grad_output[0].shape}\")  \n    print(f\"  grad_input (weight) shape: {grad_input[1].shape}\")\n\nhandle = layer.register_full_backward_hook(backward_hook)\n\nx = torch.randn(1, 3, requires_grad=True)  \nout = layer(x)  \nloss = out.sum()  \nloss.backward()\n\nhandle.remove()",
+      "use_when": "Auditing gradient flow, exploding/vanishing gradient metrics per module, or implementing specialized gradient modification layers.",
+      "avoid_when": "Modifying individual tensor gradients; register_hook on specific tensors is safer and simpler.\nUsing deprecated register_backward_hook which had broken behavior on complex architectures with multiple inputs/outputs.",
+      "gotchas": [
+        "Deprecated register_backward_hook should never be used in PyTorch 2.x; use register_full_backward_hook exclusively.",
+        "Arguments grad_input and grad_output are tuples. Unpacking them incorrectly raises IndexError or TypeError."
+      ],
+      "performance_notes": "Hooks run during C++ autograd execution. Complex logic inside Python backward hooks can slow down gradient evaluation cycles.",
+      "related_apis": [
+        "torch.Tensor.register_hook",
+        "torch.nn.Module.register_forward_hook"
+      ],
+      "framework_migration_notes": "From TensorFlow: Similar to intercepting gradient evaluations within custom gradient wrappers.",
+      "tensorflow_equivalent": "No direct module-level equivalent (handled via custom gradient functions on operations).",
+      "framework_equivalent": "No direct module-level equivalent (handled via custom gradient functions on operations).",
+      "version_compatibility": "register_full_backward_hook replaced register_backward_hook in PyTorch 1.8 to ensure full support for multi-input/multi-output modules.",
+      "search_metadata": {
+        "aliases": [
+          "Module backward hook",
+          "full backward hook",
+          "register_full_backward_hook"
+        ],
+        "search_terms": [
+          "pytorch register_full_backward_hook example",
+          "layer gradient hook pytorch",
+          "inspect module gradients"
+        ],
+        "keywords": [
+          "register_full_backward_hook",
+          "module gradient",
+          "autograd hook",
+          "backward pass"
+        ],
+        "confused_with": [
+          "register_backward_hook (legacy deprecated version with bugged behavior)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/generated/torch.nn.Module.register_full_backward_hook.html",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/generated/torch.nn.Module.register_full_backward_hook.html"
+    },
+    {
+      "task": "Disable Gradient Computation (torch.no_grad)",
+      "problem_solved": "Context manager or decorator that disables autograd history tracking, reducing memory consumption and speeding up execution during validation or inference.",
+      "mental_trigger": "I am evaluating my model on test data and need to ensure PyTorch doesn't construct computation graphs or waste VRAM tracking gradients.",
+      "syntax": "with torch.no_grad():  \n    # Operations here execute without autograd graph construction  \n    ...\n\n# Or as a function decorator:  \n@torch.no_grad()  \ndef eval_step(inputs):  \n    ...",
+      "important_parameters": [
+        "None."
+      ],
+      "important_params": [
+        "None."
+      ],
+      "return_value": "Context manager / Function Decorator.",
+      "example": "import torch  \nimport torch.nn as nn\n\nlayer = nn.Linear(5, 1)  \nx = torch.randn(3, 5, requires_grad=True)\n\n# Standard tracking  \nout_tracked = layer(x)  \nprint(f\"Tracked requires_grad: {out_tracked.requires_grad}\")\n\n# Disabled tracking via context manager  \nwith torch.no_grad():  \n    out_untracked = layer(x)\n\nprint(f\"Untracked requires_grad: {out_untracked.requires_grad}\")  \nprint(f\"Untracked grad_fn: {out_untracked.grad_fn}\")",
+      "use_when": "Validation and testing loops where gradients are not computed.\nModel evaluation steps, batch inference, or writing non-differentiable utility code.",
+      "avoid_when": "Real-time production inference on modern PyTorch versions; prefer torch.inference_mode() which offers higher performance.",
+      "gotchas": [
+        "Tensors created inside torch.no_grad() will have requires_grad=False. Calling .backward() on them later raises an error.",
+        "no_grad() does not switch model operational modes (e.g., Dropout and BatchNorm still behave in training mode unless model.eval() is called explicitly)."
+      ],
+      "performance_notes": "Eliminates computational graph allocation and intermediate activation preservation, dramatically reducing peak memory footprint during evaluation runs.",
+      "related_apis": [
+        "torch.inference_mode",
+        "torch.enable_grad",
+        "torch.set_grad_enabled"
+      ],
+      "framework_migration_notes": "From TensorFlow: Equivalent to executing operations outside a tf.GradientTape() context manager scope.",
+      "tensorflow_equivalent": "# Executing code outside of tf.GradientTape context",
+      "framework_equivalent": "# Executing code outside of tf.GradientTape context",
+      "version_compatibility": "No significant changes in modern PyTorch releases. Standard across all 1.x and 2.x releases.",
+      "search_metadata": {
+        "aliases": [
+          "Disable gradients",
+          "no_grad",
+          "evaluation context manager"
+        ],
+        "search_terms": [
+          "pytorch torch.no_grad()",
+          "disable autograd testing",
+          "no_grad decorator"
+        ],
+        "keywords": [
+          "no_grad",
+          "evaluation",
+          "context manager",
+          "autograd disabled",
+          "memory efficiency"
+        ],
+        "confused_with": [
+          "model.eval() (controls layer operational behaviors like Dropout vs no_grad which disables autograd tracking)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "llama"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.no_grad.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.no_grad.html"
+    },
+    {
+      "task": "Execute Inference with torch.inference_mode",
+      "problem_solved": "Provides an optimized context manager/decorator for pure inference workloads, disabling autograd while skipping view tracking and version counter updates for maximum performance.",
+      "mental_trigger": "I want the absolute fastest inference runtime and lowest VRAM overhead possible in modern PyTorch (PyTorch 1.9+ / 2.0+).",
+      "syntax": "with torch.inference_mode():  \n    # Optimized inference operations  \n    ...\n\n# Or as a function decorator:  \n@torch.inference_mode()  \ndef predict(batch):  \n    ...",
+      "important_parameters": [
+        "mode (bool, optional): Whether to enable (True) or disable (False) inference mode. Default is True."
+      ],
+      "important_params": [
+        "mode (bool, optional): Whether to enable (True) or disable (False) inference mode. Default is True."
+      ],
+      "return_value": "Context manager / Function Decorator.",
+      "example": "import torch  \nimport torch.nn as nn\n\nclass InferenceModel(nn.Module):  \n    def __init__(self):  \n        super().__init__()  \n        self.fc = nn.Linear(10, 2)\n\n    def forward(self, x):  \n        return self.fc(x)\n\nmodel = InferenceModel().eval()  \ninputs = torch.randn(4, 10)\n\n# Preferred production inference block  \nwith torch.inference_mode():  \n    predictions = model(inputs)\n\nprint(f\"Predictions requires_grad: {predictions.requires_grad}\")",
+      "use_when": "Production inference code, model evaluation pipelines, or standalone benchmark benchmarks in PyTorch 1.9+.",
+      "avoid_when": "Code where returned tensors will later be mutated or used inside a downstream differentiable graph (use torch.no_grad() if tensor views need to re-enter autograd later).",
+      "gotchas": [
+        "Tensors produced within inference_mode cannot participate in autograd later. Mutating them outside the block or using them in tracked graphs raises an error.",
+        "inference_mode does not set model.eval(). Remember to call model.eval() to freeze BatchNorm and Dropout layers."
+      ],
+      "performance_notes": "Superior to torch.no_grad():\nCompletely disables tensor version counters (eliminates overhead needed for in-place mutation checks).\nSpeeds up C++ dispatch times by bypassing autograd handling entirely.",
+      "related_apis": [
+        "torch.no_grad",
+        "torch.enable_grad"
+      ],
+      "framework_migration_notes": "From TensorFlow: Matches executing optimized saved models or running inside tf.function with tracking turned off.",
+      "tensorflow_equivalent": "# Executing standard TF inference models outside GradientTape",
+      "framework_equivalent": "# Executing standard TF inference models outside GradientTape",
+      "version_compatibility": "Introduced in PyTorch 1.9; default best practice for all modern PyTorch 2.x inference pipelines.",
+      "search_metadata": {
+        "aliases": [
+          "Inference mode",
+          "fast evaluation context",
+          "production inference manager"
+        ],
+        "search_terms": [
+          "pytorch inference_mode vs no_grad",
+          "fast inference pytorch 2.0",
+          "torch.inference_mode"
+        ],
+        "keywords": [
+          "inference_mode",
+          "speedup",
+          "memory optimization",
+          "production inference"
+        ],
+        "confused_with": [
+          "torch.no_grad (older context manager that retains view tracking and version counting)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "yolo",
+        "bert",
+        "gpt",
+        "llama",
+        "qwen"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide",
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/generated/torch.inference_mode.html",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/generated/torch.inference_mode.html"
+    },
+    {
+      "task": "Temporarily Enable Gradient Calculation (torch.enable_grad)",
+      "problem_solved": "Enables autograd gradient tracking inside blocks where gradients were previously disabled via torch.no_grad or torch.set_grad_enabled.",
+      "mental_trigger": "I am inside a global no_grad() evaluation loop, but I need to compute gradients for a specific task (e.g., test-time optimization or adversarial attack generation).",
+      "syntax": "with torch.enable_grad():  \n    # Operations here track gradients regardless of outer no_grad blocks  \n    ...\n\n# Or as a function decorator:  \n@torch.enable_grad()  \ndef compute_adversarial_step(inputs):  \n    ...",
+      "important_parameters": [
+        "None."
+      ],
+      "important_params": [
+        "None."
+      ],
+      "return_value": "Context manager / Function Decorator.",
+      "example": "import torch\n\nx = torch.tensor([2.0], requires_grad=True)\n\n@torch.no_grad()  \ndef evaluation_pipeline(val_tensor):  \n    # Outer block has gradients disabled  \n    val_res = val_tensor ** 2  \n      \n    # Temporarily enable gradients for adversarial sampling  \n    with torch.enable_grad():  \n        x_adv = val_tensor.clone().requires_grad_(True)  \n        loss = (x_adv ** 3).sum()  \n        loss.backward()  \n        adv_grad = x_adv.grad  \n          \n    return val_res, adv_grad\n\nres, grad = evaluation_pipeline(x)  \nprint(f\"Validation Result (untracked): {res}\")  \nprint(f\"Adversarial Gradient (tracked): {grad}\")",
+      "use_when": "Generating adversarial examples (e.g., FGSM) during model validation steps.\nExecuting test-time fine-tuning or meta-learning inner loops inside an overall non-differentiable pipeline.",
+      "avoid_when": "Outer contexts already have gradient tracking enabled (redundant).",
+      "gotchas": [
+        "enable_grad cannot override torch.inference_mode(). If enclosed inside an outer inference_mode block, attempting tracking operations will fail or behave unexpectedly; exit inference_mode first."
+      ],
+      "performance_notes": "Restores normal computational graph construction overhead for operations contained within its scope.",
+      "related_apis": [
+        "torch.no_grad",
+        "torch.set_grad_enabled",
+        "torch.is_grad_enabled"
+      ],
+      "framework_migration_notes": "From TensorFlow: Equivalent to re-entering a tf.GradientTape() context while processing variables inside non-tracked evaluation functions.",
+      "tensorflow_equivalent": "with tf.GradientTape() as tape:  # Explicit tape re-entry",
+      "framework_equivalent": "with tf.GradientTape() as tape:  # Explicit tape re-entry",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Re-enable autograd",
+          "enable_grad context",
+          "force gradient tracking"
+        ],
+        "search_terms": [
+          "pytorch enable_grad inside no_grad",
+          "enable autograd temporarily",
+          "torch.enable_grad"
+        ],
+        "keywords": [
+          "enable_grad",
+          "autograd",
+          "adversarial attack",
+          "context manager"
+        ],
+        "confused_with": [
+          "set_grad_enabled (takes boolean flag vs enable_grad context manager)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.enable_grad.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.enable_grad.html"
+    },
+    {
+      "task": "Create Custom Autograd Function (torch.autograd.Function)",
+      "problem_solved": "Defines non-standard forward and backward pass operations manually with explicit dynamic automatic differentiation rules.",
+      "mental_trigger": "I need to write a custom layer with a specialized derivative, non-differentiable step approximation (e.g., Straight-Through Estimator), or a custom C++/CUDA kernel binding.",
+      "syntax": "class CustomFunction(torch.autograd.Function):  \n    @staticmethod  \n    def forward(ctx, input_tensor, weight):  \n        ctx.save_for_backward(input_tensor, weight)  \n        # Compute forward  \n        return output\n\n    @staticmethod  \n    def backward(ctx, grad_output):  \n        input_tensor, weight = ctx.saved_tensors  \n        # Compute custom gradients wrt inputs  \n        return grad_input, grad_weight",
+      "important_parameters": [
+        "ctx: Context object used to stash arbitrary variables or tensors (ctx.save_for_backward) for consumption during backward.",
+        "grad_output: Gradient of loss with respect to the output of this function."
+      ],
+      "important_params": [
+        "ctx: Context object used to stash arbitrary variables or tensors (ctx.save_for_backward) for consumption during backward.",
+        "grad_output: Gradient of loss with respect to the output of this function."
+      ],
+      "return_value": "Gradients for each argument passed to forward(). Unused or non-differentiable input arguments must return None.",
+      "example": "import torch\n\n# Implement Straight-Through Estimator (STE) for Sign function  \nclass StraightThroughEstimator(torch.autograd.Function):  \n    @staticmethod  \n    def forward(ctx, x):  \n        # Quantize to -1.0 or 1.0  \n        return torch.sign(x)\n\n    @staticmethod  \n    def backward(ctx, grad_output):  \n        # Pass gradient straight through unchanged (Identity gradient)  \n        return grad_output\n\n# Apply custom function via .apply  \nste_sign = StraightThroughEstimator.apply\n\nx = torch.tensor([-0.5, 1.2, -2.1], requires_grad=True)  \ny = ste_sign(x)  \nloss = y.sum()  \nloss.backward()\n\nprint(f\"Forward output (quantized): {y}\")  \nprint(f\"Backward gradient (STE applied): {x.grad}\")",
+      "use_when": "Custom CUDA/C++ extensions lacking native autograd support.\nApproximating non-differentiable operations (e.g., binarization, quantization, hard thresholding) with surrogate gradients.\nNumerically stabilizing specific sub-networks (e.g., custom log-sum-exp implementations).",
+      "avoid_when": "Operations can be composed natively using standard PyTorch mathematical operators; PyTorch autograd handles native composition automatically.",
+      "gotchas": [
+        "Saved intermediate non-tensor objects must be stored on ctx directly (e.g., ctx.alpha = alpha). Tensors must be stored using ctx.save_for_backward(tensor1, tensor2) to preserve memory and device tracking.",
+        "The number of returned gradient tensors in backward() must exactly match the number of arguments accepted by forward()."
+      ],
+      "performance_notes": "Efficiently bridges custom low-level C++/CUDA kernels into PyTorch's automatic differentiation graph with minimal dispatch overhead.",
+      "related_apis": [
+        "torch.autograd.Function.apply",
+        "torch.autograd.gradcheck"
+      ],
+      "framework_migration_notes": "From TensorFlow: Matches @tf.custom_gradient decorating custom operations with explicit forward and gradient lambda functions.",
+      "tensorflow_equivalent": "@tf.custom_gradient\ndef custom_op(x):\ndef grad(dy):\nreturn dy * ...\nreturn output, grad",
+      "framework_equivalent": "@tf.custom_gradient\ndef custom_op(x):\ndef grad(dy):\nreturn dy * ...\nreturn output, grad",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Custom autograd function",
+          "custom backward pass",
+          "surrogate gradient layer"
+        ],
+        "search_terms": [
+          "custom autograd function pytorch example",
+          "torch.autograd.Function save_for_backward",
+          "straight through estimator pytorch"
+        ],
+        "keywords": [
+          "torch.autograd.Function",
+          "custom gradients",
+          "save_for_backward",
+          "forward/backward"
+        ],
+        "confused_with": [
+          "torch.nn.Module (defines structural layers vs Function defining automatic differentiation operational rules)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "transformer",
+        "deepseek"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://www.google.com/search?q=https://pytorch.org/docs/stable/generated/torch.autograd.Function.html",
+      "official_docs": "https://www.google.com/search?q=https://pytorch.org/docs/stable/generated/torch.autograd.Function.html"
+    },
+    {
+      "task": "Detach Tensor from Computation Graph (detach, detach_)",
+      "problem_solved": "Creates a new tensor shareable with identical data storage but detached from the computational graph, preventing gradient flow past the detachment point.",
+      "mental_trigger": "I need to stop gradients from flowing back through a specific sub-network or variable while retaining its computed numerical value.",
+      "syntax": "detached_tensor = tensor.detach()  \n# Or in-place modification:  \ntensor.detach_()",
+      "important_parameters": [
+        "None."
+      ],
+      "important_params": [
+        "None."
+      ],
+      "return_value": "> * **detach()**: A new torch.Tensor sharing storage with tensor, with requires_grad=False and grad_fn=None.  \n> * **detach_()**: The target tensor modified in-place to detach it from history.",
+      "example": "import torch\n\nx = torch.tensor([2.0, 3.0], requires_grad=True)\n\n# Derive y with tracking  \ny = x ** 2\n\n# Detach y before calculating z  \ny_detached = y.detach()  \nz = (y_detached * 5).sum()\n\nz.backward()\n\nprint(f\"x.grad: {x.grad}\")  # None, because graph was broken at y_detached  \nprint(f\"y_detached.requires_grad: {y_detached.requires_grad}\")",
+      "use_when": "Implementing Actor-Critic reinforcement learning algorithms (e.g., detaching target Q-network targets).\nGenerative Adversarial Networks (GANs) where generator and discriminator updates alternate.\nTruncated Backpropagation Through Time (TBPTT) in recurrent models.",
+      "avoid_when": "Creating an independent, deep memory copy of data un-linked in memory; use tensor.clone().detach() instead.",
+      "gotchas": [
+        "tensor.detach() shares underlying data storage. Modifying detached_tensor in-place will corrupt the original tensor's numerical values, which can cause subtle autograd errors if the original tensor is used in a backward pass.",
+        "Using detach() alone does not copy memory. If memory isolation is required, use .clone().detach()."
+      ],
+      "performance_notes": "Extremely fast *O*(1) operation; creates a tensor header pointing to existing memory buffers without allocating new CUDA/RAM memory.",
+      "related_apis": [
+        "torch.Tensor.clone",
+        "torch.Tensor.requires_grad_",
+        "torch.no_grad"
+      ],
+      "framework_migration_notes": "From TensorFlow: Equivalent to tf.stop_gradient(tensor).",
+      "tensorflow_equivalent": "tf.stop_gradient(tensor)",
+      "framework_equivalent": "tf.stop_gradient(tensor)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Stop gradient",
+          "detach graph",
+          "detach_"
+        ],
+        "search_terms": [
+          "pytorch stop_gradient",
+          "detach vs clone pytorch",
+          "tensor.detach() example"
+        ],
+        "keywords": [
+          "detach",
+          "stop_gradient",
+          "computation graph",
+          "memory sharing",
+          "autograd"
+        ],
+        "confused_with": [
+          "clone() (copies memory vs detach which disconnects autograd history)",
+          "torch.no_grad (context scope vs tensor-level detachment)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "gan",
+        "transformer"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.Tensor.detach.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.Tensor.detach.html"
+    },
+    {
+      "task": "Control Computation Graph Lifetime (retain_graph, create_graph)",
+      "problem_solved": "Controls whether computation graph buffers are retained after backpropagation and whether the backward pass itself creates a differentiable graph for higher-order derivatives.",
+      "mental_trigger": "I need to call .backward() multiple times on the same loss graph, or compute gradients of gradients (higher-order derivatives).",
+      "syntax": "tensor.backward(retain_graph=True, create_graph=True)",
+      "important_parameters": [
+        "retain_graph (bool): Retains graph execution buffers after computing gradients. Allows calling .backward() again on the same graph without throwing an error.",
+        "create_graph (bool): Constructs a computational graph of the backward operations itself, enabling higher-order derivatives (e.g., second derivatives)."
+      ],
+      "important_params": [
+        "retain_graph (bool): Retains graph execution buffers after computing gradients. Allows calling .backward() again on the same graph without throwing an error.",
+        "create_graph (bool): Constructs a computational graph of the backward operations itself, enabling higher-order derivatives (e.g., second derivatives)."
+      ],
+      "return_value": "None.",
+      "example": "import torch\n\nx = torch.tensor([3.0], requires_grad=True)  \ny = x ** 3  # dy/dx = 3x^2 = 27\n\n# First backward: Retain graph buffers and construct higher-order graph  \ny.backward(retain_graph=True, create_graph=True)  \nfirst_grad = x.grad.clone()  \nprint(f\"First derivative (dy/dx): {first_grad.item()}\")\n\n# Reset x.grad to compute clean second derivative  \nx.grad.zero_()\n\n# Calculate second derivative by computing backward on the graph of x.grad  \nfirst_grad.backward()  \nprint(f\"Second derivative (d2y/dx2): {x.grad.item()}\")  # d2y/dx2 = 6x = 18",
+      "use_when": "Multi-task learning where multiple task-specific losses are backpropagated sequentially from a shared backbone.\nHigher-order derivative algorithms (e.g., Hessian-vector products, MAML meta-learning, WGAN-GP gradient penalties).",
+      "avoid_when": "Standard training passes. Setting retain_graph=True unnecessarily causes major VRAM memory leaks.",
+      "gotchas": [
+        "Leaving retain_graph=True active in standard training loops causes memory consumption to increase continuously until the system runs out of memory (OOM).",
+        "Using create_graph=True without clearing intermediate states keeps references to backward graphs active, leading to significant memory consumption."
+      ],
+      "performance_notes": "retain_graph=True prevents autograd from releasing activation buffers, increasing peak VRAM footprint proportionally to graph size.\ncreate_graph=True doubles computational complexity by constructing graph nodes during backward pass execution.",
+      "related_apis": [
+        "torch.Tensor.backward",
+        "torch.autograd.grad"
+      ],
+      "framework_migration_notes": "From TensorFlow: retain_graph=True is equivalent to instantiating persistent tapes: tf.GradientTape(persistent=True).",
+      "tensorflow_equivalent": "with tf.GradientTape(persistent=True) as tape:",
+      "framework_equivalent": "with tf.GradientTape(persistent=True) as tape:",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "Graph lifetime control",
+          "retain_graph",
+          "create_graph",
+          "higher order backward"
+        ],
+        "search_terms": [
+          "pytorch retain_graph=True example",
+          "compute second derivative pytorch",
+          "create_graph autograd"
+        ],
+        "keywords": [
+          "retain_graph",
+          "create_graph",
+          "higher-order derivatives",
+          "graph lifetime",
+          "autograd"
+        ],
+        "confused_with": [
+          "retain_grad (retains intermediate tensor gradient buffers vs retain_graph which retains full computation graph execution structure)"
+        ]
+      },
+      "related_models": [
+        "transformer",
+        "deepseek"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://pytorch.org/docs/stable/generated/torch.Tensor.backward.html",
+      "official_docs": "https://pytorch.org/docs/stable/generated/torch.Tensor.backward.html"
+    }
+  ]
+}

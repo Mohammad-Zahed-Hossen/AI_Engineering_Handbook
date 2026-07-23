@@ -1,0 +1,2112 @@
+{
+  "id": "pytorch",
+  "module_name": "01_tensor",
+  "module_title": "Tensor Operations",
+  "slug": "01_tensor",
+  "tasks": [
+    {
+      "task": "Create Tensor from Python Sequence (`torch.tensor`)",
+      "problem_solved": "Construct a new Tensor from Python scalars or nested sequences for immediate computation.",
+      "mental_trigger": "I need a fresh tensor built from Python lists or scalars that does not share memory with the source.",
+      "syntax": "torch.tensor(data, dtype=None, device=None, requires_grad=False, pin_memory=False)",
+      "important_parameters": [
+        "data — Python scalar, list, tuple, or ndarray input.",
+        "dtype — desired tensor dtype.",
+        "device — target device (cpu, cuda).",
+        "requires_grad — whether autograd should track the tensor.",
+        "pin_memory — pin host memory for faster transfer to CUDA."
+      ],
+      "important_params": [
+        "data — Python scalar, list, tuple, or ndarray input.",
+        "dtype — desired tensor dtype.",
+        "device — target device (cpu, cuda).",
+        "requires_grad — whether autograd should track the tensor.",
+        "pin_memory — pin host memory for faster transfer to CUDA."
+      ],
+      "return_value": "A newly allocated torch.Tensor with its own storage (always copies input data when data is a Python sequence).",
+      "example": "import torch\nt = torch.tensor([1.0, 2.0, 3.0], dtype=torch.float32)",
+      "use_when": "You want an independent Tensor created from Python-native data and do not require zero-copy semantics.",
+      "avoid_when": "You need to avoid copies (use torch.as_tensor or torch.from_numpy instead).",
+      "gotchas": [
+        "Always copies Python sequences; does not share memory with the source.",
+        "When passed a tensor, behaves like clone().detach(), which can produce a new leaf tensor.",
+        "dtype inference may upcast (e.g., ints → long) depending on input; specify dtype to avoid surprises.",
+        "pin_memory only affects CPU tensors and is ignored on CUDA."
+      ],
+      "performance_notes": "Allocates new memory and copies data — use for small construction or when isolation is required; avoid in tight loops where zero-copy is needed.",
+      "related_apis": [
+        "torch.as_tensor",
+        "torch.from_numpy",
+        "torch.clone",
+        "torch.empty"
+      ],
+      "framework_migration_notes": "NumPy users: similar to numpy.array but always copies Python sequences; prefer as_tensor/from_numpy for zero-copy with ndarrays.",
+      "tensorflow_equivalent": "tf.convert_to_tensor(data) — creates a new TensorFlow Tensor (may copy depending on input).",
+      "framework_equivalent": "tf.convert_to_tensor(data) — creates a new TensorFlow Tensor (may copy depending on input).",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "tensor_constructor"
+        ],
+        "search_terms": [
+          "create tensor from list",
+          "torch.tensor copy"
+        ],
+        "keywords": [
+          "creation",
+          "allocation",
+          "copy"
+        ],
+        "confused_with": [
+          "torch.as_tensor",
+          "torch.from_numpy"
+        ]
+      },
+      "related_models": [
+        "resnet"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tensor-creation"
+      ],
+      "related_cheatsheet": [
+        "tensor-creation"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.tensor.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.tensor.html\n\n***"
+    },
+    {
+      "task": "Create Tensor from Existing Data avoiding copies (`torch.as_tensor`)",
+      "problem_solved": "Wrap existing array-like data into a Tensor while avoiding unnecessary copies when possible.",
+      "mental_trigger": "I need a tensor view over existing numeric data without allocating a duplicate buffer.",
+      "syntax": "torch.as_tensor(data, dtype=None, device=None)",
+      "important_parameters": [
+        "data — array-like (tensor, ndarray, sequence).",
+        "dtype — requested dtype (may trigger copy if conversion required).",
+        "device — optional device placement for the returned tensor."
+      ],
+      "important_params": [
+        "data — array-like (tensor, ndarray, sequence).",
+        "dtype — requested dtype (may trigger copy if conversion required).",
+        "device — optional device placement for the returned tensor."
+      ],
+      "return_value": "A tensor referencing the input where possible (no copy for tensor inputs; may share memory with NumPy arrays in some cases).",
+      "example": "import torch, numpy as np\na = np.array(, dtype=np.float32)[^1][^2][^3]\nt = torch.as_tensor(a)",
+      "use_when": "Wrapping existing tensors or NumPy arrays for computation without forcing a copy.",
+      "avoid_when": "You need a guaranteed new allocation (use torch.tensor), or when input is read-only NumPy array requiring write access.",
+      "gotchas": [
+        "May still copy if dtype/device conversion is necessary.",
+        "If input is a torch.Tensor, returns a tensor that may share storage — changes may affect original.",
+        "Read-only NumPy arrays may produce undefined behavior if written through the tensor.",
+        "as_tensor with nested Python lists will copy."
+      ],
+      "performance_notes": "Preferable to torch.tensor for zero-copy wrapping; minimal overhead when no conversion required.",
+      "related_apis": [
+        "torch.tensor",
+        "torch.from_numpy",
+        "torch.clone"
+      ],
+      "framework_migration_notes": "NumPy users: closer to numpy.asarray semantics (no copy when possible).",
+      "tensorflow_equivalent": "tf.convert_to_tensor with zero-copy is not guaranteed; tf.constant typically copies.",
+      "framework_equivalent": "tf.convert_to_tensor with zero-copy is not guaranteed; tf.constant typically copies.",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "as_tensor"
+        ],
+        "search_terms": [
+          "wrap numpy to tensor no copy",
+          "as_tensor vs tensor"
+        ],
+        "keywords": [
+          "zero-copy",
+          "view",
+          "adapter"
+        ],
+        "confused_with": [
+          "torch.tensor",
+          "torch.from_numpy"
+        ]
+      },
+      "related_models": [
+        "vit"
+      ],
+      "related_patterns": [
+        "tensor-broadcasting"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tensor-creation"
+      ],
+      "related_cheatsheet": [
+        "tensor-creation"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.as_tensor.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.as_tensor.html\n\n***"
+    },
+    {
+      "task": "Create Tensor from NumPy Array with Zero-Copy (`torch.from_numpy`)",
+      "problem_solved": "Create a Tensor that shares memory with a NumPy ndarray to avoid allocation and copying.",
+      "mental_trigger": "I need a zero-copy tensor view of an ndarray so updates reflect bidirectionally.",
+      "syntax": "torch.from_numpy(ndarray)",
+      "important_parameters": [
+        "ndarray — NumPy ndarray with compatible dtype and writable memory.",
+        "(no other parameters; device/dtype must be handled separately)"
+      ],
+      "important_params": [
+        "ndarray — NumPy ndarray with compatible dtype and writable memory.",
+        "(no other parameters; device/dtype must be handled separately)"
+      ],
+      "return_value": "A CPU tensor that shares the same underlying memory as the ndarray (no allocation).",
+      "example": "import torch, numpy as np\na = np.array([1.0,2.0], dtype=np.float32)\nt = torch.from_numpy(a)",
+      "use_when": "Interfacing with NumPy workflows and you need memory-efficient sharing between NumPy and PyTorch.",
+      "avoid_when": "Working on CUDA devices (must copy to GPU explicitly) or when the NumPy array is read-only.",
+      "gotchas": [
+        "Returned tensor is CPU-only; moving to CUDA performs a copy.",
+        "Writing to tensor will modify ndarray and vice versa; watch for unintended mutations.",
+        "Using read-only ndarrays is unsupported and may produce undefined behavior.",
+        "Dtype compatibility is limited to supported NumPy dtypes."
+      ],
+      "performance_notes": "Zero-copy for CPU paths yields minimal overhead; moving to device causes allocation and copy.",
+      "related_apis": [
+        "torch.as_tensor",
+        "tensor.numpy",
+        "torch.tensor"
+      ],
+      "framework_migration_notes": "Direct memory sharing unlike most TensorFlow conversions; similar spirit to numpy.asarray but specifically returns a torch.Tensor.",
+      "tensorflow_equivalent": "tf.convert_to_tensor typically copies; no direct zero-copy ndarray-to-tensor mapping guaranteed.",
+      "framework_equivalent": "tf.convert_to_tensor typically copies; no direct zero-copy ndarray-to-tensor mapping guaranteed.",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "from_numpy"
+        ],
+        "search_terms": [
+          "numpy to torch zero copy",
+          "from_numpy shared memory"
+        ],
+        "keywords": [
+          "zero-copy",
+          "numpy",
+          "interoperability"
+        ],
+        "confused_with": [
+          "torch.as_tensor",
+          "torch.tensor"
+        ]
+      },
+      "related_models": [
+        "bert"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "tensor-creation"
+      ],
+      "related_cheatsheet": [
+        "tensor-creation"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.from_numpy.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.from_numpy.html\n\n***"
+    },
+    {
+      "task": "Create Zero-Filled Tensor (`torch.zeros` / `torch.zeros_like`)",
+      "problem_solved": "Allocate tensors initialized to zero for weights, masks, or placeholders.",
+      "mental_trigger": "I need a tensor pre-filled with zeros matching a shape or another tensor.",
+      "syntax": "torch.zeros(*size, dtype=None, device=None, requires_grad=False, pin_memory=False)\ntorch.zeros_like(input, dtype=None, device=None, requires_grad=False, memory_format=torch.preserve_format)",
+      "important_parameters": [
+        "size / input — output shape or reference tensor.",
+        "dtype — data type.",
+        "device — placement device.",
+        "requires_grad — autograd tracking flag.",
+        "pin_memory / memory_format — host memory pinning and format control."
+      ],
+      "important_params": [
+        "size / input — output shape or reference tensor.",
+        "dtype — data type.",
+        "device — placement device.",
+        "requires_grad — autograd tracking flag.",
+        "pin_memory / memory_format — host memory pinning and format control."
+      ],
+      "return_value": "A newly allocated tensor filled with zeros; zeros_like matches input metadata unless overridden.",
+      "example": "import torch\nz = torch.zeros(3,4, dtype=torch.float32)\nz2 = torch.zeros_like(z)",
+      "use_when": "You need deterministic zero initialization or masks with the same shape as existing tensors.",
+      "avoid_when": "You need uninitialized memory for performance (use torch.empty).",
+      "gotchas": [
+        "zeros_like will preserve memory format and device by default; explicit device param may allocate copy.",
+        "Requires explicit dtype to avoid unexpected integer/float choices.",
+        "pin_memory only applies to CPU tensors.",
+        "zeros allocates memory; frequent small zeros calls can be costly."
+      ],
+      "performance_notes": "Zero-initialization writes memory; torch.empty+fill_ can be marginally faster for some backends but less explicit.",
+      "related_apis": [
+        "torch.empty",
+        "torch.ones",
+        "torch.full",
+        "torch.zeros_like"
+      ],
+      "framework_migration_notes": "Analogous to numpy.zeros; behavior is familiar to NumPy users.",
+      "tensorflow_equivalent": "tf.zeros / tf.zeros_like",
+      "framework_equivalent": "tf.zeros / tf.zeros_like",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "zeros",
+          "zeros_like"
+        ],
+        "search_terms": [
+          "create zeros tensor",
+          "zeros_like shape"
+        ],
+        "keywords": [
+          "initialization",
+          "mask",
+          "allocation"
+        ],
+        "confused_with": [
+          "torch.empty",
+          "torch.full"
+        ]
+      },
+      "related_models": [
+        "resnet"
+      ],
+      "related_patterns": [
+        "tensor-creation"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tensor-creation"
+      ],
+      "related_cheatsheet": [
+        "tensor-creation"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.zeros.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.zeros.html\n\n***"
+    },
+    {
+      "task": "Create One-Filled Tensor (`torch.ones` / `torch.ones_like`)",
+      "problem_solved": "Allocate tensors filled with ones for scalar bias initializations or masks.",
+      "mental_trigger": "I need a tensor of ones matching a shape or another tensor.",
+      "syntax": "torch.ones(*size, dtype=None, device=None, requires_grad=False, pin_memory=False)\ntorch.ones_like(input, dtype=None, device=None, requires_grad=False, memory_format=torch.preserve_format)",
+      "important_parameters": [
+        "size / input — shape or reference tensor.",
+        "dtype — output dtype.",
+        "device — placement device.",
+        "requires_grad — autograd flag.",
+        "memory_format / pin_memory — memory layout and pin options."
+      ],
+      "important_params": [
+        "size / input — shape or reference tensor.",
+        "dtype — output dtype.",
+        "device — placement device.",
+        "requires_grad — autograd flag.",
+        "memory_format / pin_memory — memory layout and pin options."
+      ],
+      "return_value": "A newly allocated tensor filled with ones; ones_like mirrors input metadata by default.",
+      "example": "import torch\no = torch.ones(2,3)\no2 = torch.ones_like(o)",
+      "use_when": "Creating constant masks or initialization where ones are required.",
+      "avoid_when": "You need uninitialized memory for performance reasons.",
+      "gotchas": [
+        "One-fill writes memory and causes allocation overhead.",
+        "ones_like inherits layout/device unless overridden.",
+        "Be explicit with dtype to avoid integer vs float surprises.",
+        "Frequent allocation in tight loops is costly."
+      ],
+      "performance_notes": "Same allocation cost as zeros; use in-place operations only when safe.",
+      "related_apis": [
+        "torch.zeros",
+        "torch.full",
+        "torch.empty"
+      ],
+      "framework_migration_notes": "Matches numpy.ones semantics.",
+      "tensorflow_equivalent": "tf.ones / tf.ones_like",
+      "framework_equivalent": "tf.ones / tf.ones_like",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "ones",
+          "ones_like"
+        ],
+        "search_terms": [
+          "ones tensor",
+          "ones_like torch"
+        ],
+        "keywords": [
+          "initialization",
+          "mask"
+        ],
+        "confused_with": [
+          "torch.full",
+          "torch.zeros"
+        ]
+      },
+      "related_models": [
+        "random-forest"
+      ],
+      "related_patterns": [
+        "tensor-creation"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tensor-creation"
+      ],
+      "related_cheatsheet": [
+        "tensor-creation"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.ones.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.ones.html\n\n***"
+    },
+    {
+      "task": "Create Uninitialized Tensor Memory (`torch.empty` / `torch.empty_like`)",
+      "problem_solved": "Allocate tensor storage without initializing values for performance-sensitive paths.",
+      "mental_trigger": "I need allocated memory that I will overwrite immediately to avoid initialization cost.",
+      "syntax": "torch.empty(*size, dtype=None, device=None, requires_grad=False, pin_memory=False)\ntorch.empty_like(input, dtype=None, device=None, requires_grad=False, memory_format=torch.preserve_format)",
+      "important_parameters": [
+        "size / input — shape or reference.",
+        "dtype — dtype of allocated storage.",
+        "device — target device.",
+        "requires_grad — autograd flag.",
+        "memory_format / pin_memory — layout/pinning options."
+      ],
+      "important_params": [
+        "size / input — shape or reference.",
+        "dtype — dtype of allocated storage.",
+        "device — target device.",
+        "requires_grad — autograd flag.",
+        "memory_format / pin_memory — layout/pinning options."
+      ],
+      "return_value": "A tensor with uninitialized (indeterminate) memory; contents are unspecified until written.",
+      "example": "import torch\ne = torch.empty(3,3, dtype=torch.float32)",
+      "use_when": "Preallocating buffers to be filled by computation, reducing allocation overhead.",
+      "avoid_when": "You need deterministic initial values (use zeros/ones/full).",
+      "gotchas": [
+        "Contents are uninitialized and may contain arbitrary data; always overwrite before use.",
+        "On some backends, empty may still zero memory for safety (backend-dependent).",
+        "Using values before assignment yields nondeterministic results.",
+        "empty_like inherits metadata and may produce unexpected layout unless controlled."
+      ],
+      "performance_notes": "Avoids initialization cost which can improve startup and tight-loop performance.",
+      "related_apis": [
+        "torch.zeros",
+        "torch.ones",
+        "torch.full"
+      ],
+      "framework_migration_notes": "Similar to numpy.empty semantics; NumPy users should likewise ensure overwrite before use.",
+      "tensorflow_equivalent": "tf.empty is not a direct API; tf.Variable with uninitialized values is uncommon — TensorFlow generally initializes tensors.",
+      "framework_equivalent": "tf.empty is not a direct API; tf.Variable with uninitialized values is uncommon — TensorFlow generally initializes tensors.",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "empty",
+          "empty_like"
+        ],
+        "search_terms": [
+          "uninitialized tensor",
+          "torch.empty usage"
+        ],
+        "keywords": [
+          "allocation",
+          "performance",
+          "buffer"
+        ],
+        "confused_with": [
+          "torch.zeros",
+          "torch.empty_like"
+        ]
+      },
+      "related_models": [
+        "gpt"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "tensor-creation"
+      ],
+      "related_cheatsheet": [
+        "tensor-creation"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.empty.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.empty.html\n\n***"
+    },
+    {
+      "task": "Create Constant-Filled Tensor (`torch.full` / `torch.full_like`)",
+      "problem_solved": "Allocate tensors initialized to a specified constant value across all elements.",
+      "mental_trigger": "I need a tensor filled with a specific scalar value that matches another tensor's shape or explicit size.",
+      "syntax": "torch.full(size, fill_value, dtype=None, device=None, requires_grad=False, pin_memory=False)\ntorch.full_like(input, fill_value, dtype=None, device=None, requires_grad=False, memory_format=torch.preserve_format)",
+      "important_parameters": [
+        "size / input — desired shape or reference tensor.",
+        "fill_value — scalar value to fill.",
+        "dtype — output dtype.",
+        "device — placement device.",
+        "requires_grad — autograd behavior."
+      ],
+      "important_params": [
+        "size / input — desired shape or reference tensor.",
+        "fill_value — scalar value to fill.",
+        "dtype — output dtype.",
+        "device — placement device.",
+        "requires_grad — autograd behavior."
+      ],
+      "return_value": "A newly allocated tensor where all elements equal fill_value.",
+      "example": "import torch\nf = torch.full((2,2), 7.0)",
+      "use_when": "Initializing bias tensors, masks with non-zero default values, or sentinel arrays.",
+      "avoid_when": "You can use broadcasted arithmetic on zeros/ones to compute values without allocation.",
+      "gotchas": [
+        "fill_value will be cast to dtype; ensure compatible dtype to avoid precision loss.",
+        "full_like inherits input metadata unless overridden.",
+        "Allocation cost similar to zeros/ones.",
+        "Using large full allocations can increase memory footprint."
+      ],
+      "performance_notes": "Write-initialization of memory incurs allocation cost; consider in-place arithmetic when appropriate.",
+      "related_apis": [
+        "torch.zeros",
+        "torch.ones",
+        "torch.empty"
+      ],
+      "framework_migration_notes": "Equivalent to numpy.full.",
+      "tensorflow_equivalent": "tf.fill",
+      "framework_equivalent": "tf.fill",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "full",
+          "full_like"
+        ],
+        "search_terms": [
+          "constant tensor",
+          "fill tensor"
+        ],
+        "keywords": [
+          "initialization",
+          "constant"
+        ],
+        "confused_with": [
+          "torch.ones",
+          "torch.zeros"
+        ]
+      },
+      "related_models": [
+        "bert"
+      ],
+      "related_patterns": [
+        "tensor-creation"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "tensor-creation"
+      ],
+      "related_cheatsheet": [
+        "tensor-creation"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.full.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.full.html\n\n***"
+    },
+    {
+      "task": "Create Random Tensor (`torch.rand` / `torch.randn` / `torch.randint`)",
+      "problem_solved": "Generate tensors with samples from common random distributions for initialization or stochastic workflows.",
+      "mental_trigger": "I need random or normally distributed tensors or integer samples for sampling indices.",
+      "syntax": "torch.rand(*size, dtype=None, device=None)\ntorch.randn(*size, dtype=None, device=None)\ntorch.randint(low, high, size, dtype=None, device=None)",
+      "important_parameters": [
+        "size — output shape.",
+        "dtype — output dtype (rand/randn returns float dtypes).",
+        "device — placement device.",
+        "low/high (randint) — integer range for sampling.",
+        "generator — optional RNG for reproducibility (not always present in shorthand)."
+      ],
+      "important_params": [
+        "size — output shape.",
+        "dtype — output dtype (rand/randn returns float dtypes).",
+        "device — placement device.",
+        "low/high (randint) — integer range for sampling.",
+        "generator — optional RNG for reproducibility (not always present in shorthand)."
+      ],
+      "return_value": "A newly allocated tensor filled with random samples from the specified distribution.",
+      "example": "import torch\nr = torch.rand(4,4)\nn = torch.randn(3)\ni = torch.randint(0, 10, (5,))",
+      "use_when": "Parameter initialization, data augmentation randomness, stochastic algorithms.",
+      "avoid_when": "A deterministic sequence is required; use manual seeding or deterministic generators.",
+      "gotchas": [
+        "Randomness depends on global RNG state unless a generator is provided.",
+        "Moving random tensors between devices performs allocation/copy.",
+        "Seeding must be managed across processes for distributed reproducibility.",
+        "dtype choices affect supported distributions (rand/randn produce floating types)."
+      ],
+      "performance_notes": "Random number generation can be a measurable cost at scale; prefer batched generation and reuse generators.",
+      "related_apis": [
+        "torch.manual_seed",
+        "torch.Generator",
+        "torch.rand_like"
+      ],
+      "framework_migration_notes": "Similar semantics to NumPy's random APIs but integrates with torch's RNG and device semantics.",
+      "tensorflow_equivalent": "tf.random.uniform, tf.random.normal, tf.random.uniform with integer dtype",
+      "framework_equivalent": "tf.random.uniform, tf.random.normal, tf.random.uniform with integer dtype",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "rand",
+          "randn",
+          "randint"
+        ],
+        "search_terms": [
+          "random tensor torch",
+          "torch.rand vs randn"
+        ],
+        "keywords": [
+          "random",
+          "initialization",
+          "rng"
+        ],
+        "confused_with": [
+          "torch.randn vs torch.rand"
+        ]
+      },
+      "related_models": [
+        "transformer"
+      ],
+      "related_patterns": [
+        "tensor-creation"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "tensor-creation"
+      ],
+      "related_cheatsheet": [
+        "tensor-creation"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.rand.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.rand.html\n\n***"
+    },
+    {
+      "task": "Create Ranged Tensor Sequences (`torch.arange` / `torch.linspace`)",
+      "problem_solved": "Produce 1-D tensors representing arithmetic sequences or evenly spaced samples for indexing or positional encodings.",
+      "mental_trigger": "I need a numeric range or evenly spaced sequence as a tensor.",
+      "syntax": "torch.arange(start=0, end, step=1, dtype=None, device=None)\ntorch.linspace(start, end, steps=100, dtype=None, device=None)",
+      "important_parameters": [
+        "start, end, step / steps — range specification.",
+        "dtype — output dtype.",
+        "device — placement device.",
+        "inclusive/exclusive behavior — arange end is exclusive."
+      ],
+      "important_params": [
+        "start, end, step / steps — range specification.",
+        "dtype — output dtype.",
+        "device — placement device.",
+        "inclusive/exclusive behavior — arange end is exclusive."
+      ],
+      "return_value": "A 1-D tensor containing the requested sequence.",
+      "example": "import torch\na = torch.arange(0, 10, 2)\nl = torch.linspace(0.0, 1.0, steps=5)",
+      "use_when": "Index generation, positional encoding, or parameterized sequences.",
+      "avoid_when": "You need multi-dimensional grids (use torch.meshgrid) or non-linear spacing.",
+      "gotchas": [
+        "arange with floating steps may produce rounding differences; prefer linspace for stable counts.",
+        "arange end is exclusive; linspace includes both endpoints by definition.",
+        "dtype conversion may truncate values unexpectedly.",
+        "Large ranges allocate significant memory."
+      ],
+      "performance_notes": "Efficient for small-to-moderate sequences; generating massive ranges consumes memory.",
+      "related_apis": [
+        "torch.linspace",
+        "torch.meshgrid",
+        "torch.range (deprecated)"
+      ],
+      "framework_migration_notes": "Similar to numpy.arange / numpy.linspace; watch floating-step rounding differences.",
+      "tensorflow_equivalent": "tf.range, tf.linspace",
+      "framework_equivalent": "tf.range, tf.linspace",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "arange",
+          "linspace"
+        ],
+        "search_terms": [
+          "torch.arange vs linspace",
+          "create range tensor"
+        ],
+        "keywords": [
+          "sequence",
+          "index",
+          "positions"
+        ],
+        "confused_with": [
+          "torch.range (deprecated)"
+        ]
+      },
+      "related_models": [
+        "transformer"
+      ],
+      "related_patterns": [
+        "tensor-broadcasting"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tensor-creation"
+      ],
+      "related_cheatsheet": [
+        "tensor-creation"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.arange.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.arange.html\n\n***"
+    },
+    {
+      "task": "Inspect Tensor Properties (`shape`, `dtype`, `device`, `layout`, `ndim`, `numel`, `stride`, `is_contiguous`)",
+      "problem_solved": "Quickly obtain a tensor's structural and storage metadata for validation and control flow.",
+      "mental_trigger": "I need to verify a tensor's shape, dtype, device, memory layout, and contiguity.",
+      "syntax": "tensor.shape, tensor.dtype, tensor.device, tensor.layout, tensor.ndim, tensor.numel(), tensor.stride(), tensor.is_contiguous()",
+      "important_parameters": [
+        "(accessors; no parameters)",
+        "Use tensor.attribute for metadata reads."
+      ],
+      "important_params": [
+        "(accessors; no parameters)",
+        "Use tensor.attribute for metadata reads."
+      ],
+      "return_value": "Scalar or tuple metadata values describing tensor shape, type, device, memory format, dimensionality, element count, stride tuple, and contiguity boolean.",
+      "example": "import torch\nt = torch.randn(2,3)\nprint(t.shape, t.dtype, t.device, t.is_contiguous())",
+      "use_when": "Validating inputs, selecting code paths based on layout/device, or debugging performance issues.",
+      "avoid_when": "You require deep inspection of storage internals beyond public attributes.",
+      "gotchas": [
+        "is_contiguous() depends on memory format and view operations; non-contiguity affects view compatibility.",
+        "stride() order indicates how memory is laid out; misinterpreting strides can cause incorrect reshapes.",
+        "layout can be sparse or strided; many ops only support strided tensors.",
+        "device strings may differ across backends (e.g., 'cuda:0', 'mps')."
+      ],
+      "performance_notes": "Attribute reads are cheap; however, operations conditioned on these attributes may change execution (e.g., copying to contiguous layout).",
+      "related_apis": [
+        "tensor.numel",
+        "tensor.element_size",
+        "torch.is_tensor"
+      ],
+      "framework_migration_notes": "NumPy users: shape/ndim/stride concepts align with ndarray; device and layout are PyTorch-specific.",
+      "tensorflow_equivalent": "tf.Tensor.shape, tf.dtypes, tf.device (contextual)",
+      "framework_equivalent": "tf.Tensor.shape, tf.dtypes, tf.device (contextual)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "tensor-metadata"
+        ],
+        "search_terms": [
+          "tensor shape dtype device contiguous stride"
+        ],
+        "keywords": [
+          "metadata",
+          "layout",
+          "inspection"
+        ],
+        "confused_with": [
+          "tensor.size() vs tensor.shape"
+        ]
+      },
+      "related_models": [
+        "resnet"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tensor-manipulation"
+      ],
+      "related_cheatsheet": [
+        "tensor-manipulation"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/tensor_attributes.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/tensor_attributes.html\n\n***"
+    },
+    {
+      "task": "Reshape Contiguous Tensor View (`torch.view` / `view_as`)",
+      "problem_solved": "Create a new view with a different shape that shares the same memory when the tensor is contiguous.",
+      "mental_trigger": "I need a no-copy reshape of a contiguous tensor for indexing or batch adjustments.",
+      "syntax": "tensor.view(*shape)\ntorch.view_as(tensor, other)",
+      "important_parameters": [
+        "shape — desired output shape (must be compatible with numel).",
+        "(no device/dtype params for view)",
+        "Use -1 for automatic dimension inference."
+      ],
+      "important_params": [
+        "shape — desired output shape (must be compatible with numel).",
+        "(no device/dtype params for view)",
+        "Use -1 for automatic dimension inference."
+      ],
+      "return_value": "A view referencing the same storage as the original tensor when memory layout allows; raises if view cannot be satisfied.",
+      "example": "import torch\nt = torch.randn(2,3)\nv = t.view(3,2)",
+      "use_when": "Reshaping contiguous tensors without allocation for performance and memory efficiency.",
+      "avoid_when": "Tensor is non-contiguous due to transposes or slicing (use reshape or contiguous() first).",
+      "gotchas": [
+        "view requires the tensor to be contiguous; otherwise it raises an error.",
+        "Using view on a tensor that was created as a view may still be valid only if strides match.",
+        "In-place modifications affect both view and base tensor.",
+        "Using incorrect shape that mismatches element count raises an error."
+      ],
+      "performance_notes": "No allocation when successful — excellent for zero-copy reshaping.",
+      "related_apis": [
+        "torch.reshape",
+        "tensor.contiguous",
+        "tensor.view_as"
+      ],
+      "framework_migration_notes": "NumPy users: analogous to ndarray.view/reshape but contiguity rules differ.",
+      "tensorflow_equivalent": "tf.reshape (TensorFlow typically returns a new tensor but may avoid copy)",
+      "framework_equivalent": "tf.reshape (TensorFlow typically returns a new tensor but may avoid copy)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "view",
+          "view_as"
+        ],
+        "search_terms": [
+          "tensor view reshape torch.view contiguous"
+        ],
+        "keywords": [
+          "view",
+          "reshape",
+          "contiguous"
+        ],
+        "confused_with": [
+          "torch.reshape"
+        ]
+      },
+      "related_models": [
+        "resnet"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tensor-manipulation"
+      ],
+      "related_cheatsheet": [
+        "tensor-manipulation"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.Tensor.view.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.Tensor.view.html\n\n***"
+    },
+    {
+      "task": "Reshape Tensor with Copy/View Fallback (`torch.reshape` / `reshape_as`)",
+      "problem_solved": "Obtain a tensor with the requested shape, returning a view when possible or a copy otherwise.",
+      "mental_trigger": "I need a reshaped tensor regardless of contiguity details.",
+      "syntax": "torch.reshape(input, shape)\ntorch.reshape_as(input, other)",
+      "important_parameters": [
+        "input — source tensor.",
+        "shape — desired shape (use -1 to infer).",
+        "device/dtype not accepted here."
+      ],
+      "important_params": [
+        "input — source tensor.",
+        "shape — desired shape (use -1 to infer).",
+        "device/dtype not accepted here."
+      ],
+      "return_value": "A tensor with the requested shape; may be a view (no copy) or a new allocation when view is not possible.",
+      "example": "import torch\nt = torch.randn(2,3).t()\nr = torch.reshape(t, (3,2))",
+      "use_when": "You want a convenient reshape that works across contiguous and non-contiguous tensors.",
+      "avoid_when": "You require guaranteed no-copy behavior; use view on known-contiguous tensors.",
+      "gotchas": [
+        "May allocate new memory silently; performance implications if unexpected.",
+        "In-place expectations may break if a copy was created.",
+        "Strides of the returned tensor may differ from source when a copy occurs.",
+        "reshape_as uses other's shape and may trigger copy similarly."
+      ],
+      "performance_notes": "Prefer reshape over view when contiguity is uncertain; monitor for unexpected allocations on performance-critical paths.",
+      "related_apis": [
+        "torch.view",
+        "tensor.contiguous",
+        "torch.clone"
+      ],
+      "framework_migration_notes": "Similar to numpy.reshape; copy semantics are context-dependent.",
+      "tensorflow_equivalent": "tf.reshape",
+      "framework_equivalent": "tf.reshape",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "reshape",
+          "reshape_as"
+        ],
+        "search_terms": [
+          "torch.reshape copy vs view"
+        ],
+        "keywords": [
+          "reshape",
+          "view-fallback"
+        ],
+        "confused_with": [
+          "torch.view"
+        ]
+      },
+      "related_models": [
+        "vit"
+      ],
+      "related_patterns": [
+        "tensor-broadcasting"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tensor-manipulation"
+      ],
+      "related_cheatsheet": [
+        "tensor-manipulation"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.reshape.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.reshape.html\n\n***"
+    },
+    {
+      "task": "Flatten Tensor Dimensions (`torch.flatten`)",
+      "problem_solved": "Collapse a range of dimensions into a single dimension for vectorization or linear layers.",
+      "mental_trigger": "I need to collapse batch or spatial dimensions into a single feature dimension.",
+      "syntax": "torch.flatten(input, start_dim=0, end_dim=-1)",
+      "important_parameters": [
+        "input — source tensor.",
+        "start_dim — first dimension to flatten.",
+        "end_dim — last dimension to flatten."
+      ],
+      "important_params": [
+        "input — source tensor.",
+        "start_dim — first dimension to flatten.",
+        "end_dim — last dimension to flatten."
+      ],
+      "return_value": "A view when possible that presents a flattened shape; may allocate if underlying memory prevents a view.",
+      "example": "import torch\nt = torch.randn(2,3,4)\nf = torch.flatten(t, start_dim=1)",
+      "use_when": "Preparing tensors for linear layers or feature vector extraction.",
+      "avoid_when": "You need to preserve original dimensionality; use view/reshape to revert with known shapes.",
+      "gotchas": [
+        "May return a copy if memory layout prevents view.",
+        "start_dim/end_dim handling must match tensor rank (negative indexes allowed).",
+        "In-place operations on flattened view affect underlying tensor."
+      ],
+      "performance_notes": "Likely zero-copy for standard layouts; check is_contiguous or test for allocation in tight loops.",
+      "related_apis": [
+        "torch.reshape",
+        "tensor.view",
+        "tensor.flatten"
+      ],
+      "framework_migration_notes": "Matches numpy.ravel/reshape patterns; TensorFlow uses tf.reshape for flattening.",
+      "tensorflow_equivalent": "tf.reshape(x, [x.shape, -1]) or tf.keras.layers.Flatten",
+      "framework_equivalent": "tf.reshape(x, [x.shape, -1]) or tf.keras.layers.Flatten",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "flatten"
+        ],
+        "search_terms": [
+          "flatten tensor torch"
+        ],
+        "keywords": [
+          "flatten",
+          "vectorize"
+        ],
+        "confused_with": [
+          "torch.reshape",
+          "torch.view"
+        ]
+      },
+      "related_models": [
+        "resnet"
+      ],
+      "related_patterns": [
+        "feature-fusion"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tensor-manipulation"
+      ],
+      "related_cheatsheet": [
+        "tensor-manipulation"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.flatten.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.flatten.html\n\n***"
+    },
+    {
+      "task": "Squeeze and Unsqueeze Dimensions (`torch.squeeze` / `torch.unsqueeze`)",
+      "problem_solved": "Remove or add singleton dimensions for broadcasting or layout compatibility.",
+      "mental_trigger": "I need to remove size-1 axes or insert new axes to match expected shapes.",
+      "syntax": "torch.squeeze(input, dim=None)\ntorch.unsqueeze(input, dim)",
+      "important_parameters": [
+        "input — source tensor.",
+        "dim — specific axis to squeeze/unsqueeze; omit dim to remove all size-1 axes."
+      ],
+      "important_params": [
+        "input — source tensor.",
+        "dim — specific axis to squeeze/unsqueeze; omit dim to remove all size-1 axes."
+      ],
+      "return_value": "A tensor view that shares memory with the source when operation is possible.",
+      "example": "import torch\nt = torch.randn(3,1,4)\ns = torch.squeeze(t, 1)\nu = torch.unsqueeze(s, 1)",
+      "use_when": "Preparing tensors for broadcasting, ensuring batch dimensions, or aligning shapes.",
+      "avoid_when": "Attempting to squeeze non-singleton dimensions (raises error if specific dim mismatched).",
+      "gotchas": [
+        "squeeze without dim removes all size-1 axes and may change intended semantics.",
+        "Unsqueeze indices follow Python indexing rules; negative dims allowed.",
+        "Both are usually views; in-place expectations affect original tensor.",
+        "Using squeeze on tensors where dim !=1 raises error."
+      ],
+      "performance_notes": "No allocation for typical cases; cheap shape-change operations.",
+      "related_apis": [
+        "torch.reshape",
+        "torch.view",
+        "torch.permute"
+      ],
+      "framework_migration_notes": "NumPy users: equivalent to np.squeeze and np.expand_dims.",
+      "tensorflow_equivalent": "tf.squeeze, tf.expand_dims",
+      "framework_equivalent": "tf.squeeze, tf.expand_dims",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "squeeze",
+          "unsqueeze"
+        ],
+        "search_terms": [
+          "remove singleton dimension torch",
+          "add axis torch"
+        ],
+        "keywords": [
+          "reshape",
+          "axes",
+          "singleton"
+        ],
+        "confused_with": [
+          "torch.reshape"
+        ]
+      },
+      "related_models": [
+        "yolo"
+      ],
+      "related_patterns": [
+        "tensor-broadcasting"
+      ],
+      "related_workflows": [
+        "object-detection-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tensor-manipulation"
+      ],
+      "related_cheatsheet": [
+        "tensor-manipulation"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.squeeze.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.squeeze.html\n\n***"
+    },
+    {
+      "task": "Permute and Transpose Dimensions (`torch.permute` / `torch.transpose`)",
+      "problem_solved": "Reorder tensor dimensions to match expected memory layout or operator requirements.",
+      "mental_trigger": "I need to swap or reorder axes for convolution, linearization, or layout conversion.",
+      "syntax": "torch.transpose(input, dim0, dim1)\ntorch.permute(input, dims)",
+      "important_parameters": [
+        "dim0, dim1 / dims — axis indices to swap or the full permutation tuple.",
+        "input — source tensor."
+      ],
+      "important_params": [
+        "dim0, dim1 / dims — axis indices to swap or the full permutation tuple.",
+        "input — source tensor."
+      ],
+      "return_value": "A view with reinterpreted strides; does not copy when possible but may produce non-contiguous tensors.",
+      "example": "import torch\nt = torch.randn(2,3,4)\np = torch.permute(t, (0,2,1))\ns = torch.transpose(t, 1, 2)",
+      "use_when": "Converting between channel-first/channel-last layouts or swapping batch/spatial dims.",
+      "avoid_when": "Expecting contiguous memory subsequently; call contiguous() if a contiguous buffer is required.",
+      "gotchas": [
+        "Permuted tensors are often non-contiguous; many ops require contiguity.",
+        "Subsequent view() calls will fail unless tensor is contiguous.",
+        "In-place operations can be invalid or change underlying storage unexpectedly.",
+        "Repeated permutations can increase code complexity and mistake risk."
+      ],
+      "performance_notes": "No immediate allocation, but non-contiguity may force copies in downstream kernels.",
+      "related_apis": [
+        "tensor.contiguous",
+        "torch.reshape",
+        "torch.permute"
+      ],
+      "framework_migration_notes": "Equivalent to numpy.transpose/permutation; watch for performance implications related to memory layout.",
+      "tensorflow_equivalent": "tf.transpose",
+      "framework_equivalent": "tf.transpose",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "permute",
+          "transpose"
+        ],
+        "search_terms": [
+          "change axis order torch"
+        ],
+        "keywords": [
+          "layout",
+          "transpose",
+          "permute"
+        ],
+        "confused_with": [
+          "torch.reshape",
+          "torch.view"
+        ]
+      },
+      "related_models": [
+        "yolo"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "object-detection-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tensor-manipulation"
+      ],
+      "related_cheatsheet": [
+        "tensor-manipulation"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.permute.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.permute.html\n\n***"
+    },
+    {
+      "task": "Enforce Memory Contiguity (`torch.contiguous`)",
+      "problem_solved": "Produce a contiguous copy of a tensor when kernels require contiguous storage.",
+      "mental_trigger": "I need a contiguous tensor before calling an API that requires contiguous input.",
+      "syntax": "tensor.contiguous(memory_format=torch.contiguous_format)",
+      "important_parameters": [
+        "memory_format — memory layout hint.",
+        "(no device/dtype params)"
+      ],
+      "important_params": [
+        "memory_format — memory layout hint.",
+        "(no device/dtype params)"
+      ],
+      "return_value": "A tensor that is contiguous in memory; may return the same object if already contiguous, otherwise allocates a copy.",
+      "example": "import torch\nt = torch.randn(2,3).t()\ntc = t.contiguous()",
+      "use_when": "Preparing inputs for C/C++ extensions or kernels expecting contiguous buffers.",
+      "avoid_when": "You do not need a contiguous buffer — avoid unnecessary copies.",
+      "gotchas": [
+        "May allocate a new buffer and copy data, causing performance overhead.",
+        "memory_format influences layout and can affect downstream views/strides.",
+        "Calling contiguous repeatedly on already-contiguous tensors is a no-op but adds call overhead.",
+        "In-place expectations may be invalid if a copy was made."
+      ],
+      "performance_notes": "Copy cost can be significant for large tensors; minimize by designing layout to avoid forced contiguity.",
+      "related_apis": [
+        "torch.permute",
+        "tensor.clone",
+        "torch.reshape"
+      ],
+      "framework_migration_notes": "NumPy ndarrays are typically contiguous; PyTorch permute/transpose can produce non-contiguous views requiring contiguous().",
+      "tensorflow_equivalent": "TensorFlow tensors abstract away contiguity; explicit copy operations (tf.identity + reorder) may be required.",
+      "framework_equivalent": "TensorFlow tensors abstract away contiguity; explicit copy operations (tf.identity + reorder) may be required.",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "contiguous"
+        ],
+        "search_terms": [
+          "make tensor contiguous torch"
+        ],
+        "keywords": [
+          "contiguity",
+          "copy",
+          "layout"
+        ],
+        "confused_with": [
+          "torch.clone",
+          "torch.detach"
+        ]
+      },
+      "related_models": [
+        "resnet"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tensor-manipulation"
+      ],
+      "related_cheatsheet": [
+        "tensor-manipulation"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.Tensor.contiguous.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.Tensor.contiguous.html\n\n***"
+    },
+    {
+      "task": "Clone Tensor Memory and Storage (`torch.clone`)",
+      "problem_solved": "Create an explicit copy of a tensor's data and metadata to avoid shared-storage side effects.",
+      "mental_trigger": "I need an independent copy of tensor contents to mutate without affecting the original.",
+      "syntax": "tensor.clone(memory_format=torch.preserve_format)",
+      "important_parameters": [
+        "memory_format — layout of the cloned tensor.",
+        "(no device/dtype parameters)"
+      ],
+      "important_params": [
+        "memory_format — layout of the cloned tensor.",
+        "(no device/dtype parameters)"
+      ],
+      "return_value": "A new tensor with copied storage and identical contents to the source.",
+      "example": "import torch\nt = torch.randn(2,3)\nc = t.clone()",
+      "use_when": "Safely copying tensors prior to in-place operations or cross-scope mutations.",
+      "avoid_when": "You want zero-copy views (use view/reshape) or when shallow copy semantics suffice.",
+      "gotchas": [
+        "clone always allocates new storage, which increases memory usage.",
+        "Clone of a non-contiguous tensor may produce a contiguous copy depending on memory_format.",
+        "clone preserves requires_grad on the returned tensor by default (autograd semantics apply).",
+        "Large clones can cause peak memory pressure."
+      ],
+      "performance_notes": "Costly for large tensors; prefer view-based approaches when safe and valid.",
+      "related_apis": [
+        "tensor.detach",
+        "torch.tensor (copy on creation)",
+        "torch.empty + copy_"
+      ],
+      "framework_migration_notes": "NumPy copy() creates new array similar to clone behavior.",
+      "tensorflow_equivalent": "tf.identity or tf.clone equivalent patterns (copying tensors explicitly)",
+      "framework_equivalent": "tf.identity or tf.clone equivalent patterns (copying tensors explicitly)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "clone"
+        ],
+        "search_terms": [
+          "copy tensor torch clone"
+        ],
+        "keywords": [
+          "copy",
+          "storage",
+          "independent"
+        ],
+        "confused_with": [
+          "torch.tensor (copy on construction)",
+          "tensor.detach"
+        ]
+      },
+      "related_models": [
+        "gpt"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "tensor-manipulation"
+      ],
+      "related_cheatsheet": [
+        "tensor-manipulation"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.Tensor.clone.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.Tensor.clone.html\n\n***"
+    },
+    {
+      "task": "Concatenate Tensors along Existing Dimension (`torch.cat`)",
+      "problem_solved": "Join multiple tensors along an existing axis to form a single tensor for batched processing.",
+      "mental_trigger": "I need to merge a list of tensors along a shared dimension into one tensor.",
+      "syntax": "torch.cat(tensors, dim=0, *, out=None)",
+      "important_parameters": [
+        "tensors — iterable of tensors with matching shapes except at dim.",
+        "dim — axis along which to concatenate.",
+        "out — optional output tensor for storage."
+      ],
+      "important_params": [
+        "tensors — iterable of tensors with matching shapes except at dim.",
+        "dim — axis along which to concatenate.",
+        "out — optional output tensor for storage."
+      ],
+      "return_value": "A new tensor representing the concatenation result; may allocate new storage.",
+      "example": "import torch\na = torch.ones(2,3)\nb = torch.zeros(1,3)\nc = torch.cat([a,b], dim=0)",
+      "use_when": "Collating minibatches, merging features, and combining outputs from parallel branches.",
+      "avoid_when": "You can use stacking for adding a new dimension, or preallocate and write into buffers to avoid repeated concatenations.",
+      "gotchas": [
+        "All tensors must be on the same device and have compatible dtypes.",
+        "Concatenation allocates new memory proportional to the combined size.",
+        "Frequent repeated concatenation in loops is expensive; prefer list accumulation + single cat.",
+        "Non-contiguous inputs may cause extra copies during cat."
+      ],
+      "performance_notes": "Batch concatenation in a single call is efficient; avoid incremental concatenation inside hot loops.",
+      "related_apis": [
+        "torch.stack",
+        "torch.hstack",
+        "torch.vstack",
+        "torch.split"
+      ],
+      "framework_migration_notes": "NumPy users: similar to numpy.concatenate.",
+      "tensorflow_equivalent": "tf.concat",
+      "framework_equivalent": "tf.concat",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "cat",
+          "concatenate"
+        ],
+        "search_terms": [
+          "torch.cat batch",
+          "concatenate tensors"
+        ],
+        "keywords": [
+          "concat",
+          "merge",
+          "join"
+        ],
+        "confused_with": [
+          "torch.stack"
+        ]
+      },
+      "related_models": [
+        "resnet"
+      ],
+      "related_patterns": [
+        "feature-fusion"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tensor-manipulation"
+      ],
+      "related_cheatsheet": [
+        "tensor-manipulation"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.cat.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.cat.html\n\n***"
+    },
+    {
+      "task": "Stack Tensors along New Dimension (`torch.stack`)",
+      "problem_solved": "Combine tensors by adding a new dimension and stacking entries along it to form a higher-rank tensor.",
+      "mental_trigger": "I need to assemble a list of tensors into a single tensor where each input becomes a slice along a new axis.",
+      "syntax": "torch.stack(tensors, dim=0, *, out=None)",
+      "important_parameters": [
+        "tensors — sequence of tensors with identical shapes.",
+        "dim — index at which to insert the new axis.",
+        "out — optional output tensor."
+      ],
+      "important_params": [
+        "tensors — sequence of tensors with identical shapes.",
+        "dim — index at which to insert the new axis.",
+        "out — optional output tensor."
+      ],
+      "return_value": "A newly allocated tensor where input tensors are stacked along a new dimension.",
+      "example": "import torch\na = torch.tensor()[^2][^1]\nb = torch.tensor()[^3][^4]\ns = torch.stack([a,b], dim=0)  \\# shape (2,2)",
+      "use_when": "Creating batched tensors from separate elements or assembling per-sample outputs.",
+      "avoid_when": "You want to concatenate along an existing axis (use torch.cat).",
+      "gotchas": [
+        "All inputs must have identical shapes and dtypes.",
+        "Stack always allocates new memory.",
+        "Inputs must be on the same device.",
+        "Frequent stacking can be less efficient than preallocating a buffer."
+      ],
+      "performance_notes": "Single stack call is efficient for moderate lists; for large collections, preallocate and assign for best performance.",
+      "related_apis": [
+        "torch.cat",
+        "torch.unsqueeze",
+        "torch.stack"
+      ],
+      "framework_migration_notes": "NumPy equivalent is numpy.stack.",
+      "tensorflow_equivalent": "tf.stack",
+      "framework_equivalent": "tf.stack",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "stack"
+        ],
+        "search_terms": [
+          "torch.stack vs cat",
+          "stack tensors"
+        ],
+        "keywords": [
+          "stack",
+          "new-dim",
+          "batch"
+        ],
+        "confused_with": [
+          "torch.cat"
+        ]
+      },
+      "related_models": [
+        "vit"
+      ],
+      "related_patterns": [
+        "tensor-broadcasting"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tensor-manipulation"
+      ],
+      "related_cheatsheet": [
+        "tensor-manipulation"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.stack.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.stack.html\n\n***"
+    },
+    {
+      "task": "Split Tensor into Chunks or Sections (`torch.split` / `torch.chunk`)",
+      "problem_solved": "Partition a tensor into smaller tensors by sizes or evenly into N chunks for parallel processing or batching.",
+      "mental_trigger": "I need to divide a tensor into parts either by explicit sizes or equal chunks.",
+      "syntax": "torch.split(tensor, split_size_or_sections, dim=0)\ntorch.chunk(tensor, chunks, dim=0)",
+      "important_parameters": [
+        "split_size_or_sections / chunks — sizes or number of parts.",
+        "dim — axis to split along."
+      ],
+      "important_params": [
+        "split_size_or_sections / chunks — sizes or number of parts.",
+        "dim — axis to split along."
+      ],
+      "return_value": "A tuple of tensors representing each partition; may be views when possible.",
+      "example": "import torch\nt = torch.arange(8)\nparts = torch.split(t, )[^5][^3]",
+      "use_when": "Sharding workloads, mini-batching, or dividing data for parallel pipelines.",
+      "avoid_when": "You require complex non-contiguous slicing patterns; consider index_select or advanced indexing.",
+      "gotchas": [
+        "split with uneven sections behaves as specified; chunk with non-divisible sizes yields smaller last chunk.",
+        "May return views which share storage — mutating outputs may affect the original.",
+        "All resulting tensors must be used carefully with device and dtype considerations.",
+        "Large number of small splits can cause overhead."
+      ],
+      "performance_notes": "View-based splits are cheap; copying splits is costlier if layout requires it.",
+      "related_apis": [
+        "torch.narrow",
+        "torch.index_select",
+        "torch.chunk"
+      ],
+      "framework_migration_notes": "Similar to numpy.split and numpy.array_split.",
+      "tensorflow_equivalent": "tf.split",
+      "framework_equivalent": "tf.split",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "split",
+          "chunk"
+        ],
+        "search_terms": [
+          "split tensor torch",
+          "chunk tensor"
+        ],
+        "keywords": [
+          "partition",
+          "shard",
+          "split"
+        ],
+        "confused_with": [
+          "torch.narrow"
+        ]
+      },
+      "related_models": [
+        "resnet"
+      ],
+      "related_patterns": [
+        "feature-fusion"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tensor-manipulation"
+      ],
+      "related_cheatsheet": [
+        "tensor-manipulation"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.split.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.split.html\n\n***"
+    },
+    {
+      "task": "Select and Gather Tensors (`torch.index_select` / `torch.gather` / `torch.scatter` / `torch.take_along_dim`)",
+      "problem_solved": "Perform indexed selection, gather elements along an axis, scatter values by index, or take elements along a dimension for advanced indexing and rearrangement.",
+      "mental_trigger": "I need fine-grained selection or scatter semantics using index tensors.",
+      "syntax": "torch.index_select(input, dim, index)\ntorch.gather(input, dim, index)\ntorch.scatter(input, dim, index, src)\ntorch.take_along_dim(input, indices, dim)",
+      "important_parameters": [
+        "input — source tensor.",
+        "dim — axis for operation.",
+        "index / indices — integer tensors specifying positions.",
+        "src — source values for scatter."
+      ],
+      "important_params": [
+        "input — source tensor.",
+        "dim — axis for operation.",
+        "index / indices — integer tensors specifying positions.",
+        "src — source values for scatter."
+      ],
+      "return_value": "New tensors representing selected/gathered results or mutated tensor for scatter (scatter may be in-place when using underscore variants).",
+      "example": "import torch\nt = torch.tensor([,])[^4][^1][^2][^3]\nidx = torch.tensor()[^1]\ng = torch.gather(t, 1, idx.unsqueeze(0))",
+      "use_when": "Implementing advanced indexing, batched gather operations, or scatter-accumulate patterns.",
+      "avoid_when": "Simple slicing or boolean indexing suffices; these APIs are for index-driven operations.",
+      "gotchas": [
+        "Shapes of index and input must align per API contract — mismatches raise errors.",
+        "gather/scatter semantics differ subtly; gather reads from input, scatter writes into output.",
+        "scatter may be in-place and can overwrite data unexpectedly.",
+        "take_along_dim introduced for clearer semantics in some versions — check compatibility."
+      ],
+      "performance_notes": "Index-heavy operations can be memory- and compute-intensive; try to batch indices and minimize Python-level loops.",
+      "related_apis": [
+        "torch.index_put_",
+        "torch.masked_select",
+        "advanced indexing"
+      ],
+      "framework_migration_notes": "NumPy: numpy.take_along_axis and advanced indexing map closely; TensorFlow has tf.gather, tf.scatter_nd analogs.",
+      "tensorflow_equivalent": "tf.gather, tf.gather_nd, tf.scatter_nd",
+      "framework_equivalent": "tf.gather, tf.gather_nd, tf.scatter_nd",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "gather",
+          "scatter",
+          "index_select",
+          "take_along_dim"
+        ],
+        "search_terms": [
+          "gather torch",
+          "scatter torch",
+          "index_select usage"
+        ],
+        "keywords": [
+          "gather",
+          "scatter",
+          "index",
+          "advanced-indexing"
+        ],
+        "confused_with": [
+          "boolean indexing",
+          "mask select"
+        ]
+      },
+      "related_models": [
+        "transformer"
+      ],
+      "related_patterns": [
+        "feature-fusion"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tensor-manipulation"
+      ],
+      "related_cheatsheet": [
+        "tensor-manipulation"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.gather.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.gather.html\n\n***"
+    },
+    {
+      "task": "Element-wise Arithmetic and In-place Operations (`add`, `sub`, `mul`, `div`, `add_`)",
+      "problem_solved": "Perform elementwise arithmetic with options for functional or in-place updates for memory efficiency.",
+      "mental_trigger": "I need to compute arithmetic between tensors or update tensors in-place to reduce allocations.",
+      "syntax": "torch.add(input, other, *, out=None) / torch.Tensor.add\ntorch.add_(tensor, other)  \\# in-place variant\n(similar for sub, mul, div and their in-place counterparts)",
+      "important_parameters": [
+        "input/other — operands (tensor or scalar).",
+        "out — optional preallocated output.",
+        "alpha / broadcasting rules — scale factor for some ops.",
+        "dtype promotion behavior — implicit casting rules."
+      ],
+      "important_params": [
+        "input/other — operands (tensor or scalar).",
+        "out — optional preallocated output.",
+        "alpha / broadcasting rules — scale factor for some ops.",
+        "dtype promotion behavior — implicit casting rules."
+      ],
+      "return_value": "A tensor containing elementwise results; in-place variants modify the left-hand operand.",
+      "example": "import torch\na = torch.ones(3)\nb = torch.tensor()[^2][^3][^1]\nc = a + b\na.add_(b)",
+      "use_when": "Basic arithmetic, incremental updates to buffers, and avoiding intermediate allocations.",
+      "avoid_when": "Autograd history must be preserved in specific ways — in-place ops can complicate gradient computation.",
+      "gotchas": [
+        "In-place ops can break autograd when they modify values needed for gradient computation.",
+        "Broadcasting rules may cause implicit expansion leading to larger allocations.",
+        "Dtype promotion can silently change dtype (e.g., int + float → float).",
+        "Using out= with overlapping memory may produce undefined behavior."
+      ],
+      "performance_notes": "In-place operations reduce allocations but must be used cautiously with autograd and view-sharing semantics.",
+      "related_apis": [
+        "torch.add",
+        "torch.sub",
+        "torch.mul",
+        "torch.div",
+        "tensor.add_",
+        "tensor.mul_"
+      ],
+      "framework_migration_notes": "NumPy users: in-place operators (+=) behave similarly but watch broadcasting and dtype rules.",
+      "tensorflow_equivalent": "tf.add, tf.math.add, in-place semantics are not typical in TensorFlow; use variables with assign_add for mutation.",
+      "framework_equivalent": "tf.add, tf.math.add, in-place semantics are not typical in TensorFlow; use variables with assign_add for mutation.",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "add_",
+          "sub_",
+          "mul_",
+          "div_"
+        ],
+        "search_terms": [
+          "in-place tensor add",
+          "torch.add_ vs torch.add"
+        ],
+        "keywords": [
+          "arithmetic",
+          "in-place",
+          "broadcasting"
+        ],
+        "confused_with": [
+          "torch.add (functional) vs tensor.add_ (in-place)"
+        ]
+      },
+      "related_models": [
+        "gpt"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "tensor-math"
+      ],
+      "related_cheatsheet": [
+        "tensor-math"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.add.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.add.html\n\n***"
+    },
+    {
+      "task": "Matrix Multiplication Operations (`torch.matmul` / `torch.mm` / `torch.bmm`)",
+      "problem_solved": "Perform matrix and batch-matrix multiplications with appropriate dispatch for 2D and batched tensors.",
+      "mental_trigger": "I need efficient dense matrix or batched matrix multiplication on tensors.",
+      "syntax": "torch.matmul(input, other)\ntorch.mm(mat1, mat2)  \\# 2-D only\ntorch.bmm(batch1, batch2)  \\# 3-D batched matmul",
+      "important_parameters": [
+        "input/mat1/batch1 — left operand.",
+        "other/mat2/batch2 — right operand.",
+        "out — optional preallocated output in some variants.",
+        "dtype/device — implicit from inputs."
+      ],
+      "important_params": [
+        "input/mat1/batch1 — left operand.",
+        "other/mat2/batch2 — right operand.",
+        "out — optional preallocated output in some variants.",
+        "dtype/device — implicit from inputs."
+      ],
+      "return_value": "A tensor with product results; implementations dispatch to optimized BLAS/CUDA kernels.",
+      "example": "import torch\na = torch.randn(3,4)\nb = torch.randn(4,5)\nc = torch.matmul(a,b)",
+      "use_when": "Linear algebra, dense layers, and batched linear operations.",
+      "avoid_when": "Sparse-dense matmul needed; use specialized sparse APIs.",
+      "gotchas": [
+        "Dimension mismatch errors are common if ranks/shapes are incorrect.",
+        "matmul semantics differ across 1-D/2-D/ND inputs (e.g., vector-matrix behavior).",
+        "Data layout and dtype (float16 vs float32) affect kernel availability and performance.",
+        "Large batched matmul may require memory planning to avoid OOM."
+      ],
+      "performance_notes": "Dispatches to highly-optimized BLAS/CUDA kernels; ensure correct dtype/device to utilize GPU backends.",
+      "related_apis": [
+        "torch.einsum",
+        "torch.mm",
+        "torch.bmm",
+        "torch.linalg"
+      ],
+      "framework_migration_notes": "NumPy: numpy.matmul and numpy.dot map closely; TensorFlow: tf.matmul.",
+      "tensorflow_equivalent": "tf.matmul, tf.linalg.matmul",
+      "framework_equivalent": "tf.matmul, tf.linalg.matmul",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "matmul",
+          "mm",
+          "bmm"
+        ],
+        "search_terms": [
+          "matrix multiply torch",
+          "batched matmul torch"
+        ],
+        "keywords": [
+          "matmul",
+          "batch-matmul",
+          "linear-algebra"
+        ],
+        "confused_with": [
+          "torch.einsum"
+        ]
+      },
+      "related_models": [
+        "transformer"
+      ],
+      "related_patterns": [
+        "feature-fusion"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "tensor-math"
+      ],
+      "related_cheatsheet": [
+        "tensor-math"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.matmul.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.matmul.html\n\n***"
+    },
+    {
+      "task": "Tensor Reduction Operations (`torch.sum` / `torch.mean` / `torch.max` / `torch.min` / `torch.argmax`)",
+      "problem_solved": "Compute reductions across specified axes to produce aggregated statistics or indices.",
+      "mental_trigger": "I need sums, means, extrema, or argmax across dimensions for metrics or pooling.",
+      "syntax": "torch.sum(input, dim=None, keepdim=False)\ntorch.mean(input, dim=None, keepdim=False)\ntorch.max(input, dim=None, keepdim=False)\ntorch.min(input, dim=None, keepdim=False)\ntorch.argmax(input, dim=None, keepdim=False)",
+      "important_parameters": [
+        "input — tensor to reduce.",
+        "dim — axis or axes for reduction.",
+        "keepdim — whether to retain reduced dims.",
+        "dtype — optional accumulation dtype."
+      ],
+      "important_params": [
+        "input — tensor to reduce.",
+        "dim — axis or axes for reduction.",
+        "keepdim — whether to retain reduced dims.",
+        "dtype — optional accumulation dtype."
+      ],
+      "return_value": "Scalar or tensor reduced along requested dimensions; dtype may be promoted during accumulation.",
+      "example": "import torch\nt = torch.randn(3,4)\ns = torch.sum(t, dim=1)",
+      "use_when": "Metric computation, pooling, and statistical summaries.",
+      "avoid_when": "You need elementwise outputs; reductions change tensor rank.",
+      "gotchas": [
+        "Accumulation dtype can overflow for narrow integer types; specify dtype for safety.",
+        "max/min return values and indices variants have different signatures.",
+        "Reductions on non-contiguous tensors work but may incur copies.",
+        "argmax returns indices with dtype torch.long."
+      ],
+      "performance_notes": "Reductions are implemented efficiently but can be memory-bound on large tensors; prefer in-place reductions over materializing intermediate large tensors.",
+      "related_apis": [
+        "torch.mean",
+        "torch.sum",
+        "torch.amax",
+        "torch.amin",
+        "torch.argmax"
+      ],
+      "framework_migration_notes": "Matches NumPy reduce semantics; TensorFlow equivalents exist via tf.reduce_* functions.",
+      "tensorflow_equivalent": "tf.reduce_sum, tf.reduce_mean, tf.argmax",
+      "framework_equivalent": "tf.reduce_sum, tf.reduce_mean, tf.argmax",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "reduce-ops"
+        ],
+        "search_terms": [
+          "torch.sum dim",
+          "torch.argmax usage"
+        ],
+        "keywords": [
+          "reduction",
+          "pooling",
+          "metrics"
+        ],
+        "confused_with": [
+          "torch.max (value vs index variants)"
+        ]
+      },
+      "related_models": [
+        "resnet"
+      ],
+      "related_patterns": [
+        "feature-fusion"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tensor-math"
+      ],
+      "related_cheatsheet": [
+        "tensor-math"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.sum.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.sum.html\n\n***"
+    },
+    {
+      "task": "Conditional Selection and Coordinate Grids (`torch.where` / `torch.meshgrid`)",
+      "problem_solved": "Select elements conditionally or construct coordinate grids for indexing and positional encodings.",
+      "mental_trigger": "I need to pick values by condition or build coordinate matrices for spatial operations.",
+      "syntax": "torch.where(condition, x, y)\ntorch.meshgrid(*tensors, indexing='xy')",
+      "important_parameters": [
+        "condition — boolean tensor.",
+        "x, y — tensors or scalars for selection.",
+        "tensors — 1-D tensors for meshgrid.",
+        "indexing — 'xy' or 'ij' to control axis ordering."
+      ],
+      "important_params": [
+        "condition — boolean tensor.",
+        "x, y — tensors or scalars for selection.",
+        "tensors — 1-D tensors for meshgrid.",
+        "indexing — 'xy' or 'ij' to control axis ordering."
+      ],
+      "return_value": "torch.where returns a tensor selected elementwise from x or y; meshgrid returns N-D coordinate tensors.",
+      "example": "import torch\ncond = torch.tensor([True, False])\nout = torch.where(cond, torch.tensor(), torch.tensor())[^1]\nx = torch.linspace(0,1,3)\nX,Y = torch.meshgrid(x, x, indexing='xy')",
+      "use_when": "Masking, conditional computation, or building coordinate frames for image ops.",
+      "avoid_when": "You only need boolean indexing (use masked_select) or simple broadcasting arithmetic.",
+      "gotchas": [
+        "where requires shapes compatible for broadcasting.",
+        "meshgrid indexing parameter changes axis order; mismatches cause subtle bugs.",
+        "where with mixed dtypes may upcast results.",
+        "Large meshgrids allocate O(N^2) memory for 2D cases."
+      ],
+      "performance_notes": "where is efficient for elementwise selection; meshgrid can be memory-intensive for high-resolution grids.",
+      "related_apis": [
+        "torch.masked_select",
+        "torch.nonzero",
+        "torch.arange"
+      ],
+      "framework_migration_notes": "NumPy equivalents: numpy.where, numpy.meshgrid; TensorFlow has tf.where and tf.meshgrid.",
+      "tensorflow_equivalent": "tf.where, tf.meshgrid",
+      "framework_equivalent": "tf.where, tf.meshgrid",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "where",
+          "meshgrid"
+        ],
+        "search_terms": [
+          "torch.where usage",
+          "torch.meshgrid indexing"
+        ],
+        "keywords": [
+          "conditional",
+          "mask",
+          "coordinates"
+        ],
+        "confused_with": [
+          "masked_select",
+          "nonzero"
+        ]
+      },
+      "related_models": [
+        "yolo"
+      ],
+      "related_patterns": [
+        "tensor-broadcasting"
+      ],
+      "related_workflows": [
+        "object-detection-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tensor-math"
+      ],
+      "related_cheatsheet": [
+        "tensor-math"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.where.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.where.html\n\n***"
+    },
+    {
+      "task": "Expand Tensor Dimensions without Copying (`torch.expand` / `expand_as`)",
+      "problem_solved": "Create a view that broadcasts an existing tensor across larger dimensions without allocating new storage.",
+      "mental_trigger": "I need to broadcast a smaller tensor to a larger shape without copying data.",
+      "syntax": "tensor.expand(*sizes)\ntensor.expand_as(other)",
+      "important_parameters": [
+        "sizes — desired expanded shape (must be compatible via broadcasting).",
+        "other — tensor to match shape."
+      ],
+      "important_params": [
+        "sizes — desired expanded shape (must be compatible via broadcasting).",
+        "other — tensor to match shape."
+      ],
+      "return_value": "A view that behaves as if expanded to target shape; does not allocate storage but may restrict writable semantics.",
+      "example": "import torch\nt = torch.tensor()[^3][^2][^1]\ne = t.expand(3,3)",
+      "use_when": "Broadcasting constants or parameters across batch dimensions cheaply.",
+      "avoid_when": "You need a real allocated tensor (use repeat) or need to write to the expanded tensor.",
+      "gotchas": [
+        "Expanded tensors are **views** with stride 0 in expanded dims; in-place writes are not allowed.",
+        "expand cannot add new memory-backed dimensions that require distinct storage.",
+        "Using expand on non-broadcast-compatible shapes raises errors.",
+        "Some ops do not accept expanded tensors as writable outputs."
+      ],
+      "performance_notes": "No allocation; very cheap and ideal for read-only broadcasted operations.",
+      "related_apis": [
+        "torch.repeat",
+        "torch.broadcast_to (alias)",
+        "broadcasting semantics"
+      ],
+      "framework_migration_notes": "NumPy's broadcasting uses views implicitly; expand provides an explicit view API in PyTorch.",
+      "tensorflow_equivalent": "tf.broadcast_to",
+      "framework_equivalent": "tf.broadcast_to",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "expand",
+          "expand_as"
+        ],
+        "search_terms": [
+          "torch.expand vs repeat",
+          "broadcast without copy"
+        ],
+        "keywords": [
+          "expand",
+          "broadcast",
+          "view"
+        ],
+        "confused_with": [
+          "torch.repeat"
+        ]
+      },
+      "related_models": [
+        "resnet"
+      ],
+      "related_patterns": [
+        "tensor-broadcasting"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "device-management"
+      ],
+      "related_cheatsheet": [
+        "device-management"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.Tensor.expand.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.Tensor.expand.html\n\n***"
+    },
+    {
+      "task": "Repeat Tensor Elements with Allocation (`torch.repeat`)",
+      "problem_solved": "Create a new tensor by repeating elements along specified dimensions, allocating new storage.",
+      "mental_trigger": "I need a fully materialized repeated tensor for indexing or writable buffers.",
+      "syntax": "tensor.repeat(*sizes)",
+      "important_parameters": [
+        "sizes — repeat multipliers for each dimension."
+      ],
+      "important_params": [
+        "sizes — repeat multipliers for each dimension."
+      ],
+      "return_value": "A newly allocated tensor with repeated copies of the original data.",
+      "example": "import torch\nt = torch.tensor()[^2][^1]\nr = t.repeat(2,1)  \\# shape (2,2)",
+      "use_when": "You require explicit allocation of repeated patterns or writable repeated data.",
+      "avoid_when": "You only need read-only broadcast behavior (use expand).",
+      "gotchas": [
+        "repeat allocates memory proportional to the repeated size — can be large.",
+        "Repeated data is independent copies; modifying result does not affect source.",
+        "Using repeat with large multipliers may cause OOM.",
+        "repeat requires matching ranks or prepending singleton dims as needed."
+      ],
+      "performance_notes": "Memory and allocation heavy compared to expand; avoid when expand suffices.",
+      "related_apis": [
+        "torch.expand",
+        "torch.tile (alias)",
+        "broadcasting"
+      ],
+      "framework_migration_notes": "NumPy: numpy.repeat and numpy.tile provide related functionality.",
+      "tensorflow_equivalent": "tf.repeat, tf.tile",
+      "framework_equivalent": "tf.repeat, tf.tile",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "repeat",
+          "tile"
+        ],
+        "search_terms": [
+          "torch.repeat vs expand",
+          "repeat tensor"
+        ],
+        "keywords": [
+          "repeat",
+          "allocate",
+          "tile"
+        ],
+        "confused_with": [
+          "torch.expand"
+        ]
+      },
+      "related_models": [
+        "vit"
+      ],
+      "related_patterns": [
+        "tensor-broadcasting"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tensor-manipulation"
+      ],
+      "related_cheatsheet": [
+        "tensor-manipulation"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.Tensor.repeat.html\n\n***",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.Tensor.repeat.html\n\n***"
+    },
+    {
+      "task": "Device Placement and Precision Casting (`to`, `cpu`, `cuda`, `mps`, `float`, `half`, `bfloat16`, `non_blocking`)",
+      "problem_solved": "Move tensors across devices and change numeric precision for performance or device compatibility.",
+      "mental_trigger": "I need to place tensors on a specific device or change dtype/precision for compute.",
+      "syntax": "tensor.to(device=None, dtype=None, non_blocking=False, copy=False)\ntensor.cpu(), tensor.cuda(device=None, non_blocking=False), tensor.to(torch.float32), tensor.half(), tensor.to(torch.bfloat16)",
+      "important_parameters": [
+        "device — target device (cpu, cuda:X, mps).",
+        "dtype — target dtype (torch.float32, torch.float16, torch.bfloat16, etc.).",
+        "non_blocking — whether copy may be asynchronous for pinned memory.",
+        "copy — force a copy even if already matching dtype/device."
+      ],
+      "important_params": [
+        "device — target device (cpu, cuda:X, mps).",
+        "dtype — target dtype (torch.float32, torch.float16, torch.bfloat16, etc.).",
+        "non_blocking — whether copy may be asynchronous for pinned memory.",
+        "copy — force a copy even if already matching dtype/device."
+      ],
+      "return_value": "A tensor on the requested device and dtype; may be a view when only dtype/format-preserving operations are performed but usually returns a new tensor when moving devices or changing dtype.",
+      "example": "import torch\nt = torch.randn(3,3)\ng = t.cuda()\nf = g.float()\nh = f.to('cpu', non_blocking=True)",
+      "use_when": "Preparing tensors for device-specific computation, optimizing memory footprint with lower precision, or converting for interoperability.",
+      "avoid_when": "Automatic implicit device moves are cheaper for prototyping but expensive in production; prefer explicit placement.",
+      "gotchas": [
+        "to(cuda) performs a device transfer that allocates GPU memory; ensure device has capacity.",
+        "non_blocking only helps when source is pinned host memory.",
+        "Casting to lower precision can change numerical behavior and support of kernels.",
+        "Using .cuda() without specifying device in multi-GPU contexts can target unexpected GPU."
+      ],
+      "performance_notes": "Device transfers and dtype casts are expensive; minimize host-device copies and prefer appropriate dtype and placement from creation time.",
+      "related_apis": [
+        "torch.as_tensor(...",
+        "device=)",
+        "torch.set_default_device (experimental)",
+        "tensor.to"
+      ],
+      "framework_migration_notes": "NumPy has no device semantics; TensorFlow uses device contexts and tf.cast for dtype conversion.",
+      "tensorflow_equivalent": "tf.cast, with device placement via with tf.device(...)",
+      "framework_equivalent": "tf.cast, with device placement via with tf.device(...)",
+      "version_compatibility": "No significant changes in modern PyTorch releases.",
+      "search_metadata": {
+        "aliases": [
+          "to(device)",
+          ".cuda",
+          ".cpu",
+          "astype(torch.float)"
+        ],
+        "search_terms": [
+          "move tensor to gpu torch",
+          "cast to half torch"
+        ],
+        "keywords": [
+          "device",
+          "dtype",
+          "cast",
+          "transfer"
+        ],
+        "confused_with": [
+          "torch.cuda.is_available",
+          "torch.set_default_dtype"
+        ]
+      },
+      "related_models": [
+        "gpt"
+      ],
+      "related_patterns": [
+        "device-placement"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "device-management"
+      ],
+      "related_cheatsheet": [
+        "device-management"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "official_documentation": "https://docs.pytorch.org/docs/stable/generated/torch.Tensor.to.html\n<span style=\"display:none\">[^10][^11][^12][^13][^14][^15][^16][^17][^18][^19][^20][^21][^22][^23][^6][^7][^8][^9]</span>\n\n<div align=\"center\">⁂</div>\n\n[^1]: AENS Knowledge Layer Specification.md\n\n[^2]: directory_structure.md\n\n[^3]: AI_CONTEXT.md\n\n[^4]: AENS_CANONICAL_SPECIFICATION.md\n\n[^5]: MACHINE_LEARNING_INTEGRATION_ARCHITECTURE_AUDIT.md\n\n[^6]: https://ieeexplore.ieee.org/document/11030010/\n\n[^7]: https://arxiv.org/pdf/1912.01703.pdf\n\n[^8]: https://arxiv.org/pdf/2306.08595.pdf\n\n[^9]: https://arxiv.org/pdf/1803.07416.pdf\n\n[^10]: http://arxiv.org/pdf/2408.02010.pdf\n\n[^11]: https://arxiv.org/pdf/1905.01330.pdf\n\n[^12]: https://arxiv.org/pdf/2003.04696.pdf\n\n[^13]: https://pmc.ncbi.nlm.nih.gov/articles/PMC10055035/\n\n[^14]: https://docs.pytorch.org/docs/stable/tensors.html\n\n[^15]: https://docs.pytorch.org/tutorials/beginner/blitz/tensor_tutorial.html\n\n[^16]: https://alband.github.io/doc_view/tensors.html\n\n[^17]: https://docs.pytorch.org/docs/2.8/generated/torch.from_numpy.html\n\n[^18]: https://docs.pytorch.org/docs/stable/generated/torch.Tensor.view.html\n\n[^19]: https://docs.pytorch.org/docs/stable/torch.html\n\n[^20]: https://github.com/PyTorch/pytorch/blob/main/torch/_tensor_docs.py\n\n[^21]: https://docs.pytorch.org/docs/stable/tensor_attributes.html\n\n[^22]: https://alband.github.io/doc_view/generated/torch.tensor.html\n\n[^23]: https://docs.pytorch.org/tutorials/beginner/introyt/tensors_deeper_tutorial.html",
+      "official_docs": "https://docs.pytorch.org/docs/stable/generated/torch.Tensor.to.html\n<span style=\"display:none\">[^10][^11][^12][^13][^14][^15][^16][^17][^18][^19][^20][^21][^22][^23][^6][^7][^8][^9]</span>\n\n<div align=\"center\">⁂</div>\n\n[^1]: AENS Knowledge Layer Specification.md\n\n[^2]: directory_structure.md\n\n[^3]: AI_CONTEXT.md\n\n[^4]: AENS_CANONICAL_SPECIFICATION.md\n\n[^5]: MACHINE_LEARNING_INTEGRATION_ARCHITECTURE_AUDIT.md\n\n[^6]: https://ieeexplore.ieee.org/document/11030010/\n\n[^7]: https://arxiv.org/pdf/1912.01703.pdf\n\n[^8]: https://arxiv.org/pdf/2306.08595.pdf\n\n[^9]: https://arxiv.org/pdf/1803.07416.pdf\n\n[^10]: http://arxiv.org/pdf/2408.02010.pdf\n\n[^11]: https://arxiv.org/pdf/1905.01330.pdf\n\n[^12]: https://arxiv.org/pdf/2003.04696.pdf\n\n[^13]: https://pmc.ncbi.nlm.nih.gov/articles/PMC10055035/\n\n[^14]: https://docs.pytorch.org/docs/stable/tensors.html\n\n[^15]: https://docs.pytorch.org/tutorials/beginner/blitz/tensor_tutorial.html\n\n[^16]: https://alband.github.io/doc_view/tensors.html\n\n[^17]: https://docs.pytorch.org/docs/2.8/generated/torch.from_numpy.html\n\n[^18]: https://docs.pytorch.org/docs/stable/generated/torch.Tensor.view.html\n\n[^19]: https://docs.pytorch.org/docs/stable/torch.html\n\n[^20]: https://github.com/PyTorch/pytorch/blob/main/torch/_tensor_docs.py\n\n[^21]: https://docs.pytorch.org/docs/stable/tensor_attributes.html\n\n[^22]: https://alband.github.io/doc_view/generated/torch.tensor.html\n\n[^23]: https://docs.pytorch.org/tutorials/beginner/introyt/tensors_deeper_tutorial.html"
+    }
+  ]
+}
