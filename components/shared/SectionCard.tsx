@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { ReactNode } from 'react';
+import SectionHeading from './SectionHeading';
 
 interface SectionCardProps {
   title: string;
@@ -37,17 +38,21 @@ export default function SectionCard({
     <div
       id={id}
       className={cn(
-        'rounded-lg border overflow-hidden',
+        'rounded-lg border overflow-hidden scroll-mt-24',
         variantStyles[variant],
         className
       )}
     >
       <div className="px-4 py-2.5 border-b border-border/50 bg-muted/30 flex items-center justify-between">
         <div>
-          <h3 className="text-xs font-semibold text-foreground flex items-center gap-2">
+          <SectionHeading
+            id={id}
+            title={title}
+            level={3}
+            className="text-xs font-semibold text-foreground flex items-center gap-2"
+          >
             {icon}
-            {title}
-          </h3>
+          </SectionHeading>
           {subtitle && (
             <p className="text-[10px] text-muted-foreground mt-0.5">{subtitle}</p>
           )}

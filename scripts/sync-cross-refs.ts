@@ -160,6 +160,52 @@ function exists(type: NodeType, id: string): boolean {
   return allNodes.has(`${type}:${id}`);
 }
 
+// Normalize PyTorch-specific cheatsheet section IDs to canonical cheatsheet IDs
+function normalizePyTorchCheatsheetIds(ids: string[] | undefined): string[] {
+  if (!ids || !Array.isArray(ids)) return [];
+  
+  const pytorchCheatsheetMap: Record<string, string> = {
+    // Tensor operations section IDs map to the main tensor cheatsheet
+    'tensor-creation': 'tensor',
+    'tensor-manipulation': 'tensor',
+    'tensor-math': 'tensor',
+    'device-management': 'tensor',
+    // Autograd section ID maps to the autograd cheatsheet
+    'autograd': 'autograd',
+    // NN section IDs map to the nn cheatsheet
+    'nn-conv': 'nn',
+    'nn-pooling': 'nn',
+    'nn-linear': 'nn',
+    'nn-activation': 'nn',
+    'nn-normalization': 'nn',
+    'nn-dropout': 'nn',
+    // Loss section IDs map to the loss cheatsheet
+    'loss-classification': 'loss',
+    'loss-regression': 'loss',
+    'loss-custom': 'loss',
+    // Optimizer section IDs map to the optimizer cheatsheet
+    'optimizer-sgd': 'optimizer',
+    'optimizer-adam': 'optimizer',
+    'optimizer-scheduler': 'optimizer',
+    // Data section IDs map to the data cheatsheet
+    'data-dataset': 'data',
+    'data-dataloader': 'data',
+    'data-transform': 'data',
+    // Training section IDs map to the training cheatsheet
+    'training-loop': 'training',
+    'training-checkpoint': 'training',
+    'training-validation': 'training',
+    // Distributed section IDs map to the distributed cheatsheet
+    'distributed-ddp': 'distributed',
+    'distributed-fsdp': 'distributed',
+    // Export section IDs map to the export cheatsheet
+    'export-torchscript': 'export',
+    'export-onnx': 'export',
+  };
+
+  return ids.map(id => pytorchCheatsheetMap[id] || id);
+}
+
 // Maps type from schema to NodeType
 function mapSchemaType(t: string): NodeType {
   if (t === 'registry') return 'registry_family';
@@ -204,6 +250,15 @@ function cleanReferences() {
       data.referenced_by_patterns = filterExistingList(data.referenced_by_patterns, 'pattern');
       data.referenced_by_models = filterExistingList(data.referenced_by_models, 'model');
       data.referenced_by_workflows = filterExistingList(data.referenced_by_workflows, 'workflow');
+    } else if (node.type === 'package') {
+      // Normalize cheatsheet IDs in package tasks
+      if (data.tasks && Array.isArray(data.tasks)) {
+        for (const task of data.tasks) {
+          if (task.related_cheatsheets) {
+            task.related_cheatsheets = normalizePyTorchCheatsheetIds(task.related_cheatsheets);
+          }
+        }
+      }
     }
 
     // Filter related_content structure

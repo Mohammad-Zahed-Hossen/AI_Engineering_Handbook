@@ -2,10 +2,12 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { ChevronDown, ChevronRight, Search, X, Filter } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import type { Cheatsheet } from '@/types/cheatsheet';
 import { cn } from '@/lib/utils';
 import ContentTypeBadge from '@/components/shared/ContentTypeBadge';
+import SearchFilterToolbar from '@/components/shared/SearchFilterToolbar';
+import HighlightMatch from '@/components/shared/HighlightMatch';
 
 interface CheatsheetListClientProps {
   cheatsheets: Cheatsheet[];
@@ -41,7 +43,6 @@ export default function CheatsheetListClient({ cheatsheets }: CheatsheetListClie
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([]);
   const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
-  const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   // Get unique filter options
@@ -103,65 +104,25 @@ export default function CheatsheetListClient({ cheatsheets }: CheatsheetListClie
     setSelectedDomains([]);
   };
 
-  const hasActiveFilters = searchQuery.length > 0 || selectedDifficulties.length > 0 || selectedDomains.length > 0;
+  const activeFilters = [
+    ...selectedDifficulties.map(d => ({ label: `Difficulty: ${d}`, value: d, onRemove: () => toggleDifficulty(d) })),
+    ...selectedDomains.map(dm => ({ label: `Domain: ${dm.replace(/_/g, ' ')}`, value: dm, onRemove: () => toggleDomain(dm) })),
+  ];
 
   return (
     <div className="space-y-4">
       {/* Search and Filters Toolbar */}
-      <div className="space-y-2.5">
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search cheatsheets by name, description, or problem..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-10 py-2 text-sm bg-card text-card-foreground border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring touch-target min-h-[44px]"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors touch-target p-1"
-                aria-label="Clear search"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-          <button
-            onClick={() => setShowMoreFilters(!showMoreFilters)}
-            className={cn(
-              "flex items-center justify-center px-3 py-2 text-sm font-medium border rounded-lg touch-target min-h-[44px] min-w-[44px] transition-colors shrink-0",
-              showMoreFilters
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-card text-card-foreground border-border hover:bg-muted"
-            )}
-            aria-expanded={showMoreFilters}
-            aria-label={showMoreFilters ? 'Hide more filters' : 'Show more filters'}
-          >
-            <Filter className="h-4 w-4" />
-          </button>
-        </div>
-
-        {/* Results count and clear filters */}
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="text-[11px] text-muted-foreground">
-            <strong className="text-foreground">{filteredCheatsheets.length}</strong> / {cheatsheets.length} cheatsheets
-          </div>
-          {hasActiveFilters && (
-            <button
-              onClick={clearAllFilters}
-              className="text-[11px] font-medium text-rose-500 hover:text-rose-600 transition-colors touch-target px-2 py-1"
-            >
-              Clear all
-            </button>
-          )}
-        </div>
-
-        {/* More filters collapsible section */}
-        {showMoreFilters && (
-          <div className="pt-2 mt-2 border-t border-border/60 space-y-3 animate-in fade-in slide-in-from-top-2">
+      <SearchFilterToolbar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Search cheatsheets by name, description, or problem..."
+        showClearSearch={true}
+        activeFilters={activeFilters}
+        onClearAll={activeFilters.length > 0 || searchQuery.length > 0 ? clearAllFilters : undefined}
+        resultCount={filteredCheatsheets.length}
+        totalCount={cheatsheets.length}
+        moreFiltersContent={
+          <div className="space-y-3">
             {/* Difficulty filters */}
             {difficultyOptions.length > 0 && (
               <div>
@@ -212,8 +173,8 @@ export default function CheatsheetListClient({ cheatsheets }: CheatsheetListClie
               </div>
             )}
           </div>
-        )}
-      </div>
+        }
+      />
 
       {/* Empty state */}
       {filteredCheatsheets.length === 0 && (
@@ -244,7 +205,7 @@ export default function CheatsheetListClient({ cheatsheets }: CheatsheetListClie
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h2 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
-                          {cs.name}
+                          <HighlightMatch text={cs.name} match={searchQuery} />
                         </h2>
                         <ContentTypeBadge type="cheatsheet" />
                       </div>

@@ -15,8 +15,9 @@
     "validate:density": "tsx scripts/validate-content.ts --category completeness",
     "validate:ownership": "tsx scripts/validate-content.ts --category ownership",
     "validate:quiet": "npx tsx scripts/validate-content.ts --quiet",
+    "merge": "npx tsx scripts/merge-pipeline.ts",
     "build:nav": "npx tsx scripts/build-nav-index.ts",
-    "prebuild": "npm run validate && npm run build:nav"
+    "prebuild": "npm run merge && npm run validate && npx tsx scripts/sync-cross-refs.ts && npm run build:nav"
   },
   "dependencies": {
     "ajv": "^8.17.1",

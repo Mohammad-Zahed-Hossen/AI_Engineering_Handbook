@@ -18,9 +18,10 @@ interface NavEntry {
   name: string;
   version?: string;
   updated_at?: string;
-  type: 'package' | 'model' | 'workflow' | 'cheatsheet' | 'pattern' | 'debug_guide' | 'decision_guide' | 'principle';
+  type: 'package' | 'model' | 'workflow' | 'cheatsheet' | 'pattern' | 'debug_guide' | 'decision_guide' | 'principle' | 'registry';
   category?: string; // for models: 'ml' | 'dl' | 'llm'
 }
+
 
 function readJSON<T>(filePath: string): T {
   return JSON.parse(fs.readFileSync(filePath, 'utf-8')) as T;
@@ -112,6 +113,37 @@ writeNavIndex(
   path.join(dataDir, 'principles'),
   buildNavIndex(path.join(dataDir, 'principles'), 'principle')
 );
+
+// Registry Families
+if (fs.existsSync(path.join(dataDir, 'registry', 'families'))) {
+  const familiesDir = path.join(dataDir, 'registry', 'families');
+  const entries: NavEntry[] = fs.readdirSync(familiesDir)
+    .filter(f => {
+      const p = path.join(familiesDir, f);
+      return fs.statSync(p).isDirectory();
+    })
+    .sort()
+    .map((familyId): NavEntry => {
+
+      const indexPath = path.join(familiesDir, familyId, '_index.json');
+      if (fs.existsSync(indexPath)) {
+        const data = readJSON<{ id: string; name: string; updated_at?: string }>(indexPath);
+        return {
+          id: data.id || familyId,
+          name: data.name || familyId,
+          type: 'registry' as const,
+          updated_at: data.updated_at ?? '',
+        };
+      }
+      return {
+        id: familyId,
+        name: familyId,
+        type: 'registry' as const,
+      };
+    });
+  writeNavIndex(path.join(dataDir, 'registry', 'families'), entries);
+}
+
 
 // Build and write global search index
 console.log('Building search index...');

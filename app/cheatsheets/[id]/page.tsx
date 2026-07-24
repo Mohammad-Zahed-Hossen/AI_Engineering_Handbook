@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getAllCheatsheetIds, getCheatsheet, getRelatedContent } from '@/lib/data';
+import { getAllCheatsheetIds, getCheatsheet, getRelatedContent, getCanonicalRelationshipsForEntity, resolveGraphNodes, shouldRenderKnowledgeGraph } from '@/lib/data';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import OfficialResources from '@/components/shared/OfficialResources';
@@ -8,6 +8,7 @@ import CheatsheetEntryList from './CheatsheetEntryList';
 import DataTable from '@/components/shared/DataTable';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 import FavoriteButton from '@/components/shared/FavoriteButton';
+import KnowledgeGraphPanel from '@/components/shared/KnowledgeGraphPanel';
 
 export async function generateStaticParams() {
   return getAllCheatsheetIds().map((id) => ({ id }));
@@ -15,6 +16,10 @@ export async function generateStaticParams() {
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+function slugify(value: string) {
+  return value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
 
 export default async function CheatsheetDetailPage({ params }: PageProps) {
@@ -28,19 +33,42 @@ export default async function CheatsheetDetailPage({ params }: PageProps) {
     throw e;
   }
   const relatedContent = getRelatedContent('cheatsheet', cheatsheet.id);
+  const rawGraphItems = getCanonicalRelationshipsForEntity('cheatsheet', cheatsheet.id);
+  const graphNodes = resolveGraphNodes(rawGraphItems, 'cheatsheet', cheatsheet.id).filter(n => n.type !== 'package_task');
+  const shouldShowGraph = shouldRenderKnowledgeGraph(relatedContent, graphNodes);
 
-  // Build TOC with improved labels (6 words instead of 4)
+  const seenAnchorIds = new Map<string, number>();
+
+  const resolvedEntries = cheatsheet.entries.map((entry) => {
+    const baseSlug = slugify(entry.problem);
+    const count = (seenAnchorIds.get(baseSlug) || 0) + 1;
+    seenAnchorIds.set(baseSlug, count);
+    const anchorId = count === 1 ? `entry-${baseSlug}` : `entry-${baseSlug}-${count}`;
+
+    return {
+      ...entry,
+      anchorId,
+    };
+  }) as Parameters<typeof CheatsheetEntryList>[0]['entries'];
+
+  // Build TOC with unique anchor IDs
   const toc = [
     { id: 'cheatsheet-header', label: cheatsheet.name },
-    ...cheatsheet.entries.map((entry, idx) => ({
-      id: `entry-${idx}`,
+    ...resolvedEntries.map((entry) => ({
+      id: entry.anchorId,
       label: entry.problem.split(' ').slice(0, 6).join(' '),
     })),
   ];
 
   if (cheatsheet.quick_references) {
-    cheatsheet.quick_references.forEach((ref, idx) => {
-      toc.push({ id: `quick-ref-${idx}`, label: ref.title });
+    cheatsheet.quick_references.forEach((ref) => {
+      const baseSlug = slugify(ref.title);
+      const key = `quick-ref-${baseSlug}`;
+      const count = (seenAnchorIds.get(key) || 0) + 1;
+      seenAnchorIds.set(key, count);
+      const refId = count === 1 ? key : `${key}-${count}`;
+
+      toc.push({ id: refId, label: ref.title });
     });
   }
 
@@ -71,12 +99,11 @@ export default async function CheatsheetDetailPage({ params }: PageProps) {
             {cheatsheet.entries.length} {cheatsheet.entries.length === 1 ? 'entry' : 'entries'}
             {' — '}tap any entry to expand
           </p>
-          <CheatsheetEntryList entries={cheatsheet.entries} />
+          <CheatsheetEntryList entries={resolvedEntries} />
         </section>
 
-
-        {cheatsheet.quick_references && cheatsheet.quick_references.map((ref, refIdx) => (
-          <section key={refIdx} id={`quick-ref-${refIdx}`} className="space-y-3 scroll-mt-24">
+        {cheatsheet.quick_references && cheatsheet.quick_references.map((ref) => (
+          <section key={slugify(ref.title)} id={`quick-ref-${slugify(ref.title)}`} className="space-y-3 scroll-mt-24">
             <h2>{ref.title}</h2>
             <DataTable
               headers={ref.headers}
@@ -85,10 +112,11 @@ export default async function CheatsheetDetailPage({ params }: PageProps) {
             />
           </section>
         ))}
-
       </div>
 
       <RelatedContent items={relatedContent} />
+
+      {shouldShowGraph && <KnowledgeGraphPanel nodes={graphNodes} />}
 
       {/* Further Study - Moved to bottom */}
       <OfficialResources sources={cheatsheet.sources} githubRepo={cheatsheet.github_repo} />

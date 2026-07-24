@@ -63,6 +63,19 @@ export async function GET(request: NextRequest) {
       }
     }
     
+    // Text search filter
+    if (searchParams.get('q')) {
+      const q = searchParams.get('q')!.toLowerCase().trim();
+      const matches =
+        family.name.toLowerCase().includes(q) ||
+        family.id.toLowerCase().includes(q) ||
+        family.provider.toLowerCase().includes(q) ||
+        (family.description && family.description.toLowerCase().includes(q));
+      if (!matches) {
+        return false;
+      }
+    }
+    
     return true;
   });
   

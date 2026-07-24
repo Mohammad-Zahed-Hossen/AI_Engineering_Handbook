@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getDebugGuide, getAllDebugGuideIds } from '@/lib/data';
+import { getDebugGuide, getAllDebugGuideIds, getRelatedContent, getCanonicalRelationshipsForEntity, resolveGraphNodes, shouldRenderKnowledgeGraph } from '@/lib/data';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import RelatedContent from '@/components/shared/RelatedContent';
@@ -17,6 +17,8 @@ import DecisionWizard from '@/components/shared/DecisionWizard';
 import RootCauseCard from '@/components/shared/RootCauseCard';
 import DiagnosticTestCard from '@/components/shared/DiagnosticTestCard';
 import SolutionGroup from '@/components/shared/SolutionGroup';
+import KnowledgeGraphPanel from '@/components/shared/KnowledgeGraphPanel';
+
 
 export async function generateStaticParams() {
   const ids = getAllDebugGuideIds();
@@ -57,14 +59,10 @@ export default async function DebugGuidePage({ params }: PageProps) {
     { id: 'escalation', label: 'Escalation' },
   ];
 
-  // Combine all related content
-  const allRelatedContent = [
-    ...debugGuide.related_packages.map(id => ({ id, type: 'package' as const, relationship_type: 'related_packages' })),
-    ...debugGuide.related_workflows.map(id => ({ id, type: 'workflow' as const, relationship_type: 'related_workflows' })),
-    ...debugGuide.related_patterns.map(id => ({ id, type: 'pattern' as const, relationship_type: 'related_patterns' })),
-    ...debugGuide.related_models.map(id => ({ id, type: 'model' as const, relationship_type: 'related_models' })),
-    ...debugGuide.related_registry.map(id => ({ id, type: 'registry' as const, relationship_type: 'related_registry' })),
-  ];
+  const allRelatedContent = getRelatedContent('debug_guide', debugGuide.id);
+  const rawGraphItems = getCanonicalRelationshipsForEntity('debug_guide', debugGuide.id);
+  const graphNodes = resolveGraphNodes(rawGraphItems, 'debug_guide', debugGuide.id).filter(n => n.type !== 'package_task');
+  const shouldShowGraph = shouldRenderKnowledgeGraph(allRelatedContent, graphNodes);
 
   // Sort root causes by probability (high -> medium -> low)
   const sortedRootCauses = [...debugGuide.root_causes].sort((a, b) => {
@@ -367,10 +365,12 @@ export default async function DebugGuidePage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Related Content - Lightweight, at bottom */}
+      {/* Related Content & Knowledge Graph */}
       {allRelatedContent.length > 0 && (
         <RelatedContent items={allRelatedContent} />
       )}
+      {shouldShowGraph && <KnowledgeGraphPanel nodes={graphNodes} />}
+
     </ContentPageLayout>
   );
 }

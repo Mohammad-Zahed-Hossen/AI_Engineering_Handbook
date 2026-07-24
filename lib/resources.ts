@@ -60,6 +60,8 @@ export function formatContentType(type: string): string {
     package: 'Package',
     workflow: 'Workflow',
     cheatsheet: 'Cheatsheet',
+    quick_reference: 'Quick Table',
+    checklist: 'Checklist',
     registry: 'Registry',
     debug_guide: 'Debug Guide',
     pattern: 'Pattern',

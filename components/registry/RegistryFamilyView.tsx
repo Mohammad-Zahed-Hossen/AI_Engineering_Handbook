@@ -65,6 +65,9 @@ export default function RegistryFamilyView({ families: initialFamilies }: Regist
         if (filters.tool_calling !== undefined) {
           params.set('tool_calling', filters.tool_calling.toString());
         }
+        if (filters.query) {
+          params.set('q', filters.query);
+        }
 
         const response = await fetch(`/api/registry/search?${params.toString()}`);
         const data = await response.json();

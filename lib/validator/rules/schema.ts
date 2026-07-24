@@ -20,7 +20,7 @@ export class SchemaValidationRule implements ValidationRule {
 
     const SLUG_REGEX = /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/;
 
-    for (const node of graph.nodes.values()) {
+    for (const node of graph.getAllNodes()) {
       if (node.type === 'problem') continue;
       const obj = node.data as { slug?: string; tags?: unknown[]; aliases?: unknown[] } | null;
       if (!obj || typeof obj !== 'object') {
@@ -36,8 +36,8 @@ export class SchemaValidationRule implements ValidationRule {
         continue;
       }
 
-      // 1. Zod Schema Verification
-      if (!node.isValid) {
+      // 1. Zod Schema Verification (Canonical page nodes only)
+      if (!node.isIntermediate && !node.isValid) {
         const schema = getZodSchema(node.type);
         if (schema) {
           const parseResult = schema.safeParse(obj);
@@ -59,27 +59,29 @@ export class SchemaValidationRule implements ValidationRule {
         }
       }
 
-      // 2. Filename ID Match check
-      const baseName = path.basename(node.filePath, '.json');
-      const expectedId = baseName === '_index'
-        ? path.basename(path.dirname(node.filePath))
-        : baseName;
+      // 2. Filename ID Match check (Canonical page nodes only)
+      if (!node.isIntermediate) {
+        const baseName = path.basename(node.filePath, '.json');
+        const expectedId = baseName === '_index'
+          ? path.basename(path.dirname(node.filePath))
+          : baseName;
 
-      if (node.id !== expectedId) {
-        issues.push({
-          code: 'KQV002',
-          ruleId: 'filename-mismatch',
-          category: this.meta.category,
-          severity: 'high',
-          filePath: node.filePath,
-          message: `Filename/ID mismatch: filename expected ID to be '${expectedId}', but declared id is '${node.id}'`,
-          suggestedFix: `Change declared "id" to "${expectedId}" or rename the JSON file.`,
-          priority: 9
-        });
+        if (node.id !== expectedId) {
+          issues.push({
+            code: 'KQV002',
+            ruleId: 'filename-mismatch',
+            category: this.meta.category,
+            severity: 'high',
+            filePath: node.filePath,
+            message: `Filename/ID mismatch: filename expected ID to be '${expectedId}', but declared id is '${node.id}'`,
+            suggestedFix: `Change declared "id" to "${expectedId}" or rename the JSON file.`,
+            priority: 9
+          });
+        }
       }
 
-      // 3. Slug Format check
-      if (obj.slug && typeof obj.slug === 'string') {
+      // 3. Slug Format check (Canonical page nodes only)
+      if (!node.isIntermediate && obj.slug && typeof obj.slug === 'string') {
         if (!SLUG_REGEX.test(obj.slug)) {
           issues.push({
             code: 'KQV003',
@@ -95,7 +97,7 @@ export class SchemaValidationRule implements ValidationRule {
       }
 
       // 4. Registered Tags check
-      if (!config.validation_rules.allow_unregistered_tags && Array.isArray(obj.tags)) {
+      if (!config?.validation_rules?.allow_unregistered_tags && Array.isArray(obj.tags)) {
         for (const tag of obj.tags) {
           if (typeof tag === 'string' && !registeredTags.has(tag)) {
             issues.push({
@@ -113,7 +115,7 @@ export class SchemaValidationRule implements ValidationRule {
       }
 
       // 5. Registered Aliases check
-      if (!config.validation_rules.allow_unregistered_aliases && Array.isArray(obj.aliases)) {
+      if (!config?.validation_rules?.allow_unregistered_aliases && Array.isArray(obj.aliases)) {
         for (const alias of obj.aliases) {
           if (typeof alias === 'string' && !registeredAliases.has(alias)) {
             issues.push({

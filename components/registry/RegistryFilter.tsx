@@ -18,6 +18,7 @@ export interface RegistryFilters {
   reasoning?: boolean;
   vision?: boolean;
   tool_calling?: boolean;
+  query?: string;
 }
 
 const modalities = ['llm', 'embedding', 'reranker', 'vision', 'speech', 'multimodal'];
@@ -129,12 +130,12 @@ export default function RegistryFilter({ onFilterChange, families, resultCount, 
 
   return (
     <SearchFilterToolbar
-      searchQuery=""
-      onSearchChange={() => {}}
-      searchPlaceholder=""
-      showClearSearch={false}
+      searchQuery={filters.query || ''}
+      onSearchChange={(q) => updateFilter('query', q || undefined)}
+      searchPlaceholder="Search model families by name, provider, description..."
+      showClearSearch={true}
       activeFilters={activeFilters}
-      onClearAll={hasActiveFilters ? clearFilters : undefined}
+      onClearAll={hasActiveFilters || Boolean(filters.query) ? clearFilters : undefined}
       resultCount={resultCount}
       totalCount={totalCount}
       moreFiltersContent={

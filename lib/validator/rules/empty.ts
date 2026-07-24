@@ -33,7 +33,11 @@ export class EmptyRule implements ValidationRule {
       if (typeof val === 'string') {
         const lowerVal = val.toLowerCase();
         for (const sub of PLACEHOLDER_SUBSTRINGS) {
-          if (lowerVal.includes(sub)) {
+          const matched = sub === 'placeholder'
+            ? (lowerVal.includes('[placeholder]') || lowerVal.includes('<placeholder>') || lowerVal.includes('placeholder:') || lowerVal === 'placeholder' || lowerVal.includes('placeholder text'))
+            : lowerVal.includes(sub);
+
+          if (matched) {
             issues.push({
               code: 'KQV009',
               ruleId: 'placeholder-found',
@@ -79,7 +83,7 @@ export class EmptyRule implements ValidationRule {
       }
     }
 
-    for (const node of graph.nodes.values()) {
+    for (const node of graph.getAllNodes()) {
       if (node.type === 'problem') continue;
       if (!node.data) continue;
       checkValue(node.data, node.filePath, '');

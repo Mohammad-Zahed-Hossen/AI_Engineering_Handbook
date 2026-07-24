@@ -112,17 +112,17 @@ const INTENT_PATTERNS: Record<SearchIntent, {
  * Type priority matrix for cross-type ranking
  */
 const TYPE_PRIORITY_MATRIX: Record<SearchIntent, SearchResult['type'][]> = {
-  problem: ['debug_guide', 'pattern', 'workflow', 'cheatsheet', 'package', 'model', 'registry', 'decision_guide', 'principle'],
-  debug_guide: ['debug_guide', 'pattern', 'workflow', 'cheatsheet', 'package', 'model', 'registry', 'decision_guide', 'principle'],
-  workflow: ['workflow', 'pattern', 'cheatsheet', 'package', 'model', 'registry', 'debug_guide', 'decision_guide', 'principle'],
-  package: ['package', 'cheatsheet', 'function', 'workflow', 'model', 'registry', 'pattern', 'debug_guide', 'decision_guide', 'principle'],
-  model: ['model', 'registry', 'pattern', 'workflow', 'package', 'cheatsheet', 'debug_guide', 'decision_guide', 'principle'],
-  pattern: ['pattern', 'workflow', 'cheatsheet', 'package', 'model', 'registry', 'debug_guide', 'decision_guide', 'principle'],
-  cheatsheet: ['cheatsheet', 'package', 'function', 'workflow', 'model', 'registry', 'pattern', 'debug_guide', 'decision_guide', 'principle'],
-  registry: ['registry', 'model', 'workflow', 'package', 'cheatsheet', 'pattern', 'debug_guide', 'decision_guide', 'principle'],
-  decision_guide: ['decision_guide', 'model', 'pattern', 'workflow', 'package', 'cheatsheet', 'registry', 'debug_guide', 'principle'],
-  principle: ['principle', 'pattern', 'model', 'workflow', 'package', 'cheatsheet', 'registry', 'debug_guide', 'decision_guide'],
-  unknown: ['package', 'model', 'workflow', 'cheatsheet', 'registry', 'pattern', 'debug_guide', 'decision_guide', 'principle'],
+  problem: ['debug_guide', 'pattern', 'workflow', 'cheatsheet', 'quick_reference', 'checklist', 'package', 'model', 'registry', 'decision_guide', 'principle'],
+  debug_guide: ['debug_guide', 'pattern', 'workflow', 'cheatsheet', 'quick_reference', 'checklist', 'package', 'model', 'registry', 'decision_guide', 'principle'],
+  workflow: ['workflow', 'pattern', 'cheatsheet', 'quick_reference', 'checklist', 'package', 'model', 'registry', 'debug_guide', 'decision_guide', 'principle'],
+  package: ['package', 'cheatsheet', 'quick_reference', 'checklist', 'function', 'workflow', 'model', 'registry', 'pattern', 'debug_guide', 'decision_guide', 'principle'],
+  model: ['model', 'registry', 'pattern', 'workflow', 'cheatsheet', 'quick_reference', 'checklist', 'package', 'debug_guide', 'decision_guide', 'principle'],
+  pattern: ['pattern', 'workflow', 'cheatsheet', 'quick_reference', 'checklist', 'package', 'model', 'registry', 'debug_guide', 'decision_guide', 'principle'],
+  cheatsheet: ['cheatsheet', 'quick_reference', 'checklist', 'package', 'function', 'workflow', 'model', 'registry', 'pattern', 'debug_guide', 'decision_guide', 'principle'],
+  registry: ['registry', 'model', 'workflow', 'package', 'cheatsheet', 'quick_reference', 'checklist', 'pattern', 'debug_guide', 'decision_guide', 'principle'],
+  decision_guide: ['decision_guide', 'model', 'pattern', 'workflow', 'package', 'cheatsheet', 'quick_reference', 'checklist', 'registry', 'debug_guide', 'principle'],
+  principle: ['principle', 'pattern', 'model', 'workflow', 'package', 'cheatsheet', 'quick_reference', 'checklist', 'registry', 'debug_guide', 'decision_guide'],
+  unknown: ['package', 'model', 'workflow', 'cheatsheet', 'quick_reference', 'checklist', 'registry', 'pattern', 'debug_guide', 'decision_guide', 'principle'],
 };
 
 /**

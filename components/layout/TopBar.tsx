@@ -1,6 +1,6 @@
 import MobileSidebarTrigger from './MobileSidebarTrigger';
 import SearchBoxWrapper from '@/components/shared/SearchBoxWrapper';
-import { NavItem } from '@/lib/data';
+import type { NavItem } from '@/types/nav';
 import DarkModeToggle from './DarkModeToggle';
 
 interface TopBarProps {

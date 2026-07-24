@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getDecisionGuide, getAllDecisionGuideIds } from '@/lib/data';
+import { getDecisionGuide, getAllDecisionGuideIds, getRelatedContent, getCanonicalRelationshipsForEntity, resolveGraphNodes, shouldRenderKnowledgeGraph } from '@/lib/data';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import RelatedContent from '@/components/shared/RelatedContent';
@@ -21,6 +21,8 @@ import PhaseDivider from '@/components/shared/PhaseDivider';
 import CollapsibleSection from '@/components/shared/CollapsibleSection';
 import SectionSummary from '@/components/shared/SectionSummary';
 import TradeoffHeatmap from '@/components/shared/TradeoffHeatmap';
+import KnowledgeGraphPanel from '@/components/shared/KnowledgeGraphPanel';
+
 
 export async function generateStaticParams() {
   const ids = getAllDecisionGuideIds();
@@ -86,12 +88,10 @@ export default async function DecisionGuidePage({ params }: PageProps) {
       : []),
   ];
 
-  // Combine all related content
-  const allRelatedContent = [
-    ...decisionGuide.related_workflows.map(id => ({ id, type: 'workflow' as const, relationship_type: 'related_workflows' })),
-    ...decisionGuide.related_packages.map(id => ({ id, type: 'package' as const, relationship_type: 'related_packages' })),
-    ...decisionGuide.related_models.map(id => ({ id, type: 'model' as const, relationship_type: 'related_models' })),
-  ];
+  const allRelatedContent = getRelatedContent('decision_guide', decisionGuide.id);
+  const rawGraphItems = getCanonicalRelationshipsForEntity('decision_guide', decisionGuide.id);
+  const graphNodes = resolveGraphNodes(rawGraphItems, 'decision_guide', decisionGuide.id).filter(n => n.type !== 'package_task');
+  const shouldShowGraph = shouldRenderKnowledgeGraph(allRelatedContent, graphNodes);
 
   return (
     <ContentPageLayout breadcrumbs={breadcrumbs} toc={toc}>
@@ -295,10 +295,12 @@ export default async function DecisionGuidePage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Related Content */}
+      {/* Related Content & Knowledge Graph */}
       {allRelatedContent.length > 0 && (
         <RelatedContent items={allRelatedContent} />
       )}
+      {shouldShowGraph && <KnowledgeGraphPanel nodes={graphNodes} />}
+
     </ContentPageLayout>
   );
 }

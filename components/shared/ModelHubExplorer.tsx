@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Model, ModelCategory, ProblemType } from '@/types/model';
 import { cn } from '@/lib/utils';
 import FilterBar from './FilterBar';
 import SearchFilterToolbar from './SearchFilterToolbar';
+import HighlightMatch from './HighlightMatch';
 
 const difficultyLevels = ['beginner', 'intermediate', 'advanced', 'expert'];
 const maturityLevels = ['experimental', 'prototype', 'production', 'deprecated'];
@@ -118,50 +119,56 @@ export default function ModelHubExplorer({ initialModels, categoriesMeta }: Mode
   };
 
   const clearAllFilters = () => {
+    setSearchQuery('');
     setSelectedProblems([]);
     setSelectedDifficulties([]);
     setSelectedMaturities([]);
   };
 
   // Filter models based on search query and all filters
-  const filteredModels = initialModels.filter((m) => {
-    const matchesSearch =
-      searchQuery === '' ||
-      m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.decisionsummary.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.subcategory.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.problem_types.some((pt) => pt.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredModels = useMemo(() => {
+    return initialModels.filter((m) => {
+      const matchesSearch =
+        searchQuery === '' ||
+        m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        m.decisionsummary.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        m.subcategory.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        m.problem_types.some((pt) => pt.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    const matchesProblems =
-      selectedProblems.length === 0 ||
-      m.problem_types.some((pt) =>
-        selectedProblems.some((selected) => pt.toLowerCase().includes(selected.toLowerCase()))
-      );
+      const matchesProblems =
+        selectedProblems.length === 0 ||
+        m.problem_types.some((pt) =>
+          selectedProblems.some((selected) => pt.toLowerCase().includes(selected.toLowerCase()))
+        );
 
-    const matchesDifficulty =
-      selectedDifficulties.length === 0 || selectedDifficulties.includes(m.difficulty);
+      const matchesDifficulty =
+        selectedDifficulties.length === 0 || selectedDifficulties.includes(m.difficulty);
 
-    const matchesMaturity =
-      selectedMaturities.length === 0 || selectedMaturities.includes(m.engineeringmaturity);
+      const matchesMaturity =
+        selectedMaturities.length === 0 || selectedMaturities.includes(m.engineeringmaturity);
 
-    return matchesSearch && matchesProblems && matchesDifficulty && matchesMaturity;
-  });
+      return matchesSearch && matchesProblems && matchesDifficulty && matchesMaturity;
+    });
+  }, [initialModels, searchQuery, selectedProblems, selectedDifficulties, selectedMaturities]);
 
   // Group models by domain -> subcategory
-  const grouped: Record<ModelCategory, Record<string, Model[]>> = {
-    ml: {},
-    dl: {},
-    llm: {},
-  };
+  const grouped = useMemo(() => {
+    const res: Record<ModelCategory, Record<string, Model[]>> = {
+      ml: {},
+      dl: {},
+      llm: {},
+    };
 
-  filteredModels.forEach((m) => {
-    const cat = m.category;
-    const sub = m.subcategory;
-    if (!grouped[cat][sub]) {
-      grouped[cat][sub] = [];
-    }
-    grouped[cat][sub].push(m);
-  });
+    filteredModels.forEach((m) => {
+      const cat = m.category;
+      const sub = m.subcategory;
+      if (!res[cat][sub]) {
+        res[cat][sub] = [];
+      }
+      res[cat][sub].push(m);
+    });
+    return res;
+  }, [filteredModels]);
 
   const domainLabels: Record<ModelCategory, string> = {
     ml: 'Machine Learning',
@@ -297,7 +304,9 @@ export default function ModelHubExplorer({ initialModels, categoriesMeta }: Mode
                                  className="block rounded-lg border border-border bg-card mobile-card-padding hover:border-foreground/20 hover:bg-muted/30 transition-colors touch-target"
                                >
                                 <div className="flex items-start justify-between gap-2 mb-2">
-                                  <h4 className="text-xs font-semibold text-primary">{m.name}</h4>
+                                  <h4 className="text-xs font-semibold text-primary">
+                                    <HighlightMatch text={m.name} match={searchQuery} />
+                                  </h4>
                                   <span
                                     className={cn(
                                       "shrink-0 text-[8px] font-mono px-1.5 py-0.5 rounded border capitalize",

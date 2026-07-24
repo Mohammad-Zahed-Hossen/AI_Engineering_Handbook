@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { 
-  ChevronRight, 
   CheckCircle2, 
   XCircle, 
   Sliders, 
@@ -13,17 +12,19 @@ import {
   Link2
 } from 'lucide-react';
 import type { PackageTask } from '@/types/package';
+import type { CanonicalRelationship } from '@/lib/relationships/types';
 import ExpandableText from '@/components/shared/ExpandableText';
 import VisualizationEquivalents from '@/components/shared/VisualizationEquivalents';
 import type { VisualizationEquivalent } from '@/types/package';
 import CollapsibleRow from './CollapsibleRow';
 import ContentCommandPalette from './ContentCommandPalette';
 
-interface ResolvedRef { id: string; href: string; name: string }
-
 interface ResolvedTask extends PackageTask {
-  related_workflow_links: ResolvedRef[];
-  related_cheatsheet_links: ResolvedRef[];
+  related_workflow_links: CanonicalRelationship[];
+  related_cheatsheet_links: CanonicalRelationship[];
+  related_model_links: CanonicalRelationship[];
+  related_pattern_links: CanonicalRelationship[];
+  related_decision_guide_links: CanonicalRelationship[];
   visualization_equivalents: VisualizationEquivalent[];
   syntaxBlock?: React.ReactNode;
   exampleBlock?: React.ReactNode;
@@ -44,6 +45,10 @@ interface ParsedDecisionNotes {
   commonMistakes: string;
   relatedApis: string[];
 }
+
+type LegacyPackageTask = PackageTask & {
+  important_parameters?: string[];
+};
 
 function slugify(value: string) {
   return value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
@@ -92,6 +97,11 @@ function parseDecisionNotes(notes: string): ParsedDecisionNotes {
   });
 
   return result;
+}
+
+function getImportantParameters(task: PackageTask): string[] | undefined {
+  const legacyTask = task as LegacyPackageTask;
+  return task.important_params ?? legacyTask.important_parameters;
 }
 
 function getNormalizedApiName(name: string): string {
@@ -229,7 +239,7 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
 
   // Search text for package tasks (combines all searchable fields)
   const getSearchText = useCallback((task: ResolvedTask): string => {
-    const rawParams = task.important_params || (task as any).important_parameters;
+    const rawParams = getImportantParameters(task);
     return [
       task.task,
       task.mental_trigger,
@@ -342,7 +352,7 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
 
                 {/* Parameters - key-value cards / structured view */}
                 {(() => {
-                  const rawParams = task.important_params || (task as any).important_parameters;
+                  const rawParams = getImportantParameters(task);
                   if (!rawParams || !Array.isArray(rawParams) || rawParams.length === 0) return null;
 
                   const parsed = rawParams.map(parseParameterString);
@@ -398,9 +408,9 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
                 })()}
 
                 {/* Decision Notes - Use/Avoid */}
-                {(task.use_when || task.avoid_when) && (
+                {(Boolean(task.use_when?.trim()) || Boolean(task.avoid_when?.trim())) && (
                   <div className="grid gap-2.5 md:grid-cols-2">
-                    {task.use_when && (
+                    {Boolean(task.use_when?.trim()) && (
                       <div>
                         <h4 className="flex items-center gap-1 font-semibold text-emerald-700 dark:text-emerald-400 mb-1 text-[10px]">
                           <CheckCircle2 className="w-3 h-3 shrink-0" />
@@ -415,7 +425,7 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
                         </ExpandableText>
                       </div>
                     )}
-                    {task.avoid_when && (
+                    {Boolean(task.avoid_when?.trim()) && (
                       <div>
                         <h4 className="flex items-center gap-1 font-semibold text-rose-700 dark:text-rose-400 mb-1 text-[10px]">
                           <XCircle className="w-3 h-3 shrink-0" />
@@ -517,31 +527,54 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
                       </a>
                     )}
 
-                    {/* Connected Guides */}
-                    {(task.related_workflow_links.length > 0 || task.related_cheatsheet_links.length > 0) && (
-                      <div className="flex flex-col gap-1.5">
-                        {task.related_workflow_links.map(ref => (
-                          <Link
-                            key={ref.id}
-                            href={ref.href}
-                            className="inline-flex items-center justify-between rounded-lg border border-border bg-muted/30 hover:bg-muted px-2 py-1.5 text-[10px] text-foreground transition-colors cursor-pointer touch-target"
-                          >
-                            <span className="font-medium">{ref.name}</span>
-                            <ChevronRight className="w-2.5 h-2.5 text-muted-foreground" />
-                          </Link>
-                        ))}
-                        {task.related_cheatsheet_links.map(ref => (
-                          <Link
-                            key={ref.id}
-                            href={ref.href}
-                            className="inline-flex items-center justify-between rounded-lg border border-border bg-muted/30 hover:bg-muted px-2 py-1.5 text-[10px] text-foreground transition-colors cursor-pointer touch-target"
-                          >
-                            <span className="font-medium">{ref.name}</span>
-                            <ChevronRight className="w-2.5 h-2.5 text-muted-foreground" />
-                          </Link>
-                        ))}
-                      </div>
-                    )}
+                    {/* Connected Guides - Relationship Chips */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {task.related_model_links.map(ref => (
+                        <Link
+                          key={`model-${ref.id}`}
+                          href={ref.href}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium bg-purple-500/5 text-purple-600 dark:text-purple-400 hover:bg-purple-500/10 border border-purple-500/10 transition-colors"
+                        >
+                          {ref.title}
+                        </Link>
+                      ))}
+                      {task.related_pattern_links.map(ref => (
+                        <Link
+                          key={`pattern-${ref.id}`}
+                          href={ref.href}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium bg-amber-500/5 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 border border-amber-500/10 transition-colors"
+                        >
+                          {ref.title}
+                        </Link>
+                      ))}
+                      {task.related_workflow_links.map(ref => (
+                        <Link
+                          key={`workflow-${ref.id}`}
+                          href={ref.href}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium bg-indigo-500/5 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 border border-indigo-500/10 transition-colors"
+                        >
+                          {ref.title}
+                        </Link>
+                      ))}
+                      {task.related_cheatsheet_links.map(ref => (
+                        <Link
+                          key={`cheatsheet-${ref.id}`}
+                          href={ref.href}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium bg-primary/5 text-primary hover:bg-primary/10 border border-primary/10 transition-colors"
+                        >
+                          {ref.title}
+                        </Link>
+                      ))}
+                      {task.related_decision_guide_links.map(ref => (
+                        <Link
+                          key={`decision-guide-${ref.id}`}
+                          href={ref.href}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/10 transition-colors"
+                        >
+                          {ref.title}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>

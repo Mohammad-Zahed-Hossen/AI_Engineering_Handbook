@@ -26,13 +26,15 @@ interface SearchBoxProps {
 const RECENT_SEARCHES_KEY = 'aens-recent-searches';
 const MAX_RECENT = 5;
 
-const TYPE_ORDER: SearchResult['type'][] = ['package', 'model', 'function', 'cheatsheet', 'workflow', 'registry', 'pattern', 'debug_guide', 'decision_guide', 'principle'];
+const TYPE_ORDER: SearchResult['type'][] = ['package', 'model', 'function', 'cheatsheet', 'quick_reference', 'checklist', 'workflow', 'registry', 'pattern', 'debug_guide', 'decision_guide', 'principle'];
 
 const TYPE_LABELS: Record<SearchResult['type'], string> = {
   package: 'Packages',
   model: 'Models',
   function: 'Functions',
   cheatsheet: 'Cheatsheets',
+  quick_reference: 'Quick Tables',
+  checklist: 'Checklists',
   workflow: 'Workflows',
   registry: 'Registry',
   pattern: 'Patterns',
@@ -201,14 +203,46 @@ export default function SearchBox({
   }, [fuse, query, limit, searchEngine]);
 
   const groupedResults = useMemo(() => {
-    const groups = new Map<SearchResult['type'], SearchDisplayResult[]>();
+    // For function-type results, group by parent_name (section) instead of type
+    const functionGroups = new Map<string, SearchDisplayResult[]>();
+    const nonFunctionResults: SearchDisplayResult[] = [];
+    
     results.forEach(r => {
-      const list = groups.get(r.item.type) || [];
-      list.push(r);
-      groups.set(r.item.type, list);
+      if (r.item.type === 'function' && r.item.parent_name) {
+        const sectionKey = r.item.parent_name;
+        const list = functionGroups.get(sectionKey) || [];
+        list.push(r);
+        functionGroups.set(sectionKey, list);
+      } else {
+        nonFunctionResults.push(r);
+      }
     });
-    return TYPE_ORDER.map(type => ({ type, label: TYPE_LABELS[type], items: groups.get(type) || [] }))
-      .filter(g => g.items.length > 0);
+
+    // Group non-function results by type as before
+    const typeGroups = new Map<SearchResult['type'], SearchDisplayResult[]>();
+    nonFunctionResults.forEach(r => {
+      const list = typeGroups.get(r.item.type) || [];
+      list.push(r);
+      typeGroups.set(r.item.type, list);
+    });
+
+    const result: Array<{ type: string; label: string; items: SearchDisplayResult[] }> = [];
+
+    // Add function groups first (grouped by parent section)
+    functionGroups.forEach((items, sectionName) => {
+      result.push({ type: 'function', label: sectionName, items });
+    });
+
+    // Add type-based groups
+    TYPE_ORDER.forEach(type => {
+      if (type === 'function') return; // Already handled above
+      const items = typeGroups.get(type) || [];
+      if (items.length > 0) {
+        result.push({ type, label: TYPE_LABELS[type], items });
+      }
+    });
+
+    return result;
   }, [results]);
 
   const flatResults = useMemo(() => {
@@ -379,7 +413,7 @@ export default function SearchBox({
           ) : (
             <div id={listboxId} role="listbox" className="max-h-[60vh] overflow-y-auto">
               {groupedResults.map(group => (
-                <div key={group.type}>
+                <div key={`${group.type}-${group.label}`}>
                   {/* Sticky group header */}
                   <div className="sticky top-0 z-10 px-3 py-1 bg-muted/60 border-b border-border backdrop-blur-sm select-none">
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">

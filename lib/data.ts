@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { cache } from 'react';
-import { Package } from '@/types/package';
+import { Package, PackageTask } from '@/types/package';
 import { Model, ModelCategory, ModelSubcategory } from '@/types/model';
 import { PackageSchema } from '@/lib/schemas/package';
 import { ModelSchema } from '@/lib/schemas/model';
@@ -14,12 +14,17 @@ import { PrincipleSchema } from '@/lib/schemas/principle';
 import { RegistryFamily, RegistryVariant } from '@/types/registry';
 import { RegistryFamilySchema, RegistryVariantSchema } from '@/lib/schemas/registry';
 import { Workflow } from '@/types/workflow';
-import { Cheatsheet } from '@/types/cheatsheet';
+import { Cheatsheet, CheatsheetEntry } from '@/types/cheatsheet';
 import { Pattern } from '@/types/pattern';
 import { DebugGuide } from '@/types/debug-guide';
 import { DecisionGuide } from '@/types/decision-guide';
 import { Principle } from '@/types/principle';
 import { ContentRef, RelationshipType } from '@/lib/schemas/base';
+import type { CanonicalRelationship } from '@/lib/relationships/types';
+import { createDefaultRelationshipResolvers } from '@/lib/relationships/resolveRelationship';
+import { createRelationshipRegistry } from '@/lib/relationships/relationshipRegistry';
+import { normalizeCheatsheet, normalizePackage } from '@/lib/relationships/normalizeRelationships';
+import { resolveGraphNodes as resolveGraphNodesCore, type KnowledgeGraphNode } from '@/lib/relationships/graphResolver';
 
 // Core data directory in the project workspace
 const dataDir = path.join(process.cwd(), 'data');
@@ -35,6 +40,24 @@ function readJSON<T>(filePath: string): T {
   const raw = fs.readFileSync(filePath, 'utf-8');
   return JSON.parse(raw) as T;
 }
+
+const readPackageRaw = cache(function readPackageRaw(id: string): Package {
+  const filePath = path.join(dataDir, 'packages', `${id}.json`);
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Package not found: ${id}`);
+  }
+  const raw = readJSON<unknown>(filePath);
+  return PackageSchema.parse(raw);
+});
+
+const readCheatsheetRaw = cache(function readCheatsheetRaw(id: string): Cheatsheet {
+  const filePath = path.join(dataDir, 'cheatsheets', `${id}.json`);
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Cheatsheet not found: ${id}`);
+  }
+  const raw = readJSON<unknown>(filePath);
+  return CheatsheetSchema.parse(raw);
+});
 
 /**
  * Scans a subdirectory and returns a list of identifier strings derived from JSON file names.
@@ -69,6 +92,28 @@ export const getAllPackageIds = cache(function getAllPackageIds(): readonly stri
   return scanDirectoryForIds('packages');
 });
 
+const getPackageRelationshipRegistry = cache(function getPackageRelationshipRegistry() {
+  return createRelationshipRegistry(getAllPackageIds().map(id => readPackageRaw(id)));
+});
+
+export const getDefaultRelationshipResolvers = cache(function getDefaultRelationshipResolvers() {
+  return createDefaultRelationshipResolvers(
+    getPackageRelationshipRegistry(),
+    (type, relationshipId) => {
+      const href = getContentPath(type, relationshipId);
+      if (!href) return null;
+
+      return {
+        id: relationshipId,
+        title: getContentName(type, relationshipId),
+        slug: relationshipId,
+        href,
+        type,
+      };
+    }
+  );
+});
+
 /**
  * Reads a single package's details from its JSON file.
  * 
@@ -76,12 +121,8 @@ export const getAllPackageIds = cache(function getAllPackageIds(): readonly stri
  * @returns {Package} The package details
  */
 export const getPackage = cache(function getPackage(id: string): Package {
-  const filePath = path.join(dataDir, 'packages', `${id}.json`);
-  if (!fs.existsSync(filePath)) {
-    throw new Error(`Package not found: ${id}`);
-  }
-  const raw = readJSON<unknown>(filePath);
-  return PackageSchema.parse(raw);
+  const pkg = readPackageRaw(id);
+  return normalizePackage(pkg, getDefaultRelationshipResolvers());
 });
 
 /**
@@ -301,12 +342,8 @@ export const getAllCheatsheetIds = cache(function getAllCheatsheetIds(): readonl
  * @returns {Cheatsheet} cheatsheet details
  */
 export const getCheatsheet = cache(function getCheatsheet(id: string): Cheatsheet {
-  const filePath = path.join(dataDir, 'cheatsheets', `${id}.json`);
-  if (!fs.existsSync(filePath)) {
-    throw new Error(`Cheatsheet not found: ${id}`);
-  }
-  const raw = readJSON<unknown>(filePath);
-  return CheatsheetSchema.parse(raw);
+  const cheatsheet = readCheatsheetRaw(id);
+  return normalizeCheatsheet(cheatsheet, getDefaultRelationshipResolvers());
 });
 
 /**
@@ -360,12 +397,9 @@ export const getDashboardCounts = cache(function getDashboardCounts(): {
 
 // ── Navigation ──────────────────────────────────────────────
 
-export interface NavItem {
-  id: string;
-  name: string;
-  version?: string;
-  category?: string;
-}
+import type { NavItem } from '@/types/nav';
+export type { NavItem };
+
 
 /**
  * Lightweight navigation retriever for python packages.
@@ -436,11 +470,16 @@ export const getCheatsheetNavItems = cache(function getCheatsheetNavItems(): Nav
  * Lightweight navigation retriever for registry families.
  */
 export const getRegistryNavItems = cache(function getRegistryNavItems(): NavItem[] {
-  return getAllRegistryFamilyIds().map(id => {
-    const family = getRegistryFamily(id);
-    return { id: family.id, name: family.name };
-  });
+  const navPath = path.join(dataDir, 'registry', 'families', '_nav.json');
+  if (!fs.existsSync(navPath)) {
+    return getAllRegistryFamilyIds().map(id => {
+      const family = getRegistryFamily(id);
+      return { id: family.id, name: family.name };
+    });
+  }
+  return readJSON<NavItem[]>(navPath);
 });
+
 
 // ── Patterns ───────────────────────────────────────────────
 
@@ -618,162 +657,8 @@ export const getPrincipleNavItems = cache(function getPrincipleNavItems(): NavIt
   return readJSON<NavItem[]>(navPath);
 });
 
-/**
- * Resolves a display name (e.g., "Logistic Regression") to a model slug and checks if it exists.
- * Used for cross-linking "Also Worth Knowing" chips to actual model pages.
- * 
- * @param displayName - The display name to resolve (e.g., "Logistic Regression")
- * @param category - The model category to search within
- * @returns The model slug if found, null otherwise
- */
-export function resolveModelByName(displayName: string, category: ModelCategory): string | null {
-  const slug = displayName.toLowerCase().replace(/\s+/g, '-');
-  const modelIds = getModelIds(category);
-  if (modelIds.includes(slug)) {
-    return slug;
-  }
-  return null;
-}
-
-export const getRelatedKnowledgeResolver = cache(function getRelatedKnowledgeResolver() {
-  const map = new Map<string, string>();
-  const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-
-  // 1. Principles
-  getAllPrinciples().forEach(p => {
-    const url = `/principles/${p.id}`;
-    if (p.id) map.set(`principle:${normalize(p.id)}`, url);
-    if (p.slug) map.set(`principle:${normalize(p.slug)}`, url);
-    if (p.name) map.set(`principle:${normalize(p.name)}`, url);
-    if (p.title) map.set(`principle:${normalize(p.title)}`, url);
-    if (Array.isArray(p.aliases)) {
-      p.aliases.forEach(a => map.set(`principle:${normalize(a)}`, url));
-    }
-  });
-
-  // 2. Workflows
-  getAllWorkflows().forEach(w => {
-    const url = `/workflows/${w.id}`;
-    if (w.id) map.set(`workflow:${normalize(w.id)}`, url);
-    if (w.slug) map.set(`workflow:${normalize(w.slug)}`, url);
-    if (w.name) map.set(`workflow:${normalize(w.name)}`, url);
-    if (w.title) map.set(`workflow:${normalize(w.title)}`, url);
-    if (Array.isArray(w.aliases)) {
-      w.aliases.forEach(a => map.set(`workflow:${normalize(a)}`, url));
-    }
-  });
-
-  // 3. Patterns
-  getAllPatterns().forEach(p => {
-    const url = `/patterns/${p.id}`;
-    if (p.id) map.set(`pattern:${normalize(p.id)}`, url);
-    if (p.slug) map.set(`pattern:${normalize(p.slug)}`, url);
-    if (p.name) map.set(`pattern:${normalize(p.name)}`, url);
-    if (p.title) map.set(`pattern:${normalize(p.title)}`, url);
-    if (Array.isArray(p.aliases)) {
-      p.aliases.forEach(a => map.set(`pattern:${normalize(a)}`, url));
-    }
-  });
-
-  // 4. Packages
-  getAllPackages().forEach(p => {
-    const url = `/packages/${p.id}`;
-    if (p.id) map.set(`package:${normalize(p.id)}`, url);
-    if (p.slug) map.set(`package:${normalize(p.slug)}`, url);
-    if (p.name) map.set(`package:${normalize(p.name)}`, url);
-    if (p.title) map.set(`package:${normalize(p.title)}`, url);
-    if (Array.isArray(p.aliases)) {
-      p.aliases.forEach(a => map.set(`package:${normalize(a)}`, url));
-    }
-  });
-
-  // 5. Guides (check debug guides, decision guides, and cheatsheets)
-  getAllDebugGuides().forEach(g => {
-    const url = `/debug-guides/${g.id}`;
-    if (g.id) map.set(`guide:${normalize(g.id)}`, url);
-    if (g.slug) map.set(`guide:${normalize(g.slug)}`, url);
-    if (g.name) map.set(`guide:${normalize(g.name)}`, url);
-    if (g.title) map.set(`guide:${normalize(g.title)}`, url);
-    if (Array.isArray(g.aliases)) {
-      g.aliases.forEach(a => map.set(`guide:${normalize(a)}`, url));
-    }
-  });
-  getAllDecisionGuides().forEach(g => {
-    const url = `/decision-guides/${g.id}`;
-    if (g.id) map.set(`guide:${normalize(g.id)}`, url);
-    if (g.slug) map.set(`guide:${normalize(g.slug)}`, url);
-    if (g.name) map.set(`guide:${normalize(g.name)}`, url);
-    if (g.title) map.set(`guide:${normalize(g.title)}`, url);
-    if (Array.isArray(g.aliases)) {
-      g.aliases.forEach(a => map.set(`guide:${normalize(a)}`, url));
-    }
-  });
-  getAllCheatsheetIds().forEach(id => {
-    const url = `/cheatsheets/${id}`;
-    map.set(`guide:${normalize(id)}`, url);
-    try {
-      const c = getCheatsheet(id);
-      if (c.slug) map.set(`guide:${normalize(c.slug)}`, url);
-      if (c.name) map.set(`guide:${normalize(c.name)}`, url);
-      if (c.title) map.set(`guide:${normalize(c.title)}`, url);
-      if (Array.isArray(c.aliases)) {
-        c.aliases.forEach(a => map.set(`guide:${normalize(a)}`, url));
-      }
-    } catch {}
-  });
-
-  // 6. Registry (check families and variants)
-  getAllRegistryFamilies().forEach(f => {
-    const url = `/registry/families/${f.id}`;
-    if (f.id) map.set(`registry:${normalize(f.id)}`, url);
-    if (f.slug) map.set(`registry:${normalize(f.slug)}`, url);
-    if (f.name) map.set(`registry:${normalize(f.name)}`, url);
-    if (f.title) map.set(`registry:${normalize(f.title)}`, url);
-    if (Array.isArray(f.aliases)) {
-      f.aliases.forEach(a => map.set(`registry:${normalize(a)}`, url));
-    }
-
-    const variantIds = getRegistryVariantIds(f.id);
-    variantIds.forEach(vid => {
-      const vurl = `/registry/families/${f.id}/${vid}`;
-      map.set(`registry:${normalize(vid)}`, vurl);
-      try {
-        const v = getRegistryVariant(f.id, vid);
-        if (v.slug) map.set(`registry:${normalize(v.slug)}`, vurl);
-        if (v.name) map.set(`registry:${normalize(v.name)}`, vurl);
-        if (v.title) map.set(`registry:${normalize(v.title)}`, vurl);
-        if (Array.isArray(v.aliases)) {
-          v.aliases.forEach(a => map.set(`registry:${normalize(a)}`, vurl));
-        }
-      } catch {}
-    });
-  });
-
-  // 7. Models
-  const categories: ModelCategory[] = ['ml', 'dl', 'llm'];
-  categories.forEach(cat => {
-    getAllModels(cat).forEach(m => {
-      const url = `/models/${cat}/${m.id}`;
-      if (m.id) map.set(`model:${normalize(m.id)}`, url);
-      if (m.slug) map.set(`model:${normalize(m.slug)}`, url);
-      if (m.name) map.set(`model:${normalize(m.name)}`, url);
-      if (m.title) map.set(`model:${normalize(m.title)}`, url);
-      if (Array.isArray(m.aliases)) {
-        m.aliases.forEach(a => map.set(`model:${normalize(a)}`, url));
-      }
-    });
-  });
-
-  return {
-    resolve: (type: 'model' | 'principle' | 'workflow' | 'pattern' | 'package' | 'guide' | 'registry', name: string): string | null => {
-      const norm = normalize(name);
-      return map.get(`${type}:${norm}`) || null;
-    }
-  };
-});
-
-
 export interface RecentContentItem {
+
   id: string;
   name: string;
   type: 'package' | 'model' | 'workflow' | 'cheatsheet' | 'registry' | 'pattern' | 'debug_guide' | 'decision_guide' | 'principle';
@@ -1006,7 +891,7 @@ export function resolveWorkflowStepLinks(workflow: Workflow): Record<string, Rec
   return resolvedLinks;
 }
 
-export const getRelatedContent = cache(function getRelatedContent(
+function collectRelatedContent(
   type: ContentRef['type'],
   id: string,
   category?: ModelCategory | string
@@ -1017,7 +902,7 @@ export const getRelatedContent = cache(function getRelatedContent(
     const pkg = getPackage(id);
     return uniqueExistingRefs([
       ...(pkg.alternatives || []),
-    ], current).slice(0, 6);
+    ], current);
   }
 
   if (type === 'model') {
@@ -1045,7 +930,7 @@ export const getRelatedContent = cache(function getRelatedContent(
       ...relatedRefs,
       ...sameCategory,
       ...sameProblemType,
-    ], current).slice(0, 6);
+    ], current);
   }
 
   if (type === 'workflow') {
@@ -1071,7 +956,7 @@ export const getRelatedContent = cache(function getRelatedContent(
       ...(workflow.related_debug_guides || []).map(id => ({ id, type: 'debug_guide' as const })),
     ];
 
-    return uniqueExistingRefs([...typedRefs, ...sharedCategory, ...sharedTools], current).slice(0, 6);
+    return uniqueExistingRefs([...typedRefs, ...sharedCategory, ...sharedTools], current);
   }
 
   if (type === 'cheatsheet') {
@@ -1084,7 +969,7 @@ export const getRelatedContent = cache(function getRelatedContent(
         : []
       : [];
 
-    return uniqueExistingRefs([...packageRef, ...relatedPackages], current).slice(0, 6);
+    return uniqueExistingRefs([...packageRef, ...relatedPackages], current);
   }
 
   if (type === 'pattern') {
@@ -1097,7 +982,7 @@ export const getRelatedContent = cache(function getRelatedContent(
       ...(pattern.related_debug_guides || []).map(id => ({ id, type: 'debug_guide' as const, relationship_type: 'related_debug_guides' })),
       ...((pattern as { related_patterns?: string[] }).related_patterns || []).map((id: string) => ({ id, type: 'pattern' as const, relationship_type: 'related_patterns' })),
     ];
-    return uniqueExistingRefs(typedRefs, current).slice(0, 6);
+    return uniqueExistingRefs(typedRefs, current);
   }
 
   if (type === 'debug_guide') {
@@ -1109,7 +994,7 @@ export const getRelatedContent = cache(function getRelatedContent(
       ...(debugGuide.related_models || []).map(id => ({ id, type: 'model' as const, relationship_type: 'related_models' })),
       ...(debugGuide.related_registry || []).map(id => ({ id, type: 'registry' as const, relationship_type: 'related_registry' })),
     ];
-    return uniqueExistingRefs(typedRefs, current).slice(0, 6);
+    return uniqueExistingRefs(typedRefs, current);
   }
 
   if (type === 'decision_guide') {
@@ -1119,7 +1004,7 @@ export const getRelatedContent = cache(function getRelatedContent(
       ...(decisionGuide.related_packages || []).map(id => ({ id, type: 'package' as const, relationship_type: 'related_packages' })),
       ...(decisionGuide.related_models || []).map(id => ({ id, type: 'model' as const, relationship_type: 'related_models' })),
     ];
-    return uniqueExistingRefs(typedRefs, current).slice(0, 6);
+    return uniqueExistingRefs(typedRefs, current);
   }
 
   if (type === 'principle') {
@@ -1129,11 +1014,94 @@ export const getRelatedContent = cache(function getRelatedContent(
       ...(principle.referenced_by_models || []).map(id => ({ id, type: 'model' as const, relationship_type: 'referenced_by_models' })),
       ...(principle.referenced_by_workflows || []).map(id => ({ id, type: 'workflow' as const, relationship_type: 'referenced_by_workflows' })),
     ];
-    return uniqueExistingRefs(typedRefs, current).slice(0, 6);
+    return uniqueExistingRefs(typedRefs, current);
   }
 
   return [];
+}
+
+export const getRelatedContent = cache(function getRelatedContent(
+  type: ContentRef['type'],
+  id: string,
+  category?: ModelCategory | string
+): ContentRef[] {
+  return collectRelatedContent(type, id, category).slice(0, 6);
 });
+
+/**
+ * Collects all canonical normalized relationships for a given content entity.
+ */
+export function getCanonicalRelationshipsForEntity(
+  type: string,
+  id: string,
+  category?: string
+): (ContentRef | CanonicalRelationship)[] {
+  const items: (ContentRef | CanonicalRelationship)[] = [];
+
+  const baseRelated = collectRelatedContent(type as ContentRef['type'], id, category as ModelCategory);
+  items.push(...baseRelated);
+
+  try {
+    if (type === 'package') {
+      const pkg = getPackage(id);
+      if (pkg.tasks) {
+        pkg.tasks.forEach((task: PackageTask) => {
+          if (task.related_workflow_links) items.push(...task.related_workflow_links);
+          if (task.related_cheatsheet_links) items.push(...task.related_cheatsheet_links);
+          if (task.related_model_links) items.push(...task.related_model_links);
+          if (task.related_pattern_links) items.push(...task.related_pattern_links);
+          if (task.related_decision_guide_links) items.push(...task.related_decision_guide_links);
+          if (task.related_package_task_links) items.push(...task.related_package_task_links);
+          if (task.related_api_links) items.push(...task.related_api_links);
+        });
+      }
+    } else if (type === 'cheatsheet') {
+      const cs = getCheatsheet(id);
+      if (cs.entries) {
+        cs.entries.forEach((entry: CheatsheetEntry) => {
+          if (entry.related_package_links) items.push(...entry.related_package_links);
+          if (entry.related_workflow_links) items.push(...entry.related_workflow_links);
+          if (entry.related_pattern_links) items.push(...entry.related_pattern_links);
+          if (entry.related_decision_guide_links) items.push(...entry.related_decision_guide_links);
+          if (entry.related_api_links) items.push(...entry.related_api_links);
+        });
+      }
+    }
+  } catch {
+    // Graceful fallback
+  }
+
+  return items;
+}
+
+export function resolveGraphNodes(
+  rawItems: (ContentRef | CanonicalRelationship | string)[],
+  currentType?: string,
+  currentId?: string
+): KnowledgeGraphNode[] {
+  return resolveGraphNodesCore(
+    rawItems,
+    getDefaultRelationshipResolvers(),
+    contentExists,
+    getContentPath,
+    getContentName,
+    currentType,
+    currentId
+  );
+}
+
+/**
+ * Reusable helper to determine whether the Knowledge Graph panel provides unique graph nodes
+ * beyond what RelatedContent already displays.
+ */
+export function shouldRenderKnowledgeGraph(
+  relatedContent: ContentRef[],
+  graphNodes: KnowledgeGraphNode[]
+): boolean {
+  if (!graphNodes || graphNodes.length === 0) return false;
+  const relatedKeys = new Set((relatedContent || []).map(r => `${r.type}:${r.id}`));
+  return graphNodes.some(node => !relatedKeys.has(`${node.type}:${node.id}`));
+}
 
 /** Fallback for when _nav.json indexes have not been built yet. */
 function getRecentContentFallback(limit: number): RecentContentItem[] {

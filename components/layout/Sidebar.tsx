@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { NavItem } from '@/lib/data';
+import type { NavItem } from '@/types/nav';
 
 const MAX_VISIBLE_ITEMS = 12;
 const ALPHA_GROUP_THRESHOLD = 30;

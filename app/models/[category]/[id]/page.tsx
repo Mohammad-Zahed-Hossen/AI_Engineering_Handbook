@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
-import { getModelIds, getModel, getRelatedContent, resolveModelByName, getRelatedKnowledgeResolver } from '@/lib/data';
+import { getModelIds, getModel, getRelatedContent, contentExists, getContentPath, getCanonicalRelationshipsForEntity, resolveGraphNodes, shouldRenderKnowledgeGraph } from '@/lib/data';
 import { ModelCategory } from '@/types/model';
+
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import OfficialResources from '@/components/shared/OfficialResources';
@@ -16,6 +17,8 @@ import RecommendedNextSection from '@/components/shared/RecommendedNextSection';
 import SectionCard from '@/components/shared/SectionCard';
 import { AlertCircle, Check, AlertTriangle, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import FavoriteButton from '@/components/shared/FavoriteButton';
+import KnowledgeGraphPanel from '@/components/shared/KnowledgeGraphPanel';
+
 
 export async function generateStaticParams() {
   const categories: ModelCategory[] = ['ml', 'dl', 'llm'];
@@ -61,33 +64,42 @@ export default async function ModelDetailPage({ params }: PageProps) {
   ];
   
   const relatedContent = getRelatedContent('model', model.id, validCategory);
+  const rawGraphItems = getCanonicalRelationshipsForEntity('model', model.id, validCategory);
+  const graphNodes = resolveGraphNodes(rawGraphItems, 'model', model.id).filter(n => n.type !== 'package_task');
+  const shouldShowGraph = shouldRenderKnowledgeGraph(relatedContent, graphNodes);
+
+  const resolveModelSlug = (displayName: string): string | null => {
+    const slug = displayName.toLowerCase().replace(/\s+/g, '-');
+    return contentExists('model', slug) ? slug : null;
+  };
 
   // Resolve Recommended Next items
   const recommendedNextItems = (model.recommendednext || []).map(name => ({
     name,
-    slug: resolveModelByName(name, validCategory)
+    slug: resolveModelSlug(name)
   }));
 
   // Resolve cross-links for "Also Worth Knowing" section
   const relatedKnowledgeLinks = {
     relatedmodels: model.relatedknowledge.relatedmodels.map(name => ({
       name,
-      slug: resolveModelByName(name, validCategory)
+      slug: resolveModelSlug(name)
     })),
     alternative_models: model.relatedknowledge.alternative_models.map(name => ({
       name,
-      slug: resolveModelByName(name, validCategory)
+      slug: resolveModelSlug(name)
     })),
   };
 
-  const resolver = getRelatedKnowledgeResolver();
   const resolvedKnowledgeLinks: Record<string, string> = {};
-  const resolveAndAdd = (type: 'model' | 'principle' | 'workflow' | 'pattern' | 'package' | 'guide' | 'registry', names: string[]) => {
+  const resolveAndAdd = (type: 'model' | 'principle' | 'workflow' | 'pattern' | 'package' | 'debug_guide' | 'decision_guide' | 'cheatsheet' | 'registry', names: string[]) => {
     if (Array.isArray(names)) {
       names.forEach(name => {
-        const href = resolver.resolve(type, name);
-        if (href) {
-          resolvedKnowledgeLinks[name] = href;
+        const slug = name.toLowerCase().replace(/\s+/g, '-');
+        let path = getContentPath(type, slug);
+        if (!path) path = getContentPath(type, name);
+        if (path) {
+          resolvedKnowledgeLinks[name] = path;
         }
       });
     }
@@ -99,8 +111,11 @@ export default async function ModelDetailPage({ params }: PageProps) {
   resolveAndAdd('workflow', model.relatedknowledge.related_workflows);
   resolveAndAdd('pattern', model.relatedknowledge.related_patterns);
   resolveAndAdd('package', model.relatedknowledge.related_packages);
-  resolveAndAdd('guide', model.relatedknowledge.related_guides);
+  resolveAndAdd('debug_guide', model.relatedknowledge.related_guides);
+  resolveAndAdd('decision_guide', model.relatedknowledge.related_guides);
+  resolveAndAdd('cheatsheet', model.relatedknowledge.related_guides);
   resolveAndAdd('registry', model.relatedknowledge.related_registry);
+
 
   return (
     <ContentPageLayout
@@ -290,6 +305,9 @@ export default async function ModelDetailPage({ params }: PageProps) {
       <RecommendedNextSection items={recommendedNextItems} category={validCategory} />
 
       <RelatedContent items={relatedContent} />
+
+      {shouldShowGraph && <KnowledgeGraphPanel nodes={graphNodes} />}
+
 
       {model.learning_resources && model.learning_resources.length > 0 && (
         <LearningResources resources={model.learning_resources} />

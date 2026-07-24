@@ -142,6 +142,8 @@ export function getTypeIcon(type: SearchResult['type']): string {
     model: '🤖',
     workflow: '🔄',
     cheatsheet: '📋',
+    quick_reference: '🗂️',
+    checklist: '✅',
     registry: '📊',
     function: '🔧',
     pattern: '🔷',

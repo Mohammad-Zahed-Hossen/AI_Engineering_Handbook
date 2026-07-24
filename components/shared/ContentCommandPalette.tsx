@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Search, X, ChevronRight, Command } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import HighlightMatch from './HighlightMatch';
 
 interface ContentCommandPaletteProps<T> {
   items: T[];
@@ -23,7 +24,7 @@ export default function ContentCommandPalette<T>({
   onSelect,
   placeholder = "Search...",
   emptyMessage = "No results found",
-  keyboardShortcut = '/',
+  keyboardShortcut = 'k',
 }: ContentCommandPaletteProps<T>) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
@@ -49,14 +50,15 @@ export default function ContentCommandPalette<T>({
       // Check if a modal/dialog is open
       const isModalOpen = document.querySelector('[role="dialog"][data-state="open"]') !== null;
       
-      // Focus search on keyboard shortcut (when not in input/code/modal)
-      if (e.key === keyboardShortcut && !isInputFocused && !isModalOpen) {
+      // Focus local search on Ctrl+K / Cmd+K (when not already in input/modal)
+      const isCmdOrCtrlK = (e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K');
+      if (isCmdOrCtrlK && !isInputFocused && !isModalOpen) {
         e.preventDefault();
         inputRef.current?.focus();
       }
       
       // Clear on Escape when focused
-      if (e.key === 'Escape' && isFocused && !isInputFocused) {
+      if (e.key === 'Escape' && isFocused) {
         e.preventDefault();
         setSearchQuery('');
         inputRef.current?.blur();
@@ -65,7 +67,7 @@ export default function ContentCommandPalette<T>({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isFocused, keyboardShortcut]);
+  }, [isFocused]);
 
   // Search across items
   const filteredItems = useMemo(() => {
@@ -165,10 +167,12 @@ export default function ContentCommandPalette<T>({
               role="option"
             >
               <div>
-                <div className="text-xs font-semibold text-foreground">{getLabel(item)}</div>
+                <div className="text-xs font-semibold text-foreground">
+                  <HighlightMatch text={getLabel(item)} match={searchQuery} />
+                </div>
                 {getDescription && (
                   <div className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">
-                    {getDescription(item)}
+                    <HighlightMatch text={getDescription(item)} match={searchQuery} />
                   </div>
                 )}
               </div>

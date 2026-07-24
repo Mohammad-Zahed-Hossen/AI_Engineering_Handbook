@@ -34,6 +34,7 @@ interface ModelListFilterProps {
 }
 
 export function ModelListFilter({ models, category, categoriesMeta = {} }: ModelListFilterProps) {
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedProblems, setSelectedProblems] = useState<ProblemType[]>([]);
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
   const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([]);
@@ -88,6 +89,7 @@ export function ModelListFilter({ models, category, categoriesMeta = {} }: Model
   };
 
   const clearAllFilters = () => {
+    setSearchQuery('');
     setSelectedProblems([]);
     setSelectedSubcategories([]);
     setSelectedDifficulties([]);
@@ -105,11 +107,17 @@ export function ModelListFilter({ models, category, categoriesMeta = {} }: Model
   };
 
   const filteredModels = models.filter((model) => {
+    const matchesSearch =
+      searchQuery === '' ||
+      model.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      model.decisionsummary.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      model.subcategory.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      model.problem_types.some((pt) => pt.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesProblem = selectedProblems.length === 0 || model.problem_types.some((pt) => selectedProblems.includes(pt));
     const matchesSubcategory = selectedSubcategories.length === 0 || selectedSubcategories.includes(model.subcategory);
     const matchesDifficulty = selectedDifficulties.length === 0 || selectedDifficulties.includes(model.difficulty);
     const matchesMaturity = selectedMaturities.length === 0 || selectedMaturities.includes(model.engineeringmaturity);
-    return matchesProblem && matchesSubcategory && matchesDifficulty && matchesMaturity;
+    return matchesSearch && matchesProblem && matchesSubcategory && matchesDifficulty && matchesMaturity;
   });
 
   // Group filtered models by subcategory
@@ -136,12 +144,12 @@ export function ModelListFilter({ models, category, categoriesMeta = {} }: Model
     <div className="space-y-4">
       {/* Search and Filters */}
       <SearchFilterToolbar
-        searchQuery=""
-        onSearchChange={() => {}}
-        searchPlaceholder=""
-        showClearSearch={false}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Search models by name, subcategory, problem type, or description..."
+        showClearSearch={true}
         activeFilters={activeFilters}
-        onClearAll={activeFilters.length > 0 ? clearAllFilters : undefined}
+        onClearAll={activeFilters.length > 0 || searchQuery.length > 0 ? clearAllFilters : undefined}
         resultCount={filteredModels.length}
         totalCount={models.length}
         moreFiltersContent={

@@ -85,8 +85,8 @@ function TableOfContentsPresentational({ items, variant, activeId }: { items: To
               </SheetHeader>
               <nav aria-label="Table of contents" className="p-2">
                 <ul className="space-y-1">
-                  {items.map(item => (
-                    <li key={item.id}>
+                  {items.map((item, idx) => (
+                    <li key={`${item.id}-${idx}`}>
                       <a
                         href={`#${item.id}`}
                         className={cn(
@@ -116,8 +116,8 @@ function TableOfContentsPresentational({ items, variant, activeId }: { items: To
             </h2>
             <nav aria-label="Table of contents">
               <ul className="space-y-1.5">
-                {items.map(item => (
-                  <li key={item.id}>
+                {items.map((item, idx) => (
+                  <li key={`${item.id}-${idx}`}>
                     <a
                       href={`#${item.id}`}
                       className={cn(
@@ -143,9 +143,9 @@ function TableOfContentsPresentational({ items, variant, activeId }: { items: To
           <div className="sticky top-4 rounded-lg border border-border bg-card p-2 select-none">
             <nav aria-label="Table of contents">
               <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                {items.map(item => (
+                {items.map((item, idx) => (
                   <a
-                    key={item.id}
+                    key={`${item.id}-${idx}`}
                     href={`#${item.id}`}
                     className={cn(
                       'whitespace-nowrap px-3 py-2 rounded-full text-[11px] font-medium transition-colors border touch-target',

@@ -76,31 +76,22 @@ export default function ExpandableText({
       const fullHeight = content.scrollHeight;
       setContentHeight(fullHeight);
 
-      if (!isExpanded) {
-        const clientH = container.clientHeight;
-        if (clientH > 0) {
-          setCollapsedHeight(clientH);
-          setIsTruncated(fullHeight > clientH);
-        }
+      // Determine if content exceeds line-clamp container height
+      const clientH = container.clientHeight;
+      if (clientH > 0) {
+        setCollapsedHeight(clientH);
+        setIsTruncated(fullHeight > clientH + 2);
       } else {
-        if (collapsedHeight === null) {
-          // If initialized as expanded, estimate the collapsed height
-          const lines = maxLines || 4;
-          const computedStyle = window.getComputedStyle(container);
-          const lineHeight = parseFloat(computedStyle.lineHeight) || 20;
-          const estimatedCollapsedHeight = lines * lineHeight;
-          setCollapsedHeight(estimatedCollapsedHeight);
-          setIsTruncated(fullHeight > estimatedCollapsedHeight);
-        }
+        const lines = maxLines || 4;
+        const computedStyle = window.getComputedStyle(container);
+        const lineHeight = parseFloat(computedStyle.lineHeight) || 18;
+        const estimatedCollapsedHeight = lines * lineHeight;
+        setIsTruncated(fullHeight > estimatedCollapsedHeight + 2);
       }
     };
 
-    // Run initial measurement
     measure();
 
-    // Optimize performance: only observe the inner content element.
-    // The content container's height is always unconstrained, so it won't trigger
-    // ResizeObserver fires during container transition height changes.
     const observer = new ResizeObserver(() => {
       measure();
     });
@@ -108,9 +99,12 @@ export default function ExpandableText({
     if (contentRef.current) {
       observer.observe(contentRef.current);
     }
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
 
     return () => observer.disconnect();
-  }, [isExpanded, children, maxLines, collapsedHeight]);
+  }, [isExpanded, children, maxLines]);
 
   // Apply visual clamp styling when collapsed and not animating
   const lineClampStyle: React.CSSProperties = maxLines
@@ -122,12 +116,14 @@ export default function ExpandableText({
     : {};
 
   const heightStyle: React.CSSProperties = {};
-  if (contentHeight !== null && collapsedHeight !== null) {
-    heightStyle.maxHeight = isExpanded ? `${contentHeight}px` : `${collapsedHeight}px`;
+  if (isExpanded && contentHeight !== null) {
+    heightStyle.maxHeight = `${contentHeight}px`;
+  } else if (!isExpanded && !shouldClamp && collapsedHeight !== null) {
+    // Only set numeric maxHeight during collapse transition animation
+    heightStyle.maxHeight = `${collapsedHeight}px`;
   }
 
   // Get the base background color from the fadeClass to build the horizontal fade
-  // fadeClass is typically in the format: "from-background to-transparent" or similar
   const horizontalFadeClass = fadeClass ? fadeClass.replace("bg-gradient-to-t", "").trim() : "from-card to-transparent";
 
   return (

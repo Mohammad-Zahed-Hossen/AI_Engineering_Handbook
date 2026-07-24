@@ -13,6 +13,20 @@ function normalizeToken(token: string): string {
   return token.toLowerCase().trim();
 }
 
+function addTextTokens(tokens: Set<string>, value: string | undefined, minLength = 2): void {
+  if (!value) return;
+
+  value
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .forEach(part => {
+      const normalized = normalizeToken(part);
+      if (normalized && normalized.length >= minLength) {
+        tokens.add(normalized);
+      }
+    });
+}
+
 function collectTokens(doc: SearchResult): string[] {
   const tokens = new Set<string>();
 
@@ -44,8 +58,19 @@ function collectTokens(doc: SearchResult): string[] {
 
   if (doc.keywords) {
     doc.keywords.forEach(keyword => {
-      const normalized = normalizeToken(keyword);
-      if (normalized) tokens.add(normalized);
+      addTextTokens(tokens, keyword, 2);
+    });
+  }
+
+  if (doc.aliases) {
+    doc.aliases.forEach(alias => {
+      addTextTokens(tokens, alias, 2);
+    });
+  }
+
+  if (doc.search_tokens) {
+    doc.search_tokens.forEach(token => {
+      addTextTokens(tokens, token, 2);
     });
   }
 

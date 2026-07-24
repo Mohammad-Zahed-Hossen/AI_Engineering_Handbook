@@ -1,4 +1,5 @@
 import type { VisualizationEquivalent } from '@/types/package';
+import { createRelationshipRegistry } from '@/lib/relationships/relationshipRegistry';
 
 export type VisualizationEquivalentItem = VisualizationEquivalent;
 
@@ -49,42 +50,108 @@ export function resolvePackageRelationship(
   currentPackageId: string,
   packages: Array<{ id: string; name: string; tasks: Array<{ task: string; resource_id?: string }> }>
 ): ResolvedRelationship | null {
-  const targetPackage = packages.find(pkg => pkg.id === equivalent.package);
-  if (!targetPackage) return null;
-
-  const targetTask = targetPackage.tasks.find(task => {
-    const normalizedTarget = slugify(equivalent.task);
-    const taskResourceId = task.resource_id ? slugify(task.resource_id) : '';
-    const taskTitleSlug = slugify(task.task);
-
-    const cleanSlug = (s: string) => s.replace(/^(create|draw|plot|show)-/, '');
-    const cleanTarget = cleanSlug(normalizedTarget);
-    const cleanTitle = cleanSlug(taskTitleSlug);
-    const cleanResource = taskResourceId ? cleanSlug(taskResourceId) : '';
-
-    return (
-      taskResourceId === normalizedTarget ||
-      taskTitleSlug === normalizedTarget ||
-      task.task === equivalent.task ||
-      task.resource_id === equivalent.task ||
-      (cleanResource && cleanResource === cleanTarget) ||
-      cleanTitle === cleanTarget
-    );
-  });
+  const registry = createRelationshipRegistry(packages);
+  const targetTask = registry.resolvePackageTask(equivalent.task, { packageId: equivalent.package });
 
   if (!targetTask) return null;
 
   return {
     ...equivalent,
     task: targetTask.task,
-    href: `/packages/${targetPackage.id}#${slugify(targetTask.task)}`,
+    href: targetTask.href,
     targetLabel: targetTask.task,
-    targetAnchor: slugify(targetTask.task),
-    packageName: targetPackage.name,
-    isLocal: targetPackage.id === currentPackageId,
+    targetAnchor: targetTask.slug,
+    packageName: targetTask.packageName,
+    isLocal: targetTask.packageId === currentPackageId,
     type: 'equivalent',
     target: equivalent.task,
   };
+}
+
+/**
+ * Get the href for any entity type based on its type and ID.
+ * Server-compatible pure function.
+ */
+export function getEntityHref(type: string, id: string): string | null {
+  if (type === 'package') return `/packages/${id}`;
+  if (type === 'cheatsheet') return `/cheatsheets/${id}`;
+  if (type === 'workflow') return `/workflows/${id}`;
+  if (type === 'pattern') return `/patterns/${id}`;
+  if (type === 'model') return `/models/ml/${id}`;
+  if (type === 'debug_guide') return `/debug-guides/${id}`;
+  if (type === 'decision_guide') return `/decision-guides/${id}`;
+  if (type === 'principle') return `/principles/${id}`;
+  return null;
+}
+
+export interface EntityLink {
+  type: string;
+  label: string;
+  href: string | null;
+}
+
+const TYPE_LABEL_MAP: Record<string, string> = {
+  package: 'Package',
+  cheatsheet: 'Cheatsheet',
+  workflow: 'Workflow',
+  pattern: 'Pattern',
+  model: 'Model',
+  debug_guide: 'Debug Guide',
+  decision_guide: 'Decision Guide',
+  principle: 'Principle',
+};
+
+/**
+ * Build entity navigation links for cross-entity navigation.
+ * Server-compatible pure function.
+ */
+export function buildEntityLinks(
+  currentType: string,
+  currentId: string,
+  relatedCheatsheet?: string | null,
+  relatedPackage?: string | null
+): EntityLink[] {
+  const links: EntityLink[] = [];
+
+  if (currentType === 'package') {
+    links.push({
+      type: 'package',
+      label: `Open ${currentId.charAt(0).toUpperCase() + currentId.slice(1)} Package`,
+      href: `/packages/${currentId}`,
+    });
+    if (relatedCheatsheet) {
+      links.push({
+        type: 'cheatsheet',
+        label: `Open Cheatsheet`,
+        href: `/cheatsheets/${relatedCheatsheet}`,
+      });
+    }
+  } else if (currentType === 'cheatsheet') {
+    links.push({
+      type: 'cheatsheet',
+      label: `Open ${currentId.charAt(0).toUpperCase() + currentId.slice(1)} Cheatsheet`,
+      href: `/cheatsheets/${currentId}`,
+    });
+    if (relatedPackage) {
+      links.push({
+        type: 'package',
+        label: `Open Package`,
+        href: `/packages/${relatedPackage}`,
+      });
+    }
+  } else {
+    const label = TYPE_LABEL_MAP[currentType] || currentType;
+    const href = getEntityHref(currentType, currentId);
+    if (href) {
+      links.push({
+        type: currentType,
+        label: `Open ${label}`,
+        href,
+      });
+    }
+  }
+
+  return links;
 }
 
 export function getRelationshipSearchKeywords(equivalents: Array<Pick<VisualizationEquivalent, 'package' | 'task' | 'reason'>> | undefined): string[] {
@@ -108,3 +175,5 @@ export function getRelationshipSearchKeywords(equivalents: Array<Pick<Visualizat
 
   return Array.from(keywordSet);
 }
+
+export * from './relationships/index';

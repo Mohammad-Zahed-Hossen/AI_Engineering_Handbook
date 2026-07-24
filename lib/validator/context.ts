@@ -19,6 +19,7 @@ export interface GraphNode {
   filePath: string;
   data: unknown;      // Parsed json data
   isValid: boolean;   // True if zod schema parsed successfully
+  isIntermediate?: boolean; // True if intermediate source module
 }
 
 export interface GraphEdge {
@@ -30,7 +31,8 @@ export interface GraphEdge {
 }
 
 export class KnowledgeGraph {
-  nodes = new Map<string, GraphNode>();               // Key: 'type:id'
+  nodes = new Map<string, GraphNode>();               // Key: 'type:id' (Navigable canonical page nodes)
+  intermediateNodes = new Map<string, GraphNode>();    // Key: 'type:intermediate:filePath' (Intermediate source modules)
   edges: GraphEdge[] = [];
   outgoing = new Map<string, GraphEdge[]>();          // Key: 'type:id'
   incoming = new Map<string, GraphEdge[]>();          // Key: 'type:id'
@@ -41,8 +43,16 @@ export class KnowledgeGraph {
   urlToNodes = new Map<string, string[]>();           // Key: URL -> Array of 'type:id'
 
   addNode(node: GraphNode) {
-    const key = `${node.type}:${node.id}`;
-    this.nodes.set(key, node);
+    const key = node.isIntermediate
+      ? `${node.type}:intermediate:${node.filePath}`
+      : `${node.type}:${node.id}`;
+
+    if (node.isIntermediate) {
+      this.intermediateNodes.set(key, node);
+    } else {
+      this.nodes.set(key, node);
+    }
+
     if (node.type === 'problem') return;
     
     if (node.data && typeof node.data === 'object') {
@@ -56,7 +66,7 @@ export class KnowledgeGraph {
       };
       
       // Map slug
-      if (obj.slug && typeof obj.slug === 'string') {
+      if (!node.isIntermediate && obj.slug && typeof obj.slug === 'string') {
         this.slugToNode.set(obj.slug, node);
       }
       
@@ -122,6 +132,10 @@ export class KnowledgeGraph {
     }
   }
 
+  getAllNodes(): GraphNode[] {
+    return [...this.nodes.values(), ...this.intermediateNodes.values()];
+  }
+
   addEdge(edge: GraphEdge) {
     this.edges.push(edge);
     
@@ -136,6 +150,17 @@ export class KnowledgeGraph {
     inList.push(edge);
     this.incoming.set(targetKey, inList);
   }
+}
+
+export function isIntermediateModule(normalizedPath: string): boolean {
+  const parts = normalizedPath.split('/');
+  if (parts.length >= 4) {
+    const category = parts[1];
+    if (['packages', 'cheatsheets', 'workflows', 'patterns', 'debug-guides', 'decision-guides', 'principles'].includes(category)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // Scans directory for JSON files, excluding files starting with '_' (except _index.json)
@@ -259,12 +284,15 @@ export async function buildValidationContext(): Promise<{
       isValid = result.success;
     }
     
+    const isIntermediate = isIntermediateModule(normalizedPath);
+
     graph.addNode({
       id: declaredId,
       type: contentType,
       filePath: normalizedPath,
       data,
-      isValid
+      isValid,
+      isIntermediate
     });
   }
 
@@ -297,7 +325,7 @@ export async function buildValidationContext(): Promise<{
   }
   
   // Second pass: construct directed graph edges
-  for (const node of graph.nodes.values()) {
+  for (const node of graph.getAllNodes()) {
     if (!node.data || typeof node.data !== 'object') continue;
     const obj = node.data as Record<string, unknown>;
 
@@ -457,6 +485,27 @@ export async function buildValidationContext(): Promise<{
               });
             }
           }
+        }
+      }
+    } else if (node.type === 'cheatsheet' && !node.isIntermediate) {
+      const pkgId = (obj.package as string) || (obj.package_reference as string);
+      if (typeof pkgId === 'string' && pkgId) {
+        const targetKey = `package:${pkgId}`;
+        if (graph.nodes.has(targetKey)) {
+          graph.addEdge({
+            sourceId: node.id,
+            sourceType: 'cheatsheet',
+            targetId: pkgId,
+            targetType: 'package',
+            relationshipType: 'cheatsheet_for'
+          });
+          graph.addEdge({
+            sourceId: pkgId,
+            sourceType: 'package',
+            targetId: node.id,
+            targetType: 'cheatsheet',
+            relationshipType: 'has_cheatsheet'
+          });
         }
       }
     }

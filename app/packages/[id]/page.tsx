@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getAllPackageIds, getPackage, getRelatedContent, getContentPath, getContentName, getAllPackages } from '@/lib/data';
+import { getAllPackageIds, getPackage, getRelatedContent, getAllPackages, getCanonicalRelationshipsForEntity, resolveGraphNodes, shouldRenderKnowledgeGraph } from '@/lib/data';
 import { resolvePackageRelationship } from '@/lib/relationships';
 import PackagePageLayout from '@/components/shared/PackagePageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
@@ -13,6 +13,7 @@ import PackageSnapshot from '@/components/shared/PackageSnapshot';
 import { CodeBlock } from '@/components/shared/CodeBlock';
 import StickyActionBar from '@/components/shared/StickyActionBar';
 import FavoriteButton from '@/components/shared/FavoriteButton';
+import KnowledgeGraphPanel from '@/components/shared/KnowledgeGraphPanel';
 
 export async function generateStaticParams() {
   return getAllPackageIds().map((id) => ({ id }));
@@ -39,37 +40,25 @@ export default async function PackageDetailPage({ params }: PageProps) {
 
   const allPackages = getAllPackages();
 
-  // Resolve task cross-references
   const resolvedTasks = pkg.tasks.map(task => ({
     ...task,
     syntaxBlock: <CodeBlock code={task.syntax} language={pkg.language} />,
     exampleBlock: <CodeBlock code={task.example} language={pkg.language} />,
-    related_workflow_links: (task.related_workflows || [])
-      .map(id => ({ 
-        id, 
-        href: getContentPath('workflow', id),
-        name: getContentName('workflow', id)
-      }))
-      .filter(r => r.href !== null) as { id: string; href: string; name: string }[],
-    related_cheatsheet_links: (task.related_cheatsheets || [])
-      .map(id => ({ 
-        id, 
-        href: getContentPath('cheatsheet', id),
-        name: getContentName('cheatsheet', id)
-      }))
-      .filter(r => r.href !== null) as { id: string; href: string; name: string }[],
     visualization_equivalents: (task.visualization_equivalents || [])
       .map(eq => resolvePackageRelationship(eq, pkg.id, allPackages))
       .filter((r): r is NonNullable<typeof r> => r !== null),
-  }));
+  })) as unknown as Parameters<typeof PackageTaskList>[0]['tasks'];
 
-  // Task navigation items for chips
+  // Task navigation items for StickyActionBar TOC
   const taskNavItems = pkg.tasks.map(task => ({
     id: slugify(task.task),
     label: task.task,
   }));
 
   const relatedContent = getRelatedContent('package', pkg.id);
+  const rawGraphItems = getCanonicalRelationshipsForEntity('package', pkg.id);
+  const graphNodes = resolveGraphNodes(rawGraphItems, 'package', pkg.id).filter(n => n.type !== 'package_task');
+  const shouldShowGraph = shouldRenderKnowledgeGraph(relatedContent, graphNodes);
 
   return (
     <PackagePageLayout
@@ -80,7 +69,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
       ]}
     >
       <ReadingSessionTracker id={pkg.id} href={`/packages/${pkg.id}`} name={pkg.name} type="package" />
-      
+
       <header className="space-y-3 border-b border-border pb-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
@@ -102,7 +91,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
         updatedAt={pkg.updated_at}
       />
 
-       <section id="summary" className="scroll-mt-24">
+      <section id="summary" className="scroll-mt-24">
         <ExpandableText cacheKey={`pkg-summary-${pkg.id}`} fadeClass="from-background to-transparent">
           <ProseClient content={pkg.summary} className="content-prose text-sm text-muted-foreground" />
         </ExpandableText>
@@ -111,6 +100,8 @@ export default async function PackageDetailPage({ params }: PageProps) {
       <PackageTaskList tasks={resolvedTasks} packageName={pkg.id} language={pkg.language} />
 
       <RelatedContent items={relatedContent} />
+
+      {shouldShowGraph && <KnowledgeGraphPanel nodes={graphNodes} />}
 
       {/* Further Study - Moved to bottom */}
       <OfficialResources sources={pkg.sources} githubRepo={pkg.github_repo} />

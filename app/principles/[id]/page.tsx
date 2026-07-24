@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getPrinciple, getAllPrincipleIds } from '@/lib/data';
+import { getPrinciple, getAllPrincipleIds, getRelatedContent, getCanonicalRelationshipsForEntity, resolveGraphNodes, shouldRenderKnowledgeGraph } from '@/lib/data';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import RelatedContent from '@/components/shared/RelatedContent';
@@ -18,6 +18,8 @@ import TradeoffComparison from '@/components/principles/TradeoffComparison';
 import CollapsibleSection from '@/components/shared/CollapsibleSection';
 import PhaseDivider from '@/components/shared/PhaseDivider';
 import Callout from '@/components/shared/Callout';
+import KnowledgeGraphPanel from '@/components/shared/KnowledgeGraphPanel';
+
 
 export async function generateStaticParams() {
   const ids = getAllPrincipleIds();
@@ -74,12 +76,10 @@ export default async function PrinciplePage({ params }: PageProps) {
       ? [{ id: 'related-concepts', label: 'Related Concepts' }] : []),
   ];
 
-  // Combine all related content
-  const allRelatedContent = [
-    ...principle.referenced_by_patterns.map(id => ({ id, type: 'pattern' as const, relationship_type: 'referenced_by_patterns' })),
-    ...principle.referenced_by_models.map(id => ({ id, type: 'model' as const, relationship_type: 'referenced_by_models' })),
-    ...principle.referenced_by_workflows.map(id => ({ id, type: 'workflow' as const, relationship_type: 'referenced_by_workflows' })),
-  ];
+  const allRelatedContent = getRelatedContent('principle', principle.id);
+  const rawGraphItems = getCanonicalRelationshipsForEntity('principle', principle.id);
+  const graphNodes = resolveGraphNodes(rawGraphItems, 'principle', principle.id).filter(n => n.type !== 'package_task');
+  const shouldShowGraph = shouldRenderKnowledgeGraph(allRelatedContent, graphNodes);
 
   return (
     <ContentPageLayout breadcrumbs={breadcrumbs} toc={toc}>
@@ -363,6 +363,13 @@ export default async function PrinciplePage({ params }: PageProps) {
           </CollapsibleSection>
         </section>
       )}
+
+      {/* Related Content & Knowledge Graph */}
+      {allRelatedContent.length > 0 && (
+        <RelatedContent items={allRelatedContent} />
+      )}
+      {shouldShowGraph && <KnowledgeGraphPanel nodes={graphNodes} />}
     </ContentPageLayout>
+
   );
 }

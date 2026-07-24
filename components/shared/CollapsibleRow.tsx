@@ -135,7 +135,7 @@ export default function CollapsibleRow({
         ref={contentRef}
         id={contentId}
         className={cn(
-          "bg-card [content-visibility:auto]",
+          "bg-card",
           contentClassName?.includes('border-t-0') ? '' : 'border-t border-border',
           contentClassName
         )}

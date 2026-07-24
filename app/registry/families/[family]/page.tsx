@@ -11,6 +11,8 @@ import EngineeringContinuation from '@/components/registry/EngineeringContinuati
 import QuickLinksCard from '@/components/registry/QuickLinksCard';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 import FavoriteButton from '@/components/shared/FavoriteButton';
+import { getCanonicalRelationshipsForEntity, resolveGraphNodes, shouldRenderKnowledgeGraph } from '@/lib/data';
+import KnowledgeGraphPanel from '@/components/shared/KnowledgeGraphPanel';
 
 /**
  * Pre-generates family params for static rendering.
@@ -35,6 +37,18 @@ export default async function RegistryFamilyPage({ params }: PageProps) {
 
   const variants = getRegistryVariantsByFamily(family);
 
+  const toc = [
+    { id: 'family-header', label: familyData.name },
+    { id: 'decisions', label: 'Engineering Decisions' },
+    ...(familyData.engineering_decision?.performance_dimensions ? [{ id: 'performance', label: 'Performance Dimensions' }] : []),
+    ...(familyData.engineering_decision?.deployment_profiles ? [{ id: 'deployment', label: 'Deployment Profiles' }] : []),
+    ...(variants.length > 0 ? [{ id: 'variants', label: 'Available Variants' }] : []),
+  ];
+
+  const rawGraphItems = getCanonicalRelationshipsForEntity('registry', family);
+  const graphNodes = resolveGraphNodes(rawGraphItems, 'registry', family).filter(n => n.type !== 'package_task');
+  const shouldShowGraph = shouldRenderKnowledgeGraph([], graphNodes);
+
   return (
     <ContentPageLayout
       breadcrumbs={[
@@ -42,12 +56,14 @@ export default async function RegistryFamilyPage({ params }: PageProps) {
         { label: 'Registry', href: '/registry' },
         { label: familyData.name },
       ]}
+      toc={toc}
     >
+
       <ReadingSessionTracker id={family} href={`/registry/families/${family}`} name={familyData.name} type="registry" category={family} />
       
       <div className="space-y-4">
         {/* Family Header */}
-        <div className="flex items-start justify-between gap-3">
+        <div id="family-header" className="flex items-start justify-between gap-3 scroll-mt-24">
           <div className="flex-1 min-w-0">
             <h1 className="text-xl md:text-2xl font-bold text-foreground tracking-tight">
               {familyData.name}
@@ -78,16 +94,22 @@ export default async function RegistryFamilyPage({ params }: PageProps) {
         </div>
 
         {/* Engineering Decision Cards */}
-        <EngineeringDecisionCards family={familyData} />
+        <div id="decisions" className="scroll-mt-24">
+          <EngineeringDecisionCards family={familyData} />
+        </div>
 
         {/* Performance Dimensions */}
         {familyData.engineering_decision?.performance_dimensions && (
-          <PerformanceDimensions dimensions={familyData.engineering_decision.performance_dimensions} />
+          <div id="performance" className="scroll-mt-24">
+            <PerformanceDimensions dimensions={familyData.engineering_decision.performance_dimensions} />
+          </div>
         )}
 
         {/* Deployment Profiles */}
         {familyData.engineering_decision?.deployment_profiles && (
-          <DeploymentProfiles profiles={familyData.engineering_decision.deployment_profiles} />
+          <div id="deployment" className="scroll-mt-24">
+            <DeploymentProfiles profiles={familyData.engineering_decision.deployment_profiles} />
+          </div>
         )}
 
         {/* Runtime Decision - Answers: Why this runtime? When not to use it? */}
@@ -99,7 +121,7 @@ export default async function RegistryFamilyPage({ params }: PageProps) {
 
         {/* Variants Section */}
         {variants.length > 0 ? (
-          <div className="space-y-4">
+          <div id="variants" className="space-y-4 scroll-mt-24">
             <h2 className="text-base md:text-lg font-semibold text-foreground">Available Variants</h2>
             <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
               {variants.map((variant) => (
@@ -130,7 +152,10 @@ export default async function RegistryFamilyPage({ params }: PageProps) {
         {familyData.related_resources && familyData.related_resources.length > 0 && (
           <EngineeringContinuation resources={familyData.related_resources} />
         )}
+
+        {shouldShowGraph && <KnowledgeGraphPanel nodes={graphNodes} />}
       </div>
+
     </ContentPageLayout>
   );
 }

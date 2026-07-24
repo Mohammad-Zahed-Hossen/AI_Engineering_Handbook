@@ -3,8 +3,9 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import FilterBar from '@/components/shared/FilterBar';
+import SearchFilterToolbar from '@/components/shared/SearchFilterToolbar';
+import HighlightMatch from '@/components/shared/HighlightMatch';
 import { Workflow } from '@/types/workflow';
-import { Search, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface WorkflowFilterClientProps {
   workflows: Workflow[];
@@ -32,7 +33,6 @@ export default function WorkflowFilterClient({ workflows }: WorkflowFilterClient
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([]);
   const [selectedMaturities, setSelectedMaturities] = useState<string[]>([]);
-  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
 
   // Filter workflows
   const filteredWorkflows = useMemo(() => {
@@ -76,8 +76,11 @@ export default function WorkflowFilterClient({ workflows }: WorkflowFilterClient
     setSelectedMaturities([]);
   };
 
-  const totalActiveFilters = selectedCategories.length + selectedDifficulties.length + 
-    selectedMaturities.length;
+  const activeFilters = [
+    ...selectedCategories.map(c => ({ label: `Category: ${c}`, value: c, onRemove: () => setSelectedCategories(prev => prev.filter(item => item !== c)) })),
+    ...selectedDifficulties.map(d => ({ label: `Difficulty: ${d}`, value: d, onRemove: () => setSelectedDifficulties(prev => prev.filter(item => item !== d)) })),
+    ...selectedMaturities.map(m => ({ label: `Maturity: ${m.replace(/_/g, ' ')}`, value: m, onRemove: () => setSelectedMaturities(prev => prev.filter(item => item !== m)) })),
+  ];
 
   const getDifficultyBadgeClass = (difficulty: string) => {
     if (difficulty === 'beginner') {
@@ -115,14 +118,6 @@ export default function WorkflowFilterClient({ workflows }: WorkflowFilterClient
       <div className="space-y-2">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Workflows</h1>
-          {(totalActiveFilters > 0 || searchQuery) && (
-            <button
-              onClick={clearAllFilters}
-              className="text-xs text-rose-500 hover:text-rose-600 font-medium touch-target-sm"
-            >
-              Clear All ({totalActiveFilters + (searchQuery ? 1 : 0)})
-            </button>
-          )}
         </div>
         <p className="text-xs text-muted-foreground max-w-2xl leading-relaxed">
           End-to-end engineering workflows and pipelines for AI/ML projects.
@@ -150,34 +145,18 @@ export default function WorkflowFilterClient({ workflows }: WorkflowFilterClient
         </div>
       </div>
 
-      {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder="Search workflows by name or description..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent touch-target"
-        />
-      </div>
-
-      {/* Collapsible Filters */}
-      <div className="border border-border rounded-lg bg-card overflow-hidden">
-        <button
-          onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
-          className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 transition-colors touch-target"
-        >
-          <span>Filters {totalActiveFilters > 0 && `(${totalActiveFilters} active)`}</span>
-          {isFiltersExpanded ? (
-            <ChevronUp className="h-4 w-4 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          )}
-        </button>
-        
-        {isFiltersExpanded && (
-          <div className="border-t border-border p-4 space-y-3">
+      {/* Search Bar & Filters Toolbar */}
+      <SearchFilterToolbar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Search workflows by name or description..."
+        showClearSearch={true}
+        activeFilters={activeFilters}
+        onClearAll={activeFilters.length > 0 || searchQuery.length > 0 ? clearAllFilters : undefined}
+        resultCount={filteredWorkflows.length}
+        totalCount={workflows.length}
+        moreFiltersContent={
+          <div className="space-y-3">
             <FilterBar
               label="Category"
               options={categories}
@@ -206,10 +185,10 @@ export default function WorkflowFilterClient({ workflows }: WorkflowFilterClient
               onClear={() => setSelectedMaturities([])}
             />
           </div>
-        )}
-      </div>
+        }
+      />
 
-      {/* Workflow List */}
+      {/* Workflow Category Groups */}
       <div className="space-y-4">
         {filteredWorkflows.length === 0 ? (
           <div className="p-8 text-center text-sm text-muted-foreground bg-card border border-border rounded-lg">
@@ -237,7 +216,9 @@ export default function WorkflowFilterClient({ workflows }: WorkflowFilterClient
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <h2 className="text-sm font-medium text-foreground">{wf.name || wf.title}</h2>
+                          <h2 className="text-sm font-medium text-foreground">
+                            <HighlightMatch text={wf.name || wf.title} match={searchQuery} />
+                          </h2>
                           <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
                             {wf.description}
                           </p>

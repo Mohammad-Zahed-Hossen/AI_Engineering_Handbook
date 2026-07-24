@@ -8,7 +8,7 @@ interface SearchFilterToolbarProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
   searchPlaceholder?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   showClearSearch?: boolean;
   activeFilters?: { label: string; value: string; onRemove: () => void }[];
   onClearAll?: () => void;
@@ -34,8 +34,15 @@ export default function SearchFilterToolbar({
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const hasMoreFilters = Boolean(moreFiltersContent);
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Escape') {
+      onSearchChange('');
+      (e.target as HTMLInputElement).blur();
+    }
+  };
+
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-2.5" role="search">
       {/* Unified search bar with results count and More Filters */}
       <div className="flex gap-2">
         <div className="relative flex-1">
@@ -45,6 +52,8 @@ export default function SearchFilterToolbar({
             placeholder={searchPlaceholder}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            aria-label={searchPlaceholder || "Search page content"}
             className="w-full pl-10 pr-10 py-2 text-sm bg-card text-card-foreground border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring touch-target min-h-[44px]"
           />
           {hasSearch && showClearSearch && (

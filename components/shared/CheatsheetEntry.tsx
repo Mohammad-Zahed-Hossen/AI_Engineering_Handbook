@@ -19,6 +19,7 @@ interface CheatsheetEntryProps {
   codeBlock?: React.ReactNode;
   open?: boolean;
   onToggle?: () => void;
+  relationships?: React.ReactNode;
 }
 
 function renderFormattedText(text: string, baseClassName: string = 'leading-relaxed') {
@@ -54,7 +55,7 @@ function renderFormattedText(text: string, baseClassName: string = 'leading-rela
   );
 }
 
-export default function CheatsheetEntry({ entry, idx, id, codeBlock, open, onToggle }: CheatsheetEntryProps) {
+export default function CheatsheetEntry({ entry, idx, id, codeBlock, open, onToggle, relationships }: CheatsheetEntryProps) {
   const [localExpanded, setLocalExpanded] = useState(false);
   const isControlled = open !== undefined;
   const isExpanded = isControlled ? open : localExpanded;
@@ -179,6 +180,12 @@ export default function CheatsheetEntry({ entry, idx, id, codeBlock, open, onTog
               {codeBlock}
             </div>
           </div>
+          {/* Relationships */}
+          {relationships && (
+            <div className="col-span-1 lg:col-span-2 p-4 border-t border-border bg-muted/5">
+              {relationships}
+            </div>
+          )}
         </div>
       )}
     </CollapsibleRow>

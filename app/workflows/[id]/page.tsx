@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getAllWorkflowIds, getWorkflow, getRelatedContent, contentExists, resolveWorkflowStepLinks, getContentPath } from '@/lib/data';
+import { getAllWorkflowIds, getWorkflow, getRelatedContent, contentExists, resolveWorkflowStepLinks, getContentPath, getCanonicalRelationshipsForEntity, resolveGraphNodes, shouldRenderKnowledgeGraph } from '@/lib/data';
 import SectionCard from '@/components/shared/SectionCard';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
@@ -18,6 +18,8 @@ import { ProseClient, ProseInline } from '@/components/shared/Prose';
 import { BadgeRow } from '@/components/shared/BadgeRow';
 import { Server, Cpu, Clock, DollarSign, Activity, BookOpen, AlertTriangle, CheckCircle2, ArrowRight } from 'lucide-react';
 import FavoriteButton from '@/components/shared/FavoriteButton';
+import KnowledgeGraphPanel from '@/components/shared/KnowledgeGraphPanel';
+
 
 export async function generateStaticParams() {
   return getAllWorkflowIds().map((id) => ({ id }));
@@ -279,6 +281,9 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
     throw e;
   }
   const relatedContent = getRelatedContent('workflow', workflow.id);
+  const rawGraphItems = getCanonicalRelationshipsForEntity('workflow', workflow.id);
+  const graphNodes = resolveGraphNodes(rawGraphItems, 'workflow', workflow.id).filter(n => n.type !== 'package_task');
+  const shouldShowGraph = shouldRenderKnowledgeGraph(relatedContent, graphNodes);
 
   const hasProductionProfile = !!(
     workflow.production_notes ||
@@ -547,6 +552,9 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
 
       {/* Related Content */}
       <RelatedContent items={relatedContent} />
+
+      {shouldShowGraph && <KnowledgeGraphPanel nodes={graphNodes} />}
+
     </ContentPageLayout>
   );
 }

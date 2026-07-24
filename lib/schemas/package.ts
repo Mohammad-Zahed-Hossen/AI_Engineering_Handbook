@@ -21,6 +21,11 @@ export const PackageTaskSchema = z.object({
   official_docs: z.string().url().optional(),
   related_workflows: z.array(z.string()).optional().default([]),
   related_cheatsheets: z.array(z.string()).optional().default([]),
+  related_models: z.array(z.string()).optional().default([]),
+  related_patterns: z.array(z.string()).optional().default([]),
+  related_decision_guides: z.array(z.string()).optional().default([]),
+  related_package_tasks: z.array(z.string()).optional().default([]),
+  related_apis: z.array(z.string()).optional().default([]),
   visualization_equivalents: z.array(VisualizationEquivalentSchema).optional().default([]),
 });
 

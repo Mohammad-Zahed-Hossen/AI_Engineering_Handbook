@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronDown, ChevronRight, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { NavItem } from '@/lib/data';
+import type { NavItem } from '@/types/nav';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 // Smart item limit: show all for ≤9 items, 5+ for 10+ items

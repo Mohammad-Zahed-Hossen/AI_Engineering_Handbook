@@ -11,9 +11,9 @@ interface PackagePageLayoutProps {
 
 export default function PackagePageLayout({ breadcrumbs, children }: PackagePageLayoutProps) {
   return (
-    <div className="flex flex-col gap-4 sm:gap-6 w-full">
+    <div className="flex flex-col lg:flex-row gap-6 sm:gap-8 items-start w-full">
       <ScrollRestore />
-      <div className="min-w-0 flex-1 w-full">
+      <div className="min-w-0 flex-1 space-y-6 sm:space-y-8 w-full">
         <Breadcrumbs items={breadcrumbs} />
         <div className="space-y-4 sm:space-y-6">
           {children}

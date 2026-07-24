@@ -2,10 +2,12 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { Search, ChevronDown, ChevronUp, BarChart3, GitCompare } from 'lucide-react';
+import { BarChart3, GitCompare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DecisionGuide } from '@/types/decision-guide';
 import FilterBar from '@/components/shared/FilterBar';
+import SearchFilterToolbar from '@/components/shared/SearchFilterToolbar';
+import HighlightMatch from '@/components/shared/HighlightMatch';
 
 interface DecisionGuideFilterClientProps {
   decisionGuides: DecisionGuide[];
@@ -75,7 +77,6 @@ export default function DecisionGuideFilterClient({ decisionGuides }: DecisionGu
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([]);
   const [selectedLifecycles, setSelectedLifecycles] = useState<string[]>([]);
-  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
 
   // Filter decision guides
   const filteredGuides = useMemo(() => {
@@ -121,51 +122,31 @@ export default function DecisionGuideFilterClient({ decisionGuides }: DecisionGu
     setSelectedLifecycles([]);
   };
 
-  const totalActiveFilters = selectedCategories.length + selectedDifficulties.length + selectedLifecycles.length;
+  const activeFilters = [
+    ...selectedCategories.map(c => ({ label: `Category: ${categoryLabels[c] || c}`, value: c, onRemove: () => setSelectedCategories(prev => prev.filter(item => item !== c)) })),
+    ...selectedDifficulties.map(d => ({ label: `Difficulty: ${d}`, value: d, onRemove: () => setSelectedDifficulties(prev => prev.filter(item => item !== d)) })),
+    ...selectedLifecycles.map(l => ({ label: `Lifecycle: ${l}`, value: l, onRemove: () => setSelectedLifecycles(prev => prev.filter(item => item !== l)) })),
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Header with title and clear filters */}
+      {/* Header with title */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Decision Guides</h1>
-        {(totalActiveFilters > 0 || searchQuery) && (
-          <button
-            onClick={clearAllFilters}
-            className="text-xs text-rose-500 hover:text-rose-600 font-medium touch-target-sm"
-          >
-            Clear All ({totalActiveFilters + (searchQuery ? 1 : 0)})
-          </button>
-        )}
       </div>
 
-      {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder="Search decision guides by name, description, or ID..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent touch-target"
-        />
-      </div>
-
-      {/* Collapsible Filters */}
-      <div className="border border-border rounded-lg bg-card overflow-hidden">
-        <button
-          onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
-          className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 transition-colors touch-target"
-        >
-          <span>Filters {totalActiveFilters > 0 && `(${totalActiveFilters} active)`}</span>
-          {isFiltersExpanded ? (
-            <ChevronUp className="h-4 w-4 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          )}
-        </button>
-        
-        {isFiltersExpanded && (
-          <div className="border-t border-border p-4 space-y-3">
+      {/* Search Bar & Filters Toolbar */}
+      <SearchFilterToolbar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Search decision guides by title or description..."
+        showClearSearch={true}
+        activeFilters={activeFilters}
+        onClearAll={activeFilters.length > 0 || searchQuery.length > 0 ? clearAllFilters : undefined}
+        resultCount={filteredGuides.length}
+        totalCount={decisionGuides.length}
+        moreFiltersContent={
+          <div className="space-y-3">
             <FilterBar
               label="Category"
               options={categories}
@@ -185,17 +166,17 @@ export default function DecisionGuideFilterClient({ decisionGuides }: DecisionGu
               onClear={() => setSelectedDifficulties([])}
             />
             <FilterBar
-              label="Status"
+              label="Lifecycle"
               options={lifecycles}
               selectedOptions={selectedLifecycles}
-              onToggle={(lifecycle) => setSelectedLifecycles(prev => 
-                prev.includes(lifecycle) ? prev.filter(l => l !== lifecycle) : [...prev, lifecycle]
+              onToggle={(lc) => setSelectedLifecycles(prev => 
+                prev.includes(lc) ? prev.filter(l => l !== lc) : [...prev, lc]
               )}
               onClear={() => setSelectedLifecycles([])}
             />
           </div>
-        )}
-      </div>
+        }
+      />
 
       {/* Decision Guide List */}
       <div className="space-y-4">
@@ -225,7 +206,9 @@ export default function DecisionGuideFilterClient({ decisionGuides }: DecisionGu
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <h2 className="text-sm font-medium text-foreground">{dg.title || dg.id}</h2>
+                          <h2 className="text-sm font-medium text-foreground">
+                            <HighlightMatch text={dg.title || dg.id} match={searchQuery} />
+                          </h2>
                           <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
                             {dg.description}
                           </p>

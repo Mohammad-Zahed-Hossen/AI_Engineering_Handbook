@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getPattern, getAllPatternIds, getRelatedContent } from '@/lib/data';
+import { getPattern, getAllPatternIds, getRelatedContent, getCanonicalRelationshipsForEntity, resolveGraphNodes, shouldRenderKnowledgeGraph } from '@/lib/data';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import MetadataBadges from '@/components/shared/MetadataBadges';
 import RelatedContent from '@/components/shared/RelatedContent';
@@ -21,6 +21,8 @@ import CollapsibleSection from '@/components/shared/CollapsibleSection';
 import SectionSummary from '@/components/shared/SectionSummary';
 import BackToTop from '@/components/shared/BackToTop';
 import FavoriteButton from '@/components/shared/FavoriteButton';
+import KnowledgeGraphPanel from '@/components/shared/KnowledgeGraphPanel';
+
 
 export async function generateStaticParams() {
   const ids = getAllPatternIds();
@@ -91,6 +93,9 @@ export default async function PatternPage({ params }: PageProps) {
 
   // Combine all related content
   const allRelatedContent = getRelatedContent('pattern', pattern.id);
+  const rawGraphItems = getCanonicalRelationshipsForEntity('pattern', pattern.id);
+  const graphNodes = resolveGraphNodes(rawGraphItems, 'pattern', pattern.id).filter(n => n.type !== 'package_task');
+  const shouldShowGraph = shouldRenderKnowledgeGraph(allRelatedContent, graphNodes);
 
   const toc = [
     { id: 'decision-summary', label: 'Decision Summary' },
@@ -285,13 +290,17 @@ export default async function PatternPage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Related Content */}
-      {allRelatedContent.length > 0 && (
-        <section id="related-content" className="scroll-mt-24 space-y-3">
-          <RelatedPatternGraph patternId={pattern.id} relatedPatterns={allRelatedContent} />
-          <RelatedContent items={allRelatedContent} />
-        </section>
-      )}
+      {/* Related Content & Knowledge Graph */}
+      <section id="related-content" className="scroll-mt-24 space-y-4">
+        {allRelatedContent.length > 0 && (
+          <>
+            <RelatedPatternGraph patternId={pattern.id} relatedPatterns={allRelatedContent} />
+            <RelatedContent items={allRelatedContent} />
+          </>
+        )}
+        {shouldShowGraph && <KnowledgeGraphPanel nodes={graphNodes} />}
+      </section>
+
 
       {/* Pattern Navigation */}
       <nav className="pt-6 mt-8 border-t border-border" aria-label="Pattern navigation">

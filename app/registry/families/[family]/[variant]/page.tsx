@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getAllRegistryFamilyIds, getRegistryFamily, getRegistryVariantIds, getRegistryVariant } from '@/lib/data';
+import { getAllRegistryFamilyIds, getRegistryFamily, getRegistryVariantIds, getRegistryVariant, getCanonicalRelationshipsForEntity, resolveGraphNodes, shouldRenderKnowledgeGraph } from '@/lib/data';
 import ContentPageLayout from '@/components/shared/ContentPageLayout';
 import { RegistryBadge, LicenseBadge, ContextBadge } from '@/components/registry/RegistryBadge';
 import { Check, X } from 'lucide-react';
@@ -9,6 +9,7 @@ import QuickLinksCard from '@/components/registry/QuickLinksCard';
 import EngineeringContinuation from '@/components/registry/EngineeringContinuation';
 import ReadingSessionTracker from '@/components/shared/ReadingSessionTracker';
 import FavoriteButton from '@/components/shared/FavoriteButton';
+import KnowledgeGraphPanel from '@/components/shared/KnowledgeGraphPanel';
 
 /**
  * Pre-generates variant params for static rendering.
@@ -62,6 +63,11 @@ export default async function RegistryVariantPage({ params }: PageProps) {
 
   // Get context window
   const contextWindow = variantData.specifications?.context_window || capabilities?.context_window;
+
+  const registryId = `${family}/${variant}`;
+  const rawGraphItems = getCanonicalRelationshipsForEntity('registry', registryId);
+  const graphNodes = resolveGraphNodes(rawGraphItems, 'registry', registryId).filter(n => n.type !== 'package_task');
+  const shouldShowGraph = shouldRenderKnowledgeGraph([], graphNodes);
 
   return (
     <ContentPageLayout
@@ -188,6 +194,8 @@ export default async function RegistryVariantPage({ params }: PageProps) {
           downloads={variantData.downloads}
           references={familyData.references}
         />
+
+        {shouldShowGraph && <KnowledgeGraphPanel nodes={graphNodes} />}
       </div>
     </ContentPageLayout>
   );

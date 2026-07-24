@@ -1,7 +1,7 @@
 import Fuse from 'fuse.js';
 
 export type SearchResult = {
-  type: 'package' | 'model' | 'workflow' | 'cheatsheet' | 'registry' | 'function' | 'pattern' | 'debug_guide' | 'decision_guide' | 'principle';
+  type: 'package' | 'model' | 'workflow' | 'cheatsheet' | 'quick_reference' | 'checklist' | 'registry' | 'function' | 'pattern' | 'debug_guide' | 'decision_guide' | 'principle';
   id: string;
   name: string;
   summary: string;

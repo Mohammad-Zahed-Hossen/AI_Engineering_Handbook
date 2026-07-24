@@ -5,6 +5,8 @@ import { detectIntent, getTypePriorityOrder, getIntentPriority } from '../lib/se
 import { calculateFreshnessBoost, calculateConfidenceBoost, isTechnicalQuery } from '../lib/search/ranking.ts';
 import { generateSnippet, highlightMatches, getMatchedFields } from '../lib/search/snippets.ts';
 import { generateDidYouMean, getAutocompleteSuggestions, getPopularSearches, getRelatedSearches, generateZeroResultRecovery, getTypeIcon } from '../lib/search/query-assistance.ts';
+import { buildSearchIndex } from '../lib/search.ts';
+import { createSearchEngine } from '../lib/search/engine.ts';
 
 // Test typo tolerance
 test('levenshteinDistance calculates correct edit distance', () => {
@@ -158,4 +160,20 @@ test('getTypeIcon returns correct icons', () => {
   assert.strictEqual(getTypeIcon('model'), '🤖');
   assert.strictEqual(getTypeIcon('debug_guide'), '🐛');
   assert.strictEqual(getTypeIcon('workflow'), '🔄');
+});
+
+test('search index returns quick reference and checklist results for canonical queries', () => {
+  const engine = createSearchEngine(buildSearchIndex());
+
+  const quickReferenceResults = engine.search('TorchVision Weight Selection', 15);
+  assert.ok(quickReferenceResults.some(result => result.type === 'quick_reference'));
+
+  const checklistResults = engine.search('Mixed Precision Checklist', 15);
+  assert.ok(checklistResults.some(result => result.type === 'checklist'));
+
+  const tableResults = engine.search('reshape', 15);
+  assert.ok(tableResults.some(result => result.type === 'quick_reference'));
+
+  const errorResults = engine.search('shape mismatch', 15);
+  assert.ok(errorResults.some(result => result.type === 'checklist'));
 });

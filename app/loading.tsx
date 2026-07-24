@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 export default function Loading() {
   return (
     <div
@@ -13,7 +15,7 @@ export default function Loading() {
         <div className="relative flex items-center justify-center">
           <div className="absolute inset-0 -z-10 rounded-[2rem] bg-primary/10 blur-3xl motion-safe:animate-[splash-float_5s_ease-in-out_infinite] motion-reduce:animate-none" />
           <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl">
-            <img
+            <Image
               src="/AENS_LOGO.svg"
               alt="AENS"
               width={120}
