@@ -1,0 +1,1714 @@
+{
+  "id": "tensorflow",
+  "module_name": "05_optimizer",
+  "module_title": "Optimizers",
+  "slug": "05_optimizer",
+  "tasks": [
+    {
+      "task": "Optimize Model with SGD (tf.keras.optimizers.SGD)",
+      "problem_solved": "Performs parameter updates using the negative gradient direction, incorporating Nesterov momentum to dampen oscillations and accelerate descent convergence.",
+      "mental_trigger": "I need a lightweight, memory-efficient optimizer for baseline vision training that utilizes standard momentum.",
+      "syntax": "tf.keras.optimizers.SGD(learning\\_rate=0.01, momentum=0.0, nesterov=False, weight\\_decay=None, clipnorm=None, clipvalue=None, global\\_clipnorm=None, use\\_ema=False, ema\\_momentum=0.99, ema\\_overwrite\\_frequency=None, name=\"SGD\", \\*\\*kwargs)",
+      "important_parameters": [
+        "learning_rate: Base step size for updates (float or schedule).",
+        "momentum: Decay factor that dampens oscillations and speeds up relevant dimensions (default 0.0).",
+        "nesterov: Boolean flag to enable Nesterov accelerated gradient updates.",
+        "weight_decay: Coefficient for decoupled or L2 weight regularization.",
+        "clipnorm: Maximum global norm threshold for individual gradient clipping."
+      ],
+      "important_params": [
+        "learning_rate: Base step size for updates (float or schedule).",
+        "momentum: Decay factor that dampens oscillations and speeds up relevant dimensions (default 0.0).",
+        "nesterov: Boolean flag to enable Nesterov accelerated gradient updates.",
+        "weight_decay: Coefficient for decoupled or L2 weight regularization.",
+        "clipnorm: Maximum global norm threshold for individual gradient clipping."
+      ],
+      "return_value": "Instantiated tf.keras.optimizers.SGD optimizer object.",
+      "example": "model = tf.keras.Sequential([tf.keras.layers.Dense(10, input_shape=(32,))])\noptimizer = tf.keras.optimizers.SGD(learning_rate=0.01, momentum=0.9, nesterov=True)\n\nx = tf.random.normal((8, 32))\ny = tf.random.normal((8, 10))\n\nwith tf.GradientTape() as tape:\npredictions = model(x)\nloss = tf.reduce_mean(tf.square(predictions - y))\n\ngradients = tape.gradient(loss, model.trainable_variables)",
+      "snippet": "model = tf.keras.Sequential([tf.keras.layers.Dense(10, input_shape=(32,))])\noptimizer = tf.keras.optimizers.SGD(learning_rate=0.01, momentum=0.9, nesterov=True)\n\nx = tf.random.normal((8, 32))\ny = tf.random.normal((8, 10))\n\nwith tf.GradientTape() as tape:\npredictions = model(x)\nloss = tf.reduce_mean(tf.square(predictions - y))\n\ngradients = tape.gradient(loss, model.trainable_variables)",
+      "use_when": "Training computer vision models (such as ResNet) where SGD with momentum achieves better generalization than adaptive learning rate methods.",
+      "avoid_when": "Training sparse data models, Transformer architectures, or deep NLP networks where adaptive learning rate optimizers like AdamW converge faster and more reliably.",
+      "gotchas": [
+        "Setting momentum too high (above 0.99) without decreasing learning rate causes training instability.",
+        "Nesterov momentum requires setting momentum greater than zero to take effect.",
+        "SGD requires careful learning rate scheduling, unlike adaptive methods which are more forgiving of default learning rates."
+      ],
+      "performance_notes": "> * Minimal state memory overhead (1 extra tensor per weight for momentum state).  \n> * High GPU compute efficiency with low per-step memory allocation.  \n> * Ideal for edge devices and distributed scale due to minimal state synchronization footprint.",
+      "related_apis": [
+        "tf.keras.optimizers.Adam, tf.keras.optimizers.RMSprop, tf.keras.optimizers.schedules.CosineDecay"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "PyTorch torch.optim.SGD uses dampening and weight decay directly in momentum updates, whereas TensorFlow Keras SGD implements standard modern momentum with decoupled weight decay support.",
+      "pytorch_equivalent": "torch.optim.SGD",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.optim.SGD",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "tf.keras.optimizers.SGD",
+          "SGD optimizer",
+          "momentum optimizer"
+        ],
+        "common_search_terms": [
+          "SGD with nesterov momentum tensorflow",
+          "tf keras sgd learning rate"
+        ],
+        "search_terms": [
+          "SGD with nesterov momentum tensorflow",
+          "tf keras sgd learning rate"
+        ],
+        "keywords": [
+          "SGD",
+          "momentum",
+          "nesterov",
+          "optimizer",
+          "gradient descent"
+        ],
+        "frequently_confused_with": [
+          "SGD vs Adam",
+          "SGD vs RMSprop"
+        ],
+        "confused_with": [
+          "SGD vs Adam",
+          "SGD vs RMSprop"
+        ]
+      },
+      "related_models": [
+        "resnet, yolo, logistic-regression"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling, memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline, transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/SGD",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/SGD"
+    },
+    {
+      "task": "Optimize Model with Adam (tf.keras.optimizers.Adam)",
+      "problem_solved": "Computes adaptive learning rates for each parameter using first and second moments of gradients.",
+      "mental_trigger": "I need a general-purpose adaptive optimizer that works well across diverse architectures with minimal hyperparameter tuning.",
+      "syntax": "tf.keras.optimizers.Adam(learning\\_rate=0.001, beta\\_1=0.9, beta\\_2=0.999, epsilon=1e-07, amsgrad=False, weight\\_decay=None, clipnorm=None, clipvalue=None, global\\_clipnorm=None, use\\_ema=False, ema\\_momentum=0.99, ema\\_overwrite\\_frequency=None, name=\"Adam\", \\*\\*kwargs)",
+      "important_parameters": [
+        "learning_rate: Base step size for updates (default 0.001).",
+        "beta_1: Exponential decay rate for the first moment estimates (default 0.9).",
+        "beta_2: Exponential decay rate for the second moment estimates (default 0.999).",
+        "epsilon: Small constant for numerical stability (default 1e-7).",
+        "amsgrad: Boolean indicating whether to use the AMSGrad variant."
+      ],
+      "important_params": [
+        "learning_rate: Base step size for updates (default 0.001).",
+        "beta_1: Exponential decay rate for the first moment estimates (default 0.9).",
+        "beta_2: Exponential decay rate for the second moment estimates (default 0.999).",
+        "epsilon: Small constant for numerical stability (default 1e-7).",
+        "amsgrad: Boolean indicating whether to use the AMSGrad variant."
+      ],
+      "return_value": "Instantiated tf.keras.optimizers.Adam optimizer object.",
+      "example": "model = tf.keras.Sequential([tf.keras.layers.Dense(10, input_shape=(16,))])\noptimizer = tf.keras.optimizers.Adam(learning_rate=1e-3, beta_1=0.9, beta_2=0.999)\n\nx = tf.random.normal((4, 16))\ny = tf.random.normal((4, 10))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "snippet": "model = tf.keras.Sequential([tf.keras.layers.Dense(10, input_shape=(16,))])\noptimizer = tf.keras.optimizers.Adam(learning_rate=1e-3, beta_1=0.9, beta_2=0.999)\n\nx = tf.random.normal((4, 16))\ny = tf.random.normal((4, 10))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "use_when": "Initial baseline training across tabular, NLP, and vision models where rapid convergence is needed without manual learning rate tuning.",
+      "avoid_when": "Training large language models or transformers with weight decay penalty, where AdamW should be used instead to properly decouple weight decay.",
+      "gotchas": [
+        "Setting weight_decay in standard Adam mixes decay with gradient moments, which distorts weight decay scaling compared to AdamW.",
+        "Epsilon value 1e-7 can cause numerical instability or NaN gradients in float16 mixed precision training.",
+        "Adam consumes 2x parameter memory in optimizer slots (moving average of gradient and square gradient)."
+      ],
+      "performance_notes": "> * Requires 2 additional state variables per model parameter (m and v tensors).  \n> * Higher memory consumption compared to SGD or Adafactor.  \n> * High per-step kernel efficiency on modern GPU/TPU architectures.",
+      "related_apis": [
+        "tf.keras.optimizers.AdamW, tf.keras.optimizers.RMSprop, tf.keras.optimizers.Adafactor"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Keras 3 tf.keras.optimizers.Adam matches PyTorch torch.optim.Adam behavior. Ensure epsilon is tuned for float16 operations (1e-8 or higher).",
+      "pytorch_equivalent": "torch.optim.Adam",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.optim.Adam",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "tf.keras.optimizers.Adam",
+          "Adam optimizer"
+        ],
+        "common_search_terms": [
+          "tf.keras.optimizers.Adam learning rate",
+          "Adam optimizer parameters tensorflow"
+        ],
+        "search_terms": [
+          "tf.keras.optimizers.Adam learning rate",
+          "Adam optimizer parameters tensorflow"
+        ],
+        "keywords": [
+          "Adam",
+          "adaptive moments",
+          "optimizer",
+          "gradient",
+          "learning rate"
+        ],
+        "frequently_confused_with": [
+          "Adam vs AdamW",
+          "Adam vs SGD"
+        ],
+        "confused_with": [
+          "Adam vs AdamW",
+          "Adam vs SGD"
+        ]
+      },
+      "related_models": [
+        "bert, resnet, vit, gpt"
+      ],
+      "related_patterns": [
+        "mixed-precision, learning-rate-scheduling"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder, image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adam",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adam"
+    },
+    {
+      "task": "Optimize Model with AdamW (tf.keras.optimizers.AdamW)",
+      "problem_solved": "Implements Adam with decoupled weight decay, applying L2 regularization directly to weights rather than gradient moments.",
+      "mental_trigger": "I need an adaptive optimizer for Transformer or LLM training with true weight decay regularization.",
+      "syntax": "tf.keras.optimizers.AdamW(learning\\_rate=0.001, weight\\_decay=0.004, beta\\_1=0.9, beta\\_2=0.999, epsilon=1e-07, amsgrad=False, clipnorm=None, clipvalue=None, global\\_clipnorm=None, use\\_ema=False, ema\\_momentum=0.99, ema\\_overwrite\\_frequency=None, name=\"AdamW\", \\*\\*kwargs)",
+      "important_parameters": [
+        "learning_rate: Base step size for weight updates (default 0.001).",
+        "weight_decay: Decoupled weight decay coefficient (default 0.004).",
+        "beta_1: Exponential decay rate for first moment estimates (default 0.9).",
+        "beta_2: Exponential decay rate for second moment estimates (default 0.999).",
+        "epsilon: Small constant for numerical stability (default 1e-7)."
+      ],
+      "important_params": [
+        "learning_rate: Base step size for weight updates (default 0.001).",
+        "weight_decay: Decoupled weight decay coefficient (default 0.004).",
+        "beta_1: Exponential decay rate for first moment estimates (default 0.9).",
+        "beta_2: Exponential decay rate for second moment estimates (default 0.999).",
+        "epsilon: Small constant for numerical stability (default 1e-7)."
+      ],
+      "return_value": "Instantiated tf.keras.optimizers.AdamW optimizer object.",
+      "example": "model = tf.keras.Sequential([tf.keras.layers.Dense(32, input_shape=(64,))])\noptimizer = tf.keras.optimizers.AdamW(learning_rate=5e-4, weight_decay=0.01)\n\nx = tf.random.normal((16, 64))\ny = tf.random.normal((16, 32))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "snippet": "model = tf.keras.Sequential([tf.keras.layers.Dense(32, input_shape=(64,))])\noptimizer = tf.keras.optimizers.AdamW(learning_rate=5e-4, weight_decay=0.01)\n\nx = tf.random.normal((16, 64))\ny = tf.random.normal((16, 32))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "use_when": "Pretraining or fine-tuning Transformer models, LLMs, ViTs, or deep neural networks where weight decay regularization is critical for generalization.",
+      "avoid_when": "Weight decay is zero or when training simple linear or logistic regression models where SGD or standard Adam suffices.",
+      "gotchas": [
+        "LayerNorm, LayerNormalization, and bias terms should often be excluded from weight decay to prevent underfitting.",
+        "Setting weight_decay too high (e.g. greater than 0.1) can severely suppress weight updates across deep layers.",
+        "Learning rate changes directly scale the effective weight decay step in AdamW."
+      ],
+      "performance_notes": "> * Maintains 2 slot variables per model parameter (same memory overhead as Adam).  \n> * Weight decay step is merged into the optimizer kernel for zero GPU runtime penalty compared to Adam.  \n> * Standard choice for modern LLM and Vision Transformer training pipelines.",
+      "related_apis": [
+        "tf.keras.optimizers.Adam, tf.keras.optimizers.schedules.CosineDecay, tf.keras.optimizers.Adafactor"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "tf.keras.optimizers.AdamW aligns directly with PyTorch torch.optim.AdamW. Both execute decoupled weight updates as proposed by Loshchilov & Hutter.",
+      "pytorch_equivalent": "torch.optim.AdamW",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.optim.AdamW",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "tf.keras.optimizers.AdamW",
+          "AdamW optimizer",
+          "decoupled weight decay Adam"
+        ],
+        "common_search_terms": [
+          "tf.keras.optimizers.AdamW weight_decay",
+          "AdamW vs Adam tensorflow"
+        ],
+        "search_terms": [
+          "tf.keras.optimizers.AdamW weight_decay",
+          "AdamW vs Adam tensorflow"
+        ],
+        "keywords": [
+          "AdamW",
+          "decoupled weight decay",
+          "transformer optimizer",
+          "learning rate"
+        ],
+        "frequently_confused_with": [
+          "Adam vs AdamW",
+          "AdamW vs SGD"
+        ],
+        "confused_with": [
+          "Adam vs AdamW",
+          "AdamW vs SGD"
+        ]
+      },
+      "related_models": [
+        "bert, roberta, t5, gpt, llama, vit, qwen, gemma, deepseek"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling, memory-efficient-training, mixed-precision"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization, text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide, hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/AdamW",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/AdamW"
+    },
+    {
+      "task": "Optimize Model with RMSprop (tf.keras.optimizers.RMSprop)",
+      "problem_solved": "Divides gradient by a running average of its recent magnitude to handle non-stationary objectives and vanishing or exploding gradients.",
+      "mental_trigger": "I need an adaptive optimizer tailored for recurrent neural networks or reinforcement learning tasks.",
+      "syntax": "tf.keras.optimizers.RMSprop(learning\\_rate=0.001, rho=0.9, momentum=0.0, epsilon=1e-07, centered=False, weight\\_decay=None, clipnorm=None, clipvalue=None, global\\_clipnorm=None, use\\_ema=False, ema\\_momentum=0.99, ema\\_overwrite\\_frequency=None, name=\"RMSprop\", \\*\\*kwargs)",
+      "important_parameters": [
+        "learning_rate: Base step size for parameter updates (default 0.001).",
+        "rho: Discounting factor for history exponential moving average (default 0.9).",
+        "momentum: Float hyperparameter introducing momentum acceleration (default 0.0).",
+        "epsilon: Small constant preventing division by zero (default 1e-7).",
+        "centered: If True, gradients are normalized by variance estimation."
+      ],
+      "important_params": [
+        "learning_rate: Base step size for parameter updates (default 0.001).",
+        "rho: Discounting factor for history exponential moving average (default 0.9).",
+        "momentum: Float hyperparameter introducing momentum acceleration (default 0.0).",
+        "epsilon: Small constant preventing division by zero (default 1e-7).",
+        "centered: If True, gradients are normalized by variance estimation."
+      ],
+      "return_value": "Instantiated tf.keras.optimizers.RMSprop optimizer object.",
+      "example": "model = tf.keras.Sequential([tf.keras.layers.Dense(8, input_shape=(16,))])\noptimizer = tf.keras.optimizers.RMSprop(learning_rate=0.001, rho=0.9, momentum=0.1)\n\nx = tf.random.normal((4, 16))\ny = tf.random.normal((4, 8))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "snippet": "model = tf.keras.Sequential([tf.keras.layers.Dense(8, input_shape=(16,))])\noptimizer = tf.keras.optimizers.RMSprop(learning_rate=0.001, rho=0.9, momentum=0.1)\n\nx = tf.random.normal((4, 16))\ny = tf.random.normal((4, 8))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "use_when": "Training recurrent neural networks (LSTM, GRU) or deep Q-learning and reinforcement learning agents where gradient scales fluctuate significantly.",
+      "avoid_when": "Fine-tuning large Transformer models where AdamW offers superior convergence and stability.",
+      "gotchas": [
+        "rho values too close to 1.0 reduce responsiveness to recent gradient fluctuations.",
+        "Setting centered=True adds an extra state vector per parameter, increasing memory overhead.",
+        "High default learning rates can cause divergence in deep networks without warmup schedules."
+      ],
+      "performance_notes": "> * Uncentered RMSprop uses 1 slot variable per parameter tensor (moving average of squared gradients).  \n> * Lower memory footprint than Adam/AdamW while providing adaptive learning rates per parameter.  \n> * Fast kernel evaluation on GPU.",
+      "related_apis": [
+        "tf.keras.optimizers.Adam, tf.keras.optimizers.SGD, tf.keras.optimizers.Adagrad"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "tf.keras.optimizers.RMSprop corresponds to PyTorch torch.optim.RMSprop. The rho parameter in TensorFlow maps to alpha in PyTorch.",
+      "pytorch_equivalent": "torch.optim.RMSprop",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.optim.RMSprop",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "tf.keras.optimizers.RMSprop",
+          "RMSprop optimizer"
+        ],
+        "common_search_terms": [
+          "RMSprop tensorflow keras",
+          "RMSprop rho parameter",
+          "RMSprop momentum"
+        ],
+        "search_terms": [
+          "RMSprop tensorflow keras",
+          "RMSprop rho parameter",
+          "RMSprop momentum"
+        ],
+        "keywords": [
+          "RMSprop",
+          "adaptive learning rate",
+          "recurrent neural network",
+          "optimizer"
+        ],
+        "frequently_confused_with": [
+          "RMSprop vs Adam",
+          "RMSprop vs SGD"
+        ],
+        "confused_with": [
+          "RMSprop vs Adam",
+          "RMSprop vs SGD"
+        ]
+      },
+      "related_models": [
+        "resnet, logistic-regression"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling, memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline, transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/RMSprop",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/RMSprop"
+    },
+    {
+      "task": "Optimize Model with Adagrad (tf.keras.optimizers.Adagrad)",
+      "problem_solved": "Adapts learning rates individually for each parameter based on historical square sum of gradients, suited for sparse data.",
+      "mental_trigger": "I need an optimizer that automatically reduces learning rate for frequently occurring features in sparse datasets.",
+      "syntax": "tf.keras.optimizers.Adagrad(learning\\_rate=0.001, initial\\_accumulator\\_value=0.1, epsilon=1e-07, weight\\_decay=None, clipnorm=None, clipvalue=None, global\\_clipnorm=None, use\\_ema=False, ema\\_momentum=0.99, ema\\_overwrite\\_frequency=None, name=\"Adagrad\", \\*\\*kwargs)",
+      "important_parameters": [
+        "learning_rate: Initial learning rate step size (default 0.001, often set higher like 0.01 for Adagrad).",
+        "initial_accumulator_value: Starting value for accumulated squared gradient sums (default 0.1).",
+        "epsilon: Small floating point value added to denominator (default 1e-7).",
+        "weight_decay: Optional weight decay factor."
+      ],
+      "important_params": [
+        "learning_rate: Initial learning rate step size (default 0.001, often set higher like 0.01 for Adagrad).",
+        "initial_accumulator_value: Starting value for accumulated squared gradient sums (default 0.1).",
+        "epsilon: Small floating point value added to denominator (default 1e-7).",
+        "weight_decay: Optional weight decay factor."
+      ],
+      "return_value": "Instantiated tf.keras.optimizers.Adagrad optimizer object.",
+      "example": "model = tf.keras.Sequential([tf.keras.layers.Dense(4, input_shape=(8,))])\noptimizer = tf.keras.optimizers.Adagrad(learning_rate=0.01, initial_accumulator_value=0.1)\n\nx = tf.random.normal((4, 8))\ny = tf.random.normal((4, 4))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "snippet": "model = tf.keras.Sequential([tf.keras.layers.Dense(4, input_shape=(8,))])\noptimizer = tf.keras.optimizers.Adagrad(learning_rate=0.01, initial_accumulator_value=0.1)\n\nx = tf.random.normal((4, 8))\ny = tf.random.normal((4, 4))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "use_when": "Training models with sparse features, such as text embedding models, recommendation systems, or high-dimensional categorical features.",
+      "avoid_when": "Training deep dense neural networks or LLMs where accumulated squared gradients grow monotonically, causing learning rates to decay to near zero prematurely.",
+      "gotchas": [
+        "Learning rate monotonically decreases throughout training and cannot increase.",
+        "Setting initial_accumulator_value too low can cause aggressive initial gradient updates.",
+        "Default learning rate (0.001) is often too small for Adagrad; 0.01 or 0.1 is usually required."
+      ],
+      "performance_notes": "> * Uses 1 slot variable per model parameter (accumulated square sum).  \n> * Memory usage is lower than Adam or AdamW.  \n> * Efficient update execution for sparse embedding lookups and sparse tensors.",
+      "related_apis": [
+        "tf.keras.optimizers.Adam, tf.keras.optimizers.RMSprop, tf.keras.optimizers.SGD"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Matches torch.optim.Adagrad. Note that TensorFlow allows configuring initial_accumulator_value.",
+      "pytorch_equivalent": "torch.optim.Adagrad",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.optim.Adagrad",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "tf.keras.optimizers.Adagrad",
+          "Adagrad optimizer"
+        ],
+        "common_search_terms": [
+          "Adagrad sparse gradient tensorflow",
+          "Adagrad learning rate accumulator"
+        ],
+        "search_terms": [
+          "Adagrad sparse gradient tensorflow",
+          "Adagrad learning rate accumulator"
+        ],
+        "keywords": [
+          "Adagrad",
+          "sparse gradients",
+          "accumulated gradients",
+          "optimizer"
+        ],
+        "frequently_confused_with": [
+          "Adagrad vs RMSprop",
+          "Adagrad vs Adam"
+        ],
+        "confused_with": [
+          "Adagrad vs RMSprop",
+          "Adagrad vs Adam"
+        ]
+      },
+      "related_models": [
+        "logistic-regression, bert"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adagrad",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adagrad"
+    },
+    {
+      "task": "Optimize Model with Adafactor (tf.keras.optimizers.Adafactor)",
+      "problem_solved": "Reduces optimizer state memory footprint by factoring the second-moment matrix for multi-dimensional weight matrices.",
+      "mental_trigger": "I need to train or fine-tune massive Transformer models without running out of GPU memory for optimizer states.",
+      "syntax": "tf.keras.optimizers.Adafactor(learning\\_rate=None, beta\\_1=None, decay\\_rate=-0.8, epsilon1=1e-30, epsilon2=0.001, clip\\_threshold=1.0, relative\\_step=True, warmup\\_init=False, multiply\\_by\\_parameter\\_scale=True, weight\\_decay=None, clipnorm=None, clipvalue=None, global\\_clipnorm=None, use\\_ema=False, ema\\_momentum=0.99, ema\\_overwrite\\_frequency=None, name=\"Adafactor\", \\*\\*kwargs)",
+      "important_parameters": [
+        "learning_rate: Optional float or schedule; if None and relative_step=True, relative step sizes are computed automatically.",
+        "beta_1: Exponential decay for 1st moment (default None for no 1st moment or float).",
+        "decay_rate: Exponential decay for second moment tracking (default -0.8).",
+        "relative_step: Boolean indicating whether to compute step size relative to parameter scale.",
+        "warmup_init: Boolean indicating whether relative step size warm-up is enabled."
+      ],
+      "important_params": [
+        "learning_rate: Optional float or schedule; if None and relative_step=True, relative step sizes are computed automatically.",
+        "beta_1: Exponential decay for 1st moment (default None for no 1st moment or float).",
+        "decay_rate: Exponential decay for second moment tracking (default -0.8).",
+        "relative_step: Boolean indicating whether to compute step size relative to parameter scale.",
+        "warmup_init: Boolean indicating whether relative step size warm-up is enabled."
+      ],
+      "return_value": "Instantiated tf.keras.optimizers.Adafactor optimizer object.",
+      "example": "model = tf.keras.Sequential([tf.keras.layers.Dense(64, input_shape=(128,))])\noptimizer = tf.keras.optimizers.Adafactor(learning_rate=1e-3, relative_step=False)\n\nx = tf.random.normal((8, 128))\ny = tf.random.normal((8, 64))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "snippet": "model = tf.keras.Sequential([tf.keras.layers.Dense(64, input_shape=(128,))])\noptimizer = tf.keras.optimizers.Adafactor(learning_rate=1e-3, relative_step=False)\n\nx = tf.random.normal((8, 128))\ny = tf.random.normal((8, 64))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "use_when": "Pretraining or fine-tuning large language models (such as T5, BART, LLaMA) on memory-constrained GPUs where Adam or AdamW memory overhead is prohibitive.",
+      "avoid_when": "Training small models or 1D parameter vectors where matrix factorization does not apply and AdamW offers more stable convergence.",
+      "gotchas": [
+        "Setting relative_step=True overrides explicit learning rate settings unless learning_rate is explicitly managed.",
+        "For 1D tensors (biases, normalization scale), Adafactor falls back to un-factored second moments.",
+        "Convergence behavior can be sensitive to clip_threshold and learning rate schedules."
+      ],
+      "performance_notes": "> * Substantially reduces optimizer state memory: uses row and column sums for 2D matrices instead of per-element state.  \n> * Saves up to 50% or more optimizer memory compared to AdamW.  \n> * Enables larger batch sizes or context lengths on high-memory LLM tasks.",
+      "related_apis": [
+        "tf.keras.optimizers.AdamW, tf.keras.optimizers.Adam, tf.keras.optimizers.schedules.CosineDecay"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "PyTorch fairseq and HuggingFace Adafactor implementations operate similarly. In Keras 3, setting relative_step=False requires providing learning_rate.",
+      "pytorch_equivalent": "transformers.Adafactor",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "transformers.Adafactor",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "tf.keras.optimizers.Adafactor",
+          "Adafactor optimizer",
+          "memory efficient optimizer"
+        ],
+        "common_search_terms": [
+          "Adafactor learning rate tensorflow",
+          "Adafactor relative step Keras"
+        ],
+        "search_terms": [
+          "Adafactor learning rate tensorflow",
+          "Adafactor relative step Keras"
+        ],
+        "keywords": [
+          "Adafactor",
+          "factored second moment",
+          "memory efficiency",
+          "transformer optimizer",
+          "LLM"
+        ],
+        "frequently_confused_with": [
+          "Adafactor vs AdamW",
+          "Adafactor vs Adagrad"
+        ],
+        "confused_with": [
+          "Adafactor vs AdamW",
+          "Adafactor vs Adagrad"
+        ]
+      },
+      "related_models": [
+        "t5, bart, gpt, llama, qwen, gemma, deepseek"
+      ],
+      "related_patterns": [
+        "memory-efficient-training, mixed-precision, learning-rate-scheduling"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide, precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adafactor",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adafactor"
+    },
+    {
+      "task": "Reset Optimizer State (optimizer.reset_state)",
+      "problem_solved": "Clears accumulated optimizer variables (momentum, velocity, step count) to reset the optimizer to its initial state without reallocating optimizer objects.",
+      "mental_trigger": "I need to reset momentum and state statistics between multi-stage training iterations or transfer learning phases.",
+      "syntax": "optimizer.reset\\_state()",
+      "important_parameters": [
+        "This method takes no parameters."
+      ],
+      "important_params": [
+        "This method takes no parameters."
+      ],
+      "return_value": "None (NoneType).",
+      "example": "model = tf.keras.Sequential([tf.keras.layers.Dense(4, input_shape=(8,))])\noptimizer = tf.keras.optimizers.Adam(learning_rate=0.01)\n\nx = tf.random.normal((2, 8))\ny = tf.random.normal((2, 4))\n\n# First training step creates state variables\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)\noptimizer.apply_gradients(zip(grads, model.trainable_variables))\n\n# Verify slot variables exist\nprint(\"Variables before reset:\", len(optimizer.variables))\n\n# Reset optimizer state\noptimizer.reset_state()\n\n# Slot variables cleared/reset",
+      "snippet": "model = tf.keras.Sequential([tf.keras.layers.Dense(4, input_shape=(8,))])\noptimizer = tf.keras.optimizers.Adam(learning_rate=0.01)\n\nx = tf.random.normal((2, 8))\ny = tf.random.normal((2, 4))\n\n# First training step creates state variables\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)\noptimizer.apply_gradients(zip(grads, model.trainable_variables))\n\n# Verify slot variables exist\nprint(\"Variables before reset:\", len(optimizer.variables))\n\n# Reset optimizer state\noptimizer.reset_state()\n\n# Slot variables cleared/reset",
+      "use_when": "Transitioning between different training phases (such as warm-up phase to main phase, or backbone freezing to full model fine-tuning) where historical momentum could bias initial updates.",
+      "avoid_when": "Continuous uninterrupted training, as clearing optimizer state destroys convergence velocity and step tracking.",
+      "gotchas": [
+        "reset_state() clears step counter variables, which resets step-dependent learning rate schedules back to step 0.",
+        "Resetting state does not re-initialize model trainable variables; only optimizer slot variables are cleared.",
+        "In custom loops, calling reset_state() mid-epoch will disrupt momentum acceleration."
+      ],
+      "performance_notes": "> * Releases or zeroes slot variable memory allocations instantly.  \n> * Minimal execution cost.",
+      "related_apis": [
+        "optimizer.apply_gradients, optimizer.save_own_variables, optimizer.load_own_variables"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "PyTorch equivalent is re-instantiating the optimizer or clearing optimizer.state.",
+      "pytorch_equivalent": "optimizer.state.clear()",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "optimizer.state.clear()",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "reset_state",
+          "optimizer.reset_state",
+          "clear optimizer memory"
+        ],
+        "common_search_terms": [
+          "how to reset optimizer state keras",
+          "reset adam momentum tf"
+        ],
+        "search_terms": [
+          "how to reset optimizer state keras",
+          "reset adam momentum tf"
+        ],
+        "keywords": [
+          "reset_state",
+          "slot variables",
+          "optimizer state",
+          "momentum reset"
+        ],
+        "frequently_confused_with": [
+          "reset_state vs re-instantiating optimizer"
+        ],
+        "confused_with": [
+          "reset_state vs re-instantiating optimizer"
+        ]
+      },
+      "related_models": [
+        "resnet, vit, bert"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling, memory-efficient-training"
+      ],
+      "related_workflows": [
+        "transfer-learning-for-vision, image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Optimizer#reset_state",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Optimizer#reset_state"
+    },
+    {
+      "task": "Apply Computed Gradients (optimizer.apply_gradients)",
+      "problem_solved": "Updates model trainable variables using provided (gradient, variable) pairs according to the optimizer's update rule.",
+      "mental_trigger": "I need to execute parameter updates in a custom tf.GradientTape training loop.",
+      "syntax": "optimizer.apply\\_gradients(grads\\_and\\_vars, name=None)",
+      "important_parameters": [
+        "grads_and_vars: Iterable of (gradient, variable) pairs.",
+        "name: Optional string name for the operation."
+      ],
+      "important_params": [
+        "grads_and_vars: Iterable of (gradient, variable) pairs.",
+        "name: Optional string name for the operation."
+      ],
+      "return_value": "None (NoneType) or step operation.",
+      "example": "model = tf.keras.Sequential([tf.keras.layers.Dense(2, input_shape=(4,))])\noptimizer = tf.keras.optimizers.SGD(learning_rate=0.1)\n\nx = tf.constant([[1.0, 2.0, 3.0, 4.0]])\ny = tf.constant([[1.0, 0.0]])\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)\ngrads_and_vars = zip(grads, model.trainable_variables)",
+      "snippet": "model = tf.keras.Sequential([tf.keras.layers.Dense(2, input_shape=(4,))])\noptimizer = tf.keras.optimizers.SGD(learning_rate=0.1)\n\nx = tf.constant([[1.0, 2.0, 3.0, 4.0]])\ny = tf.constant([[1.0, 0.0]])\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)\ngrads_and_vars = zip(grads, model.trainable_variables)",
+      "use_when": "Building custom training loops with tf.GradientTape, custom gradient clipping, gradient accumulation, or multi-GPU custom training logic.",
+      "avoid_when": "Using standard model.fit(), which handles gradient computation and application automatically.",
+      "gotchas": [
+        "Passing None gradients (for example for unused model parameters) will raise an error unless filtered out.",
+        "Un-zipped iterators in grads_and_vars passed multiple times will be exhausted upon first evaluation.",
+        "Applying gradients out-of-order or with mismatched shape causes runtime shape exceptions."
+      ],
+      "performance_notes": "> * Modern Keras 3 optimizes apply_gradients into fused kernels for high performance.  \n> * Ensures atomic update across all model parameters in eager and graph execution.",
+      "related_apis": [
+        "tf.GradientTape, tf.clip_by_global_norm, tf.clip_by_value"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "PyTorch equivalent is optimizer.step(). In PyTorch, gradients are attached directly to parameters, whereas TensorFlow requires explicitly passing zip(grads, vars).",
+      "pytorch_equivalent": "optimizer.step()",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "optimizer.step()",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "apply_gradients",
+          "optimizer.apply_gradients",
+          "apply gradients keras"
+        ],
+        "common_search_terms": [
+          "tf.keras.optimizers apply_gradients example",
+          "custom loop apply_gradients tensorflow"
+        ],
+        "search_terms": [
+          "tf.keras.optimizers apply_gradients example",
+          "custom loop apply_gradients tensorflow"
+        ],
+        "keywords": [
+          "apply_gradients",
+          "gradient update",
+          "custom training loop",
+          "grads_and_vars"
+        ],
+        "frequently_confused_with": [
+          "apply_gradients vs model.fit"
+        ],
+        "confused_with": [
+          "apply_gradients vs model.fit"
+        ]
+      },
+      "related_models": [
+        "resnet, bert, vit, gpt"
+      ],
+      "related_patterns": [
+        "gradient-accumulation, mixed-precision"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline, text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Optimizer#apply_gradients",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Optimizer#apply_gradients"
+    },
+    {
+      "task": "Configure Decoupled Weight Decay (weight_decay)",
+      "problem_solved": "Applies weight decay penalty directly to parameters independent of gradient scale or moment estimation.",
+      "mental_trigger": "I need to apply pure L2 weight decay regularization directly in my optimizer configuration without distorting gradient moment updates.",
+      "syntax": "tf.keras.optimizers.AdamW(learning\\_rate=0.001, weight\\_decay=0.01) or tf.keras.optimizers.SGD(learning\\_rate=0.01, weight\\_decay=0.01)",
+      "important_parameters": [
+        "weight_decay: Non-negative float specifies decay fraction per step (for example 0.01)."
+      ],
+      "important_params": [
+        "weight_decay: Non-negative float specifies decay fraction per step (for example 0.01)."
+      ],
+      "return_value": "Optimizer instance configured with decoupled weight decay.",
+      "example": "# Decoupled weight decay configured directly on the optimizer\noptimizer = tf.keras.optimizers.AdamW(\nlearning_rate=1e-3,\nweight_decay=0.01\n)\n\nmodel = tf.keras.Sequential([tf.keras.layers.Dense(10, input_shape=(20,))])\nx = tf.random.normal((4, 20))\ny = tf.random.normal((4, 10))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "snippet": "# Decoupled weight decay configured directly on the optimizer\noptimizer = tf.keras.optimizers.AdamW(\nlearning_rate=1e-3,\nweight_decay=0.01\n)\n\nmodel = tf.keras.Sequential([tf.keras.layers.Dense(10, input_shape=(20,))])\nx = tf.random.normal((4, 20))\ny = tf.random.normal((4, 10))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "use_when": "Regularizing deep architectures (Transformers, ConvNets) to prevent weight growth and overfitting without altering adaptive learning rate calculations.",
+      "avoid_when": "Using explicit kernel_regularizer=tf.keras.regularizers.l2(...) on individual layers, which adds loss terms to gradient computation (L2 regularization rather than decoupled weight decay).",
+      "gotchas": [
+        "Mixing kernel_regularizer on layers with weight_decay on optimizer results in double regularization.",
+        "Setting weight_decay on bias terms or normalization parameters can degrade performance.",
+        "Effective decay rate depends on learning rate when schedules are applied."
+      ],
+      "performance_notes": "> * Executed directly inside parameter update kernel without additional GradientTape overhead or loss node evaluation.  \n> * Zero memory overhead compared to adding L2 loss terms.",
+      "related_apis": [
+        "tf.keras.optimizers.AdamW, tf.keras.optimizers.SGD, tf.keras.regularizers.L2"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Direct equivalent of PyTorch weight_decay parameter in torch.optim.AdamW.",
+      "pytorch_equivalent": "weight_decay parameter in torch.optim.AdamW or torch.optim.SGD",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "weight_decay parameter in torch.optim.AdamW or torch.optim.SGD",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "weight_decay",
+          "decoupled weight decay",
+          "optimizer weight decay"
+        ],
+        "common_search_terms": [
+          "how to set weight decay in keras optimizers",
+          "L2 vs decoupled weight decay"
+        ],
+        "search_terms": [
+          "how to set weight decay in keras optimizers",
+          "L2 vs decoupled weight decay"
+        ],
+        "keywords": [
+          "weight_decay",
+          "decoupled weight decay",
+          "regularization",
+          "AdamW"
+        ],
+        "frequently_confused_with": [
+          "weight_decay vs kernel_regularizer"
+        ],
+        "confused_with": [
+          "weight_decay vs kernel_regularizer"
+        ]
+      },
+      "related_models": [
+        "bert, roberta, vit, resnet, gpt, llama"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling, memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization, text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/AdamW",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/AdamW"
+    },
+    {
+      "task": "Exclude Variables from Weight Decay",
+      "problem_solved": "Prevents weight decay from being applied to bias parameters, LayerNorm scales and biases, and embedding tables where decay harms optimization.",
+      "mental_trigger": "I need to exclude bias and LayerNorm parameters from weight decay to follow standard LLM and Transformer training best practices.",
+      "syntax": "optimizer.exclude\\_from\\_weight\\_decay(var\\_list=None, var\\_names=None)",
+      "important_parameters": [
+        "var_list: List of variable instances to exclude from weight decay.",
+        "var_names: List of variable name substrings (such as [\"bias\", \"norm\", \"ln\"]) to exclude."
+      ],
+      "important_params": [
+        "var_list: List of variable instances to exclude from weight decay.",
+        "var_names: List of variable name substrings (such as [\"bias\", \"norm\", \"ln\"]) to exclude."
+      ],
+      "return_value": "None (NoneType).",
+      "example": "model = tf.keras.Sequential([\ntf.keras.layers.Dense(32, input_shape=(16,), name=\"dense_1\"),\ntf.keras.layers.LayerNormalization(name=\"layer_norm\"),\ntf.keras.layers.Dense(10, name=\"dense_2\")\n])\n\noptimizer = tf.keras.optimizers.AdamW(learning_rate=1e-3, weight_decay=0.01)\n\n# Build model weights\n_ = model(tf.zeros((1, 16)))\n\n# Exclude bias and LayerNorm parameters from weight decay\noptimizer.exclude_from_weight_decay(\nvar_names=[\"bias\", \"gamma\", \"beta\", \"layer_norm\"]\n)\n\nx = tf.random.normal((4, 16))\ny = tf.random.normal((4, 10))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "snippet": "model = tf.keras.Sequential([\ntf.keras.layers.Dense(32, input_shape=(16,), name=\"dense_1\"),\ntf.keras.layers.LayerNormalization(name=\"layer_norm\"),\ntf.keras.layers.Dense(10, name=\"dense_2\")\n])\n\noptimizer = tf.keras.optimizers.AdamW(learning_rate=1e-3, weight_decay=0.01)\n\n# Build model weights\n_ = model(tf.zeros((1, 16)))\n\n# Exclude bias and LayerNorm parameters from weight decay\noptimizer.exclude_from_weight_decay(\nvar_names=[\"bias\", \"gamma\", \"beta\", \"layer_norm\"]\n)\n\nx = tf.random.normal((4, 16))\ny = tf.random.normal((4, 10))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "use_when": "Pretraining or fine-tuning Transformer models (BERT, GPT, LLaMA) where bias terms and LayerNormalization parameters should not be regularized.",
+      "avoid_when": "Standard feed-forward networks or simple linear models where uniform weight decay across all parameters is intended.",
+      "gotchas": [
+        "Must call exclude_from_weight_decay after model variables are created (after model build or first forward pass).",
+        "String matching in var_names is case-sensitive substring matching against var.name.",
+        "Forgetting to exclude LayerNorm scales can result in premature parameter shrinking and training instability."
+      ],
+      "performance_notes": "> * Zero runtime performance overhead; exclusions are flagged prior to optimization step evaluation.",
+      "related_apis": [
+        "tf.keras.optimizers.AdamW, tf.keras.optimizers.SGD"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "In PyTorch, engineers create custom parameter group dictionaries ({'params': [...], 'weight_decay': 0.0}). Keras 3 provides the convenient exclude_from_weight_decay() method on the optimizer.",
+      "pytorch_equivalent": "Parameter groups with {'weight_decay': 0.0}",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Parameter groups with {'weight_decay': 0.0}",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "exclude_from_weight_decay",
+          "disable weight decay bias norm"
+        ],
+        "common_search_terms": [
+          "keras exclude bias from weight decay",
+          "no weight decay layer norm tensorflow"
+        ],
+        "search_terms": [
+          "keras exclude bias from weight decay",
+          "no weight decay layer norm tensorflow"
+        ],
+        "keywords": [
+          "exclude_from_weight_decay",
+          "bias decay",
+          "layer norm",
+          "weight decay",
+          "transformer tuning"
+        ],
+        "frequently_confused_with": [
+          "exclude_from_weight_decay vs exclude_from_gradient"
+        ],
+        "confused_with": [
+          "exclude_from_weight_decay vs exclude_from_gradient"
+        ]
+      },
+      "related_models": [
+        "bert, roberta, gpt, llama, vit, t5"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling, memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization, text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Optimizer#exclude_from_weight_decay",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Optimizer#exclude_from_weight_decay"
+    },
+    {
+      "task": "Configure Exponential Decay (tf.keras.optimizers.schedules.ExponentialDecay)",
+      "problem_solved": "Smoothly reduces learning rate exponentially over training steps according to a constant decay rate.",
+      "mental_trigger": "I need a simple schedule that exponentially scales down the learning rate every fixed number of steps.",
+      "syntax": "tf.keras.optimizers.schedules.ExponentialDecay(initial\\_learning\\_rate, decay\\_steps, decay\\_rate, staircase=False, name=None)",
+      "important_parameters": [
+        "initial_learning_rate: Starting learning rate value (float).",
+        "decay_steps: Number of steps over which decay is applied.",
+        "decay_rate: Exponential decay factor applied every decay_steps.",
+        "staircase: If True, learning rate decays at discrete intervals rather than continuously."
+      ],
+      "important_params": [
+        "initial_learning_rate: Starting learning rate value (float).",
+        "decay_steps: Number of steps over which decay is applied.",
+        "decay_rate: Exponential decay factor applied every decay_steps.",
+        "staircase: If True, learning rate decays at discrete intervals rather than continuously."
+      ],
+      "return_value": "Instantiated ExponentialDecay schedule callable object.",
+      "example": "lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(\ninitial_learning_rate=0.1,\ndecay_steps=1000,\ndecay_rate=0.96,\nstaircase=True\n)\n\noptimizer = tf.keras.optimizers.SGD(learning_rate=lr_schedule)\n\nmodel = tf.keras.Sequential([tf.keras.layers.Dense(4, input_shape=(8,))])\nx = tf.random.normal((2, 8))\ny = tf.random.normal((2, 4))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "snippet": "lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(\ninitial_learning_rate=0.1,\ndecay_steps=1000,\ndecay_rate=0.96,\nstaircase=True\n)\n\noptimizer = tf.keras.optimizers.SGD(learning_rate=lr_schedule)\n\nmodel = tf.keras.Sequential([tf.keras.layers.Dense(4, input_shape=(8,))])\nx = tf.random.normal((2, 8))\ny = tf.random.normal((2, 4))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "use_when": "Training classical CNNs or MLPs where learning rate needs steady reduction as the optimization approaches local minima.",
+      "avoid_when": "Large language model pretraining, where Cosine Decay with warmup is standard practice.",
+      "gotchas": [
+        "staircase=False continuously updates learning rate every single step, which can create subtle step dependencies.",
+        "If decay_rate is too small (such as 0.5 with small decay_steps), learning rate drops to zero too quickly.",
+        "Schedule state depends on optimizer step count, so resetting optimizer state resets the schedule."
+      ],
+      "performance_notes": "> * Negligible scalar math evaluation per training step.  \n> * Graph-compatible and TPU-friendly.",
+      "related_apis": [
+        "tf.keras.optimizers.schedules.CosineDecay, tf.keras.optimizers.schedules.PiecewiseConstantDecay"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Equivalent to PyTorch torch.optim.lr_scheduler.ExponentialLR or StepLR (when staircase=True).",
+      "pytorch_equivalent": "torch.optim.lr_scheduler.ExponentialLR",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.optim.lr_scheduler.ExponentialLR",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "ExponentialDecay",
+          "tf.keras.optimizers.schedules.ExponentialDecay"
+        ],
+        "common_search_terms": [
+          "exponential decay learning rate tensorflow",
+          "tf keras ExponentialDecay example"
+        ],
+        "search_terms": [
+          "exponential decay learning rate tensorflow",
+          "tf keras ExponentialDecay example"
+        ],
+        "keywords": [
+          "ExponentialDecay",
+          "learning rate schedule",
+          "staircase decay",
+          "optimizer schedule"
+        ],
+        "frequently_confused_with": [
+          "ExponentialDecay vs CosineDecay"
+        ],
+        "confused_with": [
+          "ExponentialDecay vs CosineDecay"
+        ]
+      },
+      "related_models": [
+        "resnet, logistic-regression, yolo"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline, transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/schedules/ExponentialDecay",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/schedules/ExponentialDecay"
+    },
+    {
+      "task": "Configure Cosine Decay (tf.keras.optimizers.schedules.CosineDecay)",
+      "problem_solved": "Decays learning rate following a cosine curve with optional linear warmup steps, reaching a specified minimum learning rate.",
+      "mental_trigger": "I need a modern learning rate schedule with warmup and smooth cosine decay for Transformer or ViT training.",
+      "syntax": "tf.keras.optimizers.schedules.CosineDecay(initial\\_learning\\_rate, decay\\_steps, alpha=0.0, name=None, warmup\\_target=None, warmup\\_steps=0)",
+      "important_parameters": [
+        "initial_learning_rate: Peak learning rate after warmup (float).",
+        "decay_steps: Total number of decay steps.",
+        "alpha: Minimum learning rate fraction of initial rate at end of decay (default 0.0).",
+        "warmup_target: Target learning rate at end of linear warmup phase.",
+        "warmup_steps: Number of linear warmup steps from 0 to initial rate or warmup target."
+      ],
+      "important_params": [
+        "initial_learning_rate: Peak learning rate after warmup (float).",
+        "decay_steps: Total number of decay steps.",
+        "alpha: Minimum learning rate fraction of initial rate at end of decay (default 0.0).",
+        "warmup_target: Target learning rate at end of linear warmup phase.",
+        "warmup_steps: Number of linear warmup steps from 0 to initial rate or warmup target."
+      ],
+      "return_value": "Instantiated CosineDecay schedule callable object.",
+      "example": "lr_schedule = tf.keras.optimizers.schedules.CosineDecay(\ninitial_learning_rate=1e-3,\ndecay_steps=10000,\nalpha=0.01,\nwarmup_steps=500\n)\n\noptimizer = tf.keras.optimizers.AdamW(learning_rate=lr_schedule)\n\nmodel = tf.keras.Sequential([tf.keras.layers.Dense(10, input_shape=(16,))])\nx = tf.random.normal((4, 16))\ny = tf.random.normal((4, 10))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "snippet": "lr_schedule = tf.keras.optimizers.schedules.CosineDecay(\ninitial_learning_rate=1e-3,\ndecay_steps=10000,\nalpha=0.01,\nwarmup_steps=500\n)\n\noptimizer = tf.keras.optimizers.AdamW(learning_rate=lr_schedule)\n\nmodel = tf.keras.Sequential([tf.keras.layers.Dense(10, input_shape=(16,))])\nx = tf.random.normal((4, 16))\ny = tf.random.normal((4, 10))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "use_when": "Modern deep learning models including LLMs, Transformers, Diffusion models, and Vision Transformers requiring stable initial warmup and smooth decay.",
+      "avoid_when": "Open-ended online learning where total steps (decay_steps) are unknown or infinite.",
+      "gotchas": [
+        "decay_steps must match the total intended training steps; exceeding decay_steps leaves learning rate flat at alpha * initial_learning_rate.",
+        "Ensure warmup_steps is smaller than decay_steps.",
+        "Forgetting alpha \\> 0 causes learning rate to drop completely to zero at end of training."
+      ],
+      "performance_notes": "> * Light scalar trigonometric calculation per step; negligible GPU/TPU impact.  \n> * Standard schedule for state-of-the-art LLM pretraining runs.",
+      "related_apis": [
+        "tf.keras.optimizers.schedules.CosineDecayRestarts, tf.keras.optimizers.schedules.ExponentialDecay, tf.keras.optimizers.AdamW"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Equivalent to PyTorch torch.optim.lr_scheduler.CosineAnnealingLR combined with warmup scheduling wrappers.",
+      "pytorch_equivalent": "torch.optim.lr_scheduler.CosineAnnealingLR",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.optim.lr_scheduler.CosineAnnealingLR",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "CosineDecay",
+          "tf.keras.optimizers.schedules.CosineDecay",
+          "cosine learning rate"
+        ],
+        "common_search_terms": [
+          "cosine decay warmup keras tensorflow",
+          "CosineDecay AdamW schedule"
+        ],
+        "search_terms": [
+          "cosine decay warmup keras tensorflow",
+          "CosineDecay AdamW schedule"
+        ],
+        "keywords": [
+          "CosineDecay",
+          "learning rate schedule",
+          "warmup",
+          "transformer schedule",
+          "cosine annealing"
+        ],
+        "frequently_confused_with": [
+          "CosineDecay vs CosineDecayRestarts"
+        ],
+        "confused_with": [
+          "CosineDecay vs CosineDecayRestarts"
+        ]
+      },
+      "related_models": [
+        "bert, roberta, t5, gpt, llama, vit, qwen, gemma, deepseek"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling, memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization, text-classification-pipeline-classical-encoder, transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide, hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/schedules/CosineDecay",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/schedules/CosineDecay"
+    },
+    {
+      "task": "Configure Cosine Decay with Restarts (tf.keras.optimizers.schedules.CosineDecayRestarts)",
+      "problem_solved": "Periodically resets the cosine decay schedule, allowing the model to escape local minima and explore new regions of parameter space.",
+      "mental_trigger": "I need a cyclic cosine learning rate schedule with warm restarts for non-convex loss landscapes.",
+      "syntax": "tf.keras.optimizers.schedules.CosineDecayRestarts(initial\\_learning\\_rate, first\\_decay\\_steps, t\\_mul=2.0, m\\_mul=1.0, alpha=0.0, name=None)",
+      "important_parameters": [
+        "initial_learning_rate: Starting peak learning rate (float).",
+        "first_decay_steps: Number of steps in the first decay period.",
+        "t_mul: Factor by which the period length expands after each restart (default 2.0).",
+        "m_mul: Factor by which initial learning rate scales after each restart (default 1.0).",
+        "alpha: Minimum learning rate fraction."
+      ],
+      "important_params": [
+        "initial_learning_rate: Starting peak learning rate (float).",
+        "first_decay_steps: Number of steps in the first decay period.",
+        "t_mul: Factor by which the period length expands after each restart (default 2.0).",
+        "m_mul: Factor by which initial learning rate scales after each restart (default 1.0).",
+        "alpha: Minimum learning rate fraction."
+      ],
+      "return_value": "Instantiated CosineDecayRestarts schedule callable object.",
+      "example": "lr_schedule = tf.keras.optimizers.schedules.CosineDecayRestarts(\ninitial_learning_rate=1e-3,\nfirst_decay_steps=1000,\nt_mul=2.0,\nm_mul=0.8,\nalpha=1e-4\n)\n\noptimizer = tf.keras.optimizers.Adam(learning_rate=lr_schedule)\n\nmodel = tf.keras.Sequential([tf.keras.layers.Dense(10, input_shape=(20,))])\nx = tf.random.normal((4, 20))\ny = tf.random.normal((4, 10))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "snippet": "lr_schedule = tf.keras.optimizers.schedules.CosineDecayRestarts(\ninitial_learning_rate=1e-3,\nfirst_decay_steps=1000,\nt_mul=2.0,\nm_mul=0.8,\nalpha=1e-4\n)\n\noptimizer = tf.keras.optimizers.Adam(learning_rate=lr_schedule)\n\nmodel = tf.keras.Sequential([tf.keras.layers.Dense(10, input_shape=(20,))])\nx = tf.random.normal((4, 20))\ny = tf.random.normal((4, 10))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "use_when": "Training complex vision or generative models where periodic learning rate spikes help escape sub-optimal local minima.",
+      "avoid_when": "Fine-tuning pre-trained language models, where sudden learning rate spikes can destroy pre-trained feature representations.",
+      "gotchas": [
+        "Setting m_mul too high can cause gradient explosion on later restarts.",
+        "If t_mul is very large, subsequent periods become excessively long.",
+        "Sudden learning rate increases at period boundaries can cause transient loss spikes."
+      ],
+      "performance_notes": "> * Negligible scalar math computation per step.  \n> * Supported natively inside tf.function computational graphs.",
+      "related_apis": [
+        "tf.keras.optimizers.schedules.CosineDecay, tf.keras.optimizers.Adam"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Equivalent to PyTorch torch.optim.lr_scheduler.CosineAnnealingWarmRestarts.",
+      "pytorch_equivalent": "torch.optim.lr_scheduler.CosineAnnealingWarmRestarts",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.optim.lr_scheduler.CosineAnnealingWarmRestarts",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "CosineDecayRestarts",
+          "warm restarts cosine decay"
+        ],
+        "common_search_terms": [
+          "tf.keras.optimizers.schedules.CosineDecayRestarts example",
+          "cosine decay warm restarts tensorflow"
+        ],
+        "search_terms": [
+          "tf.keras.optimizers.schedules.CosineDecayRestarts example",
+          "cosine decay warm restarts tensorflow"
+        ],
+        "keywords": [
+          "CosineDecayRestarts",
+          "cyclic learning rate",
+          "warm restarts",
+          "optimizer schedule"
+        ],
+        "frequently_confused_with": [
+          "CosineDecayRestarts vs CosineDecay"
+        ],
+        "confused_with": [
+          "CosineDecayRestarts vs CosineDecay"
+        ]
+      },
+      "related_models": [
+        "resnet, vit, yolo"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline, transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/schedules/CosineDecayRestarts",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/schedules/CosineDecayRestarts"
+    },
+    {
+      "task": "Configure Piecewise Constant Schedule (tf.keras.optimizers.schedules.PiecewiseConstantDecay)",
+      "problem_solved": "Defines explicit step boundary thresholds at which the learning rate drops to predetermined discrete values.",
+      "mental_trigger": "I need to drop the learning rate at specific epoch boundaries (such as dropping by 10x at step 10000 and step 20000).",
+      "syntax": "tf.keras.optimizers.schedules.PiecewiseConstantDecay(boundaries, values, name=None)",
+      "important_parameters": [
+        "boundaries: Strictly increasing list of step indices (for example [10000, 20000]).",
+        "values: List of learning rate values for each interval (must have len(boundaries) \\+ 1 elements)."
+      ],
+      "important_params": [
+        "boundaries: Strictly increasing list of step indices (for example [10000, 20000]).",
+        "values: List of learning rate values for each interval (must have len(boundaries) \\+ 1 elements)."
+      ],
+      "return_value": "Instantiated PiecewiseConstantDecay schedule callable object.",
+      "example": "# Drop learning rate from 0.1 to 0.01 at step 1000, and to 0.001 at step 2000\nlr_schedule = tf.keras.optimizers.schedules.PiecewiseConstantDecay(\nboundaries=[1000, 2000],\nvalues=[0.1, 0.01, 0.001]\n)\n\noptimizer = tf.keras.optimizers.SGD(learning_rate=lr_schedule, momentum=0.9)\n\nmodel = tf.keras.Sequential([tf.keras.layers.Dense(4, input_shape=(8,))])\nx = tf.random.normal((2, 8))\ny = tf.random.normal((2, 4))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "snippet": "# Drop learning rate from 0.1 to 0.01 at step 1000, and to 0.001 at step 2000\nlr_schedule = tf.keras.optimizers.schedules.PiecewiseConstantDecay(\nboundaries=[1000, 2000],\nvalues=[0.1, 0.01, 0.001]\n)\n\noptimizer = tf.keras.optimizers.SGD(learning_rate=lr_schedule, momentum=0.9)\n\nmodel = tf.keras.Sequential([tf.keras.layers.Dense(4, input_shape=(8,))])\nx = tf.random.normal((2, 8))\ny = tf.random.normal((2, 4))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "use_when": "Reproducing classical computer vision paper benchmarks (such as ResNet ImageNet training with step drops at epochs 30, 60, 90).",
+      "avoid_when": "Smooth learning rate schedules (Cosine Decay) are preferred for better convergence without hyperparameter tuning step boundaries.",
+      "gotchas": [
+        "Length of values must exactly equal len(boundaries) \\+ 1.",
+        "Boundaries must be strictly sorted in ascending order.",
+        "Step counts are global optimizer step numbers, not epoch numbers."
+      ],
+      "performance_notes": "> * Extremely lightweight step lookup logic per iteration.",
+      "related_apis": [
+        "tf.keras.optimizers.schedules.ExponentialDecay, tf.keras.optimizers.SGD"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Maps to PyTorch torch.optim.lr_scheduler.MultiStepLR. Note that PyTorch specifies milestone epochs/steps and decay gamma factor instead of explicit value lists.",
+      "pytorch_equivalent": "torch.optim.lr_scheduler.MultiStepLR",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.optim.lr_scheduler.MultiStepLR",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "PiecewiseConstantDecay",
+          "step decay schedule",
+          "piecewise schedule"
+        ],
+        "common_search_terms": [
+          "PiecewiseConstantDecay tensorflow example",
+          "keras piecewise learning rate"
+        ],
+        "search_terms": [
+          "PiecewiseConstantDecay tensorflow example",
+          "keras piecewise learning rate"
+        ],
+        "keywords": [
+          "PiecewiseConstantDecay",
+          "step drop schedule",
+          "boundary decay",
+          "optimizer schedule"
+        ],
+        "frequently_confused_with": [
+          "PiecewiseConstantDecay vs PolynomialDecay"
+        ],
+        "confused_with": [
+          "PiecewiseConstantDecay vs PolynomialDecay"
+        ]
+      },
+      "related_models": [
+        "resnet, yolo, logistic-regression"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline, transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/schedules/PiecewiseConstantDecay",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/schedules/PiecewiseConstantDecay"
+    },
+    {
+      "task": "Configure Polynomial Decay (tf.keras.optimizers.schedules.PolynomialDecay)",
+      "problem_solved": "Decays learning rate polynomially over a given number of steps toward an end learning rate.",
+      "mental_trigger": "I need a polynomial schedule (such as linear decay with power 1.0) to decay learning rate to a target minimum step-by-step.",
+      "syntax": "tf.keras.optimizers.schedules.PolynomialDecay(initial\\_learning\\_rate, decay\\_steps, end\\_learning\\_rate=0.0001, power=1.0, cycle=False, name=None)",
+      "important_parameters": [
+        "initial_learning_rate: Starting learning rate (float).",
+        "decay_steps: Total steps over which polynomial decay occurs.",
+        "end_learning_rate: Minimum final learning rate (default 0.0001).",
+        "power: Polynomial power degree (1.0 for linear decay, 2.0 for quadratic decay).",
+        "cycle: Boolean indicating whether schedule cycles after reaching decay_steps."
+      ],
+      "important_params": [
+        "initial_learning_rate: Starting learning rate (float).",
+        "decay_steps: Total steps over which polynomial decay occurs.",
+        "end_learning_rate: Minimum final learning rate (default 0.0001).",
+        "power: Polynomial power degree (1.0 for linear decay, 2.0 for quadratic decay).",
+        "cycle: Boolean indicating whether schedule cycles after reaching decay_steps."
+      ],
+      "return_value": "Instantiated PolynomialDecay schedule callable object.",
+      "example": "# Linear decay (power=1.0) over 5000 steps down to 1e-5\nlr_schedule = tf.keras.optimizers.schedules.PolynomialDecay(\ninitial_learning_rate=5e-5,\ndecay_steps=5000,\nend_learning_rate=1e-5,\npower=1.0\n)\n\noptimizer = tf.keras.optimizers.AdamW(learning_rate=lr_schedule)\n\nmodel = tf.keras.Sequential([tf.keras.layers.Dense(10, input_shape=(16,))])\nx = tf.random.normal((4, 16))\ny = tf.random.normal((4, 10))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "snippet": "# Linear decay (power=1.0) over 5000 steps down to 1e-5\nlr_schedule = tf.keras.optimizers.schedules.PolynomialDecay(\ninitial_learning_rate=5e-5,\ndecay_steps=5000,\nend_learning_rate=1e-5,\npower=1.0\n)\n\noptimizer = tf.keras.optimizers.AdamW(learning_rate=lr_schedule)\n\nmodel = tf.keras.Sequential([tf.keras.layers.Dense(10, input_shape=(16,))])\nx = tf.random.normal((4, 16))\ny = tf.random.normal((4, 10))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "use_when": "Fine-tuning BERT or RoBERTa encoder models where linear decay (power=1.0) is the standard recommended schedule.",
+      "avoid_when": "Short training runs where warmup and cosine decay provide superior convergence stability.",
+      "gotchas": [
+        "Beyond decay_steps, learning rate remains strictly at end_learning_rate unless cycle=True.",
+        "power=1.0 produces linear decay; higher power values decay learning rate very aggressively in early steps."
+      ],
+      "performance_notes": "> * Single power evaluation per step; zero GPU throughput overhead.",
+      "related_apis": [
+        "tf.keras.optimizers.schedules.CosineDecay, tf.keras.optimizers.AdamW"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Equivalent to PyTorch torch.optim.lr_scheduler.PolynomialLR or get_linear_schedule_with_warmup in HuggingFace Transformers.",
+      "pytorch_equivalent": "torch.optim.lr_scheduler.PolynomialLR",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.optim.lr_scheduler.PolynomialLR",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "PolynomialDecay",
+          "linear decay schedule",
+          "tf.keras.optimizers.schedules.PolynomialDecay"
+        ],
+        "common_search_terms": [
+          "polynomial decay learning rate tensorflow",
+          "linear learning rate decay keras"
+        ],
+        "search_terms": [
+          "polynomial decay learning rate tensorflow",
+          "linear learning rate decay keras"
+        ],
+        "keywords": [
+          "PolynomialDecay",
+          "linear decay",
+          "polynomial schedule",
+          "optimizer schedule",
+          "BERT fine-tuning"
+        ],
+        "frequently_confused_with": [
+          "PolynomialDecay vs ExponentialDecay"
+        ],
+        "confused_with": [
+          "PolynomialDecay vs ExponentialDecay"
+        ]
+      },
+      "related_models": [
+        "bert, roberta, t5, bart"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder, production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/schedules/PolynomialDecay",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/schedules/PolynomialDecay"
+    },
+    {
+      "task": "Configure Inverse Time Decay (tf.keras.optimizers.schedules.InverseTimeDecay)",
+      "problem_solved": "Applies inverse time decay where learning rate decreases proportionally to step count.",
+      "mental_trigger": "I need a decay schedule that decreases learning rate aggressively initially but flattens over prolonged training.",
+      "syntax": "tf.keras.optimizers.schedules.InverseTimeDecay(initial\\_learning\\_rate, decay\\_steps, decay\\_rate, staircase=False, name=None)",
+      "important_parameters": [
+        "initial_learning_rate: Starting learning rate (float).",
+        "decay_steps: Scale factor for step interval.",
+        "decay_rate: Decay coefficient factor.",
+        "staircase: If True, decay occurs at discrete intervals."
+      ],
+      "important_params": [
+        "initial_learning_rate: Starting learning rate (float).",
+        "decay_steps: Scale factor for step interval.",
+        "decay_rate: Decay coefficient factor.",
+        "staircase: If True, decay occurs at discrete intervals."
+      ],
+      "return_value": "Instantiated InverseTimeDecay schedule callable object.",
+      "example": "lr_schedule = tf.keras.optimizers.schedules.InverseTimeDecay(\ninitial_learning_rate=0.01,\ndecay_steps=1000,\ndecay_rate=0.5,\nstaircase=False\n)\n\noptimizer = tf.keras.optimizers.SGD(learning_rate=lr_schedule, momentum=0.9)\n\nmodel = tf.keras.Sequential([tf.keras.layers.Dense(4, input_shape=(8,))])\nx = tf.random.normal((2, 8))\ny = tf.random.normal((2, 4))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "snippet": "lr_schedule = tf.keras.optimizers.schedules.InverseTimeDecay(\ninitial_learning_rate=0.01,\ndecay_steps=1000,\ndecay_rate=0.5,\nstaircase=False\n)\n\noptimizer = tf.keras.optimizers.SGD(learning_rate=lr_schedule, momentum=0.9)\n\nmodel = tf.keras.Sequential([tf.keras.layers.Dense(4, input_shape=(8,))])\nx = tf.random.normal((2, 8))\ny = tf.random.normal((2, 4))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "use_when": "Long-running continuous training tasks where learning rate should slow its decay rate as step count grows.",
+      "avoid_when": "Transformer or Vision model training where Cosine Decay is standard.",
+      "gotchas": [
+        "staircase=True causes step-wise drops rather than continuous updates.",
+        "High decay_rate leads to rapid reduction in early steps."
+      ],
+      "performance_notes": "> * Negligible division operation overhead per step.",
+      "related_apis": [
+        "tf.keras.optimizers.schedules.ExponentialDecay, tf.keras.optimizers.schedules.PolynomialDecay"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "PyTorch has no direct named schedule class for inverse time decay, but achievable via LambdaLR.",
+      "pytorch_equivalent": "torch.optim.lr_scheduler.LambdaLR",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.optim.lr_scheduler.LambdaLR",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "InverseTimeDecay",
+          "inverse time learning rate decay"
+        ],
+        "common_search_terms": [
+          "InverseTimeDecay tensorflow",
+          "inverse time decay keras schedule"
+        ],
+        "search_terms": [
+          "InverseTimeDecay tensorflow",
+          "inverse time decay keras schedule"
+        ],
+        "keywords": [
+          "InverseTimeDecay",
+          "inverse decay",
+          "learning rate schedule",
+          "optimizer"
+        ],
+        "frequently_confused_with": [
+          "InverseTimeDecay vs ExponentialDecay"
+        ],
+        "confused_with": [
+          "InverseTimeDecay vs ExponentialDecay"
+        ]
+      },
+      "related_models": [
+        "logistic-regression, resnet"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/schedules/InverseTimeDecay",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/schedules/InverseTimeDecay"
+    },
+    {
+      "task": "Clip Gradients by Global Norm (tf.clip_by_global_norm)",
+      "problem_solved": "Scales a list of gradient tensors proportionally so that their combined L2 global norm does not exceed a maximum threshold.",
+      "mental_trigger": "I need to prevent exploding gradients across all model parameters in my custom training loop.",
+      "syntax": "tf.clip\\_by\\_global\\_norm(t\\_list, clip\\_norm, use\\_norm=None, name=None)",
+      "important_parameters": [
+        "t_list: Tuple or list of gradient tensors.",
+        "clip_norm: Maximum allowed scalar global norm.",
+        "use_norm: Optional global norm tensor if precomputed."
+      ],
+      "important_params": [
+        "t_list: Tuple or list of gradient tensors.",
+        "clip_norm: Maximum allowed scalar global norm.",
+        "use_norm: Optional global norm tensor if precomputed."
+      ],
+      "return_value": "Tuple (clipped_tensors, global_norm) containing the list of clipped gradient tensors and the computed global norm float scalar.",
+      "example": "model = tf.keras.Sequential([tf.keras.layers.Dense(10, input_shape=(16,))])\noptimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)\n\nx = tf.random.normal((4, 16))\ny = tf.random.normal((4, 10))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)\n\n# Clip gradients by global norm = 1.0\nclipped_grads, global_norm = tf.clip_by_global_norm(grads, clip_norm=1.0)",
+      "snippet": "model = tf.keras.Sequential([tf.keras.layers.Dense(10, input_shape=(16,))])\noptimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)\n\nx = tf.random.normal((4, 16))\ny = tf.random.normal((4, 10))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)\n\n# Clip gradients by global norm = 1.0\nclipped_grads, global_norm = tf.clip_by_global_norm(grads, clip_norm=1.0)",
+      "use_when": "Fine-tuning or pretraining Transformers, LLMs, or RNNs in custom training loops to stabilize training against gradient explosion.",
+      "avoid_when": "Using optimizer parameter global_clipnorm=1.0 directly in the optimizer configuration, which performs global norm clipping automatically.",
+      "gotchas": [
+        "Must filter out None gradients before calling clip_by_global_norm.",
+        "Clipping by global norm preserves gradient directions across parameters, unlike elementwise or per-tensor clipping.",
+        "Global norm computation involves a full reduction sync across all gradients."
+      ],
+      "performance_notes": "> * Triggers reduction across gradient tensors to compute L2 norm.  \n> * Standard stabilization method for LLM training.",
+      "related_apis": [
+        "tf.clip_by_value, tf.keras.optimizers.AdamW"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Direct equivalent of PyTorch torch.nn.utils.clip_grad_norm_. Note that PyTorch clips gradients in-place on parameters, whereas TensorFlow returns new clipped tensors.",
+      "pytorch_equivalent": "torch.nn.utils.clip_grad_norm_",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.nn.utils.clip_grad_norm_",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "tf.clip_by_global_norm",
+          "clip_by_global_norm",
+          "global norm gradient clipping"
+        ],
+        "common_search_terms": [
+          "tf.clip_by_global_norm example",
+          "gradient clipping global norm keras"
+        ],
+        "search_terms": [
+          "tf.clip_by_global_norm example",
+          "gradient clipping global norm keras"
+        ],
+        "keywords": [
+          "clip_by_global_norm",
+          "gradient clipping",
+          "global norm",
+          "exploding gradients",
+          "optimizer"
+        ],
+        "frequently_confused_with": [
+          "clip_by_global_norm vs clip_by_value"
+        ],
+        "confused_with": [
+          "clip_by_global_norm vs clip_by_value"
+        ]
+      },
+      "related_models": [
+        "bert, roberta, t5, gpt, llama, qwen, gemma, deepseek"
+      ],
+      "related_patterns": [
+        "mixed-precision, gradient-accumulation, memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization, text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide, hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/clip_by_global_norm",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/clip_by_global_norm"
+    },
+    {
+      "task": "Clip Gradients by Value (tf.clip_by_value)",
+      "problem_solved": "Clamps gradient tensor values individually to lie strictly within a minimum and maximum scalar bound.",
+      "mental_trigger": "I need to hard-clamp extreme positive or negative gradient values to a fixed numerical range.",
+      "syntax": "tf.clip\\_by\\_value(t, clip\\_value\\_min, clip\\_value\\_max, name=None)",
+      "important_parameters": [
+        "t: Input gradient tensor or structure of tensors.",
+        "clip_value_min: Lower scalar boundary.",
+        "clip_value_max: Upper scalar boundary."
+      ],
+      "important_params": [
+        "t: Input gradient tensor or structure of tensors.",
+        "clip_value_min: Lower scalar boundary.",
+        "clip_value_max: Upper scalar boundary."
+      ],
+      "return_value": "Clipped tensor with values bounded to [clip_value_min, clip_value_max].",
+      "example": "model = tf.keras.Sequential([tf.keras.layers.Dense(5, input_shape=(10,))])\noptimizer = tf.keras.optimizers.SGD(learning_rate=0.01)\n\nx = tf.random.normal((2, 10))\ny = tf.random.normal((2, 5))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)\n\n# Clip elementwise gradient values to [-0.5, 0.5]\nclipped_grads = [tf.clip_by_value(g, -0.5, 0.5) for g in grads]",
+      "snippet": "model = tf.keras.Sequential([tf.keras.layers.Dense(5, input_shape=(10,))])\noptimizer = tf.keras.optimizers.SGD(learning_rate=0.01)\n\nx = tf.random.normal((2, 10))\ny = tf.random.normal((2, 5))\n\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)\n\n# Clip elementwise gradient values to [-0.5, 0.5]\nclipped_grads = [tf.clip_by_value(g, -0.5, 0.5) for g in grads]",
+      "use_when": "Hard elementwise clamping is required to prevent extreme gradient spikes or NaNs in specific numerical layers.",
+      "avoid_when": "Regularizing deep Transformers where global norm clipping (tf.clip_by_global_norm) is preferred because value clipping distorts relative gradient direction vector angles.",
+      "gotchas": [
+        "Alters the relative direction of multi-dimensional gradient vectors.",
+        "Setting bounds too narrow restricts model convergence speed.",
+        "Passing None gradients directly causes runtime attribute errors."
+      ],
+      "performance_notes": "> * Fast, elementwise CUDA kernel execution.  \n> * Operates locally per tensor without cross-variable synchronization.",
+      "related_apis": [
+        "tf.clip_by_global_norm, tf.keras.optimizers.Optimizer"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Direct equivalent of PyTorch torch.nn.utils.clip_grad_value_.",
+      "pytorch_equivalent": "torch.nn.utils.clip_grad_value_",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.nn.utils.clip_grad_value_",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "tf.clip_by_value",
+          "clip_by_value",
+          "gradient value clipping"
+        ],
+        "common_search_terms": [
+          "tf.clip_by_value example",
+          "clamp gradients tensorflow"
+        ],
+        "search_terms": [
+          "tf.clip_by_value example",
+          "clamp gradients tensorflow"
+        ],
+        "keywords": [
+          "clip_by_value",
+          "value clipping",
+          "gradient clamp",
+          "optimizer"
+        ],
+        "frequently_confused_with": [
+          "clip_by_value vs clip_by_global_norm"
+        ],
+        "confused_with": [
+          "clip_by_value vs clip_by_global_norm"
+        ]
+      },
+      "related_models": [
+        "resnet, logistic-regression"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/clip_by_value",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/clip_by_value"
+    },
+    {
+      "task": "Inspect and Modify Learning Rate (optimizer.learning_rate)",
+      "problem_solved": "Dynamically inspects or programmatically updates the active learning rate variable during training execution.",
+      "mental_trigger": "I need to query the current step learning rate or manually adjust it during custom epoch callbacks.",
+      "syntax": "optimizer.learning\\_rate (getter or setter property) or optimizer.learning\\_rate.assign(new\\_value)",
+      "important_parameters": [
+        "Property access on optimizer instance."
+      ],
+      "important_params": [
+        "Property access on optimizer instance."
+      ],
+      "return_value": "Current learning rate float tensor, float, or learning rate schedule instance.",
+      "example": "optimizer = tf.keras.optimizers.Adam(learning_rate=0.01)\n\n# Inspect current learning rate\ncurrent_lr = float(optimizer.learning_rate.numpy())\nprint(\"Initial learning rate:\", current_lr)\n\n# Programmatically assign new learning rate\noptimizer.learning_rate.assign(0.001)\nupdated_lr = float(optimizer.learning_rate.numpy())",
+      "snippet": "optimizer = tf.keras.optimizers.Adam(learning_rate=0.01)\n\n# Inspect current learning rate\ncurrent_lr = float(optimizer.learning_rate.numpy())\nprint(\"Initial learning rate:\", current_lr)\n\n# Programmatically assign new learning rate\noptimizer.learning_rate.assign(0.001)\nupdated_lr = float(optimizer.learning_rate.numpy())",
+      "use_when": "Writing custom learning rate adaptation callbacks, dynamic threshold adjusting logic, or printing live metrics during custom training loops.",
+      "avoid_when": "Using a LearningRateSchedule object, where assigning a raw float directly overrides and replaces the schedule object.",
+      "gotchas": [
+        "Assigning a float to optimizer.learning_rate when a schedule was attached permanently overwrites the schedule.",
+        "Inspecting optimizer.learning_rate when using a schedule returns the schedule object, not the evaluated scalar value (call optimizer.learning_rate(optimizer.iterations) to get the scalar value)."
+      ],
+      "performance_notes": "> * Zero performance cost for inspection; assign executes an immediate variable assignment.",
+      "related_apis": [
+        "tf.keras.optimizers.schedules.ExponentialDecay, tf.keras.optimizers.schedules.CosineDecay"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "PyTorch learning rate is accessed via optimizer.param_groups[0]['lr']. In Keras 3, it is exposed as optimizer.learning_rate.",
+      "pytorch_equivalent": "optimizer.param_groups[0]['lr']",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "optimizer.param_groups[0]['lr']",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "optimizer.learning_rate",
+          "get learning rate keras",
+          "set learning rate keras"
+        ],
+        "common_search_terms": [
+          "how to change learning rate during training tensorflow",
+          "keras get current learning rate"
+        ],
+        "search_terms": [
+          "how to change learning rate during training tensorflow",
+          "keras get current learning rate"
+        ],
+        "keywords": [
+          "learning_rate",
+          "inspect learning rate",
+          "assign learning rate",
+          "dynamic learning rate"
+        ],
+        "frequently_confused_with": [
+          "optimizer.learning_rate vs schedule evaluation"
+        ],
+        "confused_with": [
+          "optimizer.learning_rate vs schedule evaluation"
+        ]
+      },
+      "related_models": [
+        "resnet, bert, vit, gpt"
+      ],
+      "related_patterns": [
+        "learning-rate-scheduling"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline, text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Optimizer#learning_rate",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Optimizer#learning_rate"
+    },
+    {
+      "task": "Save and Restore Optimizer State (optimizer.save_own_variables / optimizer.load_own_variables)",
+      "problem_solved": "Saves and restores internal state slot variables (momentum, step counts, second moments) independently of model weights.",
+      "mental_trigger": "I need to save or load optimizer state variables directly for custom checkpointing routines in Keras 3.",
+      "syntax": "optimizer.save\\_own\\_variables(store) / optimizer.load\\_own\\_variables(store)",
+      "important_parameters": [
+        "store: Dictionary or dictionary-like object mapping variable indices or keys to variable state tensors."
+      ],
+      "important_params": [
+        "store: Dictionary or dictionary-like object mapping variable indices or keys to variable state tensors."
+      ],
+      "return_value": "None (NoneType) or variable dictionary during save.",
+      "example": "model = tf.keras.Sequential([tf.keras.layers.Dense(4, input_shape=(8,))])\nopt1 = tf.keras.optimizers.Adam(learning_rate=0.01)\n\nx = tf.random.normal((2, 8))\ny = tf.random.normal((2, 4))\n\n# Step opt1 to build slot variables\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)\nopt1.apply_gradients(zip(grads, model.trainable_variables))\n\n# Save optimizer state variables\nstate_store = {}\nopt1.save_own_variables(state_store)\n\n# Create new optimizer instance\nopt2 = tf.keras.optimizers.Adam(learning_rate=0.01)\n# Step opt2 to initialize variable structure\nopt2.build(model.trainable_variables)\n\n# Restore state into opt2",
+      "snippet": "model = tf.keras.Sequential([tf.keras.layers.Dense(4, input_shape=(8,))])\nopt1 = tf.keras.optimizers.Adam(learning_rate=0.01)\n\nx = tf.random.normal((2, 8))\ny = tf.random.normal((2, 4))\n\n# Step opt1 to build slot variables\nwith tf.GradientTape() as tape:\npreds = model(x)\nloss = tf.reduce_mean(tf.square(preds - y))\n\ngrads = tape.gradient(loss, model.trainable_variables)\nopt1.apply_gradients(zip(grads, model.trainable_variables))\n\n# Save optimizer state variables\nstate_store = {}\nopt1.save_own_variables(state_store)\n\n# Create new optimizer instance\nopt2 = tf.keras.optimizers.Adam(learning_rate=0.01)\n# Step opt2 to initialize variable structure\nopt2.build(model.trainable_variables)\n\n# Restore state into opt2",
+      "use_when": "Building custom checkpointing systems, distributed training state recovery, or serializing optimizer state separately from model architecture files.",
+      "avoid_when": "Using standard Keras model saving model.save(\"model.keras\") or tf.train.Checkpoint, which serializes model and optimizer states automatically.",
+      "gotchas": [
+        "load_own_variables requires the destination optimizer to be built (opt.build(vars) or after 1 step) so that slot variable structures match.",
+        "Number and shapes of target variables must strictly match saved state tensors."
+      ],
+      "performance_notes": "> * In-memory tensor copy or direct dictionary lookup. Minimal CPU or GPU overhead.",
+      "related_apis": [
+        "optimizer.reset_state, tf.train.Checkpoint"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Aligns with PyTorch optimizer.state_dict() and optimizer.load_state_dict().",
+      "pytorch_equivalent": "optimizer.state_dict() / optimizer.load_state_dict()",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "optimizer.state_dict() / optimizer.load_state_dict()",
+      "version_compatibility": "Native Keras 3 API. No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "save_own_variables",
+          "load_own_variables",
+          "optimizer save state"
+        ],
+        "common_search_terms": [
+          "keras 3 save optimizer state",
+          "save_own_variables load_own_variables tf keras"
+        ],
+        "search_terms": [
+          "keras 3 save optimizer state",
+          "save_own_variables load_own_variables tf keras"
+        ],
+        "keywords": [
+          "save_own_variables",
+          "load_own_variables",
+          "optimizer state checkpointing",
+          "slot variables"
+        ],
+        "frequently_confused_with": [
+          "save_own_variables vs model.save"
+        ],
+        "confused_with": [
+          "save_own_variables vs model.save"
+        ]
+      },
+      "related_models": [
+        "bert, resnet, gpt, llama, vit"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization, image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "optimizers"
+      ],
+      "related_cheatsheet": [
+        "optimizers"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Optimizer#save_own_variables",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Optimizer#save_own_variables"
+    }
+  ]
+}

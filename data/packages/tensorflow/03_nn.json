@@ -1,0 +1,3450 @@
+{
+  "id": "tensorflow",
+  "module_name": "03_nn",
+  "module_title": "Neural Network Layers",
+  "slug": "03_nn",
+  "tasks": [
+    {
+      "task": "1. Create Dense Layer (tf.keras.layers.Dense)",
+      "problem_solved": "Projects input features into a higher or lower-dimensional vector space using a fully connected matrix multiplication and bias addition.",
+      "mental_trigger": "I need a learnable fully connected layer to project features into another representation space.",
+      "syntax": "units,\nactivation=None,\nuse_bias=True,\nkernel_initializer=\"glorot_uniform\",\nbias_initializer=\"zeros\",\nkernel_regularizer=None,\nbias_regularizer=None,\nactivity_regularizer=None,\nkernel_constraint=None,\nbias_constraint=None,\n**kwargs",
+      "important_parameters": [
+        "units: Positive integer specifying the dimensionality of the output space.",
+        "activation: Activation function to use. Defaults to linear (no activation).",
+        "use_bias: Boolean indicating whether the layer uses a bias vector.",
+        "kernel_initializer: Initializer for the embeddings/weights matrix.",
+        "kernel_regularizer: Regularizer function applied to the weight matrix."
+      ],
+      "important_params": [
+        "units: Positive integer specifying the dimensionality of the output space.",
+        "activation: Activation function to use. Defaults to linear (no activation).",
+        "use_bias: Boolean indicating whether the layer uses a bias vector.",
+        "kernel_initializer: Initializer for the embeddings/weights matrix.",
+        "kernel_regularizer: Regularizer function applied to the weight matrix."
+      ],
+      "return_value": "A tensor of shape (batch_size, ..., units) where all dimensions except the last match the input tensor shape.",
+      "example": "x = tf.random.normal([32, 128])\ndense_layer = tf.keras.layers.Dense(64, activation=\"relu\")\noutput = dense_layer(x)",
+      "snippet": "x = tf.random.normal([32, 128])\ndense_layer = tf.keras.layers.Dense(64, activation=\"relu\")\noutput = dense_layer(x)",
+      "use_when": "> * Building classification heads or regression output layers.  \n> * Constructing multilayer perceptrons (MLPs) or feedforward networks.  \n> * Projecting feature dimensions before or after attention mechanisms.",
+      "avoid_when": "> * Processing high-dimensional spatial data like images where local weight sharing is required (use Conv2D).  \n> * Processing long sequential data where spatial/temporal context matters without explicit flattening.",
+      "gotchas": [
+        "Dense operates on the last axis of the input tensor. Passing shape (32, 10, 128) results in (32, 10, 64).",
+        "Forgetting to flatten multidimensional feature maps prior to a final output Dense layer in legacy pipelines.",
+        "Initializer defaults may cause vanishing or exploding gradients if paired with non-standard activations without adjusting initializers.",
+        "Regularization loss must be tracked via layer.losses when using custom training loops without standard Keras Model compilation."
+      ],
+      "performance_notes": "> * Highly optimized using BLAS libraries (cuBLAS on GPU, MKL/DNNL on CPU).  \n> * Tensor contraction on rank greater than 2 inputs may introduce slight reshaping overheads.",
+      "related_apis": [
+        "tf.keras.layers.Dense",
+        "tf.keras.layers.EinsumDense",
+        "tf.keras.activations.relu"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.Dense"
+      ],
+      "framework_migration_notes": "tf.keras.layers.Dense \u2192 nn.Linear",
+      "pytorch_equivalent": "tf.keras.layers.Dense \u2192 nn.Linear",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.Dense \u2192 nn.Linear",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Fully connected layer",
+          "Linear layer",
+          "MLP block"
+        ],
+        "common_search_terms": [
+          "tf.keras Dense layer",
+          "linear projection keras"
+        ],
+        "search_terms": [
+          "tf.keras Dense layer",
+          "linear projection keras"
+        ],
+        "keywords": [
+          "dense",
+          "linear",
+          "affine",
+          "fully_connected"
+        ],
+        "frequently_confused_with": [
+          "Dense vs Conv1D (kernel size 1)"
+        ],
+        "confused_with": [
+          "Dense vs Conv1D (kernel size 1)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "logistic-regression"
+      ],
+      "related_patterns": [
+        "feature-fusion",
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Dense",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Dense"
+    },
+    {
+      "task": "2. Create 1D Convolution Layer (tf.keras.layers.Conv1D)",
+      "problem_solved": "Applies 1D cross-correlation over temporal or sequential feature representations to extract local invariant patterns.",
+      "mental_trigger": "I need to extract local temporal or sequence patterns across a single spatial/time dimension.",
+      "syntax": "filters,\nkernel_size,\nstrides=1,\npadding=\"valid\",\ndata_format=\"channels_last\",\ndilation_rate=1,\ngroups=1,\nactivation=None,\nuse_bias=True,\nkernel_initializer=\"glorot_uniform\",\nbias_initializer=\"zeros\",\n**kwargs",
+      "important_parameters": [
+        "filters: Integer, the dimensionality of the output space.",
+        "kernel_size: Integer or tuple/list of 1 integer, specifying the length of the 1D convolution window.",
+        "strides: Integer or tuple/list of 1 integer, specifying the stride length of the convolution.",
+        "padding: String, \"valid\" (no padding), \"same\" (zero pad evenly), or \"causal\" (pad for autoregressive models).",
+        "dilation_rate: Integer or tuple/list of 1 integer, rate for dilated convolution."
+      ],
+      "important_params": [
+        "filters: Integer, the dimensionality of the output space.",
+        "kernel_size: Integer or tuple/list of 1 integer, specifying the length of the 1D convolution window.",
+        "strides: Integer or tuple/list of 1 integer, specifying the stride length of the convolution.",
+        "padding: String, \"valid\" (no padding), \"same\" (zero pad evenly), or \"causal\" (pad for autoregressive models).",
+        "dilation_rate: Integer or tuple/list of 1 integer, rate for dilated convolution."
+      ],
+      "return_value": "A 3D tensor of shape (batch_size, new_steps, filters).",
+      "example": "x = tf.random.normal([16, 50, 64])  # (batch, time_steps, features)\nconv1d = tf.keras.layers.Conv1D(filters=32, kernel_size=3, padding=\"same\", activation=\"relu\")\noutput = conv1d(x)",
+      "snippet": "x = tf.random.normal([16, 50, 64])  # (batch, time_steps, features)\nconv1d = tf.keras.layers.Conv1D(filters=32, kernel_size=3, padding=\"same\", activation=\"relu\")\noutput = conv1d(x)",
+      "use_when": "> * Extracting n-gram text features or processing speech waveforms.  \n> * Processing time-series sensor data.  \n> * Implementing causal dilated convolutions for autoregressive sequence models.",
+      "avoid_when": "> * Inputs have 2D spatial dimensions such as images or spectrograms with explicit height/width axes.  \n> * Global context across long sequences is required without local window constraints.",
+      "gotchas": [
+        "Setting padding=\"causal\" is mandatory when modeling time-series to prevent future information leakage.",
+        "Default data_format is \"channels_last\", shape must be (batch, steps, channels).",
+        "High dilation rates without appropriate padding adjustments alter expected output sequence length."
+      ],
+      "performance_notes": "> * Leverages cuDNN 1D convolution kernels on NVIDIA GPUs.  \n> * Grouped convolutions (groups \\> 1) reduce parameter count and compute complexity.",
+      "related_apis": [
+        "tf.keras.layers.Conv1D",
+        "tf.keras.layers.SeparableConv1D",
+        "tf.keras.layers.Conv2D"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.Conv1D"
+      ],
+      "framework_migration_notes": "tf.keras.layers.Conv1D \u2192 nn.Conv1d",
+      "pytorch_equivalent": "tf.keras.layers.Conv1D \u2192 nn.Conv1d",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.Conv1D \u2192 nn.Conv1d",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "1D Convolution",
+          "Temporal Convolution"
+        ],
+        "common_search_terms": [
+          "keras conv1d",
+          "1d convolution sequence",
+          "causal conv1d"
+        ],
+        "search_terms": [
+          "keras conv1d",
+          "1d convolution sequence",
+          "causal conv1d"
+        ],
+        "keywords": [
+          "conv1d",
+          "temporal",
+          "time-series",
+          "causal",
+          "kernel_size"
+        ],
+        "frequently_confused_with": [
+          "Conv1D vs SimpleRNN"
+        ],
+        "confused_with": [
+          "Conv1D vs SimpleRNN"
+        ]
+      },
+      "related_models": [
+        "t5",
+        "gpt"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Conv1D",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Conv1D"
+    },
+    {
+      "task": "3. Create 2D Convolution Layer (tf.keras.layers.Conv2D)",
+      "problem_solved": "Applies 2D spatial cross-correlation to extract local hierarchical visual patterns from grid-like inputs.",
+      "mental_trigger": "I need to extract spatial feature maps from images or 2D grid inputs.",
+      "syntax": "filters,\nkernel_size,\nstrides=(1, 1),\npadding=\"valid\",\ndata_format=None,\ndilation_rate=(1, 1),\ngroups=1,\nactivation=None,\nuse_bias=True,\nkernel_initializer=\"glorot_uniform\",\nbias_initializer=\"zeros\",\n**kwargs",
+      "important_parameters": [
+        "filters: Integer, the output channel dimension.",
+        "kernel_size: An integer or tuple of 2 integers specifying height and width of the 2D window.",
+        "strides: An integer or tuple of 2 integers specifying strides along height and width.",
+        "padding: \"valid\" or \"same\".",
+        "data_format: \"channels_last\" (default) or \"channels_first\"."
+      ],
+      "important_params": [
+        "filters: Integer, the output channel dimension.",
+        "kernel_size: An integer or tuple of 2 integers specifying height and width of the 2D window.",
+        "strides: An integer or tuple of 2 integers specifying strides along height and width.",
+        "padding: \"valid\" or \"same\".",
+        "data_format: \"channels_last\" (default) or \"channels_first\"."
+      ],
+      "return_value": "A 4D tensor with shape (batch, new_height, new_width, filters) when using \"channels_last\".",
+      "example": "x = tf.random.normal([8, 224, 224, 3])  # (batch, height, width, channels)\nconv2d = tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), padding=\"same\", activation=\"relu\")\noutput = conv2d(x)",
+      "snippet": "x = tf.random.normal([8, 224, 224, 3])  # (batch, height, width, channels)\nconv2d = tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), padding=\"same\", activation=\"relu\")\noutput = conv2d(x)",
+      "use_when": "> * Building Convolutional Neural Networks (CNNs) for image classification or object detection.  \n> * Downsampling or projecting spatial representations in vision backbone networks.",
+      "avoid_when": "> * Spatial relations are unstructured, tabular, or pure set inputs.  \n> * Parameters must be heavily restricted on edge devices (use DepthwiseConv2D or SeparableConv2D).",
+      "gotchas": [
+        "padding=\"same\" pads unevenly if kernel_size is even and stride is odd, causing spatial shift subtle bugs.",
+        "Expects 4D input tensor; passing 3D tensor (height, width, channels) raises shape errors.",
+        "\"channels_first\" requires explicit GPU layout support and non-default configuration."
+      ],
+      "performance_notes": "> * Highly optimized via cuDNN. Tensor Cores execute 1/16/32-bit floating point convolutions efficiently when filter numbers are multiples of 8.",
+      "related_apis": [
+        "tf.keras.layers.Conv2D",
+        "tf.keras.layers.DepthwiseConv2D",
+        "tf.keras.layers.SeparableConv2D",
+        "tf.keras.layers.Conv2DTranspose"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.Conv2D"
+      ],
+      "framework_migration_notes": "tf.keras.layers.Conv2D \u2192 nn.Conv2d",
+      "pytorch_equivalent": "tf.keras.layers.Conv2D \u2192 nn.Conv2d",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.Conv2D \u2192 nn.Conv2d",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "2D Convolution",
+          "CNN Layer"
+        ],
+        "common_search_terms": [
+          "keras conv2d",
+          "2d convolution layer",
+          "image convolution tensorflow"
+        ],
+        "search_terms": [
+          "keras conv2d",
+          "2d convolution layer",
+          "image convolution tensorflow"
+        ],
+        "keywords": [
+          "conv2d",
+          "cnn",
+          "spatial",
+          "filters",
+          "kernel_size"
+        ],
+        "frequently_confused_with": [
+          "Conv2D vs SeparableConv2D"
+        ],
+        "confused_with": [
+          "Conv2D vs SeparableConv2D"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "yolo"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline",
+        "semantic-segmentation-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Conv2D",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Conv2D"
+    },
+    {
+      "task": "4. Create 3D Convolution Layer (tf.keras.layers.Conv3D)",
+      "problem_solved": "Applies 3D spatial-temporal cross-correlation over volume or video sequence inputs.",
+      "mental_trigger": "I need to extract features across 3D volumes like medical MRI scans or video frames over time.",
+      "syntax": "filters,\nkernel_size,\nstrides=(1, 1, 1),\npadding=\"valid\",\ndata_format=None,\ndilation_rate=(1, 1, 1),\ngroups=1,\nactivation=None,\nuse_bias=True,\nkernel_initializer=\"glorot_uniform\",\n**kwargs",
+      "important_parameters": [
+        "filters: Integer, dimensionality of the output space.",
+        "kernel_size: Tuple of 3 integers specifying depth, height, and width of 3D window.",
+        "strides: Tuple of 3 integers specifying strides along depth, height, and width.",
+        "padding: \"valid\" or \"same\"."
+      ],
+      "important_params": [
+        "filters: Integer, dimensionality of the output space.",
+        "kernel_size: Tuple of 3 integers specifying depth, height, and width of 3D window.",
+        "strides: Tuple of 3 integers specifying strides along depth, height, and width.",
+        "padding: \"valid\" or \"same\"."
+      ],
+      "return_value": "A 5D tensor with shape (batch, new_depth, new_height, new_width, filters).",
+      "example": "x = tf.random.normal([4, 16, 112, 112, 3])  # (batch, depth/frames, height, width, channels)\nconv3d = tf.keras.layers.Conv3D(filters=32, kernel_size=(3, 3, 3), padding=\"same\", activation=\"relu\")\noutput = conv3d(x)",
+      "snippet": "x = tf.random.normal([4, 16, 112, 112, 3])  # (batch, depth/frames, height, width, channels)\nconv3d = tf.keras.layers.Conv3D(filters=32, kernel_size=(3, 3, 3), padding=\"same\", activation=\"relu\")\noutput = conv3d(x)",
+      "use_when": "> * Processing video clips (temporal stack of 2D images).  \n> * 3D volumetric medical image segmentation (CT/MRI scans).",
+      "avoid_when": "> * Temporal frames can be processed independently via 2D CNN followed by RNN/Transformer.  \n> * Hardware RAM is constrained (3D convolutions consume massive VRAM).",
+      "gotchas": [
+        "5D shape mismatches are common. Ensure channel dimension is placed last under \"channels_last\".",
+        "Substantial memory consumption can lead to GPU Out-Of-Memory (OOM) errors even at small batch sizes."
+      ],
+      "performance_notes": "> * Significantly higher FLOP count and memory bandwidth requirements than 2D convolution. Always tune batch sizes conservatively.",
+      "related_apis": [
+        "tf.keras.layers.Conv3D",
+        "tf.keras.layers.Conv2D",
+        "tf.keras.layers.Conv3DTranspose"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.Conv3D"
+      ],
+      "framework_migration_notes": "tf.keras.layers.Conv3D \u2192 nn.Conv3d",
+      "pytorch_equivalent": "tf.keras.layers.Conv3D \u2192 nn.Conv3d",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.Conv3D \u2192 nn.Conv3d",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "3D Convolution",
+          "Volumetric Convolution"
+        ],
+        "common_search_terms": [
+          "keras conv3d",
+          "video convolution tf",
+          "volumetric conv"
+        ],
+        "search_terms": [
+          "keras conv3d",
+          "video convolution tf",
+          "volumetric conv"
+        ],
+        "keywords": [
+          "conv3d",
+          "video",
+          "volumetric",
+          "mri",
+          "3d-spatial"
+        ],
+        "frequently_confused_with": [
+          "Conv3D vs Conv2D (processing video frame-by-frame)"
+        ],
+        "confused_with": [
+          "Conv3D vs Conv2D (processing video frame-by-frame)"
+        ]
+      },
+      "related_models": [
+        "resnet"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Conv3D",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Conv3D"
+    },
+    {
+      "task": "5. Create Depthwise Convolution (tf.keras.layers.DepthwiseConv2D)",
+      "problem_solved": "Performs spatial convolutions independently over each channel of the input, decoupling spatial filtering from channel projection.",
+      "mental_trigger": "I need to apply spatial filtering without mixing channels to save computation and parameters.",
+      "syntax": "kernel_size,\nstrides=(1, 1),\npadding=\"valid\",\ndepth_multiplier=1,\ndata_format=None,\ndilation_rate=(1, 1),\nactivation=None,\nuse_bias=True,\n**kwargs",
+      "important_parameters": [
+        "kernel_size: An integer or tuple of 2 integers specifying height and width of 2D spatial window.",
+        "depth_multiplier: The number of output channels generated per input channel.",
+        "strides: Stride along height and width.",
+        "padding: \"valid\" or \"same\"."
+      ],
+      "important_params": [
+        "kernel_size: An integer or tuple of 2 integers specifying height and width of 2D spatial window.",
+        "depth_multiplier: The number of output channels generated per input channel.",
+        "strides: Stride along height and width.",
+        "padding: \"valid\" or \"same\"."
+      ],
+      "return_value": "A 4D tensor with shape (batch, new_height, new_width, in_channels * depth_multiplier).",
+      "example": "x = tf.random.normal([8, 64, 64, 32])\ndepth_conv = tf.keras.layers.DepthwiseConv2D(kernel_size=3, padding=\"same\", depth_multiplier=1)\noutput = depth_conv(x)",
+      "snippet": "x = tf.random.normal([8, 64, 64, 32])\ndepth_conv = tf.keras.layers.DepthwiseConv2D(kernel_size=3, padding=\"same\", depth_multiplier=1)\noutput = depth_conv(x)",
+      "use_when": "> * Implementing MobileNet-style efficient lightweight vision architectures.  \n> * Separating spatial feature extraction from channel cross-talk.",
+      "avoid_when": "> * Dense cross-channel feature interactions are required in a single computational pass.",
+      "gotchas": [
+        "Does not accept a filters argument. Output channels are controlled strictly by in_channels * depth_multiplier.",
+        "Higher depth_multiplier values negate parameter efficiency advantages."
+      ],
+      "performance_notes": "> * Low FLOP footprint but can be memory-bandwidth bound on older hardware architectures due to lower operational intensity.",
+      "related_apis": [
+        "tf.keras.layers.DepthwiseConv2D",
+        "tf.keras.layers.SeparableConv2D",
+        "tf.keras.layers.Conv2D"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.DepthwiseConv2D"
+      ],
+      "framework_migration_notes": "tf.keras.layers.DepthwiseConv2D \u2192 nn.Conv2d (with groups=in_channels)",
+      "pytorch_equivalent": "tf.keras.layers.DepthwiseConv2D \u2192 nn.Conv2d (with groups=in_channels)",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.DepthwiseConv2D \u2192 nn.Conv2d (with groups=in_channels)",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Depthwise Convolution",
+          "Channel-wise Conv"
+        ],
+        "common_search_terms": [
+          "DepthwiseConv2D keras",
+          "mobilenet depthwise",
+          "channelwise convolution"
+        ],
+        "search_terms": [
+          "DepthwiseConv2D keras",
+          "mobilenet depthwise",
+          "channelwise convolution"
+        ],
+        "keywords": [
+          "depthwise",
+          "depth_multiplier",
+          "lightweight",
+          "mobilenet"
+        ],
+        "frequently_confused_with": [
+          "DepthwiseConv2D vs SeparableConv2D"
+        ],
+        "confused_with": [
+          "DepthwiseConv2D vs SeparableConv2D"
+        ]
+      },
+      "related_models": [
+        "resnet"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/DepthwiseConv2D",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/DepthwiseConv2D"
+    },
+    {
+      "task": "6. Create Separable Convolution (tf.keras.layers.SeparableConv2D)",
+      "problem_solved": "Executes a depthwise spatial convolution followed by a 1x1 pointwise convolution to drastically reduce parameters and compute cost.",
+      "mental_trigger": "I want a drop-in replacement for Conv2D that uses significantly fewer parameters and operations.",
+      "syntax": "filters,\nkernel_size,\nstrides=(1, 1),\npadding=\"valid\",\ndata_format=None,\ndilation_rate=(1, 1),\ndepth_multiplier=1,\nactivation=None,\nuse_bias=True,\n**kwargs",
+      "important_parameters": [
+        "filters: Integer output dimension for pointwise convolution.",
+        "kernel_size: Size of depthwise spatial kernel.",
+        "depth_multiplier: Number of depthwise channels per input channel.",
+        "padding: \"valid\" or \"same\"."
+      ],
+      "important_params": [
+        "filters: Integer output dimension for pointwise convolution.",
+        "kernel_size: Size of depthwise spatial kernel.",
+        "depth_multiplier: Number of depthwise channels per input channel.",
+        "padding: \"valid\" or \"same\"."
+      ],
+      "return_value": "A 4D tensor with shape (batch, new_height, new_width, filters).",
+      "example": "x = tf.random.normal([8, 128, 128, 16])\nsep_conv = tf.keras.layers.SeparableConv2D(filters=64, kernel_size=3, padding=\"same\")\noutput = sep_conv(x)",
+      "snippet": "x = tf.random.normal([8, 128, 128, 16])\nsep_conv = tf.keras.layers.SeparableConv2D(filters=64, kernel_size=3, padding=\"same\")\noutput = sep_conv(x)",
+      "use_when": "> * Building efficient architectures for mobile or edge deployment (e.g. Xception, MobileNet).  \n> * Replacing heavy Standard 2D Convolutions in deep networks.",
+      "avoid_when": "> * Models are very small and underfitting is the primary concern.",
+      "gotchas": [
+        "Dilation rate greater than 1 is not compatible with strides greater than 1 in depthwise separable layers."
+      ],
+      "performance_notes": "> * Requires significantly fewer multiply-accumulate (MAC) operations compared to standard Conv2D.",
+      "related_apis": [
+        "tf.keras.layers.SeparableConv2D",
+        "tf.keras.layers.DepthwiseConv2D",
+        "tf.keras.layers.Conv2D"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.SeparableConv2D"
+      ],
+      "framework_migration_notes": "tf.keras.layers.SeparableConv2D \u2192 Combination of nn.Conv2d(..., groups=in_channels) and nn.Conv2d(..., kernel_size=1)",
+      "pytorch_equivalent": "tf.keras.layers.SeparableConv2D \u2192 Combination of nn.Conv2d(..., groups=in_channels) and nn.Conv2d(..., kernel_size=1)",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.SeparableConv2D \u2192 Combination of nn.Conv2d(..., groups=in_channels) and nn.Conv2d(..., kernel_size=1)",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Depthwise Separable Convolution"
+        ],
+        "common_search_terms": [
+          "SeparableConv2D keras",
+          "xception layer",
+          "efficient convolution"
+        ],
+        "search_terms": [
+          "SeparableConv2D keras",
+          "xception layer",
+          "efficient convolution"
+        ],
+        "keywords": [
+          "separable",
+          "mobilenet",
+          "xception",
+          "pointwise",
+          "depthwise"
+        ],
+        "frequently_confused_with": [
+          "SeparableConv2D vs Conv2D"
+        ],
+        "confused_with": [
+          "SeparableConv2D vs Conv2D"
+        ]
+      },
+      "related_models": [
+        "resnet"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/SeparableConv2D",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/SeparableConv2D"
+    },
+    {
+      "task": "7. Apply ReLU Activation (tf.keras.layers.ReLU)",
+      "problem_solved": "Applies Rectified Linear Unit activation *f*(*x*)=max(0,*x*) with optional thresholding, max values, and leaky slopes.",
+      "mental_trigger": "I need a standard element-wise non-linear thresholding function zeroing out negative inputs.",
+      "syntax": "max_value=None,\nnegative_slope=0.0,\nthreshold=0.0,\n**kwargs",
+      "important_parameters": [
+        "max_value: Maximum activation value (e.g., 6.0 for ReLU6).",
+        "negative_slope: Slope for negative input values (defaults to 0.0).",
+        "threshold: Threshold value for thresholded activation."
+      ],
+      "important_params": [
+        "max_value: Maximum activation value (e.g., 6.0 for ReLU6).",
+        "negative_slope: Slope for negative input values (defaults to 0.0).",
+        "threshold: Threshold value for thresholded activation."
+      ],
+      "return_value": "Tensor of the same shape and data type as input.",
+      "example": "x = tf.constant([-2.0, -0.5, 0.0, 3.0])\nrelu_layer = tf.keras.layers.ReLU(max_value=6.0)\noutput = relu_layer(x)",
+      "snippet": "x = tf.constant([-2.0, -0.5, 0.0, 3.0])\nrelu_layer = tf.keras.layers.ReLU(max_value=6.0)\noutput = relu_layer(x)",
+      "use_when": "> * Adding non-linearity in standard feedforward and CNN architectures.  \n> * Creating bounded activations like ReLU6 by setting max_value=6.0.",
+      "avoid_when": "> * Deep networks suffer from \"dying ReLU\" issues (use LeakyReLU or GELU).",
+      "gotchas": [
+        "Setting max_value changes non-saturating behavior for inputs above max_value."
+      ],
+      "performance_notes": "> * In-place or low-overhead point-wise kernel operation with minimal compute footprint.",
+      "related_apis": [
+        "tf.keras.layers.ReLU",
+        "tf.keras.activations.relu",
+        "tf.keras.layers.LeakyReLU"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.ReLU"
+      ],
+      "framework_migration_notes": "tf.keras.layers.ReLU \u2192 nn.ReLU",
+      "pytorch_equivalent": "tf.keras.layers.ReLU \u2192 nn.ReLU",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.ReLU \u2192 nn.ReLU",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Rectified Linear Unit",
+          "ReLU6"
+        ],
+        "common_search_terms": [
+          "tf.keras.layers.ReLU",
+          "relu layer keras"
+        ],
+        "search_terms": [
+          "tf.keras.layers.ReLU",
+          "relu layer keras"
+        ],
+        "keywords": [
+          "relu",
+          "activation",
+          "relu6",
+          "threshold"
+        ],
+        "frequently_confused_with": [
+          "ReLU vs LeakyReLU"
+        ],
+        "confused_with": [
+          "ReLU vs LeakyReLU"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "yolo"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/ReLU",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/ReLU"
+    },
+    {
+      "task": "8. Apply Leaky ReLU Activation (tf.keras.layers.LeakyReLU)",
+      "problem_solved": "Allows a small non-zero gradient when input values are negative, preventing dead neuron units during optimization.",
+      "mental_trigger": "I want ReLU activation, but need gradients to flow through negative inputs to prevent dead neurons.",
+      "syntax": "negative_slope=0.2,\n**kwargs",
+      "important_parameters": [
+        "negative_slope: Float parameter controlling the slope for negative inputs (default 0.2)."
+      ],
+      "important_params": [
+        "negative_slope: Float parameter controlling the slope for negative inputs (default 0.2)."
+      ],
+      "return_value": "Tensor of the same shape and type as input.",
+      "example": "x = tf.constant([-2.0, 1.0, 3.0])\nleaky_relu = tf.keras.layers.LeakyReLU(negative_slope=0.1)\noutput = leaky_relu(x)",
+      "snippet": "x = tf.constant([-2.0, 1.0, 3.0])\nleaky_relu = tf.keras.layers.LeakyReLU(negative_slope=0.1)\noutput = leaky_relu(x)",
+      "use_when": "> * Training Generative Adversarial Networks (GANs) or deep CNNs prone to sparse zero gradients.",
+      "avoid_when": "> * Strict zero sparsity is desirable for memory savings or sparse kernel optimizations.",
+      "gotchas": [
+        "Using an excessively large negative_slope makes activation practically linear."
+      ],
+      "performance_notes": "> * Equivalent execution speed to standard ReLU on modern hardware accelerators.",
+      "related_apis": [
+        "tf.keras.layers.LeakyReLU",
+        "tf.keras.layers.ReLU",
+        "tf.keras.layers.PReLU"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.LeakyReLU"
+      ],
+      "framework_migration_notes": "tf.keras.layers.LeakyReLU \u2192 nn.LeakyReLU",
+      "pytorch_equivalent": "tf.keras.layers.LeakyReLU \u2192 nn.LeakyReLU",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.LeakyReLU \u2192 nn.LeakyReLU",
+      "version_compatibility": "In TF 2.x, alpha parameter was renamed to negative_slope for standard consistency across Keras 3.",
+      "search_metadata": {
+        "aliases": [
+          "Leaky Rectified Linear Unit"
+        ],
+        "common_search_terms": [
+          "LeakyReLU keras",
+          "leaky relu activation tf"
+        ],
+        "search_terms": [
+          "LeakyReLU keras",
+          "leaky relu activation tf"
+        ],
+        "keywords": [
+          "leaky_relu",
+          "activation",
+          "alpha",
+          "negative_slope"
+        ],
+        "frequently_confused_with": [
+          "LeakyReLU vs PReLU (PReLU parameters are learnable)"
+        ],
+        "confused_with": [
+          "LeakyReLU vs PReLU (PReLU parameters are learnable)"
+        ]
+      },
+      "related_models": [
+        "yolo"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "object-detection-pipeline"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/LeakyReLU",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/LeakyReLU"
+    },
+    {
+      "task": "9. Apply GELU Activation (tf.keras.activations.gelu)",
+      "problem_solved": "Weights inputs by their percentile value under a Gaussian distribution, providing smooth non-monotonic activation for transformer models.",
+      "mental_trigger": "I need state-of-the-art smooth activation for Transformer blocks (BERT, ViT, GPT).",
+      "syntax": "x,\napproximate=False",
+      "important_parameters": [
+        "x: Input tensor.",
+        "approximate: Boolean, whether to use fast tanh approximation."
+      ],
+      "important_params": [
+        "x: Input tensor.",
+        "approximate: Boolean, whether to use fast tanh approximation."
+      ],
+      "return_value": "Tensor of the same shape and dtype as x.",
+      "example": "x = tf.constant([-1.0, 0.0, 1.0, 2.0])\noutput = tf.keras.activations.gelu(x, approximate=True)",
+      "snippet": "x = tf.constant([-1.0, 0.0, 1.0, 2.0])\noutput = tf.keras.activations.gelu(x, approximate=True)",
+      "use_when": "> * Implementing Transformer models (BERT, RoBERTa, ViT, GPT architecture family).",
+      "avoid_when": "> * Deploying to ultra-low-power microcontrollers without fast transcendental function hardware support.",
+      "gotchas": [
+        "approximate=True is faster and standard in original BERT, but produces slight numerical differences from exact GELU."
+      ],
+      "performance_notes": "> * Setting approximate=True leverages single-pass polynomial/tanh implementations that execute faster on GPU.",
+      "related_apis": [
+        "tf.keras.activations.gelu",
+        "tf.keras.layers.Activation(\"gelu\")",
+        "tf.keras.activations.silu",
+        "tf.keras.layers.Activation"
+      ],
+      "primary_apis": [
+        "tf.keras.activations.gelu",
+        "tf.keras.layers.Activation(\"gelu\")"
+      ],
+      "framework_migration_notes": "tf.keras.activations.gelu \u2192 nn.GELU",
+      "pytorch_equivalent": "tf.keras.activations.gelu \u2192 nn.GELU",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.activations.gelu \u2192 nn.GELU",
+      "version_compatibility": "Supported directly in tf.keras.activations in TF 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Gaussian Error Linear Unit"
+        ],
+        "common_search_terms": [
+          "gelu activation tensorflow",
+          "keras gelu",
+          "transformer activation"
+        ],
+        "search_terms": [
+          "gelu activation tensorflow",
+          "keras gelu",
+          "transformer activation"
+        ],
+        "keywords": [
+          "gelu",
+          "transformer",
+          "gaussian",
+          "approximate"
+        ],
+        "frequently_confused_with": [
+          "GELU vs SiLU"
+        ],
+        "confused_with": [
+          "GELU vs SiLU"
+        ]
+      },
+      "related_models": [
+        "vit",
+        "bert",
+        "roberta",
+        "gpt",
+        "llama"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/activations/gelu",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/activations/gelu"
+    },
+    {
+      "task": "10. Apply SiLU / Swish Activation (tf.keras.activations.silu)",
+      "problem_solved": "Computes *x*\u22c5sigmoid(*x*), providing a smooth, non-monotonic curve with self-gated behavior.",
+      "mental_trigger": "I need Swish/SiLU activation for modern CNN (EfficientNet) or LLM feedforward blocks (LLaMA/Mistral).",
+      "syntax": "tf.keras.activations.silu, tf.keras.activations.swish",
+      "important_parameters": [
+        "x: Input tensor."
+      ],
+      "important_params": [
+        "x: Input tensor."
+      ],
+      "return_value": "Tensor with identical shape and data type as input x.",
+      "example": "x = tf.constant([-2.0, 0.0, 2.0])\noutput = tf.keras.activations.silu(x)",
+      "snippet": "x = tf.constant([-2.0, 0.0, 2.0])\noutput = tf.keras.activations.silu(x)",
+      "use_when": "> * Building modern LLM SwiGLU feedforward networks or EfficientNet CNN architectures.",
+      "avoid_when": "> * Compute cost per node must be minimized down to single cycle operations on low-end hardware.",
+      "gotchas": [
+        "silu and swish are alias functions in Keras; behavior is functionally identical."
+      ],
+      "performance_notes": "> * Requires exponential function calls. Highly optimized when fused into custom CUDA kernels.",
+      "related_apis": [
+        "tf.keras.activations.silu",
+        "tf.keras.activations.swish",
+        "tf.keras.activations.gelu",
+        "tf.keras.activations.sigmoid"
+      ],
+      "primary_apis": [
+        "tf.keras.activations.silu",
+        "tf.keras.activations.swish"
+      ],
+      "framework_migration_notes": "tf.keras.activations.silu \u2192 nn.SiLU or nn.SiLU (Swish)",
+      "pytorch_equivalent": "tf.keras.activations.silu \u2192 nn.SiLU or nn.SiLU (Swish)",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.activations.silu \u2192 nn.SiLU or nn.SiLU (Swish)",
+      "version_compatibility": "Directly exposed in Keras 3 / TF 2.x core activations.",
+      "search_metadata": {
+        "aliases": [
+          "Swish",
+          "Sigmoid Linear Unit"
+        ],
+        "common_search_terms": [
+          "silu tensorflow",
+          "swish activation keras",
+          "swiglu layer"
+        ],
+        "search_terms": [
+          "silu tensorflow",
+          "swish activation keras",
+          "swiglu layer"
+        ],
+        "keywords": [
+          "silu",
+          "swish",
+          "swiglu",
+          "activation",
+          "llama"
+        ],
+        "frequently_confused_with": [
+          "SiLU vs GELU"
+        ],
+        "confused_with": [
+          "SiLU vs GELU"
+        ]
+      },
+      "related_models": [
+        "llama",
+        "qwen",
+        "gemma",
+        "deepseek"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/activations/silu",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/activations/silu"
+    },
+    {
+      "task": "11. Apply Softmax Activation (tf.keras.layers.Softmax)",
+      "problem_solved": "Normalizes a vector of raw logits into a valid probability distribution over mutual classes summing to 1.",
+      "mental_trigger": "I need to convert multi-class output logit scores into valid probabilities along a specified axis.",
+      "syntax": "axis=-1,\n**kwargs",
+      "important_parameters": [
+        "axis: Integer or list/tuple of integers specifying the dimension along which to apply softmax probability normalization."
+      ],
+      "important_params": [
+        "axis: Integer or list/tuple of integers specifying the dimension along which to apply softmax probability normalization."
+      ],
+      "return_value": "Tensor of identical shape to input, with values normalized between [0,1] along specified axis.",
+      "example": "logits = tf.constant([[2.0, 1.0, 0.1]])\nsoftmax_layer = tf.keras.layers.Softmax(axis=-1)\nprobs = softmax_layer(logits)",
+      "snippet": "logits = tf.constant([[2.0, 1.0, 0.1]])\nsoftmax_layer = tf.keras.layers.Softmax(axis=-1)\nprobs = softmax_layer(logits)",
+      "use_when": "> * Formatting final multi-class classification model outputs for inference.  \n> * Computing attention weight maps across key sequence length.",
+      "avoid_when": "> * Computing training loss via CategoricalCrossentropy(from_logits=True) (losses are numerically safer when receiving raw logits directly).",
+      "gotchas": [
+        "Applying Softmax prior to cross-entropy loss with from_logits=True creates redundant exponentiations and numerical instability."
+      ],
+      "performance_notes": "> * Subtracts maximum value along axis internally prior to exponentiation to guarantee numerical stability against overflow.",
+      "related_apis": [
+        "tf.keras.layers.Softmax",
+        "tf.keras.activations.softmax",
+        "tf.nn.softmax"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.Softmax"
+      ],
+      "framework_migration_notes": "tf.keras.layers.Softmax \u2192 nn.Softmax",
+      "pytorch_equivalent": "tf.keras.layers.Softmax \u2192 nn.Softmax",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.Softmax \u2192 nn.Softmax",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Softmax normalization"
+        ],
+        "common_search_terms": [
+          "tf.keras.layers.Softmax",
+          "softmax axis keras",
+          "probabilities output"
+        ],
+        "search_terms": [
+          "tf.keras.layers.Softmax",
+          "softmax axis keras",
+          "probabilities output"
+        ],
+        "keywords": [
+          "softmax",
+          "probabilities",
+          "classification",
+          "axis"
+        ],
+        "frequently_confused_with": [
+          "Softmax layer vs Loss from_logits=True"
+        ],
+        "confused_with": [
+          "Softmax layer vs Loss from_logits=True"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert",
+        "gpt"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Softmax",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Softmax"
+    },
+    {
+      "task": "12. Apply Activation Layer (tf.keras.layers.Activation)",
+      "problem_solved": "Wraps a string-named activation function or callable into a explicit Keras Layer instance.",
+      "mental_trigger": "I need to apply an activation function as an independent, modular layer component in Functional/Sequential models.",
+      "syntax": "activation,\n**kwargs",
+      "important_parameters": [
+        "activation: String identifier (e.g. \"relu\", \"gelu\", \"silu\") or callable activation function."
+      ],
+      "important_params": [
+        "activation: String identifier (e.g. \"relu\", \"gelu\", \"silu\") or callable activation function."
+      ],
+      "return_value": "Tensor of identical shape and type as input.",
+      "example": "x = tf.constant([-1.0, 2.0])\nact_layer = tf.keras.layers.Activation(\"relu\")",
+      "snippet": "x = tf.constant([-1.0, 2.0])\nact_layer = tf.keras.layers.Activation(\"relu\")",
+      "use_when": "> * Inserting activations between operations like BatchNormalization and Conv2D (e.g., Conv -\\> BatchNorm -\\> Activation).  \n> * Decoupling activation definitions from layer parameter definitions for clean graph inspection.",
+      "avoid_when": "> * Activation can be directly specified within layer constructors like Dense(64, activation=\"relu\") without needing intermediate normalization.",
+      "gotchas": [
+        "Passing string names for custom activation functions requires registering them via @tf.keras.utils.register_keras_serializable."
+      ],
+      "performance_notes": "> * Zero overhead overhead added over applying functional activations directly.",
+      "related_apis": [
+        "tf.keras.layers.Activation",
+        "tf.keras.activations.get",
+        "tf.keras.layers.ReLU"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.Activation"
+      ],
+      "framework_migration_notes": "tf.keras.layers.Activation(\"relu\") \u2192 nn.ReLU()",
+      "pytorch_equivalent": "tf.keras.layers.Activation(\"relu\") \u2192 nn.ReLU()",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.Activation(\"relu\") \u2192 nn.ReLU()",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Generic Activation Layer"
+        ],
+        "common_search_terms": [
+          "keras Activation layer",
+          "activation string keras"
+        ],
+        "search_terms": [
+          "keras Activation layer",
+          "activation string keras"
+        ],
+        "keywords": [
+          "activation",
+          "layer",
+          "functional",
+          "wrapper"
+        ],
+        "frequently_confused_with": [
+          "Layer(activation=...) parameter vs Activation layer"
+        ],
+        "confused_with": [
+          "Layer(activation=...) parameter vs Activation layer"
+        ]
+      },
+      "related_models": [
+        "resnet"
+      ],
+      "related_patterns": [
+        "feature-fusion"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Activation",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Activation"
+    },
+    {
+      "task": "13. Apply Max Pooling (tf.keras.layers.MaxPooling2D)",
+      "problem_solved": "Downsamples spatial input dimensions by taking the maximum value across receptive patches, offering translation invariance.",
+      "mental_trigger": "I need to downsample spatial feature maps by selecting prominent feature peaks within local regions.",
+      "syntax": "pool_size=(2, 2),\nstrides=None,\npadding=\"valid\",\ndata_format=None,\n**kwargs",
+      "important_parameters": [
+        "pool_size: Integer or tuple of 2 integers, window size to take maximum over.",
+        "strides: Integer, tuple, or None. If None, defaults to pool_size.",
+        "padding: \"valid\" or \"same\"."
+      ],
+      "important_params": [
+        "pool_size: Integer or tuple of 2 integers, window size to take maximum over.",
+        "strides: Integer, tuple, or None. If None, defaults to pool_size.",
+        "padding: \"valid\" or \"same\"."
+      ],
+      "return_value": "4D Tensor with downsampled spatial dimensions (*Hout*\u200b,*Wout*\u200b).",
+      "example": "x = tf.random.normal([4, 32, 32, 64])\nmax_pool = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))\noutput = max_pool(x)",
+      "snippet": "x = tf.random.normal([4, 32, 32, 64])\nmax_pool = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))\noutput = max_pool(x)",
+      "use_when": "> * Reducing feature map resolution and parameter count in convolutional neural networks.  \n> * Inducing spatial translation invariance.",
+      "avoid_when": "> * Precise pixel spatial location information is required (e.g., dense semantic segmentation models).",
+      "gotchas": [
+        "Default strides equals pool_size, which differs from Conv2D default stride of (1,1)."
+      ],
+      "performance_notes": "> * Executes very quickly on GPU; non-learnable parameters mean zero weight memory overhead.",
+      "related_apis": [
+        "tf.keras.layers.MaxPooling2D",
+        "tf.keras.layers.AveragePooling2D",
+        "tf.keras.layers.GlobalMaxPooling2D"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.MaxPooling2D"
+      ],
+      "framework_migration_notes": "tf.keras.layers.MaxPooling2D \u2192 nn.MaxPool2d",
+      "pytorch_equivalent": "tf.keras.layers.MaxPooling2D \u2192 nn.MaxPool2d",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.MaxPooling2D \u2192 nn.MaxPool2d",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Max Pooling 2D",
+          "Spatial Max Pool"
+        ],
+        "common_search_terms": [
+          "MaxPooling2D keras",
+          "max pooling image",
+          "downsample convnet"
+        ],
+        "search_terms": [
+          "MaxPooling2D keras",
+          "max pooling image",
+          "downsample convnet"
+        ],
+        "keywords": [
+          "maxpooling",
+          "spatial",
+          "downsample",
+          "pool_size"
+        ],
+        "frequently_confused_with": [
+          "MaxPooling2D vs AveragePooling2D"
+        ],
+        "confused_with": [
+          "MaxPooling2D vs AveragePooling2D"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "yolo"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/MaxPooling2D",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/MaxPooling2D"
+    },
+    {
+      "task": "14. Apply Average Pooling (tf.keras.layers.AveragePooling2D)",
+      "problem_solved": "Downsamples spatial inputs by calculating the average value within a local sliding window.",
+      "mental_trigger": "I want smooth spatial downsampling that preserves background contextual energy rather than taking extreme peaks.",
+      "syntax": "pool_size=(2, 2),\nstrides=None,\npadding=\"valid\",\ndata_format=None,\n**kwargs",
+      "important_parameters": [
+        "pool_size: Window dimensions (*H*,*W*).",
+        "strides: Stride step size. Defaults to pool_size.",
+        "padding: \"valid\" or \"same\"."
+      ],
+      "important_params": [
+        "pool_size: Window dimensions (*H*,*W*).",
+        "strides: Stride step size. Defaults to pool_size.",
+        "padding: \"valid\" or \"same\"."
+      ],
+      "return_value": "4D downsampled spatial tensor.",
+      "example": "x = tf.random.normal([2, 28, 28, 16])\navg_pool = tf.keras.layers.AveragePooling2D(pool_size=(2, 2))\noutput = avg_pool(x)",
+      "snippet": "x = tf.random.normal([2, 28, 28, 16])\navg_pool = tf.keras.layers.AveragePooling2D(pool_size=(2, 2))\noutput = avg_pool(x)",
+      "use_when": "> * Downsampling feature maps smoothly in deeper vision networks or inception modules.",
+      "avoid_when": "> * Preserving sparse sharp features/edges is critical (use MaxPooling2D).",
+      "gotchas": [
+        "Zero padding with \"same\" can distort border averages by factoring padded zeros into calculations."
+      ],
+      "performance_notes": "> * Highly optimized, no trainable parameters.",
+      "related_apis": [
+        "tf.keras.layers.AveragePooling2D",
+        "tf.keras.layers.MaxPooling2D",
+        "tf.keras.layers.GlobalAveragePooling2D"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.AveragePooling2D"
+      ],
+      "framework_migration_notes": "tf.keras.layers.AveragePooling2D \u2192 nn.AvgPool2d",
+      "pytorch_equivalent": "tf.keras.layers.AveragePooling2D \u2192 nn.AvgPool2d",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.AveragePooling2D \u2192 nn.AvgPool2d",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "AvgPool 2D",
+          "Spatial Average Pool"
+        ],
+        "common_search_terms": [
+          "AveragePooling2D keras",
+          "avg pool layer tf"
+        ],
+        "search_terms": [
+          "AveragePooling2D keras",
+          "avg pool layer tf"
+        ],
+        "keywords": [
+          "avgpooling",
+          "smooth",
+          "downsample",
+          "pool_size"
+        ],
+        "frequently_confused_with": [
+          "AveragePooling2D vs GlobalAveragePooling2D"
+        ],
+        "confused_with": [
+          "AveragePooling2D vs GlobalAveragePooling2D"
+        ]
+      },
+      "related_models": [
+        "resnet"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/AveragePooling2D",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/AveragePooling2D"
+    },
+    {
+      "task": "15. Apply Global Average Pooling (tf.keras.layers.GlobalAveragePooling2D)",
+      "problem_solved": "Collapses spatial dimensions (*H*\u00d7*W*) by computing the mean of each channel across all spatial locations.",
+      "mental_trigger": "I need to convert spatial feature maps directly into a 1D channel descriptor vector before the final classification head.",
+      "syntax": "data_format=None,\nkeepdims=False,\n**kwargs",
+      "important_parameters": [
+        "keepdims: Boolean, whether to keep spatial axes with length 1 (True) or drop them (False, default).",
+        "data_format: \"channels_last\" or \"channels_first\"."
+      ],
+      "important_params": [
+        "keepdims: Boolean, whether to keep spatial axes with length 1 (True) or drop them (False, default).",
+        "data_format: \"channels_last\" or \"channels_first\"."
+      ],
+      "return_value": "2D tensor of shape (batch, channels) if keepdims=False, or 4D tensor (batch, 1, 1, channels) if keepdims=True.",
+      "example": "x = tf.random.normal([4, 7, 7, 512])\ngap = tf.keras.layers.GlobalAveragePooling2D()\noutput = gap(x)",
+      "snippet": "x = tf.random.normal([4, 7, 7, 512])\ngap = tf.keras.layers.GlobalAveragePooling2D()\noutput = gap(x)",
+      "use_when": "> * Transitioning from convolutional backbones to classifier head layers without using parameter-heavy Flatten operations.",
+      "avoid_when": "> * Spatial position encoding matters directly in downstream tasks.",
+      "gotchas": [
+        "Using Flatten() instead of GlobalAveragePooling2D prior to Dense layers exponentially inflates parameter counts on variable image sizes."
+      ],
+      "performance_notes": "> * Reduces parameters massively compared to standard flattened dense connections. Fast execution.",
+      "related_apis": [
+        "tf.keras.layers.GlobalAveragePooling2D",
+        "tf.keras.layers.GlobalMaxPooling2D",
+        "tf.keras.layers.Flatten"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.GlobalAveragePooling2D"
+      ],
+      "framework_migration_notes": "tf.keras.layers.GlobalAveragePooling2D \u2192 nn.AdaptiveAvgPool2d((1, 1)) followed by torch.flatten",
+      "pytorch_equivalent": "tf.keras.layers.GlobalAveragePooling2D \u2192 nn.AdaptiveAvgPool2d((1, 1)) followed by torch.flatten",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.GlobalAveragePooling2D \u2192 nn.AdaptiveAvgPool2d((1, 1)) followed by torch.flatten",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "GAP layer",
+          "Global Avg Pool"
+        ],
+        "common_search_terms": [
+          "GlobalAveragePooling2D keras",
+          "gap layer resnet",
+          "collapse spatial dimensions"
+        ],
+        "search_terms": [
+          "GlobalAveragePooling2D keras",
+          "gap layer resnet",
+          "collapse spatial dimensions"
+        ],
+        "keywords": [
+          "gap",
+          "global_average_pooling",
+          "spatial_collapse",
+          "classification_head"
+        ],
+        "frequently_confused_with": [
+          "GlobalAveragePooling2D vs Flatten"
+        ],
+        "confused_with": [
+          "GlobalAveragePooling2D vs Flatten"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/GlobalAveragePooling2D",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/GlobalAveragePooling2D"
+    },
+    {
+      "task": "16. Apply Global Max Pooling (tf.keras.layers.GlobalMaxPooling2D)",
+      "problem_solved": "Extracts the maximum feature value across spatial dimensions per channel, yielding a global summary feature vector.",
+      "mental_trigger": "I want to take the single strongest feature activation across the entire spatial grid for each channel.",
+      "syntax": "data_format=None,\nkeepdims=False,\n**kwargs",
+      "important_parameters": [
+        "keepdims: Boolean, whether to retain spatial dimensions with value 1.",
+        "data_format: \"channels_last\" or \"channels_first\"."
+      ],
+      "important_params": [
+        "keepdims: Boolean, whether to retain spatial dimensions with value 1.",
+        "data_format: \"channels_last\" or \"channels_first\"."
+      ],
+      "return_value": "2D tensor (batch, channels) or 4D tensor (batch, 1, 1, channels).",
+      "example": "x = tf.random.normal([2, 14, 14, 256])\ngmp = tf.keras.layers.GlobalMaxPooling2D()\noutput = gmp(x)",
+      "snippet": "x = tf.random.normal([2, 14, 14, 256])\ngmp = tf.keras.layers.GlobalMaxPooling2D()\noutput = gmp(x)",
+      "use_when": "> * Identifying key activation presence across spatial locations in vision or keyword detection tasks.",
+      "avoid_when": "> * Distributed background statistics are needed to represent spatial distributions (use GlobalAveragePooling2D).",
+      "gotchas": [
+        "Highly sensitive to noise or single-pixel extreme activations."
+      ],
+      "performance_notes": "> * Lightweight execution; eliminates fully connected parameter overhead.",
+      "related_apis": [
+        "tf.keras.layers.GlobalMaxPooling2D",
+        "tf.keras.layers.GlobalAveragePooling2D",
+        "tf.keras.layers.MaxPooling2D"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.GlobalMaxPooling2D"
+      ],
+      "framework_migration_notes": "tf.keras.layers.GlobalMaxPooling2D \u2192 nn.AdaptiveMaxPool2d((1, 1)) followed by flattening",
+      "pytorch_equivalent": "tf.keras.layers.GlobalMaxPooling2D \u2192 nn.AdaptiveMaxPool2d((1, 1)) followed by flattening",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.GlobalMaxPooling2D \u2192 nn.AdaptiveMaxPool2d((1, 1)) followed by flattening",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "GMP layer",
+          "Global Max Pool"
+        ],
+        "common_search_terms": [
+          "GlobalMaxPooling2D keras",
+          "gmp layer",
+          "max spatial feature"
+        ],
+        "search_terms": [
+          "GlobalMaxPooling2D keras",
+          "gmp layer",
+          "max spatial feature"
+        ],
+        "keywords": [
+          "gmp",
+          "global_max_pooling",
+          "peak_activation"
+        ],
+        "frequently_confused_with": [
+          "GlobalMaxPooling2D vs GlobalAveragePooling2D"
+        ],
+        "confused_with": [
+          "GlobalMaxPooling2D vs GlobalAveragePooling2D"
+        ]
+      },
+      "related_models": [
+        "resnet"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/GlobalMaxPooling2D",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/GlobalMaxPooling2D"
+    },
+    {
+      "task": "17. Apply Batch Normalization (tf.keras.layers.BatchNormalization)",
+      "problem_solved": "Normalizes layer activations across the batch dimension to mean 0 and variance 1, stabilizing training speed and capacity.",
+      "mental_trigger": "I need to stabilize layer input distributions across batch instances during deep CNN training.",
+      "syntax": "axis=-1,\nmomentum=0.99,\nepsilon=0.001,\ncenter=True,\nscale=True,\nbeta_initializer=\"zeros\",\ngamma_initializer=\"ones\",\nmoving_mean_initializer=\"zeros\",\nmoving_variance_initializer=\"ones\",\ntrainable=True,\n**kwargs",
+      "important_parameters": [
+        "axis: Integer specifying channel normalization axis (typically -1 for channels_last).",
+        "momentum: Momentum for the moving mean and moving variance computation.",
+        "epsilon: Small float added to variance to avoid dividing by zero.",
+        "center: If True, add learnable offset beta.",
+        "scale: If True, multiply by learnable scale gamma."
+      ],
+      "important_params": [
+        "axis: Integer specifying channel normalization axis (typically -1 for channels_last).",
+        "momentum: Momentum for the moving mean and moving variance computation.",
+        "epsilon: Small float added to variance to avoid dividing by zero.",
+        "center: If True, add learnable offset beta.",
+        "scale: If True, multiply by learnable scale gamma."
+      ],
+      "return_value": "Normalized tensor with identical shape as input.",
+      "example": "x = tf.random.normal([16, 32, 32, 64])\nbn = tf.keras.layers.BatchNormalization()\n# During training, training=True updates moving averages\noutput = bn(x, training=True)",
+      "snippet": "x = tf.random.normal([16, 32, 32, 64])\nbn = tf.keras.layers.BatchNormalization()\n# During training, training=True updates moving averages\noutput = bn(x, training=True)",
+      "use_when": "> * Training deep Convolutional Neural Networks.  \n> * Accelerating convergence and reducing sensitivity to weight initialization.",
+      "avoid_when": "> * Batch sizes are extremely small (\\<8), which introduces noisy mean and variance estimates (use LayerNormalization or GroupNormalization).  \n> * Working with variable sequence lengths in NLP or recurrent architectures.",
+      "gotchas": [
+        "Forgetting to explicitly pass training=True during custom training loops causes moving average statistics not to update.",
+        "Freezing a BatchNormalization layer (layer.trainable \\= False) keeps moving mean/variance static, but behavior when called with training=True requires caution."
+      ],
+      "performance_notes": "> * Fused BatchNorm kernels operate with high performance on CUDA-enabled GPUs when using standard layout defaults (axis=-1 or axis=1).",
+      "related_apis": [
+        "tf.keras.layers.BatchNormalization",
+        "tf.keras.layers.LayerNormalization",
+        "tf.keras.layers.GroupNormalization"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.BatchNormalization"
+      ],
+      "framework_migration_notes": "tf.keras.layers.BatchNormalization \u2192 nn.BatchNorm2d / nn.BatchNorm1d",
+      "pytorch_equivalent": "tf.keras.layers.BatchNormalization \u2192 nn.BatchNorm2d / nn.BatchNorm1d",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.BatchNormalization \u2192 nn.BatchNorm2d / nn.BatchNorm1d",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "BatchNorm",
+          "BN Layer"
+        ],
+        "common_search_terms": [
+          "BatchNormalization keras",
+          "training=True batchnorm",
+          "bn moving average"
+        ],
+        "search_terms": [
+          "BatchNormalization keras",
+          "training=True batchnorm",
+          "bn moving average"
+        ],
+        "keywords": [
+          "batchnorm",
+          "normalization",
+          "momentum",
+          "epsilon",
+          "moving_mean"
+        ],
+        "frequently_confused_with": [
+          "BatchNormalization vs LayerNormalization"
+        ],
+        "confused_with": [
+          "BatchNormalization vs LayerNormalization"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "yolo"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/BatchNormalization",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/BatchNormalization"
+    },
+    {
+      "task": "18. Apply Layer Normalization (tf.keras.layers.LayerNormalization)",
+      "problem_solved": "Normalizes features across channels/features independently for each single data sample, eliminating batch-size dependencies.",
+      "mental_trigger": "I need batch-independent feature normalization for Transformer or RNN models.",
+      "syntax": "axis=-1,\nepsilon=0.001,\ncenter=True,\nscale=True,\nbeta_initializer=\"zeros\",\ngamma_initializer=\"ones\",\n**kwargs",
+      "important_parameters": [
+        "axis: Integer or List/Tuple of integers over which calculation happens (typically -1 for sequence features).",
+        "epsilon: Small float added to variance to prevent division by zero.",
+        "center: Boolean to learn shift parameter beta.",
+        "scale: Boolean to learn scale parameter gamma."
+      ],
+      "important_params": [
+        "axis: Integer or List/Tuple of integers over which calculation happens (typically -1 for sequence features).",
+        "epsilon: Small float added to variance to prevent division by zero.",
+        "center: Boolean to learn shift parameter beta.",
+        "scale: Boolean to learn scale parameter gamma."
+      ],
+      "return_value": "Normalized output tensor with shape matching input.",
+      "example": "x = tf.random.normal([8, 50, 768])  # (batch, seq_len, hidden_dim)\nln = tf.keras.layers.LayerNormalization(axis=-1)\noutput = ln(x)",
+      "snippet": "x = tf.random.normal([8, 50, 768])  # (batch, seq_len, hidden_dim)\nln = tf.keras.layers.LayerNormalization(axis=-1)\noutput = ln(x)",
+      "use_when": "> * Building Transformer encoders, decoders, and multi-head attention networks.  \n> * Normalizing recurrent networks or sequence models with varying batch sizes.",
+      "avoid_when": "> * Training standard deep CNNs with medium-to-large batch sizes (where BatchNormalization generally performs better).",
+      "gotchas": [
+        "Axis parameter default is -1. If applied to 4D image tensors without specifying spatial dimensions, normalization only occurs over channels."
+      ],
+      "performance_notes": "> * Independent per-sample calculation means identical execution during training and inference without tracking moving statistics.",
+      "related_apis": [
+        "tf.keras.layers.LayerNormalization",
+        "tf.keras.layers.BatchNormalization",
+        "tf.keras.layers.GroupNormalization"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.LayerNormalization"
+      ],
+      "framework_migration_notes": "tf.keras.layers.LayerNormalization \u2192 nn.LayerNorm",
+      "pytorch_equivalent": "tf.keras.layers.LayerNormalization \u2192 nn.LayerNorm",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.LayerNormalization \u2192 nn.LayerNorm",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "LayerNorm",
+          "LN Layer"
+        ],
+        "common_search_terms": [
+          "LayerNormalization keras",
+          "transformer layernorm",
+          "layernorm axis"
+        ],
+        "search_terms": [
+          "LayerNormalization keras",
+          "transformer layernorm",
+          "layernorm axis"
+        ],
+        "keywords": [
+          "layernorm",
+          "normalization",
+          "transformer",
+          "sequence",
+          "scale"
+        ],
+        "frequently_confused_with": [
+          "LayerNormalization vs BatchNormalization"
+        ],
+        "confused_with": [
+          "LayerNormalization vs BatchNormalization"
+        ]
+      },
+      "related_models": [
+        "vit",
+        "bert",
+        "roberta",
+        "t5",
+        "gpt",
+        "llama"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/LayerNormalization",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/LayerNormalization"
+    },
+    {
+      "task": "19. Apply Group Normalization (tf.keras.layers.GroupNormalization)",
+      "problem_solved": "Divides channels into specified groups and normalizes features within each group per sample, providing batch-size independent vision normalization.",
+      "mental_trigger": "I need vision normalization that stays stable even when batch size is forced to 1 or 2 (e.g. object detection/segmentation).",
+      "syntax": "groups=32,\naxis=-1,\nepsilon=0.001,\ncenter=True,\nscale=True,\nbeta_initializer=\"zeros\",\ngamma_initializer=\"ones\",\n**kwargs",
+      "important_parameters": [
+        "groups: Integer specifying the number of groups to split the channel dimension into.",
+        "axis: Integer, channel dimension axis. Defaults to -1.",
+        "epsilon: Small float added to variance to prevent division by zero."
+      ],
+      "important_params": [
+        "groups: Integer specifying the number of groups to split the channel dimension into.",
+        "axis: Integer, channel dimension axis. Defaults to -1.",
+        "epsilon: Small float added to variance to prevent division by zero."
+      ],
+      "return_value": "Tensor matching input shape.",
+      "example": "x = tf.random.normal([2, 128, 128, 64])  # Small batch size of 2\ngn = tf.keras.layers.GroupNormalization(groups=16, axis=-1)\noutput = gn(x)",
+      "snippet": "x = tf.random.normal([2, 128, 128, 64])  # Small batch size of 2\ngn = tf.keras.layers.GroupNormalization(groups=16, axis=-1)\noutput = gn(x)",
+      "use_when": "> * Training visual recognition models with tiny batch sizes due to high-resolution images or high GPU RAM pressure.",
+      "avoid_when": "> * Channel count is not evenly divisible by the specified groups argument.",
+      "gotchas": [
+        "Ensure total channels are divisible by groups; otherwise an exception will be thrown during build time."
+      ],
+      "performance_notes": "> * Slightly higher compute overhead than standard Batch Normalization due to channel grouping steps, but invariant to batch size changes.",
+      "related_apis": [
+        "tf.keras.layers.GroupNormalization",
+        "tf.keras.layers.LayerNormalization",
+        "tf.keras.layers.BatchNormalization"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.GroupNormalization"
+      ],
+      "framework_migration_notes": "tf.keras.layers.GroupNormalization \u2192 nn.GroupNorm",
+      "pytorch_equivalent": "tf.keras.layers.GroupNormalization \u2192 nn.GroupNorm",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.GroupNormalization \u2192 nn.GroupNorm",
+      "version_compatibility": "Natively included inside core tf.keras.layers in TensorFlow 2.x / Keras 3.",
+      "search_metadata": {
+        "aliases": [
+          "GroupNorm",
+          "GN Layer"
+        ],
+        "common_search_terms": [
+          "GroupNormalization keras",
+          "small batch size normalization",
+          "groupnorm channels"
+        ],
+        "search_terms": [
+          "GroupNormalization keras",
+          "small batch size normalization",
+          "groupnorm channels"
+        ],
+        "keywords": [
+          "groupnorm",
+          "groups",
+          "normalization",
+          "channels",
+          "object_detection"
+        ],
+        "frequently_confused_with": [
+          "GroupNormalization vs InstanceNormalization"
+        ],
+        "confused_with": [
+          "GroupNormalization vs InstanceNormalization"
+        ]
+      },
+      "related_models": [
+        "yolo",
+        "resnet"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "object-detection-pipeline",
+        "semantic-segmentation-pipeline"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/GroupNormalization",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/GroupNormalization"
+    },
+    {
+      "task": "20. Apply Unit Normalization (tf.keras.layers.UnitNormalization)",
+      "problem_solved": "Normalizes individual sample vectors to unit L2 norm along a designated dimension.",
+      "mental_trigger": "I need to normalize vectors onto a unit hypersphere (L2 norm \\= 1) for cosine distance or vector embeddings.",
+      "syntax": "axis=-1,\n**kwargs",
+      "important_parameters": [
+        "axis: Integer or list/tuple of integers specifying axis along which vector standard L2 normalization occurs."
+      ],
+      "important_params": [
+        "axis: Integer or list/tuple of integers specifying axis along which vector standard L2 normalization occurs."
+      ],
+      "return_value": "Tensor with the same shape as input where vectors along axis have an L2 norm of 1.",
+      "example": "x = tf.constant([[3.0, 4.0], [1.0, 1.0]])\nunit_norm = tf.keras.layers.UnitNormalization(axis=-1)\noutput = unit_norm(x)\nprint(output.numpy())\n# [[0.6 0.8]",
+      "snippet": "x = tf.constant([[3.0, 4.0], [1.0, 1.0]])\nunit_norm = tf.keras.layers.UnitNormalization(axis=-1)\noutput = unit_norm(x)\nprint(output.numpy())\n# [[0.6 0.8]",
+      "use_when": "> * Generating embedding representations where cosine similarity is evaluated directly via dot products.  \n> * Contrastive representation learning paradigms (e.g. SimCLR, CLIP heads).",
+      "avoid_when": "> * Vector magnitudes carry meaningful semantic feature scaling information.",
+      "gotchas": [
+        "Division by zero is avoided via internal epsilon, but passing all-zero input vectors results in zero vector output."
+      ],
+      "performance_notes": "> * Extremely fast vector operation.",
+      "related_apis": [
+        "tf.keras.layers.UnitNormalization",
+        "tf.math.l2_normalize",
+        "tf.keras.layers.LayerNormalization"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.UnitNormalization"
+      ],
+      "framework_migration_notes": "tf.keras.layers.UnitNormalization \u2192 nn.functional.normalize(x, p=2, dim=...)",
+      "pytorch_equivalent": "tf.keras.layers.UnitNormalization \u2192 nn.functional.normalize(x, p=2, dim=...)",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.UnitNormalization \u2192 nn.functional.normalize(x, p=2, dim=...)",
+      "version_compatibility": "Natively included in TF 2.x / Keras 3 layers.",
+      "search_metadata": {
+        "aliases": [
+          "L2 Normalization Layer",
+          "Sphere projection"
+        ],
+        "common_search_terms": [
+          "UnitNormalization keras",
+          "l2 normalize layer",
+          "cosine embeddings tf"
+        ],
+        "search_terms": [
+          "UnitNormalization keras",
+          "l2 normalize layer",
+          "cosine embeddings tf"
+        ],
+        "keywords": [
+          "unit_normalization",
+          "l2_norm",
+          "embeddings",
+          "cosine_similarity"
+        ],
+        "frequently_confused_with": [
+          "UnitNormalization vs LayerNormalization"
+        ],
+        "confused_with": [
+          "UnitNormalization vs LayerNormalization"
+        ]
+      },
+      "related_models": [
+        "bert"
+      ],
+      "related_patterns": [
+        "feature-fusion"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/UnitNormalization",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/UnitNormalization"
+    },
+    {
+      "task": "21. Apply Dropout (tf.keras.layers.Dropout)",
+      "problem_solved": "Randomly sets input units to 0 with frequency rate during training to prevent parameter co-adaptation and overfitting.",
+      "mental_trigger": "I need a stochastic regularizer during training to prevent model overfitting.",
+      "syntax": "rate,\nnoise_shape=None,\nseed=None,\n**kwargs",
+      "important_parameters": [
+        "rate: Float between 0 and 1, fraction of input units dropped.",
+        "noise_shape: 1D integer tensor representing shape of binary dropout mask.",
+        "seed: Integer, random seed."
+      ],
+      "important_params": [
+        "rate: Float between 0 and 1, fraction of input units dropped.",
+        "noise_shape: 1D integer tensor representing shape of binary dropout mask.",
+        "seed: Integer, random seed."
+      ],
+      "return_value": "Tensor with identical shape as input, scaled by 1/(1\u2212rate) during training.",
+      "example": "x = tf.ones([2, 5])\ndropout = tf.keras.layers.Dropout(rate=0.5)\n# Active during training\ntrain_out = dropout(x, training=True)\n# Inactive during inference\neval_out = dropout(x, training=False)\nprint(\"Train:\\n\", train_out.numpy())",
+      "snippet": "x = tf.ones([2, 5])\ndropout = tf.keras.layers.Dropout(rate=0.5)\n# Active during training\ntrain_out = dropout(x, training=True)\n# Inactive during inference\neval_out = dropout(x, training=False)\nprint(\"Train:\\n\", train_out.numpy())",
+      "use_when": "> * Regularizing Dense or Transformer layers to mitigate overfitting on limited data.",
+      "avoid_when": "> * Applying across spatial dimensions of Convolutional layers without spatial masking (use SpatialDropout2D instead).",
+      "gotchas": [
+        "Dropout is automatically deactivated when training=False. In custom loops, failing to pass training=True disables dropout.",
+        "Scales remaining elements by 1/(1\u2212*p*) automatically during training so inference evaluation requires zero weight modification."
+      ],
+      "performance_notes": "> * Highly optimized, no trainable parameters. Negligible overhead during evaluation because it becomes an identity pass-through.",
+      "related_apis": [
+        "tf.keras.layers.Dropout",
+        "tf.keras.layers.SpatialDropout2D",
+        "tf.keras.layers.AlphaDropout"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.Dropout"
+      ],
+      "framework_migration_notes": "tf.keras.layers.Dropout \u2192 nn.Dropout",
+      "pytorch_equivalent": "tf.keras.layers.Dropout \u2192 nn.Dropout",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.Dropout \u2192 nn.Dropout",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Stochastic Dropout",
+          "Regularization"
+        ],
+        "common_search_terms": [
+          "Dropout keras",
+          "tf.keras.layers.Dropout",
+          "training parameter dropout"
+        ],
+        "search_terms": [
+          "Dropout keras",
+          "tf.keras.layers.Dropout",
+          "training parameter dropout"
+        ],
+        "keywords": [
+          "dropout",
+          "rate",
+          "regularization",
+          "training",
+          "noise_shape"
+        ],
+        "frequently_confused_with": [
+          "Dropout vs SpatialDropout2D"
+        ],
+        "confused_with": [
+          "Dropout vs SpatialDropout2D"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "gpt"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Dropout",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Dropout"
+    },
+    {
+      "task": "22. Merge Feature Tensors (Add, Concatenate, Multiply, Average)",
+      "problem_solved": "Combines multiple incoming feature tensors via element-wise operations or channel dimension concatenation.",
+      "mental_trigger": "I need to merge multiple branch outputs in a residual block, skip-connection, or multi-modal network.",
+      "syntax": "tf.keras.layers.Concatenate(axis=-1, **kwargs)(inputs)\ntf.keras.layers.Multiply(**kwargs)(inputs)",
+      "important_parameters": [
+        "inputs: List of input tensors (must be same shape for Add, Multiply, Average).",
+        "axis: Dimension index to concatenate along for Concatenate (defaults to -1)."
+      ],
+      "important_params": [
+        "inputs: List of input tensors (must be same shape for Add, Multiply, Average).",
+        "axis: Dimension index to concatenate along for Concatenate (defaults to -1)."
+      ],
+      "return_value": "A single merged output tensor.",
+      "example": "x1 = tf.random.normal([4, 16])\nx2 = tf.random.normal([4, 16])\n\n# Element-wise addition (e.g. ResNet residual connection)\nadded = tf.keras.layers.Add()([x1, x2])\n\n# Channel/feature concatenation (e.g. U-Net skip connection)\nconcat = tf.keras.layers.Concatenate(axis=-1)([x1, x2])\n\nprint(added.shape)   # (4, 16)",
+      "snippet": "x1 = tf.random.normal([4, 16])\nx2 = tf.random.normal([4, 16])\n\n# Element-wise addition (e.g. ResNet residual connection)\nadded = tf.keras.layers.Add()([x1, x2])\n\n# Channel/feature concatenation (e.g. U-Net skip connection)\nconcat = tf.keras.layers.Concatenate(axis=-1)([x1, x2])\n\nprint(added.shape)   # (4, 16)",
+      "use_when": "> * Constructing residual identity connections (Add).  \n> * Constructing feature-pyramid or U-Net skip connections (Concatenate).  \n> * Applying multiplicative attention masking (Multiply).",
+      "avoid_when": "> * Incompatible tensor shapes are provided (for Add/Multiply, shapes must match exactly).",
+      "gotchas": [
+        "Passing a tuple/list of tensors as input is required: Add()([t1, t2]), NOT Add()(t1, t2)."
+      ],
+      "performance_notes": "> * Functional merge operations compile into fast fused GPU kernels where possible.",
+      "related_apis": [
+        "tf.keras.layers.Add",
+        "tf.keras.layers.Concatenate",
+        "tf.keras.layers.Multiply",
+        "tf.keras.layers.Average",
+        "tf.keras.layers.Maximum",
+        "tf.keras.layers.Subtract"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.Add",
+        "tf.keras.layers.Concatenate",
+        "tf.keras.layers.Multiply",
+        "tf.keras.layers.Average"
+      ],
+      "framework_migration_notes": "> * tf.keras.layers.Add \u2192 torch.add or x1 \\+ x2  \n> * tf.keras.layers.Concatenate \u2192 torch.cat",
+      "pytorch_equivalent": "> * tf.keras.layers.Add \u2192 torch.add or x1 \\+ x2  \n> * tf.keras.layers.Concatenate \u2192 torch.cat",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "> * tf.keras.layers.Add \u2192 torch.add or x1 \\+ x2  \n> * tf.keras.layers.Concatenate \u2192 torch.cat",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Merge layers",
+          "Concatenate layer",
+          "Residual Add"
+        ],
+        "common_search_terms": [
+          "keras concatenate",
+          "tf.keras.layers.Add",
+          "merge tensors keras"
+        ],
+        "search_terms": [
+          "keras concatenate",
+          "tf.keras.layers.Add",
+          "merge tensors keras"
+        ],
+        "keywords": [
+          "add",
+          "concatenate",
+          "multiply",
+          "residual",
+          "skip_connection"
+        ],
+        "frequently_confused_with": [
+          "Concatenate vs Add"
+        ],
+        "confused_with": [
+          "Concatenate vs Add"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "yolo"
+      ],
+      "related_patterns": [
+        "feature-fusion"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline",
+        "semantic-segmentation-pipeline"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Concatenate",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Concatenate"
+    },
+    {
+      "task": "23. Create Embedding Layer (tf.keras.layers.Embedding)",
+      "problem_solved": "Maps positive integer categorical indices into dense embedding vectors of fixed dimension size.",
+      "mental_trigger": "I need to map integer token IDs into trainable dense vector representations.",
+      "syntax": "input_dim,\noutput_dim,\nembeddings_initializer=\"uniform\",\nembeddings_regularizer=None,\nembeddings_constraint=None,\nmask_zero=False,\n**kwargs",
+      "important_parameters": [
+        "input_dim: Size of the vocabulary (maximum integer index \\+ 1).",
+        "output_dim: Dimension of the dense embedding vectors.",
+        "mask_zero: Whether to treat value 0 as a special padding mask."
+      ],
+      "important_params": [
+        "input_dim: Size of the vocabulary (maximum integer index \\+ 1).",
+        "output_dim: Dimension of the dense embedding vectors.",
+        "mask_zero: Whether to treat value 0 as a special padding mask."
+      ],
+      "return_value": "Tensor of shape (batch_size, sequence_length, output_dim).",
+      "example": "# Token indices for batch size 2, length 4\nindices = tf.constant([[1, 5, 2, 0], [3, 4, 0, 0]])\nembedding_layer = tf.keras.layers.Embedding(input_dim=1000, output_dim=64, mask_zero=True)\noutput = embedding_layer(indices)",
+      "snippet": "# Token indices for batch size 2, length 4\nindices = tf.constant([[1, 5, 2, 0], [3, 4, 0, 0]])\nembedding_layer = tf.keras.layers.Embedding(input_dim=1000, output_dim=64, mask_zero=True)\noutput = embedding_layer(indices)",
+      "use_when": "> * Converting text token IDs into dense vector representations in NLP and Transformer pipelines.  \n> * Mapping categorical entity IDs in recommendation models.",
+      "avoid_when": "> * Inputs are already continuous high-dimensional floating-point vectors.",
+      "gotchas": [
+        "Passing token ID values \u2265input_dim throws out-of-bounds index errors during lookup execution.",
+        "Enabling mask_zero=True creates downstream mask propagation that certain custom layers must explicitly handle."
+      ],
+      "performance_notes": "> * Implemented as an efficient parallel gathering operation (tf.gather) rather than matrix multiplication.",
+      "related_apis": [
+        "tf.keras.layers.Embedding",
+        "tf.gather",
+        "tf.keras.layers.Dense"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.Embedding"
+      ],
+      "framework_migration_notes": "tf.keras.layers.Embedding \u2192 nn.Embedding",
+      "pytorch_equivalent": "tf.keras.layers.Embedding \u2192 nn.Embedding",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.Embedding \u2192 nn.Embedding",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Look-up Table",
+          "Token Embedding"
+        ],
+        "common_search_terms": [
+          "Embedding layer keras",
+          "tf.keras.layers.Embedding",
+          "vocabulary lookup"
+        ],
+        "search_terms": [
+          "Embedding layer keras",
+          "tf.keras.layers.Embedding",
+          "vocabulary lookup"
+        ],
+        "keywords": [
+          "embedding",
+          "input_dim",
+          "output_dim",
+          "mask_zero",
+          "token_ids"
+        ],
+        "frequently_confused_with": [
+          "Embedding vs Dense"
+        ],
+        "confused_with": [
+          "Embedding vs Dense"
+        ]
+      },
+      "related_models": [
+        "bert",
+        "roberta",
+        "t5",
+        "gpt",
+        "llama"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Embedding",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Embedding"
+    },
+    {
+      "task": "24. Apply Positional Encoding (Custom Keras Layer Pattern)",
+      "problem_solved": "Injects sequence order information into permutation-invariant Transformer token representations using sinusoidal functions or learnable vectors.",
+      "mental_trigger": "My model has no inherent notion of token ordering, so I need to add explicit position encodings.",
+      "syntax": "def __init__(self, d_model, max_len=5000, **kwargs):\nsuper().__init__(**kwargs)",
+      "important_parameters": [
+        "d_model: Embedding projection hidden dimension.",
+        "max_len: Maximum sequence length precomputed for sinusoidal frequencies."
+      ],
+      "important_params": [
+        "d_model: Embedding projection hidden dimension.",
+        "max_len: Maximum sequence length precomputed for sinusoidal frequencies."
+      ],
+      "return_value": "Tensor matching token input shape (batch, seq_len, d_model) with position signals added.",
+      "example": "import numpy as np\n\nclass SinusoidalPositionalEncoding(tf.keras.layers.Layer):\ndef __init__(self, d_model, max_len=1000, **kwargs):\nsuper().__init__(**kwargs)\nself.d_model = d_model\nposition = np.arange(max_len)[:, np.newaxis]\ndiv_term = np.exp(np.arange(0, d_model, 2) * -(np.log(10000.0) / d_model))\npe = np.zeros((max_len, d_model), dtype=np.float32)\npe[:, 0::2] = np.sin(position * div_term)\npe[:, 1::2] = np.cos(position * div_term)\nself.pe = tf.constant(pe[np.newaxis, ...], dtype=tf.float32)\n\ndef call(self, x):\nseq_len = tf.shape(x)[1]\nreturn x + self.pe[:, :seq_len, :]\n\nx = tf.zeros([2, 10, 64])  # (batch, seq_len, d_model)\npos_encoder = SinusoidalPositionalEncoding(d_model=64)\noutput = pos_encoder(x)",
+      "snippet": "import numpy as np\n\nclass SinusoidalPositionalEncoding(tf.keras.layers.Layer):\ndef __init__(self, d_model, max_len=1000, **kwargs):\nsuper().__init__(**kwargs)\nself.d_model = d_model\nposition = np.arange(max_len)[:, np.newaxis]\ndiv_term = np.exp(np.arange(0, d_model, 2) * -(np.log(10000.0) / d_model))\npe = np.zeros((max_len, d_model), dtype=np.float32)\npe[:, 0::2] = np.sin(position * div_term)\npe[:, 1::2] = np.cos(position * div_term)\nself.pe = tf.constant(pe[np.newaxis, ...], dtype=tf.float32)\n\ndef call(self, x):\nseq_len = tf.shape(x)[1]\nreturn x + self.pe[:, :seq_len, :]\n\nx = tf.zeros([2, 10, 64])  # (batch, seq_len, d_model)\npos_encoder = SinusoidalPositionalEncoding(d_model=64)\noutput = pos_encoder(x)",
+      "use_when": "> * Building Transformer Encoder/Decoder architectures from scratch in Keras.",
+      "avoid_when": "> * Using architectures with integrated Rotary Position Embeddings (RoPE) inside attention computation directly.",
+      "gotchas": [
+        "Ensure static slice size compatibility when dynamic batching occurs.",
+        "Precomputed lookup arrays must be instantiated as non-trainable constants or registered buffers."
+      ],
+      "performance_notes": "> * Simple element-wise vector addition; practically zero computational impact compared to Attention layers.",
+      "related_apis": [
+        "tf.keras.layers.Layer",
+        "tf.range",
+        "tf.math.sin / tf.math.cos",
+        "tf.keras.layers.Embedding",
+        "tf.keras.layers.MultiHeadAttention"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.Layer",
+        "tf.range",
+        "tf.math.sin / tf.math.cos"
+      ],
+      "framework_migration_notes": "Custom nn.Module computing sinusoidal encoding or adding learned nn.Embedding(max_len, d_model).",
+      "pytorch_equivalent": "Custom nn.Module computing sinusoidal encoding or adding learned nn.Embedding(max_len, d_model).",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Custom nn.Module computing sinusoidal encoding or adding learned nn.Embedding(max_len, d_model).",
+      "version_compatibility": "Implemented as custom layer pattern across TF 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Sinusoidal Position Encoding",
+          "Absolute Positional Embedding"
+        ],
+        "common_search_terms": [
+          "positional encoding keras",
+          "sinusoidal positional embedding tf",
+          "transformer position layer"
+        ],
+        "search_terms": [
+          "positional encoding keras",
+          "sinusoidal positional embedding tf",
+          "transformer position layer"
+        ],
+        "keywords": [
+          "positional_encoding",
+          "transformer",
+          "sinusoidal",
+          "d_model",
+          "sequence"
+        ],
+        "frequently_confused_with": [
+          "Fixed Sinusoidal vs Learned Positional Embedding"
+        ],
+        "confused_with": [
+          "Fixed Sinusoidal vs Learned Positional Embedding"
+        ]
+      },
+      "related_models": [
+        "transformer",
+        "vit",
+        "bert",
+        "t5"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Layer",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Layer"
+    },
+    {
+      "task": "25. Apply Multi-Head Attention (tf.keras.layers.MultiHeadAttention)",
+      "problem_solved": "Computes scaled dot-product attention across multiple linear projection sub-spaces simultaneously, capturing multi-faceted sequence dependencies.",
+      "mental_trigger": "I need scaled dot-product multi-head attention for Transformer query, key, and value vectors.",
+      "syntax": "num_heads,\nkey_dim,\nvalue_dim=None,\ndropout=0.0,\nuse_bias=True,\noutput_shape=None,\nattention_axes=None,\nkernel_initializer=\"glorot_uniform\",\n**kwargs",
+      "important_parameters": [
+        "num_heads: Number of parallel attention heads.",
+        "key_dim: Size of each attention head for Query and Key matrices.",
+        "value_dim: Size of each attention head for Value matrix (defaults to key_dim).",
+        "dropout: Dropout probability applied to attention softmax weights."
+      ],
+      "important_params": [
+        "num_heads: Number of parallel attention heads.",
+        "key_dim: Size of each attention head for Query and Key matrices.",
+        "value_dim: Size of each attention head for Value matrix (defaults to key_dim).",
+        "dropout: Dropout probability applied to attention softmax weights."
+      ],
+      "return_value": "A tuple (attention_output, attention_scores) if return_attention_scores=True, otherwise just attention_output.",
+      "example": "# Self-attention example\nquery = tf.random.normal([2, 16, 64])  # (batch, target_seq_len, feature_dim)\nkey = query\nmha = tf.keras.layers.MultiHeadAttention(num_heads=4, key_dim=16)\nout = mha(query=query, value=key, key=key)",
+      "snippet": "# Self-attention example\nquery = tf.random.normal([2, 16, 64])  # (batch, target_seq_len, feature_dim)\nkey = query\nmha = tf.keras.layers.MultiHeadAttention(num_heads=4, key_dim=16)\nout = mha(query=query, value=key, key=key)",
+      "use_when": "> * Constructing Transformer Encoders, Decoders, or Cross-Attention components.  \n> * Relational feature reasoning across visual patches (Vision Transformer).",
+      "avoid_when": "> * Simple temporal/spatial aggregation can be handled efficiently via Conv or Pooling with lower compute memory quadratic complexity.",
+      "gotchas": [
+        "Passing casual masking requires providing use_causal_mask=True call argument or passing explicit attention_mask.",
+        "Query tensor dimension determines output sequence length, while Key/Value tensor dimensions determine source context length."
+      ],
+      "performance_notes": "> * Highly optimized inside TensorFlow 2.x/Keras 3, utilizing FlashAttention GPU routines automatically when supported by hardware.",
+      "related_apis": [
+        "tf.keras.layers.MultiHeadAttention",
+        "tf.keras.layers.Attention",
+        "tf.keras.layers.AdditiveAttention"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.MultiHeadAttention"
+      ],
+      "framework_migration_notes": "tf.keras.layers.MultiHeadAttention \u2192 nn.MultiheadAttention",
+      "pytorch_equivalent": "tf.keras.layers.MultiHeadAttention \u2192 nn.MultiheadAttention",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.MultiHeadAttention \u2192 nn.MultiheadAttention",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "MHA Layer",
+          "Scaled Dot-Product Attention"
+        ],
+        "common_search_terms": [
+          "MultiHeadAttention keras",
+          "tf.keras.layers.MultiHeadAttention",
+          "self attention layer"
+        ],
+        "search_terms": [
+          "MultiHeadAttention keras",
+          "tf.keras.layers.MultiHeadAttention",
+          "self attention layer"
+        ],
+        "keywords": [
+          "multiheadattention",
+          "attention",
+          "query",
+          "key",
+          "value",
+          "num_heads"
+        ],
+        "frequently_confused_with": [
+          "MultiHeadAttention vs Attention"
+        ],
+        "confused_with": [
+          "MultiHeadAttention vs Attention"
+        ]
+      },
+      "related_models": [
+        "vit",
+        "transformer",
+        "bert",
+        "roberta",
+        "t5",
+        "gpt",
+        "llama"
+      ],
+      "related_patterns": [
+        "kv-cache",
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/MultiHeadAttention",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/MultiHeadAttention"
+    },
+    {
+      "task": "26. Apply Attention Layer (tf.keras.layers.Attention)",
+      "problem_solved": "Computes dot-product attention over query and value vectors without splitting into multiple projection heads.",
+      "mental_trigger": "I need simple single-head Luong-style dot-product sequence attention.",
+      "syntax": "use_scale=False,\nscore_mode=\"dot\",\ndropout=0.0,\n**kwargs",
+      "important_parameters": [
+        "use_scale: Whether to add a learnable scalar scaling parameter to attention scores.",
+        "score_mode: Score function: \"dot\" or \"concat\".",
+        "dropout: Float between 0 and 1, dropout applied to attention weights."
+      ],
+      "important_params": [
+        "use_scale: Whether to add a learnable scalar scaling parameter to attention scores.",
+        "score_mode: Score function: \"dot\" or \"concat\".",
+        "dropout: Float between 0 and 1, dropout applied to attention weights."
+      ],
+      "return_value": "Attention context output tensor matching target query shape.",
+      "example": "query = tf.random.normal([2, 5, 32])\nvalue = tf.random.normal([2, 10, 32])\nattn = tf.keras.layers.Attention()\noutput = attn([query, value])",
+      "snippet": "query = tf.random.normal([2, 5, 32])\nvalue = tf.random.normal([2, 10, 32])\nattn = tf.keras.layers.Attention()\noutput = attn([query, value])",
+      "use_when": "> * Adding lightweight sequence-to-sequence attention to legacy RNN architectures.",
+      "avoid_when": "> * Constructing modern Transformer networks (use MultiHeadAttention instead).",
+      "gotchas": [
+        "Inputs are passed as a list: attn([query, value]) or attn([query, value, key])."
+      ],
+      "performance_notes": "> * Extremely lightweight computation compared to full MultiHeadAttention.",
+      "related_apis": [
+        "tf.keras.layers.Attention",
+        "tf.keras.layers.AdditiveAttention",
+        "tf.keras.layers.MultiHeadAttention"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.Attention"
+      ],
+      "framework_migration_notes": "No direct single layer equivalent (built via manual matrix operations or nn.MultiheadAttention with 1 head).",
+      "pytorch_equivalent": "No direct single layer equivalent (built via manual matrix operations or nn.MultiheadAttention with 1 head).",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "No direct single layer equivalent (built via manual matrix operations or nn.MultiheadAttention with 1 head).",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Luong Attention",
+          "Dot-Product Attention"
+        ],
+        "common_search_terms": [
+          "tf.keras.layers.Attention",
+          "keras dot product attention",
+          "rnn attention layer"
+        ],
+        "search_terms": [
+          "tf.keras.layers.Attention",
+          "keras dot product attention",
+          "rnn attention layer"
+        ],
+        "keywords": [
+          "attention",
+          "luong",
+          "dot_product",
+          "query",
+          "value"
+        ],
+        "frequently_confused_with": [
+          "Attention vs AdditiveAttention"
+        ],
+        "confused_with": [
+          "Attention vs AdditiveAttention"
+        ]
+      },
+      "related_models": [
+        "transformer"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Attention",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Attention"
+    },
+    {
+      "task": "27. Apply Additive Attention (tf.keras.layers.AdditiveAttention)",
+      "problem_solved": "Computes Bahdanau-style additive (feed-forward) attention scores between query and key vectors.",
+      "mental_trigger": "I need Bahdanau-style additive scoring attention for sequence mapping tasks.",
+      "syntax": "use_scale=True,\ndropout=0.0,\n**kwargs",
+      "important_parameters": [
+        "use_scale: Whether to scale attention scores by learnable parameter.",
+        "dropout: Dropout fraction for attention weights."
+      ],
+      "important_params": [
+        "use_scale: Whether to scale attention scores by learnable parameter.",
+        "dropout: Dropout fraction for attention weights."
+      ],
+      "return_value": "Attention weighted context vector tensor.",
+      "example": "query = tf.random.normal([2, 4, 16])\nvalue = tf.random.normal([2, 8, 16])\nadditive_attn = tf.keras.layers.AdditiveAttention()\noutput = additive_attn([query, value])",
+      "snippet": "query = tf.random.normal([2, 4, 16])\nvalue = tf.random.normal([2, 8, 16])\nadditive_attn = tf.keras.layers.AdditiveAttention()\noutput = additive_attn([query, value])",
+      "use_when": "> * Implementing classical seq2seq translation networks or RNN alignment mechanisms.",
+      "avoid_when": "> * Target tasks require matrix-multiplication-parallel scaled dot-product processing (use MultiHeadAttention).",
+      "gotchas": [
+        "Additive attention relies on element-wise additions followed by tanh, making it computationally slower than dot-product attention for large dimensions."
+      ],
+      "performance_notes": "> * Involves explicit tensor additions and tanh activations; higher compute latency than dot product setups on tensor core architectures.",
+      "related_apis": [
+        "tf.keras.layers.AdditiveAttention",
+        "tf.keras.layers.Attention",
+        "tf.keras.layers.MultiHeadAttention"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.AdditiveAttention"
+      ],
+      "framework_migration_notes": "No direct equivalent; custom implementation required in PyTorch.",
+      "pytorch_equivalent": "No direct equivalent; custom implementation required in PyTorch.",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "No direct equivalent; custom implementation required in PyTorch.",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Bahdanau Attention",
+          "Concat Attention"
+        ],
+        "common_search_terms": [
+          "AdditiveAttention keras",
+          "bahdanau attention tf",
+          "additive seq2seq attention"
+        ],
+        "search_terms": [
+          "AdditiveAttention keras",
+          "bahdanau attention tf",
+          "additive seq2seq attention"
+        ],
+        "keywords": [
+          "additiveattention",
+          "bahdanau",
+          "query",
+          "value",
+          "seq2seq"
+        ],
+        "frequently_confused_with": [
+          "AdditiveAttention vs Attention"
+        ],
+        "confused_with": [
+          "AdditiveAttention vs Attention"
+        ]
+      },
+      "related_models": [
+        "transformer"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/AdditiveAttention",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/AdditiveAttention"
+    },
+    {
+      "task": "28. Build Simple RNN (tf.keras.layers.SimpleRNN)",
+      "problem_solved": "Processes sequential vector inputs with a fully-connected recurrent feedback state layer.",
+      "mental_trigger": "I need a basic recurrent neural network layer for short sequence dependencies.",
+      "syntax": "units,\nactivation=\"tanh\",\nuse_bias=True,\nreturn_sequences=False,\nreturn_state=False,\ngo_backwards=False,\nstateful=False,\nunroll=False,\n**kwargs",
+      "important_parameters": [
+        "units: Dimensionality of the output hidden state space.",
+        "return_sequences: Whether to return full sequence output (batch, steps, units) or last output (batch, units).",
+        "return_state: Whether to return the last hidden state alongside outputs.",
+        "stateful: If True, last state for each sample will be used as initial state for next batch."
+      ],
+      "important_params": [
+        "units: Dimensionality of the output hidden state space.",
+        "return_sequences: Whether to return full sequence output (batch, steps, units) or last output (batch, units).",
+        "return_state: Whether to return the last hidden state alongside outputs.",
+        "stateful: If True, last state for each sample will be used as initial state for next batch."
+      ],
+      "return_value": "Tensor of outputs (batch, units) or (batch, steps, units) plus optional state tensors.",
+      "example": "x = tf.random.normal([4, 10, 32])  # (batch, time_steps, features)\nrnn = tf.keras.layers.SimpleRNN(units=64, return_sequences=True)\noutput = rnn(x)",
+      "snippet": "x = tf.random.normal([4, 10, 32])  # (batch, time_steps, features)\nrnn = tf.keras.layers.SimpleRNN(units=64, return_sequences=True)\noutput = rnn(x)",
+      "use_when": "> * Modeling short temporal or sequential inputs where simple recurrence suffices.",
+      "avoid_when": "> * Sequences are long (\\>30 steps), as vanilla RNN suffers severely from vanishing and exploding gradients (use GRU or LSTM).",
+      "gotchas": [
+        "Setting return_sequences=False drops sequence length axis entirely. Stacking multiple RNN layers requires setting return_sequences=True on non-final layers."
+      ],
+      "performance_notes": "> * Less computationally expensive than LSTM/GRU per step, but prone to gradient instability during long backpropagation through time.",
+      "related_apis": [
+        "tf.keras.layers.SimpleRNN",
+        "tf.keras.layers.GRU",
+        "tf.keras.layers.LSTM",
+        "tf.keras.layers.RNN"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.SimpleRNN"
+      ],
+      "framework_migration_notes": "tf.keras.layers.SimpleRNN \u2192 nn.RNN",
+      "pytorch_equivalent": "tf.keras.layers.SimpleRNN \u2192 nn.RNN",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.SimpleRNN \u2192 nn.RNN",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Vanilla RNN",
+          "Basic Recurrent Layer"
+        ],
+        "common_search_terms": [
+          "SimpleRNN keras",
+          "tf.keras.layers.SimpleRNN",
+          "return_sequences rnn"
+        ],
+        "search_terms": [
+          "SimpleRNN keras",
+          "tf.keras.layers.SimpleRNN",
+          "return_sequences rnn"
+        ],
+        "keywords": [
+          "simplernn",
+          "rnn",
+          "recurrence",
+          "units",
+          "return_sequences"
+        ],
+        "frequently_confused_with": [
+          "SimpleRNN vs LSTM"
+        ],
+        "confused_with": [
+          "SimpleRNN vs LSTM"
+        ]
+      },
+      "related_models": [
+        "transformer"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/SimpleRNN",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/SimpleRNN"
+    },
+    {
+      "task": "29. Build GRU Network (tf.keras.layers.GRU)",
+      "problem_solved": "Processes sequential data using reset and update gating mechanisms to mitigate vanishing gradients with lower parameters than LSTM.",
+      "mental_trigger": "I need a gated recurrent network that balances temporal memory performance with parameter efficiency.",
+      "syntax": "units,\nactivation=\"tanh\",\nrecurrent_activation=\"sigmoid\",\nuse_bias=True,\nreturn_sequences=False,\nreturn_state=False,\ngo_backwards=False,\nstateful=False,\nreset_after=True,\n**kwargs",
+      "important_parameters": [
+        "units: Positive integer, output state dimensionality.",
+        "return_sequences: Boolean, whether to return last output or full output sequence.",
+        "return_state: Boolean, whether to return the last state in addition to output.",
+        "reset_after: GRU convention (whether to apply reset gate after matrix multiplication). Defaults to True."
+      ],
+      "important_params": [
+        "units: Positive integer, output state dimensionality.",
+        "return_sequences: Boolean, whether to return last output or full output sequence.",
+        "return_state: Boolean, whether to return the last state in addition to output.",
+        "reset_after: GRU convention (whether to apply reset gate after matrix multiplication). Defaults to True."
+      ],
+      "return_value": "Output sequence tensor or final state tensor (batch, units).",
+      "example": "x = tf.random.normal([8, 20, 64])\ngru = tf.keras.layers.GRU(units=128, return_sequences=False)\noutput = gru(x)",
+      "snippet": "x = tf.random.normal([8, 20, 64])\ngru = tf.keras.layers.GRU(units=128, return_sequences=False)\noutput = gru(x)",
+      "use_when": "> * Modeling sequential data (time-series, speech, text) where training speed is prioritized over cell state separation.",
+      "avoid_when": "> * Highly complex, long-term memory dependencies require dedicated cell state tracks (use LSTM).",
+      "gotchas": [
+        "Fast cuDNN acceleration requires default arguments (activation=\"tanh\", recurrent_activation=\"sigmoid\", recurrent_dropout=0, reset_after=True). Modifying these drops back to CPU fallback execution."
+      ],
+      "performance_notes": "> * Executes cuDNN optimized kernels on GPUs when default parameters are unchanged; faster than LSTM due to having 3 gates instead of 4.",
+      "related_apis": [
+        "tf.keras.layers.GRU",
+        "tf.keras.layers.LSTM",
+        "tf.keras.layers.Bidirectional"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.GRU"
+      ],
+      "framework_migration_notes": "tf.keras.layers.GRU \u2192 nn.GRU",
+      "pytorch_equivalent": "tf.keras.layers.GRU \u2192 nn.GRU",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.GRU \u2192 nn.GRU",
+      "version_compatibility": "In TF 2.x, reset_after=True is enabled by default to match cuDNN implementation.",
+      "search_metadata": {
+        "aliases": [
+          "Gated Recurrent Unit",
+          "GRU Layer"
+        ],
+        "common_search_terms": [
+          "GRU keras",
+          "tf.keras.layers.GRU",
+          "gru cudnn speedup"
+        ],
+        "search_terms": [
+          "GRU keras",
+          "tf.keras.layers.GRU",
+          "gru cudnn speedup"
+        ],
+        "keywords": [
+          "gru",
+          "recurrent",
+          "reset_after",
+          "gates",
+          "sequence"
+        ],
+        "frequently_confused_with": [
+          "GRU vs LSTM"
+        ],
+        "confused_with": [
+          "GRU vs LSTM"
+        ]
+      },
+      "related_models": [
+        "transformer"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/GRU",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/GRU"
+    },
+    {
+      "task": "30. Build LSTM Network (tf.keras.layers.LSTM)",
+      "problem_solved": "Processes long sequential data using input, forget, and output gates along with an explicit cell memory state track.",
+      "mental_trigger": "I need a robust recurrent architecture for modeling complex, long-range sequential dependencies.",
+      "syntax": "units,\nactivation=\"tanh\",\nrecurrent_activation=\"sigmoid\",\nuse_bias=True,\nreturn_sequences=False,\nreturn_state=False,\nunit_forget_bias=True,\nrecurrent_dropout=0.0,\n**kwargs",
+      "important_parameters": [
+        "units: Dimensionality of output space and hidden state.",
+        "return_sequences: Whether to return outputs for all sequence time steps.",
+        "return_state: Whether to return hidden state h and cell state c.",
+        "recurrent_dropout: Float between 0 and 1 for dropout on recurrent states."
+      ],
+      "important_params": [
+        "units: Dimensionality of output space and hidden state.",
+        "return_sequences: Whether to return outputs for all sequence time steps.",
+        "return_state: Whether to return hidden state h and cell state c.",
+        "recurrent_dropout: Float between 0 and 1 for dropout on recurrent states."
+      ],
+      "return_value": "Output tensor, optionally accompanied by final hidden state h and cell state c.",
+      "example": "x = tf.random.normal([4, 30, 32])\nlstm = tf.keras.layers.LSTM(units=64, return_sequences=True, return_state=True)\nwhole_seq, final_h, final_c = lstm(x)\nprint(whole_seq.shape) # (4, 30, 64)\nprint(final_h.shape)   # (4, 64)",
+      "snippet": "x = tf.random.normal([4, 30, 32])\nlstm = tf.keras.layers.LSTM(units=64, return_sequences=True, return_state=True)\nwhole_seq, final_h, final_c = lstm(x)\nprint(whole_seq.shape) # (4, 30, 64)\nprint(final_h.shape)   # (4, 64)",
+      "use_when": "> * Processing speech, complex financial time-series, or NLP sequences in recurrent frameworks.",
+      "avoid_when": "> * GPU parallel execution scales better via self-attention (Transformer blocks).",
+      "gotchas": [
+        "Enabling recurrent_dropout \\> 0 disables cuDNN acceleration kernels, slowing training down by orders of magnitude on GPU."
+      ],
+      "performance_notes": "> * Leverages cuDNN kernels when recurrent_dropout=0. Computes 4 internal matrix multiplications per step.",
+      "related_apis": [
+        "tf.keras.layers.LSTM",
+        "tf.keras.layers.GRU",
+        "tf.keras.layers.Bidirectional"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.LSTM"
+      ],
+      "framework_migration_notes": "tf.keras.layers.LSTM \u2192 nn.LSTM",
+      "pytorch_equivalent": "tf.keras.layers.LSTM \u2192 nn.LSTM",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.LSTM \u2192 nn.LSTM",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Long Short-Term Memory",
+          "LSTM Layer"
+        ],
+        "common_search_terms": [
+          "LSTM keras",
+          "tf.keras.layers.LSTM",
+          "return_state lstm"
+        ],
+        "search_terms": [
+          "LSTM keras",
+          "tf.keras.layers.LSTM",
+          "return_state lstm"
+        ],
+        "keywords": [
+          "lstm",
+          "cell_state",
+          "hidden_state",
+          "sequence",
+          "gates"
+        ],
+        "frequently_confused_with": [
+          "LSTM vs GRU"
+        ],
+        "confused_with": [
+          "LSTM vs GRU"
+        ]
+      },
+      "related_models": [
+        "transformer"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/LSTM",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/LSTM"
+    },
+    {
+      "task": "31. Build Transformer Encoder Block (Keras Pattern)",
+      "problem_solved": "Assembles Multi-Head Self-Attention, Residual Connections, Layer Normalization, and Feed-Forward Networks into a reusable Encoder module.",
+      "mental_trigger": "I need a complete Transformer Encoder layer block.",
+      "syntax": "def __init__(self, d_model, num_heads, dff, rate=0.1, **kwargs):\nsuper().__init__(**kwargs)",
+      "important_parameters": [
+        "d_model: Hidden size of model tokens.",
+        "num_heads: Number of multi-head attention projections.",
+        "dff: Dimensionality of inner feedforward expansion layer.",
+        "rate: Dropout rate."
+      ],
+      "important_params": [
+        "d_model: Hidden size of model tokens.",
+        "num_heads: Number of multi-head attention projections.",
+        "dff: Dimensionality of inner feedforward expansion layer.",
+        "rate: Dropout rate."
+      ],
+      "return_value": "Processed sequence representation tensor of shape (batch, seq_len, d_model).",
+      "example": "class TransformerEncoderBlock(tf.keras.layers.Layer):\ndef __init__(self, d_model, num_heads, dff, rate=0.1, **kwargs):\nsuper().__init__(**kwargs)\nself.mha = tf.keras.layers.MultiHeadAttention(num_heads=num_heads, key_dim=d_model // num_heads)\nself.ffn = tf.keras.Sequential([\ntf.keras.layers.Dense(dff, activation=\"relu\"),\ntf.keras.layers.Dense(d_model)\n])\nself.layernorm1 = tf.keras.layers.LayerNormalization(epsilon=1e-6)\nself.layernorm2 = tf.keras.layers.LayerNormalization(epsilon=1e-6)\nself.dropout1 = tf.keras.layers.Dropout(rate)\nself.dropout2 = tf.keras.layers.Dropout(rate)\n\ndef call(self, x, training=False):\nattn_output = self.mha(query=x, value=x, key=x)\nattn_output = self.dropout1(attn_output, training=training)\nout1 = self.layernorm1(x + attn_output)\n\nffn_output = self.ffn(out1)\nffn_output = self.dropout2(ffn_output, training=training)\nreturn self.layernorm2(out1 + ffn_output)\n\nx = tf.random.normal([2, 16, 64])\nencoder_block = TransformerEncoderBlock(d_model=64, num_heads=4, dff=256)\noutput = encoder_block(x)",
+      "snippet": "class TransformerEncoderBlock(tf.keras.layers.Layer):\ndef __init__(self, d_model, num_heads, dff, rate=0.1, **kwargs):\nsuper().__init__(**kwargs)\nself.mha = tf.keras.layers.MultiHeadAttention(num_heads=num_heads, key_dim=d_model // num_heads)\nself.ffn = tf.keras.Sequential([\ntf.keras.layers.Dense(dff, activation=\"relu\"),\ntf.keras.layers.Dense(d_model)\n])\nself.layernorm1 = tf.keras.layers.LayerNormalization(epsilon=1e-6)\nself.layernorm2 = tf.keras.layers.LayerNormalization(epsilon=1e-6)\nself.dropout1 = tf.keras.layers.Dropout(rate)\nself.dropout2 = tf.keras.layers.Dropout(rate)\n\ndef call(self, x, training=False):\nattn_output = self.mha(query=x, value=x, key=x)\nattn_output = self.dropout1(attn_output, training=training)\nout1 = self.layernorm1(x + attn_output)\n\nffn_output = self.ffn(out1)\nffn_output = self.dropout2(ffn_output, training=training)\nreturn self.layernorm2(out1 + ffn_output)\n\nx = tf.random.normal([2, 16, 64])\nencoder_block = TransformerEncoderBlock(d_model=64, num_heads=4, dff=256)\noutput = encoder_block(x)",
+      "use_when": "> * Constructing custom vision or language Transformer backbones (e.g. BERT, ViT).",
+      "avoid_when": "> * Text/image processing requirements are satisfied directly by pre-built KerasHub or Hugging Face pretrained models.",
+      "gotchas": [
+        "Ensure key_dim * num_heads \\== d_model if matching original Transformer specifications.",
+        "Keep track of residual order (Pre-LN vs Post-LN architectural variants)."
+      ],
+      "performance_notes": "> * Scalability and execution performance heavily depend on MultiHeadAttention hardware kernel fusion.",
+      "related_apis": [
+        "tf.keras.layers.MultiHeadAttention",
+        "tf.keras.layers.LayerNormalization",
+        "tf.keras.layers.Dense",
+        "tf.keras.layers.Dropout",
+        "tf.keras.layers.Layer"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.MultiHeadAttention",
+        "tf.keras.layers.LayerNormalization",
+        "tf.keras.layers.Dense",
+        "tf.keras.layers.Dropout",
+        "tf.keras.layers.Layer"
+      ],
+      "framework_migration_notes": "tf.keras.layers.Layer custom block \u2192 nn.TransformerEncoderLayer",
+      "pytorch_equivalent": "tf.keras.layers.Layer custom block \u2192 nn.TransformerEncoderLayer",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.Layer custom block \u2192 nn.TransformerEncoderLayer",
+      "version_compatibility": "Standard Keras 3 / TF 2.x custom layer modular design.",
+      "search_metadata": {
+        "aliases": [
+          "Transformer Encoder Layer",
+          "Encoder Block"
+        ],
+        "common_search_terms": [
+          "Transformer Encoder keras",
+          "custom transformer layer tf",
+          "vit encoder block"
+        ],
+        "search_terms": [
+          "Transformer Encoder keras",
+          "custom transformer layer tf",
+          "vit encoder block"
+        ],
+        "keywords": [
+          "transformer",
+          "encoder",
+          "mha",
+          "ffn",
+          "layernorm",
+          "residual"
+        ],
+        "frequently_confused_with": [
+          "Encoder Block vs Decoder Block"
+        ],
+        "confused_with": [
+          "Encoder Block vs Decoder Block"
+        ]
+      },
+      "related_models": [
+        "vit",
+        "transformer",
+        "bert",
+        "roberta"
+      ],
+      "related_patterns": [
+        "kv-cache",
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Layer",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Layer"
+    },
+    {
+      "task": "32. Build Transformer Decoder Block (Keras Pattern)",
+      "problem_solved": "Combines Causal Masked Self-Attention, Cross-Attention (Encoder-Decoder attention), Layer Normalization, and Feed-Forward Networks for autoregressive generation.",
+      "mental_trigger": "I need a Transformer Decoder layer supporting causal autoregressive sequence generation.",
+      "syntax": "def __init__(self, d_model, num_heads, dff, rate=0.1, **kwargs):\nsuper().__init__(**kwargs)",
+      "important_parameters": [
+        "d_model: Token representation hidden dimensionality.",
+        "num_heads: Number of parallel attention heads.",
+        "dff: Expansion dimension of feed-forward sub-layer."
+      ],
+      "important_params": [
+        "d_model: Token representation hidden dimensionality.",
+        "num_heads: Number of parallel attention heads.",
+        "dff: Expansion dimension of feed-forward sub-layer."
+      ],
+      "return_value": "Autoregressively processed sequence representation tensor.",
+      "example": "class TransformerDecoderBlock(tf.keras.layers.Layer):\ndef __init__(self, d_model, num_heads, dff, rate=0.1, **kwargs):\nsuper().__init__(**kwargs)\nself.self_attn = tf.keras.layers.MultiHeadAttention(num_heads=num_heads, key_dim=d_model // num_heads)\nself.cross_attn = tf.keras.layers.MultiHeadAttention(num_heads=num_heads, key_dim=d_model // num_heads)\nself.ffn = tf.keras.Sequential([\ntf.keras.layers.Dense(dff, activation=\"relu\"),\ntf.keras.layers.Dense(d_model)\n])\nself.norm1 = tf.keras.layers.LayerNormalization(epsilon=1e-6)\nself.norm2 = tf.keras.layers.LayerNormalization(epsilon=1e-6)\nself.norm3 = tf.keras.layers.LayerNormalization(epsilon=1e-6)\n\ndef call(self, x, enc_output, training=False):\n# Causal Self-Attention\nsa_out = self.self_attn(query=x, value=x, key=x, use_causal_mask=True)\nx = self.norm1(x + sa_out)\n\n# Cross Attention against encoder outputs\nca_out = self.cross_attn(query=x, value=enc_output, key=enc_output)\nx = self.norm2(x + ca_out)\n\n# Feed Forward Network\nffn_out = self.ffn(x)\nreturn self.norm3(x + ffn_out)\n\nx = tf.random.normal([2, 8, 64])          # Target sequence\nenc_out = tf.random.normal([2, 16, 64])  # Source sequence\ndec_block = TransformerDecoderBlock(d_model=64, num_heads=4, dff=256)\noutput = dec_block(x, enc_output=enc_out)",
+      "snippet": "class TransformerDecoderBlock(tf.keras.layers.Layer):\ndef __init__(self, d_model, num_heads, dff, rate=0.1, **kwargs):\nsuper().__init__(**kwargs)\nself.self_attn = tf.keras.layers.MultiHeadAttention(num_heads=num_heads, key_dim=d_model // num_heads)\nself.cross_attn = tf.keras.layers.MultiHeadAttention(num_heads=num_heads, key_dim=d_model // num_heads)\nself.ffn = tf.keras.Sequential([\ntf.keras.layers.Dense(dff, activation=\"relu\"),\ntf.keras.layers.Dense(d_model)\n])\nself.norm1 = tf.keras.layers.LayerNormalization(epsilon=1e-6)\nself.norm2 = tf.keras.layers.LayerNormalization(epsilon=1e-6)\nself.norm3 = tf.keras.layers.LayerNormalization(epsilon=1e-6)\n\ndef call(self, x, enc_output, training=False):\n# Causal Self-Attention\nsa_out = self.self_attn(query=x, value=x, key=x, use_causal_mask=True)\nx = self.norm1(x + sa_out)\n\n# Cross Attention against encoder outputs\nca_out = self.cross_attn(query=x, value=enc_output, key=enc_output)\nx = self.norm2(x + ca_out)\n\n# Feed Forward Network\nffn_out = self.ffn(x)\nreturn self.norm3(x + ffn_out)\n\nx = tf.random.normal([2, 8, 64])          # Target sequence\nenc_out = tf.random.normal([2, 16, 64])  # Source sequence\ndec_block = TransformerDecoderBlock(d_model=64, num_heads=4, dff=256)\noutput = dec_block(x, enc_output=enc_out)",
+      "use_when": "> * Building autoregressive sequence generation models (GPT decoder-only or T5 seq2seq decoders).",
+      "avoid_when": "> * Tasks do not require autoregressive causal decoding (e.g., sequence classification).",
+      "gotchas": [
+        "Always set use_causal_mask=True in self-attention to prevent target tokens from looking ahead into future sequence tokens."
+      ],
+      "performance_notes": "> * Causal attention execution can benefit from KV caching optimization during step-by-step autoregressive inference decoding.",
+      "related_apis": [
+        "tf.keras.layers.MultiHeadAttention",
+        "tf.keras.layers.LayerNormalization",
+        "tf.keras.layers.Dense"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.MultiHeadAttention",
+        "tf.keras.layers.LayerNormalization",
+        "tf.keras.layers.Dense"
+      ],
+      "framework_migration_notes": "tf.keras.layers.Layer custom block \u2192 nn.TransformerDecoderLayer",
+      "pytorch_equivalent": "tf.keras.layers.Layer custom block \u2192 nn.TransformerDecoderLayer",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.Layer custom block \u2192 nn.TransformerDecoderLayer",
+      "version_compatibility": "Standard Keras 3 custom layer modular pattern.",
+      "search_metadata": {
+        "aliases": [
+          "Transformer Decoder Layer",
+          "Causal Decoder Block"
+        ],
+        "common_search_terms": [
+          "Transformer Decoder keras",
+          "causal self attention tf",
+          "gpt decoder block"
+        ],
+        "search_terms": [
+          "Transformer Decoder keras",
+          "causal self attention tf",
+          "gpt decoder block"
+        ],
+        "keywords": [
+          "decoder",
+          "causal_mask",
+          "cross_attention",
+          "transformer",
+          "gpt"
+        ],
+        "frequently_confused_with": [
+          "Decoder Block vs Encoder Block"
+        ],
+        "confused_with": [
+          "Decoder Block vs Encoder Block"
+        ]
+      },
+      "related_models": [
+        "transformer",
+        "t5",
+        "bart",
+        "gpt",
+        "llama"
+      ],
+      "related_patterns": [
+        "kv-cache",
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Layer",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Layer"
+    },
+    {
+      "task": "33. Build Sequential Model (tf.keras.Sequential)",
+      "problem_solved": "Stacks single-input, single-output Keras layers in a linear sequence.",
+      "mental_trigger": "I need a simple, single-path linear feedforward network container.",
+      "syntax": "layers=None,\nname=None",
+      "important_parameters": [
+        "layers: List of Keras layer instances to stack sequentially.",
+        "name: String, optional name of the model instance."
+      ],
+      "important_params": [
+        "layers: List of Keras layer instances to stack sequentially.",
+        "name: String, optional name of the model instance."
+      ],
+      "return_value": "A tf.keras.Model object representing the sequential computation graph.",
+      "example": "model = tf.keras.Sequential([\ntf.keras.layers.Input(shape=(28, 28, 1)),\ntf.keras.layers.Conv2D(32, kernel_size=3, activation=\"relu\"),\ntf.keras.layers.MaxPooling2D(),\ntf.keras.layers.Flatten(),\ntf.keras.layers.Dense(10, activation=\"softmax\")\n], name=\"mnist_sequential\")",
+      "snippet": "model = tf.keras.Sequential([\ntf.keras.layers.Input(shape=(28, 28, 1)),\ntf.keras.layers.Conv2D(32, kernel_size=3, activation=\"relu\"),\ntf.keras.layers.MaxPooling2D(),\ntf.keras.layers.Flatten(),\ntf.keras.layers.Dense(10, activation=\"softmax\")\n], name=\"mnist_sequential\")",
+      "use_when": "> * Building straightforward linear deep architectures without skip-connections or multi-branch inputs/outputs.",
+      "avoid_when": "> * Models require shared layers, skip-connections (e.g. ResNet), or multiple input/output paths (use Functional API instead).",
+      "gotchas": [
+        "Calling Sequential without an explicit Input layer or passing input tensor delays weight instantiation until the first forward pass."
+      ],
+      "performance_notes": "> * Minimizes framework abstraction overhead for pure feed-forward execution.",
+      "related_apis": [
+        "tf.keras.Sequential",
+        "tf.keras.Model",
+        "tf.keras.Input"
+      ],
+      "primary_apis": [
+        "tf.keras.Sequential"
+      ],
+      "framework_migration_notes": "tf.keras.Sequential \u2192 nn.Sequential",
+      "pytorch_equivalent": "tf.keras.Sequential \u2192 nn.Sequential",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.Sequential \u2192 nn.Sequential",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Sequential API",
+          "Keras Sequential"
+        ],
+        "common_search_terms": [
+          "tf.keras.Sequential",
+          "sequential model keras",
+          "stack layers keras"
+        ],
+        "search_terms": [
+          "tf.keras.Sequential",
+          "sequential model keras",
+          "stack layers keras"
+        ],
+        "keywords": [
+          "sequential",
+          "linear_stack",
+          "model",
+          "layers"
+        ],
+        "frequently_confused_with": [
+          "Sequential vs Functional API"
+        ],
+        "confused_with": [
+          "Sequential vs Functional API"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "logistic-regression"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/Sequential",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/Sequential"
+    },
+    {
+      "task": "34. Build Functional Model (tf.keras.Model)",
+      "problem_solved": "Constructs arbitrary Directed Acyclic Graphs (DAGs) of layers supporting complex branching, shared layers, and multiple inputs/outputs.",
+      "mental_trigger": "I need a non-linear network architecture with skip-connections, multiple inputs, or multiple outputs.",
+      "syntax": "inputs,\noutputs,\nname=None,\n**kwargs",
+      "important_parameters": [
+        "inputs: Single tf.keras.Input tensor or list/dict of Input symbolic tensors.",
+        "outputs: Single layer output tensor or list/dict of layer output tensors.",
+        "name: String model identifier."
+      ],
+      "important_params": [
+        "inputs: Single tf.keras.Input tensor or list/dict of Input symbolic tensors.",
+        "outputs: Single layer output tensor or list/dict of layer output tensors.",
+        "name: String model identifier."
+      ],
+      "return_value": "A fully functional tf.keras.Model instance.",
+      "example": "inputs = tf.keras.Input(shape=(32, 32, 3), name=\"img_input\")\nx = tf.keras.layers.Conv2D(32, 3, activation=\"relu\")(inputs)\nresidual = x\n\nx = tf.keras.layers.Conv2D(32, 3, padding=\"same\", activation=\"relu\")(x)\nx = tf.keras.layers.Add()([x, residual])  # Skip connection\noutputs = tf.keras.layers.Dense(10, activation=\"softmax\")(x)\n\nmodel = tf.keras.Model(inputs=inputs, outputs=outputs, name=\"functional_resnet_block\")",
+      "snippet": "inputs = tf.keras.Input(shape=(32, 32, 3), name=\"img_input\")\nx = tf.keras.layers.Conv2D(32, 3, activation=\"relu\")(inputs)\nresidual = x\n\nx = tf.keras.layers.Conv2D(32, 3, padding=\"same\", activation=\"relu\")(x)\nx = tf.keras.layers.Add()([x, residual])  # Skip connection\noutputs = tf.keras.layers.Dense(10, activation=\"softmax\")(x)\n\nmodel = tf.keras.Model(inputs=inputs, outputs=outputs, name=\"functional_resnet_block\")",
+      "use_when": "> * Building modern vision models (ResNet, U-Net, Feature Pyramid Networks) or multi-modal LLM architectures.  \n> * Exporting/saving production models with explicit symbolic shapes and graphs.",
+      "avoid_when": "> * Network topology involves dynamic control flows like Python for loops or conditional branches dependent on tensor values (use Subclassed Model).",
+      "gotchas": [
+        "All inputs and outputs must be symbolically linked through valid Keras layer calls starting from tf.keras.Input."
+      ],
+      "performance_notes": "> * Generates an explicit symbolic graph, enabling optimal graph optimizations, fast serialization, and concise architecture summaries.",
+      "related_apis": [
+        "tf.keras.Model",
+        "tf.keras.Input",
+        "tf.keras.Sequential"
+      ],
+      "primary_apis": [
+        "tf.keras.Model",
+        "tf.keras.Input"
+      ],
+      "framework_migration_notes": "No direct single symbolic equivalent (PyTorch models execute imperatively via nn.Module).",
+      "pytorch_equivalent": "No direct single symbolic equivalent (PyTorch models execute imperatively via nn.Module).",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "No direct single symbolic equivalent (PyTorch models execute imperatively via nn.Module).",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Functional API",
+          "Keras Functional"
+        ],
+        "common_search_terms": [
+          "tf.keras.Model functional",
+          "functional api keras",
+          "multi input keras model"
+        ],
+        "search_terms": [
+          "tf.keras.Model functional",
+          "functional api keras",
+          "multi input keras model"
+        ],
+        "keywords": [
+          "functional",
+          "inputs",
+          "outputs",
+          "residual",
+          "dag"
+        ],
+        "frequently_confused_with": [
+          "Functional API vs Subclassed Model"
+        ],
+        "confused_with": [
+          "Functional API vs Subclassed Model"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "yolo",
+        "vit"
+      ],
+      "related_patterns": [
+        "feature-fusion",
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline",
+        "semantic-segmentation-pipeline"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/Model",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/Model"
+    },
+    {
+      "task": "35. Build Subclassed Model (tf.keras.Model)",
+      "problem_solved": "Provides custom imperative control flow and dynamic operations by subclassing tf.keras.Model and overriding call().",
+      "mental_trigger": "I need dynamic Python control flow, custom state tracking, or complex research loops in my model.",
+      "syntax": "def __init__(self, **kwargs):\nsuper().__init__(**kwargs)\n...\n\ndef call(self, inputs, training=None, mask=None):\n...",
+      "important_parameters": [
+        "inputs: Input tensor or structure of tensors.",
+        "training: Boolean flag indicating whether the call is for training or inference evaluation.",
+        "mask: Optional input mask tensor."
+      ],
+      "important_params": [
+        "inputs: Input tensor or structure of tensors.",
+        "training: Boolean flag indicating whether the call is for training or inference evaluation.",
+        "mask: Optional input mask tensor."
+      ],
+      "return_value": "Output tensor or structured container of output tensors computed imperatively.",
+      "example": "class DynamicMLP(tf.keras.Model):\ndef __init__(self, hidden_dim, num_classes, **kwargs):\nsuper().__init__(**kwargs)\nself.dense1 = tf.keras.layers.Dense(hidden_dim, activation=\"relu\")\nself.dense2 = tf.keras.layers.Dense(num_classes)\n\ndef call(self, inputs, training=False):\nx = self.dense1(inputs)\nif tf.reduce_mean(x) > 0.5:  # Dynamic control flow\nx = x * 2.0\nreturn self.dense2(x)\n\nmodel = DynamicMLP(hidden_dim=32, num_classes=10)\nout = model(tf.random.normal([2, 16]))",
+      "snippet": "class DynamicMLP(tf.keras.Model):\ndef __init__(self, hidden_dim, num_classes, **kwargs):\nsuper().__init__(**kwargs)\nself.dense1 = tf.keras.layers.Dense(hidden_dim, activation=\"relu\")\nself.dense2 = tf.keras.layers.Dense(num_classes)\n\ndef call(self, inputs, training=False):\nx = self.dense1(inputs)\nif tf.reduce_mean(x) > 0.5:  # Dynamic control flow\nx = x * 2.0\nreturn self.dense2(x)\n\nmodel = DynamicMLP(hidden_dim=32, num_classes=10)\nout = model(tf.random.normal([2, 16]))",
+      "use_when": "> * Writing research code requiring dynamic execution, conditional control flow, or state updates.",
+      "avoid_when": "> * Standard Functional API models suffice (subclassed models cannot be fully saved via basic config serialization without implementing get_config).",
+      "gotchas": [
+        "Subclassed models do not generate an explicit symbolic graph until called on actual input tensors, meaning model.summary() requires calling model.build(input_shape) first.",
+        "Custom layer weights must be defined inside __init__ or build(), not created dynamically inside call()."
+      ],
+      "performance_notes": "> * Operates under tf.function tracing for high-performance compiled execution during model training and evaluation.",
+      "related_apis": [
+        "tf.keras.Model",
+        "tf.keras.layers.Layer"
+      ],
+      "primary_apis": [
+        "tf.keras.Model"
+      ],
+      "framework_migration_notes": "tf.keras.Model (Subclassed) \u2192 nn.Module",
+      "pytorch_equivalent": "tf.keras.Model (Subclassed) \u2192 nn.Module",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.Model (Subclassed) \u2192 nn.Module",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Model Subclassing",
+          "Imperative Model"
+        ],
+        "common_search_terms": [
+          "subclassing tf.keras.Model",
+          "imperative model keras",
+          "override call keras"
+        ],
+        "search_terms": [
+          "subclassing tf.keras.Model",
+          "imperative model keras",
+          "override call keras"
+        ],
+        "keywords": [
+          "subclassing",
+          "call",
+          "imperative",
+          "dynamic",
+          "model"
+        ],
+        "frequently_confused_with": [
+          "Subclassed Model vs Functional Model"
+        ],
+        "confused_with": [
+          "Subclassed Model vs Functional Model"
+        ]
+      },
+      "related_models": [
+        "gpt",
+        "llama",
+        "deepseek"
+      ],
+      "related_patterns": [
+        "kv-cache",
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/Model",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/Model"
+    },
+    {
+      "task": "36. Create Custom Layer (tf.keras.layers.Layer)",
+      "problem_solved": "Encapsulates state (weights) and computation (forward pass logic) into a custom reusable Keras layer block.",
+      "mental_trigger": "I need to write a new custom layer with learnable weights and custom forward calculation logic.",
+      "syntax": "def __init__(self, **kwargs):\nsuper().__init__(**kwargs)\n\ndef build(self, input_shape):\n# Create trainable weights here\nsuper().build(input_shape)\n\ndef call(self, inputs, **kwargs):\n# Forward pass computation\nreturn outputs\n\ndef get_config(self):\n# For serialization\nconfig = super().get_config()",
+      "important_parameters": [
+        "input_shape: TensorShape instance passed into build() automatically on first call."
+      ],
+      "important_params": [
+        "input_shape: TensorShape instance passed into build() automatically on first call."
+      ],
+      "return_value": "Output tensor or structure computed by custom forward logic.",
+      "example": "class LinearScaleBias(tf.keras.layers.Layer):\ndef __init__(self, units=32, **kwargs):\nsuper().__init__(**kwargs)\nself.units = units\n\ndef build(self, input_shape):\nself.w = self.add_weight(\nshape=(input_shape[-1], self.units),\ninitializer=\"random_normal\",\ntrainable=True,\nname=\"w\"\n)\nself.b = self.add_weight(\nshape=(self.units,),\ninitializer=\"zeros\",\ntrainable=True,\nname=\"b\"\n)\nsuper().build(input_shape)\n\ndef call(self, inputs):\nreturn tf.matmul(inputs, self.w) + self.b\n\ndef get_config(self):\nconfig = super().get_config()\nconfig.update({\"units\": self.units})\nreturn config\n\nx = tf.random.normal([4, 16])\nlayer = LinearScaleBias(units=8)\nout = layer(x)",
+      "snippet": "class LinearScaleBias(tf.keras.layers.Layer):\ndef __init__(self, units=32, **kwargs):\nsuper().__init__(**kwargs)\nself.units = units\n\ndef build(self, input_shape):\nself.w = self.add_weight(\nshape=(input_shape[-1], self.units),\ninitializer=\"random_normal\",\ntrainable=True,\nname=\"w\"\n)\nself.b = self.add_weight(\nshape=(self.units,),\ninitializer=\"zeros\",\ntrainable=True,\nname=\"b\"\n)\nsuper().build(input_shape)\n\ndef call(self, inputs):\nreturn tf.matmul(inputs, self.w) + self.b\n\ndef get_config(self):\nconfig = super().get_config()\nconfig.update({\"units\": self.units})\nreturn config\n\nx = tf.random.normal([4, 16])\nlayer = LinearScaleBias(units=8)\nout = layer(x)",
+      "use_when": "> * Implementing novel mathematical transformations, custom normalization, or new attention layer algorithms.",
+      "avoid_when": "> * Existing built-in Keras layers can be combined using standard Functional API logic.",
+      "gotchas": [
+        "Defining weights inside __init__ requires explicit shape knowledge; use build(input_shape) to dynamically initialize weights based on input shape.",
+        "Forgetting to return serializable arguments in get_config() breaks model saving/loading routines (tf.keras.models.load_model)."
+      ],
+      "performance_notes": "> * Integrates cleanly into tf.function compilation pipelines.",
+      "related_apis": [
+        "tf.keras.layers.Layer",
+        "tf.keras.Model"
+      ],
+      "primary_apis": [
+        "tf.keras.layers.Layer"
+      ],
+      "framework_migration_notes": "tf.keras.layers.Layer \u2192 nn.Module",
+      "pytorch_equivalent": "tf.keras.layers.Layer \u2192 nn.Module",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tf.keras.layers.Layer \u2192 nn.Module",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Custom Layer",
+          "Keras Layer Subclass"
+        ],
+        "common_search_terms": [
+          "custom layer keras",
+          "add_weight tf.keras",
+          "get_config custom layer"
+        ],
+        "search_terms": [
+          "custom layer keras",
+          "add_weight tf.keras",
+          "get_config custom layer"
+        ],
+        "keywords": [
+          "custom_layer",
+          "add_weight",
+          "build",
+          "call",
+          "get_config"
+        ],
+        "frequently_confused_with": [
+          "Custom Layer vs Subclassed Model"
+        ],
+        "confused_with": [
+          "Custom Layer vs Subclassed Model"
+        ]
+      },
+      "related_models": [
+        "transformer"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Layer",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Layer"
+    },
+    {
+      "task": "37. Display Model Architecture (model.summary)",
+      "problem_solved": "Prints a detailed text summary table listing model layer names, output shapes, and parameter counts.",
+      "mental_trigger": "I need to inspect the layers, tensor output shapes, and trainable parameter counts of my model.",
+      "syntax": "line_length=None,\npositions=None,\nprint_fn=None,\nexpand_nested=False,\nshow_trainable=False,\nlayer_range=None",
+      "important_parameters": [
+        "expand_nested: Boolean, whether to expand nested sub-models to display internal layer details.",
+        "show_trainable: Boolean, whether to show if layers are trainable.",
+        "line_length: Total length of printed lines (adjust for wide terminals)."
+      ],
+      "important_params": [
+        "expand_nested: Boolean, whether to expand nested sub-models to display internal layer details.",
+        "show_trainable: Boolean, whether to show if layers are trainable.",
+        "line_length: Total length of printed lines (adjust for wide terminals)."
+      ],
+      "return_value": "Prints summary to stdout (or custom string collector passed via print_fn). Returns None.",
+      "example": "model = tf.keras.Sequential([\ntf.keras.layers.Input(shape=(64, 64, 3)),\ntf.keras.layers.Conv2D(16, 3, activation=\"relu\"),\ntf.keras.layers.GlobalAveragePooling2D(),\ntf.keras.layers.Dense(1)\n])",
+      "snippet": "model = tf.keras.Sequential([\ntf.keras.layers.Input(shape=(64, 64, 3)),\ntf.keras.layers.Conv2D(16, 3, activation=\"relu\"),\ntf.keras.layers.GlobalAveragePooling2D(),\ntf.keras.layers.Dense(1)\n])",
+      "use_when": "> * Verifying output tensor spatial shape reductions across convolutional or attention blocks.  \n> * Checking total trainable versus non-trainable parameter ratios during transfer learning.",
+      "avoid_when": "> * Automated programmatic model evaluation is required (use model.layers inspection instead).",
+      "gotchas": [
+        "Subclassed models called without an Input layer or prior forward run throw an unbuilt model exception when calling summary()."
+      ],
+      "performance_notes": "> * Text printing diagnostic operation only; zero impact on model execution runtime.",
+      "related_apis": [
+        "model.summary()",
+        "tf.keras.utils.plot_model",
+        "model.layers"
+      ],
+      "primary_apis": [
+        "model.summary()"
+      ],
+      "framework_migration_notes": "No exact native method (requires third-party libraries like torchinfo or torchsummary).",
+      "pytorch_equivalent": "No exact native method (requires third-party libraries like torchinfo or torchsummary).",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "No exact native method (requires third-party libraries like torchinfo or torchsummary).",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Model Summary",
+          "Architecture Inspection"
+        ],
+        "common_search_terms": [
+          "model.summary keras",
+          "parameter count keras",
+          "print model architecture"
+        ],
+        "search_terms": [
+          "model.summary keras",
+          "parameter count keras",
+          "print model architecture"
+        ],
+        "keywords": [
+          "summary",
+          "architecture",
+          "parameters",
+          "output_shape",
+          "layers"
+        ],
+        "frequently_confused_with": [
+          "model.summary vs plot_model"
+        ],
+        "confused_with": [
+          "model.summary vs plot_model"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#summary",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#summary"
+    },
+    {
+      "task": "38. Visualize Model Graph (tf.keras.utils.plot_model)",
+      "problem_solved": "Renders a visual node-and-edge graph diagram image representing layer connectivity and tensor shapes.",
+      "mental_trigger": "I want to generate a visual image diagram of my Keras Functional architecture graph.",
+      "syntax": "model,\nto_file=\"model.png\",\nshow_shapes=False,\nshow_dtype=False,\nshow_layer_names=True,\nrankdir=\"TB\",\nexpand_nested=False,\ndpi=200,\nshow_layer_activations=False",
+      "important_parameters": [
+        "to_file: File path name where rendered graph image is saved.",
+        "show_shapes: Boolean indicating whether output shapes are displayed in diagram nodes.",
+        "rankdir: String \"TB\" (top-to-bottom) or \"LR\" (left-to-right) diagram orientation.",
+        "expand_nested: Boolean, whether to expand nested sub-models into distinct detailed sub-graphs."
+      ],
+      "important_params": [
+        "to_file: File path name where rendered graph image is saved.",
+        "show_shapes: Boolean indicating whether output shapes are displayed in diagram nodes.",
+        "rankdir: String \"TB\" (top-to-bottom) or \"LR\" (left-to-right) diagram orientation.",
+        "expand_nested: Boolean, whether to expand nested sub-models into distinct detailed sub-graphs."
+      ],
+      "return_value": "A Graphviz image structure object displaying the compiled architecture diagram.",
+      "example": "inputs = tf.keras.Input(shape=(32, 32, 3))\nx = tf.keras.layers.Conv2D(16, 3, activation=\"relu\")(inputs)\noutputs = tf.keras.layers.Dense(10)(x)\nmodel = tf.keras.Model(inputs=inputs, outputs=outputs)\n\n# Save visual graph to PNG\ntf.keras.utils.plot_model(\nmodel,\nto_file=\"model_architecture.png\",\nshow_shapes=True,\nshow_layer_names=True",
+      "snippet": "inputs = tf.keras.Input(shape=(32, 32, 3))\nx = tf.keras.layers.Conv2D(16, 3, activation=\"relu\")(inputs)\noutputs = tf.keras.layers.Dense(10)(x)\nmodel = tf.keras.Model(inputs=inputs, outputs=outputs)\n\n# Save visual graph to PNG\ntf.keras.utils.plot_model(\nmodel,\nto_file=\"model_architecture.png\",\nshow_shapes=True,\nshow_layer_names=True",
+      "use_when": "> * Documenting multi-branch or complex network topologies for research papers, reports, or visual debugging.",
+      "avoid_when": "> * Graphviz system binaries (dot) are not installed on the system environment.",
+      "gotchas": [
+        "Requires system-level graphviz executables and Python pydot package installed; otherwise throws ImportError or ExecutableNotFound."
+      ],
+      "performance_notes": "> * File I/O diagnostic generation utility; off-line visual rendering only.",
+      "related_apis": [
+        "tf.keras.utils.plot_model",
+        "model.summary"
+      ],
+      "primary_apis": [
+        "tf.keras.utils.plot_model"
+      ],
+      "framework_migration_notes": "No direct native equivalent (requires third-party libraries like torchviz).",
+      "pytorch_equivalent": "No direct native equivalent (requires third-party libraries like torchviz).",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "No direct native equivalent (requires third-party libraries like torchviz).",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "Graph Visualization",
+          "Plot Model Graph"
+        ],
+        "common_search_terms": [
+          "plot_model keras",
+          "visualize keras graph",
+          "pydot model plot"
+        ],
+        "search_terms": [
+          "plot_model keras",
+          "visualize keras graph",
+          "pydot model plot"
+        ],
+        "keywords": [
+          "plot_model",
+          "graphviz",
+          "diagram",
+          "architecture",
+          "show_shapes"
+        ],
+        "frequently_confused_with": [
+          "plot_model vs model.summary"
+        ],
+        "confused_with": [
+          "plot_model vs model.summary"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "yolo"
+      ],
+      "related_patterns": [
+        "feature-fusion"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline"
+      ],
+      "related_cheatsheets": [
+        "nn"
+      ],
+      "related_cheatsheet": [
+        "nn"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/utils/plot_model",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/utils/plot_model"
+    }
+  ]
+}

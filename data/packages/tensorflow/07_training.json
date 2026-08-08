@@ -1,0 +1,1799 @@
+{
+  "id": "tensorflow",
+  "module_name": "07_training",
+  "module_title": "Training & Lifecycle",
+  "slug": "07_training",
+  "tasks": [
+    {
+      "task": "Compile Keras Model (model.compile)",
+      "problem_solved": "Configures the Keras model with the loss function, optimizer, and evaluation metrics required for execution in training and evaluation loops.",
+      "mental_trigger": "I need to prepare my instantiated Keras model architecture for training by assigning an optimization algorithm, objective loss, and evaluation metrics.",
+      "syntax": "optimizer=\"rmsprop\",\nloss=None,\nloss_weights=None,\nmetrics=None,\nweighted_metrics=None,\nrun_eagerly=False,\nsteps_per_execution=1,\njit_compile=\"auto\",\nauto_scale_loss=True,",
+      "important_parameters": [
+        "optimizer: String identifier or instance of a keras.optimizers.Optimizer. Defines the optimization algorithm used to compute and apply gradient updates.",
+        "loss: String identifier or instance of keras.losses.Loss. Objectives to minimize during training.",
+        "metrics: List of metric instances or string names monitored by the model during training and testing.",
+        "run_eagerly: Boolean. If True, forces model execution to run eagerly under Python instead of compiling into a TensorFlow graph.",
+        "jit_compile: Boolean. If True, compiles the computation graph using XLA (Accelerated Linear Algebra) for execution performance optimization."
+      ],
+      "important_params": [
+        "optimizer: String identifier or instance of a keras.optimizers.Optimizer. Defines the optimization algorithm used to compute and apply gradient updates.",
+        "loss: String identifier or instance of keras.losses.Loss. Objectives to minimize during training.",
+        "metrics: List of metric instances or string names monitored by the model during training and testing.",
+        "run_eagerly: Boolean. If True, forces model execution to run eagerly under Python instead of compiling into a TensorFlow graph.",
+        "jit_compile: Boolean. If True, compiles the computation graph using XLA (Accelerated Linear Algebra) for execution performance optimization."
+      ],
+      "return_value": "None. The configuration is stored internally within the keras.Model instance.",
+      "example": "import tensorflow as tf\n\ninputs = keras.Input(shape=(32,))\noutputs = keras.layers.Dense(10, activation=\"softmax\")(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\n\nmodel.compile(\noptimizer=keras.optimizers.Adam(learning_rate=0.001),\nloss=keras.losses.CategoricalCrossentropy(),\nmetrics=[\nkeras.metrics.CategoricalAccuracy(name=\"accuracy\"),\nkeras.metrics.TopKCategoricalAccuracy(k=5, name=\"top_5_accuracy\"),\n],\njit_compile=True,",
+      "snippet": "import tensorflow as tf\n\ninputs = keras.Input(shape=(32,))\noutputs = keras.layers.Dense(10, activation=\"softmax\")(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\n\nmodel.compile(\noptimizer=keras.optimizers.Adam(learning_rate=0.001),\nloss=keras.losses.CategoricalCrossentropy(),\nmetrics=[\nkeras.metrics.CategoricalAccuracy(name=\"accuracy\"),\nkeras.metrics.TopKCategoricalAccuracy(k=5, name=\"top_5_accuracy\"),\n],\njit_compile=True,",
+      "use_when": "Preparing standard Keras sequential or functional models before invoking model.fit(), model.evaluate(), or model.train_step().",
+      "avoid_when": "Building standard custom training loops completely controlled via tf.GradientTape where loss calculation and optimizer steps are invoked manually outside Keras execution APIs.",
+      "gotchas": [
+        "Strings passed to optimizer instantiate default parameter values, which prevents explicit adjustment of learning rate or weight decay without passing a full keras.optimizers.Optimizer instance.",
+        "Setting run_eagerly=True significantly drops execution throughput and should only be kept enabled during debugging sessions.",
+        "Passing custom loss functions as raw Python functions without proper scalar execution wrappers can break XLA tracing when jit_compile=True."
+      ],
+      "performance_notes": "Setting jit_compile=True compiles operations into unified XLA kernels, delivering significant speedups on modern GPU architectures at the cost of an initial dynamic tracing delay on epoch zero.",
+      "related_apis": [
+        "keras.optimizers.Optimizer",
+        "keras.losses.Loss",
+        "keras.metrics.Metric"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "model.compile() configures state setup for automatic evaluation and gradient application. In PyTorch, optimization targets and loss objects remain separate variables initialized explicitly alongside the network definition.",
+      "pytorch_equivalent": "`optimizer = torch.optim.Adam(model.parameters(), lr=0.001)`  \n`criterion = torch.nn.CrossEntropyLoss()`",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "`optimizer = torch.optim.Adam(model.parameters(), lr=0.001)`  \n`criterion = torch.nn.CrossEntropyLoss()`",
+      "version_compatibility": "In TensorFlow 2.21 with Keras 3, jit_compile defaults to \"auto\", allowing the engine to leverage modern compiler acceleration where available across target backends.",
+      "search_metadata": {
+        "aliases": [
+          "compile",
+          "model configuration",
+          "loss and optimizer setup"
+        ],
+        "common_search_terms": [
+          "how to compile tf keras model",
+          "keras model compile parameters",
+          "xla jit_compile tf"
+        ],
+        "search_terms": [
+          "how to compile tf keras model",
+          "keras model compile parameters",
+          "xla jit_compile tf"
+        ],
+        "keywords": [
+          "compile",
+          "optimizer",
+          "loss",
+          "metrics",
+          "jit_compile"
+        ],
+        "frequently_confused_with": [
+          "fit() vs compile()"
+        ],
+        "confused_with": [
+          "fit() vs compile()"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "bert",
+        "logistic-regression"
+      ],
+      "related_patterns": [
+        "mixed-precision",
+        "callbacks"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "training"
+      ],
+      "related_cheatsheet": [
+        "training"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide",
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#compile",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#compile"
+    },
+    {
+      "task": "Configure Multiple Evaluation Metrics",
+      "problem_solved": "Tracks multiple, distinct performance indicators simultaneously across training and validation splits without modifying the optimization objective.",
+      "mental_trigger": "I need my model to track categorical accuracy, precision, and recall alongside cross-entropy loss during epoch transitions.",
+      "syntax": "optimizer=\"adam\",\nloss=\"categorical_crossentropy\",\nmetrics=[\"accuracy\", keras.metrics.Precision(), keras.metrics.Recall()],",
+      "important_parameters": [
+        "metrics: A list, dictionary, or structure containing metric instances (keras.metrics.Metric) or valid string aliases evaluated during fit() and evaluate()."
+      ],
+      "important_params": [
+        "metrics: A list, dictionary, or structure containing metric instances (keras.metrics.Metric) or valid string aliases evaluated during fit() and evaluate()."
+      ],
+      "return_value": "None. Model internal state registers metric tracking nodes.",
+      "example": "import tensorflow as tf\n\ninputs = keras.Input(shape=(784,))\nx = keras.layers.Dense(128, activation=\"relu\")(inputs)\noutputs = keras.layers.Dense(10, activation=\"softmax\")(x)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\n\nmetric_list = [\n\"accuracy\",\nkeras.metrics.Precision(name=\"precision\"),\nkeras.metrics.Recall(name=\"recall\"),\nkeras.metrics.AUC(name=\"auc\"),\n]\n\nmodel.compile(\noptimizer=keras.optimizers.Adam(),\nloss=keras.losses.CategoricalCrossentropy(),\nmetrics=metric_list,",
+      "snippet": "import tensorflow as tf\n\ninputs = keras.Input(shape=(784,))\nx = keras.layers.Dense(128, activation=\"relu\")(inputs)\noutputs = keras.layers.Dense(10, activation=\"softmax\")(x)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\n\nmetric_list = [\n\"accuracy\",\nkeras.metrics.Precision(name=\"precision\"),\nkeras.metrics.Recall(name=\"recall\"),\nkeras.metrics.AUC(name=\"auc\"),\n]\n\nmodel.compile(\noptimizer=keras.optimizers.Adam(),\nloss=keras.losses.CategoricalCrossentropy(),\nmetrics=metric_list,",
+      "use_when": "Assessing multi-dimensional performance attributes on imbalanced classification tasks, multi-output models, or multi-objective regression targets.",
+      "avoid_when": "Tracking metrics in raw execution loops that manually calculate values using raw NumPy arrays without updating Keras metric dynamic state objects.",
+      "gotchas": [
+        "Re-using the exact same keras.metrics.Metric object instance across multiple model outputs causes cross-contamination of tracked internal state accumulators.",
+        "String aliases like \"accuracy\" automatically map dynamically based on output shapes, which can choose unexpected metric implementations if shapes are ambiguous."
+      ],
+      "performance_notes": "Computing expensive metrics like AUC or Mean IoU on large datasets after every batch introduces CPU-GPU synchronization bottlenecks. Consider computing them only on validation datasets.",
+      "related_apis": [
+        "keras.metrics.Metric",
+        "keras.metrics.Precision",
+        "keras.metrics.Recall"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Replaces manual metric computation loops executed at evaluation epoch bounds in native PyTorch logic.",
+      "pytorch_equivalent": "`# PyTorch requires explicit accumulators (e.g. torchmetrics or manual sum counters)`",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "`# PyTorch requires explicit accumulators (e.g. torchmetrics or manual sum counters)`",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "multi-metric setup",
+          "tracking precision recall auc"
+        ],
+        "common_search_terms": [
+          "keras track multiple metrics",
+          "add precision recall to model compile tf"
+        ],
+        "search_terms": [
+          "keras track multiple metrics",
+          "add precision recall to model compile tf"
+        ],
+        "keywords": [
+          "metrics",
+          "Precision",
+          "Recall",
+          "AUC",
+          "multi-metric"
+        ],
+        "frequently_confused_with": [
+          "weighted_metrics vs metrics"
+        ],
+        "confused_with": [
+          "weighted_metrics vs metrics"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert",
+        "logistic-regression",
+        "xgboost"
+      ],
+      "related_patterns": [
+        "callbacks"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "training"
+      ],
+      "related_cheatsheet": [
+        "training"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/metrics",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/metrics"
+    },
+    {
+      "task": "Configure Weighted Metrics",
+      "problem_solved": "Evaluates model tracking metrics adjusted by sample weights or class weights to provide true weighted performance measurements on imbalanced target distributions.",
+      "mental_trigger": "I want my evaluation metric to account for sample importance weights, whereas my basic loss already handles instance weighting.",
+      "syntax": "optimizer=\"adam\",\nloss=\"binary_crossentropy\",\nmetrics=[\"accuracy\"],\nweighted_metrics=[keras.metrics.BinaryAccuracy(name=\"weighted_acc\")],",
+      "important_parameters": [
+        "metrics: Metrics evaluated directly on raw prediction pairs without applying sample weights.",
+        "weighted_metrics: Metrics explicitly evaluated taking sample_weight or class_weight into metric value calculations."
+      ],
+      "important_params": [
+        "metrics: Metrics evaluated directly on raw prediction pairs without applying sample weights.",
+        "weighted_metrics: Metrics explicitly evaluated taking sample_weight or class_weight into metric value calculations."
+      ],
+      "return_value": "None. Configures tracking hooks inside the compiled Keras model.",
+      "example": "import keras\n\ninputs = keras.Input(shape=(10,))\noutputs = keras.layers.Dense(1, activation=\"sigmoid\")(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\n\nmodel.compile(\noptimizer=\"adam\",\nloss=\"binary_crossentropy\",\nmetrics=[keras.metrics.BinaryAccuracy(name=\"unweighted_acc\")],\nweighted_metrics=[keras.metrics.BinaryAccuracy(name=\"weighted_acc\")],\n)\n\nx = np.random.random((100, 10))\ny = np.random.randint(0, 2, size=(100, 1))\nsample_weights = np.random.random((100, 1))",
+      "snippet": "import keras\n\ninputs = keras.Input(shape=(10,))\noutputs = keras.layers.Dense(1, activation=\"sigmoid\")(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\n\nmodel.compile(\noptimizer=\"adam\",\nloss=\"binary_crossentropy\",\nmetrics=[keras.metrics.BinaryAccuracy(name=\"unweighted_acc\")],\nweighted_metrics=[keras.metrics.BinaryAccuracy(name=\"weighted_acc\")],\n)\n\nx = np.random.random((100, 10))\ny = np.random.randint(0, 2, size=(100, 1))\nsample_weights = np.random.random((100, 1))",
+      "use_when": "Training on dataset splits containing explicitly non-uniform sample importance or unbalanced frequencies where accuracy tracking must reflect per-class density weightings.",
+      "avoid_when": "Every instance in the training set carries uniform weight, rendering weighted and standard metric calculation outputs identical.",
+      "gotchas": [
+        "Passing strings inside weighted_metrics can lead to metric name collisions with entries in metrics if custom explicit names are omitted.",
+        "Validation metrics set up inside weighted_metrics require validation data to explicitly include a 3-tuple (x_val, y_val, val_sample_weights)."
+      ],
+      "performance_notes": "Weighted metrics perform additional element-wise operations on GPU buffers during tensor aggregation steps, adding minimal compute overhead.",
+      "related_apis": [
+        "keras.metrics.Metric.update_state",
+        "model.fit(sample_weight=...)"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "PyTorch does not automatically track weighted metrics; sample weights must be explicitly passed to loss functions or custom metric loops.",
+      "pytorch_equivalent": "`# Manual application of sample weight tensor multiplication inside epoch loops`",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "`# Manual application of sample weight tensor multiplication inside epoch loops`",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "weighted metrics",
+          "sample weight metrics"
+        ],
+        "common_search_terms": [
+          "keras weighted_metrics example",
+          "sample_weight with evaluation metrics tf"
+        ],
+        "search_terms": [
+          "keras weighted_metrics example",
+          "sample_weight with evaluation metrics tf"
+        ],
+        "keywords": [
+          "weighted_metrics",
+          "sample_weight",
+          "class_weight",
+          "metrics"
+        ],
+        "frequently_confused_with": [
+          "metrics vs weighted_metrics"
+        ],
+        "confused_with": [
+          "metrics vs weighted_metrics"
+        ]
+      },
+      "related_models": [
+        "logistic-regression",
+        "resnet"
+      ],
+      "related_patterns": [
+        "callbacks"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "training"
+      ],
+      "related_cheatsheet": [
+        "training"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#compile",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#compile"
+    },
+    {
+      "task": "Train Model (model.fit)",
+      "problem_solved": "Executes the main training loop for a specified number of epochs, handling batching, gradient updates, metric tracking, and callback hooks automatically.",
+      "mental_trigger": "I want to train my compiled Keras model using standard arrays or dataset structures over multiple epochs.",
+      "syntax": "x=None,\ny=None,\nbatch_size=None,\nepochs=1,\nverbose=\"auto\",\ncallbacks=None,\nvalidation_split=0.0,\nvalidation_data=None,\nshuffle=True,\nclass_weight=None,\nsample_weight=None,\ninitial_epoch=0,\nsteps_per_epoch=None,\nvalidation_steps=None,\nvalidation_batch_size=None,\nvalidation_freq=1,",
+      "important_parameters": [
+        "x: Input data. Can be a NumPy array, TensorFlow tensor, tf.data.Dataset, or Python generator.",
+        "y: Target data matching input instances. Omitted if x is a tf.data.Dataset yielding tuples.",
+        "batch_size: Number of samples per gradient update. Omitted when passing a pre-batched tf.data.Dataset.",
+        "epochs: Integer. Total number of training passes over the dataset.",
+        "validation_data: Data on which to evaluate loss and metrics at the end of each epoch."
+      ],
+      "important_params": [
+        "x: Input data. Can be a NumPy array, TensorFlow tensor, tf.data.Dataset, or Python generator.",
+        "y: Target data matching input instances. Omitted if x is a tf.data.Dataset yielding tuples.",
+        "batch_size: Number of samples per gradient update. Omitted when passing a pre-batched tf.data.Dataset.",
+        "epochs: Integer. Total number of training passes over the dataset.",
+        "validation_data: Data on which to evaluate loss and metrics at the end of each epoch."
+      ],
+      "return_value": "A keras.callbacks.History object. Its history attribute is a record of training loss values and metric values at successive epochs.",
+      "example": "import keras\n\ninputs = keras.Input(shape=(16,))\noutputs = keras.layers.Dense(1, activation=\"sigmoid\")(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\n\nmodel.compile(optimizer=\"adam\", loss=\"binary_crossentropy\", metrics=[\"accuracy\"])\n\nx_train = np.random.random((1000, 16))\ny_train = np.random.randint(0, 2, size=(1000, 1))\nx_val = np.random.random((200, 16))\ny_val = np.random.randint(0, 2, size=(200, 1))\n\nhistory = model.fit(\nx=x_train,\ny=y_train,\nbatch_size=32,\nepochs=5,\nvalidation_data=(x_val, y_val),\nverbose=1,\n)",
+      "snippet": "import keras\n\ninputs = keras.Input(shape=(16,))\noutputs = keras.layers.Dense(1, activation=\"sigmoid\")(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\n\nmodel.compile(optimizer=\"adam\", loss=\"binary_crossentropy\", metrics=[\"accuracy\"])\n\nx_train = np.random.random((1000, 16))\ny_train = np.random.randint(0, 2, size=(1000, 1))\nx_val = np.random.random((200, 16))\ny_val = np.random.randint(0, 2, size=(200, 1))\n\nhistory = model.fit(\nx=x_train,\ny=y_train,\nbatch_size=32,\nepochs=5,\nvalidation_data=(x_val, y_val),\nverbose=1,\n)",
+      "use_when": "Training standard supervised or self-supervised models that map cleanly into Keras standard execution loops.",
+      "avoid_when": "Developing highly specialized dynamic architectures requiring dynamic intermediate loss mutations mid-batch across multiple dynamic backends (use full custom training loops or custom train_step).",
+      "gotchas": [
+        "Supplying validation_split when x is provided as a pre-shuffled tf.data.Dataset is invalid; pass an explicit validation_data dataset instead.",
+        "epochs defines the cumulative total index target, not the count of additional epochs to run when resuming training."
+      ],
+      "performance_notes": "When passing raw NumPy arrays, TensorFlow copies them into CPU/GPU memory space continuously per batch. Convert large arrays directly into pre-fetched tf.data.Dataset objects to eliminate memory transfer bottlenecks.",
+      "related_apis": [
+        "keras.callbacks.History",
+        "model.compile",
+        "model.evaluate"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "model.fit() replaces manual epoch loops, manual gradient clearing (optimizer.zero_grad()), backward execution passes (loss.backward()), and step updates (optimizer.step()).",
+      "pytorch_equivalent": "`for epoch in range(epochs):`  \n    `for x_batch, y_batch in train_loader:`  \n        `optimizer.zero_grad()`  \n        `out = model(x_batch)`  \n        `loss = criterion(out, y_batch)`  \n        `loss.backward()`  \n        `optimizer.step()`",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "`for epoch in range(epochs):`  \n    `for x_batch, y_batch in train_loader:`  \n        `optimizer.zero_grad()`  \n        `out = model(x_batch)`  \n        `loss = criterion(out, y_batch)`  \n        `loss.backward()`  \n        `optimizer.step()`",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "fit",
+          "train model",
+          "keras model.fit"
+        ],
+        "common_search_terms": [
+          "how to train keras model",
+          "tf model.fit parameters",
+          "history object from fit"
+        ],
+        "search_terms": [
+          "how to train keras model",
+          "tf model.fit parameters",
+          "history object from fit"
+        ],
+        "keywords": [
+          "fit",
+          "epochs",
+          "batch_size",
+          "validation_data",
+          "History"
+        ],
+        "frequently_confused_with": [
+          "fit() vs custom GradientTape"
+        ],
+        "confused_with": [
+          "fit() vs custom GradientTape"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "bert",
+        "yolo"
+      ],
+      "related_patterns": [
+        "memory-efficient-training",
+        "mixed-precision",
+        "callbacks"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline",
+        "semantic-segmentation-pipeline",
+        "text-classification-pipeline-classical-encoder",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "training"
+      ],
+      "related_cheatsheet": [
+        "training"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide",
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#fit",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#fit"
+    },
+    {
+      "task": "Continue Training from Previous Epoch (initial_epoch)",
+      "problem_solved": "Resumes model training cleanly from a recorded epoch index offset without resetting learning rate schedules or epoch counter indices.",
+      "mental_trigger": "My training run paused or preempted at epoch 10, and I want to restart training from epoch 10 to epoch 20 seamlessly.",
+      "syntax": "x,\ny,\nepochs=20,\ninitial_epoch=10,\ncallbacks=callbacks,",
+      "important_parameters": [
+        "epochs: Total target end epoch index.",
+        "initial_epoch: Integer epoch index at which to start training (useful for resuming previous training runs)."
+      ],
+      "important_params": [
+        "epochs: Total target end epoch index.",
+        "initial_epoch: Integer epoch index at which to start training (useful for resuming previous training runs)."
+      ],
+      "return_value": "keras.callbacks.History containing loss and metric tracks recorded specifically for epochs executed between initial_epoch and epochs.",
+      "example": "import keras\n\ninputs = keras.Input(shape=(8,))\noutputs = keras.layers.Dense(1)(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer=\"adam\", loss=\"mse\")\n\nx = np.random.random((100, 8))\ny = np.random.random((100, 1))\n\n# Initial phase: train for 3 epochs (0, 1, 2)\nmodel.fit(x, y, epochs=3, batch_size=16)\n\n# Resume phase: train from epoch 3 up to epoch 6",
+      "snippet": "import keras\n\ninputs = keras.Input(shape=(8,))\noutputs = keras.layers.Dense(1)(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer=\"adam\", loss=\"mse\")\n\nx = np.random.random((100, 8))\ny = np.random.random((100, 1))\n\n# Initial phase: train for 3 epochs (0, 1, 2)\nmodel.fit(x, y, epochs=3, batch_size=16)\n\n# Resume phase: train from epoch 3 up to epoch 6",
+      "use_when": "Recovering training state following spot instance preemptions, or conducting multi-stage fine-tuning across schedule thresholds.",
+      "avoid_when": "Starting a brand-new training run from scratch where historical epoch index tracking should begin at index 0.",
+      "gotchas": [
+        "If epochs is less than or equal to initial_epoch, model.fit() exits immediately without executing any training steps.",
+        "State-dependent custom learning rate schedulers must be manually offset if they maintain internal epoch state counters independently of the epoch parameter passed by Keras."
+      ],
+      "performance_notes": "Re-initiating model.fit() triggers callback initialization checks, but optimizer state tensors (momentum/velocities) remain fully preserved in memory if using the same model instance.",
+      "related_apis": [
+        "keras.callbacks.ModelCheckpoint",
+        "keras.callbacks.LearningRateScheduler"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Allows setting global epoch indexes directly inside high-level framework wrappers rather than adjusting outer loop range controls manually.",
+      "pytorch_equivalent": "`for epoch in range(start_epoch, total_epochs):`  \n    `# Manual loop execution from checkpoint start_epoch`  \n    `pass`",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "`for epoch in range(start_epoch, total_epochs):`  \n    `# Manual loop execution from checkpoint start_epoch`  \n    `pass`",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "resume training",
+          "initial_epoch parameter",
+          "restart fit"
+        ],
+        "common_search_terms": [
+          "how to resume training in keras",
+          "tf fit initial_epoch parameter"
+        ],
+        "search_terms": [
+          "how to resume training in keras",
+          "tf fit initial_epoch parameter"
+        ],
+        "keywords": [
+          "initial_epoch",
+          "epochs",
+          "resume",
+          "checkpoint"
+        ],
+        "frequently_confused_with": [
+          "epochs count vs initial_epoch offset"
+        ],
+        "confused_with": [
+          "epochs count vs initial_epoch offset"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "transformer",
+        "llama"
+      ],
+      "related_patterns": [
+        "callbacks"
+      ],
+      "related_workflows": [
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "training"
+      ],
+      "related_cheatsheet": [
+        "training"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#fit",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#fit"
+    },
+    {
+      "task": "Train Using tf.data.Dataset",
+      "problem_solved": "Streams high-throughput, pre-processed input pipelines directly into model.fit(), maximizing hardware utilization via asynchronous multi-threaded prefetches.",
+      "mental_trigger": "My dataset does not fit into RAM, or I need asynchronous pipeline operations like transformation, batching, and GPU prefetching.",
+      "syntax": "dataset,\nepochs=10,\nsteps_per_epoch=None,\nvalidation_data=val_dataset,\ncallbacks=callbacks,",
+      "important_parameters": [
+        "x: A tf.data.Dataset object yielding (inputs, targets) or (inputs, targets, sample_weights) tuples.",
+        "y: Must be None when x is a tf.data.Dataset.",
+        "batch_size: Must be None when x is a pre-batched tf.data.Dataset.",
+        "steps_per_epoch: Total number of steps (batches of samples) before declaring one epoch finished. Optional if dataset has finite length."
+      ],
+      "important_params": [
+        "x: A tf.data.Dataset object yielding (inputs, targets) or (inputs, targets, sample_weights) tuples.",
+        "y: Must be None when x is a tf.data.Dataset.",
+        "batch_size: Must be None when x is a pre-batched tf.data.Dataset.",
+        "steps_per_epoch: Total number of steps (batches of samples) before declaring one epoch finished. Optional if dataset has finite length."
+      ],
+      "return_value": "A keras.callbacks.History tracking object.",
+      "example": "import keras\n\n# Build dummy tf.data.Dataset pipeline\nfeatures = tf.random.normal((1000, 20))\nlabels = tf.random.uniform((1000, 1), maxval=2, dtype=tf.int32)\n\ndataset = tf.data.Dataset.from_tensor_slices((features, labels))\ndataset = dataset.shuffle(buffer_size=100).batch(32).prefetch(tf.data.AUTOTUNE)\n\nval_dataset = tf.data.Dataset.from_tensor_slices((features[:200], labels[:200])).batch(32)\n\n# Build Model\ninputs = keras.Input(shape=(20,))\noutputs = keras.layers.Dense(1, activation=\"sigmoid\")(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer=\"adam\", loss=\"binary_crossentropy\", metrics=[\"accuracy\"])\n\n# Train",
+      "snippet": "import keras\n\n# Build dummy tf.data.Dataset pipeline\nfeatures = tf.random.normal((1000, 20))\nlabels = tf.random.uniform((1000, 1), maxval=2, dtype=tf.int32)\n\ndataset = tf.data.Dataset.from_tensor_slices((features, labels))\ndataset = dataset.shuffle(buffer_size=100).batch(32).prefetch(tf.data.AUTOTUNE)\n\nval_dataset = tf.data.Dataset.from_tensor_slices((features[:200], labels[:200])).batch(32)\n\n# Build Model\ninputs = keras.Input(shape=(20,))\noutputs = keras.layers.Dense(1, activation=\"sigmoid\")(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer=\"adam\", loss=\"binary_crossentropy\", metrics=[\"accuracy\"])\n\n# Train",
+      "use_when": "Building production data ingestion pipelines for large-scale vision, audio, or language modeling workflows.",
+      "avoid_when": "Working with micro-datasets that easily fit into memory, where simple NumPy array inputs require lower code overhead.",
+      "gotchas": [
+        "Passing a batch_size parameter explicitly alongside a dataset that is already batched raises an explicit ValueError.",
+        "Infinite datasets (e.g., datasets with .repeat()) require steps_per_epoch to be explicitly defined; otherwise, model.fit() loops endlessly inside epoch 1."
+      ],
+      "performance_notes": "Always chain .prefetch(tf.data.AUTOTUNE) as the final operation on your tf.data.Dataset to overlap CPU preprocessing steps with GPU forward/backward compute passes.",
+      "related_apis": [
+        "tf.data.Dataset",
+        "tf.data.AUTOTUNE"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "tf.data.Dataset directly replaces PyTorch's torch.utils.data.DataLoader \\+ Dataset paradigm.",
+      "pytorch_equivalent": "`train_loader = DataLoader(dataset, batch_size=32, shuffle=True)`  \n`for x, y in train_loader:`  \n    `# Manual execution loop`  \n    `pass`",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "`train_loader = DataLoader(dataset, batch_size=32, shuffle=True)`  \n`for x, y in train_loader:`  \n    `# Manual execution loop`  \n    `pass`",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "tf.data training",
+          "dataset model fit",
+          "streaming fit"
+        ],
+        "common_search_terms": [
+          "how to train tf model with tf.data.dataset",
+          "fit prebatched dataset keras"
+        ],
+        "search_terms": [
+          "how to train tf model with tf.data.dataset",
+          "fit prebatched dataset keras"
+        ],
+        "keywords": [
+          "tf.data.Dataset",
+          "prefetch",
+          "steps_per_epoch",
+          "fit"
+        ],
+        "frequently_confused_with": [
+          "tf.data.Dataset pre-batched vs un-batched inputs"
+        ],
+        "confused_with": [
+          "tf.data.Dataset pre-batched vs un-batched inputs"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "yolo",
+        "bert"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline",
+        "semantic-segmentation-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "training"
+      ],
+      "related_cheatsheet": [
+        "training"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#fit",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#fit"
+    },
+    {
+      "task": "Train Using Python Generator",
+      "problem_solved": "Streams custom batch arrays dynamically generated in Python memory into model.fit() without pre-converting them into tf.data.Dataset objects.",
+      "mental_trigger": "I have a custom Python generator yielding runtime-transformed data batches that I need to pass directly to Keras model training.",
+      "syntax": "generator_instance,\nsteps_per_epoch=100,\nepochs=10,\nvalidation_data=val_generator,\nvalidation_steps=20,",
+      "important_parameters": [
+        "x: A Python generator or keras.utils.Sequence object yielding (inputs, targets) tuples continuously.",
+        "steps_per_epoch: Total batch count generated to yield one full training epoch.",
+        "validation_steps: Total batch count consumed from validation_data during validation loops."
+      ],
+      "important_params": [
+        "x: A Python generator or keras.utils.Sequence object yielding (inputs, targets) tuples continuously.",
+        "steps_per_epoch: Total batch count generated to yield one full training epoch.",
+        "validation_steps: Total batch count consumed from validation_data during validation loops."
+      ],
+      "return_value": "A keras.callbacks.History object tracking epoch progression metrics.",
+      "example": "import keras\n\ndef custom_data_generator(batch_size=32, feature_dim=10):\nwhile True:\nx_batch = np.random.random((batch_size, feature_dim))\ny_batch = np.random.randint(0, 2, size=(batch_size, 1))\nyield x_batch, y_batch\n\ninputs = keras.Input(shape=(10,))\noutputs = keras.layers.Dense(1, activation=\"sigmoid\")(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer=\"adam\", loss=\"binary_crossentropy\")\n\ntrain_gen = custom_data_generator(batch_size=32)\n\nmodel.fit(\ntrain_gen,\nsteps_per_epoch=30,  # Generates 30 batches per epoch\nepochs=2,",
+      "snippet": "import keras\n\ndef custom_data_generator(batch_size=32, feature_dim=10):\nwhile True:\nx_batch = np.random.random((batch_size, feature_dim))\ny_batch = np.random.randint(0, 2, size=(batch_size, 1))\nyield x_batch, y_batch\n\ninputs = keras.Input(shape=(10,))\noutputs = keras.layers.Dense(1, activation=\"sigmoid\")(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer=\"adam\", loss=\"binary_crossentropy\")\n\ntrain_gen = custom_data_generator(batch_size=32)\n\nmodel.fit(\ntrain_gen,\nsteps_per_epoch=30,  # Generates 30 batches per epoch\nepochs=2,",
+      "use_when": "Integrating legacy codebase data generators or third-party streaming iterator sources into standard Keras model training scripts.",
+      "avoid_when": "High-throughput scaling is required. Standard Python generators suffer from Global Interpreter Lock (GIL) constraints; use tf.data.Dataset.from_generator or native tf.data pipelines instead.",
+      "gotchas": [
+        "Infinite Python generators (using while True) without a specified steps_per_epoch argument cause execution loops to stall or crash.",
+        "Plain Python generators do not support parallel multiprocessing safety unless wrapped inside a keras.utils.Sequence class definition."
+      ],
+      "performance_notes": "Python generators transfer memory across the Python-C++ runtime boundary for every batch, which can cause significant GPU starvation bottlenecks on high-speed hardware.",
+      "related_apis": [
+        "keras.utils.Sequence",
+        "tf.data.Dataset.from_generator"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Replaces manual python iterator evaluation patterns inside torch execution loops.",
+      "pytorch_equivalent": "`def custom_generator():`  \n    `while True:`  \n        `yield x_batch, y_batch`\n\n`gen = custom_generator()`  \n`x_batch, y_batch = next(gen)`",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "`def custom_generator():`  \n    `while True:`  \n        `yield x_batch, y_batch`\n\n`gen = custom_generator()`  \n`x_batch, y_batch = next(gen)`",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "generator fit",
+          "python generator training",
+          "fit yield batches"
+        ],
+        "common_search_terms": [
+          "fit model with python yield generator",
+          "keras steps_per_epoch python generator"
+        ],
+        "search_terms": [
+          "fit model with python yield generator",
+          "keras steps_per_epoch python generator"
+        ],
+        "keywords": [
+          "generator",
+          "yield",
+          "steps_per_epoch",
+          "fit"
+        ],
+        "frequently_confused_with": [
+          "generator vs keras.utils.Sequence"
+        ],
+        "confused_with": [
+          "generator vs keras.utils.Sequence"
+        ]
+      },
+      "related_models": [
+        "logistic-regression",
+        "resnet"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "training"
+      ],
+      "related_cheatsheet": [
+        "training"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#fit",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#fit"
+    },
+    {
+      "task": "Evaluate Model (model.evaluate)",
+      "problem_solved": "Computes loss and metric results across test or validation datasets in evaluation mode (training=False).",
+      "mental_trigger": "I need to compute my model's performance metrics and loss values on a test dataset without tracking gradients.",
+      "syntax": "x=None,\ny=None,\nbatch_size=None,\nverbose=\"auto\",\nsample_weight=None,\nsteps=None,\ncallbacks=None,\nreturn_dict=False,",
+      "important_parameters": [
+        "x: Input evaluation data (NumPy array, TensorFlow tensor, or tf.data.Dataset).",
+        "y: Target labels matching x. Omitted if x is a tf.data.Dataset.",
+        "batch_size: Evaluation batch size. Omitted if x is pre-batched.",
+        "return_dict: If True, returns metric names mapped to evaluation scalars as a Python dictionary instead of a flat list."
+      ],
+      "important_params": [
+        "x: Input evaluation data (NumPy array, TensorFlow tensor, or tf.data.Dataset).",
+        "y: Target labels matching x. Omitted if x is a tf.data.Dataset.",
+        "batch_size: Evaluation batch size. Omitted if x is pre-batched.",
+        "return_dict: If True, returns metric names mapped to evaluation scalars as a Python dictionary instead of a flat list."
+      ],
+      "return_value": "Scalar test loss value (if single metric) or a list/dictionary of scalar evaluation results mapping to tracked metric names.",
+      "example": "import keras\n\ninputs = keras.Input(shape=(10,))\noutputs = keras.layers.Dense(1, activation=\"sigmoid\")(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer=\"adam\", loss=\"binary_crossentropy\", metrics=[\"accuracy\"])\n\nx_test = np.random.random((200, 10))\ny_test = np.random.randint(0, 2, size=(200, 1))\n\n# Evaluate model returning dictionary\nresults = model.evaluate(x_test, y_test, batch_size=32, return_dict=True)",
+      "snippet": "import keras\n\ninputs = keras.Input(shape=(10,))\noutputs = keras.layers.Dense(1, activation=\"sigmoid\")(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer=\"adam\", loss=\"binary_crossentropy\", metrics=[\"accuracy\"])\n\nx_test = np.random.random((200, 10))\ny_test = np.random.randint(0, 2, size=(200, 1))\n\n# Evaluate model returning dictionary\nresults = model.evaluate(x_test, y_test, batch_size=32, return_dict=True)",
+      "use_when": "Assessing real-world generalization performance on held-out test splits after completing model training.",
+      "avoid_when": "Generating inference output arrays for downstream tasks; use model.predict() or model(x, training=False) instead.",
+      "gotchas": [
+        "model.evaluate() automatically executes layers like Dropout and BatchNormalization in evaluation mode (training=False), which causes loss metrics to differ from training losses computed under regular Dropout."
+      ],
+      "performance_notes": "Disables gradient tracking automatically, preserving GPU memory allocations during testing passes over large datasets.",
+      "related_apis": [
+        "model.compile",
+        "model.predict"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Replaces manual evaluation loops enclosed inside with torch.no_grad(): and explicit model.eval() mode toggles.",
+      "pytorch_equivalent": "`model.eval()`  \n`with torch.no_grad():`  \n    `for x_test, y_test in test_loader:`  \n        `out = model(x_test)`  \n        `loss = criterion(out, y_test)`",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "`model.eval()`  \n`with torch.no_grad():`  \n    `for x_test, y_test in test_loader:`  \n        `out = model(x_test)`  \n        `loss = criterion(out, y_test)`",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "evaluate",
+          "test model",
+          "model.evaluate"
+        ],
+        "common_search_terms": [
+          "how to evaluate keras model",
+          "model.evaluate return_dict dict"
+        ],
+        "search_terms": [
+          "how to evaluate keras model",
+          "model.evaluate return_dict dict"
+        ],
+        "keywords": [
+          "evaluate",
+          "test",
+          "return_dict",
+          "loss",
+          "metrics"
+        ],
+        "frequently_confused_with": [
+          "evaluate() vs predict()"
+        ],
+        "confused_with": [
+          "evaluate() vs predict()"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "yolo",
+        "bert"
+      ],
+      "related_patterns": [
+        "callbacks"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "training"
+      ],
+      "related_cheatsheet": [
+        "training"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#evaluate",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#evaluate"
+    },
+    {
+      "task": "Generate Predictions (model.predict)",
+      "problem_solved": "Generates model output predictions for input samples by auto-batching dataset arrays to prevent GPU memory overflow during large-scale inference tasks.",
+      "mental_trigger": "I want to compute output arrays for large offline datasets without calculating loss values or tracking target labels.",
+      "syntax": "x,\nbatch_size=None,\nverbose=\"auto\",\nsteps=None,\ncallbacks=None,",
+      "important_parameters": [
+        "x: Input instances (NumPy array, TensorFlow tensor, or tf.data.Dataset).",
+        "batch_size: Sample batch processing size. Defaults to 32 if omitted.",
+        "steps: Total number of step batches to evaluate before stopping."
+      ],
+      "important_params": [
+        "x: Input instances (NumPy array, TensorFlow tensor, or tf.data.Dataset).",
+        "batch_size: Sample batch processing size. Defaults to 32 if omitted.",
+        "steps: Total number of step batches to evaluate before stopping."
+      ],
+      "return_value": "NumPy array(s) containing model output predictions.",
+      "example": "import keras\n\ninputs = keras.Input(shape=(5,))\noutputs = keras.layers.Dense(2, activation=\"softmax\")(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\n\nx_unlabeled = np.random.random((500, 5))\n\n# Generate output predictions batched safely over GPU memory\npredictions = model.predict(x_unlabeled, batch_size=64)",
+      "snippet": "import keras\n\ninputs = keras.Input(shape=(5,))\noutputs = keras.layers.Dense(2, activation=\"softmax\")(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\n\nx_unlabeled = np.random.random((500, 5))\n\n# Generate output predictions batched safely over GPU memory\npredictions = model.predict(x_unlabeled, batch_size=64)",
+      "use_when": "Batch computing predictions over offline datasets or medium-to-large stored array inputs for downstream pipelines.",
+      "avoid_when": "Executing real-time, ultra-low-latency single-instance inference serving loops inside web APIs (use direct forward call model(x, training=False) to remove high-level function overhead).",
+      "gotchas": [
+        "model.predict() returns standard NumPy arrays (concatenating output batches on the host CPU memory space), which can lead to host RAM allocation failures when predicting over massive datasets.",
+        "Avoid calling model.predict() in tight single-sample loops (e.g. inside real-time control loops), as high-level batch framing routines introduce latency overhead."
+      ],
+      "performance_notes": "model.predict() constructs internal execution graphs and handles array batching overhead automatically, optimized for large batch prediction jobs.",
+      "related_apis": [
+        "model.__call__",
+        "model.evaluate"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Replaces PyTorch batch prediction loops that aggregate tensors onto CPU host memory manually using torch.cat().",
+      "pytorch_equivalent": "`model.eval()`  \n`preds = []`  \n`with torch.no_grad():`  \n    `for x_batch in loader:`  \n        `preds.append(model(x_batch).cpu().numpy())`  \n`predictions = np.concatenate(preds, axis=0)`",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "`model.eval()`  \n`preds = []`  \n`with torch.no_grad():`  \n    `for x_batch in loader:`  \n        `preds.append(model(x_batch).cpu().numpy())`  \n`predictions = np.concatenate(preds, axis=0)`",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "predict",
+          "batch prediction",
+          "generate inference"
+        ],
+        "common_search_terms": [
+          "model.predict numpy array",
+          "tf keras predict batch size"
+        ],
+        "search_terms": [
+          "model.predict numpy array",
+          "tf keras predict batch size"
+        ],
+        "keywords": [
+          "predict",
+          "inference",
+          "batch_size",
+          "predictions"
+        ],
+        "frequently_confused_with": [
+          "predict(x) vs model(x)"
+        ],
+        "confused_with": [
+          "predict(x) vs model(x)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "yolo",
+        "bert"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization",
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "training"
+      ],
+      "related_cheatsheet": [
+        "training"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#predict",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#predict"
+    },
+    {
+      "task": "Perform Direct Forward Pass (model(x, training=False))",
+      "problem_solved": "Executes direct functional graph forward passes on tensors in low-latency production environments, bypassing the overhead of Keras higher-level tracking loops.",
+      "mental_trigger": "I am building a high-throughput microservice or custom execution block and need to pass a single input tensor through my model as fast as possible.",
+      "syntax": "Perform Direct Forward Pass (model(x, training=False))",
+      "important_parameters": [
+        "inputs: Input tensor or collection of input tensors.",
+        "training: Boolean flag indicating whether the layer execution graph runs in training mode (enabling Dropout/BatchNormalization updates) or inference mode."
+      ],
+      "important_params": [
+        "inputs: Input tensor or collection of input tensors.",
+        "training: Boolean flag indicating whether the layer execution graph runs in training mode (enabling Dropout/BatchNormalization updates) or inference mode."
+      ],
+      "return_value": "Tensor (or nested tensor structure) containing immediate evaluation outputs.",
+      "example": "import keras\n\ninputs = keras.Input(shape=(10,))\nx = keras.layers.Dropout(0.5)(inputs)\noutputs = keras.layers.Dense(1)(x)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\n\n# Construct single-sample input tensor\ninput_tensor = tf.random.normal((1, 10))\n\n# Immediate forward call bypassing model.predict overhead\ninference_output = model(input_tensor, training=False)",
+      "snippet": "import keras\n\ninputs = keras.Input(shape=(10,))\nx = keras.layers.Dropout(0.5)(inputs)\noutputs = keras.layers.Dense(1)(x)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\n\n# Construct single-sample input tensor\ninput_tensor = tf.random.normal((1, 10))\n\n# Immediate forward call bypassing model.predict overhead\ninference_output = model(input_tensor, training=False)",
+      "use_when": "Executing low-latency online web endpoint serving, custom training loop iterations, or dynamic gradient evaluation logic.",
+      "avoid_when": "Processing massive multi-gigabyte datasets without manual batch chunking, as direct execution attempts to process the full tensor on GPU memory simultaneously.",
+      "gotchas": [
+        "Forgetting to set training=False leaves active Dropout nodes operational and prevents BatchNormalization layers from utilizing moving mean/variance stats, producing unstable outputs during inference."
+      ],
+      "performance_notes": "Direct execution bypasses Keras NumPy array conversion and batch management routines, reducing single-request execution latency by multiple milliseconds.",
+      "related_apis": [
+        "model.predict",
+        "tf.function"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Matches PyTorch's native model(x) evaluation semantics directly.",
+      "pytorch_equivalent": "`model.eval()`  \n`with torch.no_grad():`  \n    `output = model(input_tensor)`",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "`model.eval()`  \n`with torch.no_grad():`  \n    `output = model(input_tensor)`",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "direct call",
+          "model forward pass",
+          "model functional call"
+        ],
+        "common_search_terms": [
+          "model call training false tf",
+          "fast inference keras model(x)"
+        ],
+        "search_terms": [
+          "model call training false tf",
+          "fast inference keras model(x)"
+        ],
+        "keywords": [
+          "training=False",
+          "forward pass",
+          "inference",
+          "call"
+        ],
+        "frequently_confused_with": [
+          "model(x) vs model.predict(x)"
+        ],
+        "confused_with": [
+          "model(x) vs model.predict(x)"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert",
+        "llama",
+        "qwen"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "training"
+      ],
+      "related_cheatsheet": [
+        "training"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#call",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#call"
+    },
+    {
+      "task": "Stop Training Early (keras.callbacks.EarlyStopping)",
+      "problem_solved": "Monitors target validation metrics and halts model training when improvements stall, preventing over-fitting and saving wasted compute time.",
+      "mental_trigger": "I want to terminate model training automatically as soon as validation loss stops decreasing for 3 consecutive epochs.",
+      "syntax": "monitor=\"val_loss\",\nmin_delta=0,\npatience=0,\nverbose=0,\nmode=\"auto\",\nbaseline=None,\nrestore_best_weights=False,\nstart_epoch=0,",
+      "important_parameters": [
+        "monitor: Name of the metric string monitored by the callback hook (e.g., \"val_loss\" or \"val_accuracy\").",
+        "patience: Number of consecutive epochs with no improvement after which training stops.",
+        "restore_best_weights: Boolean flag. If True, restores model parameters from the epoch with the best monitored metric value instead of keeping weights from the final step.",
+        "mode: One of \"auto\", \"min\", or \"max\". Controls whether monitored metric target values are minimized or maximized."
+      ],
+      "important_params": [
+        "monitor: Name of the metric string monitored by the callback hook (e.g., \"val_loss\" or \"val_accuracy\").",
+        "patience: Number of consecutive epochs with no improvement after which training stops.",
+        "restore_best_weights: Boolean flag. If True, restores model parameters from the epoch with the best monitored metric value instead of keeping weights from the final step.",
+        "mode: One of \"auto\", \"min\", or \"max\". Controls whether monitored metric target values are minimized or maximized."
+      ],
+      "return_value": "A keras.callbacks.EarlyStopping instance.",
+      "example": "import keras\n\ninputs = keras.Input(shape=(10,))\noutputs = keras.layers.Dense(1, activation=\"sigmoid\")(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer=\"adam\", loss=\"binary_crossentropy\", metrics=[\"accuracy\"])\n\nx = np.random.random((100, 10))\ny = np.random.randint(0, 2, size=(100, 1))\n\nearly_stop = keras.callbacks.EarlyStopping(\nmonitor=\"val_loss\",\npatience=3,\nrestore_best_weights=True,\nverbose=1,\n)\n\nmodel.fit(\nx,\ny,\nepochs=20,\nvalidation_data=(x[:20], y[:20]),\ncallbacks=[early_stop],",
+      "snippet": "import keras\n\ninputs = keras.Input(shape=(10,))\noutputs = keras.layers.Dense(1, activation=\"sigmoid\")(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer=\"adam\", loss=\"binary_crossentropy\", metrics=[\"accuracy\"])\n\nx = np.random.random((100, 10))\ny = np.random.randint(0, 2, size=(100, 1))\n\nearly_stop = keras.callbacks.EarlyStopping(\nmonitor=\"val_loss\",\npatience=3,\nrestore_best_weights=True,\nverbose=1,\n)\n\nmodel.fit(\nx,\ny,\nepochs=20,\nvalidation_data=(x[:20], y[:20]),\ncallbacks=[early_stop],",
+      "use_when": "Training over large epoch budgets where over-fitting onset timing is unpredictable across hyperparameter search sweeps.",
+      "avoid_when": "Training on highly noisy evaluation metrics with high variance per epoch unless combined with appropriate patience thresholds or metric smoothing.",
+      "gotchas": [
+        "Leaving restore_best_weights=False (default setting in older APIs) keeps the final over-fitted parameter weights rather than reverting to optimal weights.",
+        "Setting monitor='val_loss' when no validation_data is supplied to model.fit() causes the callback to raise a missing metric warning and exit without halting training."
+      ],
+      "performance_notes": "Adds minimal scalar evaluation checks at epoch bound boundaries without impacting GPU pipeline performance.",
+      "related_apis": [
+        "keras.callbacks.ModelCheckpoint",
+        "keras.callbacks.ReduceLROnPlateau"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Replaces custom early stopping conditional logic implemented inside PyTorch custom training loops.",
+      "pytorch_equivalent": "`if val_loss < best_loss:`  \n    `best_loss = val_loss`  \n    `counter = 0`  \n`else:`  \n    `counter += 1`  \n    `if counter >= patience:`  \n        `break`",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "`if val_loss < best_loss:`  \n    `best_loss = val_loss`  \n    `counter = 0`  \n`else:`  \n    `counter += 1`  \n    `if counter >= patience:`  \n        `break`",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "EarlyStopping",
+          "early stop",
+          "halt training early"
+        ],
+        "common_search_terms": [
+          "keras early stopping restore best weights",
+          "tf earlystopping monitor val_loss"
+        ],
+        "search_terms": [
+          "keras early stopping restore best weights",
+          "tf earlystopping monitor val_loss"
+        ],
+        "keywords": [
+          "EarlyStopping",
+          "patience",
+          "restore_best_weights",
+          "monitor"
+        ],
+        "frequently_confused_with": [
+          "EarlyStopping vs ModelCheckpoint"
+        ],
+        "confused_with": [
+          "EarlyStopping vs ModelCheckpoint"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "bert"
+      ],
+      "related_patterns": [
+        "callbacks"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "training"
+      ],
+      "related_cheatsheet": [
+        "training"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/EarlyStopping",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/EarlyStopping"
+    },
+    {
+      "task": "Save Best Model Checkpoints (keras.callbacks.ModelCheckpoint)",
+      "problem_solved": "Saves the Keras model or layer weights at specified intervals, ensuring the best model checkpoint is preserved during long training runs.",
+      "mental_trigger": "I want to automatically export my model checkpoint to disk whenever the validation accuracy hits a new historical high.",
+      "syntax": "filepath,\nmonitor=\"val_loss\",\nverbose=0,\nsave_best_only=False,\nsave_weights_only=False,\nmode=\"auto\",\nsave_freq=\"epoch\",\ninitial_value_threshold=None,",
+      "important_parameters": [
+        "filepath: String path template where checkpoint files are saved (e.g., 'model_{epoch:02d}_{val_loss:.2f}.keras').",
+        "save_best_only: If True, overwrites the saved checkpoint file only when the monitored metric improves.",
+        "save_weights_only: If True, exports only parameter weights arrays rather than the complete model file.",
+        "monitor: Metric target monitored to identify historical best performance states."
+      ],
+      "important_params": [
+        "filepath: String path template where checkpoint files are saved (e.g., 'model_{epoch:02d}_{val_loss:.2f}.keras').",
+        "save_best_only: If True, overwrites the saved checkpoint file only when the monitored metric improves.",
+        "save_weights_only: If True, exports only parameter weights arrays rather than the complete model file.",
+        "monitor: Metric target monitored to identify historical best performance states."
+      ],
+      "return_value": "A keras.callbacks.ModelCheckpoint instance.",
+      "example": "import keras\n\ninputs = keras.Input(shape=(5,))\noutputs = keras.layers.Dense(1)(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer=\"adam\", loss=\"mse\")\n\nx = np.random.random((100, 5))\ny = np.random.random((100, 1))\n\ncheckpoint = keras.callbacks.ModelCheckpoint(\nfilepath=\"best_model.keras\",\nmonitor=\"val_loss\",\nsave_best_only=True,\nverbose=1,\n)\n\nmodel.fit(\nx,\ny,\nepochs=5,\nvalidation_data=(x[:20], y[:20]),\ncallbacks=[checkpoint],",
+      "snippet": "import keras\n\ninputs = keras.Input(shape=(5,))\noutputs = keras.layers.Dense(1)(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer=\"adam\", loss=\"mse\")\n\nx = np.random.random((100, 5))\ny = np.random.random((100, 1))\n\ncheckpoint = keras.callbacks.ModelCheckpoint(\nfilepath=\"best_model.keras\",\nmonitor=\"val_loss\",\nsave_best_only=True,\nverbose=1,\n)\n\nmodel.fit(\nx,\ny,\nepochs=5,\nvalidation_data=(x[:20], y[:20]),\ncallbacks=[checkpoint],",
+      "use_when": "Executing multi-hour or multi-day training jobs to guard against cluster crashes or hardware preemptions.",
+      "avoid_when": "Saving models during fast interactive experimentation runs where disk storage writes present unwanted I/O overhead.",
+      "gotchas": [
+        "File paths using extension .keras trigger modern native Keras v3 format saving, whereas legacy .h5 extensions force legacy format exports.",
+        "When using {epoch} formatting strings, avoid missing formatting keys or invalid target folder permissions."
+      ],
+      "performance_notes": "Writing large multi-gigabyte models to disk every epoch creates significant I/O disk stalls. Use save_best_only=True or set save_freq to run periodically across step bounds.",
+      "related_apis": [
+        "keras.models.load_model",
+        "model.save"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Replaces PyTorch manual serialization calls (torch.save(model.state_dict(), path)).",
+      "pytorch_equivalent": "`if val_loss < best_loss:`  \n    `best_loss = val_loss`  \n    `torch.save(model.state_dict(), \"best_model.pt\")`",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "`if val_loss < best_loss:`  \n    `best_loss = val_loss`  \n    `torch.save(model.state_dict(), \"best_model.pt\")`",
+      "version_compatibility": "TensorFlow 2.21 defaults to modern Keras .keras zip-archive format files over legacy .h5 files.",
+      "search_metadata": {
+        "aliases": [
+          "ModelCheckpoint",
+          "checkpoint callback",
+          "save best weights"
+        ],
+        "common_search_terms": [
+          "keras modelcheckpoint save_best_only",
+          "save model callback tf.keras"
+        ],
+        "search_terms": [
+          "keras modelcheckpoint save_best_only",
+          "save model callback tf.keras"
+        ],
+        "keywords": [
+          "ModelCheckpoint",
+          "filepath",
+          "save_best_only",
+          "monitor"
+        ],
+        "frequently_confused_with": [
+          "save_weights_only=True vs full model saving"
+        ],
+        "confused_with": [
+          "save_weights_only=True vs full model saving"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "yolo",
+        "bert",
+        "llama"
+      ],
+      "related_patterns": [
+        "callbacks"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "semantic-segmentation-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "training"
+      ],
+      "related_cheatsheet": [
+        "training"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/ModelCheckpoint",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/ModelCheckpoint"
+    },
+    {
+      "task": "Reduce Learning Rate on Plateau (keras.callbacks.ReduceLROnPlateau)",
+      "problem_solved": "Dynamically scales down the optimizer learning rate when a monitored validation metric stops improving, helping models break out of plateaus.",
+      "mental_trigger": "My validation loss has stagnated across 3 epochs, and I want to scale down the learning rate by a factor of 10 to fine-tune model parameters.",
+      "syntax": "monitor=\"val_loss\",\nfactor=0.1,\npatience=10,\nverbose=0,\nmode=\"auto\",\nmin_delta=0.0001,\ncooldown=0,\nmin_lr=0.0,",
+      "important_parameters": [
+        "monitor: Metric target monitored to detect validation loss plateaus.",
+        "factor: Multiplicative factor applied to drop the active learning rate (new_lr \\= lr * factor).",
+        "patience: Number of stagnant epochs permitted prior to decaying the learning rate.",
+        "min_lr: Lower bound floor for learning rate reductions."
+      ],
+      "important_params": [
+        "monitor: Metric target monitored to detect validation loss plateaus.",
+        "factor: Multiplicative factor applied to drop the active learning rate (new_lr \\= lr * factor).",
+        "patience: Number of stagnant epochs permitted prior to decaying the learning rate.",
+        "min_lr: Lower bound floor for learning rate reductions."
+      ],
+      "return_value": "A keras.callbacks.ReduceLROnPlateau instance.",
+      "example": "import keras\n\ninputs = keras.Input(shape=(10,))\noutputs = keras.layers.Dense(1, activation=\"sigmoid\")(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(\noptimizer=keras.optimizers.Adam(learning_rate=0.01),\nloss=\"binary_crossentropy\",\n)\n\nx = np.random.random((100, 10))\ny = np.random.randint(0, 2, size=(100, 1))\n\nreduce_lr = keras.callbacks.ReduceLROnPlateau(\nmonitor=\"val_loss\",\nfactor=0.2,\npatience=2,\nmin_lr=0.0001,\nverbose=1,\n)\n\nmodel.fit(\nx,\ny,\nepochs=10,\nvalidation_data=(x[:20], y[:20]),\ncallbacks=[reduce_lr],",
+      "snippet": "import keras\n\ninputs = keras.Input(shape=(10,))\noutputs = keras.layers.Dense(1, activation=\"sigmoid\")(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(\noptimizer=keras.optimizers.Adam(learning_rate=0.01),\nloss=\"binary_crossentropy\",\n)\n\nx = np.random.random((100, 10))\ny = np.random.randint(0, 2, size=(100, 1))\n\nreduce_lr = keras.callbacks.ReduceLROnPlateau(\nmonitor=\"val_loss\",\nfactor=0.2,\npatience=2,\nmin_lr=0.0001,\nverbose=1,\n)\n\nmodel.fit(\nx,\ny,\nepochs=10,\nvalidation_data=(x[:20], y[:20]),\ncallbacks=[reduce_lr],",
+      "use_when": "Training complex deep neural architectures (e.g., ResNets or Transformers) where decaying learning rate steps improve convergence near local minima.",
+      "avoid_when": "Using explicit custom learning rate decay schedules (e.g., CosineDecay) built directly inside the optimizer initialization.",
+      "gotchas": [
+        "Setting patience to a value higher than EarlyStopping patience prevents ReduceLROnPlateau from triggering before training terminates.",
+        "If min_lr is set too small, loss optimization updates can stall due to numerical underflow."
+      ],
+      "performance_notes": "Updates optimizer learning rate variables dynamically at epoch bounds without requiring graph re-tracing.",
+      "related_apis": [
+        "keras.optimizers.schedules.CosineDecay",
+        "keras.callbacks.EarlyStopping"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Directly maps to PyTorch's torch.optim.lr_scheduler.ReduceLROnPlateau.",
+      "pytorch_equivalent": "`scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(`  \n    `optimizer, mode=\"min\", factor=0.2, patience=2`  \n`)`  \n`# Inside validation epoch loop:`  \n`scheduler.step(val_loss)`",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "`scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(`  \n    `optimizer, mode=\"min\", factor=0.2, patience=2`  \n`)`  \n`# Inside validation epoch loop:`  \n`scheduler.step(val_loss)`",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "ReduceLROnPlateau",
+          "lr decay on plateau",
+          "reduce learning rate"
+        ],
+        "common_search_terms": [
+          "keras reduce learning rate on plateau",
+          "tf ReduceLROnPlateau example"
+        ],
+        "search_terms": [
+          "keras reduce learning rate on plateau",
+          "tf ReduceLROnPlateau example"
+        ],
+        "keywords": [
+          "ReduceLROnPlateau",
+          "factor",
+          "patience",
+          "min_lr"
+        ],
+        "frequently_confused_with": [
+          "ReduceLROnPlateau vs LearningRateScheduler"
+        ],
+        "confused_with": [
+          "ReduceLROnPlateau vs LearningRateScheduler"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "yolo"
+      ],
+      "related_patterns": [
+        "callbacks"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "training"
+      ],
+      "related_cheatsheet": [
+        "training"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/ReduceLROnPlateau",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/ReduceLROnPlateau"
+    },
+    {
+      "task": "Monitor Training with TensorBoard (keras.callbacks.TensorBoard)",
+      "problem_solved": "Writes training summaries, loss curves, metric logs, and computational execution graphs to disk for interactive visualization using TensorBoard.",
+      "mental_trigger": "I want to monitor my training metrics, loss trends, and parameter histograms in real time using a web browser interface.",
+      "syntax": "log_dir=\"logs\",\nhistogram_freq=0,\nwrite_graph=True,\nwrite_images=False,\nwrite_steps_per_second=False,\nupdate_freq=\"epoch\",\nprofile_batch=0,\nembeddings_freq=0,",
+      "important_parameters": [
+        "log_dir: Path to the directory where TensorBoard event log files are written.",
+        "histogram_freq: Frequency (in epochs) at which weight distribution histograms are computed. Disabled if 0.",
+        "update_freq: String (\"batch\" or \"epoch\") or integer step frequency for writing metric logs to disk.",
+        "profile_batch: Batch index step range profiled for hardware bottlenecks (e.g. '10, 15'). Disabled if 0."
+      ],
+      "important_params": [
+        "log_dir: Path to the directory where TensorBoard event log files are written.",
+        "histogram_freq: Frequency (in epochs) at which weight distribution histograms are computed. Disabled if 0.",
+        "update_freq: String (\"batch\" or \"epoch\") or integer step frequency for writing metric logs to disk.",
+        "profile_batch: Batch index step range profiled for hardware bottlenecks (e.g. '10, 15'). Disabled if 0."
+      ],
+      "return_value": "A keras.callbacks.TensorBoard instance.",
+      "example": "import keras\n\ninputs = keras.Input(shape=(10,))\noutputs = keras.layers.Dense(1)(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer=\"adam\", loss=\"mse\")\n\nx = np.random.random((100, 10))\ny = np.random.random((100, 1))\n\ntensorboard_cb = keras.callbacks.TensorBoard(\nlog_dir=\"./logs/run_1\",\nhistogram_freq=1,\nupdate_freq=\"batch\",\n)",
+      "snippet": "import keras\n\ninputs = keras.Input(shape=(10,))\noutputs = keras.layers.Dense(1)(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer=\"adam\", loss=\"mse\")\n\nx = np.random.random((100, 10))\ny = np.random.random((100, 1))\n\ntensorboard_cb = keras.callbacks.TensorBoard(\nlog_dir=\"./logs/run_1\",\nhistogram_freq=1,\nupdate_freq=\"batch\",\n)",
+      "use_when": "Monitoring active loss curves, debugging training performance, or comparing hyperparameter runs in a local or hosted TensorBoard dashboard.",
+      "avoid_when": "Running ultra-fast unit tests or small hyperparameter tuning loops where disk file creation overhead slows execution.",
+      "gotchas": [
+        "Setting update_freq='batch' on micro-batch sizes causes continuous disk write stalls, impacting training throughput.",
+        "Setting profile_batch to profile early batches can include initial compilation overhead; select representative steps (e.g., steps 100 to 105)."
+      ],
+      "performance_notes": "Computing weight histograms (histogram_freq \\> 0) requires copying all layer parameters to host memory, which adds visible overhead at epoch boundaries.",
+      "related_apis": [
+        "tf.summary",
+        "keras.callbacks.Callback"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Wraps PyTorch SummaryWriter logging hooks into an automated, zero-boilerplate Keras callback.",
+      "pytorch_equivalent": "`from torch.utils.tensorboard import SummaryWriter`\n\n`writer = SummaryWriter(\"runs/experiment_1\")`  \n`writer.add_scalar(\"Loss/train\", loss.item(), epoch)`",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "`from torch.utils.tensorboard import SummaryWriter`\n\n`writer = SummaryWriter(\"runs/experiment_1\")`  \n`writer.add_scalar(\"Loss/train\", loss.item(), epoch)`",
+      "version_compatibility": "In TensorFlow 2.21, profile_batch defaults to 0 to prevent unintended profiling overhead during standard training runs.",
+      "search_metadata": {
+        "aliases": [
+          "TensorBoard callback",
+          "log tensorboard metrics",
+          "tb callback"
+        ],
+        "common_search_terms": [
+          "keras tensorboard callback example",
+          "tf.keras callbacks tensorboard log_dir"
+        ],
+        "search_terms": [
+          "keras tensorboard callback example",
+          "tf.keras callbacks tensorboard log_dir"
+        ],
+        "keywords": [
+          "TensorBoard",
+          "log_dir",
+          "histogram_freq",
+          "update_freq"
+        ],
+        "frequently_confused_with": [
+          "TensorBoard callback vs custom tf.summary"
+        ],
+        "confused_with": [
+          "TensorBoard callback vs custom tf.summary"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "yolo",
+        "bert"
+      ],
+      "related_patterns": [
+        "callbacks"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "training"
+      ],
+      "related_cheatsheet": [
+        "training"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/TensorBoard",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/TensorBoard"
+    },
+    {
+      "task": "Schedule Learning Rate (keras.callbacks.LearningRateScheduler)",
+      "problem_solved": "Applies a user-defined custom Python schedule function to update the optimizer learning rate dynamically at epoch transitions.",
+      "mental_trigger": "I want to decay my learning rate exponentially using a custom mathematical function at the end of each epoch.",
+      "syntax": "Schedule Learning Rate (keras.callbacks.LearningRateScheduler)",
+      "important_parameters": [
+        "schedule: A custom Python function taking (epoch, lr) integer and float inputs and returning a new float learning rate.",
+        "verbose: Integer. If 1, logs learning rate update messages to the terminal console."
+      ],
+      "important_params": [
+        "schedule: A custom Python function taking (epoch, lr) integer and float inputs and returning a new float learning rate.",
+        "verbose: Integer. If 1, logs learning rate update messages to the terminal console."
+      ],
+      "return_value": "A keras.callbacks.LearningRateScheduler instance.",
+      "example": "import keras\n\n# Define custom step decay schedule function\ndef lr_schedule_fn(epoch, lr):\nif epoch > 2:\nreturn lr * 0.5\nreturn lr\n\ninputs = keras.Input(shape=(5,))\noutputs = keras.layers.Dense(1)(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer=keras.optimizers.Adam(learning_rate=0.01), loss=\"mse\")\n\nx = np.random.random((100, 5))\ny = np.random.random((100, 1))\n\nlr_scheduler = keras.callbacks.LearningRateScheduler(lr_schedule_fn, verbose=1)",
+      "snippet": "import keras\n\n# Define custom step decay schedule function\ndef lr_schedule_fn(epoch, lr):\nif epoch > 2:\nreturn lr * 0.5\nreturn lr\n\ninputs = keras.Input(shape=(5,))\noutputs = keras.layers.Dense(1)(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer=keras.optimizers.Adam(learning_rate=0.01), loss=\"mse\")\n\nx = np.random.random((100, 5))\ny = np.random.random((100, 1))\n\nlr_scheduler = keras.callbacks.LearningRateScheduler(lr_schedule_fn, verbose=1)",
+      "use_when": "Implementing specialized learning rate schedules (e.g. piecewise decay or custom warmups) defined as explicit Python logic functions.",
+      "avoid_when": "Using standard learning rate schedules like CosineDecay or ExponentialDecay; pass those directly to the learning_rate argument of the optimizer instead.",
+      "gotchas": [
+        "The schedule function receives lr as a float scalar representing the active rate from the previous epoch. Modifying this in-place incorrectly can lead to compounding arithmetic errors."
+      ],
+      "performance_notes": "Executed entirely on the CPU host at epoch boundaries, adding zero latency to core GPU step executions.",
+      "related_apis": [
+        "keras.optimizers.schedules.LearningRateSchedule",
+        "keras.callbacks.ReduceLROnPlateau"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Replaces PyTorch manual scheduler step function calls (scheduler.step()) executed inside custom training loops.",
+      "pytorch_equivalent": "`scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=custom_fn)`  \n`# Inside epoch loop:`  \n`scheduler.step()`",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "`scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=custom_fn)`  \n`# Inside epoch loop:`  \n`scheduler.step()`",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "LearningRateScheduler",
+          "lr scheduler callback",
+          "custom lr schedule"
+        ],
+        "common_search_terms": [
+          "keras LearningRateScheduler function example",
+          "custom decay schedule tf callback"
+        ],
+        "search_terms": [
+          "keras LearningRateScheduler function example",
+          "custom decay schedule tf callback"
+        ],
+        "keywords": [
+          "LearningRateScheduler",
+          "schedule",
+          "learning_rate",
+          "decay"
+        ],
+        "frequently_confused_with": [
+          "LearningRateScheduler callback vs keras.optimizers.schedules.LearningRateSchedule"
+        ],
+        "confused_with": [
+          "LearningRateScheduler callback vs keras.optimizers.schedules.LearningRateSchedule"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer"
+      ],
+      "related_patterns": [
+        "callbacks"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "training"
+      ],
+      "related_cheatsheet": [
+        "training"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/LearningRateScheduler",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/LearningRateScheduler"
+    },
+    {
+      "task": "Save Entire Model (model.save)",
+      "problem_solved": "Exports complete model state (architecture, trainable parameter weights, loss configurations, and optimizer state) to disk in a single file container.",
+      "mental_trigger": "I want to save my complete model state to disk so I can resume training or deploy it for production inference elsewhere.",
+      "syntax": "Save Entire Model (model.save)",
+      "important_parameters": [
+        "filepath: Save path destination string ending with the .keras file extension.",
+        "overwrite: Boolean. Controls whether to overwrite existing target output files.",
+        "zipped: Boolean. Controls archive compression settings under modern Keras format serializers."
+      ],
+      "important_params": [
+        "filepath: Save path destination string ending with the .keras file extension.",
+        "overwrite: Boolean. Controls whether to overwrite existing target output files.",
+        "zipped: Boolean. Controls archive compression settings under modern Keras format serializers."
+      ],
+      "return_value": "None. Model structures and parameter states are written to disk.",
+      "example": "inputs = keras.Input(shape=(10,))\noutputs = keras.layers.Dense(1)(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer=\"adam\", loss=\"mse\")\n\n# Save complete model bundle to disk",
+      "snippet": "inputs = keras.Input(shape=(10,))\noutputs = keras.layers.Dense(1)(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer=\"adam\", loss=\"mse\")\n\n# Save complete model bundle to disk",
+      "use_when": "Preserving full checkpoint states for production deployment, sharing complete artifacts, or saving checkpoints during long training runs.",
+      "avoid_when": "Persisting weight updates inside custom training loops where saving full architecture specs every iteration is unnecessary; use model.save_weights() instead.",
+      "gotchas": [
+        "Modern Keras 3 uses the .keras zip archive format. Target paths ending in .h5 or without extensions trigger legacy format saving routines.",
+        "Custom layers saved within complete model files require explicit registration using @keras.saving.register_keras_serializable() for clean deserialization."
+      ],
+      "performance_notes": "The .keras format packs model metadata into a single optimized zip archive containing JSON configuration files and fast binary parameter stores.",
+      "related_apis": [
+        "keras.models.load_model",
+        "model.save_weights"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Saves both weights and graph architecture definitions into a unified archive, unlike torch.save(model.state_dict()) which stores weights only.",
+      "pytorch_equivalent": "`torch.save(model, \"complete_model.pt\")  # Or saving state_dict`",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "`torch.save(model, \"complete_model.pt\")  # Or saving state_dict`",
+      "version_compatibility": "In TensorFlow 2.21 with Keras 3, .keras is the default file format, completely superseding legacy TensorFlow SavedModel directories and HDF5 (.h5) files.",
+      "search_metadata": {
+        "aliases": [
+          "model.save",
+          "export model",
+          "save model.keras"
+        ],
+        "common_search_terms": [
+          "how to save full keras model",
+          "tf model.save .keras format"
+        ],
+        "search_terms": [
+          "how to save full keras model",
+          "tf model.save .keras format"
+        ],
+        "keywords": [
+          "save",
+          ".keras",
+          "serialize",
+          "architecture",
+          "weights"
+        ],
+        "frequently_confused_with": [
+          "save() vs save_weights()"
+        ],
+        "confused_with": [
+          "save() vs save_weights()"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "yolo",
+        "bert",
+        "llama"
+      ],
+      "related_patterns": [
+        "callbacks"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization",
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "training"
+      ],
+      "related_cheatsheet": [
+        "training"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#save",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/Model#save"
+    },
+    {
+      "task": "Load Saved Model (keras.models.load_model)",
+      "problem_solved": "Deserializes complete .keras model archives from disk back into fully compiled memory instances ready for evaluation, inference, or continued training.",
+      "mental_trigger": "I need to reload a complete model archive from disk to run predictions or continue training.",
+      "syntax": "filepath,\ncustom_objects=None,\ncompile=True,\nsafe_mode=True,",
+      "important_parameters": [
+        "filepath: Path destination string pointing to a valid saved .keras model archive.",
+        "custom_objects: Dictionary mapping custom layer/loss string names to their Python class implementations.",
+        "compile: Boolean flag. If True, automatically reconstructs model optimizer states and loss compilers.",
+        "safe_mode: Boolean flag. If True, blocks arbitrary code execution during lambda layer deserialization."
+      ],
+      "important_params": [
+        "filepath: Path destination string pointing to a valid saved .keras model archive.",
+        "custom_objects: Dictionary mapping custom layer/loss string names to their Python class implementations.",
+        "compile: Boolean flag. If True, automatically reconstructs model optimizer states and loss compilers.",
+        "safe_mode: Boolean flag. If True, blocks arbitrary code execution during lambda layer deserialization."
+      ],
+      "return_value": "A fully functional keras.Model object.",
+      "example": "# Load compiled model from disk\nreloaded_model = keras.models.load_model(\"saved_model.keras\")\n\n# Confirm compiled state and run predictions",
+      "snippet": "# Load compiled model from disk\nreloaded_model = keras.models.load_model(\"saved_model.keras\")\n\n# Confirm compiled state and run predictions",
+      "use_when": "Restoring saved models in production serving infrastructure or resuming training runs from disk checkpoints.",
+      "avoid_when": "Restoring model weights into a pre-instantiated model architecture defined in Python code; use model.load_weights() instead.",
+      "gotchas": [
+        "Deserializing models with custom layers or non-standard loss functions without registering them via custom_objects or @register_keras_serializable causes deserialization errors."
+      ],
+      "performance_notes": "load_model parses saved metadata configurations and constructs operational execution graphs dynamically in host CPU memory space.",
+      "related_apis": [
+        "model.save",
+        "keras.saving.register_keras_serializable"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Restores full network models without requiring users to manually instantiate the Python class architecture beforehand.",
+      "pytorch_equivalent": "`model = torch.load(\"complete_model.pt\")`  \n`# Or instantiating class and using model.load_state_dict(torch.load(\"weights.pt\"))`",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "`model = torch.load(\"complete_model.pt\")`  \n`# Or instantiating class and using model.load_state_dict(torch.load(\"weights.pt\"))`",
+      "version_compatibility": "TensorFlow 2.21 defaults to modern Keras 3 safe loading mechanisms, raising warnings if legacy lambda layers contain unsafe bytecode executions.",
+      "search_metadata": {
+        "aliases": [
+          "load_model",
+          "restore model",
+          "reload saved keras model"
+        ],
+        "common_search_terms": [
+          "keras load_model example .keras",
+          "load_model custom_objects tf"
+        ],
+        "search_terms": [
+          "keras load_model example .keras",
+          "load_model custom_objects tf"
+        ],
+        "keywords": [
+          "load_model",
+          "custom_objects",
+          "compile",
+          ".keras"
+        ],
+        "frequently_confused_with": [
+          "load_model() vs load_weights()"
+        ],
+        "confused_with": [
+          "load_model() vs load_weights()"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "transformer",
+        "yolo",
+        "bert"
+      ],
+      "related_patterns": [
+        "callbacks"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization",
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "training"
+      ],
+      "related_cheatsheet": [
+        "training"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/models/load_model",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/models/load_model"
+    },
+    {
+      "task": "Set Random Seeds (keras.utils.set_random_seed)",
+      "problem_solved": "Sets global random seeds across Python random, NumPy np.random, and TensorFlow tf.random simultaneously to ensure reproducible execution runs.",
+      "mental_trigger": "I want to ensure my model initialized weights, data shuffling, and dropout masks produce identical results across re-runs.",
+      "syntax": "Set Random Seeds (keras.utils.set_random_seed)",
+      "important_parameters": [
+        "seed: Integer seed value set across global pseudorandom number generators."
+      ],
+      "important_params": [
+        "seed: Integer seed value set across global pseudorandom number generators."
+      ],
+      "return_value": "None. Configures global random number generators directly.",
+      "example": "import tensorflow as tf\n\n# Set global deterministic random seeds\nkeras.utils.set_random_seed(42)\n\n# Enable deterministic op execution where supported\ntf.config.experimental.enable_op_determinism()\n\n# Random layers initialized below yield deterministic output values\nx1 = tf.random.normal((2, 2))",
+      "snippet": "import tensorflow as tf\n\n# Set global deterministic random seeds\nkeras.utils.set_random_seed(42)\n\n# Enable deterministic op execution where supported\ntf.config.experimental.enable_op_determinism()\n\n# Random layers initialized below yield deterministic output values\nx1 = tf.random.normal((2, 2))",
+      "use_when": "Setting up experiment pipelines, debugging network architecture behaviors, or producing reproducible benchmark runs.",
+      "avoid_when": "Executing parallel multi-threaded stochastic data pipelines where explicit random variation per worker process is required.",
+      "gotchas": [
+        "Setting set_random_seed() alone does not guarantee bit-for-bit hardware deterministic execution across GPU operations; call tf.config.experimental.enable_op_determinism() as well.",
+        "Enabling deterministic op execution can introduce performance degradation on certain cuDNN convolution and atomic reduction ops."
+      ],
+      "performance_notes": "Enabling operation determinism forces certain GPU CUDA kernels to run single-threaded reduction algorithms, which reduces throughput.",
+      "related_apis": [
+        "tf.random.set_seed",
+        "tf.config.experimental.enable_op_determinism"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Replaces multi-line seed configuration blocks required across individual Python packages in PyTorch.",
+      "pytorch_equivalent": "`torch.manual_seed(42)`  \n`torch.cuda.manual_seed_all(42)`  \n`np.random.seed(42)`  \n`random.seed(42)`",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "`torch.manual_seed(42)`  \n`torch.cuda.manual_seed_all(42)`  \n`np.random.seed(42)`  \n`random.seed(42)`",
+      "version_compatibility": "Available natively via keras.utils.set_random_seed in TensorFlow 2.x and modern Keras 3.",
+      "search_metadata": {
+        "aliases": [
+          "set_random_seed",
+          "reproducibility seed",
+          "tf set seed"
+        ],
+        "common_search_terms": [
+          "how to set random seed in keras tf",
+          "reproducible training tensorflow set_random_seed"
+        ],
+        "search_terms": [
+          "how to set random seed in keras tf",
+          "reproducible training tensorflow set_random_seed"
+        ],
+        "keywords": [
+          "set_random_seed",
+          "reproducibility",
+          "determinism",
+          "seed"
+        ],
+        "frequently_confused_with": [
+          "keras.utils.set_random_seed vs setting np.random.seed only"
+        ],
+        "confused_with": [
+          "keras.utils.set_random_seed vs setting np.random.seed only"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "transformer",
+        "logistic-regression"
+      ],
+      "related_patterns": [
+        "custom-training-loop"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "training"
+      ],
+      "related_cheatsheet": [
+        "training"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/keras/utils/set_random_seed",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/keras/utils/set_random_seed"
+    },
+    {
+      "task": "Override train_step() in a Custom Model",
+      "problem_solved": "Customizes batch execution steps (e.g. adding GAN loss components or custom gradient clips) while continuing to rely on Keras model.fit() for outer loop scheduling, callbacks, and evaluation logic.",
+      "mental_trigger": "I want custom batch gradient computation logic, but I still want to use standard model.fit() callbacks, epoch loops, and metrics tracking.",
+      "syntax": "def train_step(self, data):\n# Unpack data\n# Record gradients with tf.GradientTape\n# Compute loss and apply gradients\n# Return dict mapping metric names to values",
+      "important_parameters": [
+        "data: Batch structure passed directly from the input dataset stream (e.g. (x, y) or (x, y, sample_weight))."
+      ],
+      "important_params": [
+        "data: Batch structure passed directly from the input dataset stream (e.g. (x, y) or (x, y, sample_weight))."
+      ],
+      "return_value": "A Python dictionary mapping metric string names to active scalar scalar metrics ({m.name: m.result() for m in self.metrics}).",
+      "example": "import keras\n\nclass CustomTrainer(keras.Model):\n\ndef train_step(self, data):\nx, y = data\n\nwith tf.GradientTape() as tape:\ny_pred = self(x, training=True)\nloss = self.compute_loss(y=y, y_pred=y_pred)\n\n# Compute gradients and apply via internal optimizer\ngradients = tape.gradient(loss, self.trainable_variables)\nself.optimizer.apply_gradients(zip(gradients, self.trainable_variables))\n\n# Update metrics tracking states\nfor metric in self.metrics:\nif metric.name == \"loss\":\nmetric.update_state(loss)\nelse:\nmetric.update_state(y, y_pred)\n\nreturn {m.name: m.result() for m in self.metrics}\n\n# Build and train custom model\ninputs = keras.Input(shape=(10,))\noutputs = keras.layers.Dense(1, activation=\"sigmoid\")(inputs)\nmodel = CustomTrainer(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer=\"adam\", loss=\"binary_crossentropy\", metrics=[\"accuracy\"])\n\nx_data = tf.random.normal((100, 10))\ny_data = tf.random.uniform((100, 1), maxval=2, dtype=tf.int32)",
+      "snippet": "import keras\n\nclass CustomTrainer(keras.Model):\n\ndef train_step(self, data):\nx, y = data\n\nwith tf.GradientTape() as tape:\ny_pred = self(x, training=True)\nloss = self.compute_loss(y=y, y_pred=y_pred)\n\n# Compute gradients and apply via internal optimizer\ngradients = tape.gradient(loss, self.trainable_variables)\nself.optimizer.apply_gradients(zip(gradients, self.trainable_variables))\n\n# Update metrics tracking states\nfor metric in self.metrics:\nif metric.name == \"loss\":\nmetric.update_state(loss)\nelse:\nmetric.update_state(y, y_pred)\n\nreturn {m.name: m.result() for m in self.metrics}\n\n# Build and train custom model\ninputs = keras.Input(shape=(10,))\noutputs = keras.layers.Dense(1, activation=\"sigmoid\")(inputs)\nmodel = CustomTrainer(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer=\"adam\", loss=\"binary_crossentropy\", metrics=[\"accuracy\"])\n\nx_data = tf.random.normal((100, 10))\ny_data = tf.random.uniform((100, 1), maxval=2, dtype=tf.int32)",
+      "use_when": "Implementing customized training steps like GANs, variational autoencoders, dynamic loss scaling, or gradient clipping while preserving standard Keras model.fit() callbacks and multi-epoch handling.",
+      "avoid_when": "Building standard supervised training steps with standard loss functions; default model.fit() implementation covers those efficiently out of the box.",
+      "gotchas": [
+        "Failing to update internal metric accumulator states inside train_step() leads to flat or inaccurate metric logs on progress bars.",
+        "When overriding train_step(), remember to handle optional sample_weight parameters if supplied in the dataset tuple."
+      ],
+      "performance_notes": "Executes seamlessly inside compiled graph execution loops, maintaining high compute throughput identical to default model.fit() routines.",
+      "related_apis": [
+        "tf.GradientTape",
+        "model.fit",
+        "model.compute_loss"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Bridges the gap between raw PyTorch custom loop design and high-level Keras fit callbacks.",
+      "pytorch_equivalent": "`# PyTorch equivalent requires inheriting nn.Module and writing a custom loop function`",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "`# PyTorch equivalent requires inheriting nn.Module and writing a custom loop function`",
+      "version_compatibility": "Keras 3 provides self.compute_loss() to cleanly handle built-in loss computation within custom train_step() overrides.",
+      "search_metadata": {
+        "aliases": [
+          "custom train_step",
+          "override train_step",
+          "custom fit logic"
+        ],
+        "common_search_terms": [
+          "how to override train_step in keras",
+          "tf custom model train_step example"
+        ],
+        "search_terms": [
+          "how to override train_step in keras",
+          "tf custom model train_step example"
+        ],
+        "keywords": [
+          "train_step",
+          "GradientTape",
+          "fit",
+          "custom training"
+        ],
+        "frequently_confused_with": [
+          "Overriding train_step() vs writing a full custom GradientTape loop"
+        ],
+        "confused_with": [
+          "Overriding train_step() vs writing a full custom GradientTape loop"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "transformer",
+        "yolo",
+        "gan"
+      ],
+      "related_patterns": [
+        "custom-training-loop",
+        "mixed-precision",
+        "gradient-accumulation"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline"
+      ],
+      "related_cheatsheets": [
+        "training"
+      ],
+      "related_cheatsheet": [
+        "training"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/guide/keras/customizing_what_happens_in_fit",
+      "official_docs": "https://www.tensorflow.org/guide/keras/customizing_what_happens_in_fit"
+    },
+    {
+      "task": "Build a Full Custom Training Loop (tf.GradientTape)",
+      "problem_solved": "Provides complete, fine-grained Python control over training execution, dataset iteration, epoch loops, gradient computation, and optimization steps.",
+      "mental_trigger": "I need full, low-level operational control over my training pipeline without relying on Keras abstractions.",
+      "syntax": "for x_batch, y_batch in dataset:\nwith tf.GradientTape() as tape:\nlogits = model(x_batch, training=True)\nloss_value = loss_fn(y_batch, logits)\ngrads = tape.gradient(loss_value, model.trainable_variables)",
+      "important_parameters": [
+        "tf.GradientTape: Context manager that records operations for automatic differentiation.",
+        "tape.gradient(target, sources): Computes the gradients of target tensor(s) with respect to source parameter variables.",
+        "optimizer.apply_gradients(grads_and_vars): Updates model parameters using computed gradient pairs."
+      ],
+      "important_params": [
+        "tf.GradientTape: Context manager that records operations for automatic differentiation.",
+        "tape.gradient(target, sources): Computes the gradients of target tensor(s) with respect to source parameter variables.",
+        "optimizer.apply_gradients(grads_and_vars): Updates model parameters using computed gradient pairs."
+      ],
+      "return_value": "Full manual execution loop; returns explicit loss scalars and metric results computed manually.",
+      "example": "import keras\n\n# Define model, loss, optimizer, and metrics\ninputs = keras.Input(shape=(10,))\noutputs = keras.layers.Dense(1, activation=\"sigmoid\")(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\n\nloss_fn = keras.losses.BinaryCrossentropy()\noptimizer = keras.optimizers.Adam(learning_rate=0.01)\ntrain_acc_metric = keras.metrics.BinaryAccuracy()\n\n# Setup dummy dataset\nx_data = tf.random.normal((100, 10))\ny_data = tf.random.uniform((100, 1), maxval=2, dtype=tf.int32)\ndataset = tf.data.Dataset.from_tensor_slices((x_data, y_data)).batch(16)\n\n# Compile training loop function under tf.function for speed\n@tf.function\ndef train_step(x_batch, y_batch):\nwith tf.GradientTape() as tape:\nlogits = model(x_batch, training=True)\nloss_val = loss_fn(y_batch, logits)\ngrads = tape.gradient(loss_val, model.trainable_variables)\noptimizer.apply_gradients(zip(grads, model.trainable_variables))\ntrain_acc_metric.update_state(y_batch, logits)\nreturn loss_val\n\n# Execute custom training loop across 2 epochs\nfor epoch in range(2):\nprint(f\"Start of Epoch {epoch}\")\nfor step, (x_batch, y_batch) in enumerate(dataset):\nloss_value = train_step(x_batch, y_batch)\n\n# Log and reset metric state at epoch bounds\nprint(f\"Epoch {epoch} Accuracy: {float(train_acc_metric.result()):.4f}\")",
+      "snippet": "import keras\n\n# Define model, loss, optimizer, and metrics\ninputs = keras.Input(shape=(10,))\noutputs = keras.layers.Dense(1, activation=\"sigmoid\")(inputs)\nmodel = keras.Model(inputs=inputs, outputs=outputs)\n\nloss_fn = keras.losses.BinaryCrossentropy()\noptimizer = keras.optimizers.Adam(learning_rate=0.01)\ntrain_acc_metric = keras.metrics.BinaryAccuracy()\n\n# Setup dummy dataset\nx_data = tf.random.normal((100, 10))\ny_data = tf.random.uniform((100, 1), maxval=2, dtype=tf.int32)\ndataset = tf.data.Dataset.from_tensor_slices((x_data, y_data)).batch(16)\n\n# Compile training loop function under tf.function for speed\n@tf.function\ndef train_step(x_batch, y_batch):\nwith tf.GradientTape() as tape:\nlogits = model(x_batch, training=True)\nloss_val = loss_fn(y_batch, logits)\ngrads = tape.gradient(loss_val, model.trainable_variables)\noptimizer.apply_gradients(zip(grads, model.trainable_variables))\ntrain_acc_metric.update_state(y_batch, logits)\nreturn loss_val\n\n# Execute custom training loop across 2 epochs\nfor epoch in range(2):\nprint(f\"Start of Epoch {epoch}\")\nfor step, (x_batch, y_batch) in enumerate(dataset):\nloss_value = train_step(x_batch, y_batch)\n\n# Log and reset metric state at epoch bounds\nprint(f\"Epoch {epoch} Accuracy: {float(train_acc_metric.result()):.4f}\")",
+      "use_when": "Developing non-standard research architectures, reinforcement learning loops, complex multi-step meta-learning pipelines, or low-level framework integrations.",
+      "avoid_when": "Standard supervised model training can be implemented using built-in model.fit() or train_step() overrides, which require significantly less boilerplate code.",
+      "gotchas": [
+        "Forgetting to call metric.reset_state() at epoch boundaries causes metric accumulators to pool results across all historical epochs continuously.",
+        "Forgetting to decorate the inner step step execution function with @tf.function forces code to run in unoptimized eager Python mode, severely degrading GPU execution performance."
+      ],
+      "performance_notes": "Wrapping step execution blocks in @tf.function builds optimized execution graphs that maximize GPU usage and match native model.fit() execution speed.",
+      "related_apis": [
+        "tf.GradientTape",
+        "tf.function",
+        "keras.optimizers.Optimizer"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "This design directly mirrors standard PyTorch training loop structures.",
+      "pytorch_equivalent": "`for epoch in range(epochs):`  \n    `for x_batch, y_batch in dataset:`  \n        `optimizer.zero_grad()`  \n        `logits = model(x_batch)`  \n        `loss = loss_fn(logits, y_batch)`  \n        `loss.backward()`  \n        `optimizer.step()`",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "`for epoch in range(epochs):`  \n    `for x_batch, y_batch in dataset:`  \n        `optimizer.zero_grad()`  \n        `logits = model(x_batch)`  \n        `loss = loss_fn(logits, y_batch)`  \n        `loss.backward()`  \n        `optimizer.step()`",
+      "version_compatibility": "In TensorFlow 2.21, optimizer.apply_gradients() accepts variable-gradient zip iterators natively across eager and graph execution modes.",
+      "search_metadata": {
+        "aliases": [
+          "custom training loop",
+          "GradientTape loop",
+          "manual tf training loop"
+        ],
+        "common_search_terms": [
+          "tensorflow custom training loop tf.GradientTape",
+          "tf.function train step loop example"
+        ],
+        "search_terms": [
+          "tensorflow custom training loop tf.GradientTape",
+          "tf.function train step loop example"
+        ],
+        "keywords": [
+          "GradientTape",
+          "apply_gradients",
+          "custom loop",
+          "tf.function"
+        ],
+        "frequently_confused_with": [
+          "GradientTape manual loop vs Keras fit()"
+        ],
+        "confused_with": [
+          "GradientTape manual loop vs Keras fit()"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "transformer",
+        "yolo",
+        "gan"
+      ],
+      "related_patterns": [
+        "custom-training-loop",
+        "memory-efficient-training",
+        "mixed-precision",
+        "gradient-accumulation"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline",
+        "semantic-segmentation-pipeline"
+      ],
+      "related_cheatsheets": [
+        "training"
+      ],
+      "related_cheatsheet": [
+        "training"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide",
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/guide/keras/writing_a_training_loop_from_scratch",
+      "official_docs": "https://www.tensorflow.org/guide/keras/writing_a_training_loop_from_scratch"
+    }
+  ]
+}

@@ -1,0 +1,1820 @@
+{
+  "id": "tensorflow",
+  "module_name": "06_data",
+  "module_title": "Data Loading Pipelines",
+  "slug": "06_data",
+  "tasks": [
+    {
+      "task": "Create Dataset from Tensor Slices (tf.data.Dataset.from_tensor_slices)",
+      "problem_solved": "Converts in-memory NumPy arrays, Python structures, or TensorFlow tensors into a tf.data.Dataset by slicing them along their leading dimension.",
+      "mental_trigger": "I need to convert in-memory arrays or tensors into an element-wise streaming TensorFlow dataset.",
+      "syntax": "Create Dataset from Tensor Slices (tf.data.Dataset.from_tensor_slices)",
+      "important_parameters": [
+        "tensors**: A nested structure of tensors or array-like objects whose zero-th dimensions must match in length.",
+        "name**: Optional string name for the dataset operation node."
+      ],
+      "important_params": [
+        "tensors**: A nested structure of tensors or array-like objects whose zero-th dimensions must match in length.",
+        "name**: Optional string name for the dataset operation node."
+      ],
+      "return_value": "A tf.data.Dataset yielding sliced elements matching the structure of tensors with the zero-th dimension stripped.",
+      "example": "features = tf.constant([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])\nlabels = tf.constant([0, 1, 0])\n\ndataset = tf.data.Dataset.from_tensor_slices((features, labels))\n\nfor x, y in dataset.take(2):",
+      "snippet": "features = tf.constant([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])\nlabels = tf.constant([0, 1, 0])\n\ndataset = tf.data.Dataset.from_tensor_slices((features, labels))\n\nfor x, y in dataset.take(2):",
+      "use_when": "Working with small to medium-sized in-memory datasets (NumPy arrays, Pandas DataFrames) that fit comfortably within host system RAM.",
+      "avoid_when": "Processing datasets exceeding host memory capacity or passing large arrays directly that bloat the TensorFlow computational graph.",
+      "gotchas": [
+        "1. Embeds large arrays directly as constants inside the TF graph protocol buffer if passed as raw NumPy literals, exceeding the 2 GB graph serialization limit.",
+        "2. Mismatched zero-th dimension sizes across tuple components raises a ValueError.",
+        "3. Modifying the original NumPy array after dataset creation does not update data if converted to a graph constant.",
+        "4. Fails to scale to massive multi-terabyte datasets due to complete host RAM dependency."
+      ],
+      "performance_notes": "Zero-copy operation when passing existing tf.Tensor objects directly. For large NumPy arrays, pass them via tf.constant or place dataset construction outside execution loops to prevent repeated graph allocation.",
+      "related_apis": [
+        "tf.data.Dataset.from_tensors",
+        "tf.data.Dataset.from_generator"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Equivalent to PyTorch TensorDataset. In PyTorch, TensorDataset requires explicit indexing via DataLoader, whereas from_tensor_slices directly forms the dataset stream itself.",
+      "pytorch_equivalent": "torch.utils.data.TensorDataset",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.utils.data.TensorDataset",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "from_tensor_slices",
+          "tf.data.from_tensor_slices"
+        ],
+        "common_search_terms": [
+          "slice array into tf dataset",
+          "convert numpy to dataset"
+        ],
+        "search_terms": [
+          "slice array into tf dataset",
+          "convert numpy to dataset"
+        ],
+        "keywords": [
+          "dataset",
+          "tensor",
+          "slice",
+          "in-memory",
+          "numpy"
+        ],
+        "frequently_confused_with": [
+          "from_tensors vs from_tensor_slices"
+        ],
+        "confused_with": [
+          "from_tensors vs from_tensor_slices"
+        ]
+      },
+      "related_models": [
+        "logistic-regression",
+        "resnet"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "tf-data"
+      ],
+      "related_cheatsheet": [
+        "tf-data"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#from_tensor_slices",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#from_tensor_slices"
+    },
+    {
+      "task": "Create Dataset from Generator (tf.data.Dataset.from_generator)",
+      "problem_solved": "Wraps a Python generator into a TensorFlow dataset pipeline to stream unbounded, custom-formatted, or dynamic data without materializing full contents in memory.",
+      "mental_trigger": "I need to stream dynamic data or non-standard Python objects into my pipeline without loading everything into memory.",
+      "syntax": "Create Dataset from Generator (tf.data.Dataset.from_generator)",
+      "important_parameters": [
+        "generator**: Callable Python generator or function returning an iterator yielding dataset elements.",
+        "output_signature**: A nested structure of tf.TypeSpec objects defining element data types and shapes.",
+        "args**: Optional tuple of arguments passed directly to the generator callable.",
+        "name**: Optional string name for the operation node."
+      ],
+      "important_params": [
+        "generator**: Callable Python generator or function returning an iterator yielding dataset elements.",
+        "output_signature**: A nested structure of tf.TypeSpec objects defining element data types and shapes.",
+        "args**: Optional tuple of arguments passed directly to the generator callable.",
+        "name**: Optional string name for the operation node."
+      ],
+      "return_value": "A tf.data.Dataset emitting items yielded by the Python generator matching output_signature.",
+      "example": "def generate_data():\nfor i in range(5):\nyield {\"id\": i, \"val\": tf.random.uniform([2])}\n\noutput_signature = {\n\"id\": tf.TensorSpec(shape=(), dtype=tf.int64),\n\"val\": tf.TensorSpec(shape=(2,), dtype=tf.float32)\n}\n\ndataset = tf.data.Dataset.from_generator(\ngenerate_data,\noutput_signature=output_signature\n)\n\nfor item in dataset.take(2):",
+      "snippet": "def generate_data():\nfor i in range(5):\nyield {\"id\": i, \"val\": tf.random.uniform([2])}\n\noutput_signature = {\n\"id\": tf.TensorSpec(shape=(), dtype=tf.int64),\n\"val\": tf.TensorSpec(shape=(2,), dtype=tf.float32)\n}\n\ndataset = tf.data.Dataset.from_generator(\ngenerate_data,\noutput_signature=output_signature\n)\n\nfor item in dataset.take(2):",
+      "use_when": "Streaming custom third-party Python SDK sources, dynamic procedural data generation, or datasets too large for host RAM that lack native C++ file format readers.",
+      "avoid_when": "High-throughput production workloads requiring massive CPU parallelism, because Python generators run sequentially subject to the Global Interpreter Lock (GIL).",
+      "gotchas": [
+        "1. Cannot be parallelized across multiple worker threads using num_parallel_calls due to GIL execution restrictions.",
+        "2. Omitting output_signature or relying on deprecated output_types causes static typing and graph compilation failures.",
+        "3. Generator state is non-serializable, preventing checkpointing and exact state restoration in distributed training.",
+        "4. Infinite generators without stopping conditions cause training loops to run endlessly unless capped with .take()."
+      ],
+      "performance_notes": "Python-to-C++ serialization overhead creates significant throughput bottlenecks. Prefer tf.data.TFRecordDataset or native C++ ops for high-performance distributed training.",
+      "related_apis": [
+        "tf.data.Dataset.from_tensor_slices",
+        "tf.py_function"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "PyTorch custom Dataset (__getitem__) executes Python code per sample, but PyTorch parallelizes it via process workers (num_workers). from_generator runs in a single Python thread inside the C++ runtime context.",
+      "pytorch_equivalent": "Custom torch.utils.data.IterableDataset",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Custom torch.utils.data.IterableDataset",
+      "version_compatibility": "output_signature is strictly required in TensorFlow 2.x (output_types and output_shapes are deprecated).",
+      "search_metadata": {
+        "aliases": [
+          "from_generator",
+          "generator_dataset"
+        ],
+        "common_search_terms": [
+          "tf.data python generator",
+          "stream python data into tensorflow"
+        ],
+        "search_terms": [
+          "tf.data python generator",
+          "stream python data into tensorflow"
+        ],
+        "keywords": [
+          "generator",
+          "python",
+          "output_signature",
+          "streaming",
+          "gil"
+        ],
+        "frequently_confused_with": [
+          "from_generator vs from_tensor_slices"
+        ],
+        "confused_with": [
+          "from_generator vs from_tensor_slices"
+        ]
+      },
+      "related_models": [
+        "transformer",
+        "bert"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "tf-data"
+      ],
+      "related_cheatsheet": [
+        "tf-data"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#from_generator",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#from_generator"
+    },
+    {
+      "task": "Create Dataset from TensorFlow Records (tf.data.TFRecordDataset)",
+      "problem_solved": "Reads serialized protocol buffer messages (tf.train.Example) from binary TFRecord files sequentially or in parallel for high-throughput disk access.",
+      "mental_trigger": "I need to load enterprise-scale binary datasets stored in TFRecord files with maximum disk read throughput.",
+      "syntax": "Create Dataset from TensorFlow Records (tf.data.TFRecordDataset)",
+      "important_parameters": [
+        "filenames**: String, list of strings, or dataset of strings containing the target TFRecord file paths.",
+        "compression_type**: String ('GZIP' or 'ZLIB') or None if uncompressed.",
+        "buffer_size**: Read buffer size in bytes for each file stream.",
+        "num_parallel_reads**: Number of files to read concurrently in background threads."
+      ],
+      "important_params": [
+        "filenames**: String, list of strings, or dataset of strings containing the target TFRecord file paths.",
+        "compression_type**: String ('GZIP' or 'ZLIB') or None if uncompressed.",
+        "buffer_size**: Read buffer size in bytes for each file stream.",
+        "num_parallel_reads**: Number of files to read concurrently in background threads."
+      ],
+      "return_value": "A tf.data.Dataset emitting raw serialized byte-string tensors corresponding to TFRecord protocol buffers.",
+      "example": "import os\n\nfilename = \"data.tfrecord\"\nwith tf.io.TFRecordWriter(filename) as writer:\nfeature = {\"val\": tf.train.Feature(int64_list=tf.train.Int64List(value=[42]))}\nexample = tf.train.Example(features=tf.train.Features(feature=feature))\nwriter.write(example.SerializeToString())\n\ndataset = tf.data.TFRecordDataset(filenames=[filename])\n\ndef parse_fn(proto):\nfeature_spec = {\"val\": tf.io.FixedLenFeature([], tf.int64)}\nreturn tf.io.parse_single_example(proto, feature_spec)\n\nparsed_dataset = dataset.map(parse_fn)\nfor item in parsed_dataset:\nprint(\"Parsed Value:\", item[\"val\"].numpy())\n\nif os.path.exists(filename):",
+      "snippet": "import os\n\nfilename = \"data.tfrecord\"\nwith tf.io.TFRecordWriter(filename) as writer:\nfeature = {\"val\": tf.train.Feature(int64_list=tf.train.Int64List(value=[42]))}\nexample = tf.train.Example(features=tf.train.Features(feature=feature))\nwriter.write(example.SerializeToString())\n\ndataset = tf.data.TFRecordDataset(filenames=[filename])\n\ndef parse_fn(proto):\nfeature_spec = {\"val\": tf.io.FixedLenFeature([], tf.int64)}\nreturn tf.io.parse_single_example(proto, feature_spec)\n\nparsed_dataset = dataset.map(parse_fn)\nfor item in parsed_dataset:\nprint(\"Parsed Value:\", item[\"val\"].numpy())\n\nif os.path.exists(filename):",
+      "use_when": "Production pipelines reading medium to massive datasets stored on local SSDs, Google Cloud Storage, or AWS S3 in standard TFRecord format.",
+      "avoid_when": "Prototyping with un-serialized unstructured files (e.g., JPEG images or CSVs) where binary conversion setup adds unnecessary friction.",
+      "gotchas": [
+        "1. Emits raw serialized byte strings; forgetting to chain .map(parse_fn) with tf.io.parse_single_example yields unparsed binary blobs.",
+        "2. Using compressed TFRecord files (GZIP) disables block-level seeking and increases CPU unpacking overhead.",
+        "3. Omitting num_parallel_reads forces single-threaded sequential reads across file shards, starving downstream GPUs.",
+        "4. Incorrect feature schema definitions in tf.io.parse_single_example cause silent data type mismatches or runtime decode errors."
+      ],
+      "performance_notes": "Native C++ binary file reader bypasses the Python GIL completely. Set num_parallel_reads=tf.data.AUTOTUNE to parallelize disk reads across multi-file shards.",
+      "related_apis": [
+        "tf.io.parse_single_example",
+        "tf.io.TFRecordWriter",
+        "tf.data.Dataset.interleave"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "PyTorch lacks a native TFRecord counterpart; PyTorch pipelines rely on WebDataset (.tar archives) or LMDB/HDF5 formats for binary sharded records.",
+      "pytorch_equivalent": "WebDataset or custom LMDB torch.utils.data.Dataset",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "WebDataset or custom LMDB torch.utils.data.Dataset",
+      "version_compatibility": "No significant changes in TensorFlow 2.21. Prefer explicit num_parallel_reads=tf.data.AUTOTUNE.",
+      "search_metadata": {
+        "aliases": [
+          "TFRecordDataset",
+          "tf.data.TFRecordDataset"
+        ],
+        "common_search_terms": [
+          "read tfrecords tensorflow",
+          "parse serialized example tf.data"
+        ],
+        "search_terms": [
+          "read tfrecords tensorflow",
+          "parse serialized example tf.data"
+        ],
+        "keywords": [
+          "tfrecord",
+          "binary",
+          "protobuf",
+          "num_parallel_reads",
+          "serialization"
+        ],
+        "frequently_confused_with": [
+          "TFRecordDataset vs TextLineDataset"
+        ],
+        "confused_with": [
+          "TFRecordDataset vs TextLineDataset"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "yolo"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tf-data"
+      ],
+      "related_cheatsheet": [
+        "tf-data"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/data/TFRecordDataset",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/data/TFRecordDataset"
+    },
+    {
+      "task": "Create Dataset from CSV Files (tf.data.experimental.make_csv_dataset)",
+      "problem_solved": "Parses batched structured records directly from CSV files into a feature dictionary and target label tensor without full in-memory Pandas loading.",
+      "mental_trigger": "I need to construct an input pipeline directly from tabular CSV files with automatic column parsing, shuffling, and batching.",
+      "syntax": "file_pattern, batch_size, column_names=None, column_defaults=None,\nlabel_name=None, select_columns=None, field_delim=',', use_quote_delim=True,\nna_value='', header=True, num_epochs=None, shuffle=True,\nshuffle_buffer_size=10000, shuffle_seed=None, prefetch_buffer_size=None,\nnum_parallel_reads=None, sloppy=False, num_rows_for_inference=100,\ncompression_type=None, ignore_errors=False",
+      "important_parameters": [
+        "file_pattern**: Glob pattern or list of file paths matching target CSV files.",
+        "batch_size**: Integer number of samples per output batch.",
+        "label_name**: String column name to extract as target label tensor.",
+        "select_columns**: Optional list of column names to selectively load into memory.",
+        "column_defaults**: List of default values or data types for parsing CSV fields."
+      ],
+      "important_params": [
+        "file_pattern**: Glob pattern or list of file paths matching target CSV files.",
+        "batch_size**: Integer number of samples per output batch.",
+        "label_name**: String column name to extract as target label tensor.",
+        "select_columns**: Optional list of column names to selectively load into memory.",
+        "column_defaults**: List of default values or data types for parsing CSV fields."
+      ],
+      "return_value": "A tf.data.Dataset yielding (features_dict, label_tensor) tuples where features_dict maps column names to batched tensors.",
+      "example": "import tempfile\n\nwith tempfile.NamedTemporaryFile(\"w\", delete=False, suffix=\".csv\") as f:\nf.write(\"age,income,label\\n25,50000,0\\n42,85000,1\\n31,62000,0\\n\")\nf_path = f.name\n\ndataset = tf.data.experimental.make_csv_dataset(\nfile_pattern=f_path,\nbatch_size=2,\nlabel_name=\"label\",\nnum_epochs=1,\nshuffle=False\n)\n\nfor features, label in dataset.take(1):\nprint(\"Features:\", {k: v.numpy() for k, v in features.items()})",
+      "snippet": "import tempfile\n\nwith tempfile.NamedTemporaryFile(\"w\", delete=False, suffix=\".csv\") as f:\nf.write(\"age,income,label\\n25,50000,0\\n42,85000,1\\n31,62000,0\\n\")\nf_path = f.name\n\ndataset = tf.data.experimental.make_csv_dataset(\nfile_pattern=f_path,\nbatch_size=2,\nlabel_name=\"label\",\nnum_epochs=1,\nshuffle=False\n)\n\nfor features, label in dataset.take(1):\nprint(\"Features:\", {k: v.numpy() for k, v in features.items()})",
+      "use_when": "Ingesting tabular CSV datasets directly into Keras models or Feature Preprocessing Layer workflows.",
+      "avoid_when": "Parsing unstructured text or non-standard delimited files requiring complex multi-line transformations.",
+      "gotchas": [
+        "1. Automatically batches and shuffles by default; set shuffle=False if absolute sequential order is required.",
+        "2. Missing values raise errors if appropriate default values are omitted from column_defaults.",
+        "3. Type inference on partial files can produce schema mismatches across shards if column types vary.",
+        "4. Returns batched data rather than unbatched single elements by default."
+      ],
+      "performance_notes": "Parallelizes disk reads and decoding via internal C++ CSV parsing ops. Set num_parallel_reads=tf.data.AUTOTUNE for multi-file CSV workloads.",
+      "related_apis": [
+        "tf.data.TextLineDataset",
+        "tf.io.decode_csv"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Equivalent to wrapping Pandas read_csv or PyTorch tabular datasets, but streams chunks natively in C++ without Python loop overhead.",
+      "pytorch_equivalent": "Custom torch.utils.data.Dataset using pandas.read_csv with chunking",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Custom torch.utils.data.Dataset using pandas.read_csv with chunking",
+      "version_compatibility": "API remains in experimental namespace (tf.data.experimental.make_csv_dataset), fully supported in TF 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "make_csv_dataset",
+          "tf.data.experimental.make_csv_dataset"
+        ],
+        "common_search_terms": [
+          "stream csv tensorflow",
+          "load csv into tf.data",
+          "read csv batches"
+        ],
+        "search_terms": [
+          "stream csv tensorflow",
+          "load csv into tf.data",
+          "read csv batches"
+        ],
+        "keywords": [
+          "csv",
+          "tabular",
+          "batch_size",
+          "label_name",
+          "select_columns"
+        ],
+        "frequently_confused_with": [
+          "make_csv_dataset vs TextLineDataset \\+ decode_csv"
+        ],
+        "confused_with": [
+          "make_csv_dataset vs TextLineDataset \\+ decode_csv"
+        ]
+      },
+      "related_models": [
+        "logistic-regression",
+        "random-forest",
+        "xgboost"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "tf-data"
+      ],
+      "related_cheatsheet": [
+        "tf-data"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/data/experimental/make_csv_dataset",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/data/experimental/make_csv_dataset"
+    },
+    {
+      "task": "Create Dataset from Text Files (tf.data.TextLineDataset)",
+      "problem_solved": "Streams newline-delimited text documents or logs line-by-line into scalar string tensors.",
+      "mental_trigger": "I need to load plain text files line by line for tokenization and text preprocessing.",
+      "syntax": "Create Dataset from Text Files (tf.data.TextLineDataset)",
+      "important_parameters": [
+        "filenames**: String, list of strings, or dataset of string filenames.",
+        "compression_type**: String ('GZIP' or 'ZLIB') or None if uncompressed.",
+        "buffer_size**: Read buffer size in bytes.",
+        "num_parallel_reads**: Number of files read in parallel threads."
+      ],
+      "important_params": [
+        "filenames**: String, list of strings, or dataset of string filenames.",
+        "compression_type**: String ('GZIP' or 'ZLIB') or None if uncompressed.",
+        "buffer_size**: Read buffer size in bytes.",
+        "num_parallel_reads**: Number of files read in parallel threads."
+      ],
+      "return_value": "A tf.data.Dataset emitting scalar tf.string tensors containing individual text lines.",
+      "example": "import tempfile\n\nwith tempfile.NamedTemporaryFile(\"w\", delete=False, suffix=\".txt\") as f:\nf.write(\"TensorFlow 2.21 Input Pipeline\\nProduction Ready tf.data API\\n\")\nf_path = f.name\n\ndataset = tf.data.TextLineDataset(filenames=[f_path])\n\nfor line in dataset:",
+      "snippet": "import tempfile\n\nwith tempfile.NamedTemporaryFile(\"w\", delete=False, suffix=\".txt\") as f:\nf.write(\"TensorFlow 2.21 Input Pipeline\\nProduction Ready tf.data API\\n\")\nf_path = f.name\n\ndataset = tf.data.TextLineDataset(filenames=[f_path])\n\nfor line in dataset:",
+      "use_when": "Reading raw text corpora, JSON-Lines (.jsonl), or custom line-separated log files.",
+      "avoid_when": "Reading multi-line text records or tabular data where schema validation and typed columns are needed.",
+      "gotchas": [
+        "1. Retains raw string encodings; requires explicit decoding or tokenization in downstream .map() steps.",
+        "2. Non-standard line breaks across operating systems can leave trailing carriage return characters (\\\\r).",
+        "3. Single monolithic text files cannot be parallelized across lines; split text files into multiple shard files.",
+        "4. Uncompressed large files consume high memory if mapped functions retain tokenized states in RAM."
+      ],
+      "performance_notes": "Highly effective for streaming text logs. Combine with .interleave() across multiple files with num_parallel_reads=tf.data.AUTOTUNE.",
+      "related_apis": [
+        "tf.data.TFRecordDataset",
+        "tf.strings.split",
+        "tf.io.decode_csv"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "PyTorch users typically use custom dataset classes reading text files line-by-line using Python file handles. TextLineDataset performs line reading entirely in C++.",
+      "pytorch_equivalent": "Custom IterableDataset with line-by-line file reading",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Custom IterableDataset with line-by-line file reading",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "TextLineDataset",
+          "tf.data.TextLineDataset"
+        ],
+        "common_search_terms": [
+          "read text file line by line tensorflow",
+          "tf.data stream txt"
+        ],
+        "search_terms": [
+          "read text file line by line tensorflow",
+          "tf.data stream txt"
+        ],
+        "keywords": [
+          "text",
+          "textline",
+          "string",
+          "nlp",
+          "lines"
+        ],
+        "frequently_confused_with": [
+          "TextLineDataset vs make_csv_dataset"
+        ],
+        "confused_with": [
+          "TextLineDataset vs make_csv_dataset"
+        ]
+      },
+      "related_models": [
+        "bert",
+        "roberta",
+        "t5",
+        "gpt",
+        "llama"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "tf-data"
+      ],
+      "related_cheatsheet": [
+        "tf-data"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/data/TextLineDataset",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/data/TextLineDataset"
+    },
+    {
+      "task": "Transform Dataset Elements (Dataset.map)",
+      "problem_solved": "Applies a transformation function to each element of a dataset, executing preprocessing, normalization, and tensor transformations inside the computational graph.",
+      "mental_trigger": "I need to preprocess, resize, decode, or convert elements in my pipeline.",
+      "syntax": "Transform Dataset Elements (Dataset.map)",
+      "important_parameters": [
+        "map_func**: Callable mapping an input dataset element to a target element structure.",
+        "num_parallel_calls**: Number of CPU threads allocated for parallel execution. Set to tf.data.AUTOTUNE.",
+        "deterministic**: Boolean controlling whether element order must be preserved when executing in parallel."
+      ],
+      "important_params": [
+        "map_func**: Callable mapping an input dataset element to a target element structure.",
+        "num_parallel_calls**: Number of CPU threads allocated for parallel execution. Set to tf.data.AUTOTUNE.",
+        "deterministic**: Boolean controlling whether element order must be preserved when executing in parallel."
+      ],
+      "return_value": "A tf.data.Dataset emitting transformed elements.",
+      "example": "dataset = tf.data.Dataset.range(5)\n\ndef preprocess(x):\nreturn tf.cast(x, tf.float32) * 2.0, x % 2\n\nmapped_dataset = dataset.map(\npreprocess,\nnum_parallel_calls=tf.data.AUTOTUNE\n)\n\nfor feature, label in mapped_dataset:",
+      "snippet": "dataset = tf.data.Dataset.range(5)\n\ndef preprocess(x):\nreturn tf.cast(x, tf.float32) * 2.0, x % 2\n\nmapped_dataset = dataset.map(\npreprocess,\nnum_parallel_calls=tf.data.AUTOTUNE\n)\n\nfor feature, label in mapped_dataset:",
+      "use_when": "Executing standard TF-native image resizing, tokenization, byte parsing, normalization, or element-wise data augmentations.",
+      "avoid_when": "Executing arbitrary non-TF Python code that cannot be converted into graph ops (use tf.py_function inside map only as a last resort).",
+      "gotchas": [
+        "1. Calling pure non-TF Python functions inside map_func causes symbol or type execution errors during graph tracing.",
+        "2. Setting deterministic=False improves speed under AUTOTUNE but breaks reproducible element ordering across runs.",
+        "3. Placing heavy CPU mapping ops after .batch() rather than before can lead to suboptimal thread utilization if batch size is small.",
+        "4. Heavy mapping operations placed before .cache() cause redundant re-computation per epoch if placed in incorrect order."
+      ],
+      "performance_notes": "Always pass num_parallel_calls=tf.data.AUTOTUNE to execute preprocessing transformations across available CPU worker threads concurrently.",
+      "related_apis": [
+        "tf.py_function",
+        "tf.data.Dataset.batch",
+        "tf.data.Dataset.interleave"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "PyTorch applies transformations inside Dataset.__getitem__() or transform composition functions. tf.data.Dataset.map performs this as an explicit graph transformation step.",
+      "pytorch_equivalent": "torchvision.transforms or preprocessing inside __getitem__",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torchvision.transforms or preprocessing inside __getitem__",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "map",
+          "Dataset.map"
+        ],
+        "common_search_terms": [
+          "preprocess dataset tf.data",
+          "parallel map tensorflow"
+        ],
+        "search_terms": [
+          "preprocess dataset tf.data",
+          "parallel map tensorflow"
+        ],
+        "keywords": [
+          "map",
+          "transform",
+          "autotune",
+          "num_parallel_calls",
+          "preprocessing"
+        ],
+        "frequently_confused_with": [
+          "map vs interleave"
+        ],
+        "confused_with": [
+          "map vs interleave"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "yolo"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder",
+        "semantic-segmentation-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tf-data"
+      ],
+      "related_cheatsheet": [
+        "tf-data"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#map",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#map"
+    },
+    {
+      "task": "Filter Dataset Elements (Dataset.filter)",
+      "problem_solved": "Filters elements out of a dataset based on a predicate evaluation function, keeping only elements where the predicate returns true.",
+      "mental_trigger": "I need to prune invalid samples, corrupted files, or out-of-bounds sequences dynamically during input processing.",
+      "syntax": "Filter Dataset Elements (Dataset.filter)",
+      "important_parameters": [
+        "predicate**: A callable that takes a dataset element and returns a scalar tf.bool tensor.",
+        "name**: Optional string name for the dataset operation node."
+      ],
+      "important_params": [
+        "predicate**: A callable that takes a dataset element and returns a scalar tf.bool tensor.",
+        "name**: Optional string name for the dataset operation node."
+      ],
+      "return_value": "A tf.data.Dataset emitting only elements where predicate(element) \\== True.",
+      "example": "dataset = tf.data.Dataset.range(10)\n\nfiltered_dataset = dataset.filter(lambda x: tf.equal(x % 2, 0))",
+      "snippet": "dataset = tf.data.Dataset.range(10)\n\nfiltered_dataset = dataset.filter(lambda x: tf.equal(x % 2, 0))",
+      "use_when": "Discarding corrupted inputs, dropping empty text lines, filtering dynamic bounding box targets, or restricting dataset range dynamically.",
+      "avoid_when": "Filtering out a massive percentage (\\>90%) of elements, as the pipeline still incurs I/O and evaluation overhead for dropped items.",
+      "gotchas": [
+        "1. Predicate must return a scalar boolean tf.Tensor, not a Python bool.",
+        "2. Heavy predicate filtering before .cache() forces dropped items to be read from disk on the initial pass.",
+        "3. Filtering after .batch() evaluates predicate on entire batched tensors, requiring unbatching or element-wise inspection logic.",
+        "4. Unknown cardinality results from filtering because static element counts cannot be computed beforehand."
+      ],
+      "performance_notes": "Keep predicate functions computationally lightweight. Perform coarse file-level or partition-level filtering prior to reading full files if possible.",
+      "related_apis": [
+        "tf.data.Dataset.map",
+        "tf.math.equal"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "PyTorch lacks a native .filter() method on DataLoaders; PyTorch users typically skip invalid samples inside __getitem__ by returning None and filtering via custom collate_fn.",
+      "pytorch_equivalent": "Custom filtering in Dataset.__getitem__ or collate_fn",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Custom filtering in Dataset.__getitem__ or collate_fn",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "filter",
+          "Dataset.filter"
+        ],
+        "common_search_terms": [
+          "filter elements tf.data",
+          "remove corrupted images tf.data"
+        ],
+        "search_terms": [
+          "filter elements tf.data",
+          "remove corrupted images tf.data"
+        ],
+        "keywords": [
+          "filter",
+          "predicate",
+          "remove",
+          "boolean",
+          "clean"
+        ],
+        "frequently_confused_with": [
+          "filter vs map"
+        ],
+        "confused_with": [
+          "filter vs map"
+        ]
+      },
+      "related_models": [
+        "bert",
+        "yolo",
+        "resnet"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "tf-data"
+      ],
+      "related_cheatsheet": [
+        "tf-data"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#filter",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#filter"
+    },
+    {
+      "task": "Flatten and Parallelize Dataset Loading (Dataset.interleave)",
+      "problem_solved": "Maps a dataset-yielding function across an input dataset and interleaves the results concurrently across multiple streams.",
+      "mental_trigger": "I need to open, read, and interleave elements concurrently from multiple data files to saturate disk I/O bandwidth.",
+      "syntax": "Flatten and Parallelize Dataset Loading (Dataset.interleave)",
+      "important_parameters": [
+        "map_func**: Function taking an input element and returning a tf.data.Dataset.",
+        "cycle_length**: Number of input elements (files) processed concurrently.",
+        "block_length**: Number of consecutive elements produced from one dataset before switching to the next.",
+        "num_parallel_calls**: Degree of parallel thread execution across interleaved streams. Set to tf.data.AUTOTUNE.",
+        "deterministic**: Controls strict ordered vs non-deterministic element output."
+      ],
+      "important_params": [
+        "map_func**: Function taking an input element and returning a tf.data.Dataset.",
+        "cycle_length**: Number of input elements (files) processed concurrently.",
+        "block_length**: Number of consecutive elements produced from one dataset before switching to the next.",
+        "num_parallel_calls**: Degree of parallel thread execution across interleaved streams. Set to tf.data.AUTOTUNE.",
+        "deterministic**: Controls strict ordered vs non-deterministic element output."
+      ],
+      "return_value": "A tf.data.Dataset emitting flattened interleaved elements.",
+      "example": "files = tf.data.Dataset.from_tensor_slices([\"file1.txt\", \"file2.txt\"])\n\ndef read_file(filename):\nreturn tf.data.Dataset.from_tensor_slices([f\"{filename}_line1\", f\"{filename}_line2\"])\n\ninterleaved = files.interleave(\nmap_func=read_file,\ncycle_length=2,\nblock_length=1,\nnum_parallel_calls=tf.data.AUTOTUNE\n)",
+      "snippet": "files = tf.data.Dataset.from_tensor_slices([\"file1.txt\", \"file2.txt\"])\n\ndef read_file(filename):\nreturn tf.data.Dataset.from_tensor_slices([f\"{filename}_line1\", f\"{filename}_line2\"])\n\ninterleaved = files.interleave(\nmap_func=read_file,\ncycle_length=2,\nblock_length=1,\nnum_parallel_calls=tf.data.AUTOTUNE\n)",
+      "use_when": "Reading sharded file systems (TFRecords, CSVs, text files) where concurrently reading multiple shards prevents single-file I/O bottlenecks.",
+      "avoid_when": "Reading from a single file or when strict sequential record ordering must be preserved across non-parallel pipelines.",
+      "gotchas": [
+        "1. Setting cycle_length too high can cause excessive random disk seeks on HDD storage systems.",
+        "2. Non-deterministic interleaving (deterministic=False) causes variation in sample iteration order across runs.",
+        "3. Returning a single tensor instead of a tf.data.Dataset inside map_func raises a type error.",
+        "4. block_length \\> 1 streams consecutive blocks from a single file before switching, affecting shuffle randomness if buffer is small."
+      ],
+      "performance_notes": "Essential for cloud-attached storage (GCS/S3). Set cycle_length=tf.data.AUTOTUNE and num_parallel_calls=tf.data.AUTOTUNE for adaptive high-throughput streaming.",
+      "related_apis": [
+        "tf.data.TFRecordDataset",
+        "tf.data.Dataset.map",
+        "tf.data.Dataset.flat_map"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "PyTorch multi-worker DataLoader assigns full files or indices per worker. Dataset.interleave interleaves streams at fine-grained element level in C++.",
+      "pytorch_equivalent": "No direct equivalent (approximated via PyTorch IterableDataset with multi-process shard dispatching).",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "No direct equivalent (approximated via PyTorch IterableDataset with multi-process shard dispatching).",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "interleave",
+          "Dataset.interleave"
+        ],
+        "common_search_terms": [
+          "parallel file reading tf.data",
+          "concurrent dataset load tensorflow"
+        ],
+        "search_terms": [
+          "parallel file reading tf.data",
+          "concurrent dataset load tensorflow"
+        ],
+        "keywords": [
+          "interleave",
+          "cycle_length",
+          "block_length",
+          "autotune",
+          "parallel"
+        ],
+        "frequently_confused_with": [
+          "interleave vs flat_map vs map"
+        ],
+        "confused_with": [
+          "interleave vs flat_map vs map"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "llama"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tf-data"
+      ],
+      "related_cheatsheet": [
+        "tf-data"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#interleave",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#interleave"
+    },
+    {
+      "task": "Repeat Dataset for Multiple Epochs (Dataset.repeat)",
+      "problem_solved": "Concatenates the dataset infinitely or for a fixed count, enabling continuous dataset iteration across multiple training epochs without re-instantiating iterators.",
+      "mental_trigger": "I need my dataset pipeline to loop continuously across epochs during model training.",
+      "syntax": "Repeat Dataset for Multiple Epochs (Dataset.repeat)",
+      "important_parameters": [
+        "count**: Integer number of times to repeat dataset. If None or -1, repeats indefinitely.",
+        "name**: Optional string name for the dataset operation node."
+      ],
+      "important_params": [
+        "count**: Integer number of times to repeat dataset. If None or -1, repeats indefinitely.",
+        "name**: Optional string name for the dataset operation node."
+      ],
+      "return_value": "A tf.data.Dataset yielding repeated dataset elements.",
+      "example": "dataset = tf.data.Dataset.range(3).repeat(count=2)",
+      "snippet": "dataset = tf.data.Dataset.range(3).repeat(count=2)",
+      "use_when": "Training with custom loops or explicit steps_per_epoch controls where continuous infinite streams are expected.",
+      "avoid_when": "Standard Keras model.fit() where epoch bounds are managed automatically by Keras based on dataset end-of-file signal.",
+      "gotchas": [
+        "1. Placing .repeat() *before* .shuffle() shuffles elements across epoch boundaries rather than giving fresh distinct epoch shuffles.",
+        "2. Indefinite .repeat() without steps_per_epoch in Keras model.fit() results in infinite training loops that never terminate.",
+        "3. Placing .cache() *after* .repeat() caches the entire repeated dataset across all epochs, wasting host memory.",
+        "4. Order placement relative to .batch() impacts batch boundary continuity between epochs."
+      ],
+      "performance_notes": "Zero performance cost; simply resets the underlying iterator internally upon reaching end-of-file.",
+      "related_apis": [
+        "tf.data.Dataset.shuffle",
+        "tf.data.Dataset.batch"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "PyTorch DataLoader handles epoch repetition via outer Python for epoch in range(epochs): loops, recreating iterators per epoch. tf.data.Dataset.repeat bakes looping directly into the graph pipeline.",
+      "pytorch_equivalent": "Manual outer Python epoch loop over DataLoader",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Manual outer Python epoch loop over DataLoader",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "repeat",
+          "Dataset.repeat"
+        ],
+        "common_search_terms": [
+          "repeat dataset epochs tensorflow",
+          "infinite loop tf.data"
+        ],
+        "search_terms": [
+          "repeat dataset epochs tensorflow",
+          "infinite loop tf.data"
+        ],
+        "keywords": [
+          "repeat",
+          "epochs",
+          "loop",
+          "infinite",
+          "count"
+        ],
+        "frequently_confused_with": [
+          "repeat before shuffle vs shuffle before repeat"
+        ],
+        "confused_with": [
+          "repeat before shuffle vs shuffle before repeat"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert",
+        "yolo"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "tf-data"
+      ],
+      "related_cheatsheet": [
+        "tf-data"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#repeat",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#repeat"
+    },
+    {
+      "task": "Batch Dataset Samples (Dataset.batch)",
+      "problem_solved": "Groups contiguous individual elements into batched tensors along a new zero-th dimension for vectorized model processing.",
+      "mental_trigger": "I need to combine single data elements into tensor batches for model execution.",
+      "syntax": "Batch Dataset Samples (Dataset.batch)",
+      "important_parameters": [
+        "batch_size**: Integer number of consecutive elements to combine into a single batch.",
+        "drop_remainder**: Boolean controlling whether to drop the last batch if its size is less than batch_size.",
+        "num_parallel_calls**: Number of threads allocated for parallel batch construction. Set to tf.data.AUTOTUNE.",
+        "deterministic**: Controls output order determinism under parallel execution."
+      ],
+      "important_params": [
+        "batch_size**: Integer number of consecutive elements to combine into a single batch.",
+        "drop_remainder**: Boolean controlling whether to drop the last batch if its size is less than batch_size.",
+        "num_parallel_calls**: Number of threads allocated for parallel batch construction. Set to tf.data.AUTOTUNE.",
+        "deterministic**: Controls output order determinism under parallel execution."
+      ],
+      "return_value": "A tf.data.Dataset emitting batched tensor structures.",
+      "example": "dataset = tf.data.Dataset.range(10)\nbatched_dataset = dataset.batch(batch_size=4, drop_remainder=True)\n\nfor batch in batched_dataset:",
+      "snippet": "dataset = tf.data.Dataset.range(10)\nbatched_dataset = dataset.batch(batch_size=4, drop_remainder=True)\n\nfor batch in batched_dataset:",
+      "use_when": "Aggregating uniform-shape dataset elements into static or dynamic batch sizes before feeding into network models.",
+      "avoid_when": "Elements have variable sequence lengths or dynamic tensor shapes (use padded_batch instead).",
+      "gotchas": [
+        "1. Failing to set drop_remainder=True produces dynamic batch shapes ([None, ...]) which breaks static shape optimizations on TPUs or in XLA compilation.",
+        "2. Attempting to batch elements with varying shape dimensions raises a dimension shape error (ValueError).",
+        "3. Batching *before* heavy CPU map transformations reduces parallel CPU worker granularity if batch size is large.",
+        "4. Excessive batch_size causes host RAM or GPU Out-Of-Memory (OOM) failures."
+      ],
+      "performance_notes": "Set num_parallel_calls=tf.data.AUTOTUNE on large tensor batching operations to parallelize slice concatenation and memory copies.",
+      "related_apis": [
+        "tf.data.Dataset.padded_batch",
+        "tf.data.Dataset.unbatch"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Equivalent to batch_size parameter in PyTorch DataLoader. PyTorch uses a custom collate_fn internally, whereas tf.data.Dataset.batch performs dynamic tensor stacking.",
+      "pytorch_equivalent": "torch.utils.data.DataLoader(batch_size=...)",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.utils.data.DataLoader(batch_size=...)",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "batch",
+          "Dataset.batch"
+        ],
+        "common_search_terms": [
+          "batch dataset tf.data",
+          "drop_remainder static shape"
+        ],
+        "search_terms": [
+          "batch dataset tf.data",
+          "drop_remainder static shape"
+        ],
+        "keywords": [
+          "batch",
+          "batch_size",
+          "drop_remainder",
+          "autotune",
+          "shape"
+        ],
+        "frequently_confused_with": [
+          "batch vs padded_batch"
+        ],
+        "confused_with": [
+          "batch vs padded_batch"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "yolo",
+        "transformer"
+      ],
+      "related_patterns": [
+        "device-placement",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder",
+        "semantic-segmentation-pipeline"
+      ],
+      "related_cheatsheets": [
+        "tf-data"
+      ],
+      "related_cheatsheet": [
+        "tf-data"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#batch",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#batch"
+    },
+    {
+      "task": "Batch Variable-Length Sequences (Dataset.padded_batch)",
+      "problem_solved": "Combines variable-length sequence elements into uniform batches by zero-padding short sequences up to specified target dimensions or batch-maximum lengths.",
+      "mental_trigger": "I need to batch text sequences or feature vectors of varying lengths by padding them to a uniform dimension.",
+      "syntax": "Batch Variable-Length Sequences (Dataset.padded_batch)",
+      "important_parameters": [
+        "batch_size**: Integer number of elements per batch.",
+        "padded_shapes**: Target shape to pad each dimension. None dimension pads to the maximum shape in the current batch.",
+        "padding_values**: Constant scalar value used for padding (defaults to 0 for numbers, empty string for strings).",
+        "drop_remainder**: Controls dropping partial final batch."
+      ],
+      "important_params": [
+        "batch_size**: Integer number of elements per batch.",
+        "padded_shapes**: Target shape to pad each dimension. None dimension pads to the maximum shape in the current batch.",
+        "padding_values**: Constant scalar value used for padding (defaults to 0 for numbers, empty string for strings).",
+        "drop_remainder**: Controls dropping partial final batch."
+      ],
+      "return_value": "A tf.data.Dataset emitting padded, batched tensors with uniform shapes across each batch.",
+      "example": "elements = [tf.constant([1, 2]), tf.constant([3, 4, 5, 6]), tf.constant([7])]\ndataset = tf.data.Dataset.from_generator(\nlambda: iter(elements),\noutput_signature=tf.TensorSpec(shape=(None,), dtype=tf.int32)\n)\n\npadded_ds = dataset.padded_batch(\nbatch_size=2,\npadded_shapes=[None],\npadding_values=0\n)\n\nfor batch in padded_ds:",
+      "snippet": "elements = [tf.constant([1, 2]), tf.constant([3, 4, 5, 6]), tf.constant([7])]\ndataset = tf.data.Dataset.from_generator(\nlambda: iter(elements),\noutput_signature=tf.TensorSpec(shape=(None,), dtype=tf.int32)\n)\n\npadded_ds = dataset.padded_batch(\nbatch_size=2,\npadded_shapes=[None],\npadding_values=0\n)\n\nfor batch in padded_ds:",
+      "use_when": "NLP sequence processing, audio spectrogram batching, or object detection bounding box coordinate padding where samples within a batch vary in length.",
+      "avoid_when": "All elements already possess strictly static, identical shape dimensions (use standard batch).",
+      "gotchas": [
+        "1. Omitting padded_shapes in older TF versions caused errors; in TF 2.x, padded_shapes=None defaults to maximum shape per batch.",
+        "2. Incompatible dtype between padding_values and tensor elements causes type mismatch errors.",
+        "3. Excessive padding across batches with dynamic outlier lengths wastes memory and computation; consider sorting samples by length first.",
+        "4. Using padded_shapes smaller than actual element shapes truncates data without warning unless handled carefully."
+      ],
+      "performance_notes": "Padding to dynamic batch maximums (padded_shapes=[None]) saves memory compared to padding every sequence to global maximum dataset length.",
+      "related_apis": [
+        "tf.data.Dataset.batch",
+        "tf.keras.utils.pad_sequences"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Replaces writing a custom PyTorch collate_fn with torch.nn.utils.rnn.pad_sequence.",
+      "pytorch_equivalent": "Custom collate_fn using torch.nn.utils.rnn.pad_sequence",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Custom collate_fn using torch.nn.utils.rnn.pad_sequence",
+      "version_compatibility": "padded_shapes defaults to None (padding to batch dynamic max shape) in modern TF 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "padded_batch",
+          "Dataset.padded_batch"
+        ],
+        "common_search_terms": [
+          "pad dynamic sequences tf.data",
+          "variable length batching tensorflow"
+        ],
+        "search_terms": [
+          "pad dynamic sequences tf.data",
+          "variable length batching tensorflow"
+        ],
+        "keywords": [
+          "padded_batch",
+          "padding",
+          "dynamic shape",
+          "nlp",
+          "sequence"
+        ],
+        "frequently_confused_with": [
+          "padded_batch vs batch"
+        ],
+        "confused_with": [
+          "padded_batch vs batch"
+        ]
+      },
+      "related_models": [
+        "bert",
+        "roberta",
+        "t5",
+        "transformer",
+        "llama"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "text-classification-pipeline-classical-encoder",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "tf-data"
+      ],
+      "related_cheatsheet": [
+        "tf-data"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#padded_batch",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#padded_batch"
+    },
+    {
+      "task": "Unbatch Dataset Elements (Dataset.unbatch)",
+      "problem_solved": "Decomposes batched, grouped, or chunked dataset elements back into individual single-sample elements along the leading zero-th dimension.",
+      "mental_trigger": "I need to flatten batched data elements back into individual atomic records for re-processing or re-batching.",
+      "syntax": "Unbatch Dataset Elements (Dataset.unbatch)",
+      "important_parameters": [
+        "name**: Optional string name for the operation node."
+      ],
+      "important_params": [
+        "name**: Optional string name for the operation node."
+      ],
+      "return_value": "A tf.data.Dataset emitting individual single-sample elements.",
+      "example": "batched_ds = tf.data.Dataset.range(10).batch(5)\nunbatched_ds = batched_ds.unbatch()",
+      "snippet": "batched_ds = tf.data.Dataset.range(10).batch(5)\nunbatched_ds = batched_ds.unbatch()",
+      "use_when": "Reading pre-batched file formats (e.g., TFRecord containing pre-batched tensors), re-shuffling pre-grouped datasets, or changing batch sizes dynamically mid-pipeline.",
+      "avoid_when": "Pipeline is already emitting unbatched individual elements (no-op overhead).",
+      "gotchas": [
+        "1. Unbatching zero-rank scalar tensors raises an InvalidArgumentError because scalar tensors cannot be split along axis 0.",
+        "2. Significant execution overhead if called repeatedly in a loop due to repeated element flattening and graph node creation.",
+        "3. Destroys static batch shape information, forcing downstream ops to re-infer shape dimensions.",
+        "4. Can incur performance penalties if executed on large GPU-allocated tensors directly without host CPU staging."
+      ],
+      "performance_notes": "Incurs minor memory slicing overhead as contiguous tensor batches are broken back into single elements. Keep unbatching operations on host CPU.",
+      "related_apis": [
+        "tf.data.Dataset.batch",
+        "tf.data.Dataset.flat_map"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "PyTorch lacks an explicit unbatch() pipeline transformation; PyTorch developers flatten batched tensors using torch.cat or nested Python generator loops.",
+      "pytorch_equivalent": "itertools.chain.from_iterable over batch iterator",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "itertools.chain.from_iterable over batch iterator",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "unbatch",
+          "Dataset.unbatch"
+        ],
+        "common_search_terms": [
+          "split batched dataset tf.data",
+          "flatten batch tensorflow"
+        ],
+        "search_terms": [
+          "split batched dataset tf.data",
+          "flatten batch tensorflow"
+        ],
+        "keywords": [
+          "unbatch",
+          "flatten",
+          "batch",
+          "decomposition",
+          "slice"
+        ],
+        "frequently_confused_with": [
+          "unbatch vs flat_map"
+        ],
+        "confused_with": [
+          "unbatch vs flat_map"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert",
+        "yolo"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "tf-data"
+      ],
+      "related_cheatsheet": [
+        "tf-data"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#unbatch",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#unbatch"
+    },
+    {
+      "task": "Shuffle Dataset Samples (Dataset.shuffle)",
+      "problem_solved": "Randomizes dataset element sequence order using an in-memory buffer to break correlation between consecutive data samples across training epochs.",
+      "mental_trigger": "I need to randomize sample order to prevent model learning biases during training.",
+      "syntax": "Shuffle Dataset Samples (Dataset.shuffle)",
+      "important_parameters": [
+        "buffer_size**: Integer number of elements from which the dataset samples randomly.",
+        "seed**: Integer random seed for reproducible shuffling.",
+        "reshuffle_each_iteration**: Boolean controlling whether shuffle sequence changes every epoch."
+      ],
+      "important_params": [
+        "buffer_size**: Integer number of elements from which the dataset samples randomly.",
+        "seed**: Integer random seed for reproducible shuffling.",
+        "reshuffle_each_iteration**: Boolean controlling whether shuffle sequence changes every epoch."
+      ],
+      "return_value": "A tf.data.Dataset emitting randomly shuffled elements.",
+      "example": "dataset = tf.data.Dataset.range(10)\n\nshuffled_ds = dataset.shuffle(buffer_size=5, seed=42)",
+      "snippet": "dataset = tf.data.Dataset.range(10)\n\nshuffled_ds = dataset.shuffle(buffer_size=5, seed=42)",
+      "use_when": "Training neural networks to prevent mini-batch bias and autocorrelation among adjacent samples.",
+      "avoid_when": "Processing evaluation/test sets, or when strict sequential reading order is required (e.g., time-series forecasting pipelines).",
+      "gotchas": [
+        "1. Setting buffer_size too small (e.g., smaller than mini-batch size) leads to poor randomization and incomplete shuffling.",
+        "2. Setting buffer_size equal to dataset size for massive datasets (e.g., 100 GB images) causes host RAM Out-Of-Memory (OOM) crashes.",
+        "3. Placing .shuffle() *after* .batch() shuffles whole batches rather than individual samples, reducing granularity.",
+        "4. Placing .shuffle() *after* .repeat() leads to poor cross-epoch shuffling boundaries; place .shuffle() before .repeat()."
+      ],
+      "performance_notes": "Buffer filling occurs during initial iterator startup. For massive datasets, combine coarse file-level shuffling (via file list shuffle or .interleave()) with local buffer_size window shuffling.",
+      "related_apis": [
+        "tf.data.Dataset.batch",
+        "tf.data.Dataset.repeat"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "PyTorch DataLoader(shuffle=True) creates a randomized index map across the entire dataset size. tf.data.Dataset.shuffle uses a streaming fixed-size sliding buffer.",
+      "pytorch_equivalent": "torch.utils.data.DataLoader(shuffle=True)",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.utils.data.DataLoader(shuffle=True)",
+      "version_compatibility": "reshuffle_each_iteration defaults to True in modern TF 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "shuffle",
+          "Dataset.shuffle"
+        ],
+        "common_search_terms": [
+          "shuffle buffer size tf.data",
+          "randomize dataset tensorflow"
+        ],
+        "search_terms": [
+          "shuffle buffer size tf.data",
+          "randomize dataset tensorflow"
+        ],
+        "keywords": [
+          "shuffle",
+          "buffer_size",
+          "seed",
+          "reshuffle",
+          "randomness"
+        ],
+        "frequently_confused_with": [
+          "shuffle before batch vs batch before shuffle"
+        ],
+        "confused_with": [
+          "shuffle before batch vs batch before shuffle"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "yolo",
+        "transformer"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "tf-data"
+      ],
+      "related_cheatsheet": [
+        "tf-data"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#shuffle",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#shuffle"
+    },
+    {
+      "task": "Cache Dataset in Memory or Disk (Dataset.cache)",
+      "problem_solved": "Saves evaluated dataset elements in RAM or local storage after the first epoch to bypass redundant file I/O and CPU transformations on subsequent epochs.",
+      "mental_trigger": "I want to execute preprocessing once on epoch 1 and re-use the preprocessed elements directly in subsequent epochs.",
+      "syntax": "Cache Dataset in Memory or Disk (Dataset.cache)",
+      "important_parameters": [
+        "filename**: String path to local disk cache file. If empty string '', caches dataset directly in system RAM.",
+        "name**: Optional string name for the dataset operation node."
+      ],
+      "important_params": [
+        "filename**: String path to local disk cache file. If empty string '', caches dataset directly in system RAM.",
+        "name**: Optional string name for the dataset operation node."
+      ],
+      "return_value": "A tf.data.Dataset emitting cached elements on subsequent iterations.",
+      "example": "dataset = tf.data.Dataset.range(5)\nmapped_ds = dataset.map(lambda x: x * 2)\n\ncached_ds = mapped_ds.cache()\n\n_ = list(cached_ds.as_numpy_iterator())",
+      "snippet": "dataset = tf.data.Dataset.range(5)\nmapped_ds = dataset.map(lambda x: x * 2)\n\ncached_ds = mapped_ds.cache()\n\n_ = list(cached_ds.as_numpy_iterator())",
+      "use_when": "Small to medium datasets where disk I/O or image decoding/tokenization preprocessing is CPU-heavy and fits entirely in memory or fast local NVMe storage.",
+      "avoid_when": "Dataset size exceeds available system RAM or disk capacity, or when map transformations involve stochastic data augmentation (e.g., random flips).",
+      "gotchas": [
+        "1. Placing .cache() *after* random augmentation ops (e.g., random flip) caches static augmented outputs, freezing data augmentations permanently after epoch 1.",
+        "2. Memory caching (filename='') without enough RAM causes silent OOM system crashes during epoch 1.",
+        "3. Re-running code with an existing disk cache file without deleting stale .index / .data files can load outdated or corrupted data.",
+        "4. Placing .cache() *before* heavy .map() transformations fails to prevent redundant CPU computation on subsequent epochs."
+      ],
+      "performance_notes": "Drastically reduces epoch duration after epoch 1 by eliminating disk reads and transformation latency entirely. Place right after expensive deterministic mapping operations.",
+      "related_apis": [
+        "tf.data.Dataset.prefetch",
+        "tf.data.Dataset.map"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "PyTorch lacks built-in pipeline caching mechanisms; PyTorch users must manually write preprocessed samples back to disk or use custom memory wrappers.",
+      "pytorch_equivalent": "Manual pre-computation / saved dataset tensors",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Manual pre-computation / saved dataset tensors",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "cache",
+          "Dataset.cache"
+        ],
+        "common_search_terms": [
+          "cache dataset in memory tf.data",
+          "disk cache dataset tensorflow"
+        ],
+        "search_terms": [
+          "cache dataset in memory tf.data",
+          "disk cache dataset tensorflow"
+        ],
+        "keywords": [
+          "cache",
+          "RAM",
+          "disk",
+          "preprocessed",
+          "memory"
+        ],
+        "frequently_confused_with": [
+          "cache vs prefetch"
+        ],
+        "confused_with": [
+          "cache vs prefetch"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "yolo"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "tf-data"
+      ],
+      "related_cheatsheet": [
+        "tf-data"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#cache",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#cache"
+    },
+    {
+      "task": "Prefetch Data for Pipeline Overlap (Dataset.prefetch)",
+      "problem_solved": "Overlaps CPU data preprocessing with GPU model computation by fetching future batches asynchronously into a background buffer.",
+      "mental_trigger": "I need to ensure my GPU never sits idle waiting for the CPU host pipeline to deliver the next batch.",
+      "syntax": "Prefetch Data for Pipeline Overlap (Dataset.prefetch)",
+      "important_parameters": [
+        "buffer_size**: Maximum number of elements/batches to prefetch. Always set to tf.data.AUTOTUNE.",
+        "name**: Optional string name for the operation node."
+      ],
+      "important_params": [
+        "buffer_size**: Maximum number of elements/batches to prefetch. Always set to tf.data.AUTOTUNE.",
+        "name**: Optional string name for the operation node."
+      ],
+      "return_value": "A tf.data.Dataset yielding elements pre-buffered in background execution threads.",
+      "example": "dataset = tf.data.Dataset.range(100).batch(10)\n\nprefetched_ds = dataset.prefetch(buffer_size=tf.data.AUTOTUNE)\n\nfor batch in prefetched_ds.take(2):",
+      "snippet": "dataset = tf.data.Dataset.range(100).batch(10)\n\nprefetched_ds = dataset.prefetch(buffer_size=tf.data.AUTOTUNE)\n\nfor batch in prefetched_ds.take(2):",
+      "use_when": "Production pipelines to prevent GPU starve time by executing pipeline preparation concurrently with model compute execution.",
+      "avoid_when": "Debugging complex pipeline exceptions where asynchronous background execution hides original error tracebacks.",
+      "gotchas": [
+        "1. Forgetting to place .prefetch() at the very **end** of the pipeline results in pipeline starvation between CPU host and GPU device.",
+        "2. Hardcoding static integer values for buffer_size instead of tf.data.AUTOTUNE leads to suboptimal memory utilization across hardware devices.",
+        "3. Prefetching excessively large batches can increase host memory consumption."
+      ],
+      "performance_notes": "Critical for performance. Decouples host pipeline time *T*data\u200b from GPU computation time *T*compute\u200b, achieving total step time max(*T*data\u200b,*T*compute\u200b).",
+      "related_apis": [
+        "tf.data.AUTOTUNE",
+        "tf.data.Dataset.cache"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Conceptually equivalent to setting prefetch_factor and pin_memory=True on PyTorch DataLoader.",
+      "pytorch_equivalent": "torch.utils.data.DataLoader(prefetch_factor=..., pin_memory=True)",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.utils.data.DataLoader(prefetch_factor=..., pin_memory=True)",
+      "version_compatibility": "Always pair with tf.data.AUTOTUNE in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "prefetch",
+          "Dataset.prefetch"
+        ],
+        "common_search_terms": [
+          "prevent gpu starvation tf.data",
+          "prefetch autotune tensorflow"
+        ],
+        "search_terms": [
+          "prevent gpu starvation tf.data",
+          "prefetch autotune tensorflow"
+        ],
+        "keywords": [
+          "prefetch",
+          "autotune",
+          "gpu starvation",
+          "async",
+          "buffer"
+        ],
+        "frequently_confused_with": [
+          "prefetch vs cache"
+        ],
+        "confused_with": [
+          "prefetch vs cache"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "yolo",
+        "transformer",
+        "llama"
+      ],
+      "related_patterns": [
+        "device-placement",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline",
+        "semantic-segmentation-pipeline",
+        "text-classification-pipeline-classical-encoder",
+        "transfer-learning-for-vision",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "tf-data"
+      ],
+      "related_cheatsheet": [
+        "tf-data"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#prefetch",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#prefetch"
+    },
+    {
+      "task": "Enable Parallel Data Processing (num_parallel_calls, tf.data.AUTOTUNE)",
+      "problem_solved": "Allocates CPU thread pools dynamically at runtime across transformations to optimize throughput without manual system tuning.",
+      "mental_trigger": "I want TensorFlow to auto-tune multithreaded CPU processing for map, interleave, and batch operations.",
+      "syntax": "Enable Parallel Data Processing (num_parallel_calls, tf.data.AUTOTUNE)",
+      "important_parameters": [
+        "num_parallel_calls**: Number of threads allocated (pass constant tf.data.AUTOTUNE)."
+      ],
+      "important_params": [
+        "num_parallel_calls**: Number of threads allocated (pass constant tf.data.AUTOTUNE)."
+      ],
+      "return_value": "Parameter directive passed into map, interleave, and batch operations.",
+      "example": "dataset = tf.data.Dataset.range(100)\n\nparallel_ds = dataset.map(\nlambda x: x * x,\nnum_parallel_calls=tf.data.AUTOTUNE\n).batch(10)\n\nfor batch in parallel_ds.take(1):",
+      "snippet": "dataset = tf.data.Dataset.range(100)\n\nparallel_ds = dataset.map(\nlambda x: x * x,\nnum_parallel_calls=tf.data.AUTOTUNE\n).batch(10)\n\nfor batch in parallel_ds.take(1):",
+      "use_when": "Every production pipeline where data processing or mapping operations perform non-trivial CPU work.",
+      "avoid_when": "Strict single-threaded deterministic debugging or when CPU resource utilization must be capped strictly on multi-tenant systems.",
+      "gotchas": [
+        "1. Passing hardcoded fixed integers (e.g., num_parallel_calls=4) limits portability across hardware with different CPU core counts.",
+        "2. Relying on AUTOTUNE when operations contain non-thread-safe Python functions inside tf.py_function causes race conditions.",
+        "3. Over-subscribing thread pools across multiple parallel datasets on the same machine causes thread contention."
+      ],
+      "performance_notes": "Runtime dynamically profiles system load and scales CPU worker threads based on host capacity and pipeline bottlenecks.",
+      "related_apis": [
+        "tf.data.Dataset.map",
+        "tf.data.Dataset.interleave",
+        "tf.data.Dataset.prefetch"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "PyTorch uses num_workers in DataLoader to spawn process workers. tf.data.AUTOTUNE manages thread pools directly within native C++ runtime.",
+      "pytorch_equivalent": "torch.utils.data.DataLoader(num_workers=...)",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.utils.data.DataLoader(num_workers=...)",
+      "version_compatibility": "Standard and recommended pattern across all TF 2.x releases.",
+      "search_metadata": {
+        "aliases": [
+          "AUTOTUNE",
+          "num_parallel_calls"
+        ],
+        "common_search_terms": [
+          "autotune tensorflow data",
+          "parallel processing num_parallel_calls"
+        ],
+        "search_terms": [
+          "autotune tensorflow data",
+          "parallel processing num_parallel_calls"
+        ],
+        "keywords": [
+          "autotune",
+          "parallel",
+          "threads",
+          "num_parallel_calls",
+          "cpu"
+        ],
+        "frequently_confused_with": [
+          "num_parallel_calls vs PyTorch num_workers"
+        ],
+        "confused_with": [
+          "num_parallel_calls vs PyTorch num_workers"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "yolo",
+        "transformer"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline",
+        "semantic-segmentation-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "tf-data"
+      ],
+      "related_cheatsheet": [
+        "tf-data"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/data/AUTOTUNE",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/data/AUTOTUNE"
+    },
+    {
+      "task": "Configure Dataset Performance Options (tf.data.Options)",
+      "problem_solved": "Configures global input pipeline behaviors, non-deterministic optimizations, graph rewrites, and distributed auto-sharding policies programmatically.",
+      "mental_trigger": "I need to tweak global dataset execution rules like forcing non-determinism or custom auto-sharding policies.",
+      "syntax": "Configure Dataset Performance Options (tf.data.Options)",
+      "important_parameters": [
+        "deterministic**: Boolean option enforcing strict sequence ordering.",
+        "autotune.enabled**: Boolean option toggling dynamic autotuning.",
+        "experimental_distribute.auto_shard_policy**: Enum setting distribution sharding behavior (e.g., tf.data.experimental.AutoShardPolicy.DATA)."
+      ],
+      "important_params": [
+        "deterministic**: Boolean option enforcing strict sequence ordering.",
+        "autotune.enabled**: Boolean option toggling dynamic autotuning.",
+        "experimental_distribute.auto_shard_policy**: Enum setting distribution sharding behavior (e.g., tf.data.experimental.AutoShardPolicy.DATA)."
+      ],
+      "return_value": "A tf.data.Dataset object with modified execution options.",
+      "example": "dataset = tf.data.Dataset.range(10)\n\noptions = tf.data.Options()\noptions.deterministic = False\noptions.autotune.enabled = True\n\noptimized_ds = dataset.with_options(options)",
+      "snippet": "dataset = tf.data.Dataset.range(10)\n\noptions = tf.data.Options()\noptions.deterministic = False\noptions.autotune.enabled = True\n\noptimized_ds = dataset.with_options(options)",
+      "use_when": "Tuning pipelines for maximum throughput when determinism can be relaxed, or setting auto-sharding modes in multi-worker distributed training.",
+      "avoid_when": "Default framework behavior suffices, or strictly reproducible numerical experiments are required.",
+      "gotchas": [
+        "1. Disabling determinism (options.deterministic \\= False) breaks sample reproducibility across training runs.",
+        "2. Options attached *after* pipeline execution initialization or iterator creation do not take effect.",
+        "3. Setting invalid auto_shard_policy options in multi-worker distributed setups causes initialization crashes."
+      ],
+      "performance_notes": "Setting options.deterministic \\= False allows AUTOTUNE to fetch samples out of order, boosting throughput on high-latency cloud storage.",
+      "related_apis": [
+        "tf.data.Dataset.with_options",
+        "tf.data.experimental.AutoShardPolicy"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "PyTorch manages these settings through custom flags in DataLoader and distributed samplers (DistributedSampler).",
+      "pytorch_equivalent": "torch.utils.data.distributed.DistributedSampler options",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.utils.data.distributed.DistributedSampler options",
+      "version_compatibility": "Fully supported in TF 2.21; options API continues to expand in modern TF releases.",
+      "search_metadata": {
+        "aliases": [
+          "Options",
+          "tf.data.Options",
+          "with_options"
+        ],
+        "common_search_terms": [
+          "tf.data options deterministic",
+          "auto shard policy dataset"
+        ],
+        "search_terms": [
+          "tf.data options deterministic",
+          "auto shard policy dataset"
+        ],
+        "keywords": [
+          "options",
+          "deterministic",
+          "autotune",
+          "auto_shard_policy",
+          "with_options"
+        ],
+        "frequently_confused_with": [
+          "tf.data.Options vs tf.data.AUTOTUNE"
+        ],
+        "confused_with": [
+          "tf.data.Options vs tf.data.AUTOTUNE"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert",
+        "yolo"
+      ],
+      "related_patterns": [
+        "device-placement",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "tf-data"
+      ],
+      "related_cheatsheet": [
+        "tf-data"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/data/Options",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/data/Options"
+    },
+    {
+      "task": "Inspect Dataset Cardinality (Dataset.cardinality)",
+      "problem_solved": "Determines the total number of elements in a dataset graph without executing an explicit Python evaluation loop.",
+      "mental_trigger": "I need to check whether a dataset has a known length, is infinite, or has unknown size.",
+      "syntax": "Inspect Dataset Cardinality (Dataset.cardinality)",
+      "important_parameters": [
+        "None."
+      ],
+      "important_params": [
+        "None."
+      ],
+      "return_value": "A tf.Tensor int64 scalar containing element count or sentinel values (tf.data.CARDINALITY_UNKNOWN, tf.data.CARDINALITY_INFINITE).",
+      "example": "dataset = tf.data.Dataset.range(10)\ncardinality = dataset.cardinality()\n\nif cardinality == tf.data.CARDINALITY_UNKNOWN:\nprint(\"Cardinality is unknown\")\nelif cardinality == tf.data.CARDINALITY_INFINITE:\nprint(\"Cardinality is infinite\")\nelse:",
+      "snippet": "dataset = tf.data.Dataset.range(10)\ncardinality = dataset.cardinality()\n\nif cardinality == tf.data.CARDINALITY_UNKNOWN:\nprint(\"Cardinality is unknown\")\nelif cardinality == tf.data.CARDINALITY_INFINITE:\nprint(\"Cardinality is infinite\")\nelse:",
+      "use_when": "Verifying dataset length before passing into training routines, step calculators, or progress meters.",
+      "avoid_when": "Expecting Python len(dataset) to work on all datasets (len() raises TypeError if cardinality is unknown/infinite).",
+      "gotchas": [
+        "1. Applying .filter() or .from_generator() transforms cardinality into tf.data.CARDINALITY_UNKNOWN (-2).",
+        "2. Applying .repeat() without count transforms cardinality into tf.data.CARDINALITY_INFINITE (-1).",
+        "3. Attempting to convert CARDINALITY_UNKNOWN directly to Python integer for loop range checks causes logic bugs."
+      ],
+      "performance_notes": "Zero-cost static execution check on graph metadata; does not iterate or evaluate data elements.",
+      "related_apis": [
+        "tf.data.CARDINALITY_UNKNOWN",
+        "tf.data.CARDINALITY_INFINITE"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "PyTorch uses len(dataset), which requires static dataset definitions. Dataset.cardinality() handles dynamic and infinite streaming structures via standard sentinels.",
+      "pytorch_equivalent": "len(dataset) (for static datasets)",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "len(dataset) (for static datasets)",
+      "version_compatibility": "No significant changes in TensorFlow 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "cardinality",
+          "Dataset.cardinality"
+        ],
+        "common_search_terms": [
+          "check dataset length tf.data",
+          "dataset cardinality tensorflow"
+        ],
+        "search_terms": [
+          "check dataset length tf.data",
+          "dataset cardinality tensorflow"
+        ],
+        "keywords": [
+          "cardinality",
+          "length",
+          "unknown",
+          "infinite",
+          "count"
+        ],
+        "frequently_confused_with": [
+          "cardinality() vs Python len()"
+        ],
+        "confused_with": [
+          "cardinality() vs Python len()"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "tf-data"
+      ],
+      "related_cheatsheet": [
+        "tf-data"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#cardinality",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/data/Dataset#cardinality"
+    },
+    {
+      "task": "Build End-to-End Production Input Pipeline",
+      "problem_solved": "Combines file reading, parallel interleaving, feature decoding, data mapping, shuffling, batching, caching, and prefetching into a resilient, high-throughput pipeline.",
+      "mental_trigger": "I need to structure a complete production-grade input pipeline following TensorFlow best practices.",
+      "syntax": "Composite execution flow chaining tf.data transformation methods in optimal sequence.",
+      "important_parameters": [
+        "N/A (Composite pipeline pattern)."
+      ],
+      "important_params": [
+        "N/A (Composite pipeline pattern)."
+      ],
+      "return_value": "An optimized tf.data.Dataset emitting mini-batches ready for zero-starvation model consumption.",
+      "example": "import tempfile\n\ndef build_production_pipeline(file_paths, batch_size, is_training=True):\ndataset = tf.data.Dataset.from_tensor_slices(file_paths)\n\nif is_training:\ndataset = dataset.shuffle(buffer_size=len(file_paths))\n\ndataset = dataset.interleave(\nlambda fp: tf.data.TextLineDataset(fp),\ncycle_length=tf.data.AUTOTUNE,\nnum_parallel_calls=tf.data.AUTOTUNE\n)\n\ndef parse_line(line):\nreturn tf.strings.to_number(line, out_type=tf.float32)\n\ndataset = dataset.map(parse_line, num_parallel_calls=tf.data.AUTOTUNE)\n\nif is_training:\ndataset = dataset.shuffle(buffer_size=1000)\ndataset = dataset.repeat()\n\ndataset = dataset.batch(batch_size, drop_remainder=is_training)\ndataset = dataset.prefetch(buffer_size=tf.data.AUTOTUNE)\n\nreturn dataset\n\nwith tempfile.NamedTemporaryFile(\"w\", delete=False) as f:\nf.write(\"1.0\\n2.0\\n3.0\\n4.0\\n\")\ntmp_path = f.name\n\npipeline = build_production_pipeline([tmp_path], batch_size=2, is_training=False)\nfor batch in pipeline:",
+      "snippet": "import tempfile\n\ndef build_production_pipeline(file_paths, batch_size, is_training=True):\ndataset = tf.data.Dataset.from_tensor_slices(file_paths)\n\nif is_training:\ndataset = dataset.shuffle(buffer_size=len(file_paths))\n\ndataset = dataset.interleave(\nlambda fp: tf.data.TextLineDataset(fp),\ncycle_length=tf.data.AUTOTUNE,\nnum_parallel_calls=tf.data.AUTOTUNE\n)\n\ndef parse_line(line):\nreturn tf.strings.to_number(line, out_type=tf.float32)\n\ndataset = dataset.map(parse_line, num_parallel_calls=tf.data.AUTOTUNE)\n\nif is_training:\ndataset = dataset.shuffle(buffer_size=1000)\ndataset = dataset.repeat()\n\ndataset = dataset.batch(batch_size, drop_remainder=is_training)\ndataset = dataset.prefetch(buffer_size=tf.data.AUTOTUNE)\n\nreturn dataset\n\nwith tempfile.NamedTemporaryFile(\"w\", delete=False) as f:\nf.write(\"1.0\\n2.0\\n3.0\\n4.0\\n\")\ntmp_path = f.name\n\npipeline = build_production_pipeline([tmp_path], batch_size=2, is_training=False)\nfor batch in pipeline:",
+      "use_when": "Setting up real-world computer vision, NLP, or tabular training jobs for high-performance cluster compute.",
+      "avoid_when": "Building trivial single-file prototypes where pipeline complexity adds unnecessary overhead.",
+      "gotchas": [
+        "1. Ordering rule violation: putting .prefetch() before .batch() prefetches individual elements rather than full mini-batches.",
+        "2. Ordering rule violation: putting random data augmentation *before* .cache() leads to static cached augmentations.",
+        "3. Forgetting drop_remainder=True during training breaks TPU or static XLA graph compilation.",
+        "4. Omitting AUTOTUNE on mapping and interleaving steps introduces severe CPU thread bottlenecks."
+      ],
+      "performance_notes": "Optimal ordering standard: extract (interleave) -\\> decode/map -\\> cache -\\> shuffle -\\> repeat -\\> batch -\\> prefetch. Ensures maximum GPU saturation and minimal CPU idle time.",
+      "related_apis": [
+        "tf.data.Dataset.interleave",
+        "tf.data.Dataset.map",
+        "tf.data.Dataset.prefetch"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Integrates the full PyTorch pipeline stack (Dataset \\+ Sampler \\+ DataLoader \\+ transforms \\+ pin_memory) into a unified declarative graph chain.",
+      "pytorch_equivalent": "Full Dataset \\+ DataLoader configuration with workers, pinning, and transform pipeline",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Full Dataset \\+ DataLoader configuration with workers, pinning, and transform pipeline",
+      "version_compatibility": "Represents modern TF 2.21 production standard.",
+      "search_metadata": {
+        "aliases": [
+          "production_pipeline",
+          "input_pipeline_best_practices"
+        ],
+        "common_search_terms": [
+          "end to end tf.data pipeline",
+          "optimal dataset pipeline order"
+        ],
+        "search_terms": [
+          "end to end tf.data pipeline",
+          "optimal dataset pipeline order"
+        ],
+        "keywords": [
+          "production",
+          "pipeline",
+          "autotune",
+          "best practices",
+          "prefetch"
+        ],
+        "frequently_confused_with": [
+          "Unoptimized sequential pipeline loading"
+        ],
+        "confused_with": [
+          "Unoptimized sequential pipeline loading"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "yolo",
+        "transformer",
+        "llama"
+      ],
+      "related_patterns": [
+        "device-placement",
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline",
+        "semantic-segmentation-pipeline",
+        "text-classification-pipeline-classical-encoder",
+        "transfer-learning-for-vision",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "tf-data"
+      ],
+      "related_cheatsheet": [
+        "tf-data"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/guide/data_performance",
+      "official_docs": "https://www.tensorflow.org/guide/data_performance"
+    },
+    {
+      "task": "Debug and Optimize tf.data Pipeline Performance",
+      "problem_solved": "Identifies, measures, and eliminates execution bottlenecks in input pipelines to eliminate GPU idle time.",
+      "mental_trigger": "I need to profile my pipeline to locate bottleneck steps and maximize throughput.",
+      "syntax": "Diagnostic profiling methodology using benchmarking iteration and TensorFlow Profiler tools.",
+      "important_parameters": [
+        "N/A (Diagnostic methodology)."
+      ],
+      "important_params": [
+        "N/A (Diagnostic methodology)."
+      ],
+      "return_value": "Performance metrics and benchmark analysis.",
+      "example": "import time\n\ndef benchmark_pipeline(dataset, num_steps=10):\nstart_time = time.perf_counter()\nit = iter(dataset)\nfor _ in range(num_steps):\n_ = next(it)\nend_time = time.perf_counter()\ntotal_time = end_time - start_time\nprint(f\"Executed {num_steps} steps in {total_time:.4f} seconds ({num_steps/total_time:.2f} steps/sec)\")\n\nbase_ds = tf.data.Dataset.range(1000).map(lambda x: x * 2)\nopt_ds = tf.data.Dataset.range(1000).map(lambda x: x * 2, num_parallel_calls=tf.data.AUTOTUNE).prefetch(tf.data.AUTOTUNE)\n\nprint(\"Baseline:\")\nbenchmark_pipeline(base_ds.batch(10))\n\nprint(\"Optimized:\")",
+      "snippet": "import time\n\ndef benchmark_pipeline(dataset, num_steps=10):\nstart_time = time.perf_counter()\nit = iter(dataset)\nfor _ in range(num_steps):\n_ = next(it)\nend_time = time.perf_counter()\ntotal_time = end_time - start_time\nprint(f\"Executed {num_steps} steps in {total_time:.4f} seconds ({num_steps/total_time:.2f} steps/sec)\")\n\nbase_ds = tf.data.Dataset.range(1000).map(lambda x: x * 2)\nopt_ds = tf.data.Dataset.range(1000).map(lambda x: x * 2, num_parallel_calls=tf.data.AUTOTUNE).prefetch(tf.data.AUTOTUNE)\n\nprint(\"Baseline:\")\nbenchmark_pipeline(base_ds.batch(10))\n\nprint(\"Optimized:\")",
+      "use_when": "Diagnosing GPU starvation (GPU usage \\< 90%), high CPU load, disk I/O bottlenecks, or slow step execution times during training.",
+      "avoid_when": "Input pipeline overhead is already negligible compared to model compute times.",
+      "gotchas": [
+        "1. Profiling eager iteration without warm-up passes gives skewed latency numbers due to initial iterator graph construction.",
+        "2. Relying on custom Python time.time() measurements inside .map() functions measures graph construction time rather than runtime execution.",
+        "3. Over-parallelizing pipeline steps on host systems with limited CPU cores leads to thread thrashing and increased step latency."
+      ],
+      "performance_notes": "TensorFlow Profiler (tf.profiler.experimental) provides trace viewers showing exact execution duration per dataset node (Iterator::GetNext).",
+      "related_apis": [
+        "tf.data.AUTOTUNE",
+        "tf.profiler.experimental.start",
+        "tf.profiler.experimental.stop"
+      ],
+      "primary_apis": [],
+      "framework_migration_notes": "Replaces PyTorch bottleneck profiling via torch.utils.bottleneck or PyTorch Profiler (torch.profiler) with TensorFlow Trace Viewer integration.",
+      "pytorch_equivalent": "torch.profiler for input pipeline bottleneck identification",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.profiler for input pipeline bottleneck identification",
+      "version_compatibility": "Compatible with TensorFlow Profiler tools in TF 2.21.",
+      "search_metadata": {
+        "aliases": [
+          "benchmark",
+          "debug_pipeline",
+          "optimize_tf_data"
+        ],
+        "common_search_terms": [
+          "debug tf.data performance",
+          "benchmark dataset speed tensorflow"
+        ],
+        "search_terms": [
+          "debug tf.data performance",
+          "benchmark dataset speed tensorflow"
+        ],
+        "keywords": [
+          "debug",
+          "benchmark",
+          "optimize",
+          "profiling",
+          "bottleneck"
+        ],
+        "frequently_confused_with": [
+          "Model compute bottleneck vs Input pipeline bottleneck"
+        ],
+        "confused_with": [
+          "Model compute bottleneck vs Input pipeline bottleneck"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "bert",
+        "yolo",
+        "transformer"
+      ],
+      "related_patterns": [
+        "memory-efficient-training",
+        "device-placement"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "object-detection-pipeline",
+        "semantic-segmentation-pipeline",
+        "text-classification-pipeline-classical-encoder",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "tf-data"
+      ],
+      "related_cheatsheet": [
+        "tf-data"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/guide/data_performance_analysis",
+      "official_docs": "https://www.tensorflow.org/guide/data_performance_analysis"
+    }
+  ]
+}

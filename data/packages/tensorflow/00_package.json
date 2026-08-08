@@ -1,0 +1,128 @@
+{
+  "id": "tensorflow",
+  "module_name": "00_package",
+  "title": "TensorFlow Package",
+  "slug": "tensorflow",
+  "description": "TensorFlow is a general-purpose machine learning framework centered on `tf.keras`, `tf.data`, `tf.distribute`, and deployment-oriented model serialization.",
+  "name": "tensorflow",
+  "latest_stable_version": "2.21.0",
+  "version": "2.21.0",
+  "supported_python_versions": [
+    "3.10",
+    "3.11",
+    "3.12",
+    "3.13"
+  ],
+  "summary": "Production ML framework for tensor computation, model building, training, distribution, and deployment across CPU, GPU, and edge targets.",
+  "install_command": "pip install tensorflow",
+  "install": "pip install tensorflow",
+  "import_convention": "`import tensorflow as tf`; use `tf.keras` for modern Keras-based model code.",
+  "import_as": "import tensorflow as tf",
+  "important_namespaces": [
+    "`tensorflow`",
+    "`tf.keras`",
+    "`tf.data`",
+    "`tf.distribute`",
+    "`tf.random`",
+    "`tf.linalg`",
+    "`tf.math`",
+    "`tf.image`",
+    "`tf.io`",
+    "`tf.saved_model`",
+    "`tf.lite`",
+    "`keras.applications`."
+  ],
+  "official_repository": "https://github.com/tensorflow/tensorflow",
+  "official_documentation": "https://www.tensorflow.org/",
+  "official_docs": "https://www.tensorflow.org/",
+  "license": "Apache License 2.0.",
+  "maintainers": [
+    "Google TensorFlow team and contributors; the project\u2019s package metadata lists `packages@tensorflow.org` in ecosystem indexes."
+  ],
+  "created_at": "2015-11-06",
+  "updated_at": "2026-03-12",
+  "sources": [
+    "https://www.tensorflow.org/"
+  ],
+  "installation": [
+    "Recommended installation is the current stable pip package after upgrading `pip`, with `tensorflow` for CPU-only environments and `tensorflow[and-cuda]` for supported Linux and WSL2 GPU environments. For production environments that need CPU-only isolation, `tensorflow` is the standard package; for macOS, the official guide currently shows CPU installation only and notes no official GPU support. Verification is typically done by importing TensorFlow and checking either a numeric tensor result or visible GPU devices, depending on the target environment.",
+    "Optional ecosystem packages commonly paired with TensorFlow include TensorBoard, TensorFlow Datasets, TensorFlow Hub, and TensorFlow Probability; these are official TensorFlow ecosystem components, while `tf.lite` is part of deployment tooling rather than a separate package. Version compatibility should be managed carefully because TensorFlow 2.21 removes Python 3.9 support, and package compatibility is strongest when ecosystem add-ons are aligned to the same TensorFlow minor series."
+  ],
+  "import_conventions": [
+    "The standard project-level import style is `import tensorflow as tf`, with `tf.keras` as the primary application-building namespace in modern TensorFlow 2.x projects. Common organization patterns keep core framework imports in one module, model code in `tf.keras`-centric files, input pipelines in `tf.data` modules, and deployment/serialization code separate from training logic. Alias conventions should stay simple and conventional; avoid inventing alternate aliases for the main framework import unless there is a strong local reason."
+  ],
+  "namespace_overview": [
+    "`tensorflow` is the root package that ties together tensor operations, execution, distribution, serialization, and deployment across the full TensorFlow stack. It is the coordination layer for the rest of the namespaces and is the entry point for most production code.",
+    "`tf.keras` is the high-level model-building and training namespace for modern TensorFlow 2.x. It is the center of current TensorFlow application development and connects naturally to layers, models, losses, and optimizers.",
+    "`tf.keras.layers` provides reusable building blocks for model construction. It is used together with `tf.keras.models` and the rest of `tf.keras` to define architectures without dropping into lower-level tensor plumbing.",
+    "`tf.keras.models` manages model composition, persistence, and lifecycle-level model organization. It works with `tf.keras.layers` for construction and with SavedModel-oriented export paths for deployment.",
+    "`tf.keras.losses` contains training objective definitions used during model optimization. It sits between model outputs and optimizer updates, and is typically paired with `tf.keras.optimizers` inside `tf.keras` workflows.",
+    "`tf.keras.optimizers` contains parameter update logic for training. It is used in `tf.keras` training loops and usually depends on gradient information produced by TensorFlow\u2019s automatic differentiation stack.",
+    "`tf.data` is TensorFlow\u2019s input pipeline namespace for building performant, composable data pipelines. It is the standard bridge between raw datasets and model execution, especially for scalable training and distribution.",
+    "`tf.distribute` provides distributed training and multi-device execution strategies. It interacts closely with `tf.keras` and `tf.data` so models and input pipelines can scale across devices and machines.",
+    "`tf.random` provides random-number generation utilities used for initialization, sampling, and reproducibility-sensitive workflows. It is often paired with `tf.keras` and `tf.data` code when deterministic behavior matters.",
+    "`tf.linalg` groups linear algebra operations used throughout numerical model code. It supports lower-level tensor computation that underpins many higher-level `tf.keras` and training behaviors.",
+    "`tf.math` contains core mathematical tensor operations used across preprocessing, loss computation, metrics, and model internals. It is one of the fundamental building blocks beneath higher-level framework namespaces.",
+    "`tf.image` provides image tensor processing utilities for vision-oriented pipelines. It usually appears in `tf.data` preprocessing flows and feeds directly into `tf.keras` models.",
+    "`tf.io` covers input/output primitives for files, serialization formats, and data interchange. It commonly supports `tf.data` pipelines, SavedModel workflows, and deployment-related asset handling.",
+    "`tf.saved_model` is the serialization and export namespace for TensorFlow models intended for transport and serving. It bridges `tf.keras` model artifacts with deployment systems and long-term model interchange.",
+    "`tf.lite` is the deployment namespace for TensorFlow Lite conversion and on-device inference workflows. It is the primary path for edge-oriented exports from TensorFlow models.",
+    "`keras.applications` provides ready-made application architectures and pretrained model families associated with Keras. It complements `tf.keras` by offering standardized model families for transfer-learning-oriented workflows."
+  ],
+  "version_compatibility": [
+    "TensorFlow 2.21.0 is the current stable release and supports Python 3.10 through 3.13. TensorFlow follows semantic versioning within the 2.x line, so minor releases are expected to preserve most user-facing compatibility while still allowing focused deprecations and ecosystem updates. Backward compatibility is strongest when staying on modern `tf.keras`, `tf.data`, `tf.distribute`, and SavedModel-based workflows rather than relying on legacy TensorFlow 1.x patterns.",
+    "Major TensorFlow 1.x features such as Sessions, placeholder-driven graphs, and Estimators are legacy concerns in the 2.x era and should be treated as migration topics rather than default design choices. `tf.compat.v1` remains the main compatibility surface for older code, but it is not the preferred architecture for new TensorFlow projects. A notable modernization shift is the move toward integrated `tf.keras`-centric workflows rather than standalone Keras as a separate primary integration model."
+  ],
+  "architecture": [
+    "TensorFlow is organized around tensor computation, where the root package coordinates numeric operations, device placement, execution control, and serialization across the stack. In modern TensorFlow 2.x, eager execution is the default development model, while graph execution is introduced through tracing and compilation boundaries when performance or portability is needed. `tf.function` sits at the center of this bridge, converting Python-defined computation into traced graphs that can be optimized and reused by the runtime.",
+    "Automatic differentiation supports model training by connecting tensor operations to gradient computation, which then feeds optimizer updates in `tf.keras` workflows. `tf.data` handles pipeline construction outside the model, letting input work stream efficiently into training and inference. `tf.distribute` scales the same conceptual model across multiple devices or replicas, while mixed precision and backend optimizations help the runtime balance speed, memory use, and numerical cost.",
+    "Model serialization and deployment are centered on SavedModel and TensorFlow Lite, which move trained models from development-time `tf.keras` structures into serving, edge, or embedded environments. The ecosystem is intentionally layered: low-level numeric namespaces support Keras model logic, Keras drives most application code, and serialization or deployment namespaces handle downstream delivery."
+  ],
+  "tensorflow_ecosystem": [
+    "Keras is the main high-level modeling interface in TensorFlow 2.x and the default choice for most production model code. It provides the model construction layer that most TensorFlow projects build around. TensorFlow Datasets supplies ready-to-use datasets that integrate cleanly with TensorFlow input pipelines. It is most useful when you want standard dataset loading behavior that fits `tf.data` workflows. TensorBoard is the official visualization suite for inspecting training, metrics, graphs, and performance behavior. It complements TensorFlow development rather than replacing core modeling code.",
+    "TensorFlow Hub is the official repository and distribution mechanism for reusable model components and pretrained assets. It is useful when a project needs reusable building blocks rather than training everything from scratch. TensorFlow Lite is the official edge and mobile deployment runtime path for TensorFlow models. It is focused on model conversion and compact inference rather than training. TensorFlow Serving is the official production serving system for deploying models at scale. It complements SavedModel by providing a server-side inference layer.",
+    "TensorFlow Probability adds probabilistic modeling and uncertainty-aware computation on top of TensorFlow. It is an extension library rather than a core runtime component. Keras Applications provides standard pretrained application families that are aligned with Keras and TensorFlow\u2019s modern model stack. It is commonly used as a starting point for transfer learning and baseline architectures."
+  ],
+  "execution_modes": [
+    "Eager execution is the default mode and makes TensorFlow behave like an imperative numerical programming system during development. It is the most direct model for debugging, inspection, and stepwise reasoning. Graph execution is the traced, optimized execution form used when TensorFlow compiles Python-defined computation into reusable runtime graphs. It is most relevant for performance, portability, and deployment-oriented workflows.",
+    "`tf.function` is the primary mechanism that connects eager-style code to graph execution. It automatically traces Python control flow and tensor operations into graph form when the runtime sees a stable enough execution pattern. Performance typically improves when repeated computation can be traced once and reused, but overly dynamic code can reduce tracing efficiency or cause repeated graph creation."
+  ],
+  "package_level_best_practices": [
+    "Prefer `tf.keras` as the default modeling surface for new TensorFlow code. Keep model definition, input pipeline, and deployment logic in separate modules. Use `tf.data` for production input pipelines instead of ad hoc Python iteration. Favor eager execution during development, then introduce `tf.function` where repetition or latency matters. Use SavedModel as the primary long-term model export format. Use `tf.distribute` when training needs more than one device or replica. Treat mixed precision as a performance and memory optimization, not a default assumption. Keep random seed handling consistent across TensorFlow and surrounding libraries. Align TensorFlow, Keras ecosystem packages, and deployment targets to compatible versions. Prefer stable, documented namespaces over legacy `tf.compat.v1` paths for new work. Choose `keras.applications` for standard pretrained backbones instead of reimplementing common model families. Keep serialization and inference artifacts separate from training-only checkpoints when possible. Validate tensor shapes and dtypes at module boundaries to reduce downstream breakage. Use `tf.io` and `tf.saved_model` for structured model/data interchange rather than custom ad hoc formats."
+  ],
+  "package_level_gotchas": [
+    "Eager code and graph-traced code can differ in control flow behavior, so logic that works interactively may behave differently once traced. `tf.function` can retrace too often when input shapes, dtypes, or Python-side control changes too much. Tensor shape mismatches often surface late in graph-heavy code, especially when model inputs are partially dynamic. Dtype inconsistencies can silently affect numerical behavior, memory use, and device compatibility. Device placement may not match intuition when TensorFlow moves tensors or ops across CPU and accelerator devices. `tf.data` pipelines can become the bottleneck when preprocessing, caching, or batching choices are suboptimal. Serialization formats are not always interchangeable across legacy and modern TensorFlow code paths. Mixed precision can introduce numeric instability if it is enabled without consistent type handling. Checkpoint and model compatibility can break when versions or export formats are mixed carelessly. Hidden memory growth may appear when graphs are retraced, datasets are recreated, or large tensors stay referenced longer than expected. Legacy TensorFlow 1.x code paths can behave differently from modern TensorFlow 2.x defaults and should not be assumed equivalent. `tf.compat.v1` can keep old code running, but it may obscure the intended 2.x architecture and complicate migration. Standalone Keras integration changes mean older code assumptions about package boundaries may no longer hold."
+  ],
+  "official_resources": [
+    "Official Documentation: [TensorFlow](https://www.tensorflow.org/). API Reference: [TensorFlow API docs](https://www.tensorflow.org/api_docs). Get Started Guide: [Install TensorFlow](https://www.tensorflow.org/install). Installation Guide: [Install TensorFlow with pip](https://www.tensorflow.org/install/pip). Tutorials: [TensorFlow tutorials](https://www.tensorflow.org/tutorials). TensorFlow Guide: [TensorFlow Guide](https://www.tensorflow.org/guide). GitHub Repository: [tensorflow/tensorflow](https://github.com/tensorflow/tensorflow). Release Notes: [TensorFlow releases](https://github.com/tensorflow/tensorflow/releases). Migration Guide: [TensorFlow migration guide](https://www.tensorflow.org/guide/migrate). <span style=\"display:none\"></span>",
+    "<div align=\"center\">\u2042</div>",
+    ": https://arxiv.org/pdf/1712.06139.pdf",
+    ": https://github.com/tensorflow/tensorflow",
+    ": https://www.tensorflow.org/install/pip",
+    ": https://www.tensorflow.org/install",
+    ": https://github.com/tensorflow/runtime/blob/master/LICENSE",
+    ": https://repology.org/project/tensorflow/information",
+    ": https://pypistats.org/packages/tensorflow",
+    ": https://github.com/tensorflow/tensorflow/releases",
+    ": https://digital-library.theiet.org/content/conferences/10.1049/ic_20040212",
+    ": https://arxiv.org/pdf/1901.05350.pdf",
+    ": https://arxiv.org/pdf/1605.08695.pdf",
+    ": http://arxiv.org/pdf/2406.07944.pdf",
+    ": https://www.mdpi.com/2504-4990/4/4/45/pdf?version=1664984522",
+    ": https://dl.acm.org/doi/pdf/10.1145/3611643.3616364",
+    ": https://pmc.ncbi.nlm.nih.gov/articles/PMC10192349/",
+    ": https://pypi.org/project/tensorflow/",
+    ": https://www.tensorflow.org/versions",
+    ": https://docs.hpc.qmul.ac.uk/apps/ml/tensorflow/",
+    ": https://chromium.googlesource.com/external/github.com/tensorflow/tensorflow/+/refs/heads/upstream/exported_pr_863087508/RELEASE.md",
+    ": https://www.tensorflow.org/install/pip?hl=zh-tw",
+    ": https://tf.wiki/en/basic/installation.html",
+    ": https://engineering.purdue.edu/ECN/Support/KB/Docs/setup-tensorflow-in-windows-server-with-gpu",
+    ": http://arxiv.org/pdf/1612.04251.pdf",
+    ": https://arxiv.org/pdf/2306.16307.pdf",
+    ": https://arxiv.org/pdf/2302.08436.pdf",
+    ": https://libraries.io/pypi/tensorflow",
+    ": https://summary.ecosyste.ms/projects/371330"
+  ],
+  "tasks": []
+}

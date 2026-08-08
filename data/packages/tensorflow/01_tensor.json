@@ -1,0 +1,1230 @@
+{
+  "id": "tensorflow",
+  "module_name": "01_tensor",
+  "module_title": "Tensor Operations",
+  "slug": "01_tensor",
+  "tasks": [
+    {
+      "task": "1. Create Constant Tensor (tf.constant)",
+      "problem_solved": "Returns an immutable tf.Tensor stored in host or device memory. Preserves the specified dtype or infers it directly from input Python types.",
+      "mental_trigger": "I need to create an immutable tensor from Python lists or NumPy arrays to represent static model inputs or constants.",
+      "syntax": "tf.constant",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\ntensor = tf.constant([[1.0, 2.0], [3.0, 4.0]], dtype=tf.float32\nprint(tensor",
+      "use_when": "Always set dtype explicitly when creating constant tensors to avoid implicit type promotion issues in model operations.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: TypeError or unexpected loss of floating-point precision during tensor operations.",
+        "Cause: Passing mixed Python types forces automatic inference to tf.int32 or tf.float64 rather than the intended target type.",
+        "Quick Fix: Explicitly set the dtype parameter, such as dtype=tf.float32, during initialization."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.constant"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "2. Create Mutable Tensor Variable (tf.Variable)",
+        "3. Convert Existing Data to Tensor (tf.convert_to_tensor)",
+        "6. Create Constant-Filled Tensor (tf.fill)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/constant",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/constant"
+    },
+    {
+      "task": "2. Create Mutable Tensor Variable (tf.Variable)",
+      "problem_solved": "Creates a persistent, mutable variable wrapper around an underlying tensor memory buffer. In-place updates require explicit methods like assign, assign_add, or assign_sub.",
+      "mental_trigger": "I need an in-memory mutable tensor buffer to hold trainable neural network parameters or changing state.",
+      "syntax": "tf.Variable",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\nvar = tf.Variable([[1.0, 2.0], [3.0, 4.0]], dtype=tf.float32\nvar.assign_add([[0.5, 0.5], [0.5, 0.5]]\nprint(var",
+      "use_when": "Reserve tf.Variable strictly for trainable parameters and stateful optimizer metrics, using standard immutable tensors for intermediate values.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: ValueError when calling assign with a value of a different shape or data type.",
+        "Cause: tf.Variable enforces strict shape and dtype invariance across updates by default.",
+        "Quick Fix: Pass validate_shape=False during assignment if shape changes are required, or cast input data to match the variable's original dtype."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.Variable"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "1. Create Constant Tensor (tf.constant)",
+        "3. Convert Existing Data to Tensor (tf.convert_to_tensor)",
+        "28. Device Placement and Dtype Conversion (tf.device, tf.cast, tf.identity)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/Variable",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/Variable"
+    },
+    {
+      "task": "3. Convert Existing Data to Tensor (tf.convert_to_tensor)",
+      "problem_solved": "Converts compatible Python inputs into a standard tensor while avoiding memory copies if the input is already a tf.Tensor. Accepts lists, tuples, NumPy arrays, and existing tensors.",
+      "mental_trigger": "I need to convert arbitrary Python objects, lists, or NumPy arrays into a TensorFlow tensor without making redundant copies if the object is already a tensor.",
+      "syntax": "tf.convert_to_tensor",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\nimport numpy as n\n\ndata = np.array([1.0, 2.0, 3.0], dtype=np.float32\ntensor = tf.convert_to_tensor(data, dtype=tf.float32\nprint(tensor",
+      "use_when": "Use tf.convert_to_tensor at public function boundaries to normalize incoming arguments safely without unnecessary copying.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: Memory overhead or unintended type mismatch when converting double-precision NumPy arrays.",
+        "Cause: NumPy defaults floating numbers to float64, whereas deep learning frameworks typically require float32.",
+        "Quick Fix: Provide dtype=tf.float32 directly inside tf.convert_to_tensor during conversion."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.convert_to_tensor"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "1. Create Constant Tensor (tf.constant)",
+        "10. Inspect Tensor Properties (shape, dtype, device, ndim, numpy())",
+        "28. Device Placement and Dtype Conversion (tf.device, tf.cast, tf.identity)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/convert_to_tensor",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/convert_to_tensor"
+    },
+    {
+      "task": "4. Create Zero-Filled Tensor (tf.zeros / tf.zeros_like)",
+      "problem_solved": "Allocates contiguous memory initialized to scalar zero across the given shape or target tensor layout. Supports integer, floating-point, boolean, and complex data types.",
+      "mental_trigger": "I need to allocate a tensor filled completely with zeros given an explicit shape or matching another tensor's dimensions.",
+      "syntax": "tf.zeros, tf.zeros_like",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\nzeros = tf.zeros(shape=(2, 3), dtype=tf.float32\nzeros_like = tf.zeros_like(zeros\nprint(zeros_like",
+      "use_when": "Prefer tf.zeros_like over manual shape retrieval (tf.zeros(tensor.shape)) to maintain graph traceability and automatic dtype inheritance.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: TypeError when passing a tensor directly into tf.zeros instead of its shape tuple.",
+        "Cause: tf.zeros expects a shape sequence, while tf.zeros_like expects a tensor object.",
+        "Quick Fix: Use tf.zeros_like(tensor) when matching another tensor's shape and dtype."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.zeros",
+        "tf.zeros_like"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "5. Create One-Filled Tensor (tf.ones / tf.ones_like)",
+        "6. Create Constant-Filled Tensor (tf.fill)",
+        "7. Create Identity Matrix (tf.eye)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/zeros",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/zeros"
+    },
+    {
+      "task": "5. Create One-Filled Tensor (tf.ones / tf.ones_like)",
+      "problem_solved": "Allocates a tensor filled entirely with ones matching a specified shape or reference tensor. Default dtype is tf.float32 unless specified otherwise.",
+      "mental_trigger": "I need to instantiate a tensor where every element is set to 1, such as for multiplicative masks or unit initializations.",
+      "syntax": "tf.ones, tf.ones_like",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\nones = tf.ones(shape=(2, 3), dtype=tf.float32\nones_like = tf.ones_like(ones\nprint(ones_like",
+      "use_when": "Use tf.ones_like to construct unit masks directly from dynamic intermediate tensors in custom layers.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: Unexpected tf.float32 data type when creating boolean masks with tf.ones.",
+        "Cause: Omitting the dtype argument causes tf.ones to default to tf.float32.",
+        "Quick Fix: Specify dtype=tf.bool explicitly when creating logical masks."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.ones",
+        "tf.ones_like"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "4. Create Zero-Filled Tensor (tf.zeros / tf.zeros_like)",
+        "6. Create Constant-Filled Tensor (tf.fill)",
+        "25. Conditional Selection (tf.where)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/ones",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/ones"
+    },
+    {
+      "task": "6. Create Constant-Filled Tensor (tf.fill)",
+      "problem_solved": "Constructs a tensor matching dims and assigns value to every element. The output dtype is derived directly from the scalar argument passed to value.",
+      "mental_trigger": "I need to initialize a tensor of arbitrary shape filled entirely with a single scalar value.",
+      "syntax": "tf.fill",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\nfilled = tf.fill(dims=(2, 3), value=7.0\nprint(filled",
+      "use_when": "Use tf.fill instead of tf.ones(...) * scalar to eliminate redundant tensor multiplication operations during graph execution.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: TypeError when trying to pass a non-scalar tensor as the value argument.",
+        "Cause: tf.fill requires a 0-D scalar value; passing multi-dimensional tensors is invalid.",
+        "Quick Fix: Pass a python scalar or zero-dimensional tensor, or use tf.broadcast_to for non-scalar fills."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.fill"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "4. Create Zero-Filled Tensor (tf.zeros / tf.zeros_like)",
+        "5. Create One-Filled Tensor (tf.ones / tf.ones_like)",
+        "26. Tensor Broadcasting Rules (implicit broadcasting)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/fill",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/fill"
+    },
+    {
+      "task": "7. Create Identity Matrix (tf.eye)",
+      "problem_solved": "Generates 2D or batched identity matrices. Accepts optional rectangular dimensions via num_columns and batch expansion via batch_shape.",
+      "mental_trigger": "I need a 2D identity matrix or a batch of identity matrices with ones along the main diagonal and zeros elsewhere.",
+      "syntax": "tf.eye",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\nidentity = tf.eye(num_rows=3, num_columns=3, dtype=tf.float32\nbatch_identity = tf.eye(num_rows=2, batch_shape=[2], dtype=tf.float32\nprint(identity",
+      "use_when": "Specify batch_shape directly inside tf.eye to avoid extra memory tile operations when constructing batched square matrices.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: ValueError when attempting matrix multiplication with non-matching batch dimensions.",
+        "Cause: Omitting batch_shape produces a single 2D matrix that fails to broadcast cleanly over batched 3D matrix operations.",
+        "Quick Fix: Pass batch_shape explicitly to match the leading batch dimensions of your target tensor."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.eye"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "4. Create Zero-Filled Tensor (tf.zeros / tf.zeros_like)",
+        "23. Matrix Multiplication (tf.matmul)",
+        "26. Tensor Broadcasting Rules (implicit broadcasting)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/eye",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/eye"
+    },
+    {
+      "task": "8. Create Random Tensor (tf.random.uniform / tf.random.normal)",
+      "problem_solved": "Draws random samples from specified probability distributions into a tensor of target shape. Accepts global and operation-level seeds for reproducible randomness.",
+      "mental_trigger": "I need to generate stochastic values from uniform or normal distributions for parameter initialization or noise injection.",
+      "syntax": "tf.random.uniform, tf.random.normal",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\ntf.random.set_seed(42\nuniform = tf.random.uniform(shape=(2, 2), minval=0.0, maxval=1.0, dtype=tf.float32\nnormal = tf.random.normal(shape=(2, 2), mean=0.0, stddev=1.0, dtype=tf.float32\nprint(uniform",
+      "use_when": "Use tf.random.Generator instances rather than functional random calls to ensure thread-safe determinism across distributed pipelines.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: Non-reproducible random outputs across multiple execution runs despite setting seed.",
+        "Cause: Global runtime seeds are sensitive to operation ordering; local seeds behave differently across eager and graph modes.",
+        "Quick Fix: Use tf.random.set_seed(seed) globally or employ tf.random.Generator objects for stateful, seed-safe generation."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.random.uniform",
+        "tf.random.normal"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "1. Create Constant Tensor (tf.constant)",
+        "4. Create Zero-Filled Tensor (tf.zeros / tf.zeros_like)",
+        "9. Create Ranged Tensor Sequences (tf.range / tf.linspace)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/random/uniform",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/random/uniform"
+    },
+    {
+      "task": "9. Create Ranged Tensor Sequences (tf.range / tf.linspace)",
+      "problem_solved": "tf.range creates sequence steps defined by delta up to but excluding limit. tf.linspace generates num evenly spaced points including both start and stop endpoints.",
+      "mental_trigger": "I need to construct a 1D tensor filled with linearly spaced numbers or evenly stepped sequence intervals.",
+      "syntax": "tf.range, tf.linspace",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\nranged = tf.range(start=0, limit=10, delta=2, dtype=tf.int32\nlinear = tf.linspace(start=0.0, stop=1.0, num=5\nprint(ranged\nprint(linear",
+      "use_when": "Use tf.linspace over tf.range when floating-point precision endpoint inclusion is required to prevent precision drift errors.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: InvalidArgumentError due to type mismatches between start, limit, and delta.",
+        "Cause: tf.range requires all numerical boundary arguments to share the exact same scalar data type.",
+        "Quick Fix: Cast all scalar inputs (start, limit, delta) to matching types or specify dtype explicitly."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.range",
+        "tf.linspace"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "1. Create Constant Tensor (tf.constant)",
+        "8. Create Random Tensor (tf.random.uniform / tf.random.normal)",
+        "17. Gather Tensor Elements (tf.gather)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/range",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/range"
+    },
+    {
+      "task": "10. Inspect Tensor Properties (shape, dtype, device, ndim, numpy())",
+      "problem_solved": "Retrieves static structural properties via properties and returns memory placement via device. Calling .numpy() extracts a synchronous copy of tensor data as a NumPy array.",
+      "mental_trigger": "I need to query tensor metadata or extract its underlying data as a standard NumPy array.",
+      "syntax": "tf.Tensor.shape, tf.Tensor.dtype, tf.Tensor.device, tf.Tensor.ndim, tf.Tensor.numpy",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\ntensor = tf.constant([[1.0, 2.0], [3.0, 4.0]], dtype=tf.float32\nprint(\"Shape:\", tensor.shape\nprint(\"Dtype:\", tensor.dtype\nprint(\"Device:\", tensor.device\nprint(\"NDim:\", tensor.ndim\nprint(\"NumPy:\", tensor.numpy()",
+      "use_when": "Avoid calling .numpy() during training loops to prevent costly CPU-GPU memory synchronization bottlenecks.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: AttributeError or execution failure when calling .numpy() inside symbolic graph functions (@tf.function).",
+        "Cause: Symbolic execution graphs do not possess actual runtime numpy backing arrays during graph compilation.",
+        "Quick Fix: Use TensorFlow operations instead of .numpy() when writing execution code within compiled functions."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.Tensor.shape",
+        "tf.Tensor.dtype",
+        "tf.Tensor.device",
+        "tf.Tensor.ndim",
+        "tf.Tensor.numpy"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "3. Convert Existing Data to Tensor (tf.convert_to_tensor)",
+        "11. Reshape Tensor (tf.reshape)",
+        "28. Device Placement and Dtype Conversion (tf.device, tf.cast, tf.identity)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/Tensor",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/Tensor"
+    },
+    {
+      "task": "11. Reshape Tensor (tf.reshape)",
+      "problem_solved": "Returns a new tensor with updated dimensions while leaving internal row-major memory order unchanged. Allows a single inferred axis using dimension size -1.",
+      "mental_trigger": "I need to reconfigure tensor dimension sizes without altering element values or fundamental data layout.",
+      "syntax": "tf.reshape",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\nx = tf.constant([1, 2, 3, 4, 5, 6]\nreshaped = tf.reshape(x, shape=(2, 3)\nprint(reshaped",
+      "use_when": "Use -1 for dynamic batch dimensions ((-1, feature_dim)) to allow code to generalize across varying batch sizes.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: InvalidArgumentError when total target element count does not match original element count.",
+        "Cause: Reshaping requires the product of target shape dimensions to equal the exact total length of the original tensor.",
+        "Quick Fix: Verify total element count or place -1 at a single unknown dimension position for automatic calculation."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.reshape"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "12. Flatten Tensor Dimensions (tf.reshape)",
+        "13. Expand and Squeeze Dimensions (tf.expand_dims / tf.squeeze)",
+        "14. Transpose Tensor Dimensions (tf.transpose)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/reshape",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/reshape"
+    },
+    {
+      "task": "12. Flatten Tensor Dimensions (tf.reshape)",
+      "problem_solved": "Collapses contiguous dimensions into single vector representation using [-1] or [batch_size, -1]. Preserves original data order without copying underlying buffers when possible.",
+      "mental_trigger": "I need to collapse a multi-dimensional tensor into a 1D vector or flatten spatial features into 2D batch matrices.",
+      "syntax": "tf.reshape",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\nx = tf.constant([[[1, 2], [3, 4]], [[5, 6], [7, 8]]]\nflattened_1d = tf.reshape(x, shape=[-1]\nflattened_batch = tf.reshape(x, shape=[x.shape[0], -1]\nprint(flattened_1d\nprint(flattened_batch",
+      "use_when": "Specify shape=[tf.shape(x)[0], -1] dynamically when flattening layer outputs to handle dynamic inference batch sizes correctly.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: Unintended swapping or corruption of spatial elements when flattening spatial tensors without prior axis transposition.",
+        "Cause: tf.reshape flattens in row-major order; flattening channels-first data directly can scramble feature spatial mappings.",
+        "Quick Fix: Transpose axes with tf.transpose to contiguous target ordering prior to calling tf.reshape."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.reshape"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "11. Reshape Tensor (tf.reshape)",
+        "13. Expand and Squeeze Dimensions (tf.expand_dims / tf.squeeze)",
+        "14. Transpose Tensor Dimensions (tf.transpose)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/reshape",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/reshape"
+    },
+    {
+      "task": "13. Expand and Squeeze Dimensions (tf.expand_dims / tf.squeeze)",
+      "problem_solved": "tf.expand_dims inserts a length-1 axis at axis. tf.squeeze removes all or explicitly listed length-1 dimensions from the tensor shape.",
+      "mental_trigger": "I need to insert a outer batch axis or eliminate redundant singleton dimensions of size 1\\.",
+      "syntax": "tf.expand_dims, tf.squeeze",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\nx = tf.constant([1.0, 2.0, 3.0]\nexpanded = tf.expand_dims(x, axis=0\nsqueezed = tf.squeeze(expanded, axis=0\nprint(\"Expanded Shape:\", expanded.shape\nprint(\"Squeezed Shape:\", squeezed.shape",
+      "use_when": "Explicitly pass targeted axis arguments to tf.squeeze instead of removing all single-dimension axes blindly.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: InvalidArgumentError when calling tf.squeeze on an axis whose dimension length is greater than 1\\.",
+        "Cause: Axis targeted for squeezing is not a single-element dummy dimension at runtime.",
+        "Quick Fix: Provide explicit axis parameters to tf.squeeze and verify tensor shape metadata beforehand."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.expand_dims",
+        "tf.squeeze"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "11. Reshape Tensor (tf.reshape)",
+        "14. Transpose Tensor Dimensions (tf.transpose)",
+        "15. Concatenate and Stack Dimensions (tf.concat / tf.stack)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/expand_dims",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/expand_dims"
+    },
+    {
+      "task": "14. Transpose Tensor Dimensions (tf.transpose)",
+      "problem_solved": "Permutes dimensions according to the index order specified in perm. Reverses all dimensions completely if perm is omitted.",
+      "mental_trigger": "I need to reorder or permute specific axes of a multi-dimensional tensor, such as converting between NCHW and NHWC formats.",
+      "syntax": "tf.transpose",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\nx = tf.constant([[[1, 2]], [[3, 4]]])  # Shape (2, 1, 2\ntransposed = tf.transpose(x, perm=[0, 2, 1]\nprint(\"Transposed Shape:\", transposed.shape",
+      "use_when": "Keep track of axis indices using explicit comments or axis constants when calling tf.transpose on rank-4 or rank-5 tensors.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: Silent bugs or incorrect spatial calculation results following shape modification.",
+        "Cause: Confusing tf.transpose (reordering underlying data layout) with tf.reshape (reinterpreting existing dimensions).",
+        "Quick Fix: Use tf.transpose when physical axis ordering must change, and tf.reshape strictly for view alterations."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.transpose"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "11. Reshape Tensor (tf.reshape)",
+        "13. Expand and Squeeze Dimensions (tf.expand_dims / tf.squeeze)",
+        "21. Tile Tensor (tf.tile)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/transpose",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/transpose"
+    },
+    {
+      "task": "15. Concatenate and Stack Dimensions (tf.concat / tf.stack)",
+      "problem_solved": "tf.concat joins tensors along an existing axis without changing total rank. tf.stack creates a new axis at specified axis, increasing total rank by 1\\.",
+      "mental_trigger": "I need to combine multiple tensors along an existing axis or join them along a brand new dimension.",
+      "syntax": "tf.concat, tf.stack",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\na = tf.constant([[1, 2]]\nb = tf.constant([[3, 4]]\nconcatenated = tf.concat([a, b], axis=0\nstacked = tf.stack([a, b], axis=0\nprint(\"Concat Shape:\", concatenated.shape\nprint(\"Stack Shape:\", stacked.shape",
+      "use_when": "Use tf.concat for appending features along existing axes, and tf.stack when creating batched representations from list elements.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: InvalidArgumentError due to mismatched dimension sizes among input tensors.",
+        "Cause: tf.concat requires all non-concatenated dimensions to match exactly; tf.stack requires all shapes to be identical.",
+        "Quick Fix: Check input tensor shapes and adjust non-matching dimensions using padding or slicing before joining."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.concat",
+        "tf.stack"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "13. Expand and Squeeze Dimensions (tf.expand_dims / tf.squeeze)",
+        "16. Split Tensor (tf.split)",
+        "20. Pad Tensor (tf.pad)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/concat",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/concat"
+    },
+    {
+      "task": "16. Split Tensor (tf.split)",
+      "problem_solved": "Splits value into sub-tensors along axis. Accepts an integer count for equal splits or a 1D list of sizes for custom lengths.",
+      "mental_trigger": "I need to divide a single tensor into multiple equal or custom-sized sub-tensors along a targeted dimension.",
+      "syntax": "tf.split",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\nx = tf.constant([10, 20, 30, 40, 50, 60]\nsplits = tf.split(x, num_or_size_splits=3, axis=0\nprint(splits",
+      "use_when": "Use list-based split sizes to handle variable length sequence inputs safely when splitting dynamic dynamic tensors.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: InvalidArgumentError when passing an integer split count that does not divide target axis length evenly.",
+        "Cause: Passing integer N requires the target dimension length to be evenly divisible by N.",
+        "Quick Fix: Pass a list of specific integer split lengths (num_or_size_splits=[2, 4]) if split sizes are unequal."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.split"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "15. Concatenate and Stack Dimensions (tf.concat / tf.stack)",
+        "17. Gather Tensor Elements (tf.gather)",
+        "19. Slice Tensor (tf.slice / tensor slicing)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/split",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/split"
+    },
+    {
+      "task": "17. Gather Tensor Elements (tf.gather)",
+      "problem_solved": "Gathers slices from params along axis according to integer indices. Output shape combines index dimensions with remaining non-gathered param dimensions.",
+      "mental_trigger": "I need to look up or select specific slices from a tensor using integer index slices along a specified axis.",
+      "syntax": "tf.gather",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\nparams = tf.constant([[10, 20], [30, 40], [50, 60]]\nindices = tf.constant([0, 2]\ngathered = tf.gather(params, indices, axis=0\nprint(gathered",
+      "use_when": "Prefer tf.gather over manual loop indexing for efficient GPU-accelerated sparse lookups and embedding retrieval.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: InvalidArgumentError or runtime crash due to out-of-bounds indices.",
+        "Cause: Index values equal or exceed the size of the target dimension along specified axis.",
+        "Quick Fix: Ensure index elements remain strictly within [0, params.shape[axis] - 1] bounds before gathering."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.gather"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "18. Scatter Tensor Updates (tf.tensor_scatter_nd_update)",
+        "19. Slice Tensor (tf.slice / tensor slicing)",
+        "25. Conditional Selection (tf.where)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/gather",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/gather"
+    },
+    {
+      "task": "18. Scatter Tensor Updates (tf.tensor_scatter_nd_update)",
+      "problem_solved": "Returns a new tensor with values at indices replaced by values in updates. Does not mutate the original input tensor in memory.",
+      "mental_trigger": "I need to insert updated values into specific multi-dimensional slice indices of an existing immutable tensor.",
+      "syntax": "tf.tensor_scatter_nd_update",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\ntensor = tf.constant([1, 2, 3, 4, 5]\nindices = tf.constant([[1], [3]]\nupdates = tf.constant([20, 40]\nupdated = tf.tensor_scatter_nd_update(tensor, indices, updates\nprint(updated",
+      "use_when": "Use tf.tensor_scatter_nd_update for functional graph-compatible tensor modifications instead of attempting direct item assignments.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: InvalidArgumentError caused by mismatched shape between updates and target indices locations.",
+        "Cause: Outer dimensions of updates must match leading dimensions of indices, and trailing dimensions must match sliced target rank.",
+        "Quick Fix: Ensure updates.shape matches indices.shape[:-1] \\+ tensor.shape[indices.shape[-1]:]."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.tensor_scatter_nd_update"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "17. Gather Tensor Elements (tf.gather)",
+        "19. Slice Tensor (tf.slice / tensor slicing)",
+        "25. Conditional Selection (tf.where)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/tensor_scatter_nd_update",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/tensor_scatter_nd_update"
+    },
+    {
+      "task": "19. Slice Tensor (tf.slice / tensor slicing)",
+      "problem_solved": "Extracts a continuous sub-region starting at begin of length size. Passing -1 inside size extracts all remaining elements along that axis.",
+      "mental_trigger": "I need to extract a continuous sub-tensor using start indices and explicit size lengths or standard Python slicing syntax.",
+      "syntax": "tf.slice",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\nx = tf.constant([[1, 2, 3], [4, 5, 6]]\nsliced_func = tf.slice(x, begin=[0, 1], size=[2, 2]\nsliced_syntax = x[0:2, 1:3\nprint(sliced_func",
+      "use_when": "Use Python slicing notation (x[..., 0:10]) for cleaner code readability unless functional graph primitives are required explicitly.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: InvalidArgumentError when begin[i] \\+ size[i] exceeds dimension bounds.",
+        "Cause: Requested slice offsets and extent lengths go outside tensor shape limits.",
+        "Quick Fix: Use standard Python indexing syntax (x[start:stop]) or pass -1 in size to slice automatically to dimension ends."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.slice"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "16. Split Tensor (tf.split)",
+        "17. Gather Tensor Elements (tf.gather)",
+        "20. Pad Tensor (tf.pad)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/slice",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/slice"
+    },
+    {
+      "task": "20. Pad Tensor (tf.pad)",
+      "problem_solved": "Extends tensor axes using explicit boundary pairs defined in paddings. Supports modes CONSTANT, REFLECT, and SYMMETRIC.",
+      "mental_trigger": "I need to extend tensor outer boundaries with zeros or custom constants for sequence alignment or spatial convolutions.",
+      "syntax": "tf.pad",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\nx = tf.constant([[1, 2], [3, 4]]\npaddings = tf.constant([[1, 1], [2, 2]]\npadded = tf.pad(x, paddings, mode=\"CONSTANT\", constant_values=0\nprint(padded",
+      "use_when": "Specify constant_values explicitly when padding non-zero default feature tensors to prevent unexpected value corruption.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: InvalidArgumentError due to incorrect paddings shape configuration.",
+        "Cause: paddings tensor must have rank 2 with dimensions (N, 2), where N matches target tensor rank exactly.",
+        "Quick Fix: Ensure paddings contains exactly one [before, after] length pair for every dimension in the target tensor."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.pad"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "15. Concatenate and Stack Dimensions (tf.concat / tf.stack)",
+        "19. Slice Tensor (tf.slice / tensor slicing)",
+        "21. Tile Tensor (tf.tile)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/pad",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/pad"
+    },
+    {
+      "task": "21. Tile Tensor (tf.tile)",
+      "problem_solved": "Constructs a new tensor by copying input data multiples[i] times along dimension i. Output shape dimension i becomes input.shape[i] * multiples[i].",
+      "mental_trigger": "I need to construct a larger tensor by repeatedly replicating an existing tensor along its dimensions.",
+      "syntax": "tf.tile",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\nx = tf.constant([[1, 2], [3, 4]]\ntiled = tf.tile(x, multiples=[2, 3]\nprint(tiled",
+      "use_when": "Prefer broadcasting semantics over tf.tile to avoid unnecessarily allocating duplicated memory buffers on accelerator devices.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: Excessive memory allocation or runtime slowdown during execution.",
+        "Cause: Tiling physically duplicates data buffers in memory, consuming extensive bandwidth compared to implicit broadcasting.",
+        "Quick Fix: Use implicit broadcasting or tf.broadcast_to instead of physical memory tiling where possible."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.tile"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "14. Transpose Tensor Dimensions (tf.transpose)",
+        "20. Pad Tensor (tf.pad)",
+        "27. Repeat Tensor Values (tf.repeat)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/tile",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/tile"
+    },
+    {
+      "task": "22. Element-wise Arithmetic (tf.add, tf.subtract, tf.multiply, tf.divide)",
+      "problem_solved": "Performs point-wise arithmetic matching standard Python operators (+, -, *, /). Implicitly broadcasts compatible operand shapes automatically.",
+      "mental_trigger": "I need to execute fundamental element-by-element arithmetic operations across two input tensors.",
+      "syntax": "tf.add, tf.subtract, tf.multiply, tf.divide",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\na = tf.constant([10.0, 20.0]\nb = tf.constant([2.0, 4.0]\nadd_res = tf.add(a, b\nsub_res = tf.subtract(a, b\nmul_res = tf.multiply(a, b\ndiv_res = tf.divide(a, b\nprint(add_res\nprint(div_res",
+      "use_when": "Use standard Python math operators (a \\+ b, a * b) for code clarity, as TensorFlow maps them directly to functional API calls.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: TypeError when performing arithmetic between tensors with mismatched data types.",
+        "Cause: TensorFlow does not perform implicit type casting between different numerical types like float32 and int32.",
+        "Quick Fix: Cast operands to matching data types using tf.cast(x, dtype) prior to arithmetic calls."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.add",
+        "tf.subtract",
+        "tf.multiply",
+        "tf.divide"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "23. Matrix Multiplication (tf.matmul)",
+        "24. Reduction Operations (tf.reduce_sum, tf.reduce_mean, tf.reduce_max, tf.argmax)",
+        "26. Tensor Broadcasting Rules (implicit broadcasting)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/math/add",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/math/add"
+    },
+    {
+      "task": "23. Matrix Multiplication (tf.matmul)",
+      "problem_solved": "Computes the matrix product of a and b. Supports internal transposition flags transpose_a and transpose_b for optimized computations without explicit extra transpose calls.",
+      "mental_trigger": "I need to perform linear algebra matrix products or batched matrix multiplications between compatible 2D or higher rank tensors.",
+      "syntax": "tf.matmul",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\na = tf.constant([[1.0, 2.0], [3.0, 4.0]]\nb = tf.constant([[5.0, 6.0], [7.0, 8.0]]\nproduct = tf.matmul(a, b\nprint(product",
+      "use_when": "Use transpose_b=True inside tf.matmul when multiplying by transposed weight matrices to save explicit memory rearrangement ops.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: InvalidArgumentError caused by inner matrix dimension mismatches.",
+        "Cause: Matrix multiplication requires trailing dimension of a to equal leading inner dimension of b ((..., M, K) @ (..., K, N)).",
+        "Quick Fix: Adjust dimensions or toggle boolean flags transpose_a=True or transpose_b=True within tf.matmul."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.matmul"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "7. Create Identity Matrix (tf.eye)",
+        "14. Transpose Tensor Dimensions (tf.transpose)",
+        "22. Element-wise Arithmetic (tf.add, tf.subtract, tf.multiply, tf.divide)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/linalg/matmul",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/linalg/matmul"
+    },
+    {
+      "task": "24. Reduction Operations (tf.reduce_sum, tf.reduce_mean, tf.reduce_max, tf.argmax)",
+      "problem_solved": "Reduces tensor rank across specified axes by applying summary functions. Setting keepdims=True retains reduced axes as size 1 for easy downstream broadcasting.",
+      "mental_trigger": "I need to compute aggregate summary statistics or locate extremum indices across specified tensor axes.",
+      "syntax": "tf.reduce_sum, tf.reduce_mean, tf.reduce_max, tf.argmax",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\nx = tf.constant([[1.0, 2.0], [3.0, 4.0]]\ntotal_sum = tf.reduce_sum(x, axis=1\nmean_val = tf.reduce_mean(x\nmax_idx = tf.argmax(x, axis=1\nprint(\"Sum:\", total_sum\nprint(\"Mean:\", mean_val\nprint(\"Argmax:\", max_idx",
+      "use_when": "Specify axis explicitly in all reduction calls to ensure consistent results across varying tensor ranks.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: Shape misalignment errors when combining reduced statistics back with original unreduced tensors.",
+        "Cause: Reduction operations drop target axes by default, altering total output tensor rank.",
+        "Quick Fix: Pass keepdims=True in reduction calls to preserve original tensor dimensionality for easy broadcast operations."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.reduce_sum",
+        "tf.reduce_mean",
+        "tf.reduce_max",
+        "tf.argmax"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "22. Element-wise Arithmetic (tf.add, tf.subtract, tf.multiply, tf.divide)",
+        "25. Conditional Selection (tf.where)",
+        "26. Tensor Broadcasting Rules (implicit broadcasting)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/math/reduce_sum",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/math/reduce_sum"
+    },
+    {
+      "task": "25. Conditional Selection (tf.where)",
+      "problem_solved": "Selects values from x or y based on condition. If only condition is passed, returns the multi-dimensional integer indices of all True entries.",
+      "mental_trigger": "I need to choose tensor values conditionally based on a boolean mask or gather coordinates of true elements.",
+      "syntax": "tf.where",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\ncondition = tf.constant([True, False, True]\nx = tf.constant([10, 20, 30]\ny = tf.constant([100, 200, 300]\nselected = tf.where(condition, x, y\nprint(selected",
+      "use_when": "Use tf.where with scalar fallbacks for safe thresholding and gradient-safe conditional operations in custom loss functions.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: InvalidArgumentError when condition, x, and y shapes cannot broadcast together cleanly.",
+        "Cause: All non-None inputs to tf.where must share identical shapes or follow valid broadcasting rules.",
+        "Quick Fix: Verify operand shapes or use tf.broadcast_to to align shapes prior to conditional selection."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.where"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "17. Gather Tensor Elements (tf.gather)",
+        "18. Scatter Tensor Updates (tf.tensor_scatter_nd_update)",
+        "24. Reduction Operations (tf.reduce_sum, tf.reduce_mean, tf.reduce_max, tf.argmax)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/where",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/where"
+    },
+    {
+      "task": "26. Tensor Broadcasting Rules (implicit broadcasting)",
+      "problem_solved": "Automatically expands trailing dimensions of size 1 or missing leading axes to match larger operand shapes without allocating duplicate memory. Dimensions match if they are equal or if one is 1\\.",
+      "mental_trigger": "I need to execute element-wise operations between tensors of differing shapes without manually replicating data buffers.",
+      "syntax": "Implicit broadcasting in TensorFlow operations (tf.add, tf.multiply, etc.)",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\na = tf.constant([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])  # Shape (2, 3\nb = tf.constant([10.0, 20.0, 30.0])                   # Shape (3,\nresult = a + b  # b is implicitly broadcast across rows of \nprint(result",
+      "use_when": "Rely on implicit broadcasting rather than explicit tiling calls (tf.tile) to minimize memory allocation and maximize performance on accelerators.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: InvalidArgumentError during element-wise operations on incompatible tensor shapes.",
+        "Cause: Dimensions compared from right-to-left are neither equal nor equal to 1\\.",
+        "Quick Fix: Use tf.expand_dims to add missing size-1 axes until right-aligned dimensions satisfy broadcasting rules."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "Implicit broadcasting in TensorFlow operations (tf.add, tf.multiply, etc.)"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "13. Expand and Squeeze Dimensions (tf.expand_dims / tf.squeeze)",
+        "21. Tile Tensor (tf.tile)",
+        "22. Element-wise Arithmetic (tf.add, tf.subtract, tf.multiply, tf.divide)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/guide/tensor#broadcasting",
+      "official_docs": "https://www.tensorflow.org/guide/tensor#broadcasting"
+    },
+    {
+      "task": "27. Repeat Tensor Values (tf.repeat)",
+      "problem_solved": "Duplicates elements along axis sequentially repeats times. Unlike tf.tile which replicates the entire block, tf.repeat duplicates each item inline.",
+      "mental_trigger": "I need to duplicate individual elements of a tensor sequentially along a targeted axis.",
+      "syntax": "tf.repeat",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\nx = tf.constant([[1, 2], [3, 4]]\nrepeated = tf.repeat(x, repeats=2, axis=0\nprint(repeated",
+      "use_when": "Use tf.repeat for expanding label sequences or unspooling batch items to match dynamic target lengths.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: Confusing tf.repeat with tf.tile resulting in incorrect element ordering.",
+        "Cause: tf.repeat duplicates elements contiguously ([A, A, B, B]), whereas tf.tile duplicates entire structure sequences ([A, B, A, B]).",
+        "Quick Fix: Use tf.repeat for inline element replication and tf.tile for whole-tensor block tiling."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.repeat"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "21. Tile Tensor (tf.tile)",
+        "26. Tensor Broadcasting Rules (implicit broadcasting)",
+        "28. Device Placement and Dtype Conversion (tf.device, tf.cast, tf.identity)"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/repeat",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/repeat"
+    },
+    {
+      "task": "28. Device Placement and Dtype Conversion (tf.device, tf.cast, tf.identity)",
+      "problem_solved": "tf.cast converts numeric precision. tf.device scopes device allocation, and tf.identity forces tensor copying or explicit placement binding.",
+      "mental_trigger": "I need to convert a tensor's precision or place its memory explicitly on a specific hardware device.",
+      "syntax": "tf.cast, tf.device, tf.identity",
+      "important_parameters": [],
+      "important_params": [],
+      "return_value": "",
+      "example": "import tensorflow as t\n\nx = tf.constant([1, 2, 3], dtype=tf.int32\nx_float = tf.cast(x, dtype=tf.float32\n\nwith tf.device(\"/CPU:0\")\ny = tf.identity(x_float\n\nprint(y.dtype\nprint(y.device",
+      "use_when": "Perform precision casting (tf.cast) explicitly before passing tensors to ops to prevent unexpected implicit conversion overhead.",
+      "avoid_when": "",
+      "gotchas": [
+        "Issue: Device placement contexts silently ignored for standard constant initializations.",
+        "Cause: Some operations default to host CPU placement regardless of surrounding tf.device scopes if device kernel implementations are absent.",
+        "Quick Fix: Wrap variables or compute ops inside tf.device and use tf.identity to enforce explicit target placement copies."
+      ],
+      "performance_notes": "",
+      "related_apis": [
+        "tf.cast",
+        "tf.device",
+        "tf.identity"
+      ],
+      "framework_migration_notes": "",
+      "pytorch_equivalent": "",
+      "tensorflow_equivalent": "",
+      "version_compatibility": "",
+      "search_metadata": {
+        "aliases": [],
+        "common_search_terms": [],
+        "keywords": [],
+        "frequently_confused_with": []
+      },
+      "related_models": [],
+      "related_patterns": [],
+      "related_workflows": [],
+      "related_cheatsheets": [],
+      "related_decision_guides": [],
+      "related_package_tasks": [
+        "1. Create Constant Tensor (tf.constant)",
+        "3. Convert Existing Data to Tensor (tf.convert_to_tensor)",
+        "10. Inspect Tensor Properties (shape, dtype, device, ndim, numpy())"
+      ],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/cast",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/cast"
+    }
+  ]
+}

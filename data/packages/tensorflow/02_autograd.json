@@ -1,0 +1,1745 @@
+{
+  "id": "tensorflow",
+  "module_name": "02_autograd",
+  "module_title": "Autograd",
+  "slug": "02_autograd",
+  "tasks": [
+    {
+      "task": "1. Record Operations with tf.GradientTape",
+      "problem_solved": "Tracks forward-pass operations on tensors inside a context manager to build an execution graph for automatic differentiation.",
+      "mental_trigger": "I need to record tensor operations so I can compute derivatives with respect to trainable variables.",
+      "syntax": "y = f(x)",
+      "important_parameters": [
+        "persistent: Boolean flag indicating whether to keep the tape resources after a single gradient() call. Default is False.",
+        "watch_accessed_variables: Boolean flag controlling automatic tracking of all tf.Variable instances accessed inside the scope. Default is True."
+      ],
+      "important_params": [
+        "persistent: Boolean flag indicating whether to keep the tape resources after a single gradient() call. Default is False.",
+        "watch_accessed_variables: Boolean flag controlling automatic tracking of all tf.Variable instances accessed inside the scope. Default is True."
+      ],
+      "return_value": "Returns a tf.GradientTape context manager instance. When exited, recorded operations can be queried using tape.gradient().",
+      "example": "x = tf.Variable(3.0, dtype=tf.float32)\n\nwith tf.GradientTape() as tape:\ny = x ** 2 + 2 * x + 1\n\ngrad = tape.gradient(y, x)",
+      "snippet": "x = tf.Variable(3.0, dtype=tf.float32)\n\nwith tf.GradientTape() as tape:\ny = x ** 2 + 2 * x + 1\n\ngrad = tape.gradient(y, x)",
+      "use_when": "Executing forward passes in custom training loops where loss gradients must be calculated relative to model parameters.",
+      "avoid_when": "Performing inference or evaluation passes where gradient tracking consumes unnecessary memory and compute.",
+      "gotchas": [
+        "Tape resources are released immediately after the first tape.gradient() call unless persistent=True is specified.",
+        "Passing Python constants or immutable tf.Tensor objects without explicitly calling tape.watch() yields None for gradients.",
+        "Performing operations outside the with tf.GradientTape() block prevents those operations from being recorded."
+      ],
+      "performance_notes": "> * Allocates additional memory during the forward pass to cache intermediate activation tensors required for backpropagation.  \n> * Minimal overhead when executed inside a compiled @tf.function.",
+      "related_apis": [
+        "tf.GradientTape",
+        "tf.Variable",
+        "tf.GradientTape.watch"
+      ],
+      "primary_apis": [
+        "tf.GradientTape",
+        "tf.Variable"
+      ],
+      "framework_migration_notes": "Standard PyTorch autograd graph tracking during forward pass (enabled when tensors have requires_grad=True).",
+      "pytorch_equivalent": "Standard PyTorch autograd graph tracking during forward pass (enabled when tensors have requires_grad=True).",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Standard PyTorch autograd graph tracking during forward pass (enabled when tensors have requires_grad=True).",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "tf.GradientTape",
+          "automatic differentiation context",
+          "autograd recorder"
+        ],
+        "common_search_terms": [
+          "tensorflow record gradients",
+          "gradienttape basic usage",
+          "tf2 tape gradient"
+        ],
+        "search_terms": [
+          "tensorflow record gradients",
+          "gradienttape basic usage",
+          "tf2 tape gradient"
+        ],
+        "keywords": [
+          "autograd",
+          "gradienttape",
+          "reverse-mode differentiation",
+          "computation graph"
+        ],
+        "frequently_confused_with": [
+          "GradientTape vs tf.function"
+        ],
+        "confused_with": [
+          "GradientTape vs tf.function"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "transformer",
+        "logistic-regression"
+      ],
+      "related_patterns": [
+        "memory-efficient-training",
+        "gradient-accumulation"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/GradientTape",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/GradientTape"
+    },
+    {
+      "task": "2. Watch Non-Trainable Tensors (GradientTape.watch)",
+      "problem_solved": "Forces tf.GradientTape to track operations on immutable tf.Tensor objects or non-trainable variables that are not watched automatically.",
+      "mental_trigger": "I need to compute gradients with respect to an input data tensor rather than a model trainable variable.",
+      "syntax": "tape.watch(tensor_x)",
+      "important_parameters": [
+        "tensor: A tf.Tensor or list of tf.Tensor objects to explicitly record on the tape."
+      ],
+      "important_params": [
+        "tensor: A tf.Tensor or list of tf.Tensor objects to explicitly record on the tape."
+      ],
+      "return_value": "Returns None. Mutates the tape context to begin recording operations on the specified tensors.",
+      "example": "x = tf.constant(4.0, dtype=tf.float32)\n\nwith tf.GradientTape() as tape:\ntape.watch(x)\ny = tf.sin(x)\n\ngrad = tape.gradient(y, x)",
+      "snippet": "x = tf.constant(4.0, dtype=tf.float32)\n\nwith tf.GradientTape() as tape:\ntape.watch(x)\ny = tf.sin(x)\n\ngrad = tape.gradient(y, x)",
+      "use_when": "Computing input gradients for adversarial attack generation, feature attribution methods like Integrated Gradients, or physics-informed neural networks.",
+      "avoid_when": "Working solely with tf.Variable objects inside a tape where watch_accessed_variables=True already handles tracking automatically.",
+      "gotchas": [
+        "tape.watch() must be called **before** the operations involving the target tensor are executed inside the tape context.",
+        "Watching high-dimensional input tensors increases tape memory consumption significantly by retaining input activations."
+      ],
+      "performance_notes": "> * Incurs memory overhead proportional to tensor size because intermediate activations dependent on watched tensors must be retained.",
+      "related_apis": [
+        "tf.GradientTape.watch",
+        "tf.GradientTape",
+        "tf.constant"
+      ],
+      "primary_apis": [
+        "tf.GradientTape.watch"
+      ],
+      "framework_migration_notes": "tensor.requires_grad_(True) or retain_grad()",
+      "pytorch_equivalent": "tensor.requires_grad_(True) or retain_grad()",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tensor.requires_grad_(True) or retain_grad()",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "tape.watch",
+          "watch constant tensor",
+          "record tf.Tensor"
+        ],
+        "common_search_terms": [
+          "how to compute gradient of input tensor tensorflow",
+          "tf gradienttape watch constant"
+        ],
+        "search_terms": [
+          "how to compute gradient of input tensor tensorflow",
+          "tf gradienttape watch constant"
+        ],
+        "keywords": [
+          "watch",
+          "non-trainable",
+          "constant tensor",
+          "adversarial gradients"
+        ],
+        "frequently_confused_with": [
+          "tape.watch vs watch_accessed_variables"
+        ],
+        "confused_with": [
+          "tape.watch vs watch_accessed_variables"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/GradientTape#watch",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/GradientTape#watch"
+    },
+    {
+      "task": "3. Control Automatic Variable Watching (watch_accessed_variables)",
+      "problem_solved": "Disables automatic tracking of all accessed tf.Variable objects inside tf.GradientTape to enforce selective variable recording.",
+      "mental_trigger": "I want fine-grained control over which trainable variables are tracked to avoid tracking unwanted variables and reduce memory footprint.",
+      "syntax": "tape.watch(specific_var)",
+      "important_parameters": [
+        "watch_accessed_variables: Set to False to prevent the tape from automatically watching every accessed tf.Variable."
+      ],
+      "important_params": [
+        "watch_accessed_variables: Set to False to prevent the tape from automatically watching every accessed tf.Variable."
+      ],
+      "return_value": "Returns a tf.GradientTape instance with automatic variable watching disabled.",
+      "example": "v1 = tf.Variable(2.0, dtype=tf.float32)\nv2 = tf.Variable(5.0, dtype=tf.float32)\n\nwith tf.GradientTape(watch_accessed_variables=False) as tape:\ntape.watch(v1)\ny = v1 * v2\n\ngrad_v1, grad_v2 = tape.gradient(y, [v1, v2])",
+      "snippet": "v1 = tf.Variable(2.0, dtype=tf.float32)\nv2 = tf.Variable(5.0, dtype=tf.float32)\n\nwith tf.GradientTape(watch_accessed_variables=False) as tape:\ntape.watch(v1)\ny = v1 * v2\n\ngrad_v1, grad_v2 = tape.gradient(y, [v1, v2])",
+      "use_when": "Implementing GANs, multi-task learning, or sub-network training where only a subset of variables must be updated in a given step.",
+      "avoid_when": "Standard training loops where all trainable variables in a model should receive gradients.",
+      "gotchas": [
+        "Variables not explicitly watched with tape.watch() will produce None when calling tape.gradient().",
+        "Disabling variable watching does not prevent custom operations inside the tape from executing normally."
+      ],
+      "performance_notes": "> * Reduces tape graph size and memory footprint by skipping graph construction for ignored variables.",
+      "related_apis": [
+        "tf.GradientTape",
+        "tf.GradientTape.watch"
+      ],
+      "primary_apis": [
+        "tf.GradientTape"
+      ],
+      "framework_migration_notes": "Setting param.requires_grad \\= False on selective parameters prior to forward execution.",
+      "pytorch_equivalent": "Setting param.requires_grad \\= False on selective parameters prior to forward execution.",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Setting param.requires_grad \\= False on selective parameters prior to forward execution.",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "watch_accessed_variables",
+          "disable autowatch",
+          "selective tape watching"
+        ],
+        "common_search_terms": [
+          "tf gradienttape don't watch all variables",
+          "disable variable watch tensorflow"
+        ],
+        "search_terms": [
+          "tf gradienttape don't watch all variables",
+          "disable variable watch tensorflow"
+        ],
+        "keywords": [
+          "selective tracking",
+          "watch_accessed_variables",
+          "sub-graph optimization"
+        ],
+        "frequently_confused_with": [
+          "watch_accessed_variables vs tf.stop_gradient"
+        ],
+        "confused_with": [
+          "watch_accessed_variables vs tf.stop_gradient"
+        ]
+      },
+      "related_models": [
+        "gan",
+        "transformer"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/GradientTape#__init",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/GradientTape#__init"
+    },
+    {
+      "task": "4. Use Persistent GradientTape (persistent=True)",
+      "problem_solved": "Retains execution graph resources after tape.gradient() is invoked, enabling multiple gradient evaluations from a single forward pass.",
+      "mental_trigger": "I need to evaluate gradients for multiple independent outputs or targets from a single forward execution graph.",
+      "syntax": "y1 = f1(x)\ny2 = f2(x)\ng1 = tape.gradient(y1, x)\ng2 = tape.gradient(y2, x)",
+      "important_parameters": [
+        "persistent: Set to True to allow multiple calls to tape.gradient()."
+      ],
+      "important_params": [
+        "persistent: Set to True to allow multiple calls to tape.gradient()."
+      ],
+      "return_value": "Returns a persistent tf.GradientTape instance. Requires manual garbage collection using del tape.",
+      "example": "x = tf.Variable(3.0, dtype=tf.float32)\n\nwith tf.GradientTape(persistent=True) as tape:\ny1 = x ** 2\ny2 = x ** 3\n\ndy1_dx = tape.gradient(y1, x)\ndy2_dx = tape.gradient(y2, x)\n\nprint(f\"dy1/dx: {dy1_dx.numpy()}, dy2/dx: {dy2_dx.numpy()}\") # Output: 6.0, 27.0\n\n# Explicitly free memory",
+      "snippet": "x = tf.Variable(3.0, dtype=tf.float32)\n\nwith tf.GradientTape(persistent=True) as tape:\ny1 = x ** 2\ny2 = x ** 3\n\ndy1_dx = tape.gradient(y1, x)\ndy2_dx = tape.gradient(y2, x)\n\nprint(f\"dy1/dx: {dy1_dx.numpy()}, dy2/dx: {dy2_dx.numpy()}\") # Output: 6.0, 27.0\n\n# Explicitly free memory",
+      "use_when": "Computing separate gradients for actor and critic losses, multi-objective optimization, or independent regularization terms.",
+      "avoid_when": "Standard single-loss training loops. Using persistent tapes without releasing them causes severe memory leaks.",
+      "gotchas": [
+        "Python garbage collection does not automatically release internal graph memory until del tape is executed.",
+        "Forgetting to delete a persistent tape inside a long-running training loop results in an eventual Out-Of-Memory (OOM) crash."
+      ],
+      "performance_notes": "> * Holds intermediate activation tensors in memory until del tape is called, significantly increasing peak memory usage.",
+      "related_apis": [
+        "tf.GradientTape",
+        "del tape",
+        "tf.GradientTape.gradient"
+      ],
+      "primary_apis": [
+        "tf.GradientTape",
+        "del tape"
+      ],
+      "framework_migration_notes": "loss.backward(retain_graph=True)",
+      "pytorch_equivalent": "loss.backward(retain_graph=True)",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "loss.backward(retain_graph=True)",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "persistent=True",
+          "reusable gradient tape",
+          "multiple gradient calls"
+        ],
+        "common_search_terms": [
+          "call tape gradient multiple times tensorflow",
+          "persistent gradienttape memory leak"
+        ],
+        "search_terms": [
+          "call tape gradient multiple times tensorflow",
+          "persistent gradienttape memory leak"
+        ],
+        "keywords": [
+          "persistent",
+          "multi-gradient",
+          "del tape",
+          "retain graph"
+        ],
+        "frequently_confused_with": [
+          "Persistent GradientTape vs standard non-persistent GradientTape"
+        ],
+        "confused_with": [
+          "Persistent GradientTape vs standard non-persistent GradientTape"
+        ]
+      },
+      "related_models": [
+        "transformer",
+        "yolo"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "object-detection-pipeline"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/GradientTape#__init",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/GradientTape#__init"
+    },
+    {
+      "task": "5. Compute Gradients (GradientTape.gradient)",
+      "problem_solved": "Calculates derivatives of target tensors with respect to source variables using reverse-mode automatic differentiation.",
+      "mental_trigger": "I need to evaluate the symbolic derivative of my loss with respect to my model weights.",
+      "syntax": "tf.GradientTape.gradient, tf.UnconnectedGradients",
+      "important_parameters": [
+        "target: A tf.Tensor or nested structure of tensors to differentiate.",
+        "sources: A tf.Variable or nested structure of variables/tensors acting as differentiation inputs.",
+        "output_gradients: Optional vector-jacobian products passed in for custom backward passes.",
+        "unconnected_gradients: Specifies behavior when target and sources are disconnected (NONE or ZERO). Default is NONE."
+      ],
+      "important_params": [
+        "target: A tf.Tensor or nested structure of tensors to differentiate.",
+        "sources: A tf.Variable or nested structure of variables/tensors acting as differentiation inputs.",
+        "output_gradients: Optional vector-jacobian products passed in for custom backward passes.",
+        "unconnected_gradients: Specifies behavior when target and sources are disconnected (NONE or ZERO). Default is NONE."
+      ],
+      "return_value": "Returns a tensor or nested structure of tensors matching the structure of sources. Contains None for unconnected variables when unconnected_gradients=NONE.",
+      "example": "w = tf.Variable(2.0, dtype=tf.float32)\nb = tf.Variable(1.0, dtype=tf.float32)\nx = tf.constant(3.0, dtype=tf.float32)\n\nwith tf.GradientTape() as tape:\ny = w * x + b\n\ngrads = tape.gradient(y, [w, b])",
+      "snippet": "w = tf.Variable(2.0, dtype=tf.float32)\nb = tf.Variable(1.0, dtype=tf.float32)\nx = tf.constant(3.0, dtype=tf.float32)\n\nwith tf.GradientTape() as tape:\ny = w * x + b\n\ngrads = tape.gradient(y, [w, b])",
+      "use_when": "Extracting computed gradients to pass into an optimizer (optimizer.apply_gradients) or performing custom gradient manipulation.",
+      "avoid_when": "Executing higher-order differentiation without nesting tapes properly.",
+      "gotchas": [
+        "Calling gradient() on a non-persistent tape destroys the tape context immediately.",
+        "If target is not a scalar, TensorFlow automatically sums the elements of target before taking the gradient, unless output_gradients is provided."
+      ],
+      "performance_notes": "> * Performs reverse-mode traversal of the recorded computation graph. Execution time scales with graph depth and source tensor count.",
+      "related_apis": [
+        "tf.GradientTape.gradient",
+        "tf.UnconnectedGradients",
+        "tf.GradientTape"
+      ],
+      "primary_apis": [
+        "tf.GradientTape.gradient",
+        "tf.UnconnectedGradients"
+      ],
+      "framework_migration_notes": "torch.autograd.grad() or loss.backward()",
+      "pytorch_equivalent": "torch.autograd.grad() or loss.backward()",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.autograd.grad() or loss.backward()",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "tape.gradient",
+          "calculate gradients",
+          "autograd evaluation"
+        ],
+        "common_search_terms": [
+          "tensorflow compute gradients",
+          "tape gradient target sources",
+          "tf2 gradient computation"
+        ],
+        "search_terms": [
+          "tensorflow compute gradients",
+          "tape gradient target sources",
+          "tf2 gradient computation"
+        ],
+        "keywords": [
+          "reverse-mode differentiation",
+          "target",
+          "sources",
+          "output_gradients"
+        ],
+        "frequently_confused_with": [
+          "tape.gradient vs tape.jacobian"
+        ],
+        "confused_with": [
+          "tape.gradient vs tape.jacobian"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert",
+        "logistic-regression"
+      ],
+      "related_patterns": [
+        "gradient-accumulation"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "text-classification-pipeline-classical-encoder"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/GradientTape#gradient",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/GradientTape#gradient"
+    },
+    {
+      "task": "6. Compute Multiple Gradients",
+      "problem_solved": "Evaluates derivatives for a list or structure of multiple target outputs with respect to a single source variable in a unified call.",
+      "mental_trigger": "I have multiple loss components and need to compute gradients for each component relative to a specific parameter.",
+      "syntax": "tf.GradientTape.gradient",
+      "important_parameters": [
+        "target: A list or tuple of target tensors.",
+        "sources: A single tensor or structure of source tensors."
+      ],
+      "important_params": [
+        "target: A list or tuple of target tensors.",
+        "sources: A single tensor or structure of source tensors."
+      ],
+      "return_value": "Returns gradients corresponding to the sum of targets with respect to each source.",
+      "example": "x = tf.Variable(2.0, dtype=tf.float32)\n\nwith tf.GradientTape() as tape:\nloss1 = x ** 2\nloss2 = 3 * x\n\n# Computes gradient of (loss1 + loss2) wrt x\ngrad_sum = tape.gradient([loss1, loss2], x)",
+      "snippet": "x = tf.Variable(2.0, dtype=tf.float32)\n\nwith tf.GradientTape() as tape:\nloss1 = x ** 2\nloss2 = 3 * x\n\n# Computes gradient of (loss1 + loss2) wrt x\ngrad_sum = tape.gradient([loss1, loss2], x)",
+      "use_when": "Computing composite loss gradients where targets are combined additively before backpropagation.",
+      "avoid_when": "Target gradients must be kept strictly isolated without implicit summation (use a persistent tape with separate gradient() calls instead).",
+      "gotchas": [
+        "Passing a list of targets implicitly sums their gradients together. It does not return a list of individual target gradients."
+      ],
+      "performance_notes": "> * Efficiently traverses the graph once for the combined sum rather than performing multiple reverse passes.",
+      "related_apis": [
+        "tf.GradientTape.gradient"
+      ],
+      "primary_apis": [
+        "tf.GradientTape.gradient"
+      ],
+      "framework_migration_notes": "Passing a tuple of target tensors to torch.autograd.grad(..., grad_outputs=...)",
+      "pytorch_equivalent": "Passing a tuple of target tensors to torch.autograd.grad(..., grad_outputs=...)",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Passing a tuple of target tensors to torch.autograd.grad(..., grad_outputs=...)",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "multiple target gradients",
+          "list targets tape.gradient",
+          "combined loss gradients"
+        ],
+        "common_search_terms": [
+          "tensorflow gradient of multiple losses",
+          "tf gradienttape list of targets"
+        ],
+        "search_terms": [
+          "tensorflow gradient of multiple losses",
+          "tf gradienttape list of targets"
+        ],
+        "keywords": [
+          "composite loss",
+          "multi-target autograd",
+          "gradient summation"
+        ],
+        "frequently_confused_with": [
+          "Multiple target list vs persistent tape separate evaluation"
+        ],
+        "confused_with": [
+          "Multiple target list vs persistent tape separate evaluation"
+        ]
+      },
+      "related_models": [
+        "yolo",
+        "transformer"
+      ],
+      "related_patterns": [
+        "gradient-accumulation"
+      ],
+      "related_workflows": [
+        "object-detection-pipeline"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/GradientTape#gradient",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/GradientTape#gradient"
+    },
+    {
+      "task": "7. Compute Gradients for Multiple Variables",
+      "problem_solved": "Computes partial derivatives of a scalar loss with respect to complex nested structures (lists, dicts, tuples) of source variables.",
+      "mental_trigger": "I need to compute loss gradients for all trainable parameters in my model layer tree in a single call.",
+      "syntax": "tf.GradientTape.gradient, tf.Module.trainable_variables",
+      "important_parameters": [
+        "target: A scalar target loss tensor.",
+        "sources: A list, dictionary, or nested structure of tf.Variable objects."
+      ],
+      "important_params": [
+        "target: A scalar target loss tensor.",
+        "sources: A list, dictionary, or nested structure of tf.Variable objects."
+      ],
+      "return_value": "Returns a structure matching sources (e.g., list of tensors or dict of tensors) containing the corresponding calculated gradients.",
+      "example": "var_dict = {\n'w': tf.Variable(3.0, dtype=tf.float32),\n'b': tf.Variable(1.0, dtype=tf.float32)\n}\nx = tf.constant(2.0, dtype=tf.float32)\n\nwith tf.GradientTape() as tape:\ny = var_dict['w'] * x + var_dict['b']\n\ngrads = tape.gradient(y, var_dict)",
+      "snippet": "var_dict = {\n'w': tf.Variable(3.0, dtype=tf.float32),\n'b': tf.Variable(1.0, dtype=tf.float32)\n}\nx = tf.constant(2.0, dtype=tf.float32)\n\nwith tf.GradientTape() as tape:\ny = var_dict['w'] * x + var_dict['b']\n\ngrads = tape.gradient(y, var_dict)",
+      "use_when": "Mapping gradients directly to nested variable representations across complex layer hierarchies.",
+      "avoid_when": "Passing non-nested generator objects that cannot be mirrored in the returned structure.",
+      "gotchas": [
+        "The returned gradient structure strictly mirrors the input sources layout. If sources is a dict, returned gradients form a dict with identical keys."
+      ],
+      "performance_notes": "> * Batches reverse pass computation across all requested variables efficiently in a single graph traversal.",
+      "related_apis": [
+        "tf.GradientTape.gradient",
+        "tf.Module.trainable_variables"
+      ],
+      "primary_apis": [
+        "tf.GradientTape.gradient",
+        "tf.Module.trainable_variables"
+      ],
+      "framework_migration_notes": "torch.autograd.grad(loss, model.parameters())",
+      "pytorch_equivalent": "torch.autograd.grad(loss, model.parameters())",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.autograd.grad(loss, model.parameters())",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "dictionary gradient computation",
+          "nested structure gradients",
+          "trainable_variables gradients"
+        ],
+        "common_search_terms": [
+          "tensorflow gradient for dict of variables",
+          "tf2 model trainable variables gradient"
+        ],
+        "search_terms": [
+          "tensorflow gradient for dict of variables",
+          "tf2 model trainable variables gradient"
+        ],
+        "keywords": [
+          "nested structure",
+          "variable dict",
+          "model parameters"
+        ],
+        "frequently_confused_with": [
+          "Single variable gradient vs variable structure gradient"
+        ],
+        "confused_with": [
+          "Single variable gradient vs variable structure gradient"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert",
+        "llama"
+      ],
+      "related_patterns": [
+        "gradient-accumulation"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/GradientTape#gradient",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/GradientTape#gradient"
+    },
+    {
+      "task": "8. Handle Unconnected Gradients (unconnected_gradients)",
+      "problem_solved": "Controls whether tape.gradient() returns None or a zero tensor when target and source variables have no graph connectivity.",
+      "mental_trigger": "My loss function does not connect to every model variable, but my optimizer requires explicit zero tensors instead of None.",
+      "syntax": "tf.UnconnectedGradients, tf.GradientTape.gradient",
+      "important_parameters": [
+        "unconnected_gradients: Accepts tf.UnconnectedGradients.NONE (default) or tf.UnconnectedGradients.ZERO."
+      ],
+      "important_params": [
+        "unconnected_gradients: Accepts tf.UnconnectedGradients.NONE (default) or tf.UnconnectedGradients.ZERO."
+      ],
+      "return_value": "Returns tf.UnconnectedGradients.ZERO as a zero tensor matching the shape and dtype of the source variable, or None if NONE is chosen.",
+      "example": "v1 = tf.Variable(2.0, dtype=tf.float32)\nv2 = tf.Variable(5.0, dtype=tf.float32)\n\nwith tf.GradientTape() as tape:\ny = v1 ** 2 # v2 is unconnected to y\n\ngrad_none = tape.gradient(y, v2, unconnected_gradients=tf.UnconnectedGradients.NONE)\ngrad_zero = tape.gradient(y, v2, unconnected_gradients=tf.UnconnectedGradients.ZERO)\n\nprint(f\"NONE mode: {grad_none}\") # Output: None",
+      "snippet": "v1 = tf.Variable(2.0, dtype=tf.float32)\nv2 = tf.Variable(5.0, dtype=tf.float32)\n\nwith tf.GradientTape() as tape:\ny = v1 ** 2 # v2 is unconnected to y\n\ngrad_none = tape.gradient(y, v2, unconnected_gradients=tf.UnconnectedGradients.NONE)\ngrad_zero = tape.gradient(y, v2, unconnected_gradients=tf.UnconnectedGradients.ZERO)\n\nprint(f\"NONE mode: {grad_none}\") # Output: None",
+      "use_when": "Building robust training loops where conditional execution branches leave certain variables disconnected, preventing NoneType errors in optimizers.",
+      "avoid_when": "Debugging graph connectivity issues where None is explicitly required to diagnose broken graph links.",
+      "gotchas": [
+        "Using unconnected_gradients=tf.UnconnectedGradients.ZERO masks broken computation graphs by silently replacing missing gradients with zeros."
+      ],
+      "performance_notes": "> * Allocates zero-filled tensors for disconnected variables, slightly increasing memory footprint compared to returning None.",
+      "related_apis": [
+        "tf.UnconnectedGradients",
+        "tf.GradientTape.gradient"
+      ],
+      "primary_apis": [
+        "tf.UnconnectedGradients",
+        "tf.GradientTape.gradient"
+      ],
+      "framework_migration_notes": "Manual handling after torch.autograd.grad() by checking if g is None: g \\= torch.zeros_like(p)",
+      "pytorch_equivalent": "Manual handling after torch.autograd.grad() by checking if g is None: g \\= torch.zeros_like(p)",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Manual handling after torch.autograd.grad() by checking if g is None: g \\= torch.zeros_like(p)",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "tf.UnconnectedGradients",
+          "handle none gradients",
+          "replace none with zero tf"
+        ],
+        "common_search_terms": [
+          "tensorflow gradient none fix",
+          "tf unconnected_gradients zero",
+          "gradient tape returns none"
+        ],
+        "search_terms": [
+          "tensorflow gradient none fix",
+          "tf unconnected_gradients zero",
+          "gradient tape returns none"
+        ],
+        "keywords": [
+          "unconnected_gradients",
+          "ZERO",
+          "NONE",
+          "disconnected variable"
+        ],
+        "frequently_confused_with": [
+          "Disconnected gradient vs zero-valued gradient"
+        ],
+        "confused_with": [
+          "Disconnected gradient vs zero-valued gradient"
+        ]
+      },
+      "related_models": [
+        "transformer",
+        "gan"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/UnconnectedGradients",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/UnconnectedGradients"
+    },
+    {
+      "task": "9. Compute Jacobian (GradientTape.jacobian)",
+      "problem_solved": "Calculates the full matrix of all first-order partial derivatives for vector-valued outputs with respect to vector-valued inputs.",
+      "mental_trigger": "I need to evaluate the full Jacobian matrix mapping an N-dimensional output to an M-dimensional input.",
+      "syntax": "tf.GradientTape.jacobian",
+      "important_parameters": [
+        "target: Output tensor of shape [Y_1, ..., Y_n].",
+        "sources: Input tensor or structure of shape [X_1, ..., X_m].",
+        "experimental_use_pfor: Boolean indicating whether to use parallel for loops (pfor) to accelerate computation. Default is True."
+      ],
+      "important_params": [
+        "target: Output tensor of shape [Y_1, ..., Y_n].",
+        "sources: Input tensor or structure of shape [X_1, ..., X_m].",
+        "experimental_use_pfor: Boolean indicating whether to use parallel for loops (pfor) to accelerate computation. Default is True."
+      ],
+      "return_value": "Returns a tensor of shape [Y_1, ..., Y_n, X_1, ..., X_m] containing the exact first-order partial derivatives.",
+      "example": "x = tf.Variable([2.0, 3.0], dtype=tf.float32)\n\nwith tf.GradientTape() as tape:\ny = tf.stack([x[0]**2, x[0]*x[1], x[1]**3]) # Output shape [3]\n\njac = tape.jacobian(y, x)\nprint(f\"Jacobian shape: {jac.shape}\") # Output: (3, 2)\nprint(f\"Jacobian matrix:\\n{jac.numpy()}\")\n# [[4.0, 0.0],\n#  [3.0, 2.0],",
+      "snippet": "x = tf.Variable([2.0, 3.0], dtype=tf.float32)\n\nwith tf.GradientTape() as tape:\ny = tf.stack([x[0]**2, x[0]*x[1], x[1]**3]) # Output shape [3]\n\njac = tape.jacobian(y, x)\nprint(f\"Jacobian shape: {jac.shape}\") # Output: (3, 2)\nprint(f\"Jacobian matrix:\\n{jac.numpy()}\")\n# [[4.0, 0.0],\n#  [3.0, 2.0],",
+      "use_when": "Analyzing sensitivity matrices, computing dynamical system state transitions, or constructing custom optimization algorithms (e.g., Gauss-Newton).",
+      "avoid_when": "Scalar loss backpropagation. Use tape.gradient() instead because full Jacobians are computationally prohibitive for large models.",
+      "gotchas": [
+        "Computing Jacobians on high-dimensional feature maps (e.g., intermediate CNN activations) causes massive memory usage.",
+        "experimental_use_pfor=True can fail for operations lacking vectorization implementations, falling back to sequential execution."
+      ],
+      "performance_notes": "> * Uses parallel loop vectorization (pfor) when enabled. Computational time and memory scale quadratically with tensor dimensions.",
+      "related_apis": [
+        "tf.GradientTape.jacobian",
+        "tf.GradientTape.batch_jacobian",
+        "tf.GradientTape.gradient"
+      ],
+      "primary_apis": [
+        "tf.GradientTape.jacobian"
+      ],
+      "framework_migration_notes": "torch.autograd.functional.jacobian()",
+      "pytorch_equivalent": "torch.autograd.functional.jacobian()",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.autograd.functional.jacobian()",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "tape.jacobian",
+          "full jacobian matrix",
+          "vector-to-vector derivative"
+        ],
+        "common_search_terms": [
+          "tensorflow compute jacobian matrix",
+          "tf gradienttape jacobian example",
+          "vector autograd tensorflow"
+        ],
+        "search_terms": [
+          "tensorflow compute jacobian matrix",
+          "tf gradienttape jacobian example",
+          "vector autograd tensorflow"
+        ],
+        "keywords": [
+          "jacobian",
+          "partial derivatives",
+          "pfor",
+          "sensitivity matrix"
+        ],
+        "frequently_confused_with": [
+          "tape.jacobian vs tape.batch_jacobian"
+        ],
+        "confused_with": [
+          "tape.jacobian vs tape.batch_jacobian"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "logistic-regression"
+      ],
+      "related_patterns": [
+        "tensor-broadcasting"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/GradientTape#jacobian",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/GradientTape#jacobian"
+    },
+    {
+      "task": "10. Compute Batch Jacobian (GradientTape.batch_jacobian)",
+      "problem_solved": "Computes sample-wise Jacobians across a batch dimension efficiently without calculating redundant cross-batch sample derivatives.",
+      "mental_trigger": "I need individual sample-level Jacobians for a batch of inputs without paying the cost of full cross-sample derivatives.",
+      "syntax": "tf.GradientTape.batch_jacobian",
+      "important_parameters": [
+        "target: Tensor of shape [B, Y_1, ..., Y_n] where B is the batch dimension.",
+        "source: Tensor of shape [B, X_1, ..., X_m] matching the batch dimension B.",
+        "experimental_use_pfor: Uses vectorized parallel-for execution when set to True."
+      ],
+      "important_params": [
+        "target: Tensor of shape [B, Y_1, ..., Y_n] where B is the batch dimension.",
+        "source: Tensor of shape [B, X_1, ..., X_m] matching the batch dimension B.",
+        "experimental_use_pfor: Uses vectorized parallel-for execution when set to True."
+      ],
+      "return_value": "Returns a tensor of shape [B, Y_1, ..., Y_n, X_1, ..., X_m]. Cross-terms where sample i targets depend on sample j inputs are ignored.",
+      "example": "# Batch of 2 samples, each of dimension 3\nx = tf.Variable([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]], dtype=tf.float32)\n\nwith tf.GradientTape() as tape:\ny = x ** 2 # Elementwise square along batch\n\nbatch_jac = tape.batch_jacobian(y, x)\nprint(f\"Batch Jacobian shape: {batch_jac.shape}\") # Output: (2, 3, 3)\nprint(f\"Sample 0 Jacobian:\\n{batch_jac[0].numpy()}\")\n# [[2.0, 0.0, 0.0],\n#  [0.0, 4.0, 0.0],",
+      "snippet": "# Batch of 2 samples, each of dimension 3\nx = tf.Variable([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]], dtype=tf.float32)\n\nwith tf.GradientTape() as tape:\ny = x ** 2 # Elementwise square along batch\n\nbatch_jac = tape.batch_jacobian(y, x)\nprint(f\"Batch Jacobian shape: {batch_jac.shape}\") # Output: (2, 3, 3)\nprint(f\"Sample 0 Jacobian:\\n{batch_jac[0].numpy()}\")\n# [[2.0, 0.0, 0.0],\n#  [0.0, 4.0, 0.0],",
+      "use_when": "Evaluating per-sample sensitivity, sample-wise gradient norms, or differential privacy metrics across mini-batches.",
+      "avoid_when": "Outputs depend across batch elements (e.g., global Batch Normalization layers without frozen statistics).",
+      "gotchas": [
+        "Target and source tensors must share identical leading batch dimension sizes B."
+      ],
+      "performance_notes": "> * Bypasses evaluation of *B*\u00d7(*B*\u22121) zero-value cross-sample blocks, offering dramatic speedup over tape.jacobian().",
+      "related_apis": [
+        "tf.GradientTape.batch_jacobian",
+        "tf.GradientTape.jacobian"
+      ],
+      "primary_apis": [
+        "tf.GradientTape.batch_jacobian"
+      ],
+      "framework_migration_notes": "Using torch.vmap combined with torch.autograd.functional.jacobian",
+      "pytorch_equivalent": "Using torch.vmap combined with torch.autograd.functional.jacobian",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Using torch.vmap combined with torch.autograd.functional.jacobian",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "tape.batch_jacobian",
+          "per-sample jacobian",
+          "vectorized sample jacobian"
+        ],
+        "common_search_terms": [
+          "tensorflow per sample jacobian",
+          "tf batch_jacobian example",
+          "sample-wise sensitivity tensorflow"
+        ],
+        "search_terms": [
+          "tensorflow per sample jacobian",
+          "tf batch_jacobian example",
+          "sample-wise sensitivity tensorflow"
+        ],
+        "keywords": [
+          "batch_jacobian",
+          "sample-wise",
+          "batch dimension",
+          "pfor"
+        ],
+        "frequently_confused_with": [
+          "batch_jacobian vs jacobian"
+        ],
+        "confused_with": [
+          "batch_jacobian vs jacobian"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/GradientTape#batch_jacobian",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/GradientTape#batch_jacobian"
+    },
+    {
+      "task": "11. Compute Higher-order Gradients (Nested GradientTape)",
+      "problem_solved": "Computes second-order or higher-order derivatives (such as Hessians or gradient penalties) by nesting tf.GradientTape contexts.",
+      "mental_trigger": "I need to compute the derivative of a gradient (e.g., WGAN-GP gradient penalty or Hessian-vector products).",
+      "syntax": "with tf.GradientTape() as inner_tape:\ny = f(x)\nfirst_grad = inner_tape.gradient(y, x)",
+      "important_parameters": [
+        "Nested tape scoping ensures operations in the inner gradient computation are tracked on the outer tape."
+      ],
+      "important_params": [
+        "Nested tape scoping ensures operations in the inner gradient computation are tracked on the outer tape."
+      ],
+      "return_value": "Returns high-order derivative tensors representing second (or higher) derivatives.",
+      "example": "x = tf.Variable(3.0, dtype=tf.float32)\n\nwith tf.GradientTape() as outer_tape:\nwith tf.GradientTape() as inner_tape:\ny = x ** 3 # y = x^3\ndy_dx = inner_tape.gradient(y, x) # dy/dx = 3*x^2 = 27\nd2y_dx2 = outer_tape.gradient(dy_dx, x) # d^2y/dx^2 = 6*x = 18\n\nprint(f\"First derivative dy/dx: {dy_dx.numpy()}\") # Output: 27.0",
+      "snippet": "x = tf.Variable(3.0, dtype=tf.float32)\n\nwith tf.GradientTape() as outer_tape:\nwith tf.GradientTape() as inner_tape:\ny = x ** 3 # y = x^3\ndy_dx = inner_tape.gradient(y, x) # dy/dx = 3*x^2 = 27\nd2y_dx2 = outer_tape.gradient(dy_dx, x) # d^2y/dx^2 = 6*x = 18\n\nprint(f\"First derivative dy/dx: {dy_dx.numpy()}\") # Output: 27.0",
+      "use_when": "Implementing Wasserstein GAN with Gradient Penalty (WGAN-GP), Model-Agnostic Meta-Learning (MAML), or second-order optimization algorithms.",
+      "avoid_when": "First-order optimization routines due to exponential computation and memory costs.",
+      "gotchas": [
+        "The inner tape evaluation inner_tape.gradient() must occur **inside** the with outer_tape: context block to track first-order operations.",
+        "Non-differentiable operations in the inner forward pass will produce None for second derivatives."
+      ],
+      "performance_notes": "> * Memory consumption scales rapidly because intermediate computational graphs for derivatives must be preserved.",
+      "related_apis": [
+        "tf.GradientTape (nested contexts)",
+        "tf.GradientTape.gradient"
+      ],
+      "primary_apis": [
+        "tf.GradientTape (nested contexts)"
+      ],
+      "framework_migration_notes": "Calling torch.autograd.grad(..., create_graph=True)",
+      "pytorch_equivalent": "Calling torch.autograd.grad(..., create_graph=True)",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Calling torch.autograd.grad(..., create_graph=True)",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "nested gradienttape",
+          "second order derivatives",
+          "hessian tensorflow"
+        ],
+        "common_search_terms": [
+          "how to compute second derivative tensorflow",
+          "tf nested gradienttape example",
+          "gradient penalty autograd"
+        ],
+        "search_terms": [
+          "how to compute second derivative tensorflow",
+          "tf nested gradienttape example",
+          "gradient penalty autograd"
+        ],
+        "keywords": [
+          "higher-order",
+          "nested tape",
+          "second derivative",
+          "Hessian",
+          "WGAN-GP"
+        ],
+        "frequently_confused_with": [
+          "Single tape vs nested tapes"
+        ],
+        "confused_with": [
+          "Single tape vs nested tapes"
+        ]
+      },
+      "related_models": [
+        "gan",
+        "transformer"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/GradientTape",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/GradientTape"
+    },
+    {
+      "task": "12. Define Custom Gradient (tf.custom_gradient)",
+      "problem_solved": "Allows users to override the default automatic differentiation behavior of a function with custom forward and backward pass math.",
+      "mental_trigger": "The standard autograd derivative is numerically unstable (e.g., log(0)), or I need custom gradient logic.",
+      "syntax": "def my_op(x):\ndef grad(dy):\nreturn dy * custom_derivative(x)",
+      "important_parameters": [
+        "Decorates a function returning a tuple (forward_output, grad_fn).",
+        "grad_fn receives upstream gradients dy and returns downstream gradients matching input argument shapes."
+      ],
+      "important_params": [
+        "Decorates a function returning a tuple (forward_output, grad_fn).",
+        "grad_fn receives upstream gradients dy and returns downstream gradients matching input argument shapes."
+      ],
+      "return_value": "Returns the forward pass computation result while registering the custom backward function with TensorFlow autograd.",
+      "example": "@tf.custom_gradient\ndef log1pexp(x):\n# Forward pass: log(1 + exp(x))\ne = tf.exp(x)\ny = tf.math.log(1.0 + e)\n\ndef grad(dy):\n# Numerically stable derivative: 1 / (1 + exp(-x))\nreturn dy * (1.0 / (1.0 + tf.exp(-x)))\n\nreturn y, grad\n\nx = tf.Variable(100.0, dtype=tf.float32) # Standard exp(100) overflows float32\nwith tf.GradientTape() as tape:\ny = log1pexp(x)\n\ngrad = tape.gradient(y, x)",
+      "snippet": "@tf.custom_gradient\ndef log1pexp(x):\n# Forward pass: log(1 + exp(x))\ne = tf.exp(x)\ny = tf.math.log(1.0 + e)\n\ndef grad(dy):\n# Numerically stable derivative: 1 / (1 + exp(-x))\nreturn dy * (1.0 / (1.0 + tf.exp(-x)))\n\nreturn y, grad\n\nx = tf.Variable(100.0, dtype=tf.float32) # Standard exp(100) overflows float32\nwith tf.GradientTape() as tape:\ny = log1pexp(x)\n\ngrad = tape.gradient(y, x)",
+      "use_when": "Preventing numerical underflow/overflow (e.g., custom Softmax or log-sum-exp implementations) or implementing non-differentiable ops with surrogate gradients.",
+      "avoid_when": "Standard TensorFlow operations already provide stable, optimized derivatives.",
+      "gotchas": [
+        "The number and structure of tensors returned by grad_fn must exactly match the arguments accepted by the decorated forward function.",
+        "Forgetting to multiply downstream calculations by upstream gradient dy breaks chain rule backpropagation."
+      ],
+      "performance_notes": "> * Replaces automatically generated backpropagation subgraphs with optimized user-defined CUDA/C++ mathematical operations.",
+      "related_apis": [
+        "@tf.custom_gradient",
+        "tf.stop_gradient",
+        "tf.identity"
+      ],
+      "primary_apis": [
+        "@tf.custom_gradient"
+      ],
+      "framework_migration_notes": "Subclassing torch.autograd.Function and overriding forward() and backward() static methods.",
+      "pytorch_equivalent": "Subclassing torch.autograd.Function and overriding forward() and backward() static methods.",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Subclassing torch.autograd.Function and overriding forward() and backward() static methods.",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "@tf.custom_gradient",
+          "custom backward pass",
+          "override autograd"
+        ],
+        "common_search_terms": [
+          "custom gradient tensorflow 2",
+          "tf custom_gradient example",
+          "stable backward pass tensorflow"
+        ],
+        "search_terms": [
+          "custom gradient tensorflow 2",
+          "tf custom_gradient example",
+          "stable backward pass tensorflow"
+        ],
+        "keywords": [
+          "custom_gradient",
+          "numerical stability",
+          "surrogate gradient",
+          "chain rule"
+        ],
+        "frequently_confused_with": [
+          "@tf.custom_gradient vs tf.stop_gradient"
+        ],
+        "confused_with": [
+          "@tf.custom_gradient vs tf.stop_gradient"
+        ]
+      },
+      "related_models": [
+        "transformer",
+        "deepseek"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/custom_gradient",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/custom_gradient"
+    },
+    {
+      "task": "13. Override Gradient Behavior",
+      "problem_solved": "Modifies intermediate gradient flows by injecting transformations like clipping, quantization, or straight-through estimators inside backward passes.",
+      "mental_trigger": "I need to implement a Straight-Through Estimator (STE) or clip intermediate gradients without altering forward calculations.",
+      "syntax": "def ste_quantizer(x):\ny = tf.round(x) # Non-differentiable forward pass\ndef grad(dy):\nreturn dy # Pass gradient through unchanged (STE)",
+      "important_parameters": [
+        "None. Logic is encapsulated within the custom grad function."
+      ],
+      "important_params": [
+        "None. Logic is encapsulated within the custom grad function."
+      ],
+      "return_value": "Returns modified forward activation while altering backpropagated gradient values during autograd traversal.",
+      "example": "@tf.custom_gradient\ndef straight_through_threshold(x):\n# Forward step function (threshold at 0)\ny = tf.cast(x > 0.0, dtype=tf.float32)\n\ndef grad(dy):\n# Identity gradient pass-through\nreturn dy\n\nreturn y, grad\n\nx = tf.Variable(-0.5, dtype=tf.float32)\nwith tf.GradientTape() as tape:\ny = straight_through_threshold(x)\n\ngrad = tape.gradient(y, x)\nprint(f\"Forward output: {y.numpy()}, Straight-Through Gradient: {grad.numpy()}\")",
+      "snippet": "@tf.custom_gradient\ndef straight_through_threshold(x):\n# Forward step function (threshold at 0)\ny = tf.cast(x > 0.0, dtype=tf.float32)\n\ndef grad(dy):\n# Identity gradient pass-through\nreturn dy\n\nreturn y, grad\n\nx = tf.Variable(-0.5, dtype=tf.float32)\nwith tf.GradientTape() as tape:\ny = straight_through_threshold(x)\n\ngrad = tape.gradient(y, x)\nprint(f\"Forward output: {y.numpy()}, Straight-Through Gradient: {grad.numpy()}\")",
+      "use_when": "Training quantized neural networks (QNNs), binary neural networks (BNNs), or discrete decision layers using Straight-Through Estimators.",
+      "avoid_when": "Standard continuous differentiable layers where exact backpropagation math is required.",
+      "gotchas": [
+        "Oversimplified surrogate gradients can lead to optimization divergence if backward approximations mismatch forward dynamics too severely."
+      ],
+      "performance_notes": "> * Eliminates computation of zero derivatives for non-differentiable operations by substituting simple pass-through tensor operations.",
+      "related_apis": [
+        "@tf.custom_gradient",
+        "tf.clip_by_norm",
+        "tf.identity",
+        "tf.custom_gradient",
+        "tf.stop_gradient"
+      ],
+      "primary_apis": [
+        "@tf.custom_gradient",
+        "tf.clip_by_norm",
+        "tf.identity"
+      ],
+      "framework_migration_notes": "Using torch.autograd.Function for straight-through estimators or registering tensor backward hooks using register_hook().",
+      "pytorch_equivalent": "Using torch.autograd.Function for straight-through estimators or registering tensor backward hooks using register_hook().",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Using torch.autograd.Function for straight-through estimators or registering tensor backward hooks using register_hook().",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "straight through estimator tf",
+          "gradient modification",
+          "override backward pass"
+        ],
+        "common_search_terms": [
+          "straight through estimator tensorflow example",
+          "custom gradient clipping tf2"
+        ],
+        "search_terms": [
+          "straight through estimator tensorflow example",
+          "custom gradient clipping tf2"
+        ],
+        "keywords": [
+          "straight-through estimator",
+          "quantization",
+          "surrogate gradient",
+          "custom backward"
+        ],
+        "frequently_confused_with": [
+          "Custom gradient vs gradient clipping in optimizers"
+        ],
+        "confused_with": [
+          "Custom gradient vs gradient clipping in optimizers"
+        ]
+      },
+      "related_models": [
+        "vit",
+        "bert"
+      ],
+      "related_patterns": [
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/custom_gradient",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/custom_gradient"
+    },
+    {
+      "task": "14. Stop Gradient Flow (tf.stop_gradient)",
+      "problem_solved": "Treats a tensor as a constant during automatic differentiation, stopping backpropagation through its historical computation graph.",
+      "mental_trigger": "I want to freeze gradient propagation into a teacher network, target Q-network, or intermediate feature representation.",
+      "syntax": "tf.stop_gradient",
+      "important_parameters": [
+        "input: A tf.Tensor whose computational history should be detached from autograd graph tracking."
+      ],
+      "important_params": [
+        "input: A tf.Tensor whose computational history should be detached from autograd graph tracking."
+      ],
+      "return_value": "Returns a tf.Tensor with identical content and shape as input, but detached from any upstream computational graph.",
+      "example": "w = tf.Variable(2.0, dtype=tf.float32)\nx = tf.constant(3.0, dtype=tf.float32)\n\nwith tf.GradientTape() as tape:\nintermediate = w * x\n# Detach intermediate from graph\nstopped_intermediate = tf.stop_gradient(intermediate)\ny = stopped_intermediate ** 2\n\ngrad = tape.gradient(y, w)",
+      "snippet": "w = tf.Variable(2.0, dtype=tf.float32)\nx = tf.constant(3.0, dtype=tf.float32)\n\nwith tf.GradientTape() as tape:\nintermediate = w * x\n# Detach intermediate from graph\nstopped_intermediate = tf.stop_gradient(intermediate)\ny = stopped_intermediate ** 2\n\ngrad = tape.gradient(y, w)",
+      "use_when": "Implementing Deep Q-Learning target updates, actor-critic algorithms, teacher-student distillation loss terms, or self-supervised contrastive learning (e.g., SimSiam).",
+      "avoid_when": "Gradient must flow continuously back to earlier model layers.",
+      "gotchas": [
+        "tf.stop_gradient returns a new tensor handle. Passing the original un-detached tensor in subsequent equations allows gradient flow to continue."
+      ],
+      "performance_notes": "> * Reduces peak memory by allowing early garbage collection of intermediate activation graphs upstream of the stopped boundary.",
+      "related_apis": [
+        "tf.stop_gradient",
+        "tf.identity",
+        "tf.GradientTape"
+      ],
+      "primary_apis": [
+        "tf.stop_gradient"
+      ],
+      "framework_migration_notes": "tensor.detach()",
+      "pytorch_equivalent": "tensor.detach()",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "tensor.detach()",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "tf.stop_gradient",
+          "detach tensor tensorflow",
+          "freeze graph branch"
+        ],
+        "common_search_terms": [
+          "how to detach tensor in tensorflow",
+          "tf stop_gradient example",
+          "freeze target network gradient tf2"
+        ],
+        "search_terms": [
+          "how to detach tensor in tensorflow",
+          "tf stop_gradient example",
+          "freeze target network gradient tf2"
+        ],
+        "keywords": [
+          "stop_gradient",
+          "detach",
+          "freeze weights",
+          "target network"
+        ],
+        "frequently_confused_with": [
+          "tf.stop_gradient vs trainable=False on Keras layers"
+        ],
+        "confused_with": [
+          "tf.stop_gradient vs trainable=False on Keras layers"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "gpt"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "transfer-learning-for-vision"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/stop_gradient",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/stop_gradient"
+    },
+    {
+      "task": "15. Execute Without Gradient Recording",
+      "problem_solved": "Temporarily pauses gradient tracking inside an active tf.GradientTape block to perform auxiliary computations without adding them to the graph.",
+      "mental_trigger": "I am inside a GradientTape block but want to execute side computations, metrics, or logging without tracking overhead.",
+      "syntax": "y = f(x)\nwith tape.stop_recording():\n# Untracked side operations",
+      "important_parameters": [
+        "Context manager block that accepts no explicit arguments."
+      ],
+      "important_params": [
+        "Context manager block that accepts no explicit arguments."
+      ],
+      "return_value": "Context manager that temporarily suspends operation recording on the enclosing tf.GradientTape.",
+      "example": "x = tf.Variable(3.0, dtype=tf.float32)\n\nwith tf.GradientTape() as tape:\ny = x ** 2\nwith tape.stop_recording():\n# Side operation inside tape scope\nlogging_val = x * 10.0\nz = y + logging_val # logging_val treated as constant\n\ngrad_x = tape.gradient(z, x)",
+      "snippet": "x = tf.Variable(3.0, dtype=tf.float32)\n\nwith tf.GradientTape() as tape:\ny = x ** 2\nwith tape.stop_recording():\n# Side operation inside tape scope\nlogging_val = x * 10.0\nz = y + logging_val # logging_val treated as constant\n\ngrad_x = tape.gradient(z, x)",
+      "use_when": "Computing intermediate monitoring metrics, running diagnostic checks, or executing state updates within custom layer tape execution blocks.",
+      "avoid_when": "Entire code blocks can be moved completely outside the with tf.GradientTape(): scope.",
+      "gotchas": [
+        "Tensors created inside stop_recording() acts as constants if used in subsequent tracked computations."
+      ],
+      "performance_notes": "> * Saves memory and graph execution latency by omitting untracked intermediate operation nodes from the tape.",
+      "related_apis": [
+        "tf.GradientTape.stop_recording",
+        "tf.GradientTape",
+        "tf.stop_gradient"
+      ],
+      "primary_apis": [
+        "tf.GradientTape.stop_recording"
+      ],
+      "framework_migration_notes": "with torch.no_grad(): block nested inside a forward pass.",
+      "pytorch_equivalent": "with torch.no_grad(): block nested inside a forward pass.",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "with torch.no_grad(): block nested inside a forward pass.",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "tape.stop_recording",
+          "pause gradient tape",
+          "suspend autograd recording"
+        ],
+        "common_search_terms": [
+          "pause gradienttape recording tensorflow",
+          "tf2 stop_recording example",
+          "temporarily disable gradient tape"
+        ],
+        "search_terms": [
+          "pause gradienttape recording tensorflow",
+          "tf2 stop_recording example",
+          "temporarily disable gradient tape"
+        ],
+        "keywords": [
+          "stop_recording",
+          "context manager",
+          "pause autograd",
+          "untracked ops"
+        ],
+        "frequently_confused_with": [
+          "tape.stop_recording() vs tf.stop_gradient()"
+        ],
+        "confused_with": [
+          "tape.stop_recording() vs tf.stop_gradient()"
+        ]
+      },
+      "related_models": [
+        "transformer",
+        "resnet"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/GradientTape#stop_recording",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/GradientTape#stop_recording"
+    },
+    {
+      "task": "16. Inspect Gradient Availability",
+      "problem_solved": "Queries watched variables and detects disconnected graph branches to debug None gradient return values.",
+      "mental_trigger": "tape.gradient() returned None, and I need to inspect which variables were actively watched by the tape.",
+      "syntax": "tf.GradientTape.watched_variables",
+      "important_parameters": [
+        "None. Called directly on an active tf.GradientTape instance."
+      ],
+      "important_params": [
+        "None. Called directly on an active tf.GradientTape instance."
+      ],
+      "return_value": "Returns a tuple of all tf.Variable objects currently tracked by the tape instance in order of access.",
+      "example": "v1 = tf.Variable(1.0, name=\"v1\")\nv2 = tf.Variable(2.0, name=\"v2\")\n\nwith tf.GradientTape(watch_accessed_variables=False) as tape:\ntape.watch(v1)\ny = v1 * 2.0\n# v2 is not watched\n\nwatched = tape.watched_variables()",
+      "snippet": "v1 = tf.Variable(1.0, name=\"v1\")\nv2 = tf.Variable(2.0, name=\"v2\")\n\nwith tf.GradientTape(watch_accessed_variables=False) as tape:\ntape.watch(v1)\ny = v1 * 2.0\n# v2 is not watched\n\nwatched = tape.watched_variables()",
+      "use_when": "Debugging custom training steps where variable updates fail unexpectedly due to missing gradient graph linkages.",
+      "avoid_when": "Production training loops (calling inspect methods incurs unnecessary runtime inspection overhead).",
+      "gotchas": [
+        "watched_variables() only reports variables that were both accessed and watched. It does not guarantee a mathematical graph connection exists between those variables and the loss target."
+      ],
+      "performance_notes": "> * Diagnostic inspection tool only. Should be stripped from high-performance production code.",
+      "related_apis": [
+        "tf.GradientTape.watched_variables",
+        "tf.GradientTape.watch"
+      ],
+      "primary_apis": [
+        "tf.GradientTape.watched_variables"
+      ],
+      "framework_migration_notes": "Checking tensor.requires_grad and tensor.grad_fn on candidate tensors.",
+      "pytorch_equivalent": "Checking tensor.requires_grad and tensor.grad_fn on candidate tensors.",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Checking tensor.requires_grad and tensor.grad_fn on candidate tensors.",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "tape.watched_variables",
+          "inspect watched variables",
+          "debug none gradients"
+        ],
+        "common_search_terms": [
+          "tensorflow inspect watched variables",
+          "why gradient is none tensorflow",
+          "debug gradienttape variables"
+        ],
+        "search_terms": [
+          "tensorflow inspect watched variables",
+          "why gradient is none tensorflow",
+          "debug gradienttape variables"
+        ],
+        "keywords": [
+          "watched_variables",
+          "debugging",
+          "none gradient",
+          "inspection"
+        ],
+        "frequently_confused_with": [
+          "watched_variables() vs active graph tracing inspection"
+        ],
+        "confused_with": [
+          "watched_variables() vs active graph tracing inspection"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/GradientTape#watched_variables",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/GradientTape#watched_variables"
+    },
+    {
+      "task": "17. Inference Without GradientTape",
+      "problem_solved": "Runs forward model passes without instantiating tf.GradientTape contexts to minimize latency and eliminate memory overhead.",
+      "mental_trigger": "I am running inference or validation evaluation and must execute the model with zero autograd memory footprint.",
+      "syntax": "Direct functional/layer execution without tf.GradientTape",
+      "important_parameters": [
+        "training=False: Flag passed to models or layers to enforce evaluation behavior (e.g., frozen Dropout and Batch Normalization stats)."
+      ],
+      "important_params": [
+        "training=False: Flag passed to models or layers to enforce evaluation behavior (e.g., frozen Dropout and Batch Normalization stats)."
+      ],
+      "return_value": "Returns model output tensors generated without tracking intermediate tape history.",
+      "example": "# Mock layer execution\nw = tf.Variable([[2.0], [3.0]], dtype=tf.float32)\nx = tf.constant([[1.0, 2.0]], dtype=tf.float32)\n\n# Forward pass executed directly without tape wrapper\ny_pred = tf.matmul(x, w)",
+      "snippet": "# Mock layer execution\nw = tf.Variable([[2.0], [3.0]], dtype=tf.float32)\nx = tf.constant([[1.0, 2.0]], dtype=tf.float32)\n\n# Forward pass executed directly without tape wrapper\ny_pred = tf.matmul(x, w)",
+      "use_when": "Running validation passes, test set evaluation, or production serving pipelines.",
+      "avoid_when": "Executing training steps where weight updates are required.",
+      "gotchas": [
+        "Omitting tf.GradientTape prevents calculating gradients later for that execution pass."
+      ],
+      "performance_notes": "> * Provides maximum execution speed and minimum memory consumption by skipping activation caching completely.",
+      "related_apis": [
+        "Direct functional/layer execution without tf.GradientTape",
+        "tf.keras.Model.__call__"
+      ],
+      "primary_apis": [
+        "Direct functional/layer execution without tf.GradientTape"
+      ],
+      "framework_migration_notes": "with torch.no_grad(): or with torch.inference_mode(): context blocks.",
+      "pytorch_equivalent": "with torch.no_grad(): or with torch.inference_mode(): context blocks.",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "with torch.no_grad(): or with torch.inference_mode(): context blocks.",
+      "version_compatibility": "In TensorFlow 2.x, eager execution does not track gradients unless explicitly wrapped in a tf.GradientTape context.",
+      "search_metadata": {
+        "aliases": [
+          "tf2 inference mode",
+          "execution without tape",
+          "zero autograd overhead"
+        ],
+        "common_search_terms": [
+          "tensorflow run inference without gradients",
+          "tf no grad equivalent",
+          "disable gradient tracking tensorflow"
+        ],
+        "search_terms": [
+          "tensorflow run inference without gradients",
+          "tf no grad equivalent",
+          "disable gradient tracking tensorflow"
+        ],
+        "keywords": [
+          "inference",
+          "no_grad",
+          "zero overhead",
+          "forward pass"
+        ],
+        "frequently_confused_with": [
+          "training=False vs omitting tf.GradientTape"
+        ],
+        "confused_with": [
+          "training=False vs omitting tf.GradientTape"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "vit",
+        "llama"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/GradientTape",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/GradientTape"
+    },
+    {
+      "task": "18. Differentiate Between Training and Inference Contexts",
+      "problem_solved": "Structures model execution pipelines to handle conditional gradient recording and layer behavior between training and evaluation phases cleanly.",
+      "mental_trigger": "I need a unified function structure that switches dynamically between training (with autograd) and inference modes.",
+      "syntax": "if training:\nwith tf.GradientTape() as tape:\nout = model(x, training=True)\nreturn out, tape\nelse:\nout = model(x, training=False)",
+      "important_parameters": [
+        "training: Boolean flag indicating whether to instantiate gradient recording and enable training-specific operations."
+      ],
+      "important_params": [
+        "training: Boolean flag indicating whether to instantiate gradient recording and enable training-specific operations."
+      ],
+      "return_value": "Returns model outputs along with an active tape during training, or output alone during inference.",
+      "example": "x = tf.constant([[1.0, 2.0]], dtype=tf.float32)\nw = tf.Variable([[0.5], [0.5]], dtype=tf.float32)\n\ndef step(inputs, is_training=True):\nif is_training:\nwith tf.GradientTape() as tape:\noutputs = tf.matmul(inputs, w)\nreturn outputs, tape\nreturn tf.matmul(inputs, w), None\n\n# Training call\ntrain_out, tape = step(x, is_training=True)\ngrad = tape.gradient(train_out, w)\nprint(f\"Train Grad:\\n{grad.numpy()}\")\n\n# Inference call\ninfer_out, _ = step(x, is_training=False)",
+      "snippet": "x = tf.constant([[1.0, 2.0]], dtype=tf.float32)\nw = tf.Variable([[0.5], [0.5]], dtype=tf.float32)\n\ndef step(inputs, is_training=True):\nif is_training:\nwith tf.GradientTape() as tape:\noutputs = tf.matmul(inputs, w)\nreturn outputs, tape\nreturn tf.matmul(inputs, w), None\n\n# Training call\ntrain_out, tape = step(x, is_training=True)\ngrad = tape.gradient(train_out, w)\nprint(f\"Train Grad:\\n{grad.numpy()}\")\n\n# Inference call\ninfer_out, _ = step(x, is_training=False)",
+      "use_when": "Building unified custom trainer classes, evaluation suites, or multi-phase pipeline runners.",
+      "avoid_when": "Separate dedicated function implementations for training and evaluation are cleaner and easier to maintain.",
+      "gotchas": [
+        "Ensure layer flags (like training=True/False in Dropout or BatchNorm) match the gradient tape wrapping context."
+      ],
+      "performance_notes": "> * Ensures zero gradient allocation overhead during evaluation branches.",
+      "related_apis": [
+        "tf.GradientTape",
+        "Python conditional execution (if training:)"
+      ],
+      "primary_apis": [
+        "tf.GradientTape",
+        "Python conditional execution (if training:)"
+      ],
+      "framework_migration_notes": "Combining model.train() / model.eval() with with torch.no_grad():",
+      "pytorch_equivalent": "Combining model.train() / model.eval() with with torch.no_grad():",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Combining model.train() / model.eval() with with torch.no_grad():",
+      "version_compatibility": "No significant changes in TensorFlow 2.x.",
+      "search_metadata": {
+        "aliases": [
+          "training vs inference context",
+          "conditional autograd",
+          "tf step conditional tape"
+        ],
+        "common_search_terms": [
+          "tensorflow switch training inference gradient",
+          "tf2 conditional gradienttape"
+        ],
+        "search_terms": [
+          "tensorflow switch training inference gradient",
+          "tf2 conditional gradienttape"
+        ],
+        "keywords": [
+          "training context",
+          "inference context",
+          "conditional execution",
+          "dropout mode"
+        ],
+        "frequently_confused_with": [
+          "Model training argument vs GradientTape context existence"
+        ],
+        "confused_with": [
+          "Model training argument vs GradientTape context existence"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "bert"
+      ],
+      "related_patterns": [
+        "memory-efficient-training"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/GradientTape",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/GradientTape"
+    },
+    {
+      "task": "19. Compute Gradients Inside tf.function",
+      "problem_solved": "Compiles automatic differentiation graphs into optimized static graph traces for accelerated GPU/TPU execution.",
+      "mental_trigger": "I want to speed up my custom autograd training loop using static graph compilation with @tf.function.",
+      "syntax": "def train_step(x, y):\nwith tf.GradientTape() as tape:\npred = model(x)\nloss = loss_fn(y, pred)\ngrads = tape.gradient(loss, model.trainable_variables)",
+      "important_parameters": [
+        "@tf.function(jit_compile=True): Optionally enables XLA compilation for further acceleration of autograd operations."
+      ],
+      "important_params": [
+        "@tf.function(jit_compile=True): Optionally enables XLA compilation for further acceleration of autograd operations."
+      ],
+      "return_value": "Returns compiled graph execution results (loss and gradients) with symbolic execution speedups.",
+      "example": "v = tf.Variable(2.0, dtype=tf.float32)\n\n@tf.function\ndef compiled_train_step(x):\nwith tf.GradientTape() as tape:\ny = v * x\ngrad = tape.gradient(y, v)\nreturn y, grad\n\nx_in = tf.constant(5.0, dtype=tf.float32)\ny_val, g_val = compiled_train_step(x_in)",
+      "snippet": "v = tf.Variable(2.0, dtype=tf.float32)\n\n@tf.function\ndef compiled_train_step(x):\nwith tf.GradientTape() as tape:\ny = v * x\ngrad = tape.gradient(y, v)\nreturn y, grad\n\nx_in = tf.constant(5.0, dtype=tf.float32)\ny_val, g_val = compiled_train_step(x_in)",
+      "use_when": "Optimizing custom training loops for maximum production speed across GPUs, TPUs, or distributed clusters.",
+      "avoid_when": "Debugging autograd logic. Debugging python code inside compiled graph tracing is significantly harder.",
+      "gotchas": [
+        "Variables must be created **outside** the @tf.function block. Creating tf.Variable objects inside a @tf.function decorated method raises a ValueError.",
+        "Python side effects (like standard print()) execute only once during initial graph tracing."
+      ],
+      "performance_notes": "> * Replaces Python execution overhead with fused XLA graph kernels, substantially increasing throughput.",
+      "related_apis": [
+        "@tf.function",
+        "tf.GradientTape"
+      ],
+      "primary_apis": [
+        "@tf.function",
+        "tf.GradientTape"
+      ],
+      "framework_migration_notes": "torch.compile() wrapping model training steps.",
+      "pytorch_equivalent": "torch.compile() wrapping model training steps.",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "torch.compile() wrapping model training steps.",
+      "version_compatibility": "Default graph execution model in TensorFlow 2.x when performance compilation is requested.",
+      "search_metadata": {
+        "aliases": [
+          "gradienttape in tf.function",
+          "compiled autograd",
+          "static graph gradients"
+        ],
+        "common_search_terms": [
+          "how to use gradienttape inside tf.function",
+          "tf.function compute gradients fast",
+          "tf2 compiled train step"
+        ],
+        "search_terms": [
+          "how to use gradienttape inside tf.function",
+          "tf.function compute gradients fast",
+          "tf2 compiled train step"
+        ],
+        "keywords": [
+          "tf.function",
+          "tracing",
+          "graph compilation",
+          "XLA",
+          "train_step"
+        ],
+        "frequently_confused_with": [
+          "Eager GradientTape vs @tf.function compiled GradientTape"
+        ],
+        "confused_with": [
+          "Eager GradientTape vs @tf.function compiled GradientTape"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "transformer",
+        "llama"
+      ],
+      "related_patterns": [
+        "memory-efficient-training",
+        "mixed-precision"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/function",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/function"
+    },
+    {
+      "task": "20. Automatic Differentiation Best Practices",
+      "problem_solved": "Structures production automatic differentiation pipelines to minimize memory footprint, prevent memory leaks, avoid invalid gradient updates, and maximize GPU utilization.",
+      "mental_trigger": "I want to ensure my custom gradient pipeline is production-ready, memory-efficient, and free of autograd bugs.",
+      "syntax": "with tf.GradientTape() as tape:\nloss = compute_loss(model, inputs)\n\n# 2. Compute gradients immediately\ngrads = tape.gradient(loss, model.trainable_variables, unconnected_gradients=tf.UnconnectedGradients.ZERO)\n\n# 3. Explicitly free persistent tape if used",
+      "important_parameters": [
+        "unconnected_gradients=tf.UnconnectedGradients.ZERO: Prevents None bugs in gradient processing pipelines."
+      ],
+      "important_params": [
+        "unconnected_gradients=tf.UnconnectedGradients.ZERO: Prevents None bugs in gradient processing pipelines."
+      ],
+      "return_value": "N/A. Architectural patterns for robust automatic differentiation.",
+      "example": "class CleanTrainer(tf.Module):\ndef __init__(self):\nsuper().__init__()\nself.w = tf.Variable(2.0, name=\"w\")\n\n@tf.function\ndef train_step(self, x, y_true):\n# Keep tape context minimal\nwith tf.GradientTape() as tape:\ny_pred = self.w * x\nloss = tf.reduce_mean(tf.square(y_true - y_pred))\n\ngrads = tape.gradient(\nloss,\nself.trainable_variables,\nunconnected_gradients=tf.UnconnectedGradients.ZERO\n)\nreturn loss, grads\n\ntrainer = CleanTrainer()\nloss, grads = trainer.train_step(tf.constant(3.0), tf.constant(10.0))",
+      "snippet": "class CleanTrainer(tf.Module):\ndef __init__(self):\nsuper().__init__()\nself.w = tf.Variable(2.0, name=\"w\")\n\n@tf.function\ndef train_step(self, x, y_true):\n# Keep tape context minimal\nwith tf.GradientTape() as tape:\ny_pred = self.w * x\nloss = tf.reduce_mean(tf.square(y_true - y_pred))\n\ngrads = tape.gradient(\nloss,\nself.trainable_variables,\nunconnected_gradients=tf.UnconnectedGradients.ZERO\n)\nreturn loss, grads\n\ntrainer = CleanTrainer()\nloss, grads = trainer.train_step(tf.constant(3.0), tf.constant(10.0))",
+      "use_when": "Designing production training software, custom model frameworks, or library architectures in TensorFlow 2.21.0.",
+      "avoid_when": "Writing quick single-file exploratory scripts where code longevity and memory optimization are unnecessary.",
+      "gotchas": [
+        "Wrapping non-differentiable setup code inside tf.GradientTape increases memory overhead unnecessarily.",
+        "Forgetting to call del tape on persistent tapes creates cumulative long-term memory leaks.",
+        "Using NumPy operations inside a GradientTape context silently breaks autograd tracking."
+      ],
+      "performance_notes": "> * Keeping tape scopes tight minimizes active memory allocation windows for intermediate tensors.",
+      "related_apis": [
+        "tf.GradientTape",
+        "tf.stop_gradient",
+        "tf.UnconnectedGradients",
+        "tf.custom_gradient"
+      ],
+      "primary_apis": [
+        "tf.GradientTape",
+        "tf.stop_gradient",
+        "tf.UnconnectedGradients"
+      ],
+      "framework_migration_notes": "Clean autograd practices: tight torch.enable_grad() scopes, calling .detach(), and releasing graph references.",
+      "pytorch_equivalent": "Clean autograd practices: tight torch.enable_grad() scopes, calling .detach(), and releasing graph references.",
+      "tensorflow_equivalent": "",
+      "framework_equivalent": "Clean autograd practices: tight torch.enable_grad() scopes, calling .detach(), and releasing graph references.",
+      "version_compatibility": "Applies to modern TensorFlow 2.21.0 production standards.",
+      "search_metadata": {
+        "aliases": [
+          "autograd best practices",
+          "efficient gradienttape",
+          "production tensorflow autograd"
+        ],
+        "common_search_terms": [
+          "tensorflow autograd best practices",
+          "optimize gradienttape memory",
+          "clean tf2 gradient loop"
+        ],
+        "search_terms": [
+          "tensorflow autograd best practices",
+          "optimize gradienttape memory",
+          "clean tf2 gradient loop"
+        ],
+        "keywords": [
+          "best practices",
+          "memory management",
+          "leak prevention",
+          "tight scoping"
+        ],
+        "frequently_confused_with": [
+          "Ad-hoc experimental scripts vs production autograd patterns"
+        ],
+        "confused_with": [
+          "Ad-hoc experimental scripts vs production autograd patterns"
+        ]
+      },
+      "related_models": [
+        "resnet",
+        "transformer",
+        "llama"
+      ],
+      "related_patterns": [
+        "memory-efficient-training",
+        "gradient-accumulation"
+      ],
+      "related_workflows": [
+        "image-classification-pipeline",
+        "production-llm-cost-latency-optimization"
+      ],
+      "related_cheatsheets": [
+        "autograd"
+      ],
+      "related_cheatsheet": [
+        "autograd"
+      ],
+      "related_decision_guides": [
+        "precision-tradeoffs-guide",
+        "hardware-selection-guide"
+      ],
+      "related_package_tasks": [],
+      "official_documentation": "https://www.tensorflow.org/api_docs/python/tf/GradientTape",
+      "official_docs": "https://www.tensorflow.org/api_docs/python/tf/GradientTape"
+    }
+  ]
+}
