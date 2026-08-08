@@ -12,22 +12,22 @@
       "important_parameters": [
         "## **Important Parameters",
         "from_logits (bool): Interprets y_pred as unnormalized logit values when True, or probabilities in [0, 1] when False. Default is False.",
-        "label_smoothing (float): Value between 0.0 and 1.0. Smooths binary targets (*ysmooth*\u200b\\=*y*\u22c5(1\u2212*\u03f5*)+0.5\u22c5*\u03f5*) to prevent overconfidence.",
+        "label_smoothing (float): Value between 0.0 and 1.0. Smooths binary targets (*ysmooth*​\\=*y*⋅(1−*ϵ*)+0.5⋅*ϵ*) to prevent overconfidence.",
         "axis (int): Axis along which crossentropy is computed. Default is -1.",
         "reduction (type): Type of reduction applied to loss values (SUM_OVER_BATCH_SIZE, SUM, NONE). Default is SUM_OVER_BATCH_SIZE."
       ],
       "important_params": [
         "## **Important Parameters",
         "from_logits (bool): Interprets y_pred as unnormalized logit values when True, or probabilities in [0, 1] when False. Default is False.",
-        "label_smoothing (float): Value between 0.0 and 1.0. Smooths binary targets (*ysmooth*\u200b\\=*y*\u22c5(1\u2212*\u03f5*)+0.5\u22c5*\u03f5*) to prevent overconfidence.",
+        "label_smoothing (float): Value between 0.0 and 1.0. Smooths binary targets (*ysmooth*​\\=*y*⋅(1−*ϵ*)+0.5⋅*ϵ*) to prevent overconfidence.",
         "axis (int): Axis along which crossentropy is computed. Default is -1.",
         "reduction (type): Type of reduction applied to loss values (SUM_OVER_BATCH_SIZE, SUM, NONE). Default is SUM_OVER_BATCH_SIZE."
       ],
       "return_value": "## **Return Value**\n\nA scalar float tensor representing the reduced loss, or an unreduced tensor matching batch shape if reduction=tf.keras.losses.Reduction.NONE.",
       "example": "## **Example**\n\nimport tensorflow as tf\n\n# Target binary labels (batch_size=2, num_labels=2)\ny_true = tf.constant([[0.0, 1.0], [1.0, 0.0]], dtype=tf.float32)\n\n# Unnormalized model outputs (logits)\ny_pred_logits = tf.constant([[-1.2, 2.5], [1.8, -0.4]], dtype=tf.float32)\n\n# Instantiate loss function with numerical stability enabled via from_logits=True\nloss_fn = tf.keras.losses.BinaryCrossentropy(from_logits=True, label_smoothing=0.05)\n\n# Calculate loss\nloss = loss_fn(y_true, y_pred_logits)",
       "snippet": "## **Example**\n\nimport tensorflow as tf\n\n# Target binary labels (batch_size=2, num_labels=2)\ny_true = tf.constant([[0.0, 1.0], [1.0, 0.0]], dtype=tf.float32)\n\n# Unnormalized model outputs (logits)\ny_pred_logits = tf.constant([[-1.2, 2.5], [1.8, -0.4]], dtype=tf.float32)\n\n# Instantiate loss function with numerical stability enabled via from_logits=True\nloss_fn = tf.keras.losses.BinaryCrossentropy(from_logits=True, label_smoothing=0.05)\n\n# Calculate loss\nloss = loss_fn(y_true, y_pred_logits)",
-      "use_when": "## **Use When**\n\n> * Training binary classification models with a single output node.  \n> * Training multi-label classification models where each class decision is non-mutually exclusive and modeled as independent sigmoid probabilities.",
-      "avoid_when": "## **Avoid When**\n\n> * Performing multi-class classification where classes are mutually exclusive (use CategoricalCrossentropy or SparseCategoricalCrossentropy).",
+      "use_when": "## **Use When**\n\nTraining binary classification models with a single output node.\nTraining multi-label classification models where each class decision is non-mutually exclusive and modeled as independent sigmoid probabilities.",
+      "avoid_when": "## **Avoid When**\n\nPerforming multi-class classification where classes are mutually exclusive (use CategoricalCrossentropy or SparseCategoricalCrossentropy).",
       "gotchas": [
         "## **Gotchas",
         "Setting from_logits=False when passing raw logits leads to mathematical errors or clipped log limits (log(0)).",
@@ -42,10 +42,10 @@
         "tf.keras.losses.CategoricalCrossentropy"
       ],
       "primary_apis": [],
-      "framework_migration_notes": "## **PyTorch Equivalent**\n\n`tf.keras.losses.BinaryCrossentropy (from_logits=True)`  \n`\u2192 nn.BCEWithLogitsLoss`",
-      "pytorch_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.BinaryCrossentropy (from_logits=True)`  \n`\u2192 nn.BCEWithLogitsLoss`",
+      "framework_migration_notes": "## **PyTorch Equivalent**\n\n`tf.keras.losses.BinaryCrossentropy (from_logits=True)`  \n`→ nn.BCEWithLogitsLoss`",
+      "pytorch_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.BinaryCrossentropy (from_logits=True)`  \n`→ nn.BCEWithLogitsLoss`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.BinaryCrossentropy (from_logits=True)`  \n`\u2192 nn.BCEWithLogitsLoss`",
+      "framework_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.BinaryCrossentropy (from_logits=True)`  \n`→ nn.BCEWithLogitsLoss`",
       "version_compatibility": "## **Version Compatibility**\n\nNo significant changes in TensorFlow 2.x.",
       "search_metadata": {
         "aliases": [
@@ -129,8 +129,8 @@
       "return_value": "## **Return Value**\n\nA scalar loss tensor (or unreduced per-sample loss tensor when reduction=tf.keras.losses.Reduction.NONE).",
       "example": "## **Example**\n\nimport tensorflow as tf\n\n# One-hot encoded labels for 3 classes (batch_size=2, num_classes=3)\ny_true = tf.constant([[1.0, 0.0, 0.0], [0.0, 0.0, 1.0]], dtype=tf.float32)\n\n# Unnormalized model outputs (logits)\ny_pred_logits = tf.constant([[2.5, 0.1, -1.0], [-0.5, 0.2, 3.1]], dtype=tf.float32)\n\n# Loss configuration\nloss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=True, label_smoothing=0.1)\n\nloss = loss_fn(y_true, y_pred_logits)",
       "snippet": "## **Example**\n\nimport tensorflow as tf\n\n# One-hot encoded labels for 3 classes (batch_size=2, num_classes=3)\ny_true = tf.constant([[1.0, 0.0, 0.0], [0.0, 0.0, 1.0]], dtype=tf.float32)\n\n# Unnormalized model outputs (logits)\ny_pred_logits = tf.constant([[2.5, 0.1, -1.0], [-0.5, 0.2, 3.1]], dtype=tf.float32)\n\n# Loss configuration\nloss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=True, label_smoothing=0.1)\n\nloss = loss_fn(y_true, y_pred_logits)",
-      "use_when": "## **Use When**\n\n> * Training multi-class classification models where targets are represented as one-hot vectors or soft probability distributions (such as teacher targets in knowledge distillation).",
-      "avoid_when": "## **Avoid When**\n\n> * Class targets are integer indices (0, 1, 2, ...); use SparseCategoricalCrossentropy to avoid unnecessary one-hot memory overhead.",
+      "use_when": "## **Use When**\n\nTraining multi-class classification models where targets are represented as one-hot vectors or soft probability distributions (such as teacher targets in knowledge distillation).",
+      "avoid_when": "## **Avoid When**\n\nClass targets are integer indices (0, 1, 2, ...); use SparseCategoricalCrossentropy to avoid unnecessary one-hot memory overhead.",
       "gotchas": [
         "## **Gotchas",
         "Passing integer class labels directly into CategoricalCrossentropy causes runtime shape mismatch errors.",
@@ -152,10 +152,10 @@
         "tf.keras.losses.CategoricalCrossentropy",
         "tf.keras.losses.categorical_crossentropy"
       ],
-      "framework_migration_notes": "## **PyTorch Equivalent**\n\n`tf.keras.losses.CategoricalCrossentropy`  \n`\u2192 nn.CrossEntropyLoss`",
-      "pytorch_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.CategoricalCrossentropy`  \n`\u2192 nn.CrossEntropyLoss`",
+      "framework_migration_notes": "## **PyTorch Equivalent**\n\n`tf.keras.losses.CategoricalCrossentropy`  \n`→ nn.CrossEntropyLoss`",
+      "pytorch_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.CategoricalCrossentropy`  \n`→ nn.CrossEntropyLoss`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.CategoricalCrossentropy`  \n`\u2192 nn.CrossEntropyLoss`",
+      "framework_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.CategoricalCrossentropy`  \n`→ nn.CrossEntropyLoss`",
       "version_compatibility": "## **Version Compatibility**\n\nNo significant changes in TensorFlow 2.x.",
       "search_metadata": {
         "aliases": [
@@ -238,13 +238,13 @@
       "return_value": "## **Return Value**\n\nA scalar float tensor or unreduced loss tensor matching batch dimensions.",
       "example": "## **Example**\n\nimport tensorflow as tf\n\n# Integer targets for 3 classes (batch_size=3)\ny_true = tf.constant([0, 2, 1], dtype=tf.int32)\n\n# Unnormalized model output logits (batch_size=3, num_classes=3)\ny_pred_logits = tf.constant([\n[2.0, 0.5, -1.0],\n[-0.1, 0.4, 3.2],\n[0.1, 2.8, -0.5]\n], dtype=tf.float32)\n\nloss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True, ignore_class=-1)\nloss = loss_fn(y_true, y_pred_logits)",
       "snippet": "## **Example**\n\nimport tensorflow as tf\n\n# Integer targets for 3 classes (batch_size=3)\ny_true = tf.constant([0, 2, 1], dtype=tf.int32)\n\n# Unnormalized model output logits (batch_size=3, num_classes=3)\ny_pred_logits = tf.constant([\n[2.0, 0.5, -1.0],\n[-0.1, 0.4, 3.2],\n[0.1, 2.8, -0.5]\n], dtype=tf.float32)\n\nloss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True, ignore_class=-1)\nloss = loss_fn(y_true, y_pred_logits)",
-      "use_when": "## **Use When**\n\n> * Training multi-class models with integer target labels (e.g., 0 to *N*\u22121), saving GPU memory and simplifying input pipelines.",
-      "avoid_when": "## **Avoid When**\n\n> * Target labels are continuous soft probability distributions or require label smoothing with explicit soft target matrices (use CategoricalCrossentropy).",
+      "use_when": "## **Use When**\n\nTraining multi-class models with integer target labels (e.g., 0 to *N*−1), saving GPU memory and simplifying input pipelines.",
+      "avoid_when": "## **Avoid When**\n\nTarget labels are continuous soft probability distributions or require label smoothing with explicit soft target matrices (use CategoricalCrossentropy).",
       "gotchas": [
         "## **Gotchas",
         "Passing one-hot encoded tensors as y_true causes dimension mismatch execution failures.",
         "Attempting to pass label_smoothing parameter directly (SparseCategoricalCrossentropy does not accept label smoothing; convert to one-hot and use CategoricalCrossentropy).",
-        "Out-of-bounds target indices (*ytrue*\u200b\u2265num_classes) cause unhandled runtime CUDA kernel exceptions.",
+        "Out-of-bounds target indices (*ytrue*​≥num_classes) cause unhandled runtime CUDA kernel exceptions.",
         "Mismatching token sequence shapes when predicting sequence tokens without setting ignore_class for pad tokens."
       ],
       "performance_notes": "## **Performance Notes**\n\nSparse integer indexing requires significantly lower memory footprint and zero preprocessing transformations compared to dense one-hot matrices, maximizing data transfer speeds across PCI bus to host/GPU devices.",
@@ -261,10 +261,10 @@
         "tf.keras.losses.SparseCategoricalCrossentropy",
         "tf.keras.losses.sparse_categorical_crossentropy"
       ],
-      "framework_migration_notes": "## **PyTorch Equivalent**\n\n`tf.keras.losses.SparseCategoricalCrossentropy`  \n`\u2192 nn.CrossEntropyLoss`",
-      "pytorch_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.SparseCategoricalCrossentropy`  \n`\u2192 nn.CrossEntropyLoss`",
+      "framework_migration_notes": "## **PyTorch Equivalent**\n\n`tf.keras.losses.SparseCategoricalCrossentropy`  \n`→ nn.CrossEntropyLoss`",
+      "pytorch_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.SparseCategoricalCrossentropy`  \n`→ nn.CrossEntropyLoss`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.SparseCategoricalCrossentropy`  \n`\u2192 nn.CrossEntropyLoss`",
+      "framework_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.SparseCategoricalCrossentropy`  \n`→ nn.CrossEntropyLoss`",
       "version_compatibility": "## **Version Compatibility**\n\nignore_class parameter was added in TensorFlow 2.x to natively support sequence masking without custom layer wrappers.",
       "search_metadata": {
         "aliases": [
@@ -335,16 +335,16 @@
       "syntax": "## **Syntax**\n\ntf.keras.losses.BinaryFocalCrossentropy(\napply_class_balancing=False,\nalpha=0.25,\ngamma=2.0,\nfrom_logits=False,\nlabel_smoothing=0.0,\nreduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,\nname='binary_focal_crossentropy'",
       "important_parameters": [
         "## **Important Parameters",
-        "gamma (float): Focusing exponent parameter (*\u03b3*\u22650). Suppresses loss contribution from easy targets (*p*\u21921). Default is 2.0.",
-        "alpha (float): Class balancing weight factor for the positive class (*\u03b1*\u2208[0.0,1.0]). Default is 0.25.",
+        "gamma (float): Focusing exponent parameter (*γ*≥0). Suppresses loss contribution from easy targets (*p*→1). Default is 2.0.",
+        "alpha (float): Class balancing weight factor for the positive class (*α*∈[0.0,1.0]). Default is 0.25.",
         "apply_class_balancing (bool): Whether to apply alpha weighting for positive vs negative class balancing. Default is False.",
         "from_logits (bool): Set True if y_pred contains raw logits. Default is False.",
         "label_smoothing (float): Smooths target values to prevent overconfidence. Default is 0.0."
       ],
       "important_params": [
         "## **Important Parameters",
-        "gamma (float): Focusing exponent parameter (*\u03b3*\u22650). Suppresses loss contribution from easy targets (*p*\u21921). Default is 2.0.",
-        "alpha (float): Class balancing weight factor for the positive class (*\u03b1*\u2208[0.0,1.0]). Default is 0.25.",
+        "gamma (float): Focusing exponent parameter (*γ*≥0). Suppresses loss contribution from easy targets (*p*→1). Default is 2.0.",
+        "alpha (float): Class balancing weight factor for the positive class (*α*∈[0.0,1.0]). Default is 0.25.",
         "apply_class_balancing (bool): Whether to apply alpha weighting for positive vs negative class balancing. Default is False.",
         "from_logits (bool): Set True if y_pred contains raw logits. Default is False.",
         "label_smoothing (float): Smooths target values to prevent overconfidence. Default is 0.0."
@@ -352,16 +352,16 @@
       "return_value": "## **Return Value**\n\nA scalar float tensor or unreduced loss tensor depending on reduction mode.",
       "example": "## **Example**\n\nimport tensorflow as tf\n\n# Severely imbalanced binary targets (mostly 0s)\ny_true = tf.constant([[0.0], [1.0], [0.0], [0.0]], dtype=tf.float32)\n\n# Unnormalized model outputs (logits)\ny_pred_logits = tf.constant([[-2.5], [1.8], [-3.1], [0.4]], dtype=tf.float32)\n\nloss_fn = tf.keras.losses.BinaryFocalCrossentropy(\ngamma=2.0,\nalpha=0.25,\napply_class_balancing=True,\nfrom_logits=True\n)\n\nloss = loss_fn(y_true, y_pred_logits)",
       "snippet": "## **Example**\n\nimport tensorflow as tf\n\n# Severely imbalanced binary targets (mostly 0s)\ny_true = tf.constant([[0.0], [1.0], [0.0], [0.0]], dtype=tf.float32)\n\n# Unnormalized model outputs (logits)\ny_pred_logits = tf.constant([[-2.5], [1.8], [-3.1], [0.4]], dtype=tf.float32)\n\nloss_fn = tf.keras.losses.BinaryFocalCrossentropy(\ngamma=2.0,\nalpha=0.25,\napply_class_balancing=True,\nfrom_logits=True\n)\n\nloss = loss_fn(y_true, y_pred_logits)",
-      "use_when": "## **Use When**\n\n> * Binary classification tasks with extreme class imbalance, such as defect detection, fraud prediction, or object detection foreground/background separation.",
-      "avoid_when": "## **Avoid When**\n\n> * Dataset class distributions are well-balanced, as standard BinaryCrossentropy trains faster without hyperparameter tuning overhead.",
+      "use_when": "## **Use When**\n\nBinary classification tasks with extreme class imbalance, such as defect detection, fraud prediction, or object detection foreground/background separation.",
+      "avoid_when": "## **Avoid When**\n\nDataset class distributions are well-balanced, as standard BinaryCrossentropy trains faster without hyperparameter tuning overhead.",
       "gotchas": [
         "## **Gotchas",
         "Leaving apply_class_balancing=False ignores the alpha parameter entirely, keeping class weighting unadjusted.",
-        "Setting gamma too high (*\u03b3*\\>5.0) severely diminishes gradients across all samples, stalling network optimization.",
-        "Setting from_logits=False when passing raw logits corrupts probability estimations inside the modulating factor (1\u2212*pt*\u200b)*\u03b3*.",
+        "Setting gamma too high (*γ*\\>5.0) severely diminishes gradients across all samples, stalling network optimization.",
+        "Setting from_logits=False when passing raw logits corrupts probability estimations inside the modulating factor (1−*pt*​)*γ*.",
         "Setting gamma=0 reduces Focal Loss back to standard Binary Crossentropy."
       ],
-      "performance_notes": "## **Performance Notes**\n\nRequires exponentiation operations (1\u2212*pt*\u200b)*\u03b3* per sample, introducing minimal compute overhead compared to standard binary crossentropy while drastically improving convergence on imbalanced datasets.",
+      "performance_notes": "## **Performance Notes**\n\nRequires exponentiation operations (1−*pt*​)*γ* per sample, introducing minimal compute overhead compared to standard binary crossentropy while drastically improving convergence on imbalanced datasets.",
       "related_apis": [
         "## **Primary APIs",
         "tf.keras.losses.BinaryFocalCrossentropy",
@@ -444,7 +444,7 @@
       "syntax": "## **Syntax**\n\ntf.keras.losses.CategoricalFocalCrossentropy(\nalpha=None,\ngamma=2.0,\nfrom_logits=False,\nlabel_smoothing=0.0,\naxis=-1,\nreduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,\nname='categorical_focal_crossentropy'",
       "important_parameters": [
         "## **Important Parameters",
-        "gamma (float): Focusing exponent (*\u03b3*\u22650). Higher values penalize easy examples more aggressively. Default is 2.0.",
+        "gamma (float): Focusing exponent (*γ*≥0). Higher values penalize easy examples more aggressively. Default is 2.0.",
         "alpha (list/tuple/tensor or float or None): Weighting factor per class or scalar. Can pass a list of float weights matching class count.",
         "from_logits (bool): Set True if y_pred represents unnormalized logits. Default is False.",
         "label_smoothing (float): Smooths target distributions across classes. Default is 0.0.",
@@ -452,7 +452,7 @@
       ],
       "important_params": [
         "## **Important Parameters",
-        "gamma (float): Focusing exponent (*\u03b3*\u22650). Higher values penalize easy examples more aggressively. Default is 2.0.",
+        "gamma (float): Focusing exponent (*γ*≥0). Higher values penalize easy examples more aggressively. Default is 2.0.",
         "alpha (list/tuple/tensor or float or None): Weighting factor per class or scalar. Can pass a list of float weights matching class count.",
         "from_logits (bool): Set True if y_pred represents unnormalized logits. Default is False.",
         "label_smoothing (float): Smooths target distributions across classes. Default is 0.0.",
@@ -461,8 +461,8 @@
       "return_value": "## **Return Value**\n\nA scalar float tensor or unreduced loss tensor depending on reduction parameter.",
       "example": "## **Example**\n\nimport tensorflow as tf\n\n# One-hot encoded target labels (batch_size=2, num_classes=3)\ny_true = tf.constant([[1.0, 0.0, 0.0], [0.0, 0.0, 1.0]], dtype=tf.float32)\n\n# Model output logits\ny_pred_logits = tf.constant([[3.0, -1.0, -0.5], [0.1, 0.2, 2.8]], dtype=tf.float32)\n\n# Class weight alpha vector matching class count\nalpha_weights = [0.2, 0.3, 0.5]\n\nloss_fn = tf.keras.losses.CategoricalFocalCrossentropy(\ngamma=2.0,\nalpha=alpha_weights,\nfrom_logits=True\n)\n\nloss = loss_fn(y_true, y_pred_logits)",
       "snippet": "## **Example**\n\nimport tensorflow as tf\n\n# One-hot encoded target labels (batch_size=2, num_classes=3)\ny_true = tf.constant([[1.0, 0.0, 0.0], [0.0, 0.0, 1.0]], dtype=tf.float32)\n\n# Model output logits\ny_pred_logits = tf.constant([[3.0, -1.0, -0.5], [0.1, 0.2, 2.8]], dtype=tf.float32)\n\n# Class weight alpha vector matching class count\nalpha_weights = [0.2, 0.3, 0.5]\n\nloss_fn = tf.keras.losses.CategoricalFocalCrossentropy(\ngamma=2.0,\nalpha=alpha_weights,\nfrom_logits=True\n)\n\nloss = loss_fn(y_true, y_pred_logits)",
-      "use_when": "## **Use When**\n\n> * Training multi-class models on long-tailed or heavily imbalanced datasets (e.g., medical multi-class diagnosis, rare object detection classes).",
-      "avoid_when": "## **Avoid When**\n\n> * Training datasets have balanced class distributions; standard CategoricalCrossentropy is faster and easier to tune.",
+      "use_when": "## **Use When**\n\nTraining multi-class models on long-tailed or heavily imbalanced datasets (e.g., medical multi-class diagnosis, rare object detection classes).",
+      "avoid_when": "## **Avoid When**\n\nTraining datasets have balanced class distributions; standard CategoricalCrossentropy is faster and easier to tune.",
       "gotchas": [
         "## **Gotchas",
         "Passing sparse integer target labels instead of one-hot encoded target matrices causes execution errors.",
@@ -470,7 +470,7 @@
         "Excessive gamma values (\\>4.0) suppress gradients from moderately difficult samples, delaying convergence.",
         "Omitting from_logits=True when passing linear model outputs causes probability bounds corruption."
       ],
-      "performance_notes": "## **Performance Notes**\n\nRequires per-class focal factor computation (1\u2212*pt*\u200b)*\u03b3* along target class channels; retains GPU acceleration with minimal memory overhead over standard crossentropy.",
+      "performance_notes": "## **Performance Notes**\n\nRequires per-class focal factor computation (1−*pt*​)*γ* along target class channels; retains GPU acceleration with minimal memory overhead over standard crossentropy.",
       "related_apis": [
         "## **Primary APIs",
         "tf.keras.losses.CategoricalFocalCrossentropy",
@@ -510,10 +510,10 @@
           "multi-class"
         ],
         "frequently_confused_with": [
-          "CategoricalCrossentropy vs CategoricalFocalCrossentropy (Focal loss modulates sample loss dynamically using (1\u2212*pt*\u200b)*\u03b3*)."
+          "CategoricalCrossentropy vs CategoricalFocalCrossentropy (Focal loss modulates sample loss dynamically using (1−*pt*​)*γ*)."
         ],
         "confused_with": [
-          "CategoricalCrossentropy vs CategoricalFocalCrossentropy (Focal loss modulates sample loss dynamically using (1\u2212*pt*\u200b)*\u03b3*)."
+          "CategoricalCrossentropy vs CategoricalFocalCrossentropy (Focal loss modulates sample loss dynamically using (1−*pt*​)*γ*)."
         ]
       },
       "related_models": [
@@ -550,7 +550,7 @@
     },
     {
       "task": "Task 6: Compute Hinge Loss (tf.keras.losses.Hinge)",
-      "problem_solved": "## **Problem Solved**\n\nComputes maximum-margin hinge loss between ground truth target labels (encoded as \u22121 or 1) and linear model outputs for maximum margin classification.",
+      "problem_solved": "## **Problem Solved**\n\nComputes maximum-margin hinge loss between ground truth target labels (encoded as −1 or 1) and linear model outputs for maximum margin classification.",
       "mental_trigger": "## **Mental Trigger**\n\nI need a margin-based classification loss function for Support Vector Machines or maximum-margin neural networks.",
       "syntax": "## **Syntax**\n\ntf.keras.losses.Hinge(\nreduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,\nname='hinge'",
       "important_parameters": [
@@ -561,16 +561,16 @@
         "## **Important Parameters",
         "reduction (type): Reduction method (SUM_OVER_BATCH_SIZE, SUM, NONE). Default is SUM_OVER_BATCH_SIZE."
       ],
-      "return_value": "## **Return Value**\n\nA scalar float tensor computed as max(0,1\u2212*ytrue*\u200b\u22c5*ypred*\u200b).",
+      "return_value": "## **Return Value**\n\nA scalar float tensor computed as max(0,1−*ytrue*​⋅*ypred*​).",
       "example": "## **Example**\n\nimport tensorflow as tf\n\n# Targets must be formatted in {-1.0, 1.0}\ny_true = tf.constant([[-1.0, 1.0], [1.0, -1.0]], dtype=tf.float32)\n\n# Linear model outputs (unbounded predictions)\ny_pred = tf.constant([[-0.8, 1.2], [0.5, -0.2]], dtype=tf.float32)\n\nloss_fn = tf.keras.losses.Hinge()\nloss = loss_fn(y_true, y_pred)",
       "snippet": "## **Example**\n\nimport tensorflow as tf\n\n# Targets must be formatted in {-1.0, 1.0}\ny_true = tf.constant([[-1.0, 1.0], [1.0, -1.0]], dtype=tf.float32)\n\n# Linear model outputs (unbounded predictions)\ny_pred = tf.constant([[-0.8, 1.2], [0.5, -0.2]], dtype=tf.float32)\n\nloss_fn = tf.keras.losses.Hinge()\nloss = loss_fn(y_true, y_pred)",
-      "use_when": "## **Use When**\n\n> * Training maximum-margin classifiers, Support Vector Machines (SVMs), or margin-regularized feature representations.",
-      "avoid_when": "## **Avoid When**\n\n> * Target outputs require calibrated probability scores or targets are encoded in standard {0,1} format.",
+      "use_when": "## **Use When**\n\nTraining maximum-margin classifiers, Support Vector Machines (SVMs), or margin-regularized feature representations.",
+      "avoid_when": "## **Avoid When**\n\nTarget outputs require calibrated probability scores or targets are encoded in standard {0,1} format.",
       "gotchas": [
         "## **Gotchas",
-        "Passing targets formatted as {0,1} instead of {\u22121,1} corrupts margin evaluation, causing incorrect gradient updates.",
+        "Passing targets formatted as {0,1} instead of {−1,1} corrupts margin evaluation, causing incorrect gradient updates.",
         "Applying Sigmoid activation prior to computing Hinge loss constrains outputs to [0,1], breaking margin penalties for wrong predictions.",
-        "Expecting smooth gradient behavior everywhere; hinge loss non-differentiability at boundary *ytrue*\u200b\u22c5*ypred*\u200b\\=1 relies on subgradients."
+        "Expecting smooth gradient behavior everywhere; hinge loss non-differentiability at boundary *ytrue*​⋅*ypred*​\\=1 relies on subgradients."
       ],
       "performance_notes": "## **Performance Notes**\n\nExtremely fast computation consisting only of elementwise multiplication, subtraction, and vectorized ReLU clipping, with zero transcendental operations.",
       "related_apis": [
@@ -586,10 +586,10 @@
         "tf.keras.losses.Hinge",
         "tf.keras.losses.hinge"
       ],
-      "framework_migration_notes": "## **PyTorch Equivalent**\n\n`tf.keras.losses.Hinge`  \n`\u2192 nn.HingeEmbeddingLoss / nn.SoftMarginLoss`",
-      "pytorch_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.Hinge`  \n`\u2192 nn.HingeEmbeddingLoss / nn.SoftMarginLoss`",
+      "framework_migration_notes": "## **PyTorch Equivalent**\n\n`tf.keras.losses.Hinge`  \n`→ nn.HingeEmbeddingLoss / nn.SoftMarginLoss`",
+      "pytorch_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.Hinge`  \n`→ nn.HingeEmbeddingLoss / nn.SoftMarginLoss`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.Hinge`  \n`\u2192 nn.HingeEmbeddingLoss / nn.SoftMarginLoss`",
+      "framework_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.Hinge`  \n`→ nn.HingeEmbeddingLoss / nn.SoftMarginLoss`",
       "version_compatibility": "## **Version Compatibility**\n\nNo significant changes in TensorFlow 2.x.",
       "search_metadata": {
         "aliases": [
@@ -665,8 +665,8 @@
       "return_value": "## **Return Value**\n\nA scalar float loss tensor (or elementwise error tensor when reduction=tf.keras.losses.Reduction.NONE).",
       "example": "## **Example**\n\nimport tensorflow as tf\n\n# Continuous target values\ny_true = tf.constant([[1.0, 2.0], [3.0, 4.0]], dtype=tf.float32)\n\n# Continuous model predictions\ny_pred = tf.constant([[1.5, 1.8], [2.8, 4.2]], dtype=tf.float32)\n\nloss_fn = tf.keras.losses.MeanSquaredError()\nloss = loss_fn(y_true, y_pred)",
       "snippet": "## **Example**\n\nimport tensorflow as tf\n\n# Continuous target values\ny_true = tf.constant([[1.0, 2.0], [3.0, 4.0]], dtype=tf.float32)\n\n# Continuous model predictions\ny_pred = tf.constant([[1.5, 1.8], [2.8, 4.2]], dtype=tf.float32)\n\nloss_fn = tf.keras.losses.MeanSquaredError()\nloss = loss_fn(y_true, y_pred)",
-      "use_when": "## **Use When**\n\n> * Continuous target regression problems where prediction errors follow a Gaussian distribution and large deviations must be penalized quadratically.",
-      "avoid_when": "## **Avoid When**\n\n> * Training datasets contain severe outliers, which produce huge squared gradients that destabilize training (use Huber or MeanAbsoluteError).",
+      "use_when": "## **Use When**\n\nContinuous target regression problems where prediction errors follow a Gaussian distribution and large deviations must be penalized quadratically.",
+      "avoid_when": "## **Avoid When**\n\nTraining datasets contain severe outliers, which produce huge squared gradients that destabilize training (use Huber or MeanAbsoluteError).",
       "gotchas": [
         "## **Gotchas",
         "Exploding gradients caused by extreme target outliers, leading to NaN weights.",
@@ -687,10 +687,10 @@
         "tf.keras.losses.MeanSquaredError",
         "tf.keras.losses.mean_squared_error"
       ],
-      "framework_migration_notes": "## **PyTorch Equivalent**\n\n`tf.keras.losses.MeanSquaredError`  \n`\u2192 nn.MSELoss`",
-      "pytorch_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.MeanSquaredError`  \n`\u2192 nn.MSELoss`",
+      "framework_migration_notes": "## **PyTorch Equivalent**\n\n`tf.keras.losses.MeanSquaredError`  \n`→ nn.MSELoss`",
+      "pytorch_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.MeanSquaredError`  \n`→ nn.MSELoss`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.MeanSquaredError`  \n`\u2192 nn.MSELoss`",
+      "framework_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.MeanSquaredError`  \n`→ nn.MSELoss`",
       "version_compatibility": "## **Version Compatibility**\n\nNo significant changes in TensorFlow 2.x.",
       "search_metadata": {
         "aliases": [
@@ -768,8 +768,8 @@
       "return_value": "## **Return Value**\n\nA scalar float loss tensor.",
       "example": "## **Example**\n\nimport tensorflow as tf\n\n# Continuous ground truth targets\ny_true = tf.constant([[1.0, 2.0], [3.0, 4.0]], dtype=tf.float32)\n\n# Model predictions with an outlier\ny_pred = tf.constant([[1.5, 1.8], [2.8, 12.0]], dtype=tf.float32)\n\nloss_fn = tf.keras.losses.MeanAbsoluteError()\nloss = loss_fn(y_true, y_pred)",
       "snippet": "## **Example**\n\nimport tensorflow as tf\n\n# Continuous ground truth targets\ny_true = tf.constant([[1.0, 2.0], [3.0, 4.0]], dtype=tf.float32)\n\n# Model predictions with an outlier\ny_pred = tf.constant([[1.5, 1.8], [2.8, 12.0]], dtype=tf.float32)\n\nloss_fn = tf.keras.losses.MeanAbsoluteError()\nloss = loss_fn(y_true, y_pred)",
-      "use_when": "## **Use When**\n\n> * Continuous regression tasks where target data contains significant noise or outliers that should not dominate optimization gradients.",
-      "avoid_when": "## **Avoid When**\n\n> * Smooth gradient convergence near zero error is required; MAE derivative is constant (\u00b11), which can cause gradient bouncing around local minima without learning rate decay.",
+      "use_when": "## **Use When**\n\nContinuous regression tasks where target data contains significant noise or outliers that should not dominate optimization gradients.",
+      "avoid_when": "## **Avoid When**\n\nSmooth gradient convergence near zero error is required; MAE derivative is constant (±1), which can cause gradient bouncing around local minima without learning rate decay.",
       "gotchas": [
         "## **Gotchas",
         "Gradient bouncing near zero error prevents fine-grained model convergence unless learning rate decay schedule is applied.",
@@ -790,10 +790,10 @@
         "tf.keras.losses.MeanAbsoluteError",
         "tf.keras.losses.mean_absolute_error"
       ],
-      "framework_migration_notes": "## **PyTorch Equivalent**\n\n`tf.keras.losses.MeanAbsoluteError`  \n`\u2192 nn.L1Loss`",
-      "pytorch_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.MeanAbsoluteError`  \n`\u2192 nn.L1Loss`",
+      "framework_migration_notes": "## **PyTorch Equivalent**\n\n`tf.keras.losses.MeanAbsoluteError`  \n`→ nn.L1Loss`",
+      "pytorch_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.MeanAbsoluteError`  \n`→ nn.L1Loss`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.MeanAbsoluteError`  \n`\u2192 nn.L1Loss`",
+      "framework_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.MeanAbsoluteError`  \n`→ nn.L1Loss`",
       "version_compatibility": "## **Version Compatibility**\n\nNo significant changes in TensorFlow 2.x.",
       "search_metadata": {
         "aliases": [
@@ -863,19 +863,19 @@
       "syntax": "## **Syntax**\n\ntf.keras.losses.Huber(\ndelta=1.0,\nreduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,\nname='huber_loss'",
       "important_parameters": [
         "## **Important Parameters",
-        "delta (float): Error threshold where loss transitions from quadratic (0.5\u22c5*e*2) to linear (*\u03b4*\u22c5(\u2223*e*\u2223\u22120.5\u22c5*\u03b4*)). Default is 1.0.",
+        "delta (float): Error threshold where loss transitions from quadratic (0.5⋅*e*2) to linear (*δ*⋅(∣*e*∣−0.5⋅*δ*)). Default is 1.0.",
         "reduction (type): Reduction mode (SUM_OVER_BATCH_SIZE, SUM, NONE). Default is SUM_OVER_BATCH_SIZE."
       ],
       "important_params": [
         "## **Important Parameters",
-        "delta (float): Error threshold where loss transitions from quadratic (0.5\u22c5*e*2) to linear (*\u03b4*\u22c5(\u2223*e*\u2223\u22120.5\u22c5*\u03b4*)). Default is 1.0.",
+        "delta (float): Error threshold where loss transitions from quadratic (0.5⋅*e*2) to linear (*δ*⋅(∣*e*∣−0.5⋅*δ*)). Default is 1.0.",
         "reduction (type): Reduction mode (SUM_OVER_BATCH_SIZE, SUM, NONE). Default is SUM_OVER_BATCH_SIZE."
       ],
       "return_value": "## **Return Value**\n\nA scalar float loss tensor.",
       "example": "## **Example**\n\nimport tensorflow as tf\n\n# Ground truth values (with a large outlier sample)\ny_true = tf.constant([[1.0, 2.0], [3.0, 100.0]], dtype=tf.float32)\n\n# Predictions\ny_pred = tf.constant([[1.2, 1.9], [2.8, 10.0]], dtype=tf.float32)\n\n# Huber loss with delta threshold at 1.0\nloss_fn = tf.keras.losses.Huber(delta=1.0)\nloss = loss_fn(y_true, y_pred)",
       "snippet": "## **Example**\n\nimport tensorflow as tf\n\n# Ground truth values (with a large outlier sample)\ny_true = tf.constant([[1.0, 2.0], [3.0, 100.0]], dtype=tf.float32)\n\n# Predictions\ny_pred = tf.constant([[1.2, 1.9], [2.8, 10.0]], dtype=tf.float32)\n\n# Huber loss with delta threshold at 1.0\nloss_fn = tf.keras.losses.Huber(delta=1.0)\nloss = loss_fn(y_true, y_pred)",
-      "use_when": "## **Use When**\n\n> * Bounding box coordinate regression in object detection, time-series forecasting, or regression tasks with potential label noise or extreme outliers.",
-      "avoid_when": "## **Avoid When**\n\n> * Outlier deviations represent critical valid target signals that must be strictly penalized quadratically.",
+      "use_when": "## **Use When**\n\nBounding box coordinate regression in object detection, time-series forecasting, or regression tasks with potential label noise or extreme outliers.",
+      "avoid_when": "## **Avoid When**\n\nOutlier deviations represent critical valid target signals that must be strictly penalized quadratically.",
       "gotchas": [
         "## **Gotchas",
         "Selecting delta without analyzing target error scale; if error scale is much smaller than delta, Huber behaves purely as standard MSE.",
@@ -897,10 +897,10 @@
         "tf.keras.losses.Huber",
         "tf.keras.losses.huber"
       ],
-      "framework_migration_notes": "## **PyTorch Equivalent**\n\n`tf.keras.losses.Huber`  \n`\u2192 nn.HuberLoss (or nn.SmoothL1Loss)`",
-      "pytorch_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.Huber`  \n`\u2192 nn.HuberLoss (or nn.SmoothL1Loss)`",
+      "framework_migration_notes": "## **PyTorch Equivalent**\n\n`tf.keras.losses.Huber`  \n`→ nn.HuberLoss (or nn.SmoothL1Loss)`",
+      "pytorch_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.Huber`  \n`→ nn.HuberLoss (or nn.SmoothL1Loss)`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.Huber`  \n`\u2192 nn.HuberLoss (or nn.SmoothL1Loss)`",
+      "framework_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.Huber`  \n`→ nn.HuberLoss (or nn.SmoothL1Loss)`",
       "version_compatibility": "## **Version Compatibility**\n\nStandardized in tf.keras.losses in TensorFlow 2.x, providing consistent behavior across execution modes.",
       "search_metadata": {
         "aliases": [
@@ -963,7 +963,7 @@
     },
     {
       "task": "Task 10: Compute Log-Cosh Loss (tf.keras.losses.LogCosh)",
-      "problem_solved": "## **Problem Solved**\n\nComputes logarithm of hyperbolic cosine of prediction error (log(cosh(*ypred*\u200b\u2212*ytrue*\u200b))), giving a smooth, twice-differentiable approximation of Huber / MAE loss.",
+      "problem_solved": "## **Problem Solved**\n\nComputes logarithm of hyperbolic cosine of prediction error (log(cosh(*ypred*​−*ytrue*​))), giving a smooth, twice-differentiable approximation of Huber / MAE loss.",
       "mental_trigger": "## **Mental Trigger**\n\nI need a twice-differentiable smooth regression loss that behaves like MSE for small errors and MAE for large errors.",
       "syntax": "## **Syntax**\n\ntf.keras.losses.LogCosh(\nreduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,\nname='log_cosh'",
       "important_parameters": [
@@ -977,12 +977,12 @@
       "return_value": "## **Return Value**\n\nA scalar float loss tensor.",
       "example": "## **Example**\n\nimport tensorflow as tf\n\ny_true = tf.constant([[1.0, 2.0], [3.0, 4.0]], dtype=tf.float32)\ny_pred = tf.constant([[1.5, 1.8], [2.8, 8.0]], dtype=tf.float32)\n\nloss_fn = tf.keras.losses.LogCosh()\nloss = loss_fn(y_true, y_pred)",
       "snippet": "## **Example**\n\nimport tensorflow as tf\n\ny_true = tf.constant([[1.0, 2.0], [3.0, 4.0]], dtype=tf.float32)\ny_pred = tf.constant([[1.5, 1.8], [2.8, 8.0]], dtype=tf.float32)\n\nloss_fn = tf.keras.losses.LogCosh()\nloss = loss_fn(y_true, y_pred)",
-      "use_when": "## **Use When**\n\n> * Regression tasks requiring continuous second derivatives (e.g., optimization with second-order methods, Hessian analysis) alongside outlier robustness.",
-      "avoid_when": "## **Avoid When**\n\n> * High-throughput inference pipelines require minimal compute overhead; transcendental functions (cosh, log) add minor cost over Huber loss.",
+      "use_when": "## **Use When**\n\nRegression tasks requiring continuous second derivatives (e.g., optimization with second-order methods, Hessian analysis) alongside outlier robustness.",
+      "avoid_when": "## **Avoid When**\n\nHigh-throughput inference pipelines require minimal compute overhead; transcendental functions (cosh, log) add minor cost over Huber loss.",
       "gotchas": [
         "## **Gotchas",
-        "Naive implementations of log(cosh(*x*)) overflow for large values (*x*\\>88 in float32); TensorFlow internally uses stable formulation *x*\\+log(1+*e*\u22122*x*)\u2212log(2).",
-        "Expecting a tunable transition parameter like Huber delta; Log-Cosh transition shape is mathematically fixed around \u2223*e*\u2223\u22481.",
+        "Naive implementations of log(cosh(*x*)) overflow for large values (*x*\\>88 in float32); TensorFlow internally uses stable formulation *x*\\+log(1+*e*−2*x*)−log(2).",
+        "Expecting a tunable transition parameter like Huber delta; Log-Cosh transition shape is mathematically fixed around ∣*e*∣≈1.",
         "Unscaled target variables causing large initial errors and temporary loss spikes."
       ],
       "performance_notes": "## **Performance Notes**\n\nRequires transcendental function calculations, slightly increasing compute latency relative to standard MSE/MAE, but fully vectorised across modern GPU execution pipelines.",
@@ -1089,8 +1089,8 @@
       "return_value": "## **Return Value**\n\nA 1D float tensor of shape (batch_size,) containing negative log-likelihood loss for each sequence in the batch.",
       "example": "## **Example**\n\nimport tensorflow as tf\n\n# Batch size = 2, max_time = 4, num_classes = 5 (0..3 target classes, 4 blank index)\nlogits = tf.random.normal([4, 2, 5], dtype=tf.float32) # Time-major layout\nlabels = tf.constant([[1, 2, 0], [2, 3, 0]], dtype=tf.int32)\nlabel_length = tf.constant([2, 2], dtype=tf.int32)\nlogit_length = tf.constant([4, 4], dtype=tf.int32)\n\nloss = tf.nn.ctc_loss(\nlabels=labels,\nlogits=logits,\nlabel_length=label_length,\nlogit_length=logit_length,\nlogits_time_major=True,\nblank_index=4\n)",
       "snippet": "## **Example**\n\nimport tensorflow as tf\n\n# Batch size = 2, max_time = 4, num_classes = 5 (0..3 target classes, 4 blank index)\nlogits = tf.random.normal([4, 2, 5], dtype=tf.float32) # Time-major layout\nlabels = tf.constant([[1, 2, 0], [2, 3, 0]], dtype=tf.int32)\nlabel_length = tf.constant([2, 2], dtype=tf.int32)\nlogit_length = tf.constant([4, 4], dtype=tf.int32)\n\nloss = tf.nn.ctc_loss(\nlabels=labels,\nlogits=logits,\nlabel_length=label_length,\nlogit_length=logit_length,\nlogits_time_major=True,\nblank_index=4\n)",
-      "use_when": "## **Use When**\n\n> * Training unaligned sequence mapping models such as Optical Character Recognition (OCR), handwriting recognition, or Automatic Speech Recognition (ASR).",
-      "avoid_when": "## **Avoid When**\n\n> * Target tokens map 1-to-1 directly to prediction timesteps (use SparseCategoricalCrossentropy with sequence masking).",
+      "use_when": "## **Use When**\n\nTraining unaligned sequence mapping models such as Optical Character Recognition (OCR), handwriting recognition, or Automatic Speech Recognition (ASR).",
+      "avoid_when": "## **Avoid When**\n\nTarget tokens map 1-to-1 directly to prediction timesteps (use SparseCategoricalCrossentropy with sequence masking).",
       "gotchas": [
         "## **Gotchas",
         "Passing batch-major logits (B, T, C) while leaving logits_time_major=True (default), which corrupts CTC dynamic programming graph.",
@@ -1110,10 +1110,10 @@
         "## **Primary APIs",
         "tf.nn.ctc_loss"
       ],
-      "framework_migration_notes": "## **PyTorch Equivalent**\n\n`tf.nn.ctc_loss`  \n`\u2192 nn.CTCLoss`",
-      "pytorch_equivalent": "## **PyTorch Equivalent**\n\n`tf.nn.ctc_loss`  \n`\u2192 nn.CTCLoss`",
+      "framework_migration_notes": "## **PyTorch Equivalent**\n\n`tf.nn.ctc_loss`  \n`→ nn.CTCLoss`",
+      "pytorch_equivalent": "## **PyTorch Equivalent**\n\n`tf.nn.ctc_loss`  \n`→ nn.CTCLoss`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "## **PyTorch Equivalent**\n\n`tf.nn.ctc_loss`  \n`\u2192 nn.CTCLoss`",
+      "framework_equivalent": "## **PyTorch Equivalent**\n\n`tf.nn.ctc_loss`  \n`→ nn.CTCLoss`",
       "version_compatibility": "## **Version Compatibility**\n\ntf.nn.ctc_loss in TensorFlow 2.x standardizes argument ordering and natively supports dense target tensors alongside SparseTensors.",
       "search_metadata": {
         "aliases": [
@@ -1186,14 +1186,14 @@
         "## **Important Parameters",
         "reduction (type): Reduction method (SUM_OVER_BATCH_SIZE, SUM, NONE). Default is SUM_OVER_BATCH_SIZE."
       ],
-      "return_value": "## **Return Value**\n\nA scalar float loss tensor evaluated as \u2211*ytrue*\u200b\u22c5log(*ytrue*\u200b/*ypred*\u200b).",
+      "return_value": "## **Return Value**\n\nA scalar float loss tensor evaluated as ∑*ytrue*​⋅log(*ytrue*​/*ypred*​).",
       "example": "## **Example**\n\nimport tensorflow as tf\n\n# Soft probability target distributions (batch_size=2, classes=2)\ny_true = tf.constant([[0.2, 0.8], [0.5, 0.5]], dtype=tf.float32)\n\n# Predicted probability distributions (must sum to 1.0 along class dimension)\ny_pred = tf.constant([[0.3, 0.7], [0.1, 0.9]], dtype=tf.float32)\n\nloss_fn = tf.keras.losses.KLDivergence()\nloss = loss_fn(y_true, y_pred)",
       "snippet": "## **Example**\n\nimport tensorflow as tf\n\n# Soft probability target distributions (batch_size=2, classes=2)\ny_true = tf.constant([[0.2, 0.8], [0.5, 0.5]], dtype=tf.float32)\n\n# Predicted probability distributions (must sum to 1.0 along class dimension)\ny_pred = tf.constant([[0.3, 0.7], [0.1, 0.9]], dtype=tf.float32)\n\nloss_fn = tf.keras.losses.KLDivergence()\nloss = loss_fn(y_true, y_pred)",
-      "use_when": "## **Use When**\n\n> * Training Variational Autoencoders (VAEs), soft target knowledge distillation teacher-student pipelines, or probabilistic representation alignment.",
-      "avoid_when": "## **Avoid When**\n\n> * Target labels are discrete single-class integer targets (use SparseCategoricalCrossentropy or CategoricalCrossentropy).",
+      "use_when": "## **Use When**\n\nTraining Variational Autoencoders (VAEs), soft target knowledge distillation teacher-student pipelines, or probabilistic representation alignment.",
+      "avoid_when": "## **Avoid When**\n\nTarget labels are discrete single-class integer targets (use SparseCategoricalCrossentropy or CategoricalCrossentropy).",
       "gotchas": [
         "## **Gotchas",
-        "Asymmetric property: *DKL*\u200b(*P*\u2223\u2223*Q*)=*DKL*\u200b(*Q*\u2223\u2223*P*); order of y_true and y_pred matters significantly.",
+        "Asymmetric property: *DKL*​(*P*∣∣*Q*)=*DKL*​(*Q*∣∣*P*); order of y_true and y_pred matters significantly.",
         "Passing unnormalized logits instead of valid probability distributions summing to 1.0 across target axis.",
         "Passing zero probability values in y_pred causing division by zero or log(0) boundary instability."
       ],
@@ -1211,10 +1211,10 @@
         "tf.keras.losses.KLDivergence",
         "tf.keras.losses.kullback_leibler_divergence"
       ],
-      "framework_migration_notes": "## **PyTorch Equivalent**\n\n`tf.keras.losses.KLDivergence`  \n`\u2192 nn.KLDivLoss (Note: PyTorch expects log-probabilities for predictions)`",
-      "pytorch_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.KLDivergence`  \n`\u2192 nn.KLDivLoss (Note: PyTorch expects log-probabilities for predictions)`",
+      "framework_migration_notes": "## **PyTorch Equivalent**\n\n`tf.keras.losses.KLDivergence`  \n`→ nn.KLDivLoss (Note: PyTorch expects log-probabilities for predictions)`",
+      "pytorch_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.KLDivergence`  \n`→ nn.KLDivLoss (Note: PyTorch expects log-probabilities for predictions)`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.KLDivergence`  \n`\u2192 nn.KLDivLoss (Note: PyTorch expects log-probabilities for predictions)`",
+      "framework_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.KLDivergence`  \n`→ nn.KLDivLoss (Note: PyTorch expects log-probabilities for predictions)`",
       "version_compatibility": "## **Version Compatibility**\n\nNo significant changes in TensorFlow 2.x.",
       "search_metadata": {
         "aliases": [
@@ -1294,18 +1294,18 @@
         "axis (int): Dimension along which cosine similarity is computed. Default is -1.",
         "reduction (type): Reduction method (SUM_OVER_BATCH_SIZE, SUM, NONE). Default is SUM_OVER_BATCH_SIZE."
       ],
-      "return_value": "## **Return Value**\n\nA scalar float loss tensor returning **negative** cosine similarity (values between \u22121.0 for exact directional match and \\+1.0 for opposite direction).",
+      "return_value": "## **Return Value**\n\nA scalar float loss tensor returning **negative** cosine similarity (values between −1.0 for exact directional match and \\+1.0 for opposite direction).",
       "example": "## **Example**\n\nimport tensorflow as tf\n\n# Target embedding vectors\ny_true = tf.constant([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]], dtype=tf.float32)\n\n# Predicted embedding vectors\ny_pred = tf.constant([[0.9, 0.1, 0.0], [0.2, -0.8, 0.0]], dtype=tf.float32)\n\nloss_fn = tf.keras.losses.CosineSimilarity(axis=-1)\nloss = loss_fn(y_true, y_pred)",
       "snippet": "## **Example**\n\nimport tensorflow as tf\n\n# Target embedding vectors\ny_true = tf.constant([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]], dtype=tf.float32)\n\n# Predicted embedding vectors\ny_pred = tf.constant([[0.9, 0.1, 0.0], [0.2, -0.8, 0.0]], dtype=tf.float32)\n\nloss_fn = tf.keras.losses.CosineSimilarity(axis=-1)\nloss = loss_fn(y_true, y_pred)",
-      "use_when": "## **Use When**\n\n> * Representation learning, text/image embedding alignment, metric learning, or self-supervised feature projection tasks.",
-      "avoid_when": "## **Avoid When**\n\n> * Target vector length or scale carries physical significance that model must predict (use MeanSquaredError or combined norm loss).",
+      "use_when": "## **Use When**\n\nRepresentation learning, text/image embedding alignment, metric learning, or self-supervised feature projection tasks.",
+      "avoid_when": "## **Avoid When**\n\nTarget vector length or scale carries physical significance that model must predict (use MeanSquaredError or combined norm loss).",
       "gotchas": [
         "## **Gotchas",
         "Negative Output Sign Trap**: tf.keras.losses.CosineSimilarity returns **negative** cosine similarity so that minimizing loss maximizes vector similarity.",
         "Zero-norm vectors in y_true or y_pred causing division by zero, yielding NaN loss values.",
         "Mismatched axis setting when feature embeddings have extra spatial or sequence dimensions."
       ],
-      "performance_notes": "## **Performance Notes**\n\nPerforms *L*2\u200b norm evaluation and dot product along target axis; lightweight GPU matrix multiplication.",
+      "performance_notes": "## **Performance Notes**\n\nPerforms *L*2​ norm evaluation and dot product along target axis; lightweight GPU matrix multiplication.",
       "related_apis": [
         "## **Primary APIs",
         "tf.keras.losses.CosineSimilarity",
@@ -1319,10 +1319,10 @@
         "tf.keras.losses.CosineSimilarity",
         "tf.keras.losses.cosine_similarity"
       ],
-      "framework_migration_notes": "## **PyTorch Equivalent**\n\n`tf.keras.losses.CosineSimilarity`  \n`\u2192 nn.CosineEmbeddingLoss`",
-      "pytorch_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.CosineSimilarity`  \n`\u2192 nn.CosineEmbeddingLoss`",
+      "framework_migration_notes": "## **PyTorch Equivalent**\n\n`tf.keras.losses.CosineSimilarity`  \n`→ nn.CosineEmbeddingLoss`",
+      "pytorch_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.CosineSimilarity`  \n`→ nn.CosineEmbeddingLoss`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.CosineSimilarity`  \n`\u2192 nn.CosineEmbeddingLoss`",
+      "framework_equivalent": "## **PyTorch Equivalent**\n\n`tf.keras.losses.CosineSimilarity`  \n`→ nn.CosineEmbeddingLoss`",
       "version_compatibility": "## **Version Compatibility**\n\nNo significant changes in TensorFlow 2.x.",
       "search_metadata": {
         "aliases": [
@@ -1402,11 +1402,11 @@
         "axis (int or tuple): Axis or tuple of axes over which overlap is computed. Default is -1.",
         "reduction (type): Reduction method (SUM_OVER_BATCH_SIZE, SUM, NONE). Default is SUM_OVER_BATCH_SIZE."
       ],
-      "return_value": "## **Return Value**\n\nA scalar float loss tensor calculated as 1\u2212\u2223*Y*\u2223+\u2223*Y*^\u2223+*\u03f5*2\u2223*Y*\u2229*Y*^\u2223+*\u03f5*\u200b.",
+      "return_value": "## **Return Value**\n\nA scalar float loss tensor calculated as 1−∣*Y*∣+∣*Y*^∣+*ϵ*2∣*Y*∩*Y*^∣+*ϵ*​.",
       "example": "## **Example**\n\nimport tensorflow as tf\n\n# Target mask (batch_size=1, height=2, width=2, channels=1)\ny_true = tf.constant([[[[1.0], [0.0]], [[1.0], [0.0]]]], dtype=tf.float32)\n\n# Predicted probability mask\ny_pred = tf.constant([[[[0.8], [0.1]], [[0.9], [0.2]]]], dtype=tf.float32)\n\nloss_fn = tf.keras.losses.Dice(smooth=1e-5)\nloss = loss_fn(y_true, y_pred)",
       "snippet": "## **Example**\n\nimport tensorflow as tf\n\n# Target mask (batch_size=1, height=2, width=2, channels=1)\ny_true = tf.constant([[[[1.0], [0.0]], [[1.0], [0.0]]]], dtype=tf.float32)\n\n# Predicted probability mask\ny_pred = tf.constant([[[[0.8], [0.1]], [[0.9], [0.2]]]], dtype=tf.float32)\n\nloss_fn = tf.keras.losses.Dice(smooth=1e-5)\nloss = loss_fn(y_true, y_pred)",
-      "use_when": "## **Use When**\n\n> * Semantic segmentation, medical image mask prediction, or binary spatial region overlap tasks with sparse foreground masks.",
-      "avoid_when": "## **Avoid When**\n\n> * Task is standard multi-class image classification or regression where spatial region overlap is non-applicable.",
+      "use_when": "## **Use When**\n\nSemantic segmentation, medical image mask prediction, or binary spatial region overlap tasks with sparse foreground masks.",
+      "avoid_when": "## **Avoid When**\n\nTask is standard multi-class image classification or regression where spatial region overlap is non-applicable.",
       "gotchas": [
         "## **Gotchas",
         "Passing raw unnormalized logits when Dice loss expects Sigmoid or Softmax probabilities in [0,1].",
@@ -1514,8 +1514,8 @@
       "return_value": "## **Return Value**\n\nA scalar float tensor (for SUM / SUM_OVER_BATCH_SIZE) or unreduced tensor matching batch shape (for NONE).",
       "example": "## **Example**\n\nimport tensorflow as tf\n\ny_true = tf.constant([[1.0], [0.0]], dtype=tf.float32)\ny_pred = tf.constant([[0.9], [0.2]], dtype=tf.float32)\n\n# Unreduced loss per sample\nloss_none_fn = tf.keras.losses.BinaryCrossentropy(reduction=tf.keras.losses.Reduction.NONE)\nloss_per_sample = loss_none_fn(y_true, y_pred)\nprint(\"Unreduced Loss per sample shape:\", loss_per_sample.shape, \"values:\", loss_per_sample.numpy())\n\n# Batch-averaged scalar loss\nloss_sum_batch_fn = tf.keras.losses.BinaryCrossentropy(reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE)\nloss_scalar = loss_sum_batch_fn(y_true, y_pred)",
       "snippet": "## **Example**\n\nimport tensorflow as tf\n\ny_true = tf.constant([[1.0], [0.0]], dtype=tf.float32)\ny_pred = tf.constant([[0.9], [0.2]], dtype=tf.float32)\n\n# Unreduced loss per sample\nloss_none_fn = tf.keras.losses.BinaryCrossentropy(reduction=tf.keras.losses.Reduction.NONE)\nloss_per_sample = loss_none_fn(y_true, y_pred)\nprint(\"Unreduced Loss per sample shape:\", loss_per_sample.shape, \"values:\", loss_per_sample.numpy())\n\n# Batch-averaged scalar loss\nloss_sum_batch_fn = tf.keras.losses.BinaryCrossentropy(reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE)\nloss_scalar = loss_sum_batch_fn(y_true, y_pred)",
-      "use_when": "## **Use When**\n\n> * Custom training loops with tf.GradientTape, distributed training across multiple GPUs (tf.distribute), or dynamic loss re-weighting per sample.",
-      "avoid_when": "## **Avoid When**\n\n> * Using standard Keras high-level model.fit() training loops, where SUM_OVER_BATCH_SIZE is handled automatically.",
+      "use_when": "## **Use When**\n\nCustom training loops with tf.GradientTape, distributed training across multiple GPUs (tf.distribute), or dynamic loss re-weighting per sample.",
+      "avoid_when": "## **Avoid When**\n\nUsing standard Keras high-level model.fit() training loops, where SUM_OVER_BATCH_SIZE is handled automatically.",
       "gotchas": [
         "## **Gotchas",
         "Using SUM_OVER_BATCH_SIZE in custom distributed training loops leads to double division when averaging gradients across GPU replicas.",
@@ -1616,8 +1616,8 @@
       "return_value": "## **Return Value**\n\nA scalar float loss tensor (or unreduced weighted loss tensor) multiplied by sample weights.",
       "example": "## **Example**\n\nimport tensorflow as tf\n\ny_true = tf.constant([[1.0, 0.0], [0.0, 1.0]], dtype=tf.float32)\ny_pred = tf.constant([[0.9, 0.1], [0.3, 0.7]], dtype=tf.float32)\n\n# Sample 1 gets full weight 1.0; Sample 2 (uncertain/noisy) gets reduced weight 0.2\nsample_weight = tf.constant([1.0, 0.2], dtype=tf.float32)\n\nloss_fn = tf.keras.losses.CategoricalCrossentropy()\nweighted_loss = loss_fn(y_true, y_pred, sample_weight=sample_weight)",
       "snippet": "## **Example**\n\nimport tensorflow as tf\n\ny_true = tf.constant([[1.0, 0.0], [0.0, 1.0]], dtype=tf.float32)\ny_pred = tf.constant([[0.9, 0.1], [0.3, 0.7]], dtype=tf.float32)\n\n# Sample 1 gets full weight 1.0; Sample 2 (uncertain/noisy) gets reduced weight 0.2\nsample_weight = tf.constant([1.0, 0.2], dtype=tf.float32)\n\nloss_fn = tf.keras.losses.CategoricalCrossentropy()\nweighted_loss = loss_fn(y_true, y_pred, sample_weight=sample_weight)",
-      "use_when": "## **Use When**\n\n> * Handling imbalanced datasets, sample confidence weighting, active learning, time-series masking, or sequence padding exclusion.",
-      "avoid_when": "## **Avoid When**\n\n> * Model architecture already incorporates loss weighting natively (e.g., class-balanced focal loss) to avoid duplicate scaling.",
+      "use_when": "## **Use When**\n\nHandling imbalanced datasets, sample confidence weighting, active learning, time-series masking, or sequence padding exclusion.",
+      "avoid_when": "## **Avoid When**\n\nModel architecture already incorporates loss weighting natively (e.g., class-balanced focal loss) to avoid duplicate scaling.",
       "gotchas": [
         "## **Gotchas",
         "Passing 2D sample weights (N, 1) with 1D loss output can trigger unexpected spatial matrix broadcasting instead of row-wise scaling.",
@@ -1718,11 +1718,11 @@
       "return_value": "## **Return Value**\n\nA configured loss function instance executing internal fused log-activation kernels when called.",
       "example": "## **Example**\n\nimport tensorflow as tf\n\n# Integer ground truth class indices\ny_true = tf.constant([0, 1], dtype=tf.int32)\n\n# Model outputs raw logits (linear Dense layer, no activation)\ny_pred_logits = tf.constant([[2.1, -1.0], [-0.5, 3.2]], dtype=tf.float32)\n\n# Recommended: from_logits=True with linear outputs\nloss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)\nloss_val = loss_fn(y_true, y_pred_logits)",
       "snippet": "## **Example**\n\nimport tensorflow as tf\n\n# Integer ground truth class indices\ny_true = tf.constant([0, 1], dtype=tf.int32)\n\n# Model outputs raw logits (linear Dense layer, no activation)\ny_pred_logits = tf.constant([[2.1, -1.0], [-0.5, 3.2]], dtype=tf.float32)\n\n# Recommended: from_logits=True with linear outputs\nloss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)\nloss_val = loss_fn(y_true, y_pred_logits)",
-      "use_when": "## **Use When**\n\n> * Designing deep neural networks where numerical precision, vanishing/exploding gradient prevention, and fused XLA kernel performance matter.",
-      "avoid_when": "## **Avoid When**\n\n> * Model output layer already includes non-linear probability activations (Softmax / Sigmoid) that cannot be removed.",
+      "use_when": "## **Use When**\n\nDesigning deep neural networks where numerical precision, vanishing/exploding gradient prevention, and fused XLA kernel performance matter.",
+      "avoid_when": "## **Avoid When**\n\nModel output layer already includes non-linear probability activations (Softmax / Sigmoid) that cannot be removed.",
       "gotchas": [
         "## **Gotchas",
-        "Setting from_logits=False when model outputs raw unnormalized logits causes severe underflow/overflow and numerical zero logs (log(0)\u2192\u2212\u221e).",
+        "Setting from_logits=False when model outputs raw unnormalized logits causes severe underflow/overflow and numerical zero logs (log(0)→−∞).",
         "Setting from_logits=True when output layer already has Sigmoid/Softmax activation applies double transformation, producing incorrect loss gradients.",
         "Exporting inference models without adding Softmax/Sigmoid activation when trained with from_logits=True, returning raw unbounded numbers to client applications."
       ],

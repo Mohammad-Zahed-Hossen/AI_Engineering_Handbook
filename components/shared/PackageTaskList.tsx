@@ -279,6 +279,15 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
         const isExpanded = expandedTasks.has(idx);
         const notes = parseDecisionNotes(task.decision_notes || '');
         const visualizationEquivalents = task.visualization_equivalents ?? [];
+        const allRelatedApis = Array.from(
+          new Set([
+            ...(task.related_apis || []),
+            ...notes.relatedApis
+          ].map(a => a.trim()).filter(Boolean))
+        );
+        const allRelatedPackageTasks = Array.from(
+          new Set((task.related_package_tasks || []).map(t => t.trim()).filter(Boolean))
+        );
 
         return (
           <CollapsibleRow
@@ -479,13 +488,14 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
                     <VisualizationEquivalents equivalents={visualizationEquivalents} currentPackageId={packageName} />
 
                     {/* Related APIs */}
-                    {notes.relatedApis.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {notes.relatedApis.map((apiName, apiIdx) => {
+                    {allRelatedApis.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1">
+                        <span className="text-[10px] font-semibold text-muted-foreground mr-1">Related APIs:</span>
+                        {allRelatedApis.map((apiName, apiIdx) => {
                           const matchedTask = tasks.find(t => {
                             const normApi = getNormalizedApiName(apiName);
                             const normSyntax = getNormalizedSyntaxFunc(t.syntax);
-                            return normApi === normSyntax;
+                            return normApi === normSyntax || t.task.toLowerCase().includes(normApi);
                           });
 
                           if (matchedTask) {
@@ -509,6 +519,28 @@ export default function PackageTaskList({ tasks, packageName }: PackageTaskListP
                             >
                               {apiName}
                             </span>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Related Package Tasks */}
+                    {allRelatedPackageTasks.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1">
+                        <span className="text-[10px] font-semibold text-muted-foreground mr-1">Related Tasks:</span>
+                        {allRelatedPackageTasks.map((relTaskName, taskIdx) => {
+                          const relSlug = slugify(relTaskName);
+                          const matchedTask = tasks.find(t => t.task === relTaskName || slugify(t.task) === relSlug);
+                          const targetAnchor = matchedTask ? slugify(matchedTask.task) : relSlug;
+
+                          return (
+                            <a
+                              key={taskIdx}
+                              href={`#${targetAnchor}`}
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-medium bg-secondary/60 text-secondary-foreground hover:bg-secondary border border-border/60 transition-colors"
+                            >
+                              <span>{relTaskName}</span>
+                            </a>
                           );
                         })}
                       </div>

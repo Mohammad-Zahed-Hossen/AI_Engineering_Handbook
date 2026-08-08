@@ -27,7 +27,7 @@
         "Passing Python constants or immutable tf.Tensor objects without explicitly calling tape.watch() yields None for gradients.",
         "Performing operations outside the with tf.GradientTape() block prevents those operations from being recorded."
       ],
-      "performance_notes": "> * Allocates additional memory during the forward pass to cache intermediate activation tensors required for backpropagation.  \n> * Minimal overhead when executed inside a compiled @tf.function.",
+      "performance_notes": "Allocates additional memory during the forward pass to cache intermediate activation tensors required for backpropagation.\nMinimal overhead when executed inside a compiled @tf.function.",
       "related_apis": [
         "tf.GradientTape",
         "tf.Variable",
@@ -117,7 +117,7 @@
         "tape.watch() must be called **before** the operations involving the target tensor are executed inside the tape context.",
         "Watching high-dimensional input tensors increases tape memory consumption significantly by retaining input activations."
       ],
-      "performance_notes": "> * Incurs memory overhead proportional to tensor size because intermediate activations dependent on watched tensors must be retained.",
+      "performance_notes": "Incurs memory overhead proportional to tensor size because intermediate activations dependent on watched tensors must be retained.",
       "related_apis": [
         "tf.GradientTape.watch",
         "tf.GradientTape",
@@ -201,7 +201,7 @@
         "Variables not explicitly watched with tape.watch() will produce None when calling tape.gradient().",
         "Disabling variable watching does not prevent custom operations inside the tape from executing normally."
       ],
-      "performance_notes": "> * Reduces tape graph size and memory footprint by skipping graph construction for ignored variables.",
+      "performance_notes": "Reduces tape graph size and memory footprint by skipping graph construction for ignored variables.",
       "related_apis": [
         "tf.GradientTape",
         "tf.GradientTape.watch"
@@ -283,7 +283,7 @@
         "Python garbage collection does not automatically release internal graph memory until del tape is executed.",
         "Forgetting to delete a persistent tape inside a long-running training loop results in an eventual Out-Of-Memory (OOM) crash."
       ],
-      "performance_notes": "> * Holds intermediate activation tensors in memory until del tape is called, significantly increasing peak memory usage.",
+      "performance_notes": "Holds intermediate activation tensors in memory until del tape is called, significantly increasing peak memory usage.",
       "related_apis": [
         "tf.GradientTape",
         "del tape",
@@ -374,7 +374,7 @@
         "Calling gradient() on a non-persistent tape destroys the tape context immediately.",
         "If target is not a scalar, TensorFlow automatically sums the elements of target before taking the gradient, unless output_gradients is provided."
       ],
-      "performance_notes": "> * Performs reverse-mode traversal of the recorded computation graph. Execution time scales with graph depth and source tensor count.",
+      "performance_notes": "Performs reverse-mode traversal of the recorded computation graph. Execution time scales with graph depth and source tensor count.",
       "related_apis": [
         "tf.GradientTape.gradient",
         "tf.UnconnectedGradients",
@@ -464,7 +464,7 @@
       "gotchas": [
         "Passing a list of targets implicitly sums their gradients together. It does not return a list of individual target gradients."
       ],
-      "performance_notes": "> * Efficiently traverses the graph once for the combined sum rather than performing multiple reverse passes.",
+      "performance_notes": "Efficiently traverses the graph once for the combined sum rather than performing multiple reverse passes.",
       "related_apis": [
         "tf.GradientTape.gradient"
       ],
@@ -546,7 +546,7 @@
       "gotchas": [
         "The returned gradient structure strictly mirrors the input sources layout. If sources is a dict, returned gradients form a dict with identical keys."
       ],
-      "performance_notes": "> * Batches reverse pass computation across all requested variables efficiently in a single graph traversal.",
+      "performance_notes": "Batches reverse pass computation across all requested variables efficiently in a single graph traversal.",
       "related_apis": [
         "tf.GradientTape.gradient",
         "tf.Module.trainable_variables"
@@ -630,7 +630,7 @@
       "gotchas": [
         "Using unconnected_gradients=tf.UnconnectedGradients.ZERO masks broken computation graphs by silently replacing missing gradients with zeros."
       ],
-      "performance_notes": "> * Allocates zero-filled tensors for disconnected variables, slightly increasing memory footprint compared to returning None.",
+      "performance_notes": "Allocates zero-filled tensors for disconnected variables, slightly increasing memory footprint compared to returning None.",
       "related_apis": [
         "tf.UnconnectedGradients",
         "tf.GradientTape.gradient"
@@ -720,7 +720,7 @@
         "Computing Jacobians on high-dimensional feature maps (e.g., intermediate CNN activations) causes massive memory usage.",
         "experimental_use_pfor=True can fail for operations lacking vectorization implementations, falling back to sequential execution."
       ],
-      "performance_notes": "> * Uses parallel loop vectorization (pfor) when enabled. Computational time and memory scale quadratically with tensor dimensions.",
+      "performance_notes": "Uses parallel loop vectorization (pfor) when enabled. Computational time and memory scale quadratically with tensor dimensions.",
       "related_apis": [
         "tf.GradientTape.jacobian",
         "tf.GradientTape.batch_jacobian",
@@ -809,7 +809,7 @@
       "gotchas": [
         "Target and source tensors must share identical leading batch dimension sizes B."
       ],
-      "performance_notes": "> * Bypasses evaluation of *B*\u00d7(*B*\u22121) zero-value cross-sample blocks, offering dramatic speedup over tape.jacobian().",
+      "performance_notes": "Bypasses evaluation of *B*×(*B*−1) zero-value cross-sample blocks, offering dramatic speedup over tape.jacobian().",
       "related_apis": [
         "tf.GradientTape.batch_jacobian",
         "tf.GradientTape.jacobian"
@@ -894,7 +894,7 @@
         "The inner tape evaluation inner_tape.gradient() must occur **inside** the with outer_tape: context block to track first-order operations.",
         "Non-differentiable operations in the inner forward pass will produce None for second derivatives."
       ],
-      "performance_notes": "> * Memory consumption scales rapidly because intermediate computational graphs for derivatives must be preserved.",
+      "performance_notes": "Memory consumption scales rapidly because intermediate computational graphs for derivatives must be preserved.",
       "related_apis": [
         "tf.GradientTape (nested contexts)",
         "tf.GradientTape.gradient"
@@ -982,7 +982,7 @@
         "The number and structure of tensors returned by grad_fn must exactly match the arguments accepted by the decorated forward function.",
         "Forgetting to multiply downstream calculations by upstream gradient dy breaks chain rule backpropagation."
       ],
-      "performance_notes": "> * Replaces automatically generated backpropagation subgraphs with optimized user-defined CUDA/C++ mathematical operations.",
+      "performance_notes": "Replaces automatically generated backpropagation subgraphs with optimized user-defined CUDA/C++ mathematical operations.",
       "related_apis": [
         "@tf.custom_gradient",
         "tf.stop_gradient",
@@ -1067,7 +1067,7 @@
       "gotchas": [
         "Oversimplified surrogate gradients can lead to optimization divergence if backward approximations mismatch forward dynamics too severely."
       ],
-      "performance_notes": "> * Eliminates computation of zero derivatives for non-differentiable operations by substituting simple pass-through tensor operations.",
+      "performance_notes": "Eliminates computation of zero derivatives for non-differentiable operations by substituting simple pass-through tensor operations.",
       "related_apis": [
         "@tf.custom_gradient",
         "tf.clip_by_norm",
@@ -1154,7 +1154,7 @@
       "gotchas": [
         "tf.stop_gradient returns a new tensor handle. Passing the original un-detached tensor in subsequent equations allows gradient flow to continue."
       ],
-      "performance_notes": "> * Reduces peak memory by allowing early garbage collection of intermediate activation graphs upstream of the stopped boundary.",
+      "performance_notes": "Reduces peak memory by allowing early garbage collection of intermediate activation graphs upstream of the stopped boundary.",
       "related_apis": [
         "tf.stop_gradient",
         "tf.identity",
@@ -1239,7 +1239,7 @@
       "gotchas": [
         "Tensors created inside stop_recording() acts as constants if used in subsequent tracked computations."
       ],
-      "performance_notes": "> * Saves memory and graph execution latency by omitting untracked intermediate operation nodes from the tape.",
+      "performance_notes": "Saves memory and graph execution latency by omitting untracked intermediate operation nodes from the tape.",
       "related_apis": [
         "tf.GradientTape.stop_recording",
         "tf.GradientTape",
@@ -1324,7 +1324,7 @@
       "gotchas": [
         "watched_variables() only reports variables that were both accessed and watched. It does not guarantee a mathematical graph connection exists between those variables and the loss target."
       ],
-      "performance_notes": "> * Diagnostic inspection tool only. Should be stripped from high-performance production code.",
+      "performance_notes": "Diagnostic inspection tool only. Should be stripped from high-performance production code.",
       "related_apis": [
         "tf.GradientTape.watched_variables",
         "tf.GradientTape.watch"
@@ -1408,7 +1408,7 @@
       "gotchas": [
         "Omitting tf.GradientTape prevents calculating gradients later for that execution pass."
       ],
-      "performance_notes": "> * Provides maximum execution speed and minimum memory consumption by skipping activation caching completely.",
+      "performance_notes": "Provides maximum execution speed and minimum memory consumption by skipping activation caching completely.",
       "related_apis": [
         "Direct functional/layer execution without tf.GradientTape",
         "tf.keras.Model.__call__"
@@ -1493,7 +1493,7 @@
       "gotchas": [
         "Ensure layer flags (like training=True/False in Dropout or BatchNorm) match the gradient tape wrapping context."
       ],
-      "performance_notes": "> * Ensures zero gradient allocation overhead during evaluation branches.",
+      "performance_notes": "Ensures zero gradient allocation overhead during evaluation branches.",
       "related_apis": [
         "tf.GradientTape",
         "Python conditional execution (if training:)"
@@ -1577,7 +1577,7 @@
         "Variables must be created **outside** the @tf.function block. Creating tf.Variable objects inside a @tf.function decorated method raises a ValueError.",
         "Python side effects (like standard print()) execute only once during initial graph tracing."
       ],
-      "performance_notes": "> * Replaces Python execution overhead with fused XLA graph kernels, substantially increasing throughput.",
+      "performance_notes": "Replaces Python execution overhead with fused XLA graph kernels, substantially increasing throughput.",
       "related_apis": [
         "@tf.function",
         "tf.GradientTape"
@@ -1668,7 +1668,7 @@
         "Forgetting to call del tape on persistent tapes creates cumulative long-term memory leaks.",
         "Using NumPy operations inside a GradientTape context silently breaks autograd tracking."
       ],
-      "performance_notes": "> * Keeping tape scopes tight minimizes active memory allocation windows for intermediate tensors.",
+      "performance_notes": "Keeping tape scopes tight minimizes active memory allocation windows for intermediate tensors.",
       "related_apis": [
         "tf.GradientTape",
         "tf.stop_gradient",

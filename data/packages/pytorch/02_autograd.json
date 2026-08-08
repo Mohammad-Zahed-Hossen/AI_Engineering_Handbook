@@ -250,7 +250,7 @@
       "important_params": [
         "None (property accesses)."
       ],
-      "return_value": "> * **requires_grad** (bool): True if tensor tracks history.  \n> * **is_leaf** (bool): True if created directly by user (or initialized without graph history).  \n> * **grad_fn** (torch.autograd.Function or None): Reference to the operation that produced the tensor. None for leaf tensors.",
+      "return_value": "**requires_grad** (bool): True if tensor tracks history.\n**is_leaf** (bool): True if created directly by user (or initialized without graph history).\n**grad_fn** (torch.autograd.Function or None): Reference to the operation that produced the tensor. None for leaf tensors.",
       "example": "import torch\n\n# Create a leaf tensor  \nx = torch.tensor([2.0], requires_grad=True)\n\n# Derive non-leaf tensors  \ny = x ** 3  \nz = y + 5\n\ndef inspect_tensor(name, t):  \n    print(f\"[{name}] requires_grad={t.requires_grad}, is_leaf={t.is_leaf}, grad_fn={t.grad_fn}\")\n\ninspect_tensor(\"x\", x)  \ninspect_tensor(\"y\", y)  \ninspect_tensor(\"z\", z)",
       "use_when": "Debugging NoneType issues when reading .grad after backward().\nDiagnosing memory leaks caused by unwanted graph construction on intermediate variables.\nVerifying model layer freezing logic in test suites.",
       "avoid_when": "Inside performance-critical inner loops where overhead from property access or string logging is undesirable.",
@@ -1392,7 +1392,7 @@
       "important_params": [
         "None."
       ],
-      "return_value": "> * **detach()**: A new torch.Tensor sharing storage with tensor, with requires_grad=False and grad_fn=None.  \n> * **detach_()**: The target tensor modified in-place to detach it from history.",
+      "return_value": "**detach()**: A new torch.Tensor sharing storage with tensor, with requires_grad=False and grad_fn=None.\n**detach_()**: The target tensor modified in-place to detach it from history.",
       "example": "import torch\n\nx = torch.tensor([2.0, 3.0], requires_grad=True)\n\n# Derive y with tracking  \ny = x ** 2\n\n# Detach y before calculating z  \ny_detached = y.detach()  \nz = (y_detached * 5).sum()\n\nz.backward()\n\nprint(f\"x.grad: {x.grad}\")  # None, because graph was broken at y_detached  \nprint(f\"y_detached.requires_grad: {y_detached.requires_grad}\")",
       "use_when": "Implementing Actor-Critic reinforcement learning algorithms (e.g., detaching target Q-network targets).\nGenerative Adversarial Networks (GANs) where generator and discriminator updates alternate.\nTruncated Backpropagation Through Time (TBPTT) in recurrent models.",
       "avoid_when": "Creating an independent, deep memory copy of data un-linked in memory; use tensor.clone().detach() instead.",

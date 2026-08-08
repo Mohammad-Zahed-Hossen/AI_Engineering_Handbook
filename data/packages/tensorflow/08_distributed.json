@@ -18,14 +18,14 @@
       "return_value": "None. Updates the global session state within the Keras runtime environment.",
       "example": "# Globally set precision policy to float16 computation with float32 variable storage\ntf.keras.mixed_precision.set_global_policy('mixed_float16')\n\n# Verify the active global policy properties\ncurrent_policy = tf.keras.mixed_precision.global_policy()\nprint(f\"Compute Dtype: {current_policy.compute_dtype}\")\nprint(f\"Variable Dtype: {current_policy.variable_dtype}\")\n\n# Build a dense layer to demonstrate automated dtype casting\nlayer = tf.keras.layers.Dense(units=32)\ninputs = tf.random.normal(shape=(4, 16))\noutputs = layer(inputs)\n\nprint(f\"Layer weight dtype: {layer.kernel.dtype}\")",
       "snippet": "# Globally set precision policy to float16 computation with float32 variable storage\ntf.keras.mixed_precision.set_global_policy('mixed_float16')\n\n# Verify the active global policy properties\ncurrent_policy = tf.keras.mixed_precision.global_policy()\nprint(f\"Compute Dtype: {current_policy.compute_dtype}\")\nprint(f\"Variable Dtype: {current_policy.variable_dtype}\")\n\n# Build a dense layer to demonstrate automated dtype casting\nlayer = tf.keras.layers.Dense(units=32)\ninputs = tf.random.normal(shape=(4, 16))\noutputs = layer(inputs)\n\nprint(f\"Layer weight dtype: {layer.kernel.dtype}\")",
-      "use_when": "> * Training large neural networks on Tensor Core GPUs (Volta, Turing, Ampere, Ada Lovelace, Hopper) or modern TPUs.  \n> * Encountering GPU memory limits during batch size scaling or large model training.",
-      "avoid_when": "> * Training on older GPU architectures without hardware Tensor Core acceleration (e.g., Nvidia Pascal or earlier), where 16-bit emulation degrades performance.  \n> * Training models with numerical instability issues highly sensitive to dynamic range limits (e.g., custom unstable loss functions).",
+      "use_when": "Training large neural networks on Tensor Core GPUs (Volta, Turing, Ampere, Ada Lovelace, Hopper) or modern TPUs.\nEncountering GPU memory limits during batch size scaling or large model training.",
+      "avoid_when": "Training on older GPU architectures without hardware Tensor Core acceleration (e.g., Nvidia Pascal or earlier), where 16-bit emulation degrades performance.\nTraining models with numerical instability issues highly sensitive to dynamic range limits (e.g., custom unstable loss functions).",
       "gotchas": [
         "Custom layers must avoid hardcoded float32 casts on intermediate tensors to maintain 16-bit compute performance.",
         "The output layer of a network in mixed_float16 must explicitly output float32 when computing softmax cross-entropy to prevent numerical overflow/underflow.",
         "Global policies affect Keras layers instantiated **after** the policy call; layers built beforehand retain their initial dtypes."
       ],
-      "performance_notes": "> * Reduces memory bandwidth utilization by up to 50%, enabling larger per-replica batch sizes.  \n> * Yields up to 2x\u20133x training throughput improvement on modern GPU architectures featuring FP16/BF16 Tensor Cores.",
+      "performance_notes": "Reduces memory bandwidth utilization by up to 50%, enabling larger per-replica batch sizes.\nYields up to 2x–3x training throughput improvement on modern GPU architectures featuring FP16/BF16 Tensor Cores.",
       "related_apis": [
         "tf.keras.mixed_precision.global_policy",
         "tf.keras.mixed_precision.Policy",
@@ -33,9 +33,9 @@
       ],
       "primary_apis": [],
       "framework_migration_notes": "In PyTorch, mixed precision is scoped imperatively via dynamic contexts like torch.amp.autocast(). In TensorFlow, set_global_policy sets a global state that declaratively instructs Keras layers to cast inputs during execution.",
-      "pytorch_equivalent": "`tf.keras.mixed_precision.set_global_policy`  \n`\u2192 torch.amp.autocast`",
+      "pytorch_equivalent": "`tf.keras.mixed_precision.set_global_policy`  \n`→ torch.amp.autocast`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`tf.keras.mixed_precision.set_global_policy`  \n`\u2192 torch.amp.autocast`",
+      "framework_equivalent": "`tf.keras.mixed_precision.set_global_policy`  \n`→ torch.amp.autocast`",
       "version_compatibility": "No significant changes in modern TensorFlow 2.x releases.",
       "search_metadata": {
         "aliases": [
@@ -119,13 +119,13 @@
       "return_value": "A tf.keras.mixed_precision.Policy object detailing the .compute_dtype and .variable_dtype.",
       "example": "# Detect hardware availability to automatically choose optimal 16-bit precision\ngpus = tf.config.list_physical_devices('GPU')\n\nif gpus:\n# Check compute capability or architecture default\n# Ampere+ (compute capability >= 8.0) and TPUs natively support bfloat16\npolicy_name = 'mixed_bfloat16'\nelse:\npolicy_name = 'float32'\n\npolicy = tf.keras.mixed_precision.Policy(policy_name)\ntf.keras.mixed_precision.set_global_policy(policy)\n\nprint(f\"Selected Policy Name: {policy.name}\")\nprint(f\"Compute Precision:    {policy.compute_dtype}\")",
       "snippet": "# Detect hardware availability to automatically choose optimal 16-bit precision\ngpus = tf.config.list_physical_devices('GPU')\n\nif gpus:\n# Check compute capability or architecture default\n# Ampere+ (compute capability >= 8.0) and TPUs natively support bfloat16\npolicy_name = 'mixed_bfloat16'\nelse:\npolicy_name = 'float32'\n\npolicy = tf.keras.mixed_precision.Policy(policy_name)\ntf.keras.mixed_precision.set_global_policy(policy)\n\nprint(f\"Selected Policy Name: {policy.name}\")\nprint(f\"Compute Precision:    {policy.compute_dtype}\")",
-      "use_when": "> * **mixed_float16**: Training on Nvidia Volta, Turing, or Ampere GPUs where FP16 Tensor Cores offer maximal hardware FLOPS.  \n> * **mixed_bfloat16**: Training on Cloud TPUs (v2+) or Nvidia Ampere/Hopper/Ada GPUs, prioritizing numerical range equality with float32.",
-      "avoid_when": "> * Using mixed_float16 on TPUs or older GPUs where FP16 hardware units are omitted or unoptimized.  \n> * Using mixed_bfloat16 on pre-Ampere GPUs (e.g., Nvidia V100/T4), as it will be emulated via software slow-paths.",
+      "use_when": "**mixed_float16**: Training on Nvidia Volta, Turing, or Ampere GPUs where FP16 Tensor Cores offer maximal hardware FLOPS.\n**mixed_bfloat16**: Training on Cloud TPUs (v2+) or Nvidia Ampere/Hopper/Ada GPUs, prioritizing numerical range equality with float32.",
+      "avoid_when": "Using mixed_float16 on TPUs or older GPUs where FP16 hardware units are omitted or unoptimized.\nUsing mixed_bfloat16 on pre-Ampere GPUs (e.g., Nvidia V100/T4), as it will be emulated via software slow-paths.",
       "gotchas": [
         "mixed_bfloat16 retains the dynamic range of float32 (8 exponent bits) but loses precision (7 mantissa bits), which can cause degradation in optimization tasks requiring fine parameter updates.",
-        "mixed_float16 has a limited dynamic range (2\u221214 to 65504), making automatic loss scaling strictly mandatory to avoid underflow to zero."
+        "mixed_float16 has a limited dynamic range (2−14 to 65504), making automatic loss scaling strictly mandatory to avoid underflow to zero."
       ],
-      "performance_notes": "> * bfloat16 eliminates the runtime compute overhead of dynamic loss scale management.  \n> * float16 provides superior mantissa precision compared to bfloat16, which can be critical for convergence in certain vision models.",
+      "performance_notes": "bfloat16 eliminates the runtime compute overhead of dynamic loss scale management.\nfloat16 provides superior mantissa precision compared to bfloat16, which can be critical for convergence in certain vision models.",
       "related_apis": [
         "tf.keras.mixed_precision.set_global_policy",
         "tf.keras.mixed_precision.global_policy",
@@ -133,9 +133,9 @@
       ],
       "primary_apis": [],
       "framework_migration_notes": "PyTorch configures dtype=torch.float16 or dtype=torch.bfloat16 inside torch.amp.autocast. In TensorFlow, this is governed explicitly at the model level via mixed_float16 or mixed_bfloat16 policy definitions.",
-      "pytorch_equivalent": "`Policy('mixed_float16')`  \n`\u2192 torch.autocast(device_type='cuda', dtype=torch.float16)`\n\n`Policy('mixed_bfloat16')`  \n`\u2192 torch.autocast(device_type='cuda', dtype=torch.bfloat16)`",
+      "pytorch_equivalent": "`Policy('mixed_float16')`  \n`→ torch.autocast(device_type='cuda', dtype=torch.float16)`\n\n`Policy('mixed_bfloat16')`  \n`→ torch.autocast(device_type='cuda', dtype=torch.bfloat16)`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`Policy('mixed_float16')`  \n`\u2192 torch.autocast(device_type='cuda', dtype=torch.float16)`\n\n`Policy('mixed_bfloat16')`  \n`\u2192 torch.autocast(device_type='cuda', dtype=torch.bfloat16)`",
+      "framework_equivalent": "`Policy('mixed_float16')`  \n`→ torch.autocast(device_type='cuda', dtype=torch.float16)`\n\n`Policy('mixed_bfloat16')`  \n`→ torch.autocast(device_type='cuda', dtype=torch.bfloat16)`",
       "version_compatibility": "No significant changes in modern TensorFlow 2.x releases.",
       "search_metadata": {
         "aliases": [
@@ -216,13 +216,13 @@
       "return_value": "A wrapped LossScaleOptimizer instance that handles loss scaling, gradient unscaling, and optimizer weight updates transparently.",
       "example": "# Set global policy to float16\ntf.keras.mixed_precision.set_global_policy('mixed_float16')\n\n# Construct base optimizer and wrap with LossScaleOptimizer\nbase_optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)\noptimizer = tf.keras.mixed_precision.LossScaleOptimizer(base_optimizer)\n\nmodel = tf.keras.Sequential([\ntf.keras.layers.Dense(16, activation='relu'),\ntf.keras.layers.Dense(1, activation='linear', dtype='float32') # Output float32 for stability\n])\n\nx = tf.random.normal((8, 10))\ny = tf.random.normal((8, 1))\n\n# Custom training loop execution with LossScaleOptimizer\nwith tf.GradientTape() as tape:\npredictions = model(x)\nloss = tf.keras.losses.mean_squared_error(y, predictions)\n# Scale loss to prevent float16 gradient underflow\nscaled_loss = optimizer.get_scaled_loss(loss)\n\n# Compute scaled gradients\nscaled_gradients = tape.gradient(scaled_loss, model.trainable_variables)\n\n# Unscale gradients and apply steps (skips update if Inf/NaN detected)\ngradients = optimizer.get_unscaled_gradients(scaled_gradients)\noptimizer.apply_gradients(zip(gradients, model.trainable_variables))",
       "snippet": "# Set global policy to float16\ntf.keras.mixed_precision.set_global_policy('mixed_float16')\n\n# Construct base optimizer and wrap with LossScaleOptimizer\nbase_optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)\noptimizer = tf.keras.mixed_precision.LossScaleOptimizer(base_optimizer)\n\nmodel = tf.keras.Sequential([\ntf.keras.layers.Dense(16, activation='relu'),\ntf.keras.layers.Dense(1, activation='linear', dtype='float32') # Output float32 for stability\n])\n\nx = tf.random.normal((8, 10))\ny = tf.random.normal((8, 1))\n\n# Custom training loop execution with LossScaleOptimizer\nwith tf.GradientTape() as tape:\npredictions = model(x)\nloss = tf.keras.losses.mean_squared_error(y, predictions)\n# Scale loss to prevent float16 gradient underflow\nscaled_loss = optimizer.get_scaled_loss(loss)\n\n# Compute scaled gradients\nscaled_gradients = tape.gradient(scaled_loss, model.trainable_variables)\n\n# Unscale gradients and apply steps (skips update if Inf/NaN detected)\ngradients = optimizer.get_unscaled_gradients(scaled_gradients)\noptimizer.apply_gradients(zip(gradients, model.trainable_variables))",
-      "use_when": "> * Executing custom training loops using tf.GradientTape under the mixed_float16 policy.  \n> * Scaling loss manually in non-standard architecture routines (e.g., GANs or actor-critic reinforcement learning).",
-      "avoid_when": "> * Using standard model.compile() and model.fit()\u2014Keras automatically wraps the optimizer with dynamic loss scaling when mixed_float16 is enabled.  \n> * Using the mixed_bfloat16 or float32 policies (loss scaling is unnecessary and adds useless computation).",
+      "use_when": "Executing custom training loops using tf.GradientTape under the mixed_float16 policy.\nScaling loss manually in non-standard architecture routines (e.g., GANs or actor-critic reinforcement learning).",
+      "avoid_when": "Using standard model.compile() and model.fit()—Keras automatically wraps the optimizer with dynamic loss scaling when mixed_float16 is enabled.\nUsing the mixed_bfloat16 or float32 policies (loss scaling is unnecessary and adds useless computation).",
       "gotchas": [
         "Forget to call get_scaled_loss() on the loss before passing it to tape.gradient() invalidates the underflow protection.",
         "Forget to call get_unscaled_gradients() prior to applying custom gradient clipping (tf.clip_by_global_norm) will clip artificially inflated gradients."
       ],
-      "performance_notes": "> * Minimal runtime overhead. When NaN or Inf values are produced due to excessive scaling, LossScaleOptimizer discards the step, reduces the scale factor, and continues training safely.",
+      "performance_notes": "Minimal runtime overhead. When NaN or Inf values are produced due to excessive scaling, LossScaleOptimizer discards the step, reduces the scale factor, and continues training safely.",
       "related_apis": [
         "tf.keras.mixed_precision.set_global_policy",
         "tf.GradientTape",
@@ -230,9 +230,9 @@
       ],
       "primary_apis": [],
       "framework_migration_notes": "Direct counterpart to PyTorch's torch.amp.GradScaler. In PyTorch, you explicitly execute scaler.scale(loss).backward() and scaler.step(optimizer). In TensorFlow custom loops, you call optimizer.get_scaled_loss() and optimizer.apply_gradients().",
-      "pytorch_equivalent": "`LossScaleOptimizer`  \n`\u2192 torch.amp.GradScaler`",
+      "pytorch_equivalent": "`LossScaleOptimizer`  \n`→ torch.amp.GradScaler`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`LossScaleOptimizer`  \n`\u2192 torch.amp.GradScaler`",
+      "framework_equivalent": "`LossScaleOptimizer`  \n`→ torch.amp.GradScaler`",
       "version_compatibility": "No significant changes in modern TensorFlow 2.x releases.",
       "search_metadata": {
         "aliases": [
@@ -305,21 +305,21 @@
       "return_value": "A tf.keras.mixed_precision.Policy instance exposing .name, .compute_dtype, and .variable_dtype attributes.",
       "example": "# Check default global policy prior to configuration\ndefault_policy = tf.keras.mixed_precision.global_policy()\nprint(f\"Default Policy: {default_policy.name}\")\n\n# Set policy\ntf.keras.mixed_precision.set_global_policy('mixed_bfloat16')\n\n# Inspect policy post-configuration\nactive_policy = tf.keras.mixed_precision.global_policy()\nprint(f\"Active Policy Name:   {active_policy.name}\")\nprint(f\"Active Compute Dtype: {active_policy.compute_dtype}\")\nprint(f\"Active Var Dtype:     {active_policy.variable_dtype}\")\n\n# Defensive verification block\nif active_policy.compute_dtype != active_policy.variable_dtype:",
       "snippet": "# Check default global policy prior to configuration\ndefault_policy = tf.keras.mixed_precision.global_policy()\nprint(f\"Default Policy: {default_policy.name}\")\n\n# Set policy\ntf.keras.mixed_precision.set_global_policy('mixed_bfloat16')\n\n# Inspect policy post-configuration\nactive_policy = tf.keras.mixed_precision.global_policy()\nprint(f\"Active Policy Name:   {active_policy.name}\")\nprint(f\"Active Compute Dtype: {active_policy.compute_dtype}\")\nprint(f\"Active Var Dtype:     {active_policy.variable_dtype}\")\n\n# Defensive verification block\nif active_policy.compute_dtype != active_policy.variable_dtype:",
-      "use_when": "> * Writing reusable components, custom layers, or trainer classes that must adapt behavior based on the current execution precision context.  \n> * Validating global configuration state during automated unit tests or experiment logging runs.",
-      "avoid_when": "> * Setting runtime precision state (use tf.keras.mixed_precision.set_global_policy instead).",
+      "use_when": "Writing reusable components, custom layers, or trainer classes that must adapt behavior based on the current execution precision context.\nValidating global configuration state during automated unit tests or experiment logging runs.",
+      "avoid_when": "Setting runtime precision state (use tf.keras.mixed_precision.set_global_policy instead).",
       "gotchas": [
         "Reading global_policy() does not inform you whether individual layers override their local policy via Layer(dtype=...)."
       ],
-      "performance_notes": "> * Purely metadata lookup operation with zero computational runtime cost.",
+      "performance_notes": "Purely metadata lookup operation with zero computational runtime cost.",
       "related_apis": [
         "tf.keras.mixed_precision.set_global_policy",
         "tf.keras.mixed_precision.Policy"
       ],
       "primary_apis": [],
       "framework_migration_notes": "PyTorch does not have a single global policy inspection call; instead, engineers inspect the active context state via torch.is_autocast_enabled().",
-      "pytorch_equivalent": "`tf.keras.mixed_precision.global_policy()`  \n`\u2192 torch.is_autocast_enabled()`",
+      "pytorch_equivalent": "`tf.keras.mixed_precision.global_policy()`  \n`→ torch.is_autocast_enabled()`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`tf.keras.mixed_precision.global_policy()`  \n`\u2192 torch.is_autocast_enabled()`",
+      "framework_equivalent": "`tf.keras.mixed_precision.global_policy()`  \n`→ torch.is_autocast_enabled()`",
       "version_compatibility": "No significant changes in modern TensorFlow 2.x releases.",
       "search_metadata": {
         "aliases": [
@@ -390,21 +390,21 @@
       "return_value": "A tf.distribute.OneDeviceStrategy object wrapping single-device execution.",
       "example": "# Choose single target device (fall back to CPU if no GPU present)\ndevice_name = '/gpu:0' if tf.config.list_physical_devices('GPU') else '/cpu:0'\nstrategy = tf.distribute.OneDeviceStrategy(device=device_name)\n\n# Model and optimizer creation inside strategy scope\nwith strategy.scope():\nmodel = tf.keras.Sequential([\ntf.keras.layers.Dense(10, activation='relu', input_shape=(5,)),\ntf.keras.layers.Dense(1)\n])\nmodel.compile(optimizer='adam', loss='mse')\n\n# Standard synthetic dataset\nx = tf.random.normal((32, 5))\ny = tf.random.normal((32, 1))\n\n# Run training targeting designated single device\nmodel.fit(x, y, epochs=1, verbose=0)",
       "snippet": "# Choose single target device (fall back to CPU if no GPU present)\ndevice_name = '/gpu:0' if tf.config.list_physical_devices('GPU') else '/cpu:0'\nstrategy = tf.distribute.OneDeviceStrategy(device=device_name)\n\n# Model and optimizer creation inside strategy scope\nwith strategy.scope():\nmodel = tf.keras.Sequential([\ntf.keras.layers.Dense(10, activation='relu', input_shape=(5,)),\ntf.keras.layers.Dense(1)\n])\nmodel.compile(optimizer='adam', loss='mse')\n\n# Standard synthetic dataset\nx = tf.random.normal((32, 5))\ny = tf.random.normal((32, 1))\n\n# Run training targeting designated single device\nmodel.fit(x, y, epochs=1, verbose=0)",
-      "use_when": "> * Local debugging and quick sanity verification of complex distributed pipelines.  \n> * Ensuring reusable library modules run identically on single-device workstations and distributed enterprise clusters.",
-      "avoid_when": "> * Scaling model workloads across multiple physical GPUs or distributed cluster nodes.",
+      "use_when": "Local debugging and quick sanity verification of complex distributed pipelines.\nEnsuring reusable library modules run identically on single-device workstations and distributed enterprise clusters.",
+      "avoid_when": "Scaling model workloads across multiple physical GPUs or distributed cluster nodes.",
       "gotchas": [
         "Placing heavy models explicitly on '/cpu:0' via OneDeviceStrategy can cause host memory exhaustion or extremely slow iteration rates."
       ],
-      "performance_notes": "> * Eliminates cross-device communication and reduction overhead entirely.",
+      "performance_notes": "Eliminates cross-device communication and reduction overhead entirely.",
       "related_apis": [
         "tf.distribute.MirroredStrategy",
         "tf.device"
       ],
       "primary_apis": [],
       "framework_migration_notes": "Equivalent to standard PyTorch single-device execution (e.g., model.to('cuda:0')), but structured within the tf.distribute.Strategy pattern.",
-      "pytorch_equivalent": "`tf.distribute.OneDeviceStrategy`  \n`\u2192 Standard single-device training (e.g., model.to(device))`",
+      "pytorch_equivalent": "`tf.distribute.OneDeviceStrategy`  \n`→ Standard single-device training (e.g., model.to(device))`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`tf.distribute.OneDeviceStrategy`  \n`\u2192 Standard single-device training (e.g., model.to(device))`",
+      "framework_equivalent": "`tf.distribute.OneDeviceStrategy`  \n`→ Standard single-device training (e.g., model.to(device))`",
       "version_compatibility": "No significant changes in modern TensorFlow 2.x releases.",
       "search_metadata": {
         "aliases": [
@@ -476,22 +476,22 @@
       "return_value": "A tf.distribute.MirroredStrategy object that manages variable replication, batch sharding, and gradient aggregation.",
       "example": "# Instantiate MirroredStrategy for all locally available GPUs\nstrategy = tf.distribute.MirroredStrategy()\nprint(f\"Number of devices in strategy: {strategy.num_replicas_in_sync}\")\n\n# Create model and optimizer variables inside strategy scope\nwith strategy.scope():\nmodel = tf.keras.Sequential([\ntf.keras.layers.Dense(64, activation='relu', input_shape=(32,)),\ntf.keras.layers.Dense(10, activation='softmax')\n])\nmodel.compile(\noptimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),\nloss='sparse_categorical_crossentropy',\nmetrics=['accuracy']\n)\n\n# Synthetic dataset generation\nfeatures = tf.random.normal((128, 32))\nlabels = tf.random.uniform((128,), maxval=10, dtype=tf.int32)\n\n# Global batch size must be divisible by replica count\nglobal_batch_size = 32\ndataset = tf.data.Dataset.from_tensor_slices((features, labels)).batch(global_batch_size)\n\n# Model training automatically distributes batches across GPUs",
       "snippet": "# Instantiate MirroredStrategy for all locally available GPUs\nstrategy = tf.distribute.MirroredStrategy()\nprint(f\"Number of devices in strategy: {strategy.num_replicas_in_sync}\")\n\n# Create model and optimizer variables inside strategy scope\nwith strategy.scope():\nmodel = tf.keras.Sequential([\ntf.keras.layers.Dense(64, activation='relu', input_shape=(32,)),\ntf.keras.layers.Dense(10, activation='softmax')\n])\nmodel.compile(\noptimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),\nloss='sparse_categorical_crossentropy',\nmetrics=['accuracy']\n)\n\n# Synthetic dataset generation\nfeatures = tf.random.normal((128, 32))\nlabels = tf.random.uniform((128,), maxval=10, dtype=tf.int32)\n\n# Global batch size must be divisible by replica count\nglobal_batch_size = 32\ndataset = tf.data.Dataset.from_tensor_slices((features, labels)).batch(global_batch_size)\n\n# Model training automatically distributes batches across GPUs",
-      "use_when": "> * Scaling synchronous model training across 2 to 8+ GPUs residing on a single host node.  \n> * Standard deep learning architectures fit entirely within a single GPU's VRAM.",
-      "avoid_when": "> * Scaling across multiple distinct physical servers (use MultiWorkerMirroredStrategy).  \n> * Models are too large to fit inside a single GPU's memory (requires pipeline or model parallelism).",
+      "use_when": "Scaling synchronous model training across 2 to 8+ GPUs residing on a single host node.\nStandard deep learning architectures fit entirely within a single GPU's VRAM.",
+      "avoid_when": "Scaling across multiple distinct physical servers (use MultiWorkerMirroredStrategy).\nModels are too large to fit inside a single GPU's memory (requires pipeline or model parallelism).",
       "gotchas": [
         "Batch size defined in tf.data.Dataset.batch(N) acts as the **global batch size**; each replica processes N / num_replicas samples per step.",
         "Initializing model or variables **outside** strategy.scope() breaks replication, creating un-mirrored variables that fail to synchronize."
       ],
-      "performance_notes": "> * Uses NCCL (Nvidia Collective Communications Library) by default for maximum bandwidth utilization over NVLink or PCIe interconnects.  \n> * Scaling efficiency approaches linear speedup (\\>90%) for computationally intensive models (e.g., ResNet-50, Transformers).",
+      "performance_notes": "Uses NCCL (Nvidia Collective Communications Library) by default for maximum bandwidth utilization over NVLink or PCIe interconnects.\nScaling efficiency approaches linear speedup (\\>90%) for computationally intensive models (e.g., ResNet-50, Transformers).",
       "related_apis": [
         "tf.distribute.MultiWorkerMirroredStrategy",
         "tf.distribute.StrategyScope"
       ],
       "primary_apis": [],
       "framework_migration_notes": "MirroredStrategy is the TensorFlow counterpart to PyTorch's single-node DistributedDataParallel (DDP). Unlike PyTorch, which requires explicit worker process launching via torchrun, TensorFlow handles thread/device execution internally in a single process script.",
-      "pytorch_equivalent": "`MirroredStrategy`  \n`\u2192 torch.nn.parallel.DistributedDataParallel (Single-Node DDP)`",
+      "pytorch_equivalent": "`MirroredStrategy`  \n`→ torch.nn.parallel.DistributedDataParallel (Single-Node DDP)`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`MirroredStrategy`  \n`\u2192 torch.nn.parallel.DistributedDataParallel (Single-Node DDP)`",
+      "framework_equivalent": "`MirroredStrategy`  \n`→ torch.nn.parallel.DistributedDataParallel (Single-Node DDP)`",
       "version_compatibility": "No significant changes in modern TensorFlow 2.x releases.",
       "search_metadata": {
         "aliases": [
@@ -573,22 +573,22 @@
       "return_value": "A tf.distribute.MultiWorkerMirroredStrategy instance coordinating cross-node model training.",
       "example": "import json\nimport tensorflow as tf\n\n# Example cluster configuration (typically set externally by orchestration like Kubernetes/Slurm)\nos.environ['TF_CONFIG'] = json.dumps({\n'cluster': {\n'worker': [\"10.0.0.1:12345\", \"10.0.0.2:12345\"]\n},\n'task': {'type': 'worker', 'index': 0} # Index 0 represents the primary task node\n})\n\n# Initialize strategy (reads TF_CONFIG automatically)\nstrategy = tf.distribute.MultiWorkerMirroredStrategy()\n\nprint(f\"Total cluster replicas in sync: {strategy.num_replicas_in_sync}\")\n\nwith strategy.scope():\nmodel = tf.keras.Sequential([\ntf.keras.layers.Dense(32, activation='relu', input_shape=(16,)),\ntf.keras.layers.Dense(1)\n])\nmodel.compile(optimizer='adam', loss='mse')\n\n# Datasets must be sharded automatically or manually per worker node\nfeatures = tf.random.normal((64, 16))\nlabels = tf.random.normal((64, 1))\n\ndataset = tf.data.Dataset.from_tensor_slices((features, labels)).batch(16)\n\n# Execute training\nmodel.fit(dataset, epochs=1, verbose=0)",
       "snippet": "import json\nimport tensorflow as tf\n\n# Example cluster configuration (typically set externally by orchestration like Kubernetes/Slurm)\nos.environ['TF_CONFIG'] = json.dumps({\n'cluster': {\n'worker': [\"10.0.0.1:12345\", \"10.0.0.2:12345\"]\n},\n'task': {'type': 'worker', 'index': 0} # Index 0 represents the primary task node\n})\n\n# Initialize strategy (reads TF_CONFIG automatically)\nstrategy = tf.distribute.MultiWorkerMirroredStrategy()\n\nprint(f\"Total cluster replicas in sync: {strategy.num_replicas_in_sync}\")\n\nwith strategy.scope():\nmodel = tf.keras.Sequential([\ntf.keras.layers.Dense(32, activation='relu', input_shape=(16,)),\ntf.keras.layers.Dense(1)\n])\nmodel.compile(optimizer='adam', loss='mse')\n\n# Datasets must be sharded automatically or manually per worker node\nfeatures = tf.random.normal((64, 16))\nlabels = tf.random.normal((64, 1))\n\ndataset = tf.data.Dataset.from_tensor_slices((features, labels)).batch(16)\n\n# Execute training\nmodel.fit(dataset, epochs=1, verbose=0)",
-      "use_when": "> * Scaling model workloads across large computing clusters spanning multiple nodes and dozens of GPUs.",
-      "avoid_when": "> * Training on a single server containing multiple GPUs (use MirroredStrategy, which avoids network serialization overheads).",
+      "use_when": "Scaling model workloads across large computing clusters spanning multiple nodes and dozens of GPUs.",
+      "avoid_when": "Training on a single server containing multiple GPUs (use MirroredStrategy, which avoids network serialization overheads).",
       "gotchas": [
         "Failing to set or incorrectly formatting the TF_CONFIG environment variable prior to calling the strategy constructor will crash process startup or hang worker handshakes.",
         "File I/O operations (like saving model checkpoints or logging TensorBoard metrics) must be restricted to primary task (worker index 0) to avoid write race conditions."
       ],
-      "performance_notes": "> * Inter-node network bandwidth (e.g., 100Gbps InfiniBand vs 1Gbps Ethernet) is the primary throughput bottleneck during AllReduce parameter synchronization steps.",
+      "performance_notes": "Inter-node network bandwidth (e.g., 100Gbps InfiniBand vs 1Gbps Ethernet) is the primary throughput bottleneck during AllReduce parameter synchronization steps.",
       "related_apis": [
         "tf.distribute.MirroredStrategy",
         "Environment Variable: TF_CONFIG"
       ],
       "primary_apis": [],
       "framework_migration_notes": "Direct equivalent to PyTorch Multi-Node DistributedDataParallel (DDP) initialized via torch.distributed.init_process_group.",
-      "pytorch_equivalent": "`MultiWorkerMirroredStrategy`  \n`\u2192 torch.nn.parallel.DistributedDataParallel (Multi-Node DDP)`",
+      "pytorch_equivalent": "`MultiWorkerMirroredStrategy`  \n`→ torch.nn.parallel.DistributedDataParallel (Multi-Node DDP)`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`MultiWorkerMirroredStrategy`  \n`\u2192 torch.nn.parallel.DistributedDataParallel (Multi-Node DDP)`",
+      "framework_equivalent": "`MultiWorkerMirroredStrategy`  \n`→ torch.nn.parallel.DistributedDataParallel (Multi-Node DDP)`",
       "version_compatibility": "No significant changes in modern TensorFlow 2.x releases.",
       "search_metadata": {
         "aliases": [
@@ -662,22 +662,22 @@
       "return_value": "A tf.distribute.TPUStrategy object handling compilation and distribution over TPU Matrix Multiply Units (MXUs).",
       "example": "try:\n# Connect to local or cloud TPU instance\nresolver = tf.distribute.cluster_resolver.TPUClusterResolver(tpu='')\ntf.config.experimental_connect_to_cluster(resolver)\ntf.tpu.experimental.initialize_tpu_system(resolver)\nstrategy = tf.distribute.TPUStrategy(resolver)\nprint(f\"TPU initialized successfully with {strategy.num_replicas_in_sync} cores.\")\nexcept ValueError:\nprint(\"TPU system initialization failed: No TPU hardware found. Falling back to CPU/GPU.\")\nstrategy = tf.distribute.get_strategy()\n\n# Build model inside TPU strategy scope\nwith strategy.scope():\nmodel = tf.keras.Sequential([\ntf.keras.layers.Dense(128, activation='relu', input_shape=(64,)),\ntf.keras.layers.Dense(10, activation='softmax')\n])\nmodel.compile(\noptimizer='adam',\nloss='sparse_categorical_crossentropy'",
       "snippet": "try:\n# Connect to local or cloud TPU instance\nresolver = tf.distribute.cluster_resolver.TPUClusterResolver(tpu='')\ntf.config.experimental_connect_to_cluster(resolver)\ntf.tpu.experimental.initialize_tpu_system(resolver)\nstrategy = tf.distribute.TPUStrategy(resolver)\nprint(f\"TPU initialized successfully with {strategy.num_replicas_in_sync} cores.\")\nexcept ValueError:\nprint(\"TPU system initialization failed: No TPU hardware found. Falling back to CPU/GPU.\")\nstrategy = tf.distribute.get_strategy()\n\n# Build model inside TPU strategy scope\nwith strategy.scope():\nmodel = tf.keras.Sequential([\ntf.keras.layers.Dense(128, activation='relu', input_shape=(64,)),\ntf.keras.layers.Dense(10, activation='softmax')\n])\nmodel.compile(\noptimizer='adam',\nloss='sparse_categorical_crossentropy'",
-      "use_when": "> * High-throughput training on Google Cloud TPU v2/v3/v4/v5e/v6e infrastructure.  \n> * Large vision or NLP models benefiting from XLA (Accelerated Linear Algebra) graph compilation and high BF16 matrix multiplication performance.",
-      "avoid_when": "> * Training locally on standard workstation GPUs or non-TPU Cloud instances.",
+      "use_when": "High-throughput training on Google Cloud TPU v2/v3/v4/v5e/v6e infrastructure.\nLarge vision or NLP models benefiting from XLA (Accelerated Linear Algebra) graph compilation and high BF16 matrix multiplication performance.",
+      "avoid_when": "Training locally on standard workstation GPUs or non-TPU Cloud instances.",
       "gotchas": [
         "Datasets used with TPUs must use static tensor shape sizes; dynamic or variable batch dimensions force excessive XLA recompilations that severely degrade performance.",
         "Custom operations written in pure C++ or custom CUDA kernels cannot execute on TPU hardware."
       ],
-      "performance_notes": "> * Cloud TPUs offer massive hardware throughput using bfloat16 precision natively in their MXU cores.",
+      "performance_notes": "Cloud TPUs offer massive hardware throughput using bfloat16 precision natively in their MXU cores.",
       "related_apis": [
         "tf.distribute.cluster_resolver.TPUClusterResolver",
         "tf.tpu.experimental.initialize_tpu_system"
       ],
       "primary_apis": [],
       "framework_migration_notes": "In PyTorch, TPU execution requires PyTorch/XLA (torch_xla). In TensorFlow, TPU execution is integrated into the core tf.distribute.TPUStrategy API.",
-      "pytorch_equivalent": "`TPUStrategy`  \n`\u2192 PyTorch/XLA (torch_xla.core.xla_model)`",
+      "pytorch_equivalent": "`TPUStrategy`  \n`→ PyTorch/XLA (torch_xla.core.xla_model)`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`TPUStrategy`  \n`\u2192 PyTorch/XLA (torch_xla.core.xla_model)`",
+      "framework_equivalent": "`TPUStrategy`  \n`→ PyTorch/XLA (torch_xla.core.xla_model)`",
       "version_compatibility": "No significant changes in modern TensorFlow 2.x releases.",
       "search_metadata": {
         "aliases": [
@@ -753,12 +753,12 @@
       "return_value": "A context manager context (tf.distribute.StrategyScope).",
       "example": "strategy = tf.distribute.MirroredStrategy()\n\n# Correct Scope Usage: Define model, optimizer, and metrics inside strategy context\nwith strategy.scope():\nmodel = tf.keras.Sequential([\ntf.keras.layers.Dense(32, activation='relu', input_shape=(16,)),\ntf.keras.layers.Dense(1)\n])\n\noptimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)\nloss_fn = tf.keras.losses.MeanSquaredError()\n\n# Inspect created model variable type",
       "snippet": "strategy = tf.distribute.MirroredStrategy()\n\n# Correct Scope Usage: Define model, optimizer, and metrics inside strategy context\nwith strategy.scope():\nmodel = tf.keras.Sequential([\ntf.keras.layers.Dense(32, activation='relu', input_shape=(16,)),\ntf.keras.layers.Dense(1)\n])\n\noptimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)\nloss_fn = tf.keras.losses.MeanSquaredError()\n\n# Inspect created model variable type",
-      "use_when": "> * Instantiating Keras models, layer weights, optimizers, or custom tf.Variable objects meant to run in distributed modes.  \n> * Loading pre-trained checkpoint weights prior to distributed training execution.",
-      "avoid_when": "> * Defining pure Python constants, preprocessing functions, or host-only datasets that do not involve stateful variables.",
+      "use_when": "Instantiating Keras models, layer weights, optimizers, or custom tf.Variable objects meant to run in distributed modes.\nLoading pre-trained checkpoint weights prior to distributed training execution.",
+      "avoid_when": "Defining pure Python constants, preprocessing functions, or host-only datasets that do not involve stateful variables.",
       "gotchas": [
         "Declaring a model or variable **outside** strategy.scope() creates a standard single-device ResourceVariable. Passing this un-replicated variable into distributed execution step functions causes crash errors or silently skips variable updates across replicas."
       ],
-      "performance_notes": "> * strategy.scope() ensures variable copies are distributed and placed on target GPU/TPU memory banks during construction, eliminating runtime memory copying delays.",
+      "performance_notes": "strategy.scope() ensures variable copies are distributed and placed on target GPU/TPU memory banks during construction, eliminating runtime memory copying delays.",
       "related_apis": [
         "tf.distribute.MirroredStrategy",
         "tf.distribute.TPUStrategy",
@@ -766,9 +766,9 @@
       ],
       "primary_apis": [],
       "framework_migration_notes": "PyTorch does not use scope context managers for variable distribution. Instead, PyTorch wraps an existing single-device model using DistributedDataParallel(model).",
-      "pytorch_equivalent": "`strategy.scope()`  \n`\u2192 No direct equivalent (PyTorch wraps models explicitly with torch.nn.parallel.DistributedDataParallel)`",
+      "pytorch_equivalent": "`strategy.scope()`  \n`→ No direct equivalent (PyTorch wraps models explicitly with torch.nn.parallel.DistributedDataParallel)`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`strategy.scope()`  \n`\u2192 No direct equivalent (PyTorch wraps models explicitly with torch.nn.parallel.DistributedDataParallel)`",
+      "framework_equivalent": "`strategy.scope()`  \n`→ No direct equivalent (PyTorch wraps models explicitly with torch.nn.parallel.DistributedDataParallel)`",
       "version_compatibility": "No significant changes in modern TensorFlow 2.x releases.",
       "search_metadata": {
         "aliases": [
@@ -840,13 +840,13 @@
       "return_value": "A tf.distribute.DistributedDataset object yielding PerReplica batch elements during iteration.",
       "example": "strategy = tf.distribute.MirroredStrategy()\n\n# Define global batch size\nglobal_batch_size = 16\nfeatures = tf.random.normal((64, 10))\nlabels = tf.random.normal((64, 1))\n\n# Step 1: Create standard host dataset batched by global batch size\nraw_dataset = tf.data.Dataset.from_tensor_slices((features, labels)).batch(global_batch_size)\n\n# Step 2: Convert to distributed dataset using strategy API\ndist_dataset = strategy.experimental_distribute_dataset(raw_dataset)\n\n# Inspect distributed dataset structure\nfor x_dist, y_dist in dist_dataset.take(1):",
       "snippet": "strategy = tf.distribute.MirroredStrategy()\n\n# Define global batch size\nglobal_batch_size = 16\nfeatures = tf.random.normal((64, 10))\nlabels = tf.random.normal((64, 1))\n\n# Step 1: Create standard host dataset batched by global batch size\nraw_dataset = tf.data.Dataset.from_tensor_slices((features, labels)).batch(global_batch_size)\n\n# Step 2: Convert to distributed dataset using strategy API\ndist_dataset = strategy.experimental_distribute_dataset(raw_dataset)\n\n# Inspect distributed dataset structure\nfor x_dist, y_dist in dist_dataset.take(1):",
-      "use_when": "> * Building custom training loops using strategy.run() where input pipeline data must be distributed cleanly across replicas.",
-      "avoid_when": "> * Using standard model.fit() high-level training pipelines\u2014Keras automatically distributes input tf.data.Dataset objects internally.",
+      "use_when": "Building custom training loops using strategy.run() where input pipeline data must be distributed cleanly across replicas.",
+      "avoid_when": "Using standard model.fit() high-level training pipelines—Keras automatically distributes input tf.data.Dataset objects internally.",
       "gotchas": [
         "Input dataset **must** be batched prior to passing into experimental_distribute_dataset(). Passing an unbatched dataset results in runtime errors or single-sample distribution.",
         "In multi-worker training, ensure autosharding options (tf.data.experimental.AutoShardPolicy) are set properly to avoid workers reading duplicate data."
       ],
-      "performance_notes": "> * Performs asynchronous prefetching and direct host-to-device memory transfers via DMA (Direct Memory Access) channels.",
+      "performance_notes": "Performs asynchronous prefetching and direct host-to-device memory transfers via DMA (Direct Memory Access) channels.",
       "related_apis": [
         "strategy.run",
         "tf.data.Dataset",
@@ -854,9 +854,9 @@
       ],
       "primary_apis": [],
       "framework_migration_notes": "Equivalent to PyTorch's torch.utils.data.distributed.DistributedSampler combined with DataLoader.",
-      "pytorch_equivalent": "`strategy.experimental_distribute_dataset`  \n`\u2192 torch.utils.data.DataLoader with DistributedSampler`",
+      "pytorch_equivalent": "`strategy.experimental_distribute_dataset`  \n`→ torch.utils.data.DataLoader with DistributedSampler`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`strategy.experimental_distribute_dataset`  \n`\u2192 torch.utils.data.DataLoader with DistributedSampler`",
+      "framework_equivalent": "`strategy.experimental_distribute_dataset`  \n`→ torch.utils.data.DataLoader with DistributedSampler`",
       "version_compatibility": "Retains the experimental_ prefix in TensorFlow 2.21.0 as the stable canonical API for custom loop dataset distribution.",
       "search_metadata": {
         "aliases": [
@@ -929,12 +929,12 @@
       "return_value": "A PerReplica data structure containing the tensor outputs returned by fn on each execution device.",
       "example": "strategy = tf.distribute.MirroredStrategy()\n\nwith strategy.scope():\nmodel = tf.keras.Sequential([tf.keras.layers.Dense(1, input_shape=(4,))])\noptimizer = tf.keras.optimizers.SGD(learning_rate=0.01)\n\n# Step function designed for individual replica execution\ndef train_step(inputs):\nx, y = inputs\nwith tf.GradientTape() as tape:\npredictions = model(x)\nloss = tf.keras.losses.mean_squared_error(y, predictions)\ngradients = tape.gradient(loss, model.trainable_variables)\noptimizer.apply_gradients(zip(gradients, model.trainable_variables))\nreturn loss\n\n# Wrap complete step in tf.function for graph compilation\n@tf.function\ndef distributed_train_step(dataset_inputs):\n# strategy.run executes train_step on each GPU in parallel\nper_replica_losses = strategy.run(train_step, args=(dataset_inputs,))\nreturn strategy.reduce(tf.distribute.ReduceOp.MEAN, per_replica_losses, axis=None)\n\n# Run synthetic iteration\nfeatures = tf.random.normal((16, 4))\nlabels = tf.random.normal((16, 1))\ndist_dataset = strategy.experimental_distribute_dataset(\ntf.data.Dataset.from_tensor_slices((features, labels)).batch(16)\n)\n\nfor batch in dist_dataset:\nloss_val = distributed_train_step(batch)",
       "snippet": "strategy = tf.distribute.MirroredStrategy()\n\nwith strategy.scope():\nmodel = tf.keras.Sequential([tf.keras.layers.Dense(1, input_shape=(4,))])\noptimizer = tf.keras.optimizers.SGD(learning_rate=0.01)\n\n# Step function designed for individual replica execution\ndef train_step(inputs):\nx, y = inputs\nwith tf.GradientTape() as tape:\npredictions = model(x)\nloss = tf.keras.losses.mean_squared_error(y, predictions)\ngradients = tape.gradient(loss, model.trainable_variables)\noptimizer.apply_gradients(zip(gradients, model.trainable_variables))\nreturn loss\n\n# Wrap complete step in tf.function for graph compilation\n@tf.function\ndef distributed_train_step(dataset_inputs):\n# strategy.run executes train_step on each GPU in parallel\nper_replica_losses = strategy.run(train_step, args=(dataset_inputs,))\nreturn strategy.reduce(tf.distribute.ReduceOp.MEAN, per_replica_losses, axis=None)\n\n# Run synthetic iteration\nfeatures = tf.random.normal((16, 4))\nlabels = tf.random.normal((16, 1))\ndist_dataset = strategy.experimental_distribute_dataset(\ntf.data.Dataset.from_tensor_slices((features, labels)).batch(16)\n)\n\nfor batch in dist_dataset:\nloss_val = distributed_train_step(batch)",
-      "use_when": "> * Orchestrating custom distributed training loops using tf.GradientTape across multiple GPUs or TPUs.",
-      "avoid_when": "> * Training models using standard Keras model.fit() (where step execution is handled internally).",
+      "use_when": "Orchestrating custom distributed training loops using tf.GradientTape across multiple GPUs or TPUs.",
+      "avoid_when": "Training models using standard Keras model.fit() (where step execution is handled internally).",
       "gotchas": [
         "Operations inside the function passed to strategy.run() execute in per-replica context; attempting cross-replica collective updates directly inside fn without strategy APIs will fail."
       ],
-      "performance_notes": "> * Decorating the outer distributed step function with @tf.function is critical; compiling execution into an XLA/TF graph eliminates Python interpreter invocation overhead across replicas.",
+      "performance_notes": "Decorating the outer distributed step function with @tf.function is critical; compiling execution into an XLA/TF graph eliminates Python interpreter invocation overhead across replicas.",
       "related_apis": [
         "strategy.reduce",
         "strategy.experimental_distribute_dataset",
@@ -942,9 +942,9 @@
       ],
       "primary_apis": [],
       "framework_migration_notes": "In PyTorch DDP, forward/backward execution is invoked directly on the model (output \\= model(input)). In TensorFlow custom loops, execution across replicas is managed explicitly via strategy.run(step_fn, args).",
-      "pytorch_equivalent": "`strategy.run`  \n`\u2192 Parallel execution of forward/backward across DDP process replicas`",
+      "pytorch_equivalent": "`strategy.run`  \n`→ Parallel execution of forward/backward across DDP process replicas`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`strategy.run`  \n`\u2192 Parallel execution of forward/backward across DDP process replicas`",
+      "framework_equivalent": "`strategy.run`  \n`→ Parallel execution of forward/backward across DDP process replicas`",
       "version_compatibility": "No significant changes in modern TensorFlow 2.x releases.",
       "search_metadata": {
         "aliases": [
@@ -1018,21 +1018,21 @@
       "return_value": "A standard aggregated tf.Tensor residing on the host context.",
       "example": "strategy = tf.distribute.MirroredStrategy()\n\n# Function returning replica-specific local values\ndef compute_local_loss():\nreplica_id = tf.distribute.get_replica_context().replica_id_in_sync_group\n# Generate mock loss dependent on replica index\nreturn tf.cast(replica_id + 1, dtype=tf.float32)\n\n# Execute step across replicas to obtain PerReplica results\nper_replica_losses = strategy.run(compute_local_loss)\nprint(f\"Per-replica raw values object: {per_replica_losses}\")\n\n# Aggregate per-replica values into a single global mean scalar\nmean_loss = strategy.reduce(tf.distribute.ReduceOp.MEAN, per_replica_losses, axis=None)\nsum_loss = strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_losses, axis=None)\n\nprint(f\"Aggregated Mean Value: {mean_loss.numpy()}\")",
       "snippet": "strategy = tf.distribute.MirroredStrategy()\n\n# Function returning replica-specific local values\ndef compute_local_loss():\nreplica_id = tf.distribute.get_replica_context().replica_id_in_sync_group\n# Generate mock loss dependent on replica index\nreturn tf.cast(replica_id + 1, dtype=tf.float32)\n\n# Execute step across replicas to obtain PerReplica results\nper_replica_losses = strategy.run(compute_local_loss)\nprint(f\"Per-replica raw values object: {per_replica_losses}\")\n\n# Aggregate per-replica values into a single global mean scalar\nmean_loss = strategy.reduce(tf.distribute.ReduceOp.MEAN, per_replica_losses, axis=None)\nsum_loss = strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_losses, axis=None)\n\nprint(f\"Aggregated Mean Value: {mean_loss.numpy()}\")",
-      "use_when": "> * Aggregating training metrics or batch loss metrics generated across device replicas in custom strategy.run() execution loops.",
-      "avoid_when": "> * Aggregating trainable variable gradients\u2014optimizer.apply_gradients() handles cross-replica gradient AllReduce reductions automatically.",
+      "use_when": "Aggregating training metrics or batch loss metrics generated across device replicas in custom strategy.run() execution loops.",
+      "avoid_when": "Aggregating trainable variable gradients—optimizer.apply_gradients() handles cross-replica gradient AllReduce reductions automatically.",
       "gotchas": [
         "Using ReduceOp.SUM instead of ReduceOp.MEAN for loss tracking will artificially inflate reported training loss metrics proportionally to the number of active GPU replicas."
       ],
-      "performance_notes": "> * Triggers lightweight cross-device memory synchronization via ring-reduction primitives.",
+      "performance_notes": "Triggers lightweight cross-device memory synchronization via ring-reduction primitives.",
       "related_apis": [
         "strategy.run",
         "tf.distribute.ReduceOp"
       ],
       "primary_apis": [],
       "framework_migration_notes": "Direct counterpart to PyTorch's explicit collective communication reduction function torch.distributed.all_reduce.",
-      "pytorch_equivalent": "`strategy.reduce`  \n`\u2192 torch.distributed.all_reduce`",
+      "pytorch_equivalent": "`strategy.reduce`  \n`→ torch.distributed.all_reduce`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`strategy.reduce`  \n`\u2192 torch.distributed.all_reduce`",
+      "framework_equivalent": "`strategy.reduce`  \n`→ torch.distributed.all_reduce`",
       "version_compatibility": "No significant changes in modern TensorFlow 2.x releases.",
       "search_metadata": {
         "aliases": [
@@ -1102,22 +1102,22 @@
       "return_value": "Context manager controlling default device context during scope execution.",
       "example": "# Explicitly pin constant creation and operation onto Host CPU\nwith tf.device('/CPU:0'):\ncpu_matrix_a = tf.constant([[1.0, 2.0], [3.0, 4.0]])\ncpu_matrix_b = tf.constant([[5.0, 6.0], [7.0, 8.0]])\ncpu_result = tf.matmul(cpu_matrix_a, cpu_matrix_b)\n\nprint(f\"CPU Tensor Device Placement: {cpu_result.device}\")\n\n# If GPU is detected, pin operation explicitly onto GPU 0\ngpus = tf.config.list_physical_devices('GPU')\nif gpus:\nwith tf.device('/GPU:0'):\ngpu_matrix = tf.random.normal((100, 100))\ngpu_result = tf.reduce_sum(gpu_matrix)",
       "snippet": "# Explicitly pin constant creation and operation onto Host CPU\nwith tf.device('/CPU:0'):\ncpu_matrix_a = tf.constant([[1.0, 2.0], [3.0, 4.0]])\ncpu_matrix_b = tf.constant([[5.0, 6.0], [7.0, 8.0]])\ncpu_result = tf.matmul(cpu_matrix_a, cpu_matrix_b)\n\nprint(f\"CPU Tensor Device Placement: {cpu_result.device}\")\n\n# If GPU is detected, pin operation explicitly onto GPU 0\ngpus = tf.config.list_physical_devices('GPU')\nif gpus:\nwith tf.device('/GPU:0'):\ngpu_matrix = tf.random.normal((100, 100))\ngpu_result = tf.reduce_sum(gpu_matrix)",
-      "use_when": "> * Manually balancing memory usage, such as pinning large embedding tables or image decoding operations onto host CPU RAM.  \n> * Debugging numerical precision discrepancies between CPU and GPU kernel implementations.",
-      "avoid_when": "> * Managing multi-GPU parallel training pipelines (use high-level distribution strategies like tf.distribute.MirroredStrategy instead).",
+      "use_when": "Manually balancing memory usage, such as pinning large embedding tables or image decoding operations onto host CPU RAM.\nDebugging numerical precision discrepancies between CPU and GPU kernel implementations.",
+      "avoid_when": "Managing multi-GPU parallel training pipelines (use high-level distribution strategies like tf.distribute.MirroredStrategy instead).",
       "gotchas": [
         "Hardcoding specific device strings (e.g., '/GPU:1') breaks code portability when executing on single-GPU or non-GPU compute environments.",
         "Explicit device scope conflicts with tf.distribute.Strategy scope placements can lead to runtime crashes or unintended cross-device data copying overheads."
       ],
-      "performance_notes": "> * Explicit cross-device assignments (e.g., computing on GPU and fetching to CPU) incur PCI-e transfer latency penalties.",
+      "performance_notes": "Explicit cross-device assignments (e.g., computing on GPU and fetching to CPU) incur PCI-e transfer latency penalties.",
       "related_apis": [
         "tf.config.list_physical_devices",
         "tf.distribute.OneDeviceStrategy"
       ],
       "primary_apis": [],
       "framework_migration_notes": "Direct equivalent to PyTorch's with torch.device('cuda:0'): context manager.",
-      "pytorch_equivalent": "`with tf.device('/GPU:0'):`  \n`\u2192 with torch.device('cuda:0'):`",
+      "pytorch_equivalent": "`with tf.device('/GPU:0'):`  \n`→ with torch.device('cuda:0'):`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`with tf.device('/GPU:0'):`  \n`\u2192 with torch.device('cuda:0'):`",
+      "framework_equivalent": "`with tf.device('/GPU:0'):`  \n`→ with torch.device('cuda:0'):`",
       "version_compatibility": "No significant changes in modern TensorFlow 2.x releases.",
       "search_metadata": {
         "aliases": [
@@ -1186,21 +1186,21 @@
       "return_value": "A Python list of tf.config.PhysicalDevice objects containing device names and device types.",
       "example": "# List all physical hardware components recognized by runtime\nall_devices = tf.config.list_physical_devices()\nprint(\"All Detected Devices:\")\nfor dev in all_devices:\nprint(f\" - Name: {dev.name}, Type: {dev.device_type}\")\n\n# Filter specifically for GPU accelerators\ngpu_devices = tf.config.list_physical_devices('GPU')\nprint(f\"\\nTotal Physical GPUs Available: {len(gpu_devices)}\")\n\n# Programmatic validation strategy selection\nif len(gpu_devices) > 1:\nstrategy = tf.distribute.MirroredStrategy()\nelif len(gpu_devices) == 1:\nstrategy = tf.distribute.OneDeviceStrategy(device='/gpu:0')\nelse:\nstrategy = tf.distribute.OneDeviceStrategy(device='/cpu:0')",
       "snippet": "# List all physical hardware components recognized by runtime\nall_devices = tf.config.list_physical_devices()\nprint(\"All Detected Devices:\")\nfor dev in all_devices:\nprint(f\" - Name: {dev.name}, Type: {dev.device_type}\")\n\n# Filter specifically for GPU accelerators\ngpu_devices = tf.config.list_physical_devices('GPU')\nprint(f\"\\nTotal Physical GPUs Available: {len(gpu_devices)}\")\n\n# Programmatic validation strategy selection\nif len(gpu_devices) > 1:\nstrategy = tf.distribute.MirroredStrategy()\nelif len(gpu_devices) == 1:\nstrategy = tf.distribute.OneDeviceStrategy(device='/gpu:0')\nelse:\nstrategy = tf.distribute.OneDeviceStrategy(device='/cpu:0')",
-      "use_when": "> * Writing robust startup routines that dynamically select execution strategies based on available hardware infrastructure.  \n> * Logging hardware system configurations at job start.",
-      "avoid_when": "> * Trying to query logical devices created via virtual GPU partitioning (use tf.config.list_logical_devices instead).",
+      "use_when": "Writing robust startup routines that dynamically select execution strategies based on available hardware infrastructure.\nLogging hardware system configurations at job start.",
+      "avoid_when": "Trying to query logical devices created via virtual GPU partitioning (use tf.config.list_logical_devices instead).",
       "gotchas": [
         "list_physical_devices returns hardware present at process startup; devices hidden via CUDA_VISIBLE_DEVICES environment settings will not appear in this list."
       ],
-      "performance_notes": "> * Lightweight inquiry function; does not trigger expensive hardware context initializations.",
+      "performance_notes": "Lightweight inquiry function; does not trigger expensive hardware context initializations.",
       "related_apis": [
         "tf.config.list_logical_devices",
         "tf.config.set_visible_devices"
       ],
       "primary_apis": [],
       "framework_migration_notes": "Equivalent to PyTorch's torch.cuda.is_available() and torch.cuda.device_count().",
-      "pytorch_equivalent": "`tf.config.list_physical_devices('GPU')`  \n`\u2192 [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())]`",
+      "pytorch_equivalent": "`tf.config.list_physical_devices('GPU')`  \n`→ [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())]`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`tf.config.list_physical_devices('GPU')`  \n`\u2192 [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())]`",
+      "framework_equivalent": "`tf.config.list_physical_devices('GPU')`  \n`→ [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())]`",
       "version_compatibility": "No significant changes in modern TensorFlow 2.x releases.",
       "search_metadata": {
         "aliases": [
@@ -1272,22 +1272,22 @@
       "return_value": "None. Modifies runtime device memory management settings.",
       "example": "# Retrieve list of physical GPU devices\ngpus = tf.config.list_physical_devices('GPU')\n\nif gpus:\ntry:\n# Memory growth MUST be set before GPUs are initialized\nfor gpu in gpus:\ntf.config.experimental.set_memory_growth(gpu, True)\nprint(f\"Dynamic memory growth enabled across {len(gpus)} GPU(s).\")\nexcept RuntimeError as e:\n# Memory growth must be configured prior to runtime/tensor initialization",
       "snippet": "# Retrieve list of physical GPU devices\ngpus = tf.config.list_physical_devices('GPU')\n\nif gpus:\ntry:\n# Memory growth MUST be set before GPUs are initialized\nfor gpu in gpus:\ntf.config.experimental.set_memory_growth(gpu, True)\nprint(f\"Dynamic memory growth enabled across {len(gpus)} GPU(s).\")\nexcept RuntimeError as e:\n# Memory growth must be configured prior to runtime/tensor initialization",
-      "use_when": "> * Running TensorFlow jobs on shared GPU hardware alongside other framework workloads (e.g., PyTorch, Jupyter kernels).  \n> * Debugging memory allocation limits or running multiple isolated python processes on a single host node.",
-      "avoid_when": "> * Executing dedicated production training jobs where pre-allocating VRAM optimizes memory fragmentation and guarantees job execution space.",
+      "use_when": "Running TensorFlow jobs on shared GPU hardware alongside other framework workloads (e.g., PyTorch, Jupyter kernels).\nDebugging memory allocation limits or running multiple isolated python processes on a single host node.",
+      "avoid_when": "Executing dedicated production training jobs where pre-allocating VRAM optimizes memory fragmentation and guarantees job execution space.",
       "gotchas": [
         "Calling set_memory_growth **after** tensors have been allocated or GPUs have been initialized throws a RuntimeError: Physical devices cannot be modified after being initialized.",
         "Must be called explicitly for **every** GPU in multi-GPU configurations."
       ],
-      "performance_notes": "> * Dynamic growth can introduce slight runtime allocation overhead when expanding VRAM memory blocks during early iteration steps.",
+      "performance_notes": "Dynamic growth can introduce slight runtime allocation overhead when expanding VRAM memory blocks during early iteration steps.",
       "related_apis": [
         "tf.config.list_physical_devices",
         "tf.config.set_logical_device_configuration"
       ],
       "primary_apis": [],
       "framework_migration_notes": "PyTorch defaults to dynamic allocation without reserving all VRAM upfront. TensorFlow defaults to full pre-allocation unless set_memory_growth is explicitly invoked.",
-      "pytorch_equivalent": "`tf.config.experimental.set_memory_growth`  \n`\u2192 Default PyTorch CUDA memory allocator behavior`",
+      "pytorch_equivalent": "`tf.config.experimental.set_memory_growth`  \n`→ Default PyTorch CUDA memory allocator behavior`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`tf.config.experimental.set_memory_growth`  \n`\u2192 Default PyTorch CUDA memory allocator behavior`",
+      "framework_equivalent": "`tf.config.experimental.set_memory_growth`  \n`→ Default PyTorch CUDA memory allocator behavior`",
       "version_compatibility": "Remains under tf.config.experimental namespace in TensorFlow 2.21.0 for backwards compatibility.",
       "search_metadata": {
         "aliases": [
@@ -1361,23 +1361,23 @@
       "return_value": "None. Operating system environment side-effect read by TensorFlow runtime initialization calls.",
       "example": "import json\nimport tensorflow as tf\n\n# Define cluster specification for a 2-node cluster environment\ncluster_spec = {\n'cluster': {\n'worker': [\n'192.168.1.10:12345',  # Worker index 0 (Primary)\n'192.168.1.11:12345'   # Worker index 1\n]\n},\n'task': {\n'type': 'worker',\n'index': 0  # Should be set dynamically on each machine (0 for Node 1, 1 for Node 2)\n}\n}\n\n# Set TF_CONFIG environment variable before initializing MultiWorkerMirroredStrategy\nos.environ['TF_CONFIG'] = json.dumps(cluster_spec)\n\n# Verify parsing via strategy instantiation\nstrategy = tf.distribute.MultiWorkerMirroredStrategy()\nprint(f\"Task role: {strategy.cluster_resolver.task_type}\")",
       "snippet": "import json\nimport tensorflow as tf\n\n# Define cluster specification for a 2-node cluster environment\ncluster_spec = {\n'cluster': {\n'worker': [\n'192.168.1.10:12345',  # Worker index 0 (Primary)\n'192.168.1.11:12345'   # Worker index 1\n]\n},\n'task': {\n'type': 'worker',\n'index': 0  # Should be set dynamically on each machine (0 for Node 1, 1 for Node 2)\n}\n}\n\n# Set TF_CONFIG environment variable before initializing MultiWorkerMirroredStrategy\nos.environ['TF_CONFIG'] = json.dumps(cluster_spec)\n\n# Verify parsing via strategy instantiation\nstrategy = tf.distribute.MultiWorkerMirroredStrategy()\nprint(f\"Task role: {strategy.cluster_resolver.task_type}\")",
-      "use_when": "> * Launching multi-node multi-worker training jobs on orchestration platforms like Kubernetes (via Kubeflow Training Operator), Slurm, or custom cloud cluster scripts.",
-      "avoid_when": "> * Training on a single machine with multiple GPUs (use MirroredStrategy).",
+      "use_when": "Launching multi-node multi-worker training jobs on orchestration platforms like Kubernetes (via Kubeflow Training Operator), Slurm, or custom cloud cluster scripts.",
+      "avoid_when": "Training on a single machine with multiple GPUs (use MirroredStrategy).",
       "gotchas": [
         "JSON formatting errors in TF_CONFIG cause runtime parsing failures or silent job hangs.",
         "Worker 0 is responsible for saving checkpoints; if worker indices are misconfigured, multiple nodes may attempt concurrent writes, corrupting checkpoint files.",
         "Ports specified in TF_CONFIG must be open and accessible across worker nodes through firewalls."
       ],
-      "performance_notes": "> * Proper network configuration prevents connection timeouts during gRPC/NCCL handshake steps.",
+      "performance_notes": "Proper network configuration prevents connection timeouts during gRPC/NCCL handshake steps.",
       "related_apis": [
         "tf.distribute.MultiWorkerMirroredStrategy",
         "tf.distribute.cluster_resolver.TFConfigClusterResolver"
       ],
       "primary_apis": [],
       "framework_migration_notes": "In PyTorch, multi-node configuration relies on environment variables like MASTER_ADDR, MASTER_PORT, WORLD_SIZE, and RANK. TensorFlow consolidates these configuration parameters into the single structured TF_CONFIG JSON environment variable.",
-      "pytorch_equivalent": "`TF_CONFIG`  \n`\u2192 Set PyTorch DDP env vars (MASTER_ADDR, MASTER_PORT, RANK, WORLD_SIZE)`",
+      "pytorch_equivalent": "`TF_CONFIG`  \n`→ Set PyTorch DDP env vars (MASTER_ADDR, MASTER_PORT, RANK, WORLD_SIZE)`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`TF_CONFIG`  \n`\u2192 Set PyTorch DDP env vars (MASTER_ADDR, MASTER_PORT, RANK, WORLD_SIZE)`",
+      "framework_equivalent": "`TF_CONFIG`  \n`→ Set PyTorch DDP env vars (MASTER_ADDR, MASTER_PORT, RANK, WORLD_SIZE)`",
       "version_compatibility": "No significant changes in modern TensorFlow 2.x releases.",
       "search_metadata": {
         "aliases": [
@@ -1404,10 +1404,10 @@
           "MultiWorkerMirroredStrategy"
         ],
         "frequently_confused_with": [
-          "Slurm or Kubernetes environment variables\u2014TF_CONFIG must be constructed explicitly from cluster orchestrator metadata."
+          "Slurm or Kubernetes environment variables—TF_CONFIG must be constructed explicitly from cluster orchestrator metadata."
         ],
         "confused_with": [
-          "Slurm or Kubernetes environment variables\u2014TF_CONFIG must be constructed explicitly from cluster orchestrator metadata."
+          "Slurm or Kubernetes environment variables—TF_CONFIG must be constructed explicitly from cluster orchestrator metadata."
         ]
       },
       "related_models": [
@@ -1449,13 +1449,13 @@
       "return_value": "A tf.keras.callbacks.TensorBoard object configured for performance profiling.",
       "example": "import tempfile\nimport tensorflow as tf\n\nstrategy = tf.distribute.MirroredStrategy()\n\n# Setup temporary logging directory\nlog_dir = os.path.join(tempfile.gettempdir(), \"tb_profile_logs\")\n\n# Configure TensorBoard callback to profile steps 5 through 10\ntensorboard_callback = tf.keras.callbacks.TensorBoard(\nlog_dir=log_dir,\nprofile_batch=(5, 10),\nhistogram_freq=1\n)\n\nwith strategy.scope():\nmodel = tf.keras.Sequential([\ntf.keras.layers.Dense(64, activation='relu', input_shape=(32,)),\ntf.keras.layers.Dense(1)\n])\nmodel.compile(optimizer='adam', loss='mse')\n\n# Create synthetic dataset\ndataset = tf.data.Dataset.from_tensor_slices(\n(tf.random.normal((320, 32)), tf.random.normal((320, 1)))\n).batch(32)\n\n# Fit model with profiling active\nmodel.fit(dataset, epochs=2, callbacks=[tensorboard_callback], verbose=0)",
       "snippet": "import tempfile\nimport tensorflow as tf\n\nstrategy = tf.distribute.MirroredStrategy()\n\n# Setup temporary logging directory\nlog_dir = os.path.join(tempfile.gettempdir(), \"tb_profile_logs\")\n\n# Configure TensorBoard callback to profile steps 5 through 10\ntensorboard_callback = tf.keras.callbacks.TensorBoard(\nlog_dir=log_dir,\nprofile_batch=(5, 10),\nhistogram_freq=1\n)\n\nwith strategy.scope():\nmodel = tf.keras.Sequential([\ntf.keras.layers.Dense(64, activation='relu', input_shape=(32,)),\ntf.keras.layers.Dense(1)\n])\nmodel.compile(optimizer='adam', loss='mse')\n\n# Create synthetic dataset\ndataset = tf.data.Dataset.from_tensor_slices(\n(tf.random.normal((320, 32)), tf.random.normal((320, 1)))\n).batch(32)\n\n# Fit model with profiling active\nmodel.fit(dataset, epochs=2, callbacks=[tensorboard_callback], verbose=0)",
-      "use_when": "> * Diagnosing scaling bottlenecks, low GPU utilization, or input pipeline stalls in distributed training runs.  \n> * Auditing memory utilization across individual GPU or TPU replicas.",
-      "avoid_when": "> * Profiling continuously throughout long production training runs (profiling introduces execution overhead and generates massive log files).",
+      "use_when": "Diagnosing scaling bottlenecks, low GPU utilization, or input pipeline stalls in distributed training runs.\nAuditing memory utilization across individual GPU or TPU replicas.",
+      "avoid_when": "Profiling continuously throughout long production training runs (profiling introduces execution overhead and generates massive log files).",
       "gotchas": [
-        "Profiling step 0 or step 1 captures initial graph compilation overhead, skewing performance metrics; always profile steady-state steps (e.g., steps 20\u201340).",
+        "Profiling step 0 or step 1 captures initial graph compilation overhead, skewing performance metrics; always profile steady-state steps (e.g., steps 20–40).",
         "Ensure the tensorboard-plugin-profile package is installed in your python environment to visualize profile traces inside TensorBoard."
       ],
-      "performance_notes": "> * Profiling adds \\~5-10% execution overhead while active; ensure profiling is disabled after trace collection completes.",
+      "performance_notes": "Profiling adds \\~5-10% execution overhead while active; ensure profiling is disabled after trace collection completes.",
       "related_apis": [
         "tf.profiler.experimental.start",
         "tf.profiler.experimental.stop",
@@ -1463,9 +1463,9 @@
       ],
       "primary_apis": [],
       "framework_migration_notes": "Equivalent to PyTorch's torch.profiler.profile combined with TensorBoard export mechanisms (torch.utils.tensorboard).",
-      "pytorch_equivalent": "`tf.keras.callbacks.TensorBoard(profile_batch=...)`  \n`\u2192 torch.profiler.profile`",
+      "pytorch_equivalent": "`tf.keras.callbacks.TensorBoard(profile_batch=...)`  \n`→ torch.profiler.profile`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`tf.keras.callbacks.TensorBoard(profile_batch=...)`  \n`\u2192 torch.profiler.profile`",
+      "framework_equivalent": "`tf.keras.callbacks.TensorBoard(profile_batch=...)`  \n`→ torch.profiler.profile`",
       "version_compatibility": "No significant changes in modern TensorFlow 2.x releases.",
       "search_metadata": {
         "aliases": [

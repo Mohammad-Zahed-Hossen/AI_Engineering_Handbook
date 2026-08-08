@@ -33,7 +33,7 @@
         "Nesterov momentum requires setting momentum greater than zero to take effect.",
         "SGD requires careful learning rate scheduling, unlike adaptive methods which are more forgiving of default learning rates."
       ],
-      "performance_notes": "> * Minimal state memory overhead (1 extra tensor per weight for momentum state).  \n> * High GPU compute efficiency with low per-step memory allocation.  \n> * Ideal for edge devices and distributed scale due to minimal state synchronization footprint.",
+      "performance_notes": "Minimal state memory overhead (1 extra tensor per weight for momentum state).\nHigh GPU compute efficiency with low per-step memory allocation.\nIdeal for edge devices and distributed scale due to minimal state synchronization footprint.",
       "related_apis": [
         "tf.keras.optimizers.Adam, tf.keras.optimizers.RMSprop, tf.keras.optimizers.schedules.CosineDecay"
       ],
@@ -124,7 +124,7 @@
         "Epsilon value 1e-7 can cause numerical instability or NaN gradients in float16 mixed precision training.",
         "Adam consumes 2x parameter memory in optimizer slots (moving average of gradient and square gradient)."
       ],
-      "performance_notes": "> * Requires 2 additional state variables per model parameter (m and v tensors).  \n> * Higher memory consumption compared to SGD or Adafactor.  \n> * High per-step kernel efficiency on modern GPU/TPU architectures.",
+      "performance_notes": "Requires 2 additional state variables per model parameter (m and v tensors).\nHigher memory consumption compared to SGD or Adafactor.\nHigh per-step kernel efficiency on modern GPU/TPU architectures.",
       "related_apis": [
         "tf.keras.optimizers.AdamW, tf.keras.optimizers.RMSprop, tf.keras.optimizers.Adafactor"
       ],
@@ -214,7 +214,7 @@
         "Setting weight_decay too high (e.g. greater than 0.1) can severely suppress weight updates across deep layers.",
         "Learning rate changes directly scale the effective weight decay step in AdamW."
       ],
-      "performance_notes": "> * Maintains 2 slot variables per model parameter (same memory overhead as Adam).  \n> * Weight decay step is merged into the optimizer kernel for zero GPU runtime penalty compared to Adam.  \n> * Standard choice for modern LLM and Vision Transformer training pipelines.",
+      "performance_notes": "Maintains 2 slot variables per model parameter (same memory overhead as Adam).\nWeight decay step is merged into the optimizer kernel for zero GPU runtime penalty compared to Adam.\nStandard choice for modern LLM and Vision Transformer training pipelines.",
       "related_apis": [
         "tf.keras.optimizers.Adam, tf.keras.optimizers.schedules.CosineDecay, tf.keras.optimizers.Adafactor"
       ],
@@ -304,7 +304,7 @@
         "Setting centered=True adds an extra state vector per parameter, increasing memory overhead.",
         "High default learning rates can cause divergence in deep networks without warmup schedules."
       ],
-      "performance_notes": "> * Uncentered RMSprop uses 1 slot variable per parameter tensor (moving average of squared gradients).  \n> * Lower memory footprint than Adam/AdamW while providing adaptive learning rates per parameter.  \n> * Fast kernel evaluation on GPU.",
+      "performance_notes": "Uncentered RMSprop uses 1 slot variable per parameter tensor (moving average of squared gradients).\nLower memory footprint than Adam/AdamW while providing adaptive learning rates per parameter.\nFast kernel evaluation on GPU.",
       "related_apis": [
         "tf.keras.optimizers.Adam, tf.keras.optimizers.SGD, tf.keras.optimizers.Adagrad"
       ],
@@ -393,7 +393,7 @@
         "Setting initial_accumulator_value too low can cause aggressive initial gradient updates.",
         "Default learning rate (0.001) is often too small for Adagrad; 0.01 or 0.1 is usually required."
       ],
-      "performance_notes": "> * Uses 1 slot variable per model parameter (accumulated square sum).  \n> * Memory usage is lower than Adam or AdamW.  \n> * Efficient update execution for sparse embedding lookups and sparse tensors.",
+      "performance_notes": "Uses 1 slot variable per model parameter (accumulated square sum).\nMemory usage is lower than Adam or AdamW.\nEfficient update execution for sparse embedding lookups and sparse tensors.",
       "related_apis": [
         "tf.keras.optimizers.Adam, tf.keras.optimizers.RMSprop, tf.keras.optimizers.SGD"
       ],
@@ -482,7 +482,7 @@
         "For 1D tensors (biases, normalization scale), Adafactor falls back to un-factored second moments.",
         "Convergence behavior can be sensitive to clip_threshold and learning rate schedules."
       ],
-      "performance_notes": "> * Substantially reduces optimizer state memory: uses row and column sums for 2D matrices instead of per-element state.  \n> * Saves up to 50% or more optimizer memory compared to AdamW.  \n> * Enables larger batch sizes or context lengths on high-memory LLM tasks.",
+      "performance_notes": "Substantially reduces optimizer state memory: uses row and column sums for 2D matrices instead of per-element state.\nSaves up to 50% or more optimizer memory compared to AdamW.\nEnables larger batch sizes or context lengths on high-memory LLM tasks.",
       "related_apis": [
         "tf.keras.optimizers.AdamW, tf.keras.optimizers.Adam, tf.keras.optimizers.schedules.CosineDecay"
       ],
@@ -565,7 +565,7 @@
         "Resetting state does not re-initialize model trainable variables; only optimizer slot variables are cleared.",
         "In custom loops, calling reset_state() mid-epoch will disrupt momentum acceleration."
       ],
-      "performance_notes": "> * Releases or zeroes slot variable memory allocations instantly.  \n> * Minimal execution cost.",
+      "performance_notes": "Releases or zeroes slot variable memory allocations instantly.\nMinimal execution cost.",
       "related_apis": [
         "optimizer.apply_gradients, optimizer.save_own_variables, optimizer.load_own_variables"
       ],
@@ -647,7 +647,7 @@
         "Un-zipped iterators in grads_and_vars passed multiple times will be exhausted upon first evaluation.",
         "Applying gradients out-of-order or with mismatched shape causes runtime shape exceptions."
       ],
-      "performance_notes": "> * Modern Keras 3 optimizes apply_gradients into fused kernels for high performance.  \n> * Ensures atomic update across all model parameters in eager and graph execution.",
+      "performance_notes": "Modern Keras 3 optimizes apply_gradients into fused kernels for high performance.\nEnsures atomic update across all model parameters in eager and graph execution.",
       "related_apis": [
         "tf.GradientTape, tf.clip_by_global_norm, tf.clip_by_value"
       ],
@@ -727,7 +727,7 @@
         "Setting weight_decay on bias terms or normalization parameters can degrade performance.",
         "Effective decay rate depends on learning rate when schedules are applied."
       ],
-      "performance_notes": "> * Executed directly inside parameter update kernel without additional GradientTape overhead or loss node evaluation.  \n> * Zero memory overhead compared to adding L2 loss terms.",
+      "performance_notes": "Executed directly inside parameter update kernel without additional GradientTape overhead or loss node evaluation.\nZero memory overhead compared to adding L2 loss terms.",
       "related_apis": [
         "tf.keras.optimizers.AdamW, tf.keras.optimizers.SGD, tf.keras.regularizers.L2"
       ],
@@ -809,7 +809,7 @@
         "String matching in var_names is case-sensitive substring matching against var.name.",
         "Forgetting to exclude LayerNorm scales can result in premature parameter shrinking and training instability."
       ],
-      "performance_notes": "> * Zero runtime performance overhead; exclusions are flagged prior to optimization step evaluation.",
+      "performance_notes": "Zero runtime performance overhead; exclusions are flagged prior to optimization step evaluation.",
       "related_apis": [
         "tf.keras.optimizers.AdamW, tf.keras.optimizers.SGD"
       ],
@@ -895,7 +895,7 @@
         "If decay_rate is too small (such as 0.5 with small decay_steps), learning rate drops to zero too quickly.",
         "Schedule state depends on optimizer step count, so resetting optimizer state resets the schedule."
       ],
-      "performance_notes": "> * Negligible scalar math evaluation per training step.  \n> * Graph-compatible and TPU-friendly.",
+      "performance_notes": "Negligible scalar math evaluation per training step.\nGraph-compatible and TPU-friendly.",
       "related_apis": [
         "tf.keras.optimizers.schedules.CosineDecay, tf.keras.optimizers.schedules.PiecewiseConstantDecay"
       ],
@@ -982,7 +982,7 @@
         "Ensure warmup_steps is smaller than decay_steps.",
         "Forgetting alpha \\> 0 causes learning rate to drop completely to zero at end of training."
       ],
-      "performance_notes": "> * Light scalar trigonometric calculation per step; negligible GPU/TPU impact.  \n> * Standard schedule for state-of-the-art LLM pretraining runs.",
+      "performance_notes": "Light scalar trigonometric calculation per step; negligible GPU/TPU impact.\nStandard schedule for state-of-the-art LLM pretraining runs.",
       "related_apis": [
         "tf.keras.optimizers.schedules.CosineDecayRestarts, tf.keras.optimizers.schedules.ExponentialDecay, tf.keras.optimizers.AdamW"
       ],
@@ -1071,7 +1071,7 @@
         "If t_mul is very large, subsequent periods become excessively long.",
         "Sudden learning rate increases at period boundaries can cause transient loss spikes."
       ],
-      "performance_notes": "> * Negligible scalar math computation per step.  \n> * Supported natively inside tf.function computational graphs.",
+      "performance_notes": "Negligible scalar math computation per step.\nSupported natively inside tf.function computational graphs.",
       "related_apis": [
         "tf.keras.optimizers.schedules.CosineDecay, tf.keras.optimizers.Adam"
       ],
@@ -1152,7 +1152,7 @@
         "Boundaries must be strictly sorted in ascending order.",
         "Step counts are global optimizer step numbers, not epoch numbers."
       ],
-      "performance_notes": "> * Extremely lightweight step lookup logic per iteration.",
+      "performance_notes": "Extremely lightweight step lookup logic per iteration.",
       "related_apis": [
         "tf.keras.optimizers.schedules.ExponentialDecay, tf.keras.optimizers.SGD"
       ],
@@ -1239,7 +1239,7 @@
         "Beyond decay_steps, learning rate remains strictly at end_learning_rate unless cycle=True.",
         "power=1.0 produces linear decay; higher power values decay learning rate very aggressively in early steps."
       ],
-      "performance_notes": "> * Single power evaluation per step; zero GPU throughput overhead.",
+      "performance_notes": "Single power evaluation per step; zero GPU throughput overhead.",
       "related_apis": [
         "tf.keras.optimizers.schedules.CosineDecay, tf.keras.optimizers.AdamW"
       ],
@@ -1325,7 +1325,7 @@
         "staircase=True causes step-wise drops rather than continuous updates.",
         "High decay_rate leads to rapid reduction in early steps."
       ],
-      "performance_notes": "> * Negligible division operation overhead per step.",
+      "performance_notes": "Negligible division operation overhead per step.",
       "related_apis": [
         "tf.keras.optimizers.schedules.ExponentialDecay, tf.keras.optimizers.schedules.PolynomialDecay"
       ],
@@ -1408,7 +1408,7 @@
         "Clipping by global norm preserves gradient directions across parameters, unlike elementwise or per-tensor clipping.",
         "Global norm computation involves a full reduction sync across all gradients."
       ],
-      "performance_notes": "> * Triggers reduction across gradient tensors to compute L2 norm.  \n> * Standard stabilization method for LLM training.",
+      "performance_notes": "Triggers reduction across gradient tensors to compute L2 norm.\nStandard stabilization method for LLM training.",
       "related_apis": [
         "tf.clip_by_value, tf.keras.optimizers.AdamW"
       ],
@@ -1493,7 +1493,7 @@
         "Setting bounds too narrow restricts model convergence speed.",
         "Passing None gradients directly causes runtime attribute errors."
       ],
-      "performance_notes": "> * Fast, elementwise CUDA kernel execution.  \n> * Operates locally per tensor without cross-variable synchronization.",
+      "performance_notes": "Fast, elementwise CUDA kernel execution.\nOperates locally per tensor without cross-variable synchronization.",
       "related_apis": [
         "tf.clip_by_global_norm, tf.keras.optimizers.Optimizer"
       ],
@@ -1572,7 +1572,7 @@
         "Assigning a float to optimizer.learning_rate when a schedule was attached permanently overwrites the schedule.",
         "Inspecting optimizer.learning_rate when using a schedule returns the schedule object, not the evaluated scalar value (call optimizer.learning_rate(optimizer.iterations) to get the scalar value)."
       ],
-      "performance_notes": "> * Zero performance cost for inspection; assign executes an immediate variable assignment.",
+      "performance_notes": "Zero performance cost for inspection; assign executes an immediate variable assignment.",
       "related_apis": [
         "tf.keras.optimizers.schedules.ExponentialDecay, tf.keras.optimizers.schedules.CosineDecay"
       ],
@@ -1651,7 +1651,7 @@
         "load_own_variables requires the destination optimizer to be built (opt.build(vars) or after 1 step) so that slot variable structures match.",
         "Number and shapes of target variables must strictly match saved state tensors."
       ],
-      "performance_notes": "> * In-memory tensor copy or direct dictionary lookup. Minimal CPU or GPU overhead.",
+      "performance_notes": "In-memory tensor copy or direct dictionary lookup. Minimal CPU or GPU overhead.",
       "related_apis": [
         "optimizer.reset_state, tf.train.Checkpoint"
       ],

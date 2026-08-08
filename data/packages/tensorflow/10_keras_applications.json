@@ -26,23 +26,23 @@
       "return_value": "A tf.keras.Model instance representing the ResNet50 architecture.",
       "example": "# Load full pretrained ResNet50 for 1000-class ImageNet prediction\nmodel = tf.keras.applications.ResNet50(\ninclude_top=True,\nweights=\"imagenet\",\ninput_shape=(224, 224, 3)\n)\n\n# Mock input image tensor (batch_size=1, height=224, width=224, channels=3)\nmock_image = tf.random.uniform((1, 224, 224, 3), minval=0, maxval=255)\n\n# Preprocess image using model-specific preprocessing\npreprocessed_image = tf.keras.applications.resnet50.preprocess_input(mock_image)\n\n# Run inference\npredictions = model(preprocessed_image, training=False)",
       "snippet": "# Load full pretrained ResNet50 for 1000-class ImageNet prediction\nmodel = tf.keras.applications.ResNet50(\ninclude_top=True,\nweights=\"imagenet\",\ninput_shape=(224, 224, 3)\n)\n\n# Mock input image tensor (batch_size=1, height=224, width=224, channels=3)\nmock_image = tf.random.uniform((1, 224, 224, 3), minval=0, maxval=255)\n\n# Preprocess image using model-specific preprocessing\npreprocessed_image = tf.keras.applications.resnet50.preprocess_input(mock_image)\n\n# Run inference\npredictions = model(preprocessed_image, training=False)",
-      "use_when": "> * You require a stable baseline model for visual recognition tasks.  \n> * You need deep feature representations for downstream transfer learning or embedding generation.",
-      "avoid_when": "> * Deploying to extreme edge or mobile devices with severe memory and latency limits.  \n> * Parameter efficiency and ultra-low latency are top priority (use MobileNetV3 or EfficientNetV2 instead).",
+      "use_when": "You require a stable baseline model for visual recognition tasks.\nYou need deep feature representations for downstream transfer learning or embedding generation.",
+      "avoid_when": "Deploying to extreme edge or mobile devices with severe memory and latency limits.\nParameter efficiency and ultra-low latency are top priority (use MobileNetV3 or EfficientNetV2 instead).",
       "gotchas": [
         "Input images must be preprocessed using tf.keras.applications.resnet50.preprocess_input (converts RGB to BGR and zero-centers each color channel with respect to ImageNet).",
         "Omitting include_top=False when supplying a custom input_shape that is not (224, 224, 3) throws a ValueError.",
         "Setting trainable=True during fine-tuning without locking BatchNormalization layers can corrupt learned feature representations."
       ],
-      "performance_notes": "> * Contains \\~25.6 million parameters.  \n> * Higher GPU memory usage compared to lightweight models like MobileNetV3.  \n> * Excellent throughput on modern desktop and server GPUs.",
+      "performance_notes": "Contains \\~25.6 million parameters.\nHigher GPU memory usage compared to lightweight models like MobileNetV3.\nExcellent throughput on modern desktop and server GPUs.",
       "related_apis": [
         "tf.keras.applications.resnet50.preprocess_input",
         "tf.keras.applications.resnet50.decode_predictions"
       ],
       "primary_apis": [],
-      "framework_migration_notes": "> * weights=\"imagenet\" in TensorFlow replaces explicit weight enums like ResNet50_Weights.DEFAULT in PyTorch TorchVision.  \n> * ResNet in Keras expects channels-last data format (batch, height, width, channels) by default, unlike PyTorch (batch, channels, height, width).",
-      "pytorch_equivalent": "`tf.keras.applications.ResNet50`  \n`\u2192 torchvision.models.resnet50`",
+      "framework_migration_notes": "weights=\"imagenet\" in TensorFlow replaces explicit weight enums like ResNet50_Weights.DEFAULT in PyTorch TorchVision.\nResNet in Keras expects channels-last data format (batch, height, width, channels) by default, unlike PyTorch (batch, channels, height, width).",
+      "pytorch_equivalent": "`tf.keras.applications.ResNet50`  \n`→ torchvision.models.resnet50`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`tf.keras.applications.ResNet50`  \n`\u2192 torchvision.models.resnet50`",
+      "framework_equivalent": "`tf.keras.applications.ResNet50`  \n`→ torchvision.models.resnet50`",
       "version_compatibility": "No significant changes in TensorFlow 2.21.",
       "search_metadata": {
         "aliases": [
@@ -118,22 +118,22 @@
       "return_value": "A tf.keras.Model instance representing EfficientNetV2B0.",
       "example": "# Load EfficientNetV2B0 with built-in preprocessing enabled\nmodel = tf.keras.applications.EfficientNetV2B0(\ninclude_top=True,\nweights=\"imagenet\",\ninclude_preprocessing=True\n)\n\n# Raw image values in range [0, 255]\nraw_image = tf.random.uniform((1, 224, 224, 3), minval=0, maxval=255)\n\n# Direct inference without manual preprocess_input when include_preprocessing=True\npredictions = model(raw_image, training=False)",
       "snippet": "# Load EfficientNetV2B0 with built-in preprocessing enabled\nmodel = tf.keras.applications.EfficientNetV2B0(\ninclude_top=True,\nweights=\"imagenet\",\ninclude_preprocessing=True\n)\n\n# Raw image values in range [0, 255]\nraw_image = tf.random.uniform((1, 224, 224, 3), minval=0, maxval=255)\n\n# Direct inference without manual preprocess_input when include_preprocessing=True\npredictions = model(raw_image, training=False)",
-      "use_when": "> * Building high-accuracy vision systems under strict compute budget constraints.  \n> * Training vision models where fast convergence and parameter efficiency matter.",
-      "avoid_when": "> * Legacy deployment pipelines require simpler convnets without depthwise or Fused-MBConv layers.  \n> * Edge hardware lacks optimized kernels for depthwise separable convolutions.",
+      "use_when": "Building high-accuracy vision systems under strict compute budget constraints.\nTraining vision models where fast convergence and parameter efficiency matter.",
+      "avoid_when": "Legacy deployment pipelines require simpler convnets without depthwise or Fused-MBConv layers.\nEdge hardware lacks optimized kernels for depthwise separable convolutions.",
       "gotchas": [
         "Setting include_preprocessing=True expects raw image inputs in range [0, 255]. Passing pre-scaled [0, 1] inputs under this setting will lead to double normalization and poor predictions.",
         "When include_preprocessing=False, you must manually apply tf.keras.applications.efficientnet_v2.preprocess_input."
       ],
-      "performance_notes": "> * EfficientNetV2B0 contains only \\~7.2 million parameters.  \n> * Fused-MBConv operations optimize GPU/TPU accelerator utilization significantly compared to EfficientNetV1.",
+      "performance_notes": "EfficientNetV2B0 contains only \\~7.2 million parameters.\nFused-MBConv operations optimize GPU/TPU accelerator utilization significantly compared to EfficientNetV1.",
       "related_apis": [
         "tf.keras.applications.EfficientNetV2S",
         "tf.keras.applications.efficientnet_v2.preprocess_input"
       ],
       "primary_apis": [],
-      "framework_migration_notes": "> * EfficientNetV2 in Keras handles feature scaling inside the computational graph when include_preprocessing=True, unlike PyTorch TorchVision models which strictly require manual transforms.Normalize.",
-      "pytorch_equivalent": "`tf.keras.applications.EfficientNetV2B0`  \n`\u2192 torchvision.models.efficientnet_v2_s`",
+      "framework_migration_notes": "EfficientNetV2 in Keras handles feature scaling inside the computational graph when include_preprocessing=True, unlike PyTorch TorchVision models which strictly require manual transforms.Normalize.",
+      "pytorch_equivalent": "`tf.keras.applications.EfficientNetV2B0`  \n`→ torchvision.models.efficientnet_v2_s`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`tf.keras.applications.EfficientNetV2B0`  \n`\u2192 torchvision.models.efficientnet_v2_s`",
+      "framework_equivalent": "`tf.keras.applications.EfficientNetV2B0`  \n`→ torchvision.models.efficientnet_v2_s`",
       "version_compatibility": "No significant changes in TensorFlow 2.21.",
       "search_metadata": {
         "aliases": [
@@ -209,22 +209,22 @@
       "return_value": "A tf.keras.Model instance representing MobileNetV3Small.",
       "example": "# Load MobileNetV3Small optimized for mobile inference\nmodel = tf.keras.applications.MobileNetV3Small(\ninput_shape=(224, 224, 3),\ninclude_top=False,\nweights=\"imagenet\",\npooling=\"avg\",\ninclude_preprocessing=True\n)\n\n# Input image tensor with values in [0, 255]\ninput_tensor = tf.random.uniform((1, 224, 224, 3), minval=0, maxval=255)\n\n# Extract 576-dimensional feature vector directly\nfeature_vector = model(input_tensor, training=False)",
       "snippet": "# Load MobileNetV3Small optimized for mobile inference\nmodel = tf.keras.applications.MobileNetV3Small(\ninput_shape=(224, 224, 3),\ninclude_top=False,\nweights=\"imagenet\",\npooling=\"avg\",\ninclude_preprocessing=True\n)\n\n# Input image tensor with values in [0, 255]\ninput_tensor = tf.random.uniform((1, 224, 224, 3), minval=0, maxval=255)\n\n# Extract 576-dimensional feature vector directly\nfeature_vector = model(input_tensor, training=False)",
-      "use_when": "> * Target platform is an iOS/Android device, Raspberry Pi, or web browser via TensorFlow.js / TFLite.  \n> * Latency and memory consumption must be strictly minimized.",
-      "avoid_when": "> * Top-1 accuracy is the single primary metric and server-side GPU resources are unrestricted.",
+      "use_when": "Target platform is an iOS/Android device, Raspberry Pi, or web browser via TensorFlow.js / TFLite.\nLatency and memory consumption must be strictly minimized.",
+      "avoid_when": "Top-1 accuracy is the single primary metric and server-side GPU resources are unrestricted.",
       "gotchas": [
         "Setting minimalistic=True changes the architecture, meaning official 'imagenet' weights trained for non-minimalistic models cannot be loaded.",
         "Alpha multipliers must match valid pretrained configurations if loading ImageNet weights."
       ],
-      "performance_notes": "> * MobileNetV3Small contains only \\~2.5 million parameters.  \n> * Utilizes hard-swish activations and squeeze-and-excitation blocks for minimal latency on edge processors.",
+      "performance_notes": "MobileNetV3Small contains only \\~2.5 million parameters.\nUtilizes hard-swish activations and squeeze-and-excitation blocks for minimal latency on edge processors.",
       "related_apis": [
         "tf.keras.applications.MobileNetV3Large",
         "tf.keras.applications.mobilenet_v3.preprocess_input"
       ],
       "primary_apis": [],
-      "framework_migration_notes": "> * TensorFlow MobileNetV3 includes include_preprocessing parameter natively, avoiding explicit manual transform setups.",
-      "pytorch_equivalent": "`tf.keras.applications.MobileNetV3Small`  \n`\u2192 torchvision.models.mobilenet_v3_small`",
+      "framework_migration_notes": "TensorFlow MobileNetV3 includes include_preprocessing parameter natively, avoiding explicit manual transform setups.",
+      "pytorch_equivalent": "`tf.keras.applications.MobileNetV3Small`  \n`→ torchvision.models.mobilenet_v3_small`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`tf.keras.applications.MobileNetV3Small`  \n`\u2192 torchvision.models.mobilenet_v3_small`",
+      "framework_equivalent": "`tf.keras.applications.MobileNetV3Small`  \n`→ torchvision.models.mobilenet_v3_small`",
       "version_compatibility": "No significant changes in TensorFlow 2.21.",
       "search_metadata": {
         "aliases": [
@@ -301,23 +301,23 @@
       "return_value": "A tf.keras.Model instance representing DenseNet121.",
       "example": "# Load DenseNet121 feature extractor\nbase_model = tf.keras.applications.DenseNet121(\ninclude_top=False,\nweights=\"imagenet\",\ninput_shape=(224, 224, 3),\npooling=\"avg\"\n)\n\ndummy_batch = tf.random.uniform((2, 224, 224, 3), minval=0, maxval=255)\npreprocessed = tf.keras.applications.densenet.preprocess_input(dummy_batch)\n\nfeatures = base_model(preprocessed, training=False)",
       "snippet": "# Load DenseNet121 feature extractor\nbase_model = tf.keras.applications.DenseNet121(\ninclude_top=False,\nweights=\"imagenet\",\ninput_shape=(224, 224, 3),\npooling=\"avg\"\n)\n\ndummy_batch = tf.random.uniform((2, 224, 224, 3), minval=0, maxval=255)\npreprocessed = tf.keras.applications.densenet.preprocess_input(dummy_batch)\n\nfeatures = base_model(preprocessed, training=False)",
-      "use_when": "> * Working on tasks with smaller dataset sizes where dense connections help mitigate overfitting.  \n> * Medical visual analysis (e.g., X-rays, pathology) where feature concatenation across scale levels is beneficial.",
-      "avoid_when": "> * GPU memory footprint during forward/backward passes is severely constrained (concatenating feature maps increases memory overhead).",
+      "use_when": "Working on tasks with smaller dataset sizes where dense connections help mitigate overfitting.\nMedical visual analysis (e.g., X-rays, pathology) where feature concatenation across scale levels is beneficial.",
+      "avoid_when": "GPU memory footprint during forward/backward passes is severely constrained (concatenating feature maps increases memory overhead).",
       "gotchas": [
         "DenseNet require specific feature scaling via tf.keras.applications.densenet.preprocess_input (scales pixel values between 0 and 1, then normalizes by ImageNet stats).",
         "High GPU memory utilization during training due to concatenation of intermediate feature maps across dense blocks."
       ],
-      "performance_notes": "> * \\~8.0 million parameters (highly parameter efficient relative to depth).  \n> * Higher memory bandwidth requirement during backward propagation compared to ResNet.",
+      "performance_notes": "\\~8.0 million parameters (highly parameter efficient relative to depth).\nHigher memory bandwidth requirement during backward propagation compared to ResNet.",
       "related_apis": [
         "tf.keras.applications.DenseNet169",
         "tf.keras.applications.DenseNet201",
         "tf.keras.applications.densenet.preprocess_input"
       ],
       "primary_apis": [],
-      "framework_migration_notes": "> * DenseNet layer concatenation logic inside Keras matches PyTorch implementations, but tensor shapes must conform to channels-last ordering (NHWC).",
-      "pytorch_equivalent": "`tf.keras.applications.DenseNet121`  \n`\u2192 torchvision.models.densenet121`",
+      "framework_migration_notes": "DenseNet layer concatenation logic inside Keras matches PyTorch implementations, but tensor shapes must conform to channels-last ordering (NHWC).",
+      "pytorch_equivalent": "`tf.keras.applications.DenseNet121`  \n`→ torchvision.models.densenet121`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`tf.keras.applications.DenseNet121`  \n`\u2192 torchvision.models.densenet121`",
+      "framework_equivalent": "`tf.keras.applications.DenseNet121`  \n`→ torchvision.models.densenet121`",
       "version_compatibility": "No significant changes in TensorFlow 2.21.",
       "search_metadata": {
         "aliases": [
@@ -393,22 +393,22 @@
       "return_value": "A tf.keras.Model instance representing Xception.",
       "example": "# Load Xception for high-resolution vision modeling\nmodel = tf.keras.applications.Xception(\ninclude_top=False,\nweights=\"imagenet\",\ninput_shape=(299, 299, 3),\npooling=\"avg\"\n)\n\n# Xception default resolution is 299x299\nimage_input = tf.random.uniform((1, 299, 299, 3), minval=0, maxval=255)\npreprocessed = tf.keras.applications.xception.preprocess_input(image_input)\n\noutput = model(preprocessed, training=False)",
       "snippet": "# Load Xception for high-resolution vision modeling\nmodel = tf.keras.applications.Xception(\ninclude_top=False,\nweights=\"imagenet\",\ninput_shape=(299, 299, 3),\npooling=\"avg\"\n)\n\n# Xception default resolution is 299x299\nimage_input = tf.random.uniform((1, 299, 299, 3), minval=0, maxval=255)\npreprocessed = tf.keras.applications.xception.preprocess_input(image_input)\n\noutput = model(preprocessed, training=False)",
-      "use_when": "> * Working with larger default resolutions (299x299) where fine details matter.  \n> * Fine-tuning large image datasets on server GPUs.",
-      "avoid_when": "> * Target platforms require fast execution on low-power mobile ARM chips.",
+      "use_when": "Working with larger default resolutions (299x299) where fine details matter.\nFine-tuning large image datasets on server GPUs.",
+      "avoid_when": "Target platforms require fast execution on low-power mobile ARM chips.",
       "gotchas": [
         "Default input size is (299, 299, 3). Passing (224, 224, 3) without explicit definition in input_shape will cause a shape mismatch error.",
         "preprocess_input scales input pixels to range [-1, 1]."
       ],
-      "performance_notes": "> * Contains \\~22.9 million parameters.  \n> * Highly optimized performance on CUDA GPUs with CUDNN support for depthwise separable ops.",
+      "performance_notes": "Contains \\~22.9 million parameters.\nHighly optimized performance on CUDA GPUs with CUDNN support for depthwise separable ops.",
       "related_apis": [
         "tf.keras.applications.InceptionV3",
         "tf.keras.applications.xception.preprocess_input"
       ],
       "primary_apis": [],
-      "framework_migration_notes": "> * Xception was originally designed specifically for Keras/TensorFlow. In PyTorch, Xception is typically accessed via third-party packages like timm (timm.create_model('xception')).",
-      "pytorch_equivalent": "`tf.keras.applications.Xception`  \n`\u2192 timm.create_model('xception', pretrained=True)`",
+      "framework_migration_notes": "Xception was originally designed specifically for Keras/TensorFlow. In PyTorch, Xception is typically accessed via third-party packages like timm (timm.create_model('xception')).",
+      "pytorch_equivalent": "`tf.keras.applications.Xception`  \n`→ timm.create_model('xception', pretrained=True)`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`tf.keras.applications.Xception`  \n`\u2192 timm.create_model('xception', pretrained=True)`",
+      "framework_equivalent": "`tf.keras.applications.Xception`  \n`→ timm.create_model('xception', pretrained=True)`",
       "version_compatibility": "No significant changes in TensorFlow 2.21.",
       "search_metadata": {
         "aliases": [
@@ -476,22 +476,22 @@
       "return_value": "Not applicable for native tf.keras.applications (unavailable). Returns a Keras model when using keras_cv.models.",
       "example": "# Check native tf.keras.applications availability\nhas_native_vit = hasattr(tf.keras.applications, \"ViTB16\")\nprint(f\"Native ViT in tf.keras.applications: {has_native_vit}\")\n\nif not has_native_vit:\nprint(\"ViT is unavailable in tf.keras.applications.\")\nprint(\"Recommended alternatives within tf.keras.applications: EfficientNetV2 or ConvNeXt.\")\n\n# Load ConvNeXtTiny as a modern CNN alternative inside tf.keras.applications\nalternative_backbone = tf.keras.applications.ConvNeXtTiny(\ninclude_top=False,\nweights=\"imagenet\",\ninput_shape=(224, 224, 3)\n)\ndummy_input = tf.random.uniform((1, 224, 224, 3), minval=0, maxval=255)",
       "snippet": "# Check native tf.keras.applications availability\nhas_native_vit = hasattr(tf.keras.applications, \"ViTB16\")\nprint(f\"Native ViT in tf.keras.applications: {has_native_vit}\")\n\nif not has_native_vit:\nprint(\"ViT is unavailable in tf.keras.applications.\")\nprint(\"Recommended alternatives within tf.keras.applications: EfficientNetV2 or ConvNeXt.\")\n\n# Load ConvNeXtTiny as a modern CNN alternative inside tf.keras.applications\nalternative_backbone = tf.keras.applications.ConvNeXtTiny(\ninclude_top=False,\nweights=\"imagenet\",\ninput_shape=(224, 224, 3)\n)\ndummy_input = tf.random.uniform((1, 224, 224, 3), minval=0, maxval=255)",
-      "use_when": "> * Assessing available transformer vs modern convolutional backbones in core TensorFlow Keras.",
-      "avoid_when": "> * Assuming tf.keras.applications.ViT exists natively in core TensorFlow without checking namespace availability.",
+      "use_when": "Assessing available transformer vs modern convolutional backbones in core TensorFlow Keras.",
+      "avoid_when": "Assuming tf.keras.applications.ViT exists natively in core TensorFlow without checking namespace availability.",
       "gotchas": [
         "tf.keras.applications in TensorFlow 2.21 does not provide native Vision Transformers. Attempting tf.keras.applications.ViTB16 raises an AttributeError.",
         "Use keras_cv.models or modern convnet architectures (ConvNeXt, EfficientNetV2) for state-of-the-art vision backbones in core TensorFlow workflows."
       ],
-      "performance_notes": "> * ConvNeXt and EfficientNetV2 backbones in tf.keras.applications offer accuracy competitive with ViT while maintaining native GPU operator efficiency.",
+      "performance_notes": "ConvNeXt and EfficientNetV2 backbones in tf.keras.applications offer accuracy competitive with ViT while maintaining native GPU operator efficiency.",
       "related_apis": [
         "tf.keras.applications.ConvNeXtTiny",
         "tf.keras.applications.EfficientNetV2S"
       ],
       "primary_apis": [],
-      "framework_migration_notes": "> * While PyTorch provides torchvision.models.vit_b_16, TensorFlow core houses vision transformers in external ecosystem libraries like KerasCV (keras_cv.models).",
-      "pytorch_equivalent": "`Vision Transformer in tf.keras.applications`  \n`\u2192 Unavailable natively. Use keras_cv.models.ViTB16 or torchvision.models.vit_b_16`",
+      "framework_migration_notes": "While PyTorch provides torchvision.models.vit_b_16, TensorFlow core houses vision transformers in external ecosystem libraries like KerasCV (keras_cv.models).",
+      "pytorch_equivalent": "`Vision Transformer in tf.keras.applications`  \n`→ Unavailable natively. Use keras_cv.models.ViTB16 or torchvision.models.vit_b_16`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`Vision Transformer in tf.keras.applications`  \n`\u2192 Unavailable natively. Use keras_cv.models.ViTB16 or torchvision.models.vit_b_16`",
+      "framework_equivalent": "`Vision Transformer in tf.keras.applications`  \n`→ Unavailable natively. Use keras_cv.models.ViTB16 or torchvision.models.vit_b_16`",
       "version_compatibility": "Explicitly unavailable in tf.keras.applications for TensorFlow 2.21.0.",
       "search_metadata": {
         "aliases": [
@@ -562,23 +562,23 @@
       "return_value": "Preprocessed tensor or array matching the specific expectation of the target architecture.",
       "example": "# Raw RGB uint8 images [0, 255]\nraw_images = tf.random.uniform((2, 224, 224, 3), minval=0, maxval=256, dtype=tf.int32)\nraw_float = tf.cast(raw_images, tf.float32)\n\n# ResNet50 preprocessing: RGB to BGR and zero-centering\nresnet_inputs = tf.keras.applications.resnet50.preprocess_input(raw_float)\n\n# Xception preprocessing: scale to [-1, 1]\nxception_inputs = tf.keras.applications.xception.preprocess_input(raw_float)\n\nprint(\"Raw min/max:\", tf.reduce_min(raw_float).numpy(), tf.reduce_max(raw_float).numpy())\nprint(\"ResNet preprocessed shape:\", resnet_inputs.shape)",
       "snippet": "# Raw RGB uint8 images [0, 255]\nraw_images = tf.random.uniform((2, 224, 224, 3), minval=0, maxval=256, dtype=tf.int32)\nraw_float = tf.cast(raw_images, tf.float32)\n\n# ResNet50 preprocessing: RGB to BGR and zero-centering\nresnet_inputs = tf.keras.applications.resnet50.preprocess_input(raw_float)\n\n# Xception preprocessing: scale to [-1, 1]\nxception_inputs = tf.keras.applications.xception.preprocess_input(raw_float)\n\nprint(\"Raw min/max:\", tf.reduce_min(raw_float).numpy(), tf.reduce_max(raw_float).numpy())\nprint(\"ResNet preprocessed shape:\", resnet_inputs.shape)",
-      "use_when": "> * Feeding input image tensors to pretrained models that do not include built-in preprocessing layers.",
-      "avoid_when": "> * Using models with built-in preprocessing configured (e.g. EfficientNetV2 with include_preprocessing=True).",
+      "use_when": "Feeding input image tensors to pretrained models that do not include built-in preprocessing layers.",
+      "avoid_when": "Using models with built-in preprocessing configured (e.g. EfficientNetV2 with include_preprocessing=True).",
       "gotchas": [
         "Mixing up preprocessing modules across architectures (e.g., passing Xception-preprocessed images into ResNet50) leads to poor inference accuracy.",
         "Passing integer tensors into some preprocess_input functions without casting can cause subtle floating point truncation issues."
       ],
-      "performance_notes": "> * Preprocessing operations are differentiable TensorFlow graph ops and can run inside input pipelines (tf.data.Dataset.map).",
+      "performance_notes": "Preprocessing operations are differentiable TensorFlow graph ops and can run inside input pipelines (tf.data.Dataset.map).",
       "related_apis": [
         "tf.keras.applications.resnet50.preprocess_input",
         "tf.keras.applications.mobilenet_v3.preprocess_input",
         "tf.keras.applications.densenet.preprocess_input"
       ],
       "primary_apis": [],
-      "framework_migration_notes": "> * In PyTorch, preprocessing is configured manually via torchvision.transforms.Compose. Keras provides per-model preprocess_input functions matching exact original paper configurations.",
-      "pytorch_equivalent": "`preprocess_input`  \n`\u2192 torchvision.transforms.Normalize`",
+      "framework_migration_notes": "In PyTorch, preprocessing is configured manually via torchvision.transforms.Compose. Keras provides per-model preprocess_input functions matching exact original paper configurations.",
+      "pytorch_equivalent": "`preprocess_input`  \n`→ torchvision.transforms.Normalize`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`preprocess_input`  \n`\u2192 torchvision.transforms.Normalize`",
+      "framework_equivalent": "`preprocess_input`  \n`→ torchvision.transforms.Normalize`",
       "version_compatibility": "No significant changes in TensorFlow 2.21.",
       "search_metadata": {
         "aliases": [
@@ -655,22 +655,22 @@
       "return_value": "A tf.data.Dataset yielding tuples of (images, labels) where images has shape (batch_size, image_size[0], image_size[1], num_channels).",
       "example": "from pathlib import Path\nimport tensorflow as tf\n\n# Create dummy directory structure\ntemp_dir = tempfile.mkdtemp()\ndata_path = Path(temp_dir)\n(data_path / \"cats\").mkdir(parents=True, exist_ok=True)\n(data_path / \"dogs\").mkdir(parents=True, exist_ok=True)\n\n# Generate dummy image file\nimg = tf.io.encode_jpeg(tf.zeros((100, 100, 3), dtype=tf.uint8))\ntf.io.write_file(str(data_path / \"cats\" / \"c1.jpg\"), img)\ntf.io.write_file(str(data_path / \"dogs\" / \"d1.jpg\"), img)\n\n# Create dataset from directory\ndataset = tf.keras.utils.image_dataset_from_directory(\ndirectory=data_path,\nlabels=\"inferred\",\nlabel_mode=\"int\",\nbatch_size=2,\nimage_size=(224, 224),\nshuffle=True\n)\n\nfor images, labels in dataset.take(1):\nprint(\"Batch images shape:\", images.shape)",
       "snippet": "from pathlib import Path\nimport tensorflow as tf\n\n# Create dummy directory structure\ntemp_dir = tempfile.mkdtemp()\ndata_path = Path(temp_dir)\n(data_path / \"cats\").mkdir(parents=True, exist_ok=True)\n(data_path / \"dogs\").mkdir(parents=True, exist_ok=True)\n\n# Generate dummy image file\nimg = tf.io.encode_jpeg(tf.zeros((100, 100, 3), dtype=tf.uint8))\ntf.io.write_file(str(data_path / \"cats\" / \"c1.jpg\"), img)\ntf.io.write_file(str(data_path / \"dogs\" / \"d1.jpg\"), img)\n\n# Create dataset from directory\ndataset = tf.keras.utils.image_dataset_from_directory(\ndirectory=data_path,\nlabels=\"inferred\",\nlabel_mode=\"int\",\nbatch_size=2,\nimage_size=(224, 224),\nshuffle=True\n)\n\nfor images, labels in dataset.take(1):\nprint(\"Batch images shape:\", images.shape)",
-      "use_when": "> * Ingesting local image datasets structured by directory folders.  \n> * Building reproducible train/validation dataset splits automatically.",
-      "avoid_when": "> * Datasets are already stored in binary format (TFRecords, HDF5, or memory arrays).",
+      "use_when": "Ingesting local image datasets structured by directory folders.\nBuilding reproducible train/validation dataset splits automatically.",
+      "avoid_when": "Datasets are already stored in binary format (TFRecords, HDF5, or memory arrays).",
       "gotchas": [
         "image_dataset_from_directory returns unscaled images with values in [0, 255] as float32. Remember to apply preprocess_input or a Rescaling layer downstream.",
         "Setting validation_split requires providing both a fixed seed and specifying subset=\"training\" or subset=\"validation\"."
       ],
-      "performance_notes": "> * Asynchronous disk I/O and multi-threaded image decoding are used automatically.  \n> * Combine with .prefetch(tf.data.AUTOTUNE) for maximum training throughput.",
+      "performance_notes": "Asynchronous disk I/O and multi-threaded image decoding are used automatically.\nCombine with .prefetch(tf.data.AUTOTUNE) for maximum training throughput.",
       "related_apis": [
         "tf.data.Dataset",
         "tf.keras.layers.Rescaling"
       ],
       "primary_apis": [],
-      "framework_migration_notes": "> * Direct replacement for torchvision.datasets.ImageFolder combined with DataLoader.",
-      "pytorch_equivalent": "`keras.utils.image_dataset_from_directory`  \n`\u2192 torchvision.datasets.ImageFolder`",
+      "framework_migration_notes": "Direct replacement for torchvision.datasets.ImageFolder combined with DataLoader.",
+      "pytorch_equivalent": "`keras.utils.image_dataset_from_directory`  \n`→ torchvision.datasets.ImageFolder`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`keras.utils.image_dataset_from_directory`  \n`\u2192 torchvision.datasets.ImageFolder`",
+      "framework_equivalent": "`keras.utils.image_dataset_from_directory`  \n`→ torchvision.datasets.ImageFolder`",
       "version_compatibility": "No significant changes in TensorFlow 2.21.",
       "search_metadata": {
         "aliases": [
@@ -731,36 +731,36 @@
         "scale: Float multiplicative factor for rescaling input values.",
         "offset: Float additive factor for rescaling input values.",
         "mode: Flip orientation (\"horizontal\", \"vertical\", or \"horizontal_and_vertical\").",
-        "factor: Float representing fraction of 2*\u03c0* for random rotation range.",
+        "factor: Float representing fraction of 2*π* for random rotation range.",
         "fill_mode: Points outside boundaries filled according to specified mode (\"reflect\", \"constant\", \"nearest\")."
       ],
       "important_params": [
         "scale: Float multiplicative factor for rescaling input values.",
         "offset: Float additive factor for rescaling input values.",
         "mode: Flip orientation (\"horizontal\", \"vertical\", or \"horizontal_and_vertical\").",
-        "factor: Float representing fraction of 2*\u03c0* for random rotation range.",
+        "factor: Float representing fraction of 2*π* for random rotation range.",
         "fill_mode: Points outside boundaries filled according to specified mode (\"reflect\", \"constant\", \"nearest\")."
       ],
       "return_value": "A Keras layer instance that operates on 4D image tensors (batch, height, width, channels).",
       "example": "# Construct vector of augmentation and scaling layers\ndata_augmentation = tf.keras.Sequential([\ntf.keras.layers.Rescaling(1./255),\ntf.keras.layers.RandomFlip(\"horizontal\"),\ntf.keras.layers.RandomRotation(0.1),\n])\n\n# Dummy input batch in range [0, 255]\nraw_batch = tf.random.uniform((4, 224, 224, 3), minval=0, maxval=255)\n\n# Augment images on GPU\naugmented_batch = data_augmentation(raw_batch, training=True)",
       "snippet": "# Construct vector of augmentation and scaling layers\ndata_augmentation = tf.keras.Sequential([\ntf.keras.layers.Rescaling(1./255),\ntf.keras.layers.RandomFlip(\"horizontal\"),\ntf.keras.layers.RandomRotation(0.1),\n])\n\n# Dummy input batch in range [0, 255]\nraw_batch = tf.random.uniform((4, 224, 224, 3), minval=0, maxval=255)\n\n# Augment images on GPU\naugmented_batch = data_augmentation(raw_batch, training=True)",
-      "use_when": "> * Performing data augmentation directly on GPU/TPU accelerators during model execution.  \n> * Exporting end-to-end models where raw unscaled images can be passed directly to saved inference artifacts.",
-      "avoid_when": "> * Augmentation operations are CPU-bound and need to be offloaded into pre-fetching worker threads via tf.data.",
+      "use_when": "Performing data augmentation directly on GPU/TPU accelerators during model execution.\nExporting end-to-end models where raw unscaled images can be passed directly to saved inference artifacts.",
+      "avoid_when": "Augmentation operations are CPU-bound and need to be offloaded into pre-fetching worker threads via tf.data.",
       "gotchas": [
         "Augmentation layers are inactive during inference when training=False is passed or when running model.predict().",
         "If utilizing preprocess_input for standard ImageNet models, double-check whether Rescaling is needed to prevent over-scaling input pixels."
       ],
-      "performance_notes": "> * Executing augmentation via Keras layers leverages native GPU acceleration via TensorRT or XLA.",
+      "performance_notes": "Executing augmentation via Keras layers leverages native GPU acceleration via TensorRT or XLA.",
       "related_apis": [
         "tf.keras.layers.RandomZoom",
         "tf.keras.layers.RandomContrast",
         "tf.keras.layers.Rescaling"
       ],
       "primary_apis": [],
-      "framework_migration_notes": "> * Replaces PyTorch torchvision.transforms.v2 transformations, executing directly inside the Keras functional or sequential model.",
-      "pytorch_equivalent": "`keras.layers.RandomFlip / RandomRotation`  \n`\u2192 torchvision.transforms.v2.RandomHorizontalFlip / RandomRotation`",
+      "framework_migration_notes": "Replaces PyTorch torchvision.transforms.v2 transformations, executing directly inside the Keras functional or sequential model.",
+      "pytorch_equivalent": "`keras.layers.RandomFlip / RandomRotation`  \n`→ torchvision.transforms.v2.RandomHorizontalFlip / RandomRotation`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`keras.layers.RandomFlip / RandomRotation`  \n`\u2192 torchvision.transforms.v2.RandomHorizontalFlip / RandomRotation`",
+      "framework_equivalent": "`keras.layers.RandomFlip / RandomRotation`  \n`→ torchvision.transforms.v2.RandomHorizontalFlip / RandomRotation`",
       "version_compatibility": "No significant changes in TensorFlow 2.21.",
       "search_metadata": {
         "aliases": [
@@ -828,22 +828,22 @@
       "return_value": "None (modifies model layer state in-place).",
       "example": "# Load base backbone without classifier top\nbase_model = tf.keras.applications.ResNet50(\ninclude_top=False,\nweights=\"imagenet\",\ninput_shape=(224, 224, 3)\n)\n\n# Freeze entire backbone\nbase_model.trainable = False\n\n# Build complete transfer learning model\ninputs = tf.keras.Input(shape=(224, 224, 3))\nx = tf.keras.applications.resnet50.preprocess_input(inputs)\nx = base_model(x, training=False)  # Keep BN layers in inference mode\nx = tf.keras.layers.GlobalAveragePooling2D()(x)\noutputs = tf.keras.layers.Dense(10, activation=\"softmax\")(x)\n\nmodel = tf.keras.Model(inputs, outputs)\n\n# Verify trainable vs non-trainable parameter count\nprint(\"Trainable variables count:\", len(model.trainable_variables))",
       "snippet": "# Load base backbone without classifier top\nbase_model = tf.keras.applications.ResNet50(\ninclude_top=False,\nweights=\"imagenet\",\ninput_shape=(224, 224, 3)\n)\n\n# Freeze entire backbone\nbase_model.trainable = False\n\n# Build complete transfer learning model\ninputs = tf.keras.Input(shape=(224, 224, 3))\nx = tf.keras.applications.resnet50.preprocess_input(inputs)\nx = base_model(x, training=False)  # Keep BN layers in inference mode\nx = tf.keras.layers.GlobalAveragePooling2D()(x)\noutputs = tf.keras.layers.Dense(10, activation=\"softmax\")(x)\n\nmodel = tf.keras.Model(inputs, outputs)\n\n# Verify trainable vs non-trainable parameter count\nprint(\"Trainable variables count:\", len(model.trainable_variables))",
-      "use_when": "> * Training a initial custom classification head on top of a pretrained backbone.  \n> * Working with small target datasets vulnerable to catastrophic forgetting.",
-      "avoid_when": "> * Fine-tuning end-to-end on a large domain-specific dataset after the classification head has converged.",
+      "use_when": "Training a initial custom classification head on top of a pretrained backbone.\nWorking with small target datasets vulnerable to catastrophic forgetting.",
+      "avoid_when": "Fine-tuning end-to-end on a large domain-specific dataset after the classification head has converged.",
       "gotchas": [
         "Setting base_model.trainable \\= False requires re-compiling the model via model.compile(...) if already compiled for parameter state updates to apply during fit().",
         "Passing training=False to base_model during call ensures BatchNormalization layers remain in inference mode, preserving original mean/variance statistics."
       ],
-      "performance_notes": "> * Freezing backbone layers eliminates backward pass gradient computation for frozen parameters, accelerating epoch iteration speed.",
+      "performance_notes": "Freezing backbone layers eliminates backward pass gradient computation for frozen parameters, accelerating epoch iteration speed.",
       "related_apis": [
         "tf.keras.Model.compile",
         "tf.keras.layers.Layer.trainable"
       ],
       "primary_apis": [],
-      "framework_migration_notes": "> * base_model.trainable \\= False in Keras recursively sets all child sublayers non-trainable, whereas in PyTorch setting param.requires_grad \\= False must be iterated over model.parameters().",
-      "pytorch_equivalent": "`base_model.trainable = False`  \n`\u2192 for param in base_model.parameters(): param.requires_grad = False`",
+      "framework_migration_notes": "base_model.trainable \\= False in Keras recursively sets all child sublayers non-trainable, whereas in PyTorch setting param.requires_grad \\= False must be iterated over model.parameters().",
+      "pytorch_equivalent": "`base_model.trainable = False`  \n`→ for param in base_model.parameters(): param.requires_grad = False`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`base_model.trainable = False`  \n`\u2192 for param in base_model.parameters(): param.requires_grad = False`",
+      "framework_equivalent": "`base_model.trainable = False`  \n`→ for param in base_model.parameters(): param.requires_grad = False`",
       "version_compatibility": "No significant changes in TensorFlow 2.21.",
       "search_metadata": {
         "aliases": [
@@ -915,23 +915,23 @@
       "return_value": "A new tf.keras.Model instance connecting the feature extractor backbone to the new classification head.",
       "example": "# Load base model without top classifier\nbase_model = tf.keras.applications.EfficientNetV2B0(\ninclude_top=False,\nweights=\"imagenet\",\ninput_shape=(224, 224, 3)\n)\nbase_model.trainable = False\n\n# Construct custom classification head\ninputs = tf.keras.Input(shape=(224, 224, 3))\nx = base_model(inputs, training=False)\nx = tf.keras.layers.GlobalAveragePooling2D()(x)\nx = tf.keras.layers.Dropout(0.2)(x)\n# New 5-class classification head\noutputs = tf.keras.layers.Dense(5, activation=\"softmax\")(x)\n\ncustom_model = tf.keras.Model(inputs, outputs)",
       "snippet": "# Load base model without top classifier\nbase_model = tf.keras.applications.EfficientNetV2B0(\ninclude_top=False,\nweights=\"imagenet\",\ninput_shape=(224, 224, 3)\n)\nbase_model.trainable = False\n\n# Construct custom classification head\ninputs = tf.keras.Input(shape=(224, 224, 3))\nx = base_model(inputs, training=False)\nx = tf.keras.layers.GlobalAveragePooling2D()(x)\nx = tf.keras.layers.Dropout(0.2)(x)\n# New 5-class classification head\noutputs = tf.keras.layers.Dense(5, activation=\"softmax\")(x)\n\ncustom_model = tf.keras.Model(inputs, outputs)",
-      "use_when": "> * Adapting pretrained vision models to custom downstream classification tasks.",
-      "avoid_when": "> * Performing dense spatial prediction tasks like semantic segmentation or object detection (where spatial feature maps must be preserved).",
+      "use_when": "Adapting pretrained vision models to custom downstream classification tasks.",
+      "avoid_when": "Performing dense spatial prediction tasks like semantic segmentation or object detection (where spatial feature maps must be preserved).",
       "gotchas": [
         "Ensure include_top=False was passed during base model initialization before constructing the new head.",
         "Selecting an incorrect final activation function (e.g., \"softmax\" for multi-label classification) damages training convergence."
       ],
-      "performance_notes": "> * A standard single-layer classification head adds minimal parameter overhead (e.g., 2048\u00d7*N* weights).",
+      "performance_notes": "A standard single-layer classification head adds minimal parameter overhead (e.g., 2048×*N* weights).",
       "related_apis": [
         "tf.keras.layers.GlobalAveragePooling2D",
         "tf.keras.layers.Dense",
         "tf.keras.Model"
       ],
       "primary_apis": [],
-      "framework_migration_notes": "> * In PyTorch, heads are often replaced by overwriting model.fc \\= nn.Linear(...). In Keras, Functional API construction using include_top=False is standard.",
-      "pytorch_equivalent": "`Replace classification head`  \n`\u2192 model.fc = nn.Linear(in_features, num_classes)`",
+      "framework_migration_notes": "In PyTorch, heads are often replaced by overwriting model.fc \\= nn.Linear(...). In Keras, Functional API construction using include_top=False is standard.",
+      "pytorch_equivalent": "`Replace classification head`  \n`→ model.fc = nn.Linear(in_features, num_classes)`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`Replace classification head`  \n`\u2192 model.fc = nn.Linear(in_features, num_classes)`",
+      "framework_equivalent": "`Replace classification head`  \n`→ model.fc = nn.Linear(in_features, num_classes)`",
       "version_compatibility": "No significant changes in TensorFlow 2.21.",
       "search_metadata": {
         "aliases": [
@@ -1003,22 +1003,22 @@
       "return_value": "A 2D float32 Tensor of shape (batch_size, feature_dim) representing extracted image embeddings.",
       "example": "# Initialize ResNet50 as feature extractor with global average pooling\nfeature_extractor = tf.keras.applications.ResNet50(\ninclude_top=False,\nweights=\"imagenet\",\ninput_shape=(224, 224, 3),\npooling=\"avg\"\n)\nfeature_extractor.trainable = False\n\n# Batch of 2 images\nimages = tf.random.uniform((2, 224, 224, 3), minval=0, maxval=255)\npreprocessed_images = tf.keras.applications.resnet50.preprocess_input(images)\n\n# Extract 2048-dimensional embedding vectors\nembeddings = feature_extractor(preprocessed_images, training=False)",
       "snippet": "# Initialize ResNet50 as feature extractor with global average pooling\nfeature_extractor = tf.keras.applications.ResNet50(\ninclude_top=False,\nweights=\"imagenet\",\ninput_shape=(224, 224, 3),\npooling=\"avg\"\n)\nfeature_extractor.trainable = False\n\n# Batch of 2 images\nimages = tf.random.uniform((2, 224, 224, 3), minval=0, maxval=255)\npreprocessed_images = tf.keras.applications.resnet50.preprocess_input(images)\n\n# Extract 2048-dimensional embedding vectors\nembeddings = feature_extractor(preprocessed_images, training=False)",
-      "use_when": "> * Pre-computing fixed vector representations for an entire image dataset to store in a vector database.  \n> * Training fast linear classifiers or gradient boosted trees on extracted image features.",
-      "avoid_when": "> * The target domain imagery differs drastically from ImageNet (e.g., satellite, radar, or medical imagery), requiring end-to-end fine-tuning.",
+      "use_when": "Pre-computing fixed vector representations for an entire image dataset to store in a vector database.\nTraining fast linear classifiers or gradient boosted trees on extracted image features.",
+      "avoid_when": "The target domain imagery differs drastically from ImageNet (e.g., satellite, radar, or medical imagery), requiring end-to-end fine-tuning.",
       "gotchas": [
         "Always pass training=False during forward passes to guarantee BatchNormalization layers execute using precomputed ImageNet running statistics.",
         "Forgetting pooling='avg' or pooling='max' returns a 4D spatial feature tensor (batch, height, width, channels) rather than a 2D embedding vector."
       ],
-      "performance_notes": "> * Feature extraction allows caching image embeddings to disk, avoiding backbone evaluation on every training epoch.",
+      "performance_notes": "Feature extraction allows caching image embeddings to disk, avoiding backbone evaluation on every training epoch.",
       "related_apis": [
         "tf.keras.applications.ResNet50",
         "tf.keras.applications.MobileNetV3Small"
       ],
       "primary_apis": [],
-      "framework_migration_notes": "> * Equivalent to running PyTorch models inside a with torch.no_grad(): context with model.eval().",
-      "pytorch_equivalent": "`include_top=False with training=False`  \n`\u2192 model.eval() with torch.no_grad() feature extraction`",
+      "framework_migration_notes": "Equivalent to running PyTorch models inside a with torch.no_grad(): context with model.eval().",
+      "pytorch_equivalent": "`include_top=False with training=False`  \n`→ model.eval() with torch.no_grad() feature extraction`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`include_top=False with training=False`  \n`\u2192 model.eval() with torch.no_grad() feature extraction`",
+      "framework_equivalent": "`include_top=False with training=False`  \n`→ model.eval() with torch.no_grad() feature extraction`",
       "version_compatibility": "No significant changes in TensorFlow 2.21.",
       "search_metadata": {
         "aliases": [
@@ -1078,32 +1078,32 @@
       "mental_trigger": "My classification head has converged, but I need higher accuracy by adapting the top convolutional representations to my custom dataset.",
       "syntax": "base_model.trainable = True\n\n# Freeze lower layers, unfreeze top N layers\nfor layer in base_model.layers[:-num_layers_to_unfreeze]:\nlayer.trainable = False\n\n# Recompile model with low learning rate\nmodel.compile(\noptimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),\nloss='categorical_crossentropy',\nmetrics=['accuracy']",
       "important_parameters": [
-        "learning_rate: Must use a small learning rate (e.g. 10\u22125) to avoid destroying pretrained weights.",
+        "learning_rate: Must use a small learning rate (e.g. 10−5) to avoid destroying pretrained weights.",
         "num_layers_to_unfreeze: Number of high-level feature extraction layers near the top of the network to unfreeze."
       ],
       "important_params": [
-        "learning_rate: Must use a small learning rate (e.g. 10\u22125) to avoid destroying pretrained weights.",
+        "learning_rate: Must use a small learning rate (e.g. 10−5) to avoid destroying pretrained weights.",
         "num_layers_to_unfreeze: Number of high-level feature extraction layers near the top of the network to unfreeze."
       ],
       "return_value": "None (updates internal layer trainable flags and recompiles optimizer graph).",
       "example": "# 1. Base model setup\nbase_model = tf.keras.applications.MobileNetV3Small(\ninclude_top=False,\nweights=\"imagenet\",\ninput_shape=(224, 224, 3)\n)\n\ninputs = tf.keras.Input(shape=(224, 224, 3))\nx = base_model(inputs, training=False)\nx = tf.keras.layers.GlobalAveragePooling2D()(x)\noutputs = tf.keras.layers.Dense(5, activation=\"softmax\")(x)\nmodel = tf.keras.Model(inputs, outputs)\n\n# 2. Step 1: Train head with frozen backbone\nbase_model.trainable = False\nmodel.compile(optimizer=\"adam\", loss=\"sparse_categorical_crossentropy\")\n\n# 3. Step 2: Unfreeze base model for fine-tuning\nbase_model.trainable = True\n\n# Freeze all layers except top 10\nfor layer in base_model.layers[:-10]:\nlayer.trainable = False\n\n# Recompile with significantly lower learning rate\nmodel.compile(\noptimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),\nloss=\"sparse_categorical_crossentropy\",\nmetrics=[\"accuracy\"]\n)",
       "snippet": "# 1. Base model setup\nbase_model = tf.keras.applications.MobileNetV3Small(\ninclude_top=False,\nweights=\"imagenet\",\ninput_shape=(224, 224, 3)\n)\n\ninputs = tf.keras.Input(shape=(224, 224, 3))\nx = base_model(inputs, training=False)\nx = tf.keras.layers.GlobalAveragePooling2D()(x)\noutputs = tf.keras.layers.Dense(5, activation=\"softmax\")(x)\nmodel = tf.keras.Model(inputs, outputs)\n\n# 2. Step 1: Train head with frozen backbone\nbase_model.trainable = False\nmodel.compile(optimizer=\"adam\", loss=\"sparse_categorical_crossentropy\")\n\n# 3. Step 2: Unfreeze base model for fine-tuning\nbase_model.trainable = True\n\n# Freeze all layers except top 10\nfor layer in base_model.layers[:-10]:\nlayer.trainable = False\n\n# Recompile with significantly lower learning rate\nmodel.compile(\noptimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),\nloss=\"sparse_categorical_crossentropy\",\nmetrics=[\"accuracy\"]\n)",
-      "use_when": "> * Target dataset is moderately sized and feature extraction accuracy has plateaued.  \n> * Domain-specific image characteristics differ slightly from ImageNet baseline features.",
-      "avoid_when": "> * Target dataset is tiny (risks severe overfitting).  \n> * Classification head has not been trained first (large initial random gradients ruin pretrained backbone weights).",
+      "use_when": "Target dataset is moderately sized and feature extraction accuracy has plateaued.\nDomain-specific image characteristics differ slightly from ImageNet baseline features.",
+      "avoid_when": "Target dataset is tiny (risks severe overfitting).\nClassification head has not been trained first (large initial random gradients ruin pretrained backbone weights).",
       "gotchas": [
-        "Always recompile the model using model.compile(...) with a small learning rate (10\u22125) after changing trainable flags.",
+        "Always recompile the model using model.compile(...) with a small learning rate (10−5) after changing trainable flags.",
         "Keep training=False on the base model call if you want BatchNormalization stats kept frozen."
       ],
-      "performance_notes": "> * Unfreezing top layers increases backward pass memory consumption and compute requirements relative to fixed feature extraction.",
+      "performance_notes": "Unfreezing top layers increases backward pass memory consumption and compute requirements relative to fixed feature extraction.",
       "related_apis": [
         "tf.keras.optimizers.Adam",
         "tf.keras.Model.compile"
       ],
       "primary_apis": [],
-      "framework_migration_notes": "> * In PyTorch, fine-tuning requires configuring parameter groups with differential learning rates in the optimizer. In Keras, explicit layer freezing \\+ low global learning rate recompilation is used.",
-      "pytorch_equivalent": "`Fine-tuning top layers`  \n`\u2192 Setting differential parameter learning rates in torch.optim.Adam`",
+      "framework_migration_notes": "In PyTorch, fine-tuning requires configuring parameter groups with differential learning rates in the optimizer. In Keras, explicit layer freezing \\+ low global learning rate recompilation is used.",
+      "pytorch_equivalent": "`Fine-tuning top layers`  \n`→ Setting differential parameter learning rates in torch.optim.Adam`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`Fine-tuning top layers`  \n`\u2192 Setting differential parameter learning rates in torch.optim.Adam`",
+      "framework_equivalent": "`Fine-tuning top layers`  \n`→ Setting differential parameter learning rates in torch.optim.Adam`",
       "version_compatibility": "No significant changes in TensorFlow 2.21.",
       "search_metadata": {
         "aliases": [
@@ -1172,20 +1172,20 @@
       "return_value": "List of string names corresponding to available functions and architecture classes.",
       "example": "# List available architectures in tf.keras.applications\napp_symbols = dir(tf.keras.applications)\n\n# Filter for callable architecture constructors\nmodel_constructors = [\nsym for sym in app_symbols\nif isinstance(getattr(tf.keras.applications, sym), type) or callable(getattr(tf.keras.applications, sym))\n]\n\nprint(\"Sample available Keras Application architectures:\")\nfor name in sorted(model_constructors)[:8]:",
       "snippet": "# List available architectures in tf.keras.applications\napp_symbols = dir(tf.keras.applications)\n\n# Filter for callable architecture constructors\nmodel_constructors = [\nsym for sym in app_symbols\nif isinstance(getattr(tf.keras.applications, sym), type) or callable(getattr(tf.keras.applications, sym))\n]\n\nprint(\"Sample available Keras Application architectures:\")\nfor name in sorted(model_constructors)[:8]:",
-      "use_when": "> * Building automated benchmarking pipelines that test multiple vision backbones.  \n> * Validating model availability programmatically across execution environments.",
-      "avoid_when": "> * Hardcoding specific static model selections in application production logic.",
+      "use_when": "Building automated benchmarking pipelines that test multiple vision backbones.\nValidating model availability programmatically across execution environments.",
+      "avoid_when": "Hardcoding specific static model selections in application production logic.",
       "gotchas": [
         "dir(tf.keras.applications) includes utility functions (preprocess_input) alongside model constructors. Filter using callable() or naming checks."
       ],
-      "performance_notes": "> * Programmatic inspection incurs zero execution runtime overhead.",
+      "performance_notes": "Programmatic inspection incurs zero execution runtime overhead.",
       "related_apis": [
         "tf.keras.applications"
       ],
       "primary_apis": [],
-      "framework_migration_notes": "> * Equivalent to querying torchvision.models.list_models().",
-      "pytorch_equivalent": "`dir(tf.keras.applications)`  \n`\u2192 torchvision.models.list_models()`",
+      "framework_migration_notes": "Equivalent to querying torchvision.models.list_models().",
+      "pytorch_equivalent": "`dir(tf.keras.applications)`  \n`→ torchvision.models.list_models()`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`dir(tf.keras.applications)`  \n`\u2192 torchvision.models.list_models()`",
+      "framework_equivalent": "`dir(tf.keras.applications)`  \n`→ torchvision.models.list_models()`",
       "version_compatibility": "No significant changes in TensorFlow 2.21.",
       "search_metadata": {
         "aliases": [
@@ -1253,22 +1253,22 @@
       "return_value": "A tf.keras.Model outputting either class logits/probabilities (include_top=True) or feature maps (include_top=False).",
       "example": "# 1. Full classifier model\nfull_model = tf.keras.applications.ResNet50(include_top=True, weights=\"imagenet\")\n\n# 2. Headless feature extractor\nheadless_model = tf.keras.applications.ResNet50(include_top=False, weights=\"imagenet\")\n\ndummy_input = tf.random.uniform((1, 224, 224, 3), minval=0, maxval=255)\ndummy_preprocessed = tf.keras.applications.resnet50.preprocess_input(dummy_input)\n\nprint(\"Full classifier output shape (1000 classes):\", full_model(dummy_preprocessed).shape)",
       "snippet": "# 1. Full classifier model\nfull_model = tf.keras.applications.ResNet50(include_top=True, weights=\"imagenet\")\n\n# 2. Headless feature extractor\nheadless_model = tf.keras.applications.ResNet50(include_top=False, weights=\"imagenet\")\n\ndummy_input = tf.random.uniform((1, 224, 224, 3), minval=0, maxval=255)\ndummy_preprocessed = tf.keras.applications.resnet50.preprocess_input(dummy_input)\n\nprint(\"Full classifier output shape (1000 classes):\", full_model(dummy_preprocessed).shape)",
-      "use_when": "> * include_top=True: Direct 1000-class ImageNet classification out-of-the-box.  \n> * include_top=False: All transfer learning, custom classification, feature embedding, and object detection workflows.",
-      "avoid_when": "> * Setting include_top=True when planning to append custom dense output layers.",
+      "use_when": "include_top=True: Direct 1000-class ImageNet classification out-of-the-box.\ninclude_top=False: All transfer learning, custom classification, feature embedding, and object detection workflows.",
+      "avoid_when": "Setting include_top=True when planning to append custom dense output layers.",
       "gotchas": [
         "Setting include_top=True restricts input_shape strictly to (224, 224, 3) (or model default resolution).",
         "Custom input shapes require setting include_top=False."
       ],
-      "performance_notes": "> * Omission of top layers slightly reduces total weight size and parameter count loaded into GPU RAM.",
+      "performance_notes": "Omission of top layers slightly reduces total weight size and parameter count loaded into GPU RAM.",
       "related_apis": [
         "tf.keras.applications.ResNet50",
         "tf.keras.applications.EfficientNetV2B0"
       ],
       "primary_apis": [],
-      "framework_migration_notes": "> * PyTorch TorchVision models include classification heads by default; stripping them requires replacing model.fc \\= nn.Identity() or accessing intermediate submodules. Keras manages this via include_top=False.",
-      "pytorch_equivalent": "`include_top=False`  \n`\u2192 model.fc = nn.Identity()`",
+      "framework_migration_notes": "PyTorch TorchVision models include classification heads by default; stripping them requires replacing model.fc \\= nn.Identity() or accessing intermediate submodules. Keras manages this via include_top=False.",
+      "pytorch_equivalent": "`include_top=False`  \n`→ model.fc = nn.Identity()`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`include_top=False`  \n`\u2192 model.fc = nn.Identity()`",
+      "framework_equivalent": "`include_top=False`  \n`→ model.fc = nn.Identity()`",
       "version_compatibility": "No significant changes in TensorFlow 2.21.",
       "search_metadata": {
         "aliases": [
@@ -1336,22 +1336,22 @@
       "return_value": "A tf.keras.Model instance with initialized weight parameters.",
       "example": "# Load model initialized with official ImageNet weights\npretrained_model = tf.keras.applications.ResNet50(\ninclude_top=False,\nweights=\"imagenet\"\n)\n\n# Load model with random initialization (training from scratch)\nscratch_model = tf.keras.applications.ResNet50(\ninclude_top=False,\nweights=None\n)\n\nprint(\"Pretrained weight sample layer zero mean:\", tf.reduce_mean(pretrained_model.layers[2].weights[0]).numpy())",
       "snippet": "# Load model initialized with official ImageNet weights\npretrained_model = tf.keras.applications.ResNet50(\ninclude_top=False,\nweights=\"imagenet\"\n)\n\n# Load model with random initialization (training from scratch)\nscratch_model = tf.keras.applications.ResNet50(\ninclude_top=False,\nweights=None\n)\n\nprint(\"Pretrained weight sample layer zero mean:\", tf.reduce_mean(pretrained_model.layers[2].weights[0]).numpy())",
-      "use_when": "> * weights=\"imagenet\": Transfer learning or fine-tuning scenarios.  \n> * weights=None: Training architecture from scratch on massive custom datasets.",
-      "avoid_when": "> * Setting weights=\"imagenet\" when loading custom checkpoint files (supply local path string instead).",
+      "use_when": "weights=\"imagenet\": Transfer learning or fine-tuning scenarios.\nweights=None: Training architecture from scratch on massive custom datasets.",
+      "avoid_when": "Setting weights=\"imagenet\" when loading custom checkpoint files (supply local path string instead).",
       "gotchas": [
         "Using weights=\"imagenet\" requires an active internet connection on first execution to download weight files to \\~/.keras/models/.",
         "Passing invalid weight paths or strings raises a ValueError."
       ],
-      "performance_notes": "> * Local caching prevents redundant network downloads on subsequent instantiations.",
+      "performance_notes": "Local caching prevents redundant network downloads on subsequent instantiations.",
       "related_apis": [
         "tf.keras.Model.load_weights",
         "tf.keras.Model.save_weights"
       ],
       "primary_apis": [],
-      "framework_migration_notes": "> * Replaces PyTorch weights=ResNet50_Weights.DEFAULT or deprecated pretrained=True.",
-      "pytorch_equivalent": "`weights=\"imagenet\"`  \n`\u2192 weights=ResNet50_Weights.DEFAULT`",
+      "framework_migration_notes": "Replaces PyTorch weights=ResNet50_Weights.DEFAULT or deprecated pretrained=True.",
+      "pytorch_equivalent": "`weights=\"imagenet\"`  \n`→ weights=ResNet50_Weights.DEFAULT`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`weights=\"imagenet\"`  \n`\u2192 weights=ResNet50_Weights.DEFAULT`",
+      "framework_equivalent": "`weights=\"imagenet\"`  \n`→ weights=ResNet50_Weights.DEFAULT`",
       "version_compatibility": "No significant changes in TensorFlow 2.21.",
       "search_metadata": {
         "aliases": [
@@ -1427,22 +1427,22 @@
       "return_value": "A tf.keras.Model configured with custom input dimensions and optional global pooling output layer.",
       "example": "# 1. Model with custom shape (300, 300, 3) and Global Average Pooling\navg_pooled_model = tf.keras.applications.ResNet50(\ninclude_top=False,\nweights=\"imagenet\",\ninput_shape=(300, 300, 3),\npooling=\"avg\"\n)\n\n# 2. Model with spatial 4D feature map output (pooling=None)\nspatial_output_model = tf.keras.applications.ResNet50(\ninclude_top=False,\nweights=\"imagenet\",\ninput_shape=(300, 300, 3),\npooling=None\n)\n\ncustom_input = tf.random.uniform((1, 300, 300, 3), minval=0, maxval=255)\n\nprint(\"Avg pooled output shape (2D):\", avg_pooled_model(custom_input).shape)",
       "snippet": "# 1. Model with custom shape (300, 300, 3) and Global Average Pooling\navg_pooled_model = tf.keras.applications.ResNet50(\ninclude_top=False,\nweights=\"imagenet\",\ninput_shape=(300, 300, 3),\npooling=\"avg\"\n)\n\n# 2. Model with spatial 4D feature map output (pooling=None)\nspatial_output_model = tf.keras.applications.ResNet50(\ninclude_top=False,\nweights=\"imagenet\",\ninput_shape=(300, 300, 3),\npooling=None\n)\n\ncustom_input = tf.random.uniform((1, 300, 300, 3), minval=0, maxval=255)\n\nprint(\"Avg pooled output shape (2D):\", avg_pooled_model(custom_input).shape)",
-      "use_when": "> * Processing images with custom aspect ratios or resolutions different from standard 224x224.  \n> * Selecting global average vs global max feature aggregation for embedding tasks.",
-      "avoid_when": "> * include_top=True is set (custom input_shape non-matching standard model resolutions is prohibited when include_top=True).",
+      "use_when": "Processing images with custom aspect ratios or resolutions different from standard 224x224.\nSelecting global average vs global max feature aggregation for embedding tasks.",
+      "avoid_when": "include_top=True is set (custom input_shape non-matching standard model resolutions is prohibited when include_top=True).",
       "gotchas": [
         "Setting input_shape with single-channel grayscale (H, W, 1) images while requesting weights=\"imagenet\" throws a shape error (ImageNet weights require 3 channels).",
         "Minimum width and height for most fully convolutional backbones is 32x32 pixels."
       ],
-      "performance_notes": "> * Higher input resolutions increase computational cost quadratic with spatial dimension size.",
+      "performance_notes": "Higher input resolutions increase computational cost quadratic with spatial dimension size.",
       "related_apis": [
         "tf.keras.layers.GlobalAveragePooling2D",
         "tf.keras.layers.GlobalMaxPooling2D"
       ],
       "primary_apis": [],
-      "framework_migration_notes": "> * In PyTorch, adaptive average pooling (nn.AdaptiveAvgPool2d((1,1))) is often explicit in model code; Keras exposes this directly via the pooling parameter on application model instantiation.",
-      "pytorch_equivalent": "`pooling=\"avg\"`  \n`\u2192 nn.AdaptiveAvgPool2d((1, 1)) followed by torch.flatten()`",
+      "framework_migration_notes": "In PyTorch, adaptive average pooling (nn.AdaptiveAvgPool2d((1,1))) is often explicit in model code; Keras exposes this directly via the pooling parameter on application model instantiation.",
+      "pytorch_equivalent": "`pooling=\"avg\"`  \n`→ nn.AdaptiveAvgPool2d((1, 1)) followed by torch.flatten()`",
       "tensorflow_equivalent": "",
-      "framework_equivalent": "`pooling=\"avg\"`  \n`\u2192 nn.AdaptiveAvgPool2d((1, 1)) followed by torch.flatten()`",
+      "framework_equivalent": "`pooling=\"avg\"`  \n`→ nn.AdaptiveAvgPool2d((1, 1)) followed by torch.flatten()`",
       "version_compatibility": "No significant changes in TensorFlow 2.21.",
       "search_metadata": {
         "aliases": [
